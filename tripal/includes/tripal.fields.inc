@@ -2,16 +2,37 @@
 
 /**
  * Implements hook_field_info().
+ *
+ * We want the Tripal module to handle all TripalFields.  This will allow
+ * other modules to be more easily disabled/enabled because Drupal won't
+ * let a module be disabled if it supports fields that are actively attached
+ * to bundles.  Therefore any module that provides a new TripalField will be
+ * discovered and listed for Drupal by this function.
  */
 function tripal_field_info() {
 
   $info = array();
 
-  $field_types = tripal_get_field_types('tripal');
-  foreach ($field_types as $field_type) {
-    $info[$field_type] = $field_type::fieldInfo();
+  $modules = module_list();
+  foreach ($modules as $module) {
+    $field_types = tripal_get_field_types($module);
+    foreach ($field_types as $field_type) {
+      $info[$field_type] = $field_type::globalInfo();
+    }
   }
   return $info;
+}
+
+/**
+ * Creates TripalField fields.
+ *
+ *
+ */
+function tripal_create_tripal_fields() {
+  $info = tripal_field_info();
+  foreach ($info as $field_type => $info) {
+    $field_info = $field_type::fieldInfo();
+  }
 }
 
 /**

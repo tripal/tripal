@@ -44,9 +44,6 @@ class TripalField {
   // of this object come directly from the field_config table of Drupal.
   protected $field;
 
-  // A list of instances of this field. These are attached to bundles.
-  protected $instances;
-
   // --------------------------------------------------------------------------
   //                          STATIC CONSTANTS
   //
@@ -93,8 +90,19 @@ class TripalField {
    *
    * The field must have already been previously created.
    */
-  public function __construct($field) {
-    $this->field = $field;
+  public function __construct($info = array()) {
+    // If the field array has been passed in then just link it.
+    if (array_key_exists('field', $info)) {
+      $this->field = $field;
+    }
+    // If the field name has been passed in then retreive the form info.
+    if (array_key_exists('field_name', $info)) {
+      $this->field = field_info_field($field_name);
+    }
+    // If the field info has been passed in then create the field.
+    if (array_key_exists('info', $info)) {
+      $this->field = field_create_field($info['info']);
+    }
 
     // Include any instances that have been created for this field.
     if (is_array($field) and array_key_exists('id', $this->field)) {
@@ -107,27 +115,6 @@ class TripalField {
         $this->instances[$instance->field_name] = $instance;
       }
     }
-  }
-
-  /**
-   * Instantiates a new TripalField from an existing Drupal field by name.
-   * @param $field_name
-   */
-  public static function byName($field_name) {
-    $field = field_info_field($field_name);
-    return new self($field);
-  }
-
-  /**
-   * Creates a new Drupal field and instantiates a new TripalField object
-   *
-   * If the field has been created before and Drupal knows about it then use
-   * the constructor that only requires a field_id.
-   *
-   */
-  public static function byCreate($info = array()) {
-    $this->field = field_create_field($info);
-    return new self($this->field);
   }
 
   // --------------------------------------------------------------------------
@@ -146,7 +133,7 @@ class TripalField {
    *   describing the field type. The keys are the same as for the
    *   hook_field_info() function.
    */
-  public static function fieldInfo() {
+  public static function globalInfo() {
     $field_type = get_called_class();
     return array(
       'label' => self::$default_label,
@@ -222,22 +209,11 @@ class TripalField {
     return $this->field['field_name'];
   }
 
-  /**
-   * Retrieves the type of field for this field.
-   *
-   * @return
-   *   The field's type.
-   */
-  public function getType() {
-    return $this->field['type'];
-  }
-
   // --------------------------------------------------------------------------
   //                     FIELD SPECIFIC FUNCTIONS
   //
   // Child classes SHOULD NOT override these functions as needed.
   // --------------------------------------------------------------------------
-
 
   /**
    * Creates an instance of a field and attaches it to a bundle.
@@ -246,13 +222,13 @@ class TripalField {
    *
    * @param $info
    */
-  public function addInstance($info = array()) {
-    if ($this->canAttach($info['entity_type'], $info['bundle'])) {
+  public function createInstance($info = array()) {
+    //if ($this->canAttach($info['entity_type'], $info['bundle'])) {
       return field_create_instance($info);
-    }
-    else {
-      return FALSE;
-    }
+    //}
+    //else {
+    //  return FALSE;
+    //}
   }
 
   // --------------------------------------------------------------------------
@@ -292,18 +268,18 @@ class TripalField {
    *   TRUE is returned then an instance of the field can be attached to the
    *   bundle.
    */
-  protected function canAttach($entity_type, $bundle_name) {
-    // Don't attach if it's already attached.
-    if (array_key_exists('bundles', $this->field) and
-        array_key_exists('TripalEntity', $this->field['bundles']) and
-        in_array($bundle_name, $this->field['bundles']['TripalEntity'])) {
-      return FALSE;
-    }
+//   protected function canAttach($entity_type, $bundle_name) {
+//     // Don't attach if it's already attached.
+//     if (array_key_exists('bundles', $this->field) and
+//         array_key_exists('TripalEntity', $this->field['bundles']) and
+//         in_array($bundle_name, $this->field['bundles']['TripalEntity'])) {
+//       return FALSE;
+//     }
 
-    // Child classes should check to see if this field can be attached
-    // to the bundle.
-    return NULL;
-  }
+//     // Child classes should check to see if this field can be attached
+//     // to the bundle.
+//     return NULL;
+//   }
 
 
 
@@ -535,6 +511,10 @@ class TripalField {
 
   }
 
+
+  public function instanceLoad($instance) {
+
+  }
   /**
    * Provides a form for the 'Field Settings' of the field management page.
    *
@@ -593,7 +573,7 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public static function fieldSettingsForm($field, $instance, $has_data) {
+  public static function globalSettingsForm($field, $instance, $has_data) {
     $settings = $field['settings'];
     $element = array();
 
@@ -621,7 +601,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function fieldSettingsFormValidate($field, $instance, $form, &$form_state) {
+  public static function globalSettingsFormValidate($field, $instance, $form, &$form_state) {
 
   }
 

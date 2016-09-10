@@ -14,16 +14,16 @@
  * the cache must be cleared.
  *
  */
-function tripal_chado_field_info() {
-  $info = array();
+//function tripal_chado_field_info() {
+//   $info = array();
 
-  $field_types = tripal_get_field_types('tripal_chado');
-  foreach ($field_types as $field_type) {
-    $info[$field_type] = $field_type::fieldDefaults();
-  }
-  return $info;
+//   $field_types = tripal_get_field_types('tripal_chado');
+//   foreach ($field_types as $field_type) {
+//     $info[$field_type] = $field_type::fieldDefaults();
+//   }
+//   return $info;
 
-}
+//}
 
 /**
  * Implements hook_field_create_info().
@@ -54,6 +54,206 @@ function tripal_chado_field_create_info($entity_type, $bundle) {
   $base_fields = tripal_chado_field_create_base('create_info', $entity_type, $bundle, $details);
   $custom_fields = tripal_chado_field_create_info_custom($entity_type, $bundle, $details);
   return array_merge($base_fields, $custom_fields);
+}
+
+
+function tripal_chado_field_create_linkers($entity_type, $bundle, $details) {
+  $table_name = $details['chado_table'];
+  $type_table = $details['chado_type_table'];
+  $type_field = $details['chado_type_column'];
+  $cv_id      = $details['chado_cv_id'];
+  $cvterm_id  = $details['chado_cvterm_id'];
+
+  // CONTACTS
+  $contact_table = $table_name . '_contact';
+  if (chado_table_exists($contact_table)) {
+    $schema = chado_get_schema($contact_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_contact';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__contact',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $contact_table,
+        'chado_column' => 'contact_id',
+        'base_table' => $table_name,
+        'semantic_web' => 'local:contact'
+      ),
+    );
+  }
+
+  // CVTERM
+
+  // DBXREF
+  $dbxref_table = $table_name . '_dbxref';
+  if (chado_table_exists($dbxref_table)) {
+    $dbxref_table = $table_name . '_dbxref';
+    $schema = chado_get_schema($dbxref_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_dbxref';
+    return array(
+      'field_name' =>  $field_name,
+      'type' => 'chado_linker__dbxref',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $dbxref_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'SBO:0000554',
+      ),
+    );
+  }
+  // EXPRESSION
+  $expression_table = $table_name . '_expression';
+  if (chado_table_exists($expression_table)) {
+    $schema = chado_get_schema($expression_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_expression';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__expression',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $expression_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'local:expression',
+      ),
+    );
+  }
+
+  // FEATURELOC
+  if ($table_name == 'feature') {
+    $schema = chado_get_schema('featureloc');
+    $pkey = $schema['primary key'][0];
+    $field_name = 'featureloc';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__featureloc',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => 'featureloc',
+        'chado_column' => $pkey,
+        'base_table' => 'feature',
+        'semantic_web' => 'SO:position_of',
+      ),
+    );
+  }
+  // GENOTYPE
+  $genotype_table = $table_name . '_genotype';
+  if (chado_table_exists($genotype_table)) {
+    $schema = chado_get_schema($genotype_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_genotype';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__genotype',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $genotype_table,
+        'chado_column' => $pkey,
+        'semantic_web' => 'SO:0001027',
+        'base_table' => $table_name,
+      ),
+    );
+  }
+
+  // PHENOTYPE
+  $phenotype_table = $table_name . '_phenotype';
+  if (chado_table_exists($phenotype_table)) {
+    $schema = chado_get_schema($phenotype_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_phenotype';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__phenotype',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $phenotype_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'SBO:0000358',
+      ),
+    );
+  }
+
+  // PROPERTIES
+
+  // PUBLICATIONS
+  $pub_table = $table_name . '_pub';
+  if (chado_table_exists($pub_table)) {
+    $schema = chado_get_schema($pub_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_pub';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__pub',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $pub_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'schema:publication',
+      ),
+    );
+  }
+
+  // RELATIONSHIPS
+  // If the linker table does not exists then we don't want to add attach.
+  $rel_table = $table_name . '_relationship';
+  if (chado_table_exists($rel_table)) {
+    $schema = chado_get_schema($rel_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_relationship';
+    return array(
+      'field_name' => $field_name,
+      'type' => 'chado_linker__relationship',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $rel_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'SBO:0000374',
+      ),
+    );
+
+  }
+
+  // SYNONYMS
+
 }
 
 /**
