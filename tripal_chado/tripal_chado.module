@@ -580,31 +580,31 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     // Theme fields.
     'chado_base__dbxref_id_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_base__dbxref_id.inc',
+      'file' => 'includes/TripalFields/chado_base__dbxref_id.inc',
     ),
     'chado_linker__dbxref_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__dbxref.inc',
+      'file' => 'includes/TripalFields/chado_linker__dbxref.inc',
     ),
     'chado_linker__cvterm_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__cvterm.inc',
+      'file' => 'includes/TripalFields/chado_linker__cvterm.inc',
     ),
     'chado_linker__synonym_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__synonym.inc',
+      'file' => 'includes/TripalFields/chado_linker__synonym.inc',
     ),
     'chado_linker__relationship_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__relationship.inc',
+      'file' => 'includes/TripalFields/chado_linker__relationship.inc',
     ),
     'chado_linker__pub_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__pub.inc',
+      'file' => 'includes/TripalFields/chado_linker__pub.inc',
     ),
     'chado_linker__prop_adder_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/chado_linker__prop_adder.inc',
+      'file' => 'includes/TripalFields/chado_linker__prop_adder.inc',
     ),
     'tripal_chado_date_combo' => array(
       'render element' => 'element',

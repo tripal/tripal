@@ -1,72 +1,28 @@
 <?php
 
 class chado_base__organism_id extends TripalField {
+  // The default lable for this field.
+  public static $default_label = 'Organism';
 
-  /**
-   * @see TripalField::info()
-   */
-  public static function fieldDefaults() {
-    return array(
-      'label' => t('Organism'),
-      'description' => t('A field for specifying an organism.'),
-      'default_widget' => 'chado_base__organism_id_widget',
-      'default_formatter' => 'chado_base__organism_id_formatter',
-      'settings' => array(
-        'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
-      ),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
+  // The default description for this field.
+  public static $default_description = 'A field for specifying an organism.';
 
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    $schema = chado_get_schema($table_name);
-    if (!$schema) {
-      $this->can_attach = FALSE;
-      return;
-    }
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
-    // If this is the organism table then do not attach as the organism_id
-    // field is the primary key and we don't want a field for that.
-    if ($table_name == 'organism') {
-      $this->can_attach = FALSE;
-      return;
-    }
-
-    // Check the schema for the data table if it has
-    // an 'organism_id' column then we want to attach this field.
-    if (array_key_exists('organism_id', $schema['fields'])) {
-      $this->can_attach = TRUE;
-      return;
-    }
-
-    $this->can_attach = FALSE;
-  }
-
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    $this->field_name = $table_name . '__organism_id';
-  }
 
   /**
    * @see TripalField::create_info()

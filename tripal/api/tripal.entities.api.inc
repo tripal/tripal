@@ -243,20 +243,22 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-    // Get the list of fields to create.
-    foreach (module_implements('field_create_info') as $module) {
-      $function = $module . '_field_create_info';
+    // Get the list of fields created by Tripal modules and
+    // create them if they don't already exist.
+    foreach (module_implements('create_tripalfields') as $module) {
+      $function = $module . '_create_tripalfields';
       if (function_exists($function)) {
         $fields = $function('TripalEntity', $bundle);
         if (!$fields){
           continue;
         }
-        foreach ($fields as $field_name => $info) {
+        foreach ($fields as $info) {
           // If the field already exists then skip it.
           $field = field_info_field($info['field_name']);
           if ($field) {
             continue;
           }
+          dpm($info);
           $field = field_create_field($info);
           if (!$field) {
             tripal_set_message(t("Could not create new field: %field.",
@@ -267,14 +269,14 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     }
 
     // Now get the list of field instances to add to the bundle.
-    foreach (module_implements('field_create_instance_info') as $module) {
-      $function = $module . '_field_create_instance_info';
+    foreach (module_implements('create_tripalfield_instance') as $module) {
+      $function = $module . '_create_tripalfield_instance';
       if (function_exists($function)) {
         $fields = $function('TripalEntity', $bundle);
         if (!$fields){
           continue;
         }
-        foreach ($fields as $field_name => $info) {
+        foreach ($fields as $info) {
           // If the field is already attached to this bundle then skip it.
           $field = field_info_field($info['field_name']);
           if ($field and array_key_exists('bundles', $field) and
@@ -282,6 +284,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
               in_array($bundle_name, $field['bundles']['TripalEntity'])) {
             continue;
           }
+          dpm($info);
           $instance = field_create_instance($info);
         }
       }
@@ -290,6 +293,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
   catch (Exception $e) {
     $transaction->rollback();
     $error = _drupal_decode_exception($e);
+    dpm($info);
     drupal_set_message(t("Failed to create content type': %message",
         array('%message' => $error['!message'])), 'error');
     return FALSE;

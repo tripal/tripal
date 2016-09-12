@@ -2,7 +2,7 @@
 
 
 /**
- * A base class for all fields supported by Tripal.
+ * A base class for fields attached to Tripal Entities.
  *
  * The Field API of Drupal defines three "levels" for fields:  field types,
  * fields, and instances of fields. This class attempts to consolidate use
@@ -67,10 +67,7 @@ class TripalField {
 
   // Set this to the name of the storage backend that by default will support
   // this field.
-  public static $default_storage = 'tripal';
-
-  // Set this to be the name of the module that is responsible for this field.
-  public static $module = 'tripal';
+  public static $default_storage = 'tripal_no_storage';
 
 
 
@@ -136,13 +133,13 @@ class TripalField {
   public static function globalInfo() {
     $field_type = get_called_class();
     return array(
-      'label' => self::$default_label,
-      'description' => self::$default_description,
+      'label' => $field_type::$default_label,
+      'description' => $field_type::$default_description,
       'default_widget' => $field_type . '_widget',
       'default_formatter' => $field_type . '_formatter',
-      'settings' => self::$default_settings,
+      'settings' => $field_type::$default_settings,
       'storage' => array(
-        'type' => self::$default_storage,
+        'type' => $field_type::$default_storage,
         'module' => 'tripal',
         'active' => TRUE
       ),
@@ -164,7 +161,7 @@ class TripalField {
     $field_type = get_called_class();
     return array(
       $field_type . '_widget' => array(
-        'label' => self::$default_label,
+        'label' => $field_type::$default_label,
         'field types' => array($field_type)
       ),
     );
@@ -186,7 +183,7 @@ class TripalField {
     $field_type = get_called_class();
     return array(
       $field_type . '_formatter' => array(
-        'label' => self::$default_label,
+        'label' => $field_type::$default_label,
         'field types' => array($field_type),
         'settings' => array(),
       ),
@@ -215,21 +212,6 @@ class TripalField {
   // Child classes SHOULD NOT override these functions as needed.
   // --------------------------------------------------------------------------
 
-  /**
-   * Creates an instance of a field and attaches it to a bundle.
-   *
-   * Typically there is no reason for a child class to override this function.
-   *
-   * @param $info
-   */
-  public function createInstance($info = array()) {
-    //if ($this->canAttach($info['entity_type'], $info['bundle'])) {
-      return field_create_instance($info);
-    //}
-    //else {
-    //  return FALSE;
-    //}
-  }
 
   // --------------------------------------------------------------------------
   //                  OVERRIDEABLE FIELD SPECIFIC FUNCTIONS
@@ -544,10 +526,9 @@ class TripalField {
     //       '#collapsible' => TRUE,
     //       '#tree' => TRUE,
     //     );
-    $module = $field['module'];
     $element['#field'] = $field;
     $element['#instance'] = $instance;
-    $element['#element_validate'][] = $module . '_field_instance_settings_form_validate';
+    $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
 
     return $element;
   }
@@ -589,10 +570,9 @@ class TripalField {
 //       '#collapsible' => TRUE,
 //       '#tree' => TRUE,
 //     );
-    $module = $field['module'];
     $element['#field'] = $field;
     $element['#instance'] = $instance;
-    $element['#element_validate'][] = $module . '_field_settings_form_validate';
+    $element['#element_validate'][] = 'tripal_field_settings_form_validate';
 
     return $element;
   }

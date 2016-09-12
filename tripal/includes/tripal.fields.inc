@@ -12,72 +12,20 @@
 function tripal_field_info() {
 
   $info = array();
-
-  $modules = module_list();
-  foreach ($modules as $module) {
-    $field_types = tripal_get_field_types($module);
-    foreach ($field_types as $field_type) {
-      $info[$field_type] = $field_type::globalInfo();
-    }
+  $field_types = tripal_get_field_types();
+  foreach ($field_types as $field_type) {
+    $info[$field_type] = $field_type::globalInfo();
   }
   return $info;
 }
 
-/**
- * Creates TripalField fields.
- *
- *
- */
-function tripal_create_tripal_fields() {
-  $info = tripal_field_info();
-  foreach ($info as $field_type => $info) {
-    $field_info = $field_type::fieldInfo();
-  }
-}
-
-/**
- * Implements hook_field_create_info().
- *
- * This is a Tripal defined hook that supports integration with the
- * TripalEntity field.
- */
-function tripal_field_create_info($entity_type, $bundle) {
-
-  $info = array();
-  $fields = tripal_get_fields('tripal', $entity_type, $bundle);
-  foreach ($fields as $field) {
-    $field_name = $field->getFieldName();
-    if ($field->canAttach()) {
-      $info[$field_name] = $field->createInfo();
-    }
-  }
-  return $info;
-}
-
-/**
- * Implements hook_create_instance_info().
- *
- * This is a Tripal defined hook that supports integration with the
- * TripalEntity field.
- */
-function tripal_field_create_instance_info($entity_type, $bundle) {
-  $info = array();
-  $fields = tripal_get_fields('tripal', $entity_type, $bundle);
-  foreach ($fields as $field) {
-    $field_name = $field->getFieldName();
-    if ($field->canAttach()) {
-      $info[$field_name] = $field->createInstanceInfo();
-    }
-  }
-  return $info;
-}
 /**
  * Implements hook_field_widget_info();
  */
 function tripal_field_widget_info() {
   $info = array();
 
-  $field_types = tripal_get_field_types('tripal');
+  $field_types = tripal_get_field_types();
   foreach ($field_types as $field_type) {
     $info += $field_type::widgetInfo();
   }
@@ -90,13 +38,68 @@ function tripal_field_widget_info() {
 function tripal_field_formatter_info() {
   $info = array();
 
-  $field_types = tripal_get_field_types('tripal');
+  $field_types = tripal_get_field_types();
   foreach ($field_types as $field_type) {
     $info += $field_type::formatterInfo();
   }
   return $info;
 }
 
+/**
+ *
+ */
+function tripal_create_tripalfields($entity_type, $bundle) {
+  $field_name = 'content_type';
+  $info = array();
+  $info[] = array(
+    'field_name' => $field_name,
+    'type' => 'content_type',
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'storage' => array(
+      'type' => 'tripal_no_storage'
+    ),
+    'settings' => array(
+      'semantic_web' => 'rdfs:type',
+    ),
+  );
+  return $info;
+}
+
+/**
+ *
+ * @param unknown $entity_type
+ * @param unknown $bundle
+ */
+function tripal_create_tripalfield_instance($entity_type, $bundle) {
+  $field_name = 'content_type';
+  $info = array();
+  $info[] = array(
+    'field_name' => $field_name,
+    'entity_type' => 'TripalEntity',
+    'bundle' => $this->bundle->name,
+    'label' => 'Resource Type',
+    'description' => '',
+    'required' => FALSE,
+    'settings' => array(
+      'auto_attach' => TRUE,
+    ),
+    'widget' => array(
+      'type' => 'tripal_content_type_widget',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'inline',
+        'type' => 'tripal_content_type_formatter',
+        'settings' => array(),
+      ),
+    ),
+  );
+  return $info;
+}
 /**
  * Implements hook_field_formatter_view().
  */
@@ -105,33 +108,13 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
 
   $element = array();
   $field_type = $field['type'];
-  module_load_include('inc', 'tripal', 'includes/fields/' . $field_type);
-  if (class_exists($field_type)) {
-    $field_obj = new $field_type($entity_type, $entity->bundle);
-    $field_obj::formatterView($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $tfield->formatterView($element, $entity_type, $entity, $field,
+        $instance, $langcode, $items, $display);
   }
   return $element;
-}
-/**
- * Implements hook_field_is_empty().
- */
-function tripal_field_is_empty($item, $field) {
-
-  // If there is no value field then the field is empty.
-  if (!array_key_exists('value', $item)) {
-    return TRUE;
-  }
-
-  // Iterate through all of the fields and if at least one has a value
-  // the field is not empty.
-  foreach ($item as $form_field_name => $value) {
-    if (isset($value) and $value != NULL and $value != '') {
-      return FALSE;
-    }
-  }
-
-  // Otherwise, the field is empty.
-  return TRUE;
 }
 
 /**
@@ -223,4 +206,238 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       want all biological content to be stored in Chado, be sure that the
       respective fields are "supported by" Chado.',
   );
+}
+
+
+
+/**
+ * Implements hook_field_settings_form()
+ */
+function tripal_field_settings_form($field, $instance, $has_data) {
+  $form = array();
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->fieldSettingsForm($field, $instance, $has_data);
+  }
+  return $form;
+}
+/**
+ * Implements hook_instance_settings_form()
+ */
+function tripal_field_instance_settings_form($field, $instance) {
+  $form = array();
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->instanceSettingsForm($field, $instance);
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_field_settings_form_validate().
+ *
+ * This is not an actual Drpual hook, but rather a Tripal created hook
+ * to alow the TripalField objects to have a fieldSettingsFormValidate()
+ * member function.
+ */
+function tripal_field_settings_form_validate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->fieldSettingsFormValidate($field, $instance, $form, $form_state);
+  }
+}
+/**
+ * Implements hook_instance_settings_form_validate().
+ *
+ * This is not an actual Drpual hook, but rather a Tripal created hook
+ * to alow the TripalField objects to have a instanceSettingsFormValidate()
+ * member function.
+ */
+function tripal_instance_settings_form_validate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->instanceSettingsFormValidate($field, $instance, $form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function tripal_field_formatter_settings_summary($field, $instance, $view_mode) {
+
+  $summary = '';
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->formatterSettingsSummary($field, $instance, $view_mode);
+  }
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function tripal_formatter_settings_form($field, $instance,
+    $view_mode, $form, &$form_state) {
+
+  $form = array();
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $tfield->formatterSettingsForm(field, $instance, $view_mode, $form, $form_state);
+  }
+  return $form;
+}
+
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function tripal_field_widget_form(&$form, &$form_state, $field,
+    $instance, $langcode, $items, $delta, $element) {
+
+  $widget = $element;
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $tfield->widgetForm($widget, $form, $form_state, $field, $instance,
+      $langcode, $items, $delta, $element);
+  }
+  return $widget;
+
+
+}
+
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  if (array_key_exists('#field_name', $element)) {
+    $field_name = $element['#field_name'];
+    $matches = array();
+
+    if (preg_match('/(.+?)__(.+?)$/', $field_name, $matches)) {
+      $tablename = $matches[1];
+      $colname = $matches[2];
+      $schema = chado_get_schema($tablename);
+      if (!$schema) {
+        return;
+      }
+
+      // The timelastmodified field exists in many Chado tables.  We want
+      // the form element to update to the most recent time rather than the time
+      // in the database.
+      if ($colname == 'timelastmodified' and $schema['fields'][$colname]['type'] == 'datetime') {
+        // We want the default value for the field to be the current time.
+        $element['#default_value']['value'] = format_date(time(), 'custom', "Y-m-d H:i:s", 'UTC');
+        $element['#date_items']['value'] = $element['#default_value']['value'];
+      }
+      // We want the date combo fieldset to be collaspible so we will
+      // add our own theme_wrapper to replace the one added by the date
+      // module.
+      if (array_key_exists($colname, $schema['fields']) and $schema['fields'][$colname]['type'] == 'datetime') {
+        $element['#theme_wrappers'] = array('tripal_chado_date_combo');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_validate()
+ */
+function tripal_field_validate($entity_type, $entity, $field, $instance,
+    $langcode, $items, &$errors) {
+
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $bundle = isset($entity->bundle) ? $entity->bundle : NULL;
+    $form = $field_type::widgetFormValidate($entity_type, $entity, $field, $instance,
+        $langcode, $items, $errors);
+  }
+}
+
+/**
+ * Implements hook_field_submit()
+ *
+ * This is a TripalEntity specific hook.
+ */
+function tripal_field_submit($entity_type, $entity, $field, $instance,
+    $langcode, &$items, $form, &$form_state) {
+
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type(array('field' => $field));
+    $form = $field_type::widgetFormSubmit($entity_type, $entity, $field, $instance,
+        $langcode, $items, $form, $form_state);
+  }
+}
+
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_display_overview_form is used for formatting the display
+ * or layout of fields attached to an entity and shown on the entity view page.
+ *
+ * This function removes the cvterm class and property adder field as those are
+ * really not meant for users to show or manage.
+ */
+function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
+  // on the add/edit form of an entity for adding new property fields.
+  $fields_names = element_children($form['fields']);
+  foreach ($fields_names as $field_name) {
+    $field_info = field_info_field($field_name);
+    if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+    if ($field_info['type'] == 'cvterm_class_adder') {
+      unset($form['fields'][$field_name]);
+    }
+  }
+}
+
+
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function tripal_field_is_empty($item, $field) {
+
+  // If there is no value field then the field is empty.
+  if (!array_key_exists('value', $item)) {
+    return TRUE;
+  }
+
+  // Iterate through all of the fields and if at least one has a value
+  // the field is not empty.
+  foreach ($item as $form_field_name => $value) {
+    if (isset($value) and $value != NULL and $value != '') {
+      return FALSE;
+    }
+  }
+
+  // Otherwise, the field is empty.
+  return TRUE;
 }

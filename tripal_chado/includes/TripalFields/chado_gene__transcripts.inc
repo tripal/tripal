@@ -1,55 +1,27 @@
 <?php
 
 class chado_gene__transcripts extends TripalField {
+  // The default lable for this field.
+  public static $default_label = 'Transcripts';
 
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  public static function fieldDefaults() {
-    return array(
-      'label' => t('Transcripts'),
-      'description' => t('Transcripts of genes.'),
-      'default_widget' => 'chado_gene__transcripts_widget',
-      'default_formatter' => 'chado_gene__transcripts_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default description for this field.
+  public static $default_description = 'Transcripts of genes.';
 
-    // If the linker table does not exists or this is not a gene then we don't want to add attach.
-    $rel_table = $table_name . '_relationship';
-    if (chado_table_exists($rel_table) and $this->bundle->label == 'gene') {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
-    $this->field_name = 'gene_transcripts';
-  }
 
   /**
    * @see TripalField::create_info()

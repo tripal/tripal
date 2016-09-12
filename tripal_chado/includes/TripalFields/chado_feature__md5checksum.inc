@@ -1,53 +1,27 @@
 <?php
 
 class chado_feature__md5checksum  extends TripalField {
+  // The default lable for this field.
+  public static $default_label = 'Sequence MD5 checksum';
 
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Sequence MD5 checksum'),
-      'description' => t('A field for generating MD5 checksum for a sequence.'),
-      'default_widget' => 'chado_feature__md5checksum_widget',
-      'default_formatter' => 'chado_feature__md5checksum_formatter',
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
+  // The default description for this field.
+  public static $default_description = 'A field for generating MD5 checksum for a sequence.';
 
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    if ($table_name == 'feature') {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
 
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    $this->field_name = $table_name . '__md5checksum';
-  }
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
   /**
    * @see TripalField::create_info()

@@ -1,24 +1,27 @@
 <?php
 
 class chado_linker__relationship extends TripalField {
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Relationships'),
-      'description' => t('Relationships between records.'),
-      'default_widget' => 'chado_linker__relationship_widget',
-      'default_formatter' => 'chado_linker__relationship_formatter',
-      'settings' => array(
-      ),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
+  // The default lable for this field.
+  public static $default_label = 'Relationships';
+
+  // The default description for this field.
+  public static $default_description = 'Relationships between records.';
+
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
+
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
+
 
   /**
    * @see TripalField::can_attach()

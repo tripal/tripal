@@ -1,58 +1,28 @@
 <?php
 class chado_linker__cvterm_addr extends TripalField {
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Add an Annotation Type'),
-      'description' => t('This record may have any number of types of
-        annotations. Use this field to first add the type.'),
-      'default_widget' => 'chado_linker__cvterm_adder_widget',
-      'default_formatter' => 'hidden',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-      'no_ui' => TRUE
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $field_info = array();
 
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default lable for this field.
+  public static $default_label = 'Add an Annotation Type';
 
+  // The default description for this field.
+  public static $default_description = 'This record may have any number of types of
+        annotations. Use this field to first add the type.';
 
-    // If the linker table does not exists then we don't want to add attach.
-    $cvterm_table = $table_name . '_cvterm';
-    if (chado_table_exists($cvterm_table)) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
-    $this->field_name = $table_name . '_cvterm';
-  }
 
   /**
    * @see TripalField::create_info()

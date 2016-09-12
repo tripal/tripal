@@ -1,76 +1,27 @@
 <?php
 
 class chado_linker__prop extends TripalField {
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Add a Property'),
-      'description' => t('Add details about this property.'),
-      'default_widget' => 'chado_linker__prop_widget',
-      'default_formatter' => 'chado_linker__prop_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    // This field is only attached by the chado_linker__prop_addr field.
-    $this->can_attach = FALSE;
-  }
-  /**
-   * @see TripalField::create_info()
-   */
-  function createInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
+  // The default lable for this field.
+  public static $default_label = 'Property';
 
-    // This field is only attached by the chado_linker__prop_addr field.
+  // The default description for this field.
+  public static $default_description = 'Add details about this property.';
 
-  }
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  function createInstanceInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    // This field is only attached by the chado_linker__prop_addr field.
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
-  }
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_linker__prop_widget' => array(
-        'label' => t('Property'),
-        'field types' => array('chado_linker__prop'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  static function formatterInfo() {
-    return array(
-      'chado_linker__prop_formatter' => array(
-        'label' => t('Property'),
-        'field types' => array('chado_linker__prop'),
-        'settings' => array(
-        ),
-      ),
-    );
-  }
   /**
    * @see TripalField::formatterView()
    */

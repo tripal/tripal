@@ -2,56 +2,26 @@
 
 class chado_organism__type_id extends TripalField {
 
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  public static function fieldDefaults() {
-    return array(
-      'label' => t('Infraspecific Type'),
-      'description' => t('A field for specifying an infraspecific type.'),
-      'default_widget' => 'chado_organism__type_id_widget',
-      'default_formatter' => 'chado_organism__type_id_formatter',
-      'settings' => array(
-      ),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach(){
+  // The default lable for this field.
+  public static $default_label = 'Infraspecific Type';
 
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default description for this field.
+  public static $default_description = 'Specifies the infraspecific type of an organism.';
 
-    $schema = chado_get_schema($table_name);
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    // If this is the organism table and Chado v1.3 then attach.
-    if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    $this->field_name = 'organism__type_id';
-  }
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
   /**
    * @see TripalField::create_info()
    */

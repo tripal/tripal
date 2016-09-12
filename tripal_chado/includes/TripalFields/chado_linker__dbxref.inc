@@ -10,58 +10,31 @@
  *
  */
 class chado_linker__dbxref extends TripalField {
-  /**
-   * Implements hook_info() for fields.
-   *
-   * This is a hook provided by the tripal_chado module for offloading the
-   * hook_fieldInfo() hook for each field to specify.
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Cross references'),
-      'description' => t('This record can be cross referenced with a record in
+
+  // The default lable for this field.
+  public static $default_label = 'Cross references';
+
+  // The default description for this field.
+  public static $default_description = 'This record can be cross referenced with a record in
           another online database. This field is intended for one or more
-          references.  At a minimum, the database and accession must be provided.'),
-      'default_widget' => 'chado_linker__dbxref_widget',
-      'default_formatter' => 'chado_linker__dbxref_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+          references.  At a minimum, the database and accession must be provided.';
 
-    // If the linker table does not exists then we don't want to add attach.
-    $dbxref_table = $table_name . '_dbxref';
-    if (chado_table_exists($dbxref_table)) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    $this->field_name = $table_name . '_dbxref';
-  }
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
+
+
   /**
    * @see TripalField::create_info()
    */

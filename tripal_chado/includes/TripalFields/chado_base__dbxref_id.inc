@@ -1,132 +1,98 @@
 <?php
 
 class chado_base__dbxref_id extends TripalField {
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Accession'),
-      'description' => t('This field specifies the unique stable accession (ID) for
-        this record. It requires that this site have a database entry.'),
-      'default_widget' => 'chado_base__dbxref_id_widget',
-      'default_formatter' => 'chado_base__dbxref_id_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::setCanAttach()
-   */
-  protected function setCanAttach() {
+  // The default lable for this field.
+  public static $default_label = 'Accession';
 
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default description for this field.
+  public static $default_description = 'This field specifies the unique stable accession (ID) for
+        this record. It requires that this site have a database entry.';
 
-    // Check the schema for the data table if it does not have
-    // a 'dbxref_id' column then we don't want to attach this field.
-    $schema = chado_get_schema($table_name);
-    if (!$schema) {
-      $this->can_attach = FALSE;
-      return;
-    }
-    if (array_key_exists('dbxref_id', $schema['fields'])) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
-    $this->field_name = $table_name . '__dbxref_id';
-  }
+//   /**
+//    * @see TripalField::create_info()
+//    */
+//   function createInfo() {
+//     if (!$this->can_attach) {
+//       return;
+//     };
 
-  /**
-   * @see TripalField::create_info()
-   */
-  function createInfo() {
-    if (!$this->can_attach) {
-      return;
-    };
-
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+//     $table_name = $this->details['chado_table'];
+//     $type_table = $this->details['chado_type_table'];
+//     $type_field = $this->details['chado_type_column'];
+//     $cv_id      = $this->details['chado_cv_id'];
+//     $cvterm_id  = $this->details['chado_cvterm_id'];
 
 
-    return array(
-      'field_name' => $this->field_name,
-      'type' => 'chado_base__dbxref_id',
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'dbxref_id',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
-      ),
-    );
-  }
+//     return array(
+//       'field_name' => $this->field_name,
+//       'type' => 'chado_base__dbxref_id',
+//       'cardinality' => 1,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//       'settings' => array(
+//         'chado_table' => $table_name,
+//         'chado_column' => 'dbxref_id',
+//         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
+//       ),
+//     );
+//   }
 
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  function createInstanceInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+//   /**
+//    * @see TripalField::createInstanceInfo()
+//    */
+//   function createInstanceInfo() {
+//     if (!$this->can_attach) {
+//       return;
+//     }
+//     $table_name = $this->details['chado_table'];
+//     $type_table = $this->details['chado_type_table'];
+//     $type_field = $this->details['chado_type_column'];
+//     $cv_id      = $this->details['chado_cv_id'];
+//     $cvterm_id  = $this->details['chado_cvterm_id'];
 
-    return array(
-      'field_name' => $this->field_name,
-      'entity_type' => $this->entity_type,
-      'bundle' => $this->bundle->name,
-      'label' => 'Accession',
-      'description' => 'This field specifies the unique stable accession (ID) for
-        this record. It requires that this site have a database entry.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => TRUE,
-      ),
-      'widget' => array(
-        'type' => 'chado_base__dbxref_id_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'chado_base__dbxref_id_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+//     return array(
+//       'field_name' => $this->field_name,
+//       'entity_type' => $this->entity_type,
+//       'bundle' => $this->bundle->name,
+//       'label' => 'Accession',
+//       'description' => 'This field specifies the unique stable accession (ID) for
+//         this record. It requires that this site have a database entry.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => TRUE,
+//       ),
+//       'widget' => array(
+//         'type' => 'chado_base__dbxref_id_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'inline',
+//           'type' => 'chado_base__dbxref_id_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
   /**
    * @see TripalField::widgetInfo()
    */

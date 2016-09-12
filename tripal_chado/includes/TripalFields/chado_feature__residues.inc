@@ -2,41 +2,27 @@
 
 class chado_feature__residues extends TripalField {
 
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  static function fieldDefaults() {
-    return array(
-      'label' => t('Sequences'),
-      'description' => t('A field for managing nucleotide and protein residues.'),
-      'default_widget' => 'chado_feature__residues_widget',
-      'default_formatter' => 'chado_feature__residues_formatter',
-      'settings' => array(),
-      'instance_settings' => array('text_processing' => 1, 'display_summary' => 0),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default lable for this field.
+  public static $default_label = 'Sequences';
 
-    // If  this is not the feature table then we don't want to attach.
-    if ($table_name == 'feature') {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
+  // The default description for this field.
+  public static $default_description = 'A field for managing nucleotide and protein residues.';
+
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
+
+
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
 
   /**
    * @see TripalField::setFieldName()

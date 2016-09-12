@@ -2,79 +2,27 @@
 
 class chado_linker__phenotype extends TripalField {
 
-  /**
-   * @see TripalField::fieldDefaults()
-   */
-  public static function fieldDefaults() {
-    return array(
-      'label' => t('Phenotypes'),
-      'description' => t('Associates an indviddual or organization with
-          this record.'),
-      'default_widget' => 'chado_linker__phenotype_widget',
-      'default_formatter' => 'chado_linker__phenotype_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    );
-  }
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_linker__phenotype_widget' => array(
-        'label' => t('Phenotypes'),
-        'field types' => array('chado_linker__phenotype'),
-      ),
-    );
-  }
+  // The default lable for this field.
+  public static $default_label = 'Phenotypes';
 
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  public static function formatterInfo() {
-    return array(
-      'chado_linker__phenotype_formatter' => array(
-        'label' => t('Phenotypes'),
-        'field types' => array('chado_linker__phenotype'),
-        'settings' => array(
-        ),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // The default description for this field.
+  public static $default_description = 'Associates phenotypes with this record.';
 
-    // If the linker table does not exists then we don't want to add attach.
-    $phenotype_table = $table_name . '_phenotype';
-    if (chado_table_exists($phenotype_table)) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // or the instanceSettingsForm() functions then you need to be sure that
+  // any settings you want those functions to manage are listed in this
+  // array.
+  public static $default_settings = array(
+    'chado_table' => '',
+    'chado_column' => '',
+    'base_table' => '',
+    'semantic_web' => '',
+  );
 
-    $this->field_name = $table_name . '_phenotype';
-  }
+  // Set this to the name of the storage backend that by default will support
+  // this field.
+  public static $default_storage = 'field_chado_storage';
+
   /**
    * @see TripalField::create_info()
    */
