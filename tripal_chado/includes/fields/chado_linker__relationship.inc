@@ -105,8 +105,6 @@ class chado_linker__relationship extends TripalField {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
-        'child_relationship_types' => '',
-        'relationship_types' => '',
       ),
       'widget' => array(
         'type' => 'chado_linker__relationship_widget',
@@ -130,7 +128,7 @@ class chado_linker__relationship extends TripalField {
   public static function widgetInfo() {
     return array(
       'chado_linker__relationship_widget' => array(
-        'label' => t('Relationship Settings'),
+        'label' => t('Relationships'),
         'field types' => array('chado_linker__relationship')
       ),
     );
@@ -876,7 +874,7 @@ class chado_linker__relationship extends TripalField {
       '#title' => 'Allowed Relationship Types',
       '#description' => t('There are three ways that relationship types
           can be limited for users who have permission to add new relationships.
-          Please select the most appropriate for you use case.  By default
+          Please select the most appropriate for your use case.  By default
           all vocabularies are provided to the user which allows use of any
           term for the relationship type.'),
       '#collapsed' => TRUE,
@@ -894,7 +892,7 @@ class chado_linker__relationship extends TripalField {
       '#type' => 'item',
       '#title' => 'Option #1',
       '#description' => t('Use this option to limit the vocabularies that a user .
-        could use to specify relationship types. With this option any term in .
+        could use to specify relationship types. With this option any term in 
         the vocabulary can be used for the relationship type. You may select
         more than one vocabulary.'),
 
@@ -904,7 +902,7 @@ class chado_linker__relationship extends TripalField {
       '#multiple' => TRUE,
       '#options' => $vocs,
       '#size' => 6,
-      '#default_value' => $instance['settings']['default_vocabs'],
+      '#default_value' => $instance['settings']['relationships']['option1_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
 
@@ -915,21 +913,28 @@ class chado_linker__relationship extends TripalField {
          heirarchy groups of related terms typically fall under a common parent. If you
          wish to limit the list of terms that a user can use for the relationship type,
          you can provide the parent term here.  Then, only that term\'s children will
-         then be avilable for use as a relationship type.',
+         be avilable for use as a relationship type.',
     );
     $element['relationships']['option2_vocab'] = array(
       '#type' => 'select',
-      '#description' => 'Specify Default Vocabularies',
+      '#description' => 'Specify Default Vocabulary',
       '#multiple' => FALSE,
       '#options' => $vocs,
-      '#default_value' => $instance['settings']['default_vocabs'],
-      // TODO add ajax here so that the relationship autocomplete below works
+      '#default_value' => $instance['settings']['relationships']['option2_vocab'],
+      '#ajax' => array(
+        'callback' => "chado_linker__relationship_instance_settings_form_ajax_callback",
+        'wrapper' => 'relationships-option2-parent',
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
     );
     $element['relationships']['option2_parent'] = array(
       '#type' => 'textfield',
       '#description' => 'Specify a Heirarchical Parent Term',
-      '#default_value' => $instance['settings']['child_relationship_types'],
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/"
+      '#default_value' => $instance['settings']['relationships']['option2_parent'],
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+      '#prefix' => '<div id=relationships-option2-parent>',
+      '#suffix' => '</div>'
     );
     $element['relationships']['option3'] = array(
       '#type' => 'item',
@@ -939,7 +944,7 @@ class chado_linker__relationship extends TripalField {
     );
     $element['relationships']['relationship_types'] = array(
       '#type' => 'textarea',
-      '#default_value' => $instance['settings']['relationship_types'],
+      '#default_value' => $instance['settings']['relationships']['relationship_types'],
     );
 
     return $element;
@@ -1014,7 +1019,7 @@ function theme_chado_linker__relationship_widget($variables) {
 }
 
 /**
- * An Ajax callback for the dbxref widget.
+ * An Ajax callback for the relationshp widget.
  */
 function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
   // Get the triggering element
@@ -1033,4 +1038,10 @@ function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_stat
   }
 }
 
+/**
+ * An Ajax callback for the relationshp instance setting form.
+ */
+function chado_linker__relationship_instance_settings_form_ajax_callback(&$form, $form_state) {
+  return $form['instance']['settings']['relationships']['option2_parent'];
+}
 
