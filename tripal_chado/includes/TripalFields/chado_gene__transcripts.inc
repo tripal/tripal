@@ -125,16 +125,14 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::formatter_settings_summary()
    */
-  public static function formatterSettingsSummary($field, $instance,
-      $view_mode) {
+  public function formatterSettingsSummary($view_mode) {
 
   }
 
   /**
    * @see TripalField::formatter_settings_form()
    */
-  public static function formatterSettingsForm($field, $instance,
-      $view_mode, $form, &$form_state) {
+  public function formatterSettingsForm($view_mode, $form, &$form_state) {
 
   }
 

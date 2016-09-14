@@ -869,9 +869,9 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::instanceSettingsForm()
    */
-  public static function instanceSettingsForm($field, $instance) {
+  public function instanceSettingsForm() {
 
-    $element = parent::instanceSettingsForm($field, $instance);
+    $element = parent::instanceSettingsForm();
     $element['relationships'] = array(
       '#type' => 'fieldset',
       '#title' => 'Allowed Relationship Types',
@@ -949,7 +949,7 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::instanceSettingsFormValidate()
    */
-  public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
+  public function instanceSettingsFormValidate($form, &$form_state) {
     //dpm($form);dpm($form_state);
     $settings = $form_state['values']['instance']['settings'];
 
@@ -977,9 +977,9 @@ class chado_linker__relationship extends TripalField {
       $term = tripal_get_cvterm(array('name' => trim($supertype)));
       if (!isset($term->cvterm_id)) {
         form_set_error(
-            "instance][settings][relationships][child_relationship_types",
-            t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
-            );
+          "instance][settings][relationships][child_relationship_types",
+          t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
+        );
       }
     }
   }

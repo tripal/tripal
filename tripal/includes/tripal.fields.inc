@@ -231,7 +231,7 @@ function tripal_field_instance_settings_form($field, $instance) {
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $tfield->instanceSettingsForm($field, $instance);
+    $form = $tfield->instanceSettingsForm();
   }
   return $form;
 }
@@ -281,7 +281,7 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $tfield->formatterSettingsSummary($field, $instance, $view_mode);
+    $form = $tfield->formatterSettingsSummary($view_mode);
   }
   return $summary;
 }
@@ -297,7 +297,7 @@ function tripal_formatter_settings_form($field, $instance,
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $tfield->formatterSettingsForm(field, $instance, $view_mode, $form, $form_state);
+    $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
   }
   return $form;
 }
@@ -385,8 +385,7 @@ function tripal_field_submit($entity_type, $entity, $field, $instance,
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $field_type::widgetFormSubmit($entity_type, $entity, $field, $instance,
-        $langcode, $items, $form, $form_state);
+    $form = $tfield->widgetFormSubmit($entity_type, $entity, $langcode, $items, $form, $form_state);
   }
 }
 

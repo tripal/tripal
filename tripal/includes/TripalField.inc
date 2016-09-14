@@ -232,7 +232,7 @@ class TripalField {
    *   to the user.
    *
    */
-  public static function formatterSettingsSummary($field, $instance, $view_mode) {
+  public function formatterSettingsSummary($view_mode) {
 
   }
 
@@ -259,8 +259,7 @@ class TripalField {
    * @return
    *   A Drupal Form array containing the settings form for this field.
    */
-  public static function formatterSettingsForm($field, $instance,
-      $view_mode, $form, &$form_state) {
+  public function formatterSettingsForm($view_mode, $form, &$form_state) {
 
   }
 
@@ -385,8 +384,7 @@ class TripalField {
    *      - message: The human readable message to be displayed.
    *
    */
-  public static function widgetFormValidate($entity_type, $entity, $field, $instance, $langcode,
-      $items, &$errors) {
+  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
 
   }
 
@@ -418,8 +416,7 @@ class TripalField {
    *  @param $form_state.
    *    The form state array.
    */
-  public static function widgetFormSubmit($entity_type, $entity, $field, $instance, $langcode,
-      &$items, $form, &$form_state) {
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
   }
   /**
    * Loads the field values from the underlying data store.
@@ -453,10 +450,6 @@ class TripalField {
 
   }
 
-
-  public function instanceLoad($instance) {
-
-  }
   /**
    * Provides a form for the 'Field Settings' of the field management page.
    *
@@ -470,7 +463,7 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public static function instanceSettingsForm($field, $instance) {
+  public function instanceSettingsForm() {
     $settings = $instance['settings'];
     $element = array();
 
@@ -497,7 +490,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
+  public function instanceSettingsFormValidate($form, &$form_state) {
 
   }
 
@@ -514,7 +507,7 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public static function globalSettingsForm($field, $instance, $has_data) {
+  public function globalSettingsForm($has_data) {
     $settings = $field['settings'];
     $element = array();
 
@@ -541,7 +534,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function globalSettingsFormValidate($field, $instance, $form, &$form_state) {
+  public function globalSettingsFormValidate($form, &$form_state) {
 
   }
 
@@ -555,7 +548,7 @@ class TripalField {
    * @return
    *   An associative array describing the data structure of the field.
    */
-  public static function viewsDataAlter(&$data, $field, $entity_info) {
+  public function viewsDataAlter(&$data, $entity_info) {
 
   }
 

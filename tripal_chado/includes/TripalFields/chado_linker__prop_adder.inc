@@ -149,8 +149,7 @@ class chado_linker__prop_adder extends TripalField {
   /**
    * @see TripalField::widgetFormValidate
    */
-  public static function widgetFormValidate($entity_type, $entity, $field, $instance, $langcode,
-      $items, &$errors) {
+  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
 
   }
 }
