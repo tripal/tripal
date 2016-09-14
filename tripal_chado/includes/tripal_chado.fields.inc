@@ -1345,9 +1345,9 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
   if (chado_table_exists($syn_table)) {
     $field_name = $table_name . '_synonym';
     $info[] = array(
-      'field_name' => $this->field_name,
-      'entity_type' => $this->entity_type,
-      'bundle' => $this->bundle->name,
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
       'label' => 'Synonyms',
       'description' => 'Alternate names, aliases or synonyms for this record.',
       'required' => FALSE,
