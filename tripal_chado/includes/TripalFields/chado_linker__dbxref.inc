@@ -19,7 +19,7 @@ class chado_linker__dbxref extends TripalField {
           another online database. This field is intended for one or more
           references.  At a minimum, the database and accession must be provided.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.

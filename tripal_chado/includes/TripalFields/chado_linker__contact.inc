@@ -9,7 +9,7 @@ class chado_linker__contact extends TripalField {
   public static $default_description = 'Associates an indviddual or organization with
           this record';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.

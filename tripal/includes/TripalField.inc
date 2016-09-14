@@ -55,11 +55,16 @@ class TripalField {
   public static $default_description = 'The generic base class for all
        Tripal Fields. Replace this text as appropriate for the child implementation.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
-  // or the instanceSettingsForm() functions then you need to be sure that
-  // any settings you want those functions to manage are listed in this
-  // array.
+  // Provide a list of global settings. These can be accessed witihn the
+  // globalSettingsForm.  When the globalSettingsForm is submitted then
+  // Drupal will automatically change these settings for all fields.
   public static $default_settings = array();
+
+  // Provide a list of instance specific settings. These can be access within
+  // the instanceSettingsForm.  When the instanceSettingsForm is submitted
+  // then Drupal with automatically change these settings for the instnace.
+  // It is recommended to put settings at the instance level whenever possible.
+  public static $default_instance_settings  = array();
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -115,7 +120,8 @@ class TripalField {
   /**
    * Provides default information about this field type
    *
-   * NOTE: this field should NOT be overridden by child classes.
+   * This function corresponds to the hook_field_info() function of
+   * the Drupal Field API.
    *
    * @return
    *   An array whose keys are field type names and whose values are arrays
@@ -130,6 +136,7 @@ class TripalField {
       'default_widget' => $field_type . '_widget',
       'default_formatter' => $field_type . '_formatter',
       'settings' => $field_type::$default_settings,
+      'instance_settings' => $field_type::$default_instance_settings,
       'storage' => array(
         'type' => $field_type::$default_storage,
         'module' => 'tripal',
@@ -140,6 +147,9 @@ class TripalField {
 
   /**
    * Provides information about the widgets provided by this field.
+   *
+   * This function corresponds to the hook_field_widget_info() function of
+   * the Drupal Field API.
    *
    * This is a static function as it provides default values for all of the
    * widgets for this field type, and thus we don't need an instantiated
@@ -161,6 +171,9 @@ class TripalField {
 
   /**
    * Provides information about the formatter for this field.
+   *
+   * This function corresponds to the hook_field_formatter_info() function of
+   * the Drupal Field API.
    *
    * This is a static function as it provides default values for all of the
    * formatters for this field type, and thus we don't need an instantiated
@@ -211,6 +224,9 @@ class TripalField {
   /**
    * Provides a summary of the formatter settings.
    *
+   * This function corresponds to the hook_field_formatter_settings_summary()
+   * function of the Drupal Field API.
+   *
    * On the 'Manage Display' page of the content type administration page,
    * fields are allowed to provide a settings form.  This settings form can
    * be used to allow the site admin to define how the field should be
@@ -239,6 +255,9 @@ class TripalField {
   /**
    * Provides the field's setting form.
    *
+   * This function corresponds to the hook_field_formatter_settings_form()
+   * function of the Drupal Field API.
+   *
    * The settings form appears on the 'Manage Display' page of the content
    * type administration page. This function provides the form that will
    * appear on that page.
@@ -266,6 +285,9 @@ class TripalField {
   /**
    *  Provides the display for a field
    *
+   * This function corresponds to the hook_field_formatter_view()
+   * function of the Drupal Field API.
+   *
    *  This function provides the display for a field when it is viewed on
    *  the web page.  The content returned by the formatter should only include
    *  what is present in the $items[$delta]['values] array. This way, the
@@ -276,8 +298,6 @@ class TripalField {
    *  @param $element
    *  @param $entity_type
    *  @param $entity
-   *  @param $field
-   *  @param $instance
    *  @param $langcode
    *  @param $items
    *  @param $display
@@ -298,6 +318,9 @@ class TripalField {
 
   /**
    * Provides the form for editing of this field.
+   *
+   * This function corresponds to the hook_field_widget_form()
+   * function of the Drupal Field API.
    *
    * This form is diplayed when the user creates a new entity or edits an
    * existing entity.  If the field is attached to the entity then the form
@@ -359,6 +382,9 @@ class TripalField {
   /**
    *  Perform validation of the widget_form when adding or editing the entity.
    *
+   *  This function corresponds to the hook_field_validate() function of the
+   *  Drupal Field API.
+   *
    *  Any errors encountered should be indicatd by adding a value to the $errors
    *  array according to the instructions below.
    *
@@ -389,15 +415,18 @@ class TripalField {
   }
 
   /**
-   *  Performs extra commands when the entity form is submitted.
+   * Performs extra commands when the entity form is submitted.
    *
-   *  Drupal typically does not provide a submit hook for fields.  The
-   *  TripalField provides one to allow for behind-the-scenes actions to
-   *  occur.   This function should never be used for updates, deletes or
-   *  inserts into the storage backend. Rather, the appropriate Field Storage
-   *  implementation will take care of that. An example where this function
-   *  may be useful would be to set values in the $items array using values
-   *  of the other.
+   * This function corresponds to the hook_field_submit()
+   * function of the Drupal Field API.
+   *
+   * Drupal typically does not provide a submit hook for fields.  The
+   * TripalField provides one to allow for behind-the-scenes actions to
+   * occur.   This function should never be used for updates, deletes or
+   * inserts into the storage backend. Rather, the appropriate Field Storage
+   * implementation will take care of that. An example where this function
+   * may be useful would be to set values in the $items array using values
+   * of the other.
    *
    *  @param $entity_type
    *    The type of $entity.
@@ -418,6 +447,7 @@ class TripalField {
    */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
   }
+
   /**
    * Loads the field values from the underlying data store.
    *
@@ -451,20 +481,28 @@ class TripalField {
   }
 
   /**
-   * Provides a form for the 'Field Settings' of the field management page.
+   * Provides a form for the 'Field Settings' of an instance of this field.
    *
-   * This is an optional hook function and is similar to the
-   * hook_field_settings_form function().
+   * This function corresponds to the hook_field_instance_settings_form()
+   * function of the Drupal Field API.
    *
-   * @param $field
-   *   The field structure being configured.
-   * @param $instance
-   *   The instance structure being configured.
-   * @param $has_data
-   *   TRUE if the field already has data, FALSE if not.
+   * Validation of the instance settings form is not supported by Drupal, but
+   * the TripalField class does provide a mechanism for supporting validation.
+   * To allow for validation of your setting form you must call the parent
+   * in your child class:
+   *
+   * @code
+   *   $element = parent::instanceSettingsForm();
+   * @endcode
+   *
+   * Please note, the form generated with this function does not easily
+   * support AJAX calls in the same way that other Drupal forms do.  If you
+   * need to use AJAX you must manually alter the $form in your ajax call.
+   * The typical way to handle updating the form via an AJAX call is to make
+   * the changes in the form function itself but that doesn't work here.
    */
   public function instanceSettingsForm() {
-    $settings = $instance['settings'];
+    $settings = $this->instance['settings'];
     $element = array();
 
     //     $element['semantic_web'] = array(
@@ -479,16 +517,23 @@ class TripalField {
     //       '#collapsible' => TRUE,
     //       '#tree' => TRUE,
     //     );
-    $element['#field'] = $field;
-    $element['#instance'] = $instance;
+    //$element['#field'] = $this->field;
+    //$element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
 
     return $element;
   }
   /**
+   * Provides validation of the instance settings form.
    *
-   * @param unknown $form
-   * @param unknown $form_state
+   * There is no equivalent function in the Drupal Field API. Validation
+   * of instance settings forms in Drupal is not supported. However, the
+   * TripalField provides this function to fill the gap.  See the
+   * documentation for the instanceSettingsForm() function for instructions
+   * to support use of this function.
+   *
+   * @param $form
+   * @param $form_state
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
 
@@ -508,7 +553,7 @@ class TripalField {
    *   TRUE if the field already has data, FALSE if not.
    */
   public function globalSettingsForm($has_data) {
-    $settings = $field['settings'];
+    $settings = $this->field['settings'];
     $element = array();
 
 //     $element['semantic_web'] = array(
@@ -523,8 +568,8 @@ class TripalField {
 //       '#collapsible' => TRUE,
 //       '#tree' => TRUE,
 //     );
-    $element['#field'] = $field;
-    $element['#instance'] = $instance;
+//    $element['#field'] = $this->field;
+//    $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_settings_form_validate';
 
     return $element;

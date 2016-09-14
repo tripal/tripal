@@ -8,7 +8,7 @@ class chado_linker__phenotype extends TripalField {
   // The default description for this field.
   public static $default_description = 'Associates phenotypes with this record.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.

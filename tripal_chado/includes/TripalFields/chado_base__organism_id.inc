@@ -7,7 +7,7 @@ class chado_base__organism_id extends TripalField {
   // The default description for this field.
   public static $default_description = 'A field for specifying an organism.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.
@@ -247,8 +247,8 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::settings_form()
    */
-  public static function fieldSettingsForm($field, $instance, $has_data) {
-    $element = parent::fieldSettingsForm($field, $instance, $has_data);
+  public function globalSettingsForm($has_data) {
+    $element = parent::globalSettingsForm($has_data);
 
     $settings = $this->field['settings'];
 

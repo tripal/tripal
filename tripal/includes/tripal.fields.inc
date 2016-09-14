@@ -218,7 +218,7 @@ function tripal_field_settings_form($field, $instance, $has_data) {
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $tfield->fieldSettingsForm($field, $instance, $has_data);
+    $form = $tfield->globalSettingsForm($field, $instance, $has_data);
   }
   return $form;
 }
@@ -235,24 +235,6 @@ function tripal_field_instance_settings_form($field, $instance) {
   }
   return $form;
 }
-
-/**
- * Implements hook_field_settings_form_validate().
- *
- * This is not an actual Drpual hook, but rather a Tripal created hook
- * to alow the TripalField objects to have a fieldSettingsFormValidate()
- * member function.
- */
-function tripal_field_settings_form_validate($form, &$form_state) {
-  $field = $form['#field'];
-  $instance = $form['#instance'];
-  $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->fieldSettingsFormValidate($field, $instance, $form, $form_state);
-  }
-}
 /**
  * Implements hook_instance_settings_form_validate().
  *
@@ -260,7 +242,7 @@ function tripal_field_settings_form_validate($form, &$form_state) {
  * to alow the TripalField objects to have a instanceSettingsFormValidate()
  * member function.
  */
-function tripal_instance_settings_form_validate($form, &$form_state) {
+function tripal_field_instance_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];
@@ -270,6 +252,25 @@ function tripal_instance_settings_form_validate($form, &$form_state) {
     $form = $tfield->instanceSettingsFormValidate($field, $instance, $form, $form_state);
   }
 }
+
+/**
+ * Implements hook_field_settings_form_validate().
+ *
+ * This is not an actual Drpual hook, but rather a Tripal created hook
+ * to alow the TripalField objects to have a globalSettingsFormValidate()
+ * member function.
+ */
+function tripal_field_settings_form_validate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  $is_loaded = tripal_load_include_field_type($field_type);
+  if ($is_loaded) {
+    $tfield = new $field_type($field, $instance);
+    $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
+  }
+}
+
 
 /**
  * Implements hook_field_formatter_settings_summary().
@@ -367,9 +368,7 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $bundle = isset($entity->bundle) ? $entity->bundle : NULL;
-    $form = $field_type::widgetFormValidate($entity_type, $entity, $field, $instance,
-        $langcode, $items, $errors);
+    $tfield->widgetFormValidate($entity_type, $entity, $langcode, $items, $errors);
   }
 }
 

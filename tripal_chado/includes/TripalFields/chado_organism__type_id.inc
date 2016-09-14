@@ -8,7 +8,7 @@ class chado_organism__type_id extends TripalField {
   // The default description for this field.
   public static $default_description = 'Specifies the infraspecific type of an organism.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.

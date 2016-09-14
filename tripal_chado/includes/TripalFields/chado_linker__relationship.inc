@@ -7,7 +7,7 @@ class chado_linker__relationship extends TripalField {
   // The default description for this field.
   public static $default_description = 'Relationships between records.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.
@@ -18,139 +18,22 @@ class chado_linker__relationship extends TripalField {
     'semantic_web' => '',
   );
 
+  // Provide a list of instance specific settings. These can be access within
+  // the instanceSettingsForm.  When the instanceSettingsForm is submitted
+  // then Drupal with automatically change these settings for the instnace.
+  // It is recommended to put settings at the instance level whenever possible.
+  public static $default_instance_settings = array(
+    'relationships' => array(
+      'option1_vocabs' => '',
+      'option2_vocab' => '',
+      'option2_parent' => '',
+      'relationship_types' => '',
+    ),
+  );
+
   // Set this to the name of the storage backend that by default will support
   // this field.
   public static $default_storage = 'field_chado_storage';
-
-
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function setCanAttach() {
-    $table_name = isset($this->details['chado_table']) ? $this->details['chado_table'] : '';
-    $type_table = isset($this->details['chado_type_table']) ? $this->details['chado_type_table'] : '';
-    $type_field = isset($this->details['chado_type_column']) ? $this->details['chado_type_column'] : '';
-    $cv_id      = isset($this->details['chado_cv_id']) ? $this->details['chado_cv_id'] : '';
-    $cvterm_id  = isset($this->details['chado_cvterm_id']) ? $this->details['chado_cvterm_id'] : '';
-
-    // If the linker table does not exists then we don't want to add attach.
-    $rel_table = $table_name . '_relationship';
-    if (chado_table_exists($rel_table)) {
-      $this->can_attach = TRUE;
-      return;
-    }
-    $this->can_attach = FALSE;
-  }
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = isset($this->details['chado_table']) ? $this->details['chado_table'] : '';
-    $type_table = isset($this->details['chado_type_table']) ? $this->details['chado_type_table'] : '';
-    $type_field = isset($this->details['chado_type_column']) ? $this->details['chado_type_column'] : '';
-    $cv_id      = isset($this->details['chado_cv_id']) ? $this->details['chado_cv_id'] : '';
-    $cvterm_id  = isset($this->details['chado_cvterm_id']) ? $this->details['chado_cvterm_id'] : '';
-
-    $this->field_name = $table_name . '_relationship';
-  }
-  /**
-   * @see TripalField::create_info()
-   */
-  function createInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    $rel_table = $table_name . '_relationship';
-    $schema = chado_get_schema($rel_table);
-    $pkey = $schema['primary key'][0];
-    return array(
-      'field_name' => $this->field_name,
-      'type' => 'chado_linker__relationship',
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $rel_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000374',
-      ),
-    );
-  }
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  function createInstanceInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    return array(
-      'field_name' => $this->field_name,
-      'entity_type' => $this->entity_type,
-      'bundle' => $this->bundle->name,
-      'label' => 'Relationships',
-      'description' => 'Other records with relationships to this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'child_relationship_types' => '',
-        'relationship_types' => '',
-      ),
-      'widget' => array(
-        'type' => 'chado_linker__relationship_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'chado_linker__relationship_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
-
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_linker__relationship_widget' => array(
-        'label' => t('Relationship Settings'),
-        'field types' => array('chado_linker__relationship')
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  static function formatterInfo() {
-    return array(
-      'chado_linker__relationship_formatter' => array(
-        'label' => t('Relationships'),
-        'field types' => array('chado_linker__relationship'),
-        'settings' => array(
-        ),
-      ),
-    );
-  }
 
   /**
    * @see TripalField::formatterView()
@@ -395,15 +278,13 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::validate()
    */
-  function validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  function widgetFormValidate($entity_type, $entity, $langcode, $items, &$errors) {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
-
-    $chado_record_id = $entity->chado_record_id;
 
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
@@ -514,6 +395,7 @@ class chado_linker__relationship extends TripalField {
       }
 
       // Make sure that either our object or our subject refers to the base record.
+      $chado_record_id = $entity->chado_record_id;
       if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
         $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
@@ -533,8 +415,7 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::submit()
    */
-  public function submit($entity_type, $entity, $field, $instance, $langcode,
-      &$items, $form, &$form_state) {
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -872,6 +753,8 @@ class chado_linker__relationship extends TripalField {
   public function instanceSettingsForm() {
 
     $element = parent::instanceSettingsForm();
+
+    //$element = parent::instanceSettingsForm();
     $element['relationships'] = array(
       '#type' => 'fieldset',
       '#title' => 'Allowed Relationship Types',
@@ -905,7 +788,7 @@ class chado_linker__relationship extends TripalField {
       '#multiple' => TRUE,
       '#options' => $vocs,
       '#size' => 6,
-      '#default_value' => $this->instance['settings']['default_vocabs'],
+      '#default_value' => $this->instance['settings']['relationships']['option1_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
 
@@ -916,21 +799,28 @@ class chado_linker__relationship extends TripalField {
          heirarchy groups of related terms typically fall under a common parent. If you
          wish to limit the list of terms that a user can use for the relationship type,
          you can provide the parent term here.  Then, only that term\'s children will
-         then be avilable for use as a relationship type.',
+         be avilable for use as a relationship type.',
     );
     $element['relationships']['option2_vocab'] = array(
       '#type' => 'select',
-      '#description' => 'Specify Default Vocabularies',
+      '#description' => 'Specify Default Vocabulary',
       '#multiple' => FALSE,
       '#options' => $vocs,
-      '#default_value' => $this->instance['settings']['default_vocabs'],
-      // TODO add ajax here so that the relationship autocomplete below works
+      '#default_value' => $this->instance['settings']['relationships']['option2_vocab'],
+      '#ajax' => array(
+        'callback' => "chado_linker__relationship_instance_settings_form_ajax_callback",
+        'wrapper' => 'relationships-option2-parent',
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
     );
     $element['relationships']['option2_parent'] = array(
       '#type' => 'textfield',
       '#description' => 'Specify a Heirarchical Parent Term',
-      '#default_value' => $this->instance['settings']['child_relationship_types'],
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/"
+      '#default_value' => $this->instance['settings']['relationships']['option2_parent'],
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+      '#prefix' => '<div id=relationships-option2-parent>',
+      '#suffix' => '</div>'
     );
     $element['relationships']['option3'] = array(
       '#type' => 'item',
@@ -940,7 +830,7 @@ class chado_linker__relationship extends TripalField {
     );
     $element['relationships']['relationship_types'] = array(
       '#type' => 'textarea',
-      '#default_value' => $this->instance['settings']['relationship_types'],
+      '#default_value' => $this->instance['settings']['relationships']['relationship_types'],
     );
 
     return $element;
@@ -951,37 +841,37 @@ class chado_linker__relationship extends TripalField {
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
     //dpm($form);dpm($form_state);
-    $settings = $form_state['values']['instance']['settings'];
+//     $settings = $form_state['values']['instance']['settings'];
 
-    // Make sure the supplied types are valid cvterms
-    if (isset($settings['relationship_types'])) {
-      $rel_types = explode(PHP_EOL, $settings['relationship_types']);
-      foreach($rel_types AS $type) {
-        // Ignore empty lines
-        if (trim($type) == '') {
-          continue;
-        }
-        $term = tripal_get_cvterm(array('name' => trim($type)));
-        // Don't save the form  if a term can not be found or it matches more than one cvterm
-        if (!isset($term->cvterm_id)) {
-          form_set_error(
-            "instance][settings][relationships][relationship_types",
-            t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
-          );
-        }
-      }
-    }
-    // Make sure child relationship types are using a valid cvterm
-    if (isset($settings['child_relationship_types'])) {
-      $supertype = $settings['child_relationship_types'];
-      $term = tripal_get_cvterm(array('name' => trim($supertype)));
-      if (!isset($term->cvterm_id)) {
-        form_set_error(
-          "instance][settings][relationships][child_relationship_types",
-          t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
-        );
-      }
-    }
+//     // Make sure the supplied types are valid cvterms
+//     if (isset($settings['relationship_types'])) {
+//       $rel_types = explode(PHP_EOL, $settings['relationship_types']);
+//       foreach($rel_types AS $type) {
+//         // Ignore empty lines
+//         if (trim($type) == '') {
+//           continue;
+//         }
+//         $term = tripal_get_cvterm(array('name' => trim($type)));
+//         // Don't save the form  if a term can not be found or it matches more than one cvterm
+//         if (!isset($term->cvterm_id)) {
+//           form_set_error(
+//             "instance][settings][relationships][relationship_types",
+//             t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
+//           );
+//         }
+//       }
+//     }
+//     // Make sure child relationship types are using a valid cvterm
+//     if (isset($settings['child_relationship_types'])) {
+//       $supertype = $settings['child_relationship_types'];
+//       $term = tripal_get_cvterm(array('name' => trim($supertype)));
+//       if (!isset($term->cvterm_id)) {
+//         form_set_error(
+//           "instance][settings][relationships][child_relationship_types",
+//           t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
+//         );
+//       }
+//     }
   }
 }
 
@@ -1015,9 +905,10 @@ function theme_chado_linker__relationship_widget($variables) {
 }
 
 /**
- * An Ajax callback for the dbxref widget.
+ * An Ajax callback for the relationshp widget.
  */
 function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
+
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
   preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
@@ -1034,4 +925,17 @@ function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_stat
   }
 }
 
+/**
+ * An Ajax callback for the relationshp instance setting form.
+ */
+function chado_linker__relationship_instance_settings_form_ajax_callback(&$form, $form_state) {
+  $acpath  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
+  $acpath .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'] . '/';
+  $urlval  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'];
+  $urlval .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'];
+
+  $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'] = $acpath;
+  $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'] = $urlval;
+  return $form['instance']['settings']['relationships']['option2_parent'];
+}
 

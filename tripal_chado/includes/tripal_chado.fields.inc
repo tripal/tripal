@@ -1321,8 +1321,6 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
-        'child_relationship_types' => '',
-        'relationship_types' => '',
       ),
       'widget' => array(
         'type' => 'chado_linker__relationship_widget',

@@ -8,7 +8,7 @@ class chado_base__dbxref_id extends TripalField {
   public static $default_description = 'This field specifies the unique stable accession (ID) for
         this record. It requires that this site have a database entry.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.

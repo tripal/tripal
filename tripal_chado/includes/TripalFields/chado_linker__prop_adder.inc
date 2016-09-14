@@ -8,7 +8,7 @@ class chado_linker__prop_adder extends TripalField {
   public static $default_description = 'This record may have any number of properties. Use
             this field to first add the type.';
 
-  // Add any default settings elements.  If you override the fieldSettingsForm()
+  // Add any default settings elements.  If you override the globalSettingsForm()
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.
