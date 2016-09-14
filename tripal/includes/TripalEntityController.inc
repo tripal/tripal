@@ -530,19 +530,19 @@ class TripalEntityController extends EntityAPIController {
                   $entity_ids[] = $field['id'];
                 }
                 // If the field is not auto attached then we want to add an
-                // empty default valuea nd add an 'unattached' key to
+                // empty default valuea and add an 'unattached' key to
                 // clue in other things that there may be data, it's just
                 // not attached.
                 else {
-                  $value = array(
-                    'und' => array(
-                      0 => array(
-                        'value' => '',
-                        '#unattached' => TRUE,
-                      ),
-                    ),
-                  );
-                  $entity->$field_name = $value;
+//                   $value = array(
+//                     'und' => array(
+//                       0 => array(
+//                         'value' => '',
+//                         '#unattached' => TRUE,
+//                       ),
+//                     ),
+//                   );
+//                   $entity->$field_name = $value;
                 }
               }
             }

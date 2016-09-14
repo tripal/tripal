@@ -123,10 +123,9 @@ class chado_linker__synonym extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity, $field,
-      $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $chado_table = $field['settings']['chado_table'];
+    $chado_table = $this->field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if (array_key_exists($chado_table . '__synonym_id', $item) and
           $item[$chado_table . '__synonym_id']) {
@@ -145,15 +144,14 @@ class chado_linker__synonym extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];
-    $field_name = $field['field_name'];
+    $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
-    $table_name = $field['settings']['chado_table'];
-    $base_table = $field['settings']['base_table'];
+    $table_name = $this->field['settings']['chado_table'];
+    $base_table = $this->field['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -258,15 +256,15 @@ class chado_linker__synonym extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
     $record = $details['record'];
-    $base_table = $field['settings']['base_table'];
+    $base_table = $this->field['settings']['base_table'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);

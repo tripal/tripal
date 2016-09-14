@@ -155,8 +155,7 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
 
@@ -235,17 +234,16 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  static function  widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Get the FK column that links to the base table.
-    $chado_table = $field['settings']['chado_table'];
-    $base_table = $field['settings']['base_table'];
+    $chado_table = $this->field['settings']['chado_table'];
+    $base_table = $this->field['settings']['base_table'];
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -399,11 +397,11 @@ class chado_linker__relationship extends TripalField {
    */
   function validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
-    $base_table = $field['settings']['base_table'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     $chado_record_id = $entity->chado_record_id;
 
@@ -427,19 +425,19 @@ class chado_linker__relationship extends TripalField {
       // Make sure we have values for all of the fields.
       $form_error = FALSE;
       if (!$type_name) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' => t("Please provide the type of relationship."),
         );
       }
       if (!$subject_name) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' => t("Please provide the subject of the relationship."),
         );
       }
       if (!$object_name) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' => t("Please provide the object of the relationship."),
         );
@@ -460,7 +458,7 @@ class chado_linker__relationship extends TripalField {
         $values = array($fkey_rcolumn => $subject_id);
         $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
         if (count($subject) == 0) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
           );
@@ -470,13 +468,13 @@ class chado_linker__relationship extends TripalField {
         $values = array('uniquename' => $subject_name);
         $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
         if (count($subject) == 0) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' => t("The subject record cannot be found. Please check spelling."),
           );
         }
         elseif (count($subject) > 1) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' => t("The subject is not unique and therefore the relationship cannot be made."),
           );
@@ -492,7 +490,7 @@ class chado_linker__relationship extends TripalField {
         $values = array($fkey_rcolumn => $object_id);
         $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
         if (count($subject) == 0) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
           );
@@ -502,13 +500,13 @@ class chado_linker__relationship extends TripalField {
         $values = array('uniquename' => $object_name);
         $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
         if (count($object) == 0) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' => t("The object record cannot be found. Please check spelling."),
           );;
         }
         elseif (count($object) > 1) {
-          $errors[$field['field_name']][$langcode][$delta][] = array(
+          $errors[$this->field['field_name']][$langcode][$delta][] = array(
             'error' => 'chado_linker__relationship',
             'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
           );
@@ -517,7 +515,7 @@ class chado_linker__relationship extends TripalField {
 
       // Make sure that either our object or our subject refers to the base record.
       if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
         );
@@ -525,7 +523,7 @@ class chado_linker__relationship extends TripalField {
 
       // Make sure that the object and subject are not both the same thing.
       if ($object_id == $subject_id) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
         );
@@ -538,11 +536,11 @@ class chado_linker__relationship extends TripalField {
   public function submit($entity_type, $entity, $field, $instance, $langcode,
       &$items, $form, &$form_state) {
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
-    $base_table = $field['settings']['base_table'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     $chado_record_id = $entity->chado_record_id;
 
@@ -598,17 +596,17 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
-    $settings = $field['settings'];
+    $settings = $this->field['settings'];
 
     $record = $details['record'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
-    $base_table = $field['settings']['base_table'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);
@@ -907,7 +905,7 @@ class chado_linker__relationship extends TripalField {
       '#multiple' => TRUE,
       '#options' => $vocs,
       '#size' => 6,
-      '#default_value' => $instance['settings']['default_vocabs'],
+      '#default_value' => $this->instance['settings']['default_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
 
@@ -925,13 +923,13 @@ class chado_linker__relationship extends TripalField {
       '#description' => 'Specify Default Vocabularies',
       '#multiple' => FALSE,
       '#options' => $vocs,
-      '#default_value' => $instance['settings']['default_vocabs'],
+      '#default_value' => $this->instance['settings']['default_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
     $element['relationships']['option2_parent'] = array(
       '#type' => 'textfield',
       '#description' => 'Specify a Heirarchical Parent Term',
-      '#default_value' => $instance['settings']['child_relationship_types'],
+      '#default_value' => $this->instance['settings']['child_relationship_types'],
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/"
     );
     $element['relationships']['option3'] = array(
@@ -942,7 +940,7 @@ class chado_linker__relationship extends TripalField {
     );
     $element['relationships']['relationship_types'] = array(
       '#type' => 'textarea',
-      '#default_value' => $instance['settings']['relationship_types'],
+      '#default_value' => $this->instance['settings']['relationship_types'],
     );
 
     return $element;

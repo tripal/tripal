@@ -1,5 +1,5 @@
 <?php
-class chado_linker__cvterm_addr extends TripalField {
+class chado_linker__cvterm_adder extends TripalField {
 
   // The default lable for this field.
   public static $default_label = 'Add an Annotation Type';
@@ -103,12 +103,10 @@ class chado_linker__cvterm_addr extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     // This field has no value field.  Just a fieldset for adding new annotation types.
 
-    $widget['#element_validate'] = array('chado_linker__cvterm_adder_widget_validate');
 
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
@@ -134,6 +132,8 @@ class chado_linker__cvterm_addr extends TripalField {
           you want to allow users to use for annotations."),
     );
 
+    //    $widget['#element_validate'] = array('chado_linker__cvterm_adder_widget_validate');
+
     // When this button is clicked, the form will be validated and submitted.
     // Therefore, we set custom submit and validate functions to override the
     // default form submit.  In the validate function we set the form_state
@@ -145,8 +145,8 @@ class chado_linker__cvterm_addr extends TripalField {
       '#value' => t('Add Annotation Type'),
       '#type' => 'submit',
       '#name' => 'cvterm_class_adder_button',
-      '#submit' => array('chado_linker__cvterm_adder_widget_submit'),
-      '#limit_validation_errors' => array(array($field['field_name'])),
+//      '#submit' => array('chado_linker__cvterm_adder_widget_submit'),
+      '#limit_validation_errors' => array(array($this->field['field_name'])),
     );
   }
 

@@ -120,8 +120,7 @@ class chado_feature__seqlen extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity, $field,
-      $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
@@ -134,14 +133,13 @@ class chado_feature__seqlen extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $settings = $field['settings'];
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     $widget['value'] = array(
       '#type' => 'value',

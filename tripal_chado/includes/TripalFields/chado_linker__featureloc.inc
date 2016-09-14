@@ -144,8 +144,7 @@ class chado_linker__featureloc extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     // Get the settings
     $settings = $display['settings'];
@@ -222,12 +221,12 @@ class chado_linker__featureloc extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
     $record = $details['record'];
-    $settings = $field['settings'];
+    $settings = $this->field['settings'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
@@ -400,8 +399,7 @@ class chado_linker__featureloc extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-   public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
   }
 

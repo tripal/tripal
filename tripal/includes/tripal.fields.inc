@@ -51,7 +51,7 @@ function tripal_field_formatter_info() {
 function tripal_create_tripalfields($entity_type, $bundle) {
   $field_name = 'content_type';
   $info = array();
-  $info[] = array(
+  $info[$field_name] = array(
     'field_name' => $field_name,
     'type' => 'content_type',
     'cardinality' => 1,
@@ -74,10 +74,10 @@ function tripal_create_tripalfields($entity_type, $bundle) {
 function tripal_create_tripalfield_instance($entity_type, $bundle) {
   $field_name = 'content_type';
   $info = array();
-  $info[] = array(
+  $info[$field_name] = array(
     'field_name' => $field_name,
     'entity_type' => 'TripalEntity',
-    'bundle' => $this->bundle->name,
+    'bundle' => $bundle->name,
     'label' => 'Resource Type',
     'description' => '',
     'required' => FALSE,
@@ -110,9 +110,8 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
-    $tfield->formatterView($element, $entity_type, $entity, $field,
-        $instance, $langcode, $items, $display);
+    $tfield = new $field_type($field, $instance);
+    $tfield->formatterView($element, $entity_type, $entity, $langcode, $items, $display);
   }
   return $element;
 }
@@ -218,7 +217,7 @@ function tripal_field_settings_form($field, $instance, $has_data) {
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->fieldSettingsForm($field, $instance, $has_data);
   }
   return $form;
@@ -231,7 +230,7 @@ function tripal_field_instance_settings_form($field, $instance) {
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->instanceSettingsForm($field, $instance);
   }
   return $form;
@@ -250,7 +249,7 @@ function tripal_field_settings_form_validate($form, &$form_state) {
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->fieldSettingsFormValidate($field, $instance, $form, $form_state);
   }
 }
@@ -267,7 +266,7 @@ function tripal_instance_settings_form_validate($form, &$form_state) {
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->instanceSettingsFormValidate($field, $instance, $form, $form_state);
   }
 }
@@ -281,7 +280,7 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->formatterSettingsSummary($field, $instance, $view_mode);
   }
   return $summary;
@@ -297,7 +296,7 @@ function tripal_formatter_settings_form($field, $instance,
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $tfield->formatterSettingsForm(field, $instance, $view_mode, $form, $form_state);
   }
   return $form;
@@ -314,9 +313,8 @@ function tripal_field_widget_form(&$form, &$form_state, $field,
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
-    $tfield->widgetForm($widget, $form, $form_state, $field, $instance,
-      $langcode, $items, $delta, $element);
+    $tfield = new $field_type($field, $instance);
+    $tfield->widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
   }
   return $widget;
 
@@ -368,7 +366,7 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $bundle = isset($entity->bundle) ? $entity->bundle : NULL;
     $form = $field_type::widgetFormValidate($entity_type, $entity, $field, $instance,
         $langcode, $items, $errors);
@@ -386,7 +384,7 @@ function tripal_field_submit($entity_type, $entity, $field, $instance,
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
-    $tfield = new $field_type(array('field' => $field));
+    $tfield = new $field_type($field, $instance);
     $form = $field_type::widgetFormSubmit($entity_type, $entity, $field, $instance,
         $langcode, $items, $form, $form_state);
   }

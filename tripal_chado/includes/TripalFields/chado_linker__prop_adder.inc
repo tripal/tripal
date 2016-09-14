@@ -104,8 +104,7 @@ class chado_linker__prop_adder extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  static function widgetForm(&$widget, &$form, &$form_state,
-      $field, $instance, $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
@@ -143,7 +142,7 @@ class chado_linker__prop_adder extends TripalField {
       '#value' => t('Add Property'),
       '#type' => 'submit',
       '#name' => 'kvproperty_adder_button',
-      '#limit_validation_errors' => array(array($field['field_name'])),
+      '#limit_validation_errors' => array(array($this->field['field_name'])),
     );
   }
 

@@ -165,7 +165,7 @@ function tripal_chado_create_tripalfields_base(&$info, $details, $entity_type, $
       $base_info['settings']['text_processing'] = 0;
     }
 
-    $info[] = $base_info;
+    $info[$field_name] = $base_info;
   }
 }
 
@@ -199,14 +199,13 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {
     $field_name = $table_name . '__organism_id';
     $field_type = 'chado_base__organism_id';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -220,14 +219,13 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'organism_id'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {
     $field_name = $table_name . '__md5checksum';
     $field_type = 'chado_feature__md5checksum';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -241,14 +239,13 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'md5checksum'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // FEATURE RESIDUES
   if ($table_name == 'feature') {
     $field_name = 'feature__residues';
     $field_type = 'chado_feature__residues';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -262,14 +259,13 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // FEATURE SEQLEN
   if ($table_name == 'feature') {
     $field_name = 'feature__seqlen';
     $field_type = 'chado_feature__seqlen';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -283,7 +279,6 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'seqlen'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // GENE TRANSCRIPTS
@@ -291,7 +286,7 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
     $field_name = 'gene_transcripts';
     $field_type = 'chado_gene__transcripts';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -306,14 +301,13 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => 'SO:0000673',
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 
   // ORGANISM TYPE_ID
   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
     $field_name = 'organism__type_id';
     $field_type = 'chado_organism__type_id';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -327,7 +321,6 @@ function tripal_chado_create_tripalfields_custom(&$info, $details, $entity_type,
         'semantic_web' => tripal_get_chado_semweb_term('organism', 'type_id'),
       ),
     );
-    $field = new $field_type(array('info' => $info));
   }
 }
 
@@ -350,7 +343,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_contact';
     $field_type = 'chado_linker__contact';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -372,7 +365,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
   if (chado_table_exists($cvterm_table)) {
     $field_name = $table_name . '_cvterm';
     $field_type = 'chado_linker__cvterm_adder';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -393,7 +386,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_dbxref';
     $field_type = 'chado_linker__dbxref';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' =>  $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -416,7 +409,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_expression';
     $field_type = 'chado_linker__expression';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -439,7 +432,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = 'featureloc';
     $field_type = 'chado_linker__featureloc';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -462,7 +455,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_genotype';
     $field_type = 'chado_linker__genotype';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -486,7 +479,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_phenotype';
     $field_type = 'chado_linker__phenotype';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -508,7 +501,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
   if (chado_table_exists($prop_table)) {
     $field_name = $table_name . 'prop';
     $field_type = 'chado_linker__prop_adder';
-    $info[] = array(
+    $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -528,7 +521,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_pub';
     $field_type = 'chado_linker__pub';
-    $info[] =  array(
+    $info[$field_name] =  array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -553,7 +546,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_relationship';
     $field_type = 'chado_linker__relationship';
-    $info[] =  array(
+    $info[$field_name] =  array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -577,7 +570,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_synonym';
     $field_type = 'chado_linker__synonym';
-    $info[] =  array(
+    $info[$field_name] =  array(
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -621,7 +614,7 @@ function tripal_chado_create_tripalfield_instance($entity_type, $bundle) {
 
   tripal_chado_create_tripalfield_instance_base($info, $entity_type, $bundle, $details);
   tripal_chado_create_tripalfield_instance_custom($info, $entity_type, $bundle, $details);
-  tripal_chado_create_tripalfeidl_instance_linker($info, $entity_type, $bundle, $details);
+  tripal_chado_create_tripalfield_instance_linker($info, $entity_type, $bundle, $details);
 
   return $info;
 }
@@ -665,7 +658,7 @@ function tripal_chado_create_tripalfield_instance_base(&$info, $entity_type, $bu
     $base_info =  array(
       'field_name' => $field_name,
       'entity_type' => 'TripalEntity',
-      'bundle' => $bundle_name,
+      'bundle' => $bundle->name,
       'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
       'description' => '',
       'required' => FALSE,
@@ -971,7 +964,7 @@ function tripal_chado_create_tripalfield_instance_custom(&$info, $entity_type, $
 
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
-  if (chado_table_exists($rel_table) and $this->bundle->label == 'gene') {
+  if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
     $field_name = 'gene_transcripts';
     $info[] = array(
       'field_name' => $field_name,
@@ -1081,7 +1074,7 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
     $field_name = $table_name . '_cvterm';
     $info[] = array(
       'field_name' => $field_name,
-      'entity_type' => entity_type,
+      'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Add Annotation Types',
       'description' => 'Add additional annotations types to this record.',

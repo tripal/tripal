@@ -252,13 +252,15 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
         if (!$fields){
           continue;
         }
-        foreach ($fields as $info) {
+        foreach ($fields as $field_name => $info) {
+          $field_type = $info['type'];
+
           // If the field already exists then skip it.
           $field = field_info_field($info['field_name']);
           if ($field) {
             continue;
           }
-          dpm($info);
+          // Create the field.
           $field = field_create_field($info);
           if (!$field) {
             tripal_set_message(t("Could not create new field: %field.",
@@ -276,7 +278,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
         if (!$fields){
           continue;
         }
-        foreach ($fields as $info) {
+        foreach ($fields as $field_name => $info) {
           // If the field is already attached to this bundle then skip it.
           $field = field_info_field($info['field_name']);
           if ($field and array_key_exists('bundles', $field) and
@@ -284,7 +286,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
               in_array($bundle_name, $field['bundles']['TripalEntity'])) {
             continue;
           }
-          dpm($info);
+          // Create the field instance.
           $instance = field_create_instance($info);
         }
       }
@@ -293,7 +295,6 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
   catch (Exception $e) {
     $transaction->rollback();
     $error = _drupal_decode_exception($e);
-    dpm($info);
     drupal_set_message(t("Failed to create content type': %message",
         array('%message' => $error['!message'])), 'error');
     return FALSE;

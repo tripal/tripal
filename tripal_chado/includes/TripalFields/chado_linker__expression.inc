@@ -125,8 +125,7 @@ class chado_linker__expression extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  public static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     // Get the settings
     $settings = $display['settings'];
@@ -199,13 +198,13 @@ class chado_linker__expression extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
     $record = $details['record'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);

@@ -22,16 +22,15 @@ class content_type extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
     $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $entity->{$field['field_name']}['und'][0]['value'] = $bundle->label;
+    $entity->{$this->field['field_name']}['und'][0]['value'] = $bundle->label;
   }
 
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
@@ -44,11 +43,10 @@ class content_type extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $widget = $element;
-    switch ($instance['widget']['type']) {
+    switch ($this->instance['widget']['type']) {
       case 'tripal_content_type_widget':
         // There is no widget for this type.
         break;

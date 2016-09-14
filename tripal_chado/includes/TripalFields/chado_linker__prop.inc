@@ -25,11 +25,10 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity, $field,
-    $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $field_name = $field['field_name'];
-    $chado_table = $field['settings']['chado_table'];
+    $field_name = $this->field['field_name'];
+    $chado_table = $this->field['settings']['chado_table'];
 
     $properties = array();
     foreach ($items as $delta => $item) {
@@ -47,11 +46,10 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];
-    $field_name = $field['field_name'];
+    $field_name = $this->field['field_name'];
 
     // Get the record and table mapping info.
     $chado_table = $entity->chado_table;
@@ -180,7 +178,7 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
     $field_name = $details['field_name'];
     $field_type = $details['type'];

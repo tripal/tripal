@@ -2,50 +2,46 @@
 
 
 /**
- * A base class for fields attached to Tripal Entities.
+ * A base for fields attached Tripal Entities.
  *
- * The Field API of Drupal defines three "levels" for fields:  field types,
- * fields, and instances of fields. This class attempts to consolidate use
- * of all three "levels".  All fields must be of a specific type, and
- * the field types are typically defined using the hook_field_info() hook.
- * Normally, using Drupal's Field API, fields can be created by using the
- * field_create_field() function which defines the parameters and settings
- * for the field.  The field_create_instance() function is then used to attach
- * a field to a bundle and to set local parameters and settings for the field
- * when attached to the bundle.  There are also a variety of hooks for creating
- * widgets, formatters, customizaing settings forms, loading values, validating
- * widget forms, etc. Rather than use all of these hooks, the TripalField class
- * is used to consolidate and simplify creation and management of Fields.
+ * This class is intended to simplify development of fields for Tripal Entities.
+ * The Drupal Field API can still be used if desired, but the hope for this
+ * class it to put the necessary functions in one place so that other Tripal
+ * developers do not need to suffer the pain of navigating and learning the
+ * Drupal Field API.
  *
- * A module can extend this class to create new fields, and attach them to
- * bundles.  The class is structured to allow fields to specify which bundles
- * they want to "automatically" attach. This is a bit different from how fields
- * would normally be attached. But allows a field to be self-aware.
- *
- * All of  the functionality for a field is self-contained in the Class
- * implementation.  To change functionality a developer need only edit the
- * class file for a field rathaer than look for all of the Field API hook that
- * would typically be spread around the module.
- *
- * This class also supports use of controlled vocabulaaries for providing
- * "types" to these fields. This is important for use with the semantic web
- * support for Tripal v3.
- *
- * AJAX callbacks, and theme functions unfortunately cannot be part of the
- * implementation of this class.  To keep all functionality for a field
- * in the same file, it is recommended that those functions, if needed, should
- * be added to the bottom of the file where the child class is housed, and each
- * TripalField child class should each be written in a separate file.
+ * To create a new field that can be attached to a Tripal Entity follow these
+ * steps:
+ * # Create a new class that inherits from TripalField
+ * # Copy the editable constant variables (default_desription, default_label,
+ *   default_settings and default_storage) to your class and edit as needed.
+ *   Be sure not to rename these variables and be sure to keep the 'static'
+ *   qualifier on them.
+ * # Copy the functions you want to override. You will not need to copy the
+ *   constructor, the static info() functions, or the getters and setters. In
+ *   short you'll typically only need to override the Settingsform funtions,
+ *   their validators and submitters, the load() function, and the widgetForm
+ *   with it's validator and submitter.
+ * # In your custom module implement the function hook_create_tripalfields()
+ *   This function will be called anytime a new TripalEntity is created. It
+ *   allows your module to create the new fields.  See the documentation for
+ *   this function for creating the fields.  A field is usually only ever
+ *   created once and can be reused on multiple entities.  So, even though
+ *   this function is called everytime a new TripalEntity is created the fields
+ *   will only be created once.
+ * # In your custom module implement the function
+ *   hook_create_tripalfield_instance().  This function is called anytime a
+ *   new TripalEntity is created. It allows you to specify which fields are
+ *   attached to an entity.  See the documentation for this hook function for
+ *   more information.
  *
  */
 class TripalField {
 
-  // An object containing configuration data for this field. The contents
-  // of this object come directly from the field_config table of Drupal.
-  protected $field;
+
 
   // --------------------------------------------------------------------------
-  //                          STATIC CONSTANTS
+  //                     EDITABLE STATIC CONSTANTS
   //
   // The following constants SHOULD be set for each descendent class.  They are
   // used by the static functions to provide information to Drupal about
@@ -69,43 +65,41 @@ class TripalField {
   // this field.
   public static $default_storage = 'tripal_no_storage';
 
+  // --------------------------------------------------------------------------
+  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
+  // --------------------------------------------------------------------------
+  // An array containing details about the field. The format of this array
+  // is the same as that returned by field_info_fields()
+  protected $field;
+  // An array containing details about an instance of the field. A field does
+  // not have to have an instance.  But if dealing with an instance (such as
+  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
+  protected $instance;
 
 
   // --------------------------------------------------------------------------
-  //           CONSTRUCTORS & STATIC CONSTRUCTOR HELPERS
-  //
-  // Child classes SHOULD NOT need to override these functions.
+  //                     CONSTRUCTORS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
 
   /**
    * Instantiates a new TripalField object.
    *
    * @param $field
-   *   If the field already exists in Drupal, then pass in the $field array
-   *   for this argument.  If nothing is passed in then an "empty" field
-   *   is created.  This is only useful
-   *
-   * The field must have already been previously created.
+   *   An array containing the field data as returned by field_info_field()
+   * @param $instance
+   *   (Optional). Set the instance of this field when one is available. This
+   *   is necessary when working with instance specific functions such as the
+   *   formatterSettingsForm, widgetForm, etc.
    */
-  public function __construct($info = array()) {
-    // If the field array has been passed in then just link it.
-    if (array_key_exists('field', $info)) {
-      $this->field = $field;
-    }
-    // If the field name has been passed in then retreive the form info.
-    if (array_key_exists('field_name', $info)) {
-      $this->field = field_info_field($field_name);
-    }
-    // If the field info has been passed in then create the field.
-    if (array_key_exists('info', $info)) {
-      $this->field = field_create_field($info['info']);
-    }
+  public function __construct($field, $instance = NULL) {
+    $this->field = $field;
+    $this->instance = $instance;
 
     // Include any instances that have been created for this field.
-    if (is_array($field) and array_key_exists('id', $this->field)) {
+    if (is_array($this->field) and array_key_exists('id', $this->field)) {
       $instances = db_select('field_config_instance', 'fci')
         ->fields('fci')
-        ->condition('field_id', $field['id'])
+        ->condition('field_id', $this->field['id'])
         ->execute();
 
       while ($instance = $instances->fetchObject()) {
@@ -115,9 +109,7 @@ class TripalField {
   }
 
   // --------------------------------------------------------------------------
-  //                      STATIC INFO FUNCTIONS
-  //
-  // Child classes SHOULD NOT need to override these functions.
+  //           STATIC INFO FUNCTIONS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
 
   /**
@@ -191,9 +183,7 @@ class TripalField {
   }
 
   // --------------------------------------------------------------------------
-  //                         GETTERS AND SETTERS
-  //
-  // Child classes SHOULD NOT need to override these functions.
+  //                 GETTERS AND SETTERS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
 
   /**
@@ -206,65 +196,17 @@ class TripalField {
     return $this->field['field_name'];
   }
 
-  // --------------------------------------------------------------------------
-  //                     FIELD SPECIFIC FUNCTIONS
-  //
-  // Child classes SHOULD NOT override these functions as needed.
-  // --------------------------------------------------------------------------
+  public function getField() {
+    return $this->field;
+  }
+  public function getInstance() {
+    return $this->instance;
+  }
 
 
   // --------------------------------------------------------------------------
-  //                  OVERRIDEABLE FIELD SPECIFIC FUNCTIONS
-  //
-  // Child classes SHOULD override these functions as needed.
+  //                 OVERRIDEABLE FUNCTIONS
   // --------------------------------------------------------------------------
-
-  /**
-   * Performs a check to see disallow attaching of a field instance to a bundle.
-   *
-   * By default Tripal will try to automatically attach all TripalFields to
-   * every bundle.  But this is certainly not appropriate.
-   * This function should be overridden by a child to ensure it is attached
-   * to only desired bundles.
-   *
-   * This function returns FALSE if this field should NOT be attached to the
-   * bundle. This should always be honored by a child class. If the parent class
-   * returns FALSE then so should the child.  Alternatively, this function
-   * returns NULL if there is no good reason to deny attachment and leaves it up
-   * to the child class to decide.  If the child class does not impolment
-   * this function then the NULL is recognized as FALSE by Tripal and the
-   * field will not be attached to the bundle.  Therefore, it is necessary
-   * for the child class to implement this function and return TRUE for
-   * bundles to which this field should be attached.  Because bundles names
-   * use controlled vocabulary terms the child class should be able to
-   * determine if it should attach.
-   *
-   * @param $entity_type
-   *   The entity type
-   * @param $bundle_name
-   *   The name of the bundle
-   *
-   * @return
-   *   FALSE if the child class should return FALSE, NULL if the child class
-   *   should decide.  The child class should always return FAlSE or TRUE. If
-   *   TRUE is returned then an instance of the field can be attached to the
-   *   bundle.
-   */
-//   protected function canAttach($entity_type, $bundle_name) {
-//     // Don't attach if it's already attached.
-//     if (array_key_exists('bundles', $this->field) and
-//         array_key_exists('TripalEntity', $this->field['bundles']) and
-//         in_array($bundle_name, $this->field['bundles']['TripalEntity'])) {
-//       return FALSE;
-//     }
-
-//     // Child classes should check to see if this field can be attached
-//     // to the bundle.
-//     return NULL;
-//   }
-
-
-
 
   /**
    * Provides a summary of the formatter settings.
@@ -345,8 +287,7 @@ class TripalField {
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
-  public static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     foreach($items as $delta => $item) {
       $element[$delta] = array(
@@ -369,26 +310,46 @@ class TripalField {
    * or via web services, or some other mechanism.  However, the 'value' is
    * sometimes not enough for a field.  For example, the Tripal Chado module
    * maps fields to table columns and sometimes those columns are foreign keys
-   * therefore, the Tripal Chado modules does not use the 'value' but adds
+   * therefore, the Tripal Chado modules does not just use the 'value' but adds
    * additional elements to help link records via FKs.  But even in this case
-   * the 'value' element must always be present in the returne form and in such
+   * the 'value' element must always be present in the return form and in such
    * cases it's value should be set equal to that added in the 'load' function.
    *
    * @param $widget
    * @param $form
+   *   The form structure where widgets are being attached to. This might be a
+   *   full form structure, or a sub-element of a larger form.
    * @param $form_state
-   * @param $field
-   * @param $instance
+   *   An associative array containing the current state of the form.
    * @param $langcode
+   *   The language associated with $items.
    * @param $items
+   *   Array of default values for this field.
    * @param $delta
+   *   The order of this item in the array of subelements (0, 1, 2, etc).
    * @param $element
-   *
-   * @return
-   *   A Drupal form. See the hook_field_widget_form() function for more information.
+   * A form element array containing basic properties for the widget:
+   *  - #entity_type: The name of the entity the field is attached to.
+   *  - #bundle: The name of the field bundle the field is contained in.
+   *  - #field_name: The name of the field.
+   *  - #language: The language the field is being edited in.
+   *  - #field_parents: The 'parents' space for the field in the form. Most
+   *    widgets can simply overlook this property. This identifies the location
+   *    where the field values are placed within $form_state['values'], and is
+   *    used to access processing information for the field through the
+   *    field_form_get_state() and field_form_set_state() functions.
+   *  - #columns: A list of field storage columns of the field.
+   *  - #title: The sanitized element label for the field instance, ready for
+   *    output.
+   *  - #description: The sanitized element description for the field instance,
+   *    ready for output.
+   *  - #required: A Boolean indicating whether the element value is required;
+   *    for required multiple value fields, only the first widget's values are
+   *    required.
+   *  - #delta: The order of this item in the array of subelements; see
+   *    $delta above
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $widget['value'] = array(
       '#type' => 'value',
@@ -463,7 +424,6 @@ class TripalField {
   /**
    * Loads the field values from the underlying data store.
    *
-   * @param $field
    * @param $entity
    * @param $details
    *
@@ -489,7 +449,7 @@ class TripalField {
    *
    *
    */
-  public static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
   }
 

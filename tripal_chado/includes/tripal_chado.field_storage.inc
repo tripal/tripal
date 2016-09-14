@@ -287,9 +287,10 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // Allow the creating module to alter the value if desired.  The
         // module should do this if the field has any other form elements
         // that need populationg besides the value which was set above.
-        module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+        tripal_load_include_field_type($field_type);
         if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-          $field_type::load($field, $entity, array('record' => $record));
+          $tfield = new $field_type($field);
+          $tfield->load($entity, array('record' => $record));
         }
       }
 
@@ -300,10 +301,10 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 
         // Set an empty value by default, and let the hook function update it.
         $entity->{$field_name}['und'][0]['value'] = '';
-        $load_function = $field_type . '_load';
-        module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+        tripal_load_include_field_type($field_type);
         if (class_exists($field_type) && method_exists($field_type, 'load')) {
-          $field_type::load($field, $entity, array('record' => $record));
+          $tfield = new $field_type($field);
+          $tfield->load($entity, array('record' => $record));
         }
       }
 

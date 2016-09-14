@@ -39,6 +39,10 @@ class TripalEntityUIController extends EntityDefaultUIController {
       $matches = array();
       if (preg_match('/^bio_data_(.*?)$/', $bundle_name, $matches)) {
         $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+        if (!$bundle) {
+          throw new Exception(t("Cannot find bundle that matches: %bundle_name",
+              array('%bundle_name' => $bundle_name)));
+        }
         // Get the term for this bundle
         $term = entity_load('TripalTerm', array('id' => $matches[1]));
         $term = reset($term);

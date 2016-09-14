@@ -121,8 +121,7 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity, $field,
-      $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
       if ($item['value']) {
@@ -137,13 +136,12 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Get the field defaults.
     $fk_val = '';
@@ -272,14 +270,14 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
     $record = $details['record'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
 
     // Set some defauls for the empty record

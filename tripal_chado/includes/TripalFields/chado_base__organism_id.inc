@@ -130,8 +130,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  public static function formatterView(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     if (count($items) > 0) {
       $content = $items[0]['value']['label'];
@@ -152,14 +151,13 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::widget()
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $settings = $field['settings'];
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     $organism_id = 0;
     if (count($items) > 0 and array_key_exists($field_table . '__organism_id', $items[0])) {
@@ -187,15 +185,15 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
     $record = $details['record'];
-    $settings = $field['settings'];
+    $settings = $this->field['settings'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
@@ -252,7 +250,7 @@ class chado_base__organism_id extends TripalField {
   public static function fieldSettingsForm($field, $instance, $has_data) {
     $element = parent::fieldSettingsForm($field, $instance, $has_data);
 
-    $settings = $field['settings'];
+    $settings = $this->field['settings'];
 
     $element['instructions'] = array(
       '#type' => 'item',

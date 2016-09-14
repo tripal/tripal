@@ -145,9 +145,9 @@ return;
       }
 
       // Allow the fields to alter the default selections from above.
-      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+      tripal_load_include_field_type($field_type);
       if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-        $field_obj = new $field_type();
+        $field_obj = new $field_type($field);
         $field_obj->views_data_alter($data['tripal_entity'][$field_name], $field, $entity_info);
       }
     }

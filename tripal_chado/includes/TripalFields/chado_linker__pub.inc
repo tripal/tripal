@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker_pub extends TripalField {
+class chado_linker__pub extends TripalField {
 
   // The default lable for this field.
   public static $default_label = 'Publications';
@@ -125,11 +125,10 @@ class chado_linker_pub extends TripalField {
   /**
    * @see TripalField::formatterView()
    */
-  static function formatterView(&$element, $entity_type, $entity, $field,
-      $instance, $langcode, $items, $display) {
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $list_items = array();
-    $chado_table = $field['settings']['chado_table'];
+    $chado_table = $this->field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item[$chado_table . '__pub_id']) {
         $pub = chado_generate_var('pub', array('pub_id' => $item[$chado_table . '__pub_id']));
@@ -156,15 +155,14 @@ class chado_linker_pub extends TripalField {
   /**
    * @see TripalField::widgetForm()
    */
-  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
+  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];
-    $field_name = $field['field_name'];
+    $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
-    $table_name = $field['settings']['chado_table'];
-    $base_table = $field['settings']['base_table'];
+    $table_name = $this->field['settings']['chado_table'];
+    $base_table = $this->field['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -178,7 +176,7 @@ class chado_linker_pub extends TripalField {
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
-    if (array_key_exists($delta, $items)) {
+    if (count($items) > 0 and array_key_exists($delta, $items)) {
       $record_id = $items[$delta][$table_name . '__' . $pkey];
       $fkey_value = $items[$delta][$table_name . '__' . $fkey];
       $pub_id = $items[$delta][$table_name . '__pub_id'];
@@ -197,14 +195,14 @@ class chado_linker_pub extends TripalField {
 
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-    $widget['#element_validate'] = array('chado_linker__pub_widget_validate');
+//    $widget['#element_validate'] = array('chado_linker__pub_widget_validate');
     $widget['#theme'] = 'chado_linker__pub_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget[$table_name . '__' . $pkey] = array(
@@ -238,14 +236,14 @@ class chado_linker_pub extends TripalField {
   /**
    * @see TripalField::load()
    */
-  static function load($field, $entity, $details = array()) {
+  public function load($entity, $details = array()) {
 
     $record = $details['record'];
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
