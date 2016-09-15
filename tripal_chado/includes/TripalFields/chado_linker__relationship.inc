@@ -841,41 +841,56 @@ class chado_linker__relationship extends TripalField {
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
     //dpm($form);dpm($form_state);
-     $settings = $form_state['values']['instance']['settings']['relationships'];
+    $settings = $form_state['values']['instance']['settings']['relationships'];
 
-     // Make sure the supplied types are valid cvterms
-     if (isset($settings['relationship_types'])) {
-       $rel_types = explode(PHP_EOL, $settings['relationship_types']);
-       foreach($rel_types AS $type) {
-         // Ignore empty lines
-         if (trim($type) == '') {
-           continue;
-         }
-         $term = tripal_get_cvterm(array('name' => trim($type)));
-         // Don't save the form  if a term can not be found or it matches more than one cvterm
-         if (!isset($term->cvterm_id)) {
-           form_set_error(
-             "instance][settings][relationships][relationship_types",
-             t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
+    // Make sure only one option is selected
+    $option1 = isset($settings['option1_vocabs']) && (!key_exists(0, $settings['option1_vocabs']) || count($settings['option1_vocabs']) > 1);
+    $option2 = isset($settings['option2_vocab']) && $settings['option2_vocab'];
+    $option3 = isset($settings['relationship_types']) && trim($settings['relationship_types']);
+
+     if ($option1 && ($option2 || $option3) == 1 ||
+          $option2 && ($option1 || $option3) == 1 ||
+          $option3 && ($option1 || $option2) == 1
+         ) {
+       form_set_error(
+           "instance][settings][relationships",
+           t("Only one option is allowed")
            );
-         }
-       }
      }
-     // Make sure child relationship types are using a valid cvterm
-     if (isset($settings['option2_parent']) && $settings['option2_parent']) {
-       $cv_id = $settings['option2_vocab'];
-       $supertype = $settings['option2_parent'];
-       $term = tripal_get_cvterm(array(
-         'name' => trim($supertype),
-         'cv_id' => $cv_id
-       ));
-       if (!isset($term->cvterm_id)) {
-         form_set_error(
-           "instance][settings][relationships][option2_parent",
-           t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype))
-         );
-       }
-     }
+     
+    // Make sure the supplied types are valid cvterms
+    if (isset($settings['relationship_types'])) {
+      $rel_types = explode(PHP_EOL, $settings['relationship_types']);
+      foreach($rel_types AS $type) {
+        // Ignore empty lines
+        if (trim($type) == '') {
+          continue;
+        }
+        $term = tripal_get_cvterm(array('name' => trim($type)));
+        // Don't save the form  if a term can not be found or it matches more than one cvterm
+        if (!isset($term->cvterm_id)) {
+          form_set_error(
+            "instance][settings][relationships][relationship_types",
+            t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
+          );
+        }
+      }
+    }
+    // Make sure child relationship types are using a valid cvterm
+    if (isset($settings['option2_parent']) && $settings['option2_parent']) {
+      $cv_id = $settings['option2_vocab'];
+      $supertype = $settings['option2_parent'];
+      $term = tripal_get_cvterm(array(
+        'name' => trim($supertype),
+        'cv_id' => $cv_id
+      ));
+      if (!isset($term->cvterm_id)) {
+        form_set_error(
+          "instance][settings][relationships][option2_parent",
+          t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype))
+        );
+      }
+    }
   }
 }
 
