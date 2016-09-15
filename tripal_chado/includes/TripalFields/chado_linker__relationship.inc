@@ -118,11 +118,16 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
-
+    
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
+    
+    // Get the instance settings
+    $instance = $this->instance;
+    $settings = $instance['settings']['relationships'];
+    //dpm($settings);
 
     // Get the FK column that links to the base table.
     $chado_table = $this->field['settings']['chado_table'];
