@@ -517,8 +517,8 @@ class TripalField {
     //       '#collapsible' => TRUE,
     //       '#tree' => TRUE,
     //     );
-    //$element['#field'] = $this->field;
-    //$element['#instance'] = $this->instance;
+    $element['#field'] = $this->field;
+    $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
 
     return $element;
@@ -568,8 +568,8 @@ class TripalField {
 //       '#collapsible' => TRUE,
 //       '#tree' => TRUE,
 //     );
-//    $element['#field'] = $this->field;
-//    $element['#instance'] = $this->instance;
+    $element['#field'] = $this->field;
+    $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_settings_form_validate';
 
     return $element;

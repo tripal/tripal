@@ -249,7 +249,7 @@ function tripal_field_instance_settings_form_validate($form, &$form_state) {
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $form = $tfield->instanceSettingsFormValidate($field, $instance, $form, $form_state);
+    $form = $tfield->instanceSettingsFormValidate($form, $form_state);
   }
 }
 
