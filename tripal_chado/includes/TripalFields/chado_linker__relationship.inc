@@ -133,6 +133,7 @@ class chado_linker__relationship extends TripalField {
     $option1_vocabs = $settings['option1_vocabs'];
     $option1_test = $option1_vocabs;
     $option2_vocab = $settings['option2_vocab'];
+    $option2_parent = $settings['option2_parent'];
     $option3_rtypes = $settings['relationship_types'];
 
     // Get the FK column that links to the base table.
@@ -269,7 +270,52 @@ class chado_linker__relationship extends TripalField {
     } 
     // Option 2: Child terms of a selected cvterm
     else if ($option2_vocab && !$instance_default) {
-
+      $parent_term = tripal_get_cvterm(
+        array(
+          'cv_id' => $option2_vocab,
+          'name' => $option2_parent
+        )
+      );
+      //Try getting the term by using the synonym
+      if(!$parent_term) {
+        $synonym = tripal_get_cvterm(
+            array(
+              'synonym' => array(
+                'name' => trim($option2_parent),
+              )
+            )
+            );
+        if ($synonym && $synonym->cv_id->cv_id == $option2_vocab) {
+          $parent_term = $synonym;
+        }
+      }
+      $sql = 
+        "SELECT 
+           subject_id,
+           (SELECT name from {cvterm} where cvterm_id = subject_id) AS name
+         FROM {cvtermpath}
+         WHERE
+           object_id = :parent_cvterm_id
+         AND
+           cv_id = :parent_cv_id
+       ";
+      $results = 
+        chado_query(
+          $sql, 
+          array(
+            ':parent_cvterm_id' => $parent_term->cvterm_id, 
+            ':parent_cv_id' => $parent_term->cv_id->cv_id
+          )
+        );
+      while($child = $results->fetchObject()) {
+        $rtype_options[$child->subject_id] = $child->name;
+      }
+      $widget['type_name'] = array(
+        '#type' => 'select',
+        '#title' => t('Relationship Type'),
+        '#options' => $rtype_options,
+        '#default_value' => $default_term,
+      );
     }
     // Option 1: All terms of selected vocabularies
     else if (array_pop($option1_test) && !$instance_default) {
@@ -903,40 +949,35 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::instanceSettingsFormValidate()
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
-    //dpm($form);dpm($form_state);
+
+    // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];
+    $form_state['values']['instance']['settings']['relationships']['relationship_types']= trim($settings['relationship_types']);
 
     // Make sure only one option is selected
     $option1test = $settings['option1_vocabs'];
     $option1 = isset($settings['option1_vocabs']) && array_pop($option1test);
-    $option2 = isset($settings['option2_vocab']) && $settings['option2_vocab'];
+    $option2 = (isset($settings['option2_vocab']) && $settings['option2_vocab']) || $settings['option2_parent'];
     $option3 = isset($settings['relationship_types']) && trim($settings['relationship_types']);
-
-     if ($option1 && ($option2 || $option3) == 1 ||
-          $option2 && ($option1 || $option3) == 1 ||
+    if ($option1 && ($option2 || $option3) == 1 ||
+         $option2 && ($option1 || $option3) == 1 ||
           $option3 && ($option1 || $option2) == 1
-         ) {
-       form_set_error(
-           "instance][settings][relationships",
-           t("Only one option is allowed")
-           );
-     }
+        ) {
+      form_set_error(
+        "instance][settings][relationships",
+         t("Only one option is allowed to limit the relationship types.")
+      );
+      return;
+    }
      
-    // Make sure the supplied types are valid cvterms
-    if (isset($settings['relationship_types'])) {
+    // For option3, make sure the supplied types are valid cvterms
+    if ($option3) {
       $rel_types = explode(PHP_EOL, $settings['relationship_types']);
       foreach($rel_types AS $type) {
         $type =  trim($type);
         // Ignore empty lines
         if ($type == '') {
           continue;
-        }
-        // If type contains '|', parse it as 'vocabulary|cvterm'
-        $cv = '';
-        if (strpos($type, '|')) {
-          $tmp = explode('|', $type, 2);
-          $type = trim($tmp[1]);
-          $cv = tripal_get_cv(array('name' => trim($tmp[0])));
         }
         // Find the matching cvterm
         $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
@@ -946,35 +987,84 @@ class chado_linker__relationship extends TripalField {
           $terms[] = $obj;
         }
         // Don't save the form  if a term can not be found or it matches more than one cvterm
+        $cv = '';
         if (count($terms) == 0) {
-          form_set_error(
-            "instance][settings][relationships][relationship_types",
-            t("The term '@type' can not be found.", array('@type' => $type))
-          );
-        }
-        else if (count($terms) > 1) {
-          $term = '';
-          if ($cv) {
-            $term = tripal_get_cvterm(array('name' => $type, 'cv_id' => $cv->cv_id));
+          // If a term can not be found, maybe the type contains '|', parse it as 'vocabulary|cvterm'
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
+              }
+            }
+            else {
+              $cv = $tmp[0];
+            }
           }
-          if(!$term) {
+          if (count($terms) != 1) {
+            $message = "The term '@type' can not be found.";
+            $token = array('@type' => $type);
+            if ($cv) {
+              $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
+              $token['@vocab'] = $cv;
+            }
             form_set_error(
               "instance][settings][relationships][relationship_types",
-              t("The term '@type' matches more than one term. Use 'vocabulary|term' to specify
-                  the vocabulary used for the term.", array('@type' => $type))
+              t($message, $token)
+            );
+          }
+        }
+        else if (count($terms) > 1) {
+          // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if ($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
+              }
+            }
+          }
+          if(count($terms) != 1) {
+            form_set_error(
+              "instance][settings][relationships][relationship_types",
+              t("The term '@type' matches more than one term. Please specify its vocabulary in
+                  the format of 'vocabulary|@type'.", array('@type' => $type))
             );
           }
         }
       }
     }
-    // Make sure child relationship types are using a valid cvterm
-    if (isset($settings['option2_parent']) && $settings['option2_parent']) {
+    
+    // For option2: Make sure the parent term is a valid cvterm
+    if ($option2) {
       $cv_id = $settings['option2_vocab'];
       $supertype = $settings['option2_parent'];
       $term = tripal_get_cvterm(array(
         'name' => trim($supertype),
-        'cv_id' => $cv_id
+        'cv_id' => $cv_id,
       ));
+      // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
+      // a cvterm, try cvtermsynonym
+      if (!$term) {
+        $synonym = tripal_get_cvterm(
+          array(
+            'synonym' => array(
+              'name' => trim($supertype),
+            )
+          )
+        );
+        if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
+          $term = $synonym;
+        }
+      }
       if (!isset($term->cvterm_id)) {
         form_set_error(
           "instance][settings][relationships][option2_parent",
