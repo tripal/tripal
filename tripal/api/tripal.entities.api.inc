@@ -789,9 +789,9 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
         $field_ids[$field['id']] = array($entity->id);
       }
       $entities = array($entity->id => $entity);
-      module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
-        $entities, FIELD_LOAD_CURRENT, $field_ids, array());
     }
+    module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
+        $entities, FIELD_LOAD_CURRENT, $field_ids, array());
   }
 
   // Now that all necessary fields are attached process the tokens.

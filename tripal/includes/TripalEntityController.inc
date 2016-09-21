@@ -488,8 +488,7 @@ class TripalEntityController extends EntityAPIController {
     // to keep looking them up in our loop below).
     $instances = array();
 
-    // Add in the content_type field by default. It should always be
-    // attached.
+    // Add in the content_type field by default. It should always be attached.
     $ids = array();
     $ct = field_info_field('content_type');
     $ids[] = $ct['id'];
@@ -505,8 +504,6 @@ class TripalEntityController extends EntityAPIController {
         $function = 'field_attach_load';
       }
       foreach ($queried_entities as $entity) {
-        $entity_ids = array();
-        $entity_ids += $field_ids;
         // Iterate through the fields and find those that are set to
         // 'auto_attach' and which are attached to this bundle.
         foreach ($fields as $field) {
@@ -527,34 +524,31 @@ class TripalEntityController extends EntityAPIController {
                 if (array_key_exists('settings', $instance) and
                     array_key_exists('auto_attach', $instance['settings']) and
                     $instance['settings']['auto_attach'] === TRUE) {
-                  $entity_ids[] = $field['id'];
+                  $field_ids[] = $field['id'];
                 }
                 // If the field is not auto attached then we want to add an
                 // empty default valuea and add an 'unattached' key to
                 // clue in other things that there may be data, it's just
                 // not attached.
                 else {
-//                   $value = array(
-//                     'und' => array(
-//                       0 => array(
-//                         'value' => '',
-//                         '#unattached' => TRUE,
-//                       ),
-//                     ),
-//                   );
-//                   $entity->$field_name = $value;
+                   $value = array(
+                     'und' => array(
+                       0 => array(
+                         'value' => '',
+                         '#unattached' => TRUE,
+                       ),
+                     ),
+                   );
+                   $entity->$field_name = $value;
                 }
               }
             }
           }
         }
 
-        // Iterate through each field that should be added and attach it.
-        foreach ($entity_ids as $field_id) {
-          $options = array();
-          $options['field_id'] = $field_id;
-          $function($this->entityType, array($entity->id => $entity), FIELD_LOAD_CURRENT, $options);
-        }
+        $options = array();
+        $options['field_id'] = $field_ids;
+        $function($this->entityType, array($entity->id => $entity), FIELD_LOAD_CURRENT, $options);
       }
     }
 

@@ -188,18 +188,11 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   $langcode = $language->language;
 
   foreach ($entities as $id => $entity) {
-    // The chado_xxxx properties are added to the entity in the
-    // tripal_chado_entity_load() hook which unfortunately is called after
-    // attaching fields.  So, we may not have these properties. If that's
-    // the case we can get them by querying the chado_entity table directly.
-    // The chado_xxxx properites will be here in the case of syncing
-    // records.
-    // TODO: perhaps we should add a hook_entity_preattach() hook?
     if (property_exists($entity, 'chado_table')) {
       // Get the base table and record id for the fields of this entity.
       $base_table = $entity->chado_table;
       $type_field = $entity->chado_column;
-      $record_id = $entity->chado_record_id;
+      $record_id  = $entity->chado_record_id;
     }
     else {
       // Get the base table and record id for the fields of this entity.
@@ -214,7 +207,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       // Get some values needed for loading the values from Chado.
       $base_table = isset($details->data_table) ? $details->data_table : '';
       $type_field = isset($details->field) ? $details->field : '';
-      $record_id = isset($details->record_id) ? $details->record_id : '';
+      $record_id  = isset($details->record_id) ? $details->record_id : '';
     }
 
     // Get this table's schema.
@@ -242,7 +235,6 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     // that need to be selected from each of the tables represented.
     $tables = array();
     foreach ($fields as $field_id => $ids) {
-
       // By the time this hook runs, the relevant field definitions have been
       // populated and cached in FieldInfo, so calling field_info_field_by_id()
       // on each field individually is more efficient than loading all fields in

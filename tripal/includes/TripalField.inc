@@ -99,18 +99,6 @@ class TripalField {
   public function __construct($field, $instance = NULL) {
     $this->field = $field;
     $this->instance = $instance;
-
-    // Include any instances that have been created for this field.
-    if (is_array($this->field) and array_key_exists('id', $this->field)) {
-      $instances = db_select('field_config_instance', 'fci')
-        ->fields('fci')
-        ->condition('field_id', $this->field['id'])
-        ->execute();
-
-      while ($instance = $instances->fetchObject()) {
-        $this->instances[$instance->field_name] = $instance;
-      }
-    }
   }
 
   // --------------------------------------------------------------------------

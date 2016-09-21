@@ -244,6 +244,7 @@ class chado_linker__pub extends TripalField {
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
