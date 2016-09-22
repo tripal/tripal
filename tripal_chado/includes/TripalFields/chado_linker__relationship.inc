@@ -384,7 +384,6 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::validate()
    */
   function widgetFormValidate($entity_type, $entity, $langcode, $items, &$errors) {
-
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
@@ -874,6 +873,7 @@ class chado_linker__relationship extends TripalField {
           term for the relationship type.'),
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
+      '#theme' => 'chado_linker__relationship_instance_settings'
     );
 //     $element['instructions'] = array(
 //       '#type' => 'item',
@@ -881,7 +881,6 @@ class chado_linker__relationship extends TripalField {
 //         as the relationship types. This select box will replace the vocabulary select box if the
 //         following value is set.'
 //     );
-
     $vocs = tripal_get_cv_select_options();
     $element['relationships']['option1'] = array(
       '#type' => 'item',
@@ -1102,6 +1101,32 @@ function theme_chado_linker__relationship_widget($variables) {
         </div>
       </div>
     ";
+  return $layout;
+}
+
+function theme_chado_linker__relationship_instance_settings ($variables) {
+  $element = $variables['element'];
+  $option1 = $element['option1'];
+  $option1_vocabs = $element['option1_vocabs'];
+  $option2 = $element['option2'];
+  $option2_vocab = $element['option2_vocab'];
+  $option2_parent = $element['option2_parent'];
+  $option3 = $element['option3'];
+  $rtype = $element['relationship_types'];
+  $layout = drupal_render($option1);
+  $layout .= drupal_render($option1_vocabs);
+  $layout .=
+    drupal_render($option2) .
+    "<div class=\"chado-linker--relationship-instance-settings-option2\">" .
+        "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
+            drupal_render($option2_vocab) .
+        "</div>" .
+        "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
+            drupal_render($option2_parent) .
+        "</div>" .
+    "</div>";
+  $layout .= drupal_render($option3);
+  $layout .= drupal_render($rtype);
   return $layout;
 }
 

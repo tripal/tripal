@@ -598,6 +598,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       'render element' => 'element',
       'file' => 'includes/TripalFields/chado_linker__relationship.inc',
     ),
+    'chado_linker__relationship_instance_settings' => array(
+      'render element' => 'element',
+      'file' => 'includes/TripalFields/chado_linker__relationship.inc',
+    ),
     'chado_linker__pub_widget' => array(
       'render element' => 'element',
       'file' => 'includes/TripalFields/chado_linker__pub.inc',

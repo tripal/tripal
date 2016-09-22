@@ -4,9 +4,16 @@
 .primary-dbxref-widget-item,
 .secondary-dbxref-widget-item,
 .kvproperty-adder-widget-item,
-.chado-linker--relationship-widget-item {
+.chado-linker--relationship-widget-item,
+.chado-linker--relationship-instance-settings-option2-item {
    float: left;
    margin-right: 10px;
+}
+
+.chado-linker--relationship-instance-settings-option2 {
+  float:left;
+  clear:both;
+  width:100%;
 }
 
 .primary-dbxref-widget-links,
