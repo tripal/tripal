@@ -242,32 +242,44 @@ class chado_linker__relationship extends TripalField {
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
 
-    // Option 3: Custom list of Relationship Types
+    // Getting default values
+    $default_voc = '';
+    if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['vocabulary'])) {
+      $default_voc = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['vocabulary'];
+    }
     $default_term = '';
+    if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'])) {
+      $default_term = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'];
+    }
+    $default_type_id = '';
+    if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'])) {
+      $default_type_id = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'];
+    }
+    // Option 3: Custom list of Relationship Types
     $rtype_options = array();
     $rtype_options[] = 'Select a Type';
     if ($option3_rtypes) {
       $rtypes = explode(PHP_EOL, $option3_rtypes);
-      foreach($rtypes AS $type) {
+      foreach($rtypes AS $rtype) {
         // Ignore empty lines
-        if (trim($type) == '') {
+        if (trim($rtype) == '') {
           continue;
         }
-        $term = tripal_get_cvterm(array('name' => trim($type)));
+        $term = tripal_get_cvterm(array('name' => trim($rtype)));
         // Try to get term with vocabulary specified
         if (!$term) {
-          $tmp = explode('|', trim($type), 2);
+          $tmp = explode('|', trim($rtype), 2);
           $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-          $type = trim($tmp[1]);
-          $term = tripal_get_cvterm(array('name' => $type, 'cv_id' => $cv->cv_id));
+          $rtype = trim($tmp[1]);
+          $term = tripal_get_cvterm(array('name' => $rtype, 'cv_id' => $cv->cv_id));
         }
         $rtype_options[$term->cvterm_id] = $term->name;
       }
-      $widget['type_name'] = array(
+      $widget['type_id'] = array(
         '#type' => 'select',
         '#title' => t('Relationship Type'),
         '#options' => $rtype_options,
-        '#default_value' => $default_term,
+        '#default_value' => $default_type_id,
       );
     }
     // Option 2: Child terms of a selected cvterm
@@ -310,11 +322,11 @@ class chado_linker__relationship extends TripalField {
       while($child = $results->fetchObject()) {
         $rtype_options[$child->subject_id] = $child->name;
       }
-      $widget['type_name'] = array(
+      $widget['type_id'] = array(
         '#type' => 'select',
         '#title' => t('Relationship Type'),
         '#options' => $rtype_options,
-        '#default_value' => $default_term,
+        '#default_value' => $default_type_id,
       );
     }
     // Option 1: All terms of selected vocabularies
@@ -324,11 +336,11 @@ class chado_linker__relationship extends TripalField {
       while ($obj = $results->fetchObject()) {
         $rtype_options[$obj->cvterm_id] = $obj->name;
       }
-      $widget['type_name'] = array(
+      $widget['type_id'] = array(
         '#type' => 'select',
         '#title' => t('Relationship Type'),
         '#options' => $rtype_options,
-        '#default_value' => $default_term,
+        '#default_value' => $default_type_id,
       );
     }
     // Default option:
@@ -344,6 +356,9 @@ class chado_linker__relationship extends TripalField {
           $cv_id = $cvterm->cv_id->cv_id;
           $default_term = $cvterm->name;
         }
+      }
+      if (!$cv_id) {
+        $cv_id = $default_voc;
       }
       $widget['vocabulary'] = array(
         '#type' => 'select',
@@ -397,19 +412,20 @@ class chado_linker__relationship extends TripalField {
       $subject_id = $item[$field_table . '__subject_id'];
       $object_id = $item[ $field_table . '__object_id'];
       $type_id = $item[$field_table . '__type_id'];
+      $type_id = $type_id ? $type_id : $item['type_id'];
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
 
 
       // If the row is empty then just continue, there's nothing to validate.
-      if (!$type_name and !$subject_name and !$object_name) {
+      if (!$type_id and !$type_name and !$subject_name and !$object_name) {
         continue;
       }
 
       // Make sure we have values for all of the fields.
       $form_error = FALSE;
-      if (!$type_name) {
+      if (!$type_name && !$type_id) {
         $errors[$this->field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
           'message' => t("Please provide the type of relationship."),
@@ -542,12 +558,13 @@ class chado_linker__relationship extends TripalField {
       $subject_id = $item[$field_table . '__subject_id'];
       $object_id = $item[ $field_table . '__object_id'];
       $type_id = $item[$field_table . '__type_id'];
+      $type_id = $type_id ? $type_id : $item['type_id'];
       $type_name = $item['type_name'];
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
 
       // If the row is empty then skip this one, there's nothing to validate.
-      if (!$type_name and !$subject_name and !$object_name) {
+      if (!$type_id and !$type_name and !$subject_name and !$object_name) {
         continue;
       }
 
@@ -1095,6 +1112,9 @@ function theme_chado_linker__relationship_widget($variables) {
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
           drupal_render($element['type_name']) . "
+        </div>
+        <div class=\"chado-linker--relationship-widget-item\">" .
+          drupal_render($element['type_id']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
           drupal_render($element['object_name']) . "
