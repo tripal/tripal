@@ -376,7 +376,7 @@ function tripal_feature_job_describe_args($callback, $args) {
 
     $new_args['Sequence Type'] = $args[2];
 
-    if (isset($args[14])) { 
+    if (isset($args[14])) {
       $new_args['Name Match Type'] = $args[14];
       $new_args['Name RE'] = $args[4];
       $new_args['Unique Name RE'] = $args[5];
@@ -541,13 +541,19 @@ function tripal_feature_match_features_page($id) {
   if ($num_matches == 1) {
     drupal_goto("node/" . $curr_match->nid);
   }
-  if ($num_matches == 0) {
-    return "<p>No features matched the given name '$id'</p>";
-  }
 
   $table_attrs = array('class' => 'tripal-data-table');
+  $params = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => $table_attrs,
+    'caption' => '',
+    'empty' => "No features matched the given name '$id'",
+    'sticky' => FALSE,
+    'colgroups' => array(),
+  );
   $output = "<p>The following features match the name '$id'.</p>";
-  $output .= theme_table($header, $rows, $table_attrs, $caption);
+  $output .= theme_table($params);
   return $output;
 }
 
