@@ -330,7 +330,7 @@ class chado_linker__relationship extends TripalField {
       );
     }
     // Option 1: All terms of selected vocabularies
-    else if (array_pop($option1_test)) {
+    else if ($option1_test && array_pop($option1_test)) {
       $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cv_id IN (:cv_id) ORDER BY name";
       $results = chado_query($sql, array(':cv_id' => $option1_vocabs));
       while ($obj = $results->fetchObject()) {
