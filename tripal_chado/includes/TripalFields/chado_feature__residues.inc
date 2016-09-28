@@ -24,109 +24,7 @@ class chado_feature__residues extends TripalField {
   // this field.
   public static $default_storage = 'field_chado_storage';
 
-  /**
-   * @see TripalField::setFieldName()
-   */
-  protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
 
-    $this->field_name = 'feature__residues';
-  }
-
-  /**
-   * @see TripalField::create_info()
-   */
-  function createInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    return array(
-      'field_name' => $this->field_name,
-      'type' => 'chado_feature__residues',
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'residues',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  function createInstanceInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    return array(
-      'field_name' => $this->field_name,
-      'entity_type' => $this->entity_type,
-      'bundle' => $this->bundle->name,
-      'label' => 'Sequences',
-      'description' => 'All available sequences for this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-      ),
-      'widget' => array(
-        'type' => 'chado_feature__residues_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'chado_feature__residues_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
-
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_feature__residues_widget' => array(
-        'label' => t('Sequence'),
-        'field types' => array('chado_feature__residues'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  static function formatterInfo() {
-    return array(
-      'chado_feature__residues_formatter' => array(
-        'label' => t('Sequences'),
-        'field types' => array('chado_feature__residues'),
-      ),
-    );
-  }
   /**
    * @see TripalField::formatterView()
    */
@@ -285,7 +183,7 @@ class chado_feature__residues extends TripalField {
       ),
     );
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
-    $featureloc_sequences = self::get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
+    $featureloc_sequences = $this->get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
 
     // Add in the coding sequences. It's faster to provide the SQL rather than
     // to use chado_generate_var based on the type.
@@ -376,7 +274,7 @@ class chado_feature__residues extends TripalField {
    * @param unknown $featurelocs
    * @return multitype:|Ambigous <multitype:, an>
    */
-  private static function get_featureloc_sequences($feature_id, $featurelocs) {
+  private function get_featureloc_sequences($feature_id, $featurelocs) {
 
     // if we don't have any featurelocs then no point in continuing
     if (!$featurelocs) {
@@ -385,7 +283,7 @@ class chado_feature__residues extends TripalField {
 
     // get the list of relationships (including any aggregators) and iterate
     // through each one to find information needed to color-code the reference sequence
-    $relationships = self::get_aggregate_relationships($feature_id);
+    $relationships = $this->get_aggregate_relationships($feature_id);
     if (!$relationships) {
       return array();
     }
@@ -395,7 +293,7 @@ class chado_feature__residues extends TripalField {
     // locations
     foreach ($relationships as $rindex => $rel) {
       // get the featurelocs for each of the relationship features
-      $rel_featurelocs = self::get_featurelocs($rel->subject_id, 'as_child', 0);
+      $rel_featurelocs = $this->get_featurelocs($rel->subject_id, 'as_child', 0);
       foreach ($rel_featurelocs as $rfindex => $rel_featureloc) {
         // keep track of this unique source feature
         $src = $rel_featureloc->src_feature_id . "-" . $rel_featureloc->src_cvterm_id;
@@ -520,7 +418,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private static function get_aggregate_relationships($feature_id, $substitute=1,
+  private function get_aggregate_relationships($feature_id, $substitute=1,
       $levels=0, $base_type_id=NULL, $depth=0) {
 
     // we only want to recurse to as many levels deep as indicated by the
@@ -531,7 +429,7 @@ class chado_feature__residues extends TripalField {
     }
 
     // first get the relationships for this feature
-    return self::get_relationships($feature_id, 'as_object');
+    return $this->get_relationships($feature_id, 'as_object');
 
   }
 
@@ -545,7 +443,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private static function get_relationships($feature_id, $side = 'as_subject') {
+  private function get_relationships($feature_id, $side = 'as_subject') {
     // get the relationships for this feature.  The query below is used for both
     // querying the object and subject relationships
     $sql = "
@@ -609,7 +507,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private static function get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
+  private function get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
 
     $sql = "
     SELECT

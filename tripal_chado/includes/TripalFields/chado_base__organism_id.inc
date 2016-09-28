@@ -25,109 +25,6 @@ class chado_base__organism_id extends TripalField {
 
 
   /**
-   * @see TripalField::create_info()
-   */
-  public function createInfo() {
-
-    if (!$this->can_attach) {
-      return;
-    }
-
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    return array(
-      'field_name' => $this->field_name,
-      'type' => 'chado_base__organism_id',
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'organism_id',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'organism_id'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  public function createInstanceInfo() {
-
-    if (!$this->can_attach) {
-      return;
-    }
-
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
-
-    $is_required = FALSE;
-    $schema = chado_get_schema($table_name);
-    if (array_key_exists('not null', $schema['fields']['organism_id']) and
-        $schema['fields']['organism_id']['not null']) {
-      $is_required = TRUE;
-    }
-
-    return array(
-      'field_name' => $this->field_name,
-      'entity_type' => $this->entity_type,
-      'bundle' => $this->bundle->name,
-      'label' => 'Organism',
-      'description' => 'Select an organism.',
-      'required' => $is_required,
-      'settings' => array(
-        'auto_attach' => TRUE,
-      ),
-      'widget' => array(
-        'type' => 'chado_base__organism_id_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'chado_base__organism_id_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
-
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_base__organism_id_widget' => array(
-        'label' => t('Organism Select'),
-        'field types' => array('chado_base__organism_id')
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  public static function formatterInfo() {
-    return array(
-      'chado_base__organism_id_formatter' => array(
-        'label' => t('Organism'),
-        'field types' => array('chado_base__organism_id'),
-        'settings' => array(
-        ),
-      ),
-    );
-  }
-
-  /**
    * @see TripalField::formatterView()
    */
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
@@ -311,14 +208,6 @@ class chado_base__organism_id extends TripalField {
     return $element;
   }
 
-  /**
-   *
-   * @param unknown $data
-   * @param string $criteria
-   */
-  public static function sort(&$data, $criteria = 'ASC') {
-
-  }
 }
 
 

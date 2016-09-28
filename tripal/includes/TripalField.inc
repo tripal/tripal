@@ -365,6 +365,7 @@ class TripalField {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
+
   }
 
   /**

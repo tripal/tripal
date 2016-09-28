@@ -309,7 +309,6 @@ function tripal_formatter_settings_form($field, $instance,
  */
 function tripal_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
-
   $widget = $element;
   $field_type = $field['type'];
   $is_loaded = tripal_load_include_field_type($field_type);
