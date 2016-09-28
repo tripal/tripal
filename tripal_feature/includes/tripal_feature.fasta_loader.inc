@@ -451,16 +451,18 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
     if ($interval < 1) {
       $interval = 1;
     }
-    $inv_read = 0;
+    $intv_read = 0;
     $num_read = 0;
 
     // Iterate through the lines of the file. Keep a record for
     // where in the file each line is at for later import.
     $seqs = array();
     $num_seqs = 0;
+    $num_line = 0;
     $prev_pos = 0;
     $set_start = FALSE;
     while ($line = fgets($fh)) {
+      $num_line++;
       $num_read += strlen($line);
       $intv_read += strlen($line);
 
@@ -472,15 +474,16 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         $defline = preg_replace("/^>/", '', $line);
 
         // Get the feature name if a regular expression is provided.
+        $name = null;
         if ($re_name) {
           if (!preg_match("/$re_name/", $defline, $matches)) {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature name finds nothing. Line %line.", array(
-              '%line' => $i
+              '%line' => $num_line
             ));
           }
           elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
             tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array(
-              '%line' => $i
+              '%line' => $num_line
             ));
           }
           else {
@@ -493,7 +496,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
               tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array(
-                '%line' => $i));
+                '%line' => $num_line));
             }
             else {
               $name = trim($matches[1]);
@@ -501,7 +504,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           }
           else {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Cannot find a feature name. Line %line.", array(
-              '%line' => $i));
+              '%line' => $num_line));
           }
         }
 
@@ -509,7 +512,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
-              '%line' => $i));
+              '%line' => $num_line));
           }
           $uname = trim($matches[1]);
         }
@@ -522,19 +525,22 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           }
           else {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Cannot find a feature unique name. Line %line.", array(
-              '%line' => $i));
+              '%line' => $num_line));
           }
         }
 
         // Get the accession if a regular expression is provided.
-        preg_match("/$re_accession/", $defline, $matches);
-        if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
-             "Cannot add cross reference. Line %line.", array('%line' => $i
-            ));
-        }
-        else {
-          $accession = trim($matches[1]);
+        $accession = null;
+        if (!empty($re_accession) and !empty($db_id)) {
+            preg_match("/$re_accession/", $defline, $matches);
+            if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+              tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
+                 "Cannot add cross reference. Line %line.", array('%line' => $num_line
+                ));
+            }
+            else {
+              $accession = trim($matches[1]);
+            }
         }
 
         // Get the relationship subject
@@ -566,18 +572,18 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         $intv_read = 0;
         $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
         if ($name) {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+          print "Parsing Line $num_line (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
              " bytes.\r";
         }
         else {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+          print "Parsing Line $num_line (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
              " bytes.\r";
         }
         tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
       }
     }
     $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-    print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+    print "Parsing Line $num_line (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
        " bytes.\r";
     tripal_set_job_progress($job, 50);
 
