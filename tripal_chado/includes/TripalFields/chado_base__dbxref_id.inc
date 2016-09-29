@@ -23,101 +23,6 @@ class chado_base__dbxref_id extends TripalField {
   // this field.
   public static $default_storage = 'field_chado_storage';
 
-//   /**
-//    * @see TripalField::create_info()
-//    */
-//   function createInfo() {
-//     if (!$this->can_attach) {
-//       return;
-//     };
-
-//     $table_name = $this->details['chado_table'];
-//     $type_table = $this->details['chado_type_table'];
-//     $type_field = $this->details['chado_type_column'];
-//     $cv_id      = $this->details['chado_cv_id'];
-//     $cvterm_id  = $this->details['chado_cvterm_id'];
-
-
-//     return array(
-//       'field_name' => $this->field_name,
-//       'type' => 'chado_base__dbxref_id',
-//       'cardinality' => 1,
-//       'locked' => FALSE,
-//       'storage' => array(
-//         'type' => 'field_chado_storage',
-//       ),
-//       'settings' => array(
-//         'chado_table' => $table_name,
-//         'chado_column' => 'dbxref_id',
-//         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
-//       ),
-//     );
-//   }
-
-//   /**
-//    * @see TripalField::createInstanceInfo()
-//    */
-//   function createInstanceInfo() {
-//     if (!$this->can_attach) {
-//       return;
-//     }
-//     $table_name = $this->details['chado_table'];
-//     $type_table = $this->details['chado_type_table'];
-//     $type_field = $this->details['chado_type_column'];
-//     $cv_id      = $this->details['chado_cv_id'];
-//     $cvterm_id  = $this->details['chado_cvterm_id'];
-
-//     return array(
-//       'field_name' => $this->field_name,
-//       'entity_type' => $this->entity_type,
-//       'bundle' => $this->bundle->name,
-//       'label' => 'Accession',
-//       'description' => 'This field specifies the unique stable accession (ID) for
-//         this record. It requires that this site have a database entry.',
-//       'required' => FALSE,
-//       'settings' => array(
-//         'auto_attach' => TRUE,
-//       ),
-//       'widget' => array(
-//         'type' => 'chado_base__dbxref_id_widget',
-//         'settings' => array(
-//           'display_label' => 1,
-//         ),
-//       ),
-//       'display' => array(
-//         'default' => array(
-//           'label' => 'inline',
-//           'type' => 'chado_base__dbxref_id_formatter',
-//           'settings' => array(),
-//         ),
-//       ),
-//     );
-//   }
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_base__dbxref_id_widget' => array(
-        'label' => t('Accession'),
-        'field types' => array('chado_base__dbxref_id'),
-        'description' => t('This field specifies the unique stable accession (ID) for
-          this record. It requires that this site have a database entry.'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  static function formatterInfo() {
-    return array(
-      'chado_base__dbxref_id_formatter' => array(
-        'label' => t('Accession'),
-        'field types' => array('chado_base__dbxref_id'),
-        'settings' => array(),
-      ),
-    );
-  }
   /**
    * @see TripalField::formatterView()
    */
@@ -266,6 +171,73 @@ class chado_base__dbxref_id extends TripalField {
       '#markup' => l('Add a new database', 'admin/tripal/legacy/tripal_db/add', array('attributes' => array('target' => '_blank')))
     );
   }
+  
+  /**
+   * Callback function for validating the tripal_chado_dbxref_select_widget.
+   */
+  /**
+   * @see TripalField::submit()
+   */
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+    $field_name = $this->field['field_name'];
+    $field = $form_state['field'][$field_name]['und']['field'];
+    $settings = $field['settings'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    $field_prefix = $field_table . '__' . $field_column;
+  
+  
+    // If the form ID is field_ui_field_edit_form, then the user is editing the
+    // field's values in the manage fields form of Drupal.  We don't want
+    // to validate it as if it were being used in a data entry form.
+    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+      return;
+    }
+  
+    // Get the field values.
+    //   $fk_value = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
+    //   $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--dbxref_id');
+    //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
+    //   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
+    //   $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--version');
+    //   $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--description');
+  
+    // Make sure that if a database ID is provided that an accession is also
+    // provided.  Here we use the form_set_error function rather than the
+    // form_error function because the form_error will add a red_highlight
+    // around all of the fields in the fieldset which is confusing as it's not
+    // clear to the user what field is required and which isn't. Therefore,
+    // we borrow the code from the 'form_error' function and append the field
+    // so that the proper field is highlighted on error.
+    if (!$db_id and $accession) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    }
+    if ($db_id and !$accession) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--accession', t("A database and the accession must both be provided for the primary cross reference."));
+    }
+    if (!$db_id and !$accession and ($version or $description)) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    }
+  
+    // If user did not select a database, we want to remove dbxref_id from the
+    // field.
+    if (!$db_id) {
+      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_prefix . '--dbxref_id');
+      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_table . '__' . $field_column);
+    }
+    // If the dbxref_id does not match the db_id + accession then the user
+    // has selected a new dbxref record and we need to update the hidden
+    // value accordingly.
+    if ($db_id and $accession) {
+      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
+        tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, 0, $field_table . '__' . $field_column);
+        tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, 0, $field_prefix . '--dbxref_id');
+      }
+    }
+  }
 
   /**
    * @see TripalField::load()
@@ -313,70 +285,6 @@ class chado_base__dbxref_id extends TripalField {
         $field_table . '__' . $field_column . '--version'     => $dbxref->version,
         $field_table . '__' . $field_column . '--description' => $dbxref->description,
       );
-    }
-  }
-}
-
-/**
- * Callback function for validating the tripal_chado_dbxref_select_widget.
- */
-function chado_base__dbxref_id_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
-  $field = $form_state['field'][$field_name]['und']['field'];
-  $settings = $field['settings'];
-  $field_name = $field['field_name'];
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-  $field_prefix = $field_table . '__' . $field_column;
-
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-//   $fk_value = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
-//   $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--dbxref_id');
-//   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
-//   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
-//   $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--version');
-//   $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--description');
-
-  // Make sure that if a database ID is provided that an accession is also
-  // provided.  Here we use the form_set_error function rather than the
-  // form_error function because the form_error will add a red_highlight
-  // around all of the fields in the fieldset which is confusing as it's not
-  // clear to the user what field is required and which isn't. Therefore,
-  // we borrow the code from the 'form_error' function and append the field
-  // so that the proper field is highlighted on error.
-  if (!$db_id and $accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-  if ($db_id and !$accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--accession', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-  if (!$db_id and !$accession and ($version or $description)) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-
-  // If user did not select a database, we want to remove dbxref_id from the
-  // field.
-  if (!$db_id) {
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_prefix . '--dbxref_id');
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_table . '__' . $field_column);
-  }
-  // If the dbxref_id does not match the db_id + accession then the user
-  // has selected a new dbxref record and we need to update the hidden
-  // value accordingly.
-  if ($db_id and $accession) {
-    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-    if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, 0, $field_table . '__' . $field_column);
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, 0, $field_prefix . '--dbxref_id');
     }
   }
 }

@@ -251,8 +251,9 @@ class chado_linker__relationship extends TripalField {
     if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'])) {
       $default_term = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'];
     }
-    $default_type_id = '';
-    if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'])) {
+
+    $default_type_id = $type_id;
+    if (!$type_id && isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'])) {
       $default_type_id = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'];
     }
     // Option 3: Custom list of Relationship Types
@@ -281,6 +282,9 @@ class chado_linker__relationship extends TripalField {
         '#options' => $rtype_options,
         '#default_value' => $default_type_id,
       );
+      if ($type_id && !key_exists($type_id, $rtype_options)) {
+        form_set_error($this->field['field_name'] . '[' . $langcode . '][' . $delta . '][type_id]', 'Illegal option detected for Relationship Type. Please contact site administrator to fix the problem');
+      }
     }
     // Option 2: Child terms of a selected cvterm
     else if ($option2_vocab) {
@@ -328,6 +332,9 @@ class chado_linker__relationship extends TripalField {
         '#options' => $rtype_options,
         '#default_value' => $default_type_id,
       );
+      if ($type_id && !key_exists($type_id, $rtype_options)) {
+        form_set_error($this->field['field_name'] . '[' . $langcode . '][' . $delta . '][type_id]', 'Illegal option detected for Relationship Type. Please contact site administrator to fix the problem');
+      }
     }
     // Option 1: All terms of selected vocabularies
     else if ($option1_test && array_pop($option1_test)) {
@@ -342,6 +349,9 @@ class chado_linker__relationship extends TripalField {
         '#options' => $rtype_options,
         '#default_value' => $default_type_id,
       );
+      if ($type_id && !key_exists($type_id, $rtype_options)) {
+        form_set_error($this->field['field_name'] . '[' . $langcode . '][' . $delta . '][type_id]', 'Illegal option detected for Relationship Type. Please contact site administrator to fix the problem');
+      }
     }
     // Default option:
     else {
@@ -412,7 +422,7 @@ class chado_linker__relationship extends TripalField {
       $subject_id = $item[$field_table . '__subject_id'];
       $object_id = $item[ $field_table . '__object_id'];
       $type_id = $item[$field_table . '__type_id'];
-      $type_id = $type_id ? $type_id : $item['type_id'];
+      $type_id = isset($item['type_id']) ? $item['type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
@@ -558,7 +568,7 @@ class chado_linker__relationship extends TripalField {
       $subject_id = $item[$field_table . '__subject_id'];
       $object_id = $item[ $field_table . '__object_id'];
       $type_id = $item[$field_table . '__type_id'];
-      $type_id = $type_id ? $type_id : $item['type_id'];
+      $type_id = isset($item['type_id']) ? $type_id : $item['type_id'];
       $type_name = $item['type_name'];
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
@@ -1174,12 +1184,14 @@ function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_stat
 /**
  * An Ajax callback for the relationshp instance setting form.
  */
-function chado_linker__relationship_instance_settings_form_ajax_callback(&$form, $form_state) {
+function chado_linker__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
   $acpath  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
   $acpath .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'] . '/';
   $urlval  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'];
   $urlval .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'];
-
+  // Reset value if a different vocabulary is selected
+  $form['instance']['settings']['relationships']['option2_parent']['#value'] = NULL;
+  $form_state['values']['instance']['settings']['relationships']['option2_parent'] = NULL;
   $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'] = $acpath;
   $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'] = $urlval;
   return $form['instance']['settings']['relationships']['option2_parent'];

@@ -23,52 +23,6 @@ class chado_linker__cvterm extends TripalField {
   // this field.
   public static $default_storage = 'field_chado_storage';
 
-
-  /**
-   * @see TripalField::create_info()
-   */
-  function createInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-    // This field is only attached by the chado_linker__cvterm_addr field.
-  }
-  /**
-   * @see TripalField::createInstanceInfo()
-   */
-  function createInstanceInfo() {
-    if (!$this->can_attach) {
-      return;
-    }
-
-    // This field is only attached by the chado_linker__cvterm_addr field.
-  }
-  /**
-   * @see TripalField::widgetInfo()
-   */
-  public static function widgetInfo() {
-    return array(
-      'chado_linker__cvterm_widget' => array(
-        'label' => t('Annotations'),
-        'field types' => array('chado_linker__cvterm'),
-        'description' => t('This record can be annotated with terms
-              from other vocabularies.'),
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatterInfo()
-   */
-  static function formatterInfo() {
-    return array(
-      'chado_linker__cvterm_formatter' => array(
-        'label' => t('Annotations'),
-        'field types' => array('chado_linker__cvterm'),
-        'settings' => array(
-        ),
-      ),
-    );
-  }
   /**
    * @see TripalField::formatterView()
    */
