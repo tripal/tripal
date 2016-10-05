@@ -195,6 +195,64 @@ class chado_linker__dbxref extends TripalField {
     }
   }
 
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+
+    $field_name = $element['#field_name'];
+    $delta = $element['#delta'];
+    $table_name = $element['#table_name'];
+    $fkey = $element['#fkey_field'];
+    $field = field_info_field($field_name);
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    $field_prefix = $field_table . '__dbxref_id';
+    
+    // If the form ID is field_ui_field_edit_form, then the user is editing the
+    // field's values in the manage fields form of Drupal.  We don't want
+    // to validate it as if it were being used in a data entry form.
+    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+      return;
+    }
+    
+    // Get the field values.
+    //   $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__dbxref_id');
+    //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--db_id');
+    //   $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--accession');
+    //   $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--version');
+    //   $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--description');
+    
+    // Make sure that if a database ID is provided that an accession is also
+    // provided.  Here we use the form_set_error function rather than the
+    // form_error function because the form_error will add a red_highlight
+    // around all of the fields in the fieldset which is confusing as it's not
+    // clear to the user what field is required and which isn't. Therefore,
+    // we borrow the code from the 'form_error' function and append the field
+    // so that the proper field is highlighted on error.
+    if (!$db_id and $accession) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided."));
+    }
+    if ($db_id and !$accession) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--accession', t("A database and the accession must both be provided."));
+    }
+    if (!$db_id and !$accession and ($version or $description)) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided."));
+    }
+    
+    // If the dbxref_id does not match the db_id + accession then the user
+    // has selected a new dbxref record and we need to update the hidden
+    // value accordingly.
+    if ($db_id and $accession) {
+      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
+        tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
+        tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $field_prefix . '--dbxref_id');
+      }
+    }
+    else {
+      // If the db_id and accession are not set, then remove the linker FK value to the base table.
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
+    }
+  }
   /**
    * @see TripalField::load()
    */
@@ -286,67 +344,6 @@ function theme_chado_linker__dbxref_widget($variables) {
     ";
 
   return $layout;
-}
-/**
- * Callback function for validating the chado_linker__dbxref_widget.
- */
-function chado_linker__dbxref_widget_validate($element, &$form_state) {
-
-  $field_name = $element['#field_name'];
-  $delta = $element['#delta'];
-  $table_name = $element['#table_name'];
-  $fkey = $element['#fkey_field'];
-  $field = field_info_field($field_name);
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-  $field_prefix = $field_table . '__dbxref_id';
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-//   $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__dbxref_id');
-//   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--db_id');
-//   $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--accession');
-//   $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--version');
-//   $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_prefix . '--description');
-
-  // Make sure that if a database ID is provided that an accession is also
-  // provided.  Here we use the form_set_error function rather than the
-  // form_error function because the form_error will add a red_highlight
-  // around all of the fields in the fieldset which is confusing as it's not
-  // clear to the user what field is required and which isn't. Therefore,
-  // we borrow the code from the 'form_error' function and append the field
-  // so that the proper field is highlighted on error.
-  if (!$db_id and $accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided."));
-  }
-  if ($db_id and !$accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--accession', t("A database and the accession must both be provided."));
-  }
-  if (!$db_id and !$accession and ($version or $description)) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $field_prefix . '--db_id', t("A database and the accession must both be provided."));
-  }
-
-  // If the dbxref_id does not match the db_id + accession then the user
-  // has selected a new dbxref record and we need to update the hidden
-  // value accordingly.
-  if ($db_id and $accession) {
-    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-    if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $field_prefix . '--dbxref_id');
-    }
-  }
-  else {
-    // If the db_id and accession are not set, then remove the linker FK value to the base table.
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
-  }
 }
 
 /**

@@ -61,24 +61,19 @@ class chado_feature__seqlen extends TripalField {
 //      '#element_validate' => array('chado_feature__seqlen_widget_validate'),
     );
   }
-
-}
-
-/**
- * Callback function for validating the chado_feature__seqlen_widget.
- */
-function chado_feature__seqlen_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
-
-  // Get the residues so we can calculate teh length.
-  //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
-  // Remove any white spaces.
-  if ($residues) {
-    $residues = preg_replace('/\s/', '', $residues);
-    tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues), 0, 'feature__seqlen');
+  
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+    // Get the residues so we can calculate teh length.
+    //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
+    // Remove any white spaces.
+    if ($residues) {
+      $residues = preg_replace('/\s/', '', $residues);
+      tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues), 0, 'feature__seqlen');
+    }
+    else {
+      // Otherwise, remove the seqlen value
+      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, 'feature_seqlen');
+    }
   }
-  else {
-    // Otherwise, remove the seqlen value
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, 'feature_seqlen');
-  }
+
 }

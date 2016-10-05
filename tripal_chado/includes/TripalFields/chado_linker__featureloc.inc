@@ -304,17 +304,4 @@ class chado_linker__featureloc extends TripalField {
   }
 
 }
-/**
- * Callback function for validating the chado_linker_featureloc_widget.
- */
-function chado_linker__featureloc_widget_validate($element, &$form_state) {
-
-}
-/**
- * Validation function for the chado_linker_featureloc_formatter_settings_form.
- */
-function chado_linker__featureloc_formatter_settings_form_validate(&$form, &$form_state) {
-
-  // Place here as an example for validating the settings form.
-}
 

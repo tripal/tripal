@@ -78,6 +78,27 @@ class chado_base__organism_id extends TripalField {
 //      '#element_validate' => array('chado_base__organism_id_widget_validate'),
     );
   }
+  
+  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
+
+    $settings = $field['settings'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    
+    // If the form ID is field_ui_field_edit_form, then the user is editing the
+    // field's values in the manage fields form of Drupal.  We don't want
+    // to validate it as if it were being used in a data entry form.
+    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+      return;
+    }
+    //$organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
+    
+    if (!$organism_id) {
+      form_error($element, t("Please specify an organism."));
+    }
+  }
 
   /**
    * @see TripalField::load()
@@ -207,33 +228,5 @@ class chado_base__organism_id extends TripalField {
 
     return $element;
   }
-
-}
-
-
-/**
- * Callback function for validating the chado_base__organism_id_widget.
- */
-function chado_base__organism_id_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
-  $field = $form_state['field'][$field_name]['und']['field'];
-  $settings = $field['settings'];
-  $field_name = $field['field_name'];
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-  //$organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
-
-  if (!$organism_id) {
-    form_error($element, t("Please specify an organism."));
-  }
-
 
 }

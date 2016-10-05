@@ -67,29 +67,25 @@ class chado_feature__md5checksum  extends TripalField {
     );
   }
 
-}
-
-/**
- * Callback function for validating the chado_feature__md5checksum_widget.
- */
-function chado_feature__md5checksum_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
-  $field = $form_state['field'][$field_name]['und']['field'];
-  $settings = $field['settings'];
-  $field_name = $field['field_name'];
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-
-  // Calculate the md5 checksum for the sequence only if md5 box is checked and
-  // the residues exist.
-  //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
-  if ($residues) {
-    $residues = preg_replace('/\s/', '', $residues);
-    tripal_chado_set_field_form_values($field_name, $form_state, md5($residues), 0, 'feature__md5checksum');
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+    $field = $this->field;
+    $settings = $field['settings'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    
+    // Calculate the md5 checksum for the sequence only if md5 box is checked and
+    // the residues exist.
+    //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
+    if ($residues) {
+      $residues = preg_replace('/\s/', '', $residues);
+      tripal_chado_set_field_form_values($field_name, $form_state, md5($residues), 0, 'feature__md5checksum');
+    }
+    else {
+      // Otherwise, remove the md5 value
+      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_table . '__md5checksum');
+    }
   }
-  else {
-    // Otherwise, remove the md5 value
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_table . '__md5checksum');
-  }
+  
 }

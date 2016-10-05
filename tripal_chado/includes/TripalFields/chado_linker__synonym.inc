@@ -155,6 +155,74 @@ class chado_linker__synonym extends TripalField {
       '#required' => $element['#required'],
     );
   }
+  
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+
+    $field_name = $element['#field_name'];
+    $delta = $element['#delta'];
+    $table_name = $element['#table_name'];
+    $fkey = $element['#fkey_field'];
+    
+    // If the form ID is field_ui_field_edit_form, then the user is editing the
+    // field's values in the manage fields form of Drupal.  We don't want
+    // to validate it as if it were being used in a data entry form.
+    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+      return;
+    }
+    
+    // Get the field values.
+    //   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+    //   $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
+    //   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+    //   $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
+    //   $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
+    //   $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__name');
+    //   $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__type_id');
+    
+    // Make sure that if a synonym is provided that a type is also
+    // provided.
+    if ($syn_name and !$syn_type) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--synonym__type_id', t("Please set a synonym type."));
+    }
+    if (!$syn_name and $syn_type) {
+      form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--synonym__name', t("Please set a synonym name."));
+    }
+    // If the user provided a cv_id and a name then we want to set the
+    // foreign key value to be the chado_record_idd
+    if ($syn_name and $syn_type) {
+    
+      // Get the synonym. If one with the same name and type is already present
+      // then use that. Otherwise, insert a new one.
+      if (!$synonym_id) {
+        $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+        if (!$synonym) {
+          $synonym = chado_insert_record('synonym', array(
+            'name' => $syn_name,
+            'type_id' => $syn_type,
+            'synonym_sgml' => '',
+          ));
+          $synonym = (object) $synonym;
+        }
+    
+        // Set the synonym_id and FK value
+        tripal_chado_set_field_form_values($field_name, $form_state, $synonym->synonym_id, $delta, $table_name . '__synonym_id');
+        $fkey_value = $element['#entity']->chado_record_id;
+        tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
+      }
+    
+      if (!$pub_id) {
+        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+        tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
+      }
+    }
+    else {
+      // If the $syn_name is not set, then remove the linker FK value to the base table.
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__synonym_id');
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_internal');
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_current');
+    }
+  }
 
   /**
    * @see TripalField::load()
@@ -251,77 +319,6 @@ function theme_chado_linker__synonym_widget($variables) {
     ";
 
   return $layout;
-}
-/**
- * Callback function for validating the chado_linker__synonym_widget.
- */
-function chado_linker__synonym_widget_validate($element, &$form_state) {
-
-  $field_name = $element['#field_name'];
-  $delta = $element['#delta'];
-  $table_name = $element['#table_name'];
-  $fkey = $element['#fkey_field'];
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-//   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-//   $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
-//   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-//   $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
-//   $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
-//   $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__name');
-//   $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__type_id');
-
-  // Make sure that if a synonym is provided that a type is also
-  // provided.
-  if ($syn_name and !$syn_type) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--synonym__type_id', t("Please set a synonym type."));
-  }
-  if (!$syn_name and $syn_type) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--synonym__name', t("Please set a synonym name."));
-  }
-  // If the user provided a cv_id and a name then we want to set the
-  // foreign key value to be the chado_record_idd
-  if ($syn_name and $syn_type) {
-
-    // Get the synonym. If one with the same name and type is already present
-    // then use that. Otherwise, insert a new one.
-    if (!$synonym_id) {
-      $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
-      if (!$synonym) {
-        $synonym = chado_insert_record('synonym', array(
-          'name' => $syn_name,
-          'type_id' => $syn_type,
-          'synonym_sgml' => '',
-        ));
-        $synonym = (object) $synonym;
-      }
-
-      // Set the synonym_id and FK value
-      tripal_chado_set_field_form_values($field_name, $form_state, $synonym->synonym_id, $delta, $table_name . '__synonym_id');
-      $fkey_value = $element['#entity']->chado_record_id;
-      tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
-    }
-
-    if (!$pub_id) {
-      $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-      tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
-    }
-  }
-  else {
-    // If the $syn_name is not set, then remove the linker FK value to the base table.
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__synonym_id');
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_internal');
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_current');
-  }
-
 }
 
 /**

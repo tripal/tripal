@@ -96,6 +96,16 @@ class chado_feature__residues extends TripalField {
       '#cols' => 30,
     );
   }
+  
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+
+    // Remove any white spaces.
+    //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
+    if ($residues) {
+      $residues = preg_replace('/\s/', '', $residues);
+      tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');
+    }
+  }
 
   /**
    * @see TripalField::load()
@@ -567,14 +577,7 @@ class chado_feature__residues extends TripalField {
  * Callback function for validating the chado_feature__residues_widget.
  */
 function chado_feature__residues_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
 
-  // Remove any white spaces.
-  //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
-  if ($residues) {
-    $residues = preg_replace('/\s/', '', $residues);
-    tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');
-  }
 }
 
 /**

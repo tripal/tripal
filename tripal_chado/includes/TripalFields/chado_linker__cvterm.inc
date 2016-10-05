@@ -199,6 +199,52 @@ class chado_linker__cvterm extends TripalField {
     );
 
   }
+  
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+
+    $field_name = $element['#field_name'];
+    $delta = $element['#delta'];
+    $table_name = $element['#table_name'];
+    $fkey = $element['#fkey_field'];
+    
+    // If the form ID is field_ui_field_edit_form, then the user is editing the
+    // field's values in the manage fields form of Drupal.  We don't want
+    // to validate it as if it were being used in a data entry form.
+    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+      return;
+    }
+    
+    // Get the field values.
+    //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+    //   $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
+    //   $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
+    //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+    //   $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
+    
+    // If the user provided a cv_id and a name then we want to set the
+    // foreign key value to be the chado_record_idd
+    if ($cvterm_name) {
+    
+      $fkey_value = $element['#entity']->chado_record_id;
+      tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
+    
+      // Get the cvterm ID. If one is not available because it's a newly added
+      // record, then we need to retrieve it and set the form element.
+      if (!$cvterm_id) {
+        $cvterm = tripal_get_cvterm(array('cv_id' => $cv_id, 'name' => $cvterm_name));
+        tripal_chado_set_field_form_values($field_name, $form_state, $cvterm->cvterm_id, $delta, $table_name . '__cvterm_id');
+      }
+    
+      if (!$pub_id) {
+        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+        tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
+      }
+    }
+    else {
+      // If the $cv_id and name are not set, then remove the linker FK value to the base table.
+      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
+    }
+  }
 
   /**
    * @see TripalField::load()
@@ -305,55 +351,7 @@ function theme_chado_linker__cvterm_widget($variables) {
 
   return $layout;
 }
-/**
- * Callback function for validating the chado_linker__cvterm_widget.
- */
-function chado_linker__cvterm_widget_validate($element, &$form_state) {
 
-  $field_name = $element['#field_name'];
-  $delta = $element['#delta'];
-  $table_name = $element['#table_name'];
-  $fkey = $element['#fkey_field'];
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-//   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-//   $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
-//   $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
-//   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-//   $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
-
-  // If the user provided a cv_id and a name then we want to set the
-  // foreign key value to be the chado_record_idd
-  if ($cvterm_name) {
-
-    $fkey_value = $element['#entity']->chado_record_id;
-    tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
-
-    // Get the cvterm ID. If one is not available because it's a newly added
-    // record, then we need to retrieve it and set the form element.
-    if (!$cvterm_id) {
-      $cvterm = tripal_get_cvterm(array('cv_id' => $cv_id, 'name' => $cvterm_name));
-      tripal_chado_set_field_form_values($field_name, $form_state, $cvterm->cvterm_id, $delta, $table_name . '__cvterm_id');
-    }
-
-    if (!$pub_id) {
-      $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-      tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
-    }
-  }
-  else {
-    // If the $cv_id and name are not set, then remove the linker FK value to the base table.
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
-  }
-
-}
 /**
  * An Ajax callback for the dbxref widget.
  */
