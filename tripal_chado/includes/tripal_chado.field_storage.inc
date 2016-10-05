@@ -42,7 +42,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-dpm($field_vals);
+
   // First, write the record for the base table.  If we have a record id then
   // this is an upate and we need to set the primary key.  If not, then this
   // is an insert and we need to set the type_id if the table supports it.
@@ -110,7 +110,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    $schema = chado_get_schema($table_name);
    $fkeys = $schema['foreign keys'];
    $pkey = $schema['primary key'][0];
-   dpm(array($table_name, $values));
+
 
 
    // Before inserting or updating this table, recurse if there are any
