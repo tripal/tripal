@@ -141,7 +141,7 @@ function tripal_get_db_select_options() {
 
   $options = array();
   $options[] = 'Select a Database';
-  
+
   foreach ($dbs as $db) {
     $options[$db->db_id] = $db->name;
   }
@@ -179,10 +179,12 @@ function tripal_get_db_select_options() {
  * @endcode
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only one of the
- *   following unique keys is required):
- *    - dbxref_id: the chado dbxref.dbxref_id primary key
- *    - accession: the chado dbxref.accession field (assume unique)
+ *   An array apropriate for use with the chado_generate_var for uniquely
+ *   identifying a dbxref record. Alternatively, there are also some specially
+ *   handled keys. They are:
+ *    - property: An array/object describing the property to select records for. It
+ *      should at least have either a type_name (if unique across cvs) or type_id. Other
+ *      supported keys include: cv_id/cv_name (of the type), value and rank
  *   There are also some specially handled keys. They are:
  *    - property: An array/object describing the property to select records for. It
  *      should at least have either a type_name (if unique across cvs) or type_id. Other
@@ -240,7 +242,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $dbxref = chado_get_record_with_property(
-      array('table' => 'dbxref', 'base_records' => $identifiers), 
+      array('table' => 'dbxref', 'base_records' => $identifiers),
       array('type_name' => $property),
       $options
     );

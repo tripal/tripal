@@ -1082,11 +1082,12 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
   // Get the table description.
   $table_desc = chado_get_schema($table);
-  if (empty($table_desc)) {
-    tripal_report_error('tripal_core', TRIPAL_WARNING,
+  if (!is_array($table_desc)) {
+    tripal_report_error('tripal_chado', TRIPAL_WARNING,
       'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
+    return FALSE;
   }
 
   $select = '';

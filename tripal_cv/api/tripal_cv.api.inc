@@ -128,30 +128,31 @@ function tripal_get_cv_select_options() {
  * Retrieves a chado controlled vocabulary term variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only one of the
- *   following unique keys are required):
- *    - cvterm_id: the chado cv.cvterm_id primary key
- *    - name: the chado cvterm.name field (assume unique)
- *   There are also some specially handled keys. They are:
- *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the name of the cv.
- *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
- *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
- *        of the synonym
- *    - property: An array/object describing the property to select records for. It
- *      should at least have either a type_name (if unique across cvs) or type_id. Other
- *      supported keys include: cv_id/cv_name (of the type), value and rank
+ *   An array apropriate for use with the chado_generate_var for uniquely
+ *   identifying a cvterm record. Alternativley, there are also some specially
+ *   handled keys. They are:
+ *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the
+ *      name of the cv.
+ *    - synonym: an array with 'name' => the name of the synonym of the cvterm
+ *      you want returned; 'cv_id' => the cv_id of the synonym; 'cv_name' =>
+ *      the name of the cv of the synonym
+ *    - property: An array/object describing the property to select records
+ *      for. It should at least have either a type_name (if unique across cvs)
+ *      or type_id. Other supported keys include: cv_id/cv_name (of the type),
+ *      value and rank
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
+ *     - Any keys supported by chado_generate_var(). See that function
+ *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the cvterm record to be returned.
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ *   passed into chado_select_record(). It should fully specify the cvterm
+ *   record to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing the cvterm
- *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   FALSE will be returned.
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cvterm will be returned (will be a chado variable from
+ *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_cv_api
  */
@@ -1082,7 +1083,19 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 }
 
 /**
- * Retreives the default vocabulary for a given table and field
+ * Retreives the default vocabulary for a given table and field.
+ *
+ * Each table in Chado that has a 'type_id' (or foreign key constraint to
+ * the cvterm table) will have a default vocabulary assigned. This indicates to
+ * Tripal that terms in that vocabulary are used to set the type_id for that
+ * table. An example where this is used is the
+ * tripal_get_cvterm_select_options() function which generates a list of options
+ * for a select box used in a Drupal form.  The select box will list the terms
+ * from the default vocabulary in the drop down.
+ *
+ * This function uses the Chado table and field name (e.g. 'type_id') to
+ * retreive the vocabulary assgined.
+ *
  * @param $table
  *   The name of the table that contains a field with a foreign key
  *   relationship to the cvterm table
