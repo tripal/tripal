@@ -27,7 +27,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
   $term = entity_load('TripalTerm', array('id' => $entity->term_id));
   $term = reset($term);
-  $cvterm = $term->details['cvterm'];
+
+  // Convert the Tripal term entity into the appropriate record in Chado.
+  $dbxref = tripal_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
+  $cvterm = tripal_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
@@ -39,7 +42,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-
+dpm($field_vals);
   // First, write the record for the base table.  If we have a record id then
   // this is an upate and we need to set the primary key.  If not, then this
   // is an insert and we need to set the type_id if the table supports it.
@@ -82,7 +85,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 }
 
 /**
- * Write (inserts/oupdates) a nested array of values for a table.
+ * Write (inserts/updates) a nested array of values for a table.
  *
  * The $values array is of the same format used by chado_insert_record() and
  * chado_update_record().  However, both of those methods will use any nested
@@ -107,6 +110,8 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    $schema = chado_get_schema($table_name);
    $fkeys = $schema['foreign keys'];
    $pkey = $schema['primary key'][0];
+   dpm(array($table_name, $values));
+
 
    // Before inserting or updating this table, recurse if there are any
    // nested FK array values.
@@ -145,7 +150,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
 
    // If the primary key column has a value then this will be an udpate,
    // otherwise it's an insert.
-   if (!array_key_exists($pkey, $values) or !$values[$pkey]) {
+   if (!array_key_exists($pkey, $values) or !$values[$pkey] or !isset($values[$pkey])) {
      // Before inserting, we want to make sure the record does not
      // already exist.  Using the unique constraint check for a matching record.
      $options = array('is_duplicate' => TRUE);
@@ -155,8 +160,11 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
        return $record[0]->$pkey;
      }
 
-     // Insert the values array as a new record in the table.
-     $record = chado_insert_record($table_name, $values);
+     // Insert the values array as a new record in the table but remove the
+     // pkey as it should be set.
+     $new_vals = $values;
+     unset($new_vals[$pkey]);
+     $record = chado_insert_record($table_name, $new_vals);
      if ($record === FALSE) {
        throw new Exception('Could not insert Chado record into table: "' . $table_name . '".');
      }
@@ -337,9 +345,9 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
 
           // Is this a nested FK field? If so break it down into a sub array.
           if (preg_match('/^(.*?)--(.*?)$/', $column_name, $matches)) {
-            $parent_item_name = $matches[1];
-            $sub_item_name = $matches[2];
-            $sub_item = tripal_chado_field_storage_expand_field($sub_item_name, $value);
+            $linker_table = $matches[1];
+            $base_table = $matches[2];
+            $sub_item = tripal_chado_field_storage_expand_field($base_table, $value);
             if (count(array_keys($sub_item))) {
               // If we've already encountered this table and column then we've
               // already seen the numeric FK value or we've already added a
@@ -347,11 +355,11 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
               // so we can add the details.
               if (!array_key_exists($table_name, $new_fields) or
                   !array_key_exists($delta, $new_fields[$table_name]) or
-                  !array_key_exists($parent_item_name, $new_fields[$table_name][$delta]) or
-                  !is_array($new_fields[$table_name][$delta][$parent_item_name])) {
-                $new_fields[$table_name][$delta][$parent_item_name] = array();
+                  !array_key_exists($linker_table, $new_fields[$table_name][$delta]) or
+                  !is_array($new_fields[$table_name][$delta][$linker_table])) {
+                $new_fields[$table_name][$delta][$linker_table] = array();
               }
-              $new_fields[$table_name][$delta][$parent_item_name] += $sub_item;
+              $new_fields[$table_name][$delta][$linker_table] += $sub_item;
             }
           }
           else {
@@ -383,9 +391,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
 }
 
 /**
- * Recurses through a field's item name breaking it into a nested array.
- *
- *
+ * Recurses through a field's items breaking it into a nested array.
  */
 function tripal_chado_field_storage_expand_field($item_name, $value) {
 

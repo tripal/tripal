@@ -179,11 +179,9 @@ function tripal_get_db_select_options() {
  * @endcode
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only one of the
- *   following unique keys is required):
- *    - dbxref_id: the chado dbxref.dbxref_id primary key
- *    - accession: the chado dbxref.accession field (assume unique)
- *   There are also some specially handled keys. They are:
+ *   An array apropriate for use with the chado_generate_var for uniquely
+ *   identifying a dbxref record. Alternatively, there are also some specially
+ *   handled keys. They are:
  *    - property: An array/object describing the property to select records for. It
  *      should at least have either a type_name (if unique across cvs) or type_id. Other
  *      supported keys include: cv_id/cv_name (of the type), value and rank
@@ -200,7 +198,7 @@ function tripal_get_db_select_options() {
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
  *   FALSE will be returned.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_db_api
  */
 function tripal_get_dbxref($identifiers, $options = array()) {
 
@@ -212,26 +210,18 @@ function tripal_get_dbxref($identifiers, $options = array()) {
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
-    tripal_report_error(
-      'tripal_chado_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_db_api', TRIPAL_ERROR,
       "tripal_get_dbxref: The identifier passed in is expected to be an array with the key
         matching a column name in the dbxref table (ie: dbxref_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
   elseif (empty($identifiers)) {
-    tripal_report_error(
-      'tripal_chado_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_db_api', TRIPAL_ERROR,
       "tripal_get_dbxref: You did not pass in anything to identify the dbxref you want. The identifier
         is expected to be an array with the key matching a column name in the dbxref table
         (ie: dbxref_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 
@@ -253,7 +243,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
 
   // Ensure the dbxref is singular. If it's an array then it is not singular
   if (is_array($dbxref)) {
-    tripal_report_error('tripal_chado_api', TRIPAL_ERROR,
+    tripal_report_error('tripal_db_api', TRIPAL_ERROR,
       "tripal_get_dbxref: The identifiers you passed in were not unique. You passed in %identifier.",
       array('%identifier'=> print_r($identifiers, TRUE))
     );
@@ -262,7 +252,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
   // Report an error if $dbxref is FALSE since then chado_generate_var has failed
   elseif ($dbxref === FALSE) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_db_api',
       TRIPAL_ERROR,
       "tripal_get_dbxref: chado_generate_var() failed to return a dbxref based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look

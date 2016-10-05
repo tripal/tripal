@@ -406,16 +406,12 @@ class TripalField {
   /**
    * Performs extra commands when the entity form is submitted.
    *
-   * This function corresponds to the hook_field_submit()
-   * function of the Drupal Field API.
-   *
    * Drupal typically does not provide a submit hook for fields.  The
    * TripalField provides one to allow for behind-the-scenes actions to
    * occur.   This function should never be used for updates, deletes or
    * inserts into the storage backend. Rather, the appropriate Field Storage
-   * implementation will take care of that. An example where this function
-   * may be useful would be to set values in the $items array using values
-   * of the other.
+   * implementation will take care of that. Use this function instead to
+   * to change the $items array before insertion into the database.
    *
    *  @param $entity_type
    *    The type of $entity.

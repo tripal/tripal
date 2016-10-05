@@ -26,7 +26,7 @@ class TripalTerm extends Entity {
       if (function_exists($function)) {
         $term_details = $function($vocab->vocabulary, $this->accession);
         if ($term_details) {
-          $this->details = $term_details;
+//          $this->details = $term_details;
           if ($term_details and $term_details['definition']) {
             $this->definition = $term_details['definition'];
             $this->url = $term_details['url'];

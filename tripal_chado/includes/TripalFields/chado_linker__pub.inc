@@ -80,7 +80,6 @@ class chado_linker__pub extends TripalField {
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       $record_id = $items[$delta][$table_name . '__' . $pkey];
-      $fkey_value = $items[$delta][$table_name . '__' . $fkey];
       $pub_id = $items[$delta][$table_name . '__pub_id'];
       $title = $items[$delta][$table_name . '--pub__uniquename'];
     }
@@ -97,7 +96,6 @@ class chado_linker__pub extends TripalField {
 
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-//    $widget['#element_validate'] = array('chado_linker__pub_widget_validate');
     $widget['#theme'] = 'chado_linker__pub_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
@@ -122,7 +120,7 @@ class chado_linker__pub extends TripalField {
 
     $widget[$table_name . '--pub__uniquename'] = array(
       '#type' => 'textfield',
-      '#title' => t('Publication ID'),
+      '#title' => t('Publication'),
       '#default_value' => $title,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
       '#ajax' => array(
@@ -135,46 +133,49 @@ class chado_linker__pub extends TripalField {
     );
   }
 
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
-    $field_name = $element['#field_name'];
-    $delta = $element['#delta'];
-    $table_name = $element['#table_name'];
-    $fkey = $element['#fkey_field'];
-    
+    // Get the FK column that links to the base table.
+    $table_name = $this->field['settings']['chado_table'];
+    $base_table = $this->field['settings']['base_table'];
+    $schema = chado_get_schema($table_name);
+    $pkey = $schema['primary key'][0];
+    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+    $fkey = $fkeys[0];
+
     // If the form ID is field_ui_field_edit_form, then the user is editing the
     // field's values in the manage fields form of Drupal.  We don't want
     // to validate it as if it were being used in a data entry form.
     if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
       return;
     }
-    
+
     // Get the field values.
-    //   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-    //   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-    //   $uname = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--pub__uniquename');
-    
-    // If the user provided a uniquename then we want to set the
-    // foreign key value to be the chado_record_idd
-    if ($uname) {
-    
-      // Get the pub. If one with the same name and type is already present
-      // then use that. Otherwise, insert a new one.
-      if (!$pub_id) {
+    foreach ($items as $delta => $values) {
+      $fkey_value = $values['value'];
+      $pub_id = $values[$table_name . '__pub_id'];
+      $uname = $values[$table_name . '--pub__uniquename'];
+
+      // If the user provided a uniquename then we want to set the foreign key
+      // value to be the chado_record_id
+      if ($uname and !$pub_id) {
         $pub = chado_generate_var('pub', array('uniquename' => $uname));
-        // Set the pub_id and FK value
-        tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
-        $fkey_value = $element['#entity']->chado_record_id;
-        tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
+        $items[$delta][$table_name . '__pub_id'] = $pub->pub_id;
       }
-    
-    }
-    else {
-      // If the $syn_name is not set, then remove the linker FK value to the base table.
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__pub_id');
+
+      // In the widgetFrom function we automatically add the foreign key
+      // record.  But if the user did not provide a publication we want to take
+      // it out so that the Chado field_storage infrastructure won't try to
+      // write a record.
+      if (!$uname and !$pub_id) {
+        $items[$delta][$table_name . '__' . $fkey] = '';
+      }
     }
   }
+
   /**
    * @see TripalField::load()
    */

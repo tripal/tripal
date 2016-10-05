@@ -374,7 +374,7 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
 /**
  * Implements hook_field_submit()
  *
- * This is a TripalEntity specific hook.
+ * This is a hook called by the TripalEntityUIController class.
  */
 function tripal_field_submit($entity_type, $entity, $field, $instance,
     $langcode, &$items, $form, &$form_state) {

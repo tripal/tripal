@@ -144,51 +144,52 @@ function tripal_get_cv_select_options() {
  * Retrieves a chado controlled vocabulary term variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only one of the
- *   following unique keys are required):
- *    - cvterm_id: the chado cv.cvterm_id primary key
- *    - name: the chado cvterm.name field (assume unique)
- *   There are also some specially handled keys. They are:
- *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the name of the cv.
- *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
- *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
- *        of the synonym
- *    - property: An array/object describing the property to select records for. It
- *      should at least have either a type_name (if unique across cvs) or type_id. Other
- *      supported keys include: cv_id/cv_name (of the type), value and rank
+ *   An array apropriate for use with the chado_generate_var for uniquely
+ *   identifying a cvterm record. Alternativley, there are also some specially
+ *   handled keys. They are:
+ *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the
+ *      name of the cv.
+ *    - synonym: an array with 'name' => the name of the synonym of the cvterm
+ *      you want returned; 'cv_id' => the cv_id of the synonym; 'cv_name' =>
+ *      the name of the cv of the synonym
+ *    - property: An array/object describing the property to select records
+ *      for. It should at least have either a type_name (if unique across cvs)
+ *      or type_id. Other supported keys include: cv_id/cv_name (of the type),
+ *      value and rank
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
+ *     - Any keys supported by chado_generate_var(). See that function
+ *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the cvterm record to be returned.
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ *   passed into chado_select_record(). It should fully specify the cvterm
+ *   record to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing the cvterm
- *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   FALSE will be returned.
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cvterm will be returned (will be a chado variable from
+ *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_cv_api
  */
 function tripal_get_cvterm($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var to only get the cv
-    //$options['include_fk'] = array('cv_id' => TRUE);
+    $options['include_fk'] = array('cv_id' => TRUE);
   }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
-    tripal_report_error('tripal_chado_api', TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "tripal_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
       array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
   elseif (empty($identifiers)) {
-    tripal_report_error('tripal_chado_api', TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "tripal_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
@@ -224,7 +225,6 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property()
-  $cvterm = NULL;
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
@@ -234,19 +234,17 @@ function tripal_get_cvterm($identifiers, $options = array()) {
       $options
     );
   }
+
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm
   else {
     // Try to get the cvterm
     $cvterm = chado_generate_var('cvterm', $identifiers, $options);
-    if ($cvterm) {
-      $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
-    }
   }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
   if (is_array($cvterm)) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_cv_api',
       TRIPAL_ERROR,
       "tripal_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
@@ -258,7 +256,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   // Report an error if $cvterm is FALSE since then chado_generate_var has failed
   elseif ($cvterm === FALSE) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_cv_api',
       TRIPAL_ERROR,
       "tripal_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
@@ -275,6 +273,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   }
 
 }
+
 /**
  * Create an options array to be used in a form element
  *   which provides a list of all chado cvterms

@@ -552,7 +552,7 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::submit()
    */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
-
+return;
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
@@ -565,16 +565,16 @@ class chado_linker__relationship extends TripalField {
     $fkeys = $schema['foreign keys'];
 
     foreach ($items as $delta => $item) {
+      $type_name = array_key_exists('type_name', $item) ? $item['type_name'] : '';
       $subject_id = $item[$field_table . '__subject_id'];
       $object_id = $item[ $field_table . '__object_id'];
       $type_id = $item[$field_table . '__type_id'];
-      $type_id = isset($item['type_id']) ? $type_id : $item['type_id'];
-      $type_name = $item['type_name'];
+
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
 
       // If the row is empty then skip this one, there's nothing to validate.
-      if (!$type_id and !$type_name and !$subject_name and !$object_name) {
+      if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
         continue;
       }
 
