@@ -32,8 +32,8 @@ class chado_linker__pub extends TripalField {
     $list_items = array();
     $chado_table = $this->field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      if ($item[$chado_table . '__pub_id']) {
-        $pub = chado_generate_var('pub', array('pub_id' => $item[$chado_table . '__pub_id']));
+      if ($item['chado-' . $chado_table . '__pub_id']) {
+        $pub = chado_generate_var('pub', array('pub_id' => $item['chado-' . $chado_table . '__pub_id']));
         $list_items[$pub->pyear] = $pub->uniquename;
       }
     }
@@ -79,17 +79,9 @@ class chado_linker__pub extends TripalField {
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
-      $record_id = $items[$delta][$table_name . '__' . $pkey];
-      $pub_id = $items[$delta][$table_name . '__pub_id'];
-      $title = $items[$delta][$table_name . '--pub__uniquename'];
-    }
-
-    // Check $form_state['values'] to see if an AJAX call set the values.
-    if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-//       $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
-//       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-//       $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-//       $title = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__title');
+      $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $record_id);
+      $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
+      $title = tripal_get_field_item_keyval($items, $delta, 'uniquename', $title);
     }
 
     $schema = chado_get_schema('pub');
@@ -105,20 +97,20 @@ class chado_linker__pub extends TripalField {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
-    $widget[$table_name . '__' . $pkey] = array(
+    $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
     );
-    $widget[$table_name . '__' . $fkey] = array(
+    $widget['chado-' . $table_name . '__' . $fkey] = array(
       '#type' => 'value',
       '#default_value' => $fkey_value,
     );
-    $widget[$table_name . '__pub_id'] = array(
+    $widget['chado-' . $table_name . '__pub_id'] = array(
       '#type' => 'value',
       '#default_value' => $pub_id,
     );
 
-    $widget[$table_name . '--pub__uniquename'] = array(
+    $widget['uniquename'] = array(
       '#type' => 'textfield',
       '#title' => t('Publication'),
       '#default_value' => $title,
@@ -146,24 +138,17 @@ class chado_linker__pub extends TripalField {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
 
-    // If the form ID is field_ui_field_edit_form, then the user is editing the
-    // field's values in the manage fields form of Drupal.  We don't want
-    // to validate it as if it were being used in a data entry form.
-    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-      return;
-    }
-
     // Get the field values.
     foreach ($items as $delta => $values) {
       $fkey_value = $values['value'];
-      $pub_id = $values[$table_name . '__pub_id'];
-      $uname = $values[$table_name . '--pub__uniquename'];
+      $pub_id = $values['chado-' . $table_name . '__pub_id'];
+      $uname = $values['uniquename'];
 
       // If the user provided a uniquename then we want to set the foreign key
       // value to be the chado_record_id
       if ($uname and !$pub_id) {
         $pub = chado_generate_var('pub', array('uniquename' => $uname));
-        $items[$delta][$table_name . '__pub_id'] = $pub->pub_id;
+        $items[$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
       }
 
       // In the widgetFrom function we automatically add the foreign key
@@ -171,7 +156,15 @@ class chado_linker__pub extends TripalField {
       // it out so that the Chado field_storage infrastructure won't try to
       // write a record.
       if (!$uname and !$pub_id) {
-        $items[$delta][$table_name . '__' . $fkey] = '';
+        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      }
+
+      // If the user removed the publication from the pub_uniquename field
+      // then we want to clear out the rest of the hidden values.
+      if (!$uname and $pub_id) {
+        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
+        $items[$delta]['chado-' . $table_name . '__' . $pkey] = '';
+        $items[$delta]['chado-' . $table_name . '__pub_id'] = '';
       }
     }
   }
@@ -198,10 +191,10 @@ class chado_linker__pub extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
-      $field_table . '__' . $pkey => '',
-      $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'pub_id' => '',
-      $field_table . '--' . 'pub__uniquename' => '',
+      'chado-' . $field_table . '__' . $pkey => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . 'pub_id' => '',
+      'uniquename' => '',
     );
 
     $linker_table = $base_table . '_pub';
@@ -219,10 +212,10 @@ class chado_linker__pub extends TripalField {
         $pub_details['publication']['type'] = $pub->type_id->name;
 
         $entity->{$field_name}['und'][$i]['value'] = $pub_details;
-        $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $linker->$pkey;
-        $entity->{$field_name}['und'][$i][$field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
-        $entity->{$field_name}['und'][$i][$field_table . '__' . 'pub_id'] = $pub->pub_id;
-        $entity->{$field_name}['und'][$i][$field_table . '--' . 'pub__uniquename'] =  $pub->uniquename;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub->pub_id;
+        $entity->{$field_name}['und'][$i]['uniquename'] =  $pub->uniquename;
 
         if (property_exists($pub, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
@@ -259,7 +252,7 @@ function theme_chado_linker__pub_widget($variables) {
   $layout = "
       <div class=\"pub-widget\">
         <div class=\"pub-widget-item\">" .
-        drupal_render($element[$table_name . '--pub__uniquename']) . "
+        drupal_render($element['uniquename']) . "
         </div>
       </div>
     ";

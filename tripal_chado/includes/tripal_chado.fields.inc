@@ -1109,6 +1109,7 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
   // DBXREF
   $dbxref_table = $table_name . '_dbxref';
   if (chado_table_exists($dbxref_table)) {
+    $field_name = $table_name . '_dbxref';
     $info[$field_name] =  array(
       'field_name' =>  $field_name,
       'entity_type' => $entity_type,

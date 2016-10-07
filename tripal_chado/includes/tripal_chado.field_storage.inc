@@ -111,8 +111,6 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    $fkeys = $schema['foreign keys'];
    $pkey = $schema['primary key'][0];
 
-
-
    // Before inserting or updating this table, recurse if there are any
    // nested FK array values.
    foreach ($values as $column => $value) {
@@ -274,13 +272,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           // and because $record object is created by the chado_generate_var()
           // function we must go one more level deeper to get the value
           if (is_object($record->$field_column)) {
-            $entity->{$field_name}['und'][0][$field_table . '__' . $field_column] = $record->$field_column->$field_column;
+            $entity->{$field_name}['und'][0]['chado' . $field_table . '__' . $field_column] = $record->$field_column->$field_column;
           }
           else {
             // For non FK fields we'll make the field value be the same
             // as the column value.
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
-            $entity->{$field_name}['und'][0][$field_table . '__' . $field_column] = $record->$field_column;
+            $entity->{$field_name}['und'][0]['chado' . $field_table . '__' . $field_column] = $record->$field_column;
           }
         }
 
@@ -337,45 +335,26 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
     foreach ($items as $delta => $item) {
+      // A field may have multiple items. The field can use items
+      // indexed with "chado-" to represent values that should map directly
+      // to chado tables and fields.
       foreach ($item as $item_name => $value) {
         $matches = array();
-        if (preg_match('/^(.*?)__(.*?)$/', $item_name, $matches)) {
+        if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
           $table_name = $matches[1];
           $column_name = $matches[2];
-
-          // Is this a nested FK field? If so break it down into a sub array.
-          if (preg_match('/^(.*?)--(.*?)$/', $column_name, $matches)) {
-            $linker_table = $matches[1];
-            $base_table = $matches[2];
-            $sub_item = tripal_chado_field_storage_expand_field($base_table, $value);
-            if (count(array_keys($sub_item))) {
-              // If we've already encountered this table and column then we've
-              // already seen the numeric FK value or we've already added a
-              // subcolumn. If the former we want to convert this to an array
-              // so we can add the details.
-              if (!array_key_exists($table_name, $new_fields) or
-                  !array_key_exists($delta, $new_fields[$table_name]) or
-                  !array_key_exists($linker_table, $new_fields[$table_name][$delta]) or
-                  !is_array($new_fields[$table_name][$delta][$linker_table])) {
-                $new_fields[$table_name][$delta][$linker_table] = array();
-              }
-              $new_fields[$table_name][$delta][$linker_table] += $sub_item;
-            }
-          }
-          else {
-            // If not seen this table and column then just add it. If we've
-            // already seen it then it means it's a FK field and we've already
-            // added subfields so do nothing.
-            if (!array_key_exists($table_name, $new_fields) or
-                !array_key_exists($delta, $new_fields[$table_name]) or
-                !array_key_exists($column_name, $new_fields[$table_name][$delta])) {
-              $new_fields[$table_name][$delta][$column_name] = $value;
-            }
+          // If not seen this table and column then just add it. If we've
+          // already seen it then it means it's a FK field and we've already
+          // added subfields so do nothing.
+          if (!array_key_exists($table_name, $new_fields) or
+              !array_key_exists($delta, $new_fields[$table_name]) or
+              !array_key_exists($column_name, $new_fields[$table_name][$delta])) {
+            $new_fields[$table_name][$delta][$column_name] = $value;
           }
         }
       }
       // If there is no value set for the field using the
-      // [table_name]__[field name] naming schema then check if a 'value' item
+      // chado-[table_name]__[field name] naming schema then check if a 'value' item
       // is present and if so use that.
       if ((!array_key_exists($chado_table, $new_fields) or
            !array_key_exists($delta, $new_fields[$chado_table]) or
