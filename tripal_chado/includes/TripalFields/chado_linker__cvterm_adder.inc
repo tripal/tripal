@@ -23,6 +23,14 @@ class chado_linker__cvterm_adder extends TripalField {
   // this field.
   public static $default_storage = 'field_chado_storage';
 
+  /**
+   * @see TripalField::formatterView()
+   */
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    // This field should never be viewed. It's to help add new cvterms
+    // when editing an entity.  So return nothing.
+    return '';
+  }
 
   /**
    * @see TripalField::widgetForm()
@@ -73,38 +81,38 @@ class chado_linker__cvterm_adder extends TripalField {
       '#limit_validation_errors' => array(array($this->field['field_name'])),
     );
   }
-  
+
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
     // Add the new field to the entity
     if (array_key_exists('triggering_element', $form_state) and
         $form_state['triggering_element']['#name'] == 'cvterm_class_adder_button') {
-    
+
           $form_state['rebuild'] = TRUE;
           $field_name = $element['#field_name'];
           $entity_type = $element['#entity']->type;
           $bundle = $element['#entity']->bundle;
-    
+
           // Get the base table name from the field annotations.
           $field = field_info_field($field_name);
           $base_table = $field['settings']['base_table'];
-    
+
           // Get the vocabulary.
           //$cvterm_class_adder = tripal_chado_get_field_form_values($field_name, $form_state);
           $cv = chado_generate_var('cv', array('cv_id' => $cvterm_class_adder));
-    
+
           if (!$cv) {
             form_set_error(implode('][', $element ['#parents']) . '][value', t("Please select a vocabulary."));
             return;
           }
-    
+
           $type_field_name = $field_name . '__' . $cv->cv_id;
-    
+
           // The field name is the table name in this case. We want to get the
           // primary key as this should be the field that maps th the value.
           $schema = chado_get_schema($field_name);
           $pkey = $schema['primary key'][0];
-    
+
           // Add the field if it doesn't already exists.
           $field = field_info_field('cvterm');
           if (!$field) {
@@ -124,7 +132,7 @@ class chado_linker__cvterm_adder extends TripalField {
             );
             $field = field_create_field($create_info);
           }
-    
+
           // Attach the field to the bundle if it isn't already.
           if (!$field or !array_key_exists('bundles', $field) or
               !array_key_exists('TripalEntity', $field['bundles']) or

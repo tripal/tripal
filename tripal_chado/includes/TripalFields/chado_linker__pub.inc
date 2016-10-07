@@ -161,9 +161,9 @@ class chado_linker__pub extends TripalField {
 
       // If the user removed the publication from the pub_uniquename field
       // then we want to clear out the rest of the hidden values.
+      // Leave the primary key so the record can be deleted.
       if (!$uname and $pub_id) {
         $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-        $items[$delta]['chado-' . $table_name . '__' . $pkey] = '';
         $items[$delta]['chado-' . $table_name . '__pub_id'] = '';
       }
     }

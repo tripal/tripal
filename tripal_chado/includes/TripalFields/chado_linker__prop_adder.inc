@@ -24,6 +24,15 @@ class chado_linker__prop_adder extends TripalField {
   public static $default_storage = 'field_chado_storage';
 
   /**
+   * @see TripalField::formatterView()
+   */
+  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    // This field should never be viewed. It's to help add new properties
+    // when editing an entity.  So return nothing.
+    return '';
+  }
+
+  /**
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
@@ -74,7 +83,7 @@ class chado_linker__prop_adder extends TripalField {
   public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
 
   }
-  
+
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
     // Add the new field to the entity
@@ -161,5 +170,5 @@ class chado_linker__prop_adder extends TripalField {
       }
     }
   }
-  
+
 }

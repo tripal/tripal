@@ -38,7 +38,9 @@ class chado_linker__dbxref extends TripalField {
    * @see TripalField::formatterView()
    */
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
+
     $chado_table = $this->field['settings']['chado_table'];
+    $content = '';
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
@@ -53,7 +55,7 @@ class chado_linker__dbxref extends TripalField {
       );
     }
 
-    if (count($items) == 0) {
+    if (count($element) == 0) {
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => '',
@@ -285,9 +287,9 @@ class chado_linker__dbxref extends TripalField {
         }
       }
       // If the db_id and accession are not set, then remove the linker FK
-      // value to the base table.
+      // value to the base table, but leave the primary key so the record
+      // can be deleted.
       else {
-        $items[$delta]['chado-' . $table_name . '__' . $pkey] = '';
         $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
         $items[$delta]['chado-' . $table_name . '__dbxref_id'] = '';
       }

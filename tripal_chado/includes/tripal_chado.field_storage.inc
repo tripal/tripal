@@ -85,7 +85,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 }
 
 /**
- * Write (inserts/updates) a nested array of values for a table.
+ * Write (inserts/updates/deletes) values for a Chado table.
  *
  * The $values array is of the same format used by chado_insert_record() and
  * chado_update_record().  However, both of those methods will use any nested
@@ -102,7 +102,9 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  *   The name of the table on which the insertion/update is performed.
  * @param $values
  *   The values array for the insertion.
+ *
  * @throws Exception
+ *
  * @return
  *   The unique record ID.
  */
@@ -111,27 +113,28 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    $fkeys = $schema['foreign keys'];
    $pkey = $schema['primary key'][0];
 
-   // Before inserting or updating this table, recurse if there are any
-   // nested FK array values.
-   foreach ($values as $column => $value) {
-     // If this value is an array then it must be a FK... let's recurse.
-     if (is_array($value)) {
 
-       // Find the name of the FK table for this column.
-       $fktable_name = '';
-       foreach ($fkeys as $fktable => $details) {
-         foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
-           if ($fkey_lcolumn == $column) {
-             $fktable_name = $fktable;
-           }
-         }
-       }
+//    // Before inserting or updating this table, recurse if there are any
+//    // nested FK array values.
+//    foreach ($values as $column => $value) {
+//      // If this value is an array then it must be a FK... let's recurse.
+//      if (is_array($value)) {
 
-       // Recurse on this recod.
-       $record_id = tripal_chado_field_storage_write_table($fktable_name, $values[$column]);
-       $values[$column] = $record_id;
-     }
-   }
+//        // Find the name of the FK table for this column.
+//        $fktable_name = '';
+//        foreach ($fkeys as $fktable => $details) {
+//          foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
+//            if ($fkey_lcolumn == $column) {
+//              $fktable_name = $fktable;
+//            }
+//          }
+//        }
+
+//        // Recurse on this recod.
+//        $record_id = tripal_chado_field_storage_write_table($fktable_name, $values[$column]);
+//        $values[$column] = $record_id;
+//      }
+//    }
 
    // Fields with a cardinality greater than 1 will often submit an
    // empty form.  We want to remove these empty submissions.  We can detect
@@ -145,9 +148,25 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    if ($num_empty == count(array_keys($values))) {
      return '';
    }
+   // If the primary key column has a value but all other values are empty then
+   // this is a delete.
+   if (array_key_exists($pkey, $values) and $values[$pkey]) {
+     $num_vals = 0;
+     foreach ($values as $value) {
+       if ($value) {
+         $num_vals++;
+       }
+     }
+     if ($num_vals == 1) {
+       $new_vals[$pkey] = $values[$pkey];
+       if (!chado_delete_record($table_name, $new_vals)) {
+         throw new Exception('Could not delete record from table: "' . $table_name . '".');
+       }
+       return '';
+     }
+   }
 
-   // If the primary key column has a value then this will be an udpate,
-   // otherwise it's an insert.
+   // If the primary key column does not have a value then this is an insert.
    if (!array_key_exists($pkey, $values) or !$values[$pkey] or !isset($values[$pkey])) {
      // Before inserting, we want to make sure the record does not
      // already exist.  Using the unique constraint check for a matching record.
@@ -168,16 +187,15 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
      }
      return $record[$pkey];
    }
-   // We have an incoming record_id so this is an update.
-   else {
-     // TODO: what if the unique constraint matches another record?  That is
-     // not being tested for here.
-     $match[$pkey] = $values[$pkey];
-     if (!chado_update_record($table_name, $match, $values)) {
-       drupal_set_message("Could not update Chado record in table: $table_name.", 'error');
-     }
-     return $values[$pkey];
+
+   // If we've made it to this point then this is an update.
+   // TODO: what if the unique constraint matches another record?  That is
+   // not being tested for here.
+   $match[$pkey] = $values[$pkey];
+   if (!chado_update_record($table_name, $match, $values)) {
+     drupal_set_message("Could not update Chado record in table: $table_name.", 'error');
    }
+   return $values[$pkey];
 }
 
 /**
