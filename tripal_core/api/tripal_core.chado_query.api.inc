@@ -299,11 +299,12 @@ function chado_insert_record($table, $values, $options = array()) {
 
   // get the table description
   $table_desc = chado_get_schema($table);
-  if (empty($table_desc)) {
+  if (!$table_desc) {
     tripal_report_error('tripal_core', TRIPAL_WARNING,
       'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
+    return FALSE;
   }
 
   // iterate through the values array and create a new 'insert_values' array
