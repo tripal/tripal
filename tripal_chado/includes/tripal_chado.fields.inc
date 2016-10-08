@@ -717,6 +717,7 @@ function tripal_chado_create_tripalfield_instance_base(&$info, $entity_type, $bu
         break;
       case 'boolean':
         $base_info['widget']['type'] = 'options_onoff';
+        $base_info['required'] = FALSE;
         break;
       case 'datetime':
         $base_info['widget']['type'] = 'date_select';

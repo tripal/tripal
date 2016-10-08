@@ -40,7 +40,6 @@ class chado_feature__seqlen extends TripalField {
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
@@ -51,29 +50,35 @@ class chado_feature__seqlen extends TripalField {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
-    $widget['feature__seqlen'] =  array(
+    $widget['chado-feature__seqlen'] =  array(
       '#type' => 'value',
       '#value' => 0,
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-//      '#element_validate' => array('chado_feature__seqlen_widget_validate'),
     );
   }
-  
+
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+
     // Get the residues so we can calculate teh length.
-    //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
+    $residues = $form_state['values']['feature__residues']['und'][0]['value']['residues'];
     // Remove any white spaces.
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues), 0, 'feature__seqlen');
+      $form_state['values']['feature__residues']['und'][0]['value']['chado-feature__residues'] = $residues;
+      $items[0]['chado-feature__seqlen'] = strlen($residues);
     }
     else {
-      // Otherwise, remove the seqlen value
-      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, 'feature_seqlen');
+      $items[0]['chado-feature__seqlen'] = '__NULL__';
     }
   }
-
 }

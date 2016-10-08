@@ -530,6 +530,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/contact/%'] = array(
+    'page callback' => 'tripal_autocomplete_contact',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.contact.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/storage/chado/auto_name/feature/%'] = array(
     'page callback' => 'tripal_autocomplete_feature',
     'page arguments' => array(6),
@@ -605,6 +613,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     'chado_linker__pub_widget' => array(
       'render element' => 'element',
       'file' => 'includes/TripalFields/chado_linker__pub.inc',
+    ),
+    'chado_linker__contact_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/TripalFields/chado_linker__contact.inc',
     ),
     'chado_linker__prop_adder_widget' => array(
       'render element' => 'element',

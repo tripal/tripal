@@ -66,7 +66,6 @@ class TripalEntityController extends EntityAPIController {
     }
 
     try {
-
       // First load the entity.
       $entities = entity_load('TripalEntity', $ids);
 
@@ -83,7 +82,6 @@ class TripalEntityController extends EntityAPIController {
         db_delete('tripal_entity')
           ->condition('id', $entity->id)
           ->execute();
-
       }
     }
     catch (Exception $e) {

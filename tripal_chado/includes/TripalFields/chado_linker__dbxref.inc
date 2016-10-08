@@ -107,7 +107,7 @@ class chado_linker__dbxref extends TripalField {
       $record_id = $form_state['values'][$field_name]['und'][$delta][$field_table . '__' . $pkey];
       $fkey_value = $form_state['values'][$field_name]['und'][$delta][$field_table . '__' . $fkey];
       $dbxref_id = $form_state['values'][$field_name]['und'][$delta][$field_table . '__dbxref_id'];
-      $db_id = $form_state['values'][$field_name]['und'][$delta][db_id];
+      $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
       $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
       $version = $form_state['values'][$field_name]['und'][$delta]['version'];
       $description = $form_state['values'][$field_name]['und'][$delta]['description'];
@@ -231,19 +231,19 @@ class chado_linker__dbxref extends TripalField {
       // we borrow the code from the 'form_error' function and append the field
       // so that the proper field is highlighted on error.
       if (!$db_id and $accession) {
-        $errors[$field_name][$delta]['und'][$delta] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
           'error' => 'chado_linker__dbxref',
         );
       }
       if ($db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][$delta] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
           'error' => 'chado_linker__dbxref',
         );
       }
       if (!$db_id and !$accession and ($version or $description)) {
-        $errors[$field_name][$delta]['und'][$delta] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
           'error' => 'chado_linker__dbxref',
         );

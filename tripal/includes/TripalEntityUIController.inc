@@ -43,8 +43,9 @@ class TripalEntityUIController extends EntityDefaultUIController {
           throw new Exception(t("Cannot find bundle that matches: %bundle_name",
               array('%bundle_name' => $bundle_name)));
         }
+        $term_id = $matches[1];
         // Get the term for this bundle
-        $term = entity_load('TripalTerm', array('id' => $matches[1]));
+        $term = entity_load('TripalTerm', array('id' => $term_id));
         $term = reset($term);
         $default_description = $term->definition ? $term->definition : '';
         // Set a custom page for adding new tripal data entities.
@@ -91,6 +92,24 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
     );
+    $items['bio_data/' . $wildcard . '/layout'] = array(
+      'title' => 'Layout',
+      'page callback' => 'drupal_goto',
+      'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/display")),
+      'access callback' => 'tripal_entity_access',
+      'access arguments' => array('admin', 1),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => -8,
+    );
+    $items['bio_data/' . $wildcard . '/fields'] = array(
+      'title' => 'Fields',
+      'page callback' => 'drupal_goto',
+      'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/fields")),
+      'access callback' => 'tripal_entity_access',
+      'access arguments' => array('admin', 1),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => -8,
+    );
 
     // Menu item for deleting tripal data entities.
     $items['bio_data/' . $wildcard . '/delete'] = array(
@@ -105,16 +124,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
     return $items;
   }
 }
-
-/**
- *
- * @param unknown $entity
- */
-function tripal_entity_manage_fields($entity) {
-  drupal_goto('admin/structure/bio_data/manage/' . $entity->name . '/fields');
-  return '';
-}
-
 /**
  * Menu callback to display an entity.
  *

@@ -184,7 +184,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
     ->fetchField();
 
   if ($cvterm_id) {
-    $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
+    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
     if (array_key_exists('return_object', $options)) {
       return $cvterm;
     }

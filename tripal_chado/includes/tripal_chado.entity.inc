@@ -135,22 +135,7 @@ function tripal_chado_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
-  $record = db_select('chado_entity', 'ce')
-    ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-    ->condition('entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
 
-  if ($record && property_exists($record, 'chado_entity_id')) {
-    // Delete the corresponding record in Chado
-    $table = $record->data_table;
-    $record_id = $record->record_id;
-    chado_delete_record($table, array($table . '_id' => $record_id));
-
-    //Delete the record in the public.chado_entity table
-    $sql = "DELETE FROM {chado_entity} WHERE chado_entity_id = :id";
-    db_query($sql, array(':id' => $record->chado_entity_id));
-  }
 }
 
 /**

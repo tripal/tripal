@@ -57,8 +57,8 @@ class chado_base__organism_id extends TripalField {
     $field_column = $this->field['settings']['chado_column'];
 
     $organism_id = 0;
-    if (count($items) > 0 and array_key_exists($field_table . '__organism_id', $items[0])) {
-      $organism_id = $items[0][$field_table . '__organism_id'];
+    if (count($items) > 0 and array_key_exists('chado-' . $field_table . '__organism_id', $items[0])) {
+      $organism_id = $items[0]['chado-' . $field_table . '__organism_id'];
     }
 
     $widget['value'] = array(
@@ -66,7 +66,7 @@ class chado_base__organism_id extends TripalField {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $options = tripal_get_organism_select_options(FALSE);
-    $widget[$field_table . '__organism_id'] = array(
+    $widget['chado-' . $field_table . '__organism_id'] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -75,28 +75,31 @@ class chado_base__organism_id extends TripalField {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-//      '#element_validate' => array('chado_base__organism_id_widget_validate'),
     );
   }
-  
+
+  /**
+   * @see TripalField::widgetFormValidate()
+   */
   public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
 
-    $settings = $field['settings'];
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    $field_table = $field['settings']['chado_table'];
-    $field_column = $field['settings']['chado_column'];
-    
-    // If the form ID is field_ui_field_edit_form, then the user is editing the
-    // field's values in the manage fields form of Drupal.  We don't want
-    // to validate it as if it were being used in a data entry form.
-    if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-      return;
-    }
-    //$organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
-    
-    if (!$organism_id) {
-      form_error($element, t("Please specify an organism."));
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+
+    // Get the field values.
+    foreach ($items as $delta => $values) {
+
+      // Get the field values.
+      $organism_id = $values['chado-' . $field_table . '__organism_id'];
+      if (!$organism_id or $organism_id == 0) {
+        $errors[$field_name]['und'][0][] = array(
+          'message' =>  t("Please specify an organism."),
+          'error' => 'chado_base__organism_id'
+        );
+      }
     }
   }
 
@@ -116,6 +119,7 @@ class chado_base__organism_id extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
+        'chado-' . $field_table . '__organism_id' => '',
         'label' => '',
         'genus' => '',
         'species' => '',
@@ -152,7 +156,7 @@ class chado_base__organism_id extends TripalField {
           $entity->{$field_name}['und'][0]['value']['infraspecific_type'] =  $organism->type_id->name;
         }
       }
-      $entity->{$field_name}['und'][0][$field_table . '__organism_id'] = $organism->organism_id;
+      $entity->{$field_name}['und'][0]['chado-' . $field_table . '__organism_id'] = $organism->organism_id;
 
       // Is there a published entity for this organism?
       if (property_exists($entity->chado_record->$field_column, 'entity_id')) {

@@ -74,8 +74,8 @@ class chado_feature__residues extends TripalField {
 
     // Get the field defaults.
     $residues = '';
-    if (count($items) > 0 and array_key_exists('feature__residues', $items[0])) {
-      $residues = $items[0]['feature__residues'];
+    if (count($items) > 0 and array_key_exists('chado-feature__residues', $items[0])) {
+      $residues = $items[0]['chado-feature__residues'];
     }
     if (array_key_exists('values', $form_state)) {
       //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
@@ -85,25 +85,27 @@ class chado_feature__residues extends TripalField {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    $widget['feature__residues'] = array(
+    $widget['chado-feature__residues'] = array(
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#default_value' => $residues,
       '#delta' => $delta,
-//      '#element_validate' => array('chado_feature__residues_widget_validate'),
       '#cols' => 30,
     );
   }
-  
+
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
     // Remove any white spaces.
-    //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
+    $residues = $items[0]['chado-feature__residues'];
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');
+      $items[0]['chado-feature__residues'] = $residues;
     }
   }
 
@@ -115,7 +117,6 @@ class chado_feature__residues extends TripalField {
     $field_name = $this->field['field_name'];
     $feature = $details['record'];
     $num_seqs = 0;
-
 
     // We don't want to get the sequence for traditionally large types. They are
     // too big,  bog down the web browser, take longer to load and it's not
@@ -131,7 +132,7 @@ class chado_feature__residues extends TripalField {
         'defline' => ">This sequence is too large for this display.",
         'residues' => '',
       );
-      $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = '';
+      $entity->{$field_name}['und'][$num_seqs]['chado-feature__residues'] = '';
     }
     else {
       $feature = chado_expand_var($feature,'field','feature.residues');
@@ -143,11 +144,11 @@ class chado_feature__residues extends TripalField {
           'defline' => tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)),
           'residues' => $feature->residues,
         );
-        $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = $feature->residues;
+        $entity->{$field_name}['und'][$num_seqs]['chado-feature__residues'] = $feature->residues;
       }
       else {
         $entity->{$field_name}['und'][$num_seqs]['value'] = array();
-        $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = '';
+        $entity->{$field_name}['und'][$num_seqs]['chado-feature__residues'] = '';
       }
     }
     $num_seqs++;
