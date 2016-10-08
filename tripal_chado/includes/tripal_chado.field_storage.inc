@@ -290,13 +290,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           // and because $record object is created by the chado_generate_var()
           // function we must go one more level deeper to get the value
           if (is_object($record->$field_column)) {
-            $entity->{$field_name}['und'][0]['chado' . $field_table . '__' . $field_column] = $record->$field_column->$field_column;
+            $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column->$field_column;
           }
           else {
             // For non FK fields we'll make the field value be the same
             // as the column value.
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
-            $entity->{$field_name}['und'][0]['chado' . $field_table . '__' . $field_column] = $record->$field_column;
+            $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column;
           }
         }
 

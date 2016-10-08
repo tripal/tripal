@@ -49,24 +49,23 @@ class chado_feature__md5checksum  extends TripalField {
 
     // Get the field defaults.
     $md5checksum = '';
-    if (count($items) > 0 and array_key_exists('feature__md5checksum', $items[0])) {
-      $md5checksum = $items[0]['feature__md5checksum'];
-    }
-    if (array_key_exists('values', $form_state)) {
-      //$md5checksum = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__md5checksum');
+    if (count($items) > 0 and array_key_exists('chado-feature__md5checksum', $items[0])) {
+      $md5checksum = $items[0]['chado-feature__md5checksum'];
     }
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
+      '#value' => $md5checksum,
     );
-    $widget['feature__md5checksum'] = array(
+    $widget['chado-feature__md5checksum'] = array(
       '#type' => 'value',
       '#value' => $md5checksum,
-//      '#element_validate' => array('chado_feature__md5checksum_widget_validate'),
     );
   }
 
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
     $field = $this->field;
     $settings = $field['settings'];
@@ -74,18 +73,19 @@ class chado_feature__md5checksum  extends TripalField {
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
-    
-    // Calculate the md5 checksum for the sequence only if md5 box is checked and
-    // the residues exist.
-    //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
+
+    // Get the residues so we can calculate teh length.
+    $residues = $form_state['values']['feature__residues']['und'][0]['value']['residues'];
+
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      tripal_chado_set_field_form_values($field_name, $form_state, md5($residues), 0, 'feature__md5checksum');
+      $form_state['values']['feature__residues']['und'][0]['value']['chado-feature__residues'] = $residues;
+      $items[0]['chado-feature__md5checksum'] = md5($residues);
     }
     else {
       // Otherwise, remove the md5 value
-      tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, $field_table . '__md5checksum');
+      $items[0]['chado-feature__md5checksum'] = '__NULL__';
     }
   }
-  
+
 }
