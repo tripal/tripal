@@ -70,11 +70,11 @@ class chado_feature__seqlen extends TripalField {
     $field_column = $this->field['settings']['chado_column'];
 
     // Get the residues so we can calculate teh length.
-    $residues = $form_state['values']['feature__residues']['und'][0]['value']['residues'];
+    $residues = $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'];
     // Remove any white spaces.
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values']['feature__residues']['und'][0]['value']['chado-feature__residues'] = $residues;
+      $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'] = $residues;
       $items[0]['chado-feature__seqlen'] = strlen($residues);
     }
     else {

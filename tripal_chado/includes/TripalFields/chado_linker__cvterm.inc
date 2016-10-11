@@ -33,8 +33,8 @@ class chado_linker__cvterm extends TripalField {
 
     $chado_table = $this->field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      if ($item[$chado_table . '__cvterm_id']) {
-        $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item[$chado_table . '__cvterm_id']));
+      if ($item['chado-' . $chado_table . '__cvterm_id']) {
+        $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));
         $dbxref = $cvterm->dbxref_id;
 
         // Build the accession.
@@ -45,7 +45,7 @@ class chado_linker__cvterm extends TripalField {
 
         // Build the publication reference.
         $pub_ref = '';
-        $pub_id = $item[$chado_table . '__pub_id'];
+        $pub_id = $item['chado-' . $chado_table . '__pub_id'];
         if ($pub_id) {
           $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
           $pub_ref = $pub->title;
@@ -53,7 +53,7 @@ class chado_linker__cvterm extends TripalField {
         $rows[] = array(
           $accession,
           $cvterm->definition,
-          $item[$chado_table . '__is_not'] ? 'Yes' : '',
+          $item['chado-' . $chado_table . '__is_not'] ? 'Yes' : '',
           '',
         );
       }
@@ -121,14 +121,15 @@ class chado_linker__cvterm extends TripalField {
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
       $record_id = $items[$delta]['value'];
-      $fkey_value = $items[$delta][$table_name . '__' . $fkey];
-      $cvterm_name = $items[$delta][$table_name . '--cvterm__name'];
-      $is_not = $items[$delta][$table_name . '__is_not'];
-      $cvterm_id = $items[$delta][$table_name . '__cvterm_id'];
+      $fkey_value = $items[$delta]['chado-' . $table_name . '__' . $fkey];
+      $cvterm_name = $items[$delta]['cvterm__name'];
+      $is_not = $items[$delta]['chado-' . $table_name . '__is_not'];
+      $cvterm_id = $items[$delta]['chado-' . $table_name . '__cvterm_id'];
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
+      // See example in chado_linker_contact.inc
 //       $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
 //       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
 //       $is_not = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_not');
@@ -154,24 +155,24 @@ class chado_linker__cvterm extends TripalField {
       '#value' => $items[$delta]['value'],
     );
 
-    $widget[$table_name . '__' . $pkey] = array(
+    $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
     );
-    $widget[$table_name . '--cvterm__cv_id--cv__cv_id'] = array(
+    $widget['cv__cv_id'] = array(
       '#type' => 'value',
       '#default_value' => $cv_id,
     );
-    $widget[$table_name . '__cvterm_id'] = array(
+    $widget['chado-' . $table_name . '__cvterm_id'] = array(
       '#type' => 'value',
       '#default_value' => $cvterm ? $cvterm->cvterm_id : '',
     );
-    $widget[$table_name . '__' . $fkey] = array(
+    $widget['chado-' . $table_name . '__' . $fkey] = array(
       '#type' => 'value',
       '#default_value' => $fkey_value,
     );
 
-    $widget[$table_name . '--cvterm__name'] = array(
+    $widget['cvterm__name'] = array(
       '#type' => 'textfield',
       '#title' => t('Term Name'),
       '#default_value' => $cvterm_name,
@@ -186,55 +187,55 @@ class chado_linker__cvterm extends TripalField {
       ),
     );
 
-    $widget[$table_name . '__is_not'] = array(
+    $widget['chado-' . $table_name . '__is_not'] = array(
       '#type' => 'checkbox',
       '#title' => t('Is Not'),
       '#default_value' => $is_not,
       '#required' => $element['#required'],
     );
 
-    $widget[$table_name . '--cvterm__definition'] = array(
+    $widget['cvterm__definition'] = array(
       '#type' => 'item',
       '#markup' => '',
     );
 
   }
-  
+
   public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
 
     $field_name = $element['#field_name'];
     $delta = $element['#delta'];
     $table_name = $element['#table_name'];
     $fkey = $element['#fkey_field'];
-    
+
     // If the form ID is field_ui_field_edit_form, then the user is editing the
     // field's values in the manage fields form of Drupal.  We don't want
     // to validate it as if it were being used in a data entry form.
     if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
       return;
     }
-    
+
     // Get the field values.
     //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
     //   $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
     //   $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
     //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
     //   $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
-    
+
     // If the user provided a cv_id and a name then we want to set the
     // foreign key value to be the chado_record_idd
     if ($cvterm_name) {
-    
+
       $fkey_value = $element['#entity']->chado_record_id;
       tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
-    
+
       // Get the cvterm ID. If one is not available because it's a newly added
       // record, then we need to retrieve it and set the form element.
       if (!$cvterm_id) {
         $cvterm = tripal_get_cvterm(array('cv_id' => $cv_id, 'name' => $cvterm_name));
         tripal_chado_set_field_form_values($field_name, $form_state, $cvterm->cvterm_id, $delta, $table_name . '__cvterm_id');
       }
-    
+
       if (!$pub_id) {
         $pub = chado_generate_var('pub', array('uniquename' => 'null'));
         tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
@@ -272,23 +273,23 @@ class chado_linker__cvterm extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'cvterm_id' => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . 'cvterm_id' => '',
       // The pub column is present in the cell_line_cvterm, feature_cvterm,
       // library_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
       // stock_cvterm, and stock_relationship_cvterm.
-      $field_table . '__' . 'pub_id' => '',
+      'chado-' . $field_table . '__' . 'pub_id' => '',
       // The is_not column is present in feature_cvterm and stock_cvterm tables.
-      $field_table . '__' . 'is_not' => '',
+      'chado-' . $field_table . '__' . 'is_not' => '',
       // The rank column is present in the cell_line_cvterm, expression_cvterm,
       // feature_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
       // and stock_cvterm tables.
-      $field_table . '__' . 'rank' => '',
+      'chado-' . $field_table . '__' . 'rank' => '',
       // The cvterm_type_id is present in the expression_cvterm table.
-      $field_table . '--' . 'cvterm_type_id' => '',
+      'cvterm_type_id' => '',
       // The following field are to help link the cvterm.
-      $field_table . '--' . 'cvterm__cv_id--cv__cv_id' => '',
-      $field_table . '--' . 'cvterm__name' => '',
+      'cv__cv_id' => '',
+      'cvterm__name' => '',
     );
 
     // Get the annotations associated with this base record for this fields type.
@@ -309,14 +310,14 @@ class chado_linker__cvterm extends TripalField {
       $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $linker->cvterm_id));
       $entity->{$field_name}['und'][$i] = array(
         'value' => $linker->$pkey,
-        $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
-        $field_table . '__' . 'cvterm_id' => $linker->cvterm_id,
-        $field_table . '__' . 'pub_id' => property_exists($linker, 'pub_id') ? $linker->pub_id : '',
-        $field_table . '__' . 'is_not' => property_exists($linker, 'is_not') ? $linker->is_not : '',
-        $field_table . '__' . 'rank' => property_exists($linker, 'rank') ? $linker->rank : '',
-        $field_table . '__' . 'cvterm_type_id' => property_exists($linker, 'cvterm_type_id') ? $linker->cvterm_type_id : '',
-        $field_table . '--' . 'cvterm__cv_id--cv__cv_id' => $cvterm->cv_id->cv_id,
-        $field_table . '--' . 'cvterm__name' => $cvterm->name,
+        'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
+        'chado-' . $field_table . '__' . 'cvterm_id' => $linker->cvterm_id,
+        'chado-' . $field_table . '__' . 'pub_id' => property_exists($linker, 'pub_id') ? $linker->pub_id : '',
+        'chado-' . $field_table . '__' . 'is_not' => property_exists($linker, 'is_not') ? $linker->is_not : '',
+        'chado-' . $field_table . '__' . 'rank' => property_exists($linker, 'rank') ? $linker->rank : '',
+        'chado-' . $field_table . '__' . 'cvterm_type_id' => property_exists($linker, 'cvterm_type_id') ? $linker->cvterm_type_id : '',
+        'cv__cv_id' => $cvterm->cv_id->cv_id,
+        'cvterm__name' => $cvterm->name,
       );
     }
   }
@@ -338,13 +339,13 @@ function theme_chado_linker__cvterm_widget($variables) {
   $layout = "
       <div class=\"annotation-cvterm-widget\">
         <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element[$table_name . '--cvterm__cv_id--cv__cv_id']) . "
+        drupal_render($element['cv__cv_id']) . "
         </div>
         <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element[$table_name . '--cvterm__name']) . "
+        drupal_render($element['cvterm__name']) . "
         </div>
         <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element[$table_name . '__is_not']) . "
+        drupal_render($element['chado-' . $table_name . '__is_not']) . "
         </div>
       </div>
     ";

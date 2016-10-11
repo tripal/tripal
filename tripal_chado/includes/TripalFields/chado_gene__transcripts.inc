@@ -159,10 +159,11 @@ class chado_gene__transcripts extends TripalField {
       $i++;
     }
   }
-  /**
-   * @see TripalField::widgetForm()
-   */
-  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
+  /**
+   * We don't want a widget so override this function.
+   */
+  public static function widgetInfo() {
+    return array();
   }
 }

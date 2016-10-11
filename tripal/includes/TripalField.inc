@@ -409,9 +409,17 @@ class TripalField {
    * Drupal typically does not provide a submit hook for fields.  The
    * TripalField provides one to allow for behind-the-scenes actions to
    * occur.   This function should never be used for updates, deletes or
-   * inserts into the storage backend. Rather, the appropriate Field Storage
-   * implementation will take care of that. Use this function instead to
-   * to change the $items array before insertion into the database.
+   * inserts for the Chado table associated with the field.  Rather, the
+   * storage backend should be allowed to handle inserts, updates deletes.
+   * However, it is permissible to perform inserts, updates or deletions within
+   * Chado using this function.  Those operations can be performed if needed but
+   * on other tables not directly associated with the field.
+   *
+   * An example is the chado.feature_synonym table.  The chado_linker__synonym
+   * field allows the user to provide a brand new synonynm and it must add it
+   * to the chado.synonym table prior to the record in the
+   * chado.feature_synonym table.  This insert occurs in the widgetFormSubmit
+   * function.
    *
    *  @param $entity_type
    *    The type of $entity.
