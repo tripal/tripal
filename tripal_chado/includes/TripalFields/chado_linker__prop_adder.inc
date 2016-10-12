@@ -91,84 +91,84 @@ class chado_linker__prop_adder extends TripalField {
       $form_state['triggering_element']['#name'] == 'kvproperty_adder_button') {
 
       $form_state['rebuild'] = TRUE;
-      $field_name = $element['#field_name'];
-      $entity_type = $element['#entity']->type;
-      $bundle = $element['#entity']->bundle;
+      $field_name = $this->field['field_name'];
+      $bundle = $entity->bundle;
 
       // Get the base table name from the field properties.
-      $field = field_info_field($field_name);
+      $field =$this->field;
       $base_table = $field['settings']['base_table'];
 
       // Get the term for the property
-      //$kvproperty = tripal_chado_get_field_form_values($field_name, $form_state);
-      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
+      foreach ($items as $delta => $values) {
+        $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
+        $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
 
-      if (count($term) == 1) {
-        $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
+        if (count($term) == 1) {
+          $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
 
-        // The field name is the table name in this case. We want to get the
-        // primary key as this should be the field that maps th the value.
-        $schema = chado_get_schema($field_name);
-        $pkey = $schema['primary key'][0];
+          // The field name is the table name in this case. We want to get the
+          // primary key as this should be the field that maps th the value.
+          $schema = chado_get_schema($field_name);
+          $pkey = $schema['primary key'][0];
+  
+          // Add the field if it doesn't already exists.
+          $field = field_info_field('cvterm');      dpm('property_' . $term[0]->cvterm_id);
+          if (!$field) {
+            $create_info = array(
+              'field_name' => 'property_' . $term[0]->cvterm_id,
+              'type' => 'tripal_chado_kvproperty_widget',
+              'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+              'locked' => FALSE,
+              'storage' => array(
+                'type' => 'field_chado_storage',
+              ),
+              'settings' => array(
+                'chado_table' => $field_name,
+                'chado_column' => $pkey,
+                'base_table' => $base_table,
+                'semantic_web' => '',
+              ),
+            );
+            $field = field_create_field($create_info);
+          }
 
-        // Add the field if it doesn't already exists.
-        $field = field_info_field('cvterm');
-        if (!$field) {
-          $create_info = array(
-            'field_name' => 'property-' . $term[0]->cvterm_id,
-            'type' => 'tripal_chado_kvproperty_widget',
-            'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-            'locked' => FALSE,
-            'storage' => array(
-              'type' => 'field_chado_storage',
-            ),
-            'settings' => array(
-              'chado_table' => $field_name,
-              'chado_column' => $pkey,
-              'base_table' => $base_table,
-              'semantic_web' => '',
-            ),
-          );
-          $field = field_create_field($create_info);
+          // Attach the field to the bundle if it isn't already.
+          if (!$field and array_key_exists('bundles', $field) or
+              !array_key_exists('TripalEntity', $field['bundles']) or
+              !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+  
+                $createInstanceInfo = array(
+                  'field_name' => 'property_' . $term[0]->cvterm_id,
+                  'entity_type' => 'TripalEntity',
+                  'bundle' => $this->bundle->name,
+                  'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),
+                  'description' => $term[0]->definition ? $term[0]->definition : '',
+                  'required' => FALSE,
+                  'settings' => array(),
+                  'widget' => array(
+                    'type' => 'tripal_chado_kvproperty_widget',
+                    'settings' => array(
+                      'display_label' => 1,
+                    ),
+                  ),
+                  'display' => array(
+                    'default' => array(
+                      'label' => 'inline',
+                      'type' => 'tripal_chado_kvproperty_formatter',
+                      'settings' => array(),
+                    ),
+                  ),
+                );
+                //$instance = field_create_instance($createInstanceInfo);
+              }
         }
-
-        // Attach the field to the bundle if it isn't already.
-        if (!$field and array_key_exists('bundles', $field) or
-            !array_key_exists('TripalEntity', $field['bundles']) or
-            !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-
-              $createInstanceInfo = array(
-                'field_name' => 'property-' . $term[0]->cvterm_id,
-                'entity_type' => 'TripalEntity',
-                'bundle' => $this->bundle->name,
-                'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),
-                'description' => $term[0]->definition ? $term[0]->definition : '',
-                'required' => FALSE,
-                'settings' => array(),
-                'widget' => array(
-                  'type' => 'tripal_chado_kvproperty_widget',
-                  'settings' => array(
-                    'display_label' => 1,
-                  ),
-                ),
-                'display' => array(
-                  'default' => array(
-                    'label' => 'inline',
-                    'type' => 'tripal_chado_kvproperty_formatter',
-                    'settings' => array(),
-                  ),
-                ),
-              );
-              $instance = field_create_instance($createInstanceInfo);
-            }
-      }
-      else if (count($term) > 1) {
-        form_set_error(implode('][', $element ['#parents']) . '][value', t("This term is present in multiple vocabularies. Please select the appropriate one."));
-      }
-      else {
-        form_set_error(implode('][', $element ['#parents']) . '][value', t("Please provide a property type to add."));
+        else if (count($term) > 1) {
+          form_set_error(implode('][', $element ['#parents']) . '][value', t("This term is present in multiple vocabularies. Please select the appropriate one."));
+        }
+        else {
+          form_set_error(implode('][', $element ['#parents']) . '][value', t("Please provide a property type to add."));
+        }
       }
     }
   }
-
 }

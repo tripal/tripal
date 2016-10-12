@@ -156,14 +156,30 @@ class chado_linker__relationship extends TripalField {
     $object_uniquename = '';
     $value = '';
     $rank = '';
+    
+    // Handle special cases
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
+    if ($chado_table == 'organism_relationship') {
+      $subject_id_key = 'subject_organism_id';
+      $object_id_key = 'object_organism_id';
+    }
+    else if ($rel_table == 'nd_reagent_relationship') {
+      $subject_id_key = 'subject_reagent_id';
+      $object_id_key = 'object_reagent_id';
+    }
+    else if ($rel_table == 'project_relationship') {
+      $subject_id_key = 'subject_project_id';
+      $object_id_key = 'object_project_id';
+    }
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
       $record_id = isset($items[$delta][$field_table . '__' . $pkey]) ? $items[$delta][$field_table . '__' . $pkey] : '';
-      $subject_id = isset($items[$delta][$field_table . '__subject_id']) ? $items[$delta][$field_table . '__subject_id'] : '';
+      $subject_id = isset($items[$delta][$field_table . '__' . $subject_id_key]) ? $items[$delta][$field_table . '__' . $subject_id_key] : '';
       $type_id = isset($items[$delta][$field_table . '__type_id']) ? $items[$delta][$field_table . '__type_id'] : '';
-      $object_id = isset($items[$delta][$field_table . '__object_id']) ? $items[$delta][$field_table . '__object_id'] : '';
+      $object_id = isset($items[$delta][$field_table . '__' . $object_id_key]) ? $items[$delta][$field_table . '__' . $object_id_key] : '';
 
       if (isset($items[$delta][$field_table . '__value'])) {
         $value = $items[$delta][$field_table . '__value'];
@@ -208,7 +224,7 @@ class chado_linker__relationship extends TripalField {
       '#type' => 'value',
       '#default_value' => $record_id,
     );
-    $widget[$field_table . '__subject_id'] = array(
+    $widget[$field_table . '__' . $subject_id_key] = array(
       '#type' => 'value',
       '#default_value' => $subject_id,
     );
@@ -216,7 +232,7 @@ class chado_linker__relationship extends TripalField {
       '#type' => 'value',
       '#default_value' => $type_id,
     );
-    $widget[$field_table . '__object_id'] = array(
+    $widget[$field_table . '__' . $object_id_key] = array(
       '#type' => 'value',
       '#default_value' => $object_id,
     );
@@ -237,7 +253,7 @@ class chado_linker__relationship extends TripalField {
       '#title' => t('Subject'),
       '#default_value' => $subject_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists('length', $schema['fields']['subject_id']) ? $schema['fields']['subject_id']['length'] : 255,
+      '#maxlength' => array_key_exists('length', $schema['fields'][$subject_id_key]) ? $schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
@@ -400,7 +416,7 @@ class chado_linker__relationship extends TripalField {
       '#title' => t('Object'),
       '#default_value' => $object_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists('length', $schema['fields']['object_id']) ? $schema['fields']['object_id']['length'] : 255,
+      '#maxlength' => array_key_exists('length', $schema['fields'][$object_id_key]) ? $schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
@@ -418,9 +434,25 @@ class chado_linker__relationship extends TripalField {
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
 
+    // Handle special cases
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
+    if ($field_table == 'organism_relationship') {
+      $subject_id_key = 'subject_organism_id';
+      $object_id_key = 'object_organism_id';
+    }
+    else if ($rel_table == 'nd_reagent_relationship') {
+      $subject_id_key = 'subject_reagent_id';
+      $object_id_key = 'object_reagent_id';
+    }
+    else if ($rel_table == 'project_relationship') {
+      $subject_id_key = 'subject_project_id';
+      $object_id_key = 'object_project_id';
+    }
+    
     foreach ($items as $delta => $item) {
-      $subject_id = $item[$field_table . '__subject_id'];
-      $object_id = $item[ $field_table . '__object_id'];
+      $subject_id = $item[$field_table . '__' . $subject_id_key];
+      $object_id = $item[ $field_table . '__' . $object_id_key];
       $type_id = $item[$field_table . '__type_id'];
       $type_id = isset($item['type_id']) ? $item['type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
@@ -462,7 +494,7 @@ class chado_linker__relationship extends TripalField {
       // just with the text value or with an [id: \d+] string embedded.  If the
       // later we will pull it out.
       $subject_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
+      $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
       $matches = array();
       if ($entity) {
         if(preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
@@ -496,7 +528,7 @@ class chado_linker__relationship extends TripalField {
 
       // Now check for a matching object.
       $object_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
+      $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
       $matches = array();
       if ($entity) {
         if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
@@ -706,8 +738,24 @@ return;
     if (!$record->$rel_table) {
       return;
     }
-    $srelationships = $record->$rel_table->subject_id;
-    $orelationships = $record->$rel_table->object_id;
+    $srelationships = null;
+    $orelationships = null;
+    if ($rel_table == 'organism_relationship') {
+      $srelationships = $record->$rel_table->subject_organism_id;
+      $orelationships = $record->$rel_table->object_organism_id;
+    }
+    else if ($rel_table == 'nd_reagent_relationship') {
+      $srelationships = $record->$rel_table->subject_reagent_id;
+      $orelationships = $record->$rel_table->object_reagent_id;
+    }
+    else if ($rel_table == 'project_relationship') {
+      $srelationships = $record->$rel_table->subject_project_id;
+      $orelationships = $record->$rel_table->object_project_id;
+    }
+    else {
+      $srelationships = $record->$rel_table->subject_id;
+      $orelationships = $record->$rel_table->object_id;
+    }
 
     $i = 0;
     if ($orelationships) {

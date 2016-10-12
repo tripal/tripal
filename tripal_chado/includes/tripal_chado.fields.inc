@@ -510,6 +510,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
         'type' => 'field_chado_storage',
       ),
       'settings' => array(
+        'base_table' => $table_name
       ),
     );
   }
