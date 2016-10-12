@@ -69,8 +69,9 @@ class chado_linker__prop extends TripalField {
     // of the FK field that links to the base table.
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $lfkey_field = key($schema['foreign keys'][$field_table]['columns']);
-    $rfkey_field = $schema['foreign keys'][$field_table]['columns'][$lfkey_field];
+    $base_table = $this->field['settings']['base_table'];
+    $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
+    $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
     // Get the field defaults.
     $fk_value = '';
@@ -78,10 +79,6 @@ class chado_linker__prop extends TripalField {
     if (array_key_exists($delta, $items)) {
       $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
     }
-    if ($chado_record) {
-      $fk_value = $chado_record->$rfkey_field;
-    }
-
 
     // The group of elements all-together need some extra functionality
     // after building up the full list (like draggable table rows).
@@ -91,12 +88,12 @@ class chado_linker__prop extends TripalField {
     $widget['#field_name'] = $element['#field_name'];
     $widget['#language'] = $element['#language'];
     $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
-    $widget['#element_validate'] = array('chado_linker__prop_widget_validate');
+    //$widget['#element_validate'] = array('chado_linker__prop_widget_validate');
     $widget['#cardinality'] = 1;
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => $items[0]['value'],
     );
 
     $widget['chado-' . $table_name . '__' . $pkey] = array(
@@ -127,9 +124,8 @@ class chado_linker__prop extends TripalField {
    * @see TripalField::validate()
    */
   public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
-    $field_name = $element['#field_name'];
-    $delta = $element['#delta'];
-    $entity = $element['#entity'];
+/*     $field_name = $this->field['field_name'];
+
     $matches = array();
 
     // Get the record and table mapping info.
@@ -172,7 +168,7 @@ class chado_linker__prop extends TripalField {
         $pkey => $pkey_val
       );
       chado_delete_record($table_name, $match);
-    }
+    } */
   }
   /**
    * @see TripalField::load()
@@ -189,7 +185,6 @@ class chado_linker__prop extends TripalField {
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
     $table_name = $matches[1];
     $cvterm_id = $matches[2];
-
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
@@ -210,7 +205,7 @@ class chado_linker__prop extends TripalField {
     // given type.
     $columns = array('*');
     $match = array(
-      $fkey_lcolumn => $record->$fkey_rcolumn,
+      $fkey_lcolumn => $fkey_rcolumn,
       'type_id' => $cvterm_id,
     );
     $options = array(

@@ -90,13 +90,13 @@ class chado_linker__prop_adder extends TripalField {
     $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
     $cvterms = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
 
-    if (count(cvterms) > 1) {
+    if (count($cvterms) > 1) {
       $errors[$this->field['field_name']][$langcode][$delta][] = array(
         'error' => 'chado_linker__prop_adder',
         'message' => t("This term is present in multiple vocabularies. Please select the appropriate one."),
       );
     }
-    if (count(cvterms) == 0) {
+    if (count($cvterms) == 0) {
       $errors[$this->field['field_name']][$langcode][$delta][] = array(
         'error' => 'chado_linker__prop_adder',
         'message' => t("Please provide a property type to add."),
