@@ -48,14 +48,13 @@ class chado_linker__prop extends TripalField {
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
 
-    // Get the record and table mapping info.
-    $chado_table = $entity->chado_table;
-    $chado_column = $entity->chado_column;
-    $chado_record = $entity->chado_record;
 
+    // Get the table name and cvterm that this field maps to.
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
     // If the field name is not properly formatted then we can't tell what
@@ -70,14 +69,14 @@ class chado_linker__prop extends TripalField {
     // of the FK field that links to the base table.
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $lfkey_field = key($schema['foreign keys'][$chado_table]['columns']);
-    $rfkey_field = $schema['foreign keys'][$chado_table]['columns'][$lfkey_field];
+    $lfkey_field = key($schema['foreign keys'][$field_table]['columns']);
+    $rfkey_field = $schema['foreign keys'][$field_table]['columns'][$lfkey_field];
 
     // Get the field defaults.
     $fk_value = '';
     $propval = '';
     if (array_key_exists($delta, $items)) {
-      $propval = $items[$delta][$table_name . '__value'];
+      $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
     }
     if ($chado_record) {
       $fk_value = $chado_record->$rfkey_field;
@@ -100,23 +99,23 @@ class chado_linker__prop extends TripalField {
       '#value' => $items[$delta]['value'],
     );
 
-    $widget[$table_name . '__' . $pkey] = array(
+    $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'hidden',
       '#default_value' => !empty($items[$delta]['value']) ? $items[$delta]['value'] : '',
     );
-    $widget[$table_name . '__' . $lfkey_field] = array(
+    $widget['chado-' . $table_name . '__' . $lfkey_field] = array(
       '#type' => 'hidden',
       '#value' => $fk_value,
     );
-    $widget[$table_name . '__value'] = array(
+    $widget['chado-' . $table_name . '__value'] = array(
       '#type' => 'textfield',
       '#default_value' => $propval,
     );
-    $widget[$table_name . '__type_id'] = array(
+    $widget['chado-' . $table_name . '__type_id'] = array(
       '#type' => 'hidden',
       '#value' => $cvterm_id,
     );
-    $widget[$table_name . '__rank'] = array(
+    $widget['chado-' . $table_name . '__rank'] = array(
       '#type' => 'hidden',
       '#value' => $delta,
     );
@@ -180,10 +179,11 @@ class chado_linker__prop extends TripalField {
    */
   public function load($entity, $details = array()) {
 
-    $field_name = $details['field_name'];
-    $field_type = $details['type'];
-    $field_table = $details['settings']['chado_table'];
-    $field_column = $details['settings']['chado_column'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
@@ -199,11 +199,11 @@ class chado_linker__prop extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      $field_table . '__' . $pkey => '',
-      $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__value' => '',
-      $field_table . '__type_id' => '',
-      $field_table . '__rank' => '',
+      'chado-' . $field_table . '__' . $pkey => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__value' => '',
+      'chado-' . $field_table . '__type_id' => '',
+      'chado-' . $field_table . '__rank' => '',
     );
 
     // Get the properties associated with this base record for this fields
@@ -223,11 +223,11 @@ class chado_linker__prop extends TripalField {
       foreach ($schema['fields'] as $fname => $details) {
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(),
-          $field_table . '__' . $pkey => $property->$pkey,
-          $field_table . '__' . $fkey_lcolumn => $property->$fkey_lcolumn,
-          $field_table . '__value' => $property->value,
-          $field_table . '__type_id' => $property->type_id,
-          $field_table . '__rank' => $property->rank,
+          'chado-' . $field_table . '__' . $pkey => $property->$pkey,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $property->$fkey_lcolumn,
+          'chado-' . $field_table . '__value' => $property->value,
+          'chado-' . $field_table . '__type_id' => $property->type_id,
+          'chado-' . $field_table . '__rank' => $property->rank,
         );
       }
     }
