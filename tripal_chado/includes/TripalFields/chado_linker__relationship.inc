@@ -164,11 +164,11 @@ class chado_linker__relationship extends TripalField {
       $subject_id_key = 'subject_organism_id';
       $object_id_key = 'object_organism_id';
     }
-    else if ($rel_table == 'nd_reagent_relationship') {
+    else if ($chado_table == 'nd_reagent_relationship') {
       $subject_id_key = 'subject_reagent_id';
       $object_id_key = 'object_reagent_id';
     }
-    else if ($rel_table == 'project_relationship') {
+    else if ($chado_table == 'project_relationship') {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
@@ -441,11 +441,11 @@ class chado_linker__relationship extends TripalField {
       $subject_id_key = 'subject_organism_id';
       $object_id_key = 'object_organism_id';
     }
-    else if ($rel_table == 'nd_reagent_relationship') {
+    else if ($field_table == 'nd_reagent_relationship') {
       $subject_id_key = 'subject_reagent_id';
       $object_id_key = 'object_reagent_id';
     }
-    else if ($rel_table == 'project_relationship') {
+    else if ($field_table == 'project_relationship') {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }

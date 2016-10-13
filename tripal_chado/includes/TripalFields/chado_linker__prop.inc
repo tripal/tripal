@@ -32,7 +32,7 @@ class chado_linker__prop extends TripalField {
 
     $properties = array();
     foreach ($items as $delta => $item) {
-      $properties[] = $item[$chado_table . '__value'];
+      $properties[] = $item['chado-' . $chado_table . '__value'];
     }
     $content = implode(', ', $properties);
 
@@ -74,7 +74,7 @@ class chado_linker__prop extends TripalField {
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
     // Get the field defaults.
-    $fk_value = '';
+    $fk_value =$items[0]['chado-' . $field_table . '__' . $lfkey_field];
     $propval = '';
     if (array_key_exists($delta, $items)) {
       $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
@@ -93,12 +93,12 @@ class chado_linker__prop extends TripalField {
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[0]['value'],
+      '#value' => key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'hidden',
-      '#default_value' => !empty($items[$delta]['value']) ? $items[$delta]['value'] : '',
+      '#default_value' => !empty($items[$delta]['chado-' . $field_table . '__' . $pkey]) ? $items[$delta]['chado-' . $field_table . '__' . $pkey] : '',
     );
     $widget['chado-' . $table_name . '__' . $lfkey_field] = array(
       '#type' => 'hidden',
@@ -116,7 +116,6 @@ class chado_linker__prop extends TripalField {
       '#type' => 'hidden',
       '#value' => $delta,
     );
-    return $widget;
   }
 
 
@@ -170,6 +169,25 @@ class chado_linker__prop extends TripalField {
       chado_delete_record($table_name, $match);
     } */
   }
+  
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+
+    $field_table = $this->field['settings']['chado_table'];
+    foreach ($items AS $delta => $item) {
+      // Don't save if there is no value for prop
+      if (!trim($item['chado-' . $field_table . '__' . 'value'])) {
+        foreach($item AS $key => $value) {
+          if (preg_match('/^chado-/', $key)) {
+            $items[$delta][$key] = '__NULL__';
+          }
+        }
+      }
+    }
+  }
+  
   /**
    * @see TripalField::load()
    */
@@ -192,10 +210,11 @@ class chado_linker__prop extends TripalField {
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
+    $chado_record = $entity->chado_record;
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
       'chado-' . $field_table . '__value' => '',
       'chado-' . $field_table . '__type_id' => '',
       'chado-' . $field_table . '__rank' => '',
@@ -205,7 +224,7 @@ class chado_linker__prop extends TripalField {
     // given type.
     $columns = array('*');
     $match = array(
-      $fkey_lcolumn => $fkey_rcolumn,
+      $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
       'type_id' => $cvterm_id,
     );
     $options = array(

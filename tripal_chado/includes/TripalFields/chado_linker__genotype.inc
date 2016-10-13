@@ -76,14 +76,6 @@ class chado_linker__genotype extends TripalField {
     }
   }
 
-
-  /**
-   * @see TripalField::widgetForm()
-   */
-  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
-
-  }
-
   /**
    * @see TripalField::load()
    */
@@ -148,4 +140,12 @@ class chado_linker__genotype extends TripalField {
       }
     }
   }
+  
+  /**
+   * We don't want a widget so override this function.
+   */
+  public static function widgetInfo() {
+    return array();
+  }
+  
 }

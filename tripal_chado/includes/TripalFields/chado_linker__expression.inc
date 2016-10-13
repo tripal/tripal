@@ -174,5 +174,12 @@ class chado_linker__expression extends TripalField {
       }
     }
   }
-
+  
+  /**
+   * We don't want a widget so override this function.
+   */
+  public static function widgetInfo() {
+    return array();
+  }
+  
 }

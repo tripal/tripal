@@ -221,7 +221,7 @@ class chado_base__dbxref_id extends TripalField {
       // If user did not select a database, we want to remove dbxref_id from the
       // field.
       if (!$db_id) {
-        $items[$delta]['chado-' . $table_name . '__dbxref_id'] = '__NULL__';
+        $items[$delta]['chado-' . $field_table . '__dbxref_id'] = '__NULL__';
       }
       // If the dbxref_id does not match the db_id + accession then the user
       // has selected a new dbxref record and we need to update the hidden
@@ -229,7 +229,7 @@ class chado_base__dbxref_id extends TripalField {
       if ($db_id and $accession) {
         $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
         if ($dbxref and $dbxref->dbxref_id != $fk_val) {
-          $items[$delta]['chado-' . $table_name . '__dbxref_id'] = $dbxref->dbxref_id;
+          $items[$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
         }
       }
     }
