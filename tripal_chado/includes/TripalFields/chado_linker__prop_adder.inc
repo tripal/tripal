@@ -90,6 +90,23 @@ class chado_linker__prop_adder extends TripalField {
     $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
     $cvterms = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
 
+    if (trim($kvproperty) && count($cvterms) == 1) {
+      // Get the table and base table.
+      $base_table = $this->field['settings']['base_table'];
+      
+      // Generate the name for the property table and the field name that we'll
+      // be creating.
+      $prop_table = $base_table . 'prop';
+      $field_name = $prop_table . '__' . $cvterms[0]->cvterm_id;
+      // Create an instance of the field.
+      $instance = field_info_instance($entity_type, $field_name,  $entity->bundle);
+      if ($instance) {
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__prop_adder',
+          'message' => t("The property already exists."),
+        );
+      }
+    }
     if (trim($kvproperty) && count($cvterms) > 1) {
       $errors[$this->field['field_name']][$langcode][$delta][] = array(
         'error' => 'chado_linker__prop_adder',
@@ -161,10 +178,8 @@ class chado_linker__prop_adder extends TripalField {
     }
 
     // Create an instance of the field.
-    if (!$field and array_key_exists('bundles', $field) or
-        !array_key_exists('TripalEntity', $field['bundles']) or
-        !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-
+    $instance = field_info_instance($entity_type, $field_name,  $entity->bundle);
+    if (!$instance) {
       $instance = field_create_instance(array(
         'field_name' => $field_name,
         'entity_type' => 'TripalEntity',

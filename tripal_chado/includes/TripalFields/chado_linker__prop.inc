@@ -181,7 +181,7 @@ class chado_linker__prop extends TripalField {
       if (!trim($item['chado-' . $field_table . '__' . 'value'])) {
         foreach($item AS $key => $value) {
           if (preg_match('/^chado-/', $key)) {
-            $items[$delta][$key] = '__NULL__';
+            //$items[$delta][$key] = '__NULL__';
           }
         }
       }
