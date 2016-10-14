@@ -74,7 +74,7 @@ class chado_linker__prop extends TripalField {
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
     // Get the field defaults.
-    $fk_value =$items[0]['chado-' . $field_table . '__' . $lfkey_field];
+    $fk_value =key_exists(0, $items) ? $items[0]['chado-' . $field_table . '__' . $lfkey_field] : '';
     $propval = '';
     if (array_key_exists($delta, $items)) {
       $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
@@ -181,7 +181,7 @@ class chado_linker__prop extends TripalField {
       if (!trim($item['chado-' . $field_table . '__' . 'value'])) {
         foreach($item AS $key => $value) {
           if (preg_match('/^chado-/', $key)) {
-            //$items[$delta][$key] = '__NULL__';
+            $items[$delta][$key] = '__NULL__';
           }
         }
       }
