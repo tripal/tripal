@@ -1,0 +1,16 @@
+# Tripal Content menu items definition
+entity.tripal_entity.collection:
+  title: 'Tripal Content list'
+  route_name: entity.tripal_entity.collection
+  description: 'List Tripal Content entities'
+  parent: system.admin_structure
+  weight: 100
+
+# Tripal Content type menu items definition
+entity.tripal_entity_type.collection:
+  title: 'Tripal Content type'
+  route_name: entity.tripal_entity_type.collection
+  description: 'List Tripal Content type (bundles)'
+  parent: system.admin_structure
+  weight: 99
+

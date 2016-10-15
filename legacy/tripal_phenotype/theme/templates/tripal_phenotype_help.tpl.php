@@ -1,1 +1,0 @@
-<h3>Tripal Phenotype Module</h3>

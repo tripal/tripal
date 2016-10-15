@@ -1,4 +1,0 @@
-; The file should be formatted this way :
-; file:line:warning-type
-; where warning-type is one of security, style, sql, i18n, comment, etc.
-

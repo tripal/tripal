@@ -1,0 +1,17 @@
+# Tripal Content routing definition
+entity.tripal_entity.canonical:
+  route_name: entity.tripal_entity.canonical
+  base_route: entity.tripal_entity.canonical
+  title: 'View'
+
+entity.tripal_entity.edit_form:
+  route_name: entity.tripal_entity.edit_form
+  base_route: entity.tripal_entity.canonical
+  title: Edit
+
+entity.tripal_entity.delete_form:
+  route_name:  entity.tripal_entity.delete_form
+  base_route:  entity.tripal_entity.canonical
+  title: Delete
+  weight: 10
+

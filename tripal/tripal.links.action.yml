@@ -1,0 +1,11 @@
+entity.tripal_entity.add_form:
+  route_name: 'entity.tripal_entity.add_page'
+  title: 'Add Tripal Content'
+  appears_on:
+    - entity.tripal_entity.collection
+entity.tripal_entity_type.add_form:
+  route_name: 'entity.tripal_entity_type.add_form'
+  title: 'Add Tripal Content type'
+  appears_on:
+    - entity.tripal_entity_type.collection
+
