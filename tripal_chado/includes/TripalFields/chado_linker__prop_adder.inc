@@ -38,11 +38,12 @@ class chado_linker__prop_adder extends TripalField {
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
     $field_name = $widget['#field_name'];
-    
+
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
     $widget['#description'] = $element['#description'];
     $widget['#group'] = 'entity_form_vtabs';
+
 
 /*     $widget['kvproperty_instructions'] = array(
       '#type' => 'item',
@@ -54,9 +55,13 @@ class chado_linker__prop_adder extends TripalField {
           of this type.'),
     ); */
     $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
-    
+
+    $widget['wrapper'] = array(
+      '#prefix' =>  "<span id='$field_name-lookup-form'>",
+      '#suffix' => '</span>',
+    );
     // If no term has been selected yet then provide the auto complete field.
-    $widget['term_name'] = array(
+    $widget['wrapper']['term_name'] = array(
       '#title'       => t('Term'),
       '#type'        => 'textfield',
       '#description' => t("The content type must be the name of a term in
@@ -68,19 +73,20 @@ class chado_linker__prop_adder extends TripalField {
       '#default_value' => $term_name,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     );
-    $widget['select_button'] = array(
+
+    $widget['wrapper']['select_button'] = array(
       '#type' => 'button',
       '#value' => t('Lookup Term'),
       '#name' => 'select_cvterm',
       '#ajax' => array(
         'callback' => "tripal_chado_prop_adder_form_ajax_callback",
-        'wrapper' => "edit-$field_name-und-0",
+        'wrapper' => "$field_name-lookup-form",
         'effect' => 'fade',
         'method' => 'replace'
       ),
     );
     if ($term_name) {
-      $widget['terms_list'] = array(
+      $widget['wrapper']['terms_list'] = array(
         '#type' => 'fieldset',
         '#title' => t('Matching Terms'),
         '#description' => t('Please select the term the best matches the
@@ -102,7 +108,7 @@ class chado_linker__prop_adder extends TripalField {
           $default = TRUE;
           $attrs = array('checked' => 'checked');
         }
-        $widget['terms_list']['term-' . $term->cvterm_id] = array(
+        $widget['wrapper']['terms_list']['term-' . $term->cvterm_id] = array(
           '#type' => 'checkbox',
           '#title' =>  $term->name,
           '#default_value' => $default,
@@ -114,24 +120,25 @@ class chado_linker__prop_adder extends TripalField {
         $num_terms++;
       }
       if ($num_terms == 0) {
-        $widget['terms_list']['none'] = array(
+        $widget['wrapper']['terms_list']['none'] = array(
           '#type' => 'item',
           '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
         );
       }
       // Add in the button for the cases of no terms or too many.
-      $widget['submit_button'] = array(
+      $widget['wrapper']['submit_button'] = array(
         '#type' => 'submit',
         '#value' => t('Use this term'),
         '#name' => 'use_cvterm'
       );
     }
-    
-    $widget['cancel_button'] = array(
+
+    $widget['wrapper']['cancel_button'] = array(
       '#type' => 'button',
       '#value' => t('Cancel'),
       '#name' => 'cancel_button',
-      '#limit_validation_errors' => array()
+      '#limit_validation_errors' => array(),
+      '#suffix' =>  "</span>",
     );
   }
 
@@ -151,7 +158,7 @@ class chado_linker__prop_adder extends TripalField {
     if (trim($kvproperty) && count($cvterms) == 1) {
       // Get the table and base table.
       $base_table = $this->field['settings']['base_table'];
-      
+
       // Generate the name for the property table and the field name that we'll
       // be creating.
       $prop_table = $base_table . 'prop';
@@ -269,7 +276,10 @@ class chado_linker__prop_adder extends TripalField {
  */
 function tripal_chado_prop_adder_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $delta = $form_state['triggering_element']['#parents'][2];
-  drupal_debug($form[$field_name]['und'][$delta]);
-  return $form[$field_name]['und'][$delta];
+
+//   $delta = $form_state['triggering_element']['#parents'][2];
+//   drupal_debug($form[$field_name]['und'][$delta]);
+//   return $form[$field_name]['und'][$delta];
+  return print_r(array_keys($form),TRUE);
+  return $form[''][$field_name];
 }
