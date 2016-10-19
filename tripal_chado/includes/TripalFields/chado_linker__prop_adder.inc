@@ -37,12 +37,14 @@ class chado_linker__prop_adder extends TripalField {
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
+    $field_name = $widget['#field_name'];
+    
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
     $widget['#description'] = $element['#description'];
     $widget['#group'] = 'entity_form_vtabs';
 
-    $widget['kvproperty_instructions'] = array(
+/*     $widget['kvproperty_instructions'] = array(
       '#type' => 'item',
       '#markup' => t('You may add additional properties to this form by
           providing a property name (from a vocabulary) in the field below
@@ -50,30 +52,86 @@ class chado_linker__prop_adder extends TripalField {
           new field to the form above for the property you entered.
           In the future, this field will be present for all records
           of this type.'),
-    );
-    $widget['value'] = array(
-      '#title' => t('Property Type'),
-      '#type' => 'textfield',
-      '#description' => t("Please enter the type of property that you want to
-          add.  As you type, suggestions will be provided."),
+    ); */
+    $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
+    
+    // If no term has been selected yet then provide the auto complete field.
+    $widget['term_name'] = array(
+      '#title'       => t('Term'),
+      '#type'        => 'textfield',
+      '#description' => t("The content type must be the name of a term in
+        a controlled vocabulary and the controlled vocabulary should
+        already be loaded into Tripal.  For example, to create a content
+        type for storing 'genes', use the 'gene' term from the
+        Sequence Ontology (SO)."),
+      '#required'    => TRUE,
+      '#default_value' => $term_name,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     );
-    $widget['kvproperty_adder_link'] = array(
-      '#type' => 'item',
-      '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/vocab/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
+    $widget['select_button'] = array(
+      '#type' => 'button',
+      '#value' => t('Lookup Term'),
+      '#name' => 'select_cvterm',
+      '#ajax' => array(
+        'callback' => "tripal_chado_prop_adder_form_ajax_callback",
+        'wrapper' => "edit-$field_name-und-0",
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
     );
-    // When this button is clicked, the form will be validated and submitted.
-    // Therefore, we set custom submit and validate functions to override the
-    // default form submit.  In the validate function we set the form_state
-    // to rebuild the form so the submit function never actually gets called,
-    // but we need it or Drupal will run the default validate anyway.
-    // we also set #limit_validation_errors to empty so fields that
-    // are required that don't have values won't generate warnings.
-    $widget['kvproperty_adder_button'] = array(
-      '#value' => t('Add Property'),
-      '#type' => 'submit',
-      '#name' => 'kvproperty_adder_button',
-      '#limit_validation_errors' => array(array($this->field['field_name'])),
+    if ($term_name) {
+      $widget['terms_list'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Matching Terms'),
+        '#description' => t('Please select the term the best matches the
+          content type you want to create. If the same term exists in
+          multiple vocabularies you will see more than one option below.')
+      );
+      $match = array(
+        'name' => $term_name,
+      );
+      $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+      $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+      $num_terms = 0;
+      foreach ($terms as $term) {
+        // Save the user a click by setting the default value as 1 if there's
+        // only one matching term.
+        $default = FALSE;
+        $attrs = array();
+        if ($num_terms == 0 and count($terms) == 1) {
+          $default = TRUE;
+          $attrs = array('checked' => 'checked');
+        }
+        $widget['terms_list']['term-' . $term->cvterm_id] = array(
+          '#type' => 'checkbox',
+          '#title' =>  $term->name,
+          '#default_value' => $default,
+          '#attributes' => $attrs,
+          '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+          '<br><b>Definition:</b>  ' . $term->definition,
+        );
+        $num_terms++;
+      }
+      if ($num_terms == 0) {
+        $widget['terms_list']['none'] = array(
+          '#type' => 'item',
+          '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
+        );
+      }
+      // Add in the button for the cases of no terms or too many.
+      $widget['submit_button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Use this term'),
+        '#name' => 'use_cvterm'
+      );
+    }
+    
+    $widget['cancel_button'] = array(
+      '#type' => 'button',
+      '#value' => t('Cancel'),
+      '#name' => 'cancel_button',
+      '#limit_validation_errors' => array()
     );
   }
 
@@ -124,7 +182,7 @@ class chado_linker__prop_adder extends TripalField {
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {dpm($form);return;
     // We will never have more than one item for this field at a time, so
     // delta is always zero.
     $delta = 0;
@@ -204,4 +262,14 @@ class chado_linker__prop_adder extends TripalField {
       ));
     }
   }
+}
+
+/**
+ *
+ */
+function tripal_chado_prop_adder_form_ajax_callback($form, $form_state) {
+  $field_name = $form_state['triggering_element']['#parents'][0];
+  $delta = $form_state['triggering_element']['#parents'][2];
+  drupal_debug($form[$field_name]['und'][$delta]);
+  return $form[$field_name]['und'][$delta];
 }
