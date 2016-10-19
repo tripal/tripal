@@ -54,7 +54,7 @@ class chado_linker__prop_adder extends TripalField {
           In the future, this field will be present for all records
           of this type.'),
     ); */
-    $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
+    $term_name = array_key_exists('values', $form_state) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
 
     $widget['wrapper'] = array(
       '#prefix' =>  "<span id='$field_name-lookup-form'>",
@@ -129,17 +129,9 @@ class chado_linker__prop_adder extends TripalField {
       $widget['wrapper']['submit_button'] = array(
         '#type' => 'submit',
         '#value' => t('Use this term'),
-        '#name' => 'use_cvterm'
+        '#name' => 'kvproperty_adder_button'
       );
     }
-
-    $widget['wrapper']['cancel_button'] = array(
-      '#type' => 'button',
-      '#value' => t('Cancel'),
-      '#name' => 'cancel_button',
-      '#limit_validation_errors' => array(),
-      '#suffix' =>  "</span>",
-    );
   }
 
   /**
@@ -154,7 +146,7 @@ class chado_linker__prop_adder extends TripalField {
     // Make sure the cvterm for this property is uniquely identified.
     $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
     $cvterms = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
-
+dpm($kvproperty);
     if (trim($kvproperty) && count($cvterms) == 1) {
       // Get the table and base table.
       $base_table = $this->field['settings']['base_table'];
@@ -276,10 +268,5 @@ class chado_linker__prop_adder extends TripalField {
  */
 function tripal_chado_prop_adder_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
-
-//   $delta = $form_state['triggering_element']['#parents'][2];
-//   drupal_debug($form[$field_name]['und'][$delta]);
-//   return $form[$field_name]['und'][$delta];
-  return print_r(array_keys($form),TRUE);
-  return $form[''][$field_name];
+  return $form[$field_name]['und'][0]['wrapper'];
 }
