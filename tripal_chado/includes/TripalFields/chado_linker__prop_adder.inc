@@ -45,21 +45,28 @@ class chado_linker__prop_adder extends TripalField {
     $widget['#group'] = 'entity_form_vtabs';
 
 
-/*     $widget['kvproperty_instructions'] = array(
+     $widget['kvproperty_instructions'] = array(
       '#type' => 'item',
       '#markup' => t('You may add additional properties to this form by
           providing a property name (from a vocabulary) in the field below
-          and clicking the "Add Property" button.  This will add a
-          new field to the form above for the property you entered.
+          and clicking the "Lookup Term" button.  Terms that match the value
+          entered will be displayed for selection.  After selecting the
+          appropriate term click the "Use this term" button and a
+          new field will be added to the form above for the property you selected.
           In the future, this field will be present for all records
           of this type.'),
-    ); */
+    );
     $term_name = array_key_exists('values', $form_state) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
 
+    // Drupal's vertical feild set is a bit quirky in that we can't just
+    // add a prefix and suffix to the weidget.  If we do, then the
+    // field doesn't show up on the page after an AJAX call.  We have to add
+    // an internal wrapper (below) for AJAX calls.
     $widget['wrapper'] = array(
       '#prefix' =>  "<span id='$field_name-lookup-form'>",
       '#suffix' => '</span>',
     );
+
     // If no term has been selected yet then provide the auto complete field.
     $widget['wrapper']['term_name'] = array(
       '#title'       => t('Term'),
@@ -146,7 +153,7 @@ class chado_linker__prop_adder extends TripalField {
     // Make sure the cvterm for this property is uniquely identified.
     $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
     $cvterms = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
-dpm($kvproperty);
+//dpm($kvproperty);
     if (trim($kvproperty) && count($cvterms) == 1) {
       // Get the table and base table.
       $base_table = $this->field['settings']['base_table'];
@@ -268,5 +275,9 @@ dpm($kvproperty);
  */
 function tripal_chado_prop_adder_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
+
+  // Because this field is inside a vertical fieldset we can't just
+  // return $form[$field_name]. We have set the AJAX call to replace
+  // everything inside of the 'wrapper' element, so we must return that.
   return $form[$field_name]['und'][0]['wrapper'];
 }
