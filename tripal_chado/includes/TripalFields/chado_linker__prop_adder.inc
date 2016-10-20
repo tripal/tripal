@@ -132,12 +132,22 @@ class chado_linker__prop_adder extends TripalField {
           '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
         );
       }
-      // Add in the button for the cases of no terms or too many.
-      $widget['wrapper']['submit_button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Use this term'),
-        '#name' => 'kvproperty_adder_button'
-      );
+      else {
+        $widget['wrapper']['cardinality'] = array(
+          '#title'       => t('Number of Values'),
+          '#type'        => 'textfield',
+          '#description' => t("The number of values allowed for this property. 0 for unlimited values"),
+          '#required'    => TRUE,
+          '#size' => 10,
+          '#default_value' => 1,
+        );
+        // Add in the button for the cases of no terms or too many.
+        $widget['wrapper']['submit_button'] = array(
+          '#type' => 'submit',
+          '#value' => t('Use this term'),
+          '#name' => 'use_term_button',
+        );
+      }
     }
   }
 
@@ -145,23 +155,39 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::widgetFormValidate
    */
   public function widgetFormValidate($entity_type, $entity, $langcode, $items, &$errors) {
-
+    
     // We will never have more than one item for this field at a time, so
     // delta is always zero.
     $delta = 0;
 
-    // Make sure the cvterm for this property is uniquely identified.
-    $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
-    $cvterms = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
-//dpm($kvproperty);
-    if (trim($kvproperty) && count($cvterms) == 1) {
-      // Get the table and base table.
+    // Get the form values
+    $wrapper = tripal_get_field_item_keyval($items, $delta, 'wrapper', '');
+    $term_name = key_exists('term_name', $wrapper) ? $wrapper['term_name'] : '';
+    $terms_list = key_exists('terms_list', $wrapper) ? $wrapper['terms_list'] : '';
+dpm($term_name);
+    dpm(key($terms_list));
+/*     if ($terms_list) {
+      $num_selection = 0;
+      $cvterm_id = '';
+      foreach ($terms_list AS $key => $val) {
+        if ($val) {
+          $cvterm_id = preg_replace('/^term-/', '', $key);
+          $num_selection ++;
+        }
+      }
+      
+      // Allow only one selection for the term
+      if ($num_selection != 1) {
+        $errors[$this->field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__prop_adder',
+          'message' => t("Please select one and only one term."),
+        );
+      }
+      
+      // Do not proceed if the field already exists
       $base_table = $this->field['settings']['base_table'];
-
-      // Generate the name for the property table and the field name that we'll
-      // be creating.
       $prop_table = $base_table . 'prop';
-      $field_name = $prop_table . '__' . $cvterms[0]->cvterm_id;
+      $field_name = $prop_table . '__' . $cvterm_id;
       // Create an instance of the field.
       $instance = field_info_instance($entity_type, $field_name,  $entity->bundle);
       if ($instance) {
@@ -170,25 +196,14 @@ class chado_linker__prop_adder extends TripalField {
           'message' => t("The property already exists."),
         );
       }
-    }
-    if (trim($kvproperty) && count($cvterms) > 1) {
-      $errors[$this->field['field_name']][$langcode][$delta][] = array(
-        'error' => 'chado_linker__prop_adder',
-        'message' => t("This term is present in multiple vocabularies. Please select the appropriate one."),
-      );
-    }
-    if (trim($kvproperty) && count($cvterms) == 0) {
-      $errors[$this->field['field_name']][$langcode][$delta][] = array(
-        'error' => 'chado_linker__prop_adder',
-        'message' => t("Please provide a property type to add."),
-      );
-    }
+    } */
   }
 
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {dpm($form);return;
+  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+    return;
     // We will never have more than one item for this field at a time, so
     // delta is always zero.
     $delta = 0;
