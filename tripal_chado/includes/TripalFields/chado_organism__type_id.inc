@@ -27,6 +27,7 @@ class chado_organism__type_id extends TripalField {
    * @see TripalField::widget()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];

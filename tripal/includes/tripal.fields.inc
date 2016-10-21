@@ -236,22 +236,31 @@ function tripal_field_instance_settings_form($field, $instance) {
   return $form;
 }
 /**
- * Implements hook_instance_settings_form_validate().
  *
- * This is not an actual Drpual hook, but rather a Tripal created hook
- * to alow the TripalField objects to have a instanceSettingsFormValidate()
- * member function.
  */
 function tripal_field_instance_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->instanceSettingsFormValidate($form, $form_state);
-  }
+  $tfield = new $field_type($field, $instance);
+  $form = $tfield->instanceSettingsFormValidate($form, $form_state);
 }
+
+/**
+ *
+ */
+function tripal_field_widget_form_validate($form, &$form_state) {
+  $entity = $form['#entity'];
+  $entity_type = $form['#entity_type'];
+  $langcode = $form['#language'];
+  $delta = $form['#delta'];
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  $tfield = new $field_type($field, $instance);
+  $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
+}
+
 
 /**
  * Implements hook_field_settings_form_validate().
@@ -367,27 +376,10 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
   $is_loaded = tripal_load_include_field_type($field_type);
   if ($is_loaded) {
     $tfield = new $field_type($field, $instance);
-    $tfield->widgetFormValidate($entity_type, $entity, $langcode, $items, $errors);
+    $tfield->validate($entity_type, $entity, $langcode,
+        $items, $errors);
   }
 }
-
-/**
- * Implements hook_field_submit()
- *
- * This is a hook called by the TripalEntityUIController class.
- */
-function tripal_field_submit($entity_type, $entity, $field, $instance,
-    $langcode, &$items, $form, &$form_state) {
-
-  $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->widgetFormSubmit($entity_type, $entity, $langcode, $items, $form, $form_state);
-  }
-}
-
-
 
 /**
  * Implements hook_form_FORM_ID_alter().

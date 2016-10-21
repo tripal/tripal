@@ -36,10 +36,10 @@ class chado_linker__cvterm_adder extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
 
     // This field has no value field.  Just a fieldset for adding new annotation types.
-
-
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
     $widget['#description'] = $element['#description'];
@@ -82,7 +82,12 @@ class chado_linker__cvterm_adder extends TripalField {
     );
   }
 
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  /**
+   * @see TripalField::widgetFormSubmit()
+   */
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     // Add the new field to the entity
     if (array_key_exists('triggering_element', $form_state) and

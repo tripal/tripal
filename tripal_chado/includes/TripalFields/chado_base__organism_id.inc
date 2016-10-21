@@ -49,6 +49,7 @@ class chado_base__organism_id extends TripalField {
    * @see TripalField::widget()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
@@ -79,9 +80,9 @@ class chado_base__organism_id extends TripalField {
   }
 
   /**
-   * @see TripalField::widgetFormValidate()
+   * @see TripalField::validate()
    */
-  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
 
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];

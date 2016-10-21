@@ -36,6 +36,7 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $widget['#field_name'];
 
@@ -56,6 +57,7 @@ class chado_linker__prop_adder extends TripalField {
           In the future, this field will be present for all records
           of this type.'),
     );
+
     $term_name = array_key_exists('values', $form_state) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
 
     // Drupal's vertical feild set is a bit quirky in that we can't just
@@ -76,7 +78,6 @@ class chado_linker__prop_adder extends TripalField {
         already be loaded into Tripal.  For example, to create a content
         type for storing 'genes', use the 'gene' term from the
         Sequence Ontology (SO)."),
-      '#required'    => TRUE,
       '#default_value' => $term_name,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     );
@@ -137,7 +138,6 @@ class chado_linker__prop_adder extends TripalField {
           '#title'       => t('Number of Values'),
           '#type'        => 'textfield',
           '#description' => t("The number of values allowed for this property. 0 for unlimited values"),
-          '#required'    => TRUE,
           '#size' => 10,
           '#default_value' => 1,
         );
@@ -152,61 +152,39 @@ class chado_linker__prop_adder extends TripalField {
   }
 
   /**
+   * @see TripalField::widgetFormValidate()
+   */
+  public function widgetFormValidate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    $field = $this->field;
+    $field_name = $field['field_name'];
+
+    // If the user has clicked the 'user_term_button' then we need to makes
+    // sure that the cardinality textbox contains a positive integer.
+    if ($form_state['triggering_element']['#name'] == 'use_term_button') {
+      $cardinality = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['cardinality'];
+      if (!preg_match('/^\d+$/', $cardinality) or $cardinality < 0) {
+        form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values.");
+      }
+    }
+  }
+
+  /**
    * @see TripalField::widgetFormValidate
    */
-  public function widgetFormValidate($entity_type, $entity, $langcode, $items, &$errors) {
-    
-    // We will never have more than one item for this field at a time, so
-    // delta is always zero.
-    $delta = 0;
-
-    // Get the form values
-    $wrapper = tripal_get_field_item_keyval($items, $delta, 'wrapper', '');
-    $term_name = key_exists('term_name', $wrapper) ? $wrapper['term_name'] : '';
-    $terms_list = key_exists('terms_list', $wrapper) ? $wrapper['terms_list'] : '';
-dpm($term_name);
-    dpm(key($terms_list));
-/*     if ($terms_list) {
-      $num_selection = 0;
-      $cvterm_id = '';
-      foreach ($terms_list AS $key => $val) {
-        if ($val) {
-          $cvterm_id = preg_replace('/^term-/', '', $key);
-          $num_selection ++;
-        }
-      }
-      
-      // Allow only one selection for the term
-      if ($num_selection != 1) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'chado_linker__prop_adder',
-          'message' => t("Please select one and only one term."),
-        );
-      }
-      
-      // Do not proceed if the field already exists
-      $base_table = $this->field['settings']['base_table'];
-      $prop_table = $base_table . 'prop';
-      $field_name = $prop_table . '__' . $cvterm_id;
-      // Create an instance of the field.
-      $instance = field_info_instance($entity_type, $field_name,  $entity->bundle);
-      if ($instance) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'chado_linker__prop_adder',
-          'message' => t("The property already exists."),
-        );
-      }
-    } */
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
+    // Nothing to validate.
   }
 
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     return;
     // We will never have more than one item for this field at a time, so
     // delta is always zero.
     $delta = 0;
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     // Add the new field to the entity but only if the property adder button
     // was clicked

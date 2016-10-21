@@ -44,13 +44,10 @@ class content_type extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
-
-    $widget = $element;
-    switch ($this->instance['widget']['type']) {
-      case 'tripal_content_type_widget':
-        // There is no widget for this type.
-        break;
-    }
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+    $widget['value'] = array(
+      '#type' => 'value',
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
+    );
   }
-
 }

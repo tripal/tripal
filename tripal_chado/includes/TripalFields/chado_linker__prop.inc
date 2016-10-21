@@ -47,6 +47,7 @@ class chado_linker__prop extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -122,7 +123,7 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::validate()
    */
-  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
 /*     $field_name = $this->field['field_name'];
 
     $matches = array();
@@ -169,11 +170,13 @@ class chado_linker__prop extends TripalField {
       chado_delete_record($table_name, $match);
     } */
   }
-  
+
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     $field_table = $this->field['settings']['chado_table'];
     foreach ($items AS $delta => $item) {
@@ -187,7 +190,7 @@ class chado_linker__prop extends TripalField {
       }
     }
   }
-  
+
   /**
    * @see TripalField::load()
    */

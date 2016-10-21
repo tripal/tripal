@@ -605,14 +605,13 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
  * @param unknown $tv3_content_type
  */
 function tripal_chado_migrate_selected_types($tv3_content_types) {
-  
+
   // Initialize the population of the tripal_cvterm_mapping table before migration.
   tripal_chado_map_cvterms();
 
   foreach ($tv3_content_types AS $tv3_content_type) {
     // Check if the term already exists
     $term = tripal_load_term_entity($tv3_content_type);
-dpm($tv3_content_type);
     // If term doesn't exist, create a new bundle for this term
     if (!$term) {
       print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");

@@ -67,6 +67,7 @@ class chado_linker__dbxref extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -198,9 +199,9 @@ class chado_linker__dbxref extends TripalField {
   }
 
   /**
-   * @see TripalField::widgetFormValidate()
+   * @see TripalField::validate()
    */
-  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $table_name = $this->field['settings']['chado_table'];
@@ -253,7 +254,7 @@ class chado_linker__dbxref extends TripalField {
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -265,6 +266,8 @@ class chado_linker__dbxref extends TripalField {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     // Get the field values.
     foreach ($items as $delta => $values) {

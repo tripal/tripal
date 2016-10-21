@@ -81,6 +81,8 @@ class chado_linker__contact extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
     $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
 
@@ -150,7 +152,7 @@ class chado_linker__contact extends TripalField {
   /**
    * @see TripalField::widgetFormSubmit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     // Get the FK column that links to the base table.
     $table_name = $this->field['settings']['chado_table'];
@@ -159,36 +161,35 @@ class chado_linker__contact extends TripalField {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
+    $field_name = $this->field['field_name'];
 
     // Get the field values.
-    foreach ($items as $delta => $values) {
-      $fkey_value = $values['value'];
-      $contact_id = $values['chado-' . $table_name . '__contact_id'];
-      $name = $values['name'];
+    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['value'];
+    $contact_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'];
+    $name = $form_state['values'][$field_name][$langcode][$delta]['name'];
 
-      // If the user provided a name then we want to set the foreign key
-      // value to be the chado_record_id
-      if ($name and !$contact_id) {
-        $contact = chado_generate_var('contact', array('name' => $name));
-        $items[$delta]['chado-' . $table_name . '__contact_id'] = $contact->contact_id;
-      }
-
-      // In the widgetFrom function we automatically add the foreign key
-      // record.  But if the user did not provide a contact we want to take
-      // it out so that the Chado field_storage infrastructure won't try to
-      // write a record.
-      if (!$name and !$contact_id) {
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-      }
-
-      // If the user removed the contact from the contact_name field
-      // then we want to clear out the rest of the hidden values.
-      // Leave the primary key so the record can be deleted.
-      if (!$name and $contact_id) {
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-        $items[$delta]['chado-' . $table_name . '__contact_id'] = '';
-      }
+    // If the user provided a name then we want to set the foreign key
+    // value to be the chado_record_id
+    if ($name and !$contact_id) {
+      $contact = chado_generate_var('contact', array('name' => $name));
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] = $contact->contact_id;
     }
+
+    // In the widgetForm function we automatically add the foreign key
+    // record.  But if the user did not provide a contact we want to take
+    // it out so that the Chado field_storage infrastructure won't try to
+    // write a record.
+    if (!$name and !$contact_id) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+    }
+
+    // If the user removed the contact from the contact_name field
+    // then we want to clear out the rest of the hidden values.
+    // Leave the primary key so the record can be deleted.
+    if (!$name and $contact_id) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] = '';
+    };
   }
 
   /**

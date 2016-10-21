@@ -365,14 +365,21 @@ class TripalField {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
+    $widget['#field'] = $this->field;
+    $widget['#element_validate'] = array('tripal_field_widget_form_validate');
+  }
+
+  /**
+   *
+   * @param unknown $form
+   * @param unknown $form_state
+   */
+  public function widgetFormValidate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
   }
 
   /**
-   *  Perform validation of the widget_form when adding or editing the entity.
-   *
-   *  This function corresponds to the hook_field_validate() function of the
-   *  Drupal Field API.
+   *  Perform validation of the field regardless how it is updated.
    *
    *  Any errors encountered should be indicatd by adding a value to the $errors
    *  array according to the instructions below.
@@ -399,9 +406,10 @@ class TripalField {
    *      - message: The human readable message to be displayed.
    *
    */
-  public function widgetFormValidate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
 
   }
+
 
   /**
    * Performs extra commands when the entity form is submitted.
@@ -438,7 +446,8 @@ class TripalField {
    *  @param $form_state.
    *    The form state array.
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+
   }
 
   /**

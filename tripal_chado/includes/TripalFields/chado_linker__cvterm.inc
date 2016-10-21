@@ -87,6 +87,8 @@ class chado_linker__cvterm extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
 
     $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
@@ -207,6 +209,8 @@ class chado_linker__cvterm extends TripalField {
     $delta = $element['#delta'];
     $table_name = $element['#table_name'];
     $fkey = $element['#fkey_field'];
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     // If the form ID is field_ui_field_edit_form, then the user is editing the
     // field's values in the manage fields form of Drupal.  We don't want

@@ -322,7 +322,6 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   *
   */
  function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
-
    $bundle_name = 'bio_data_' . $term_id;
 
    // Add a vertical tabs element
@@ -372,7 +371,6 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      '#name' => 'cancel_data',
      '#weight' => 1001,
      '#limit_validation_errors' => array(array('')),
-     '#submit' => array('tripal_entity_form_submit'),
    );
 
    // The entity object must be added to the $form_state in order for
@@ -381,6 +379,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
    $form['#prefix'] = "<div id='$bundle_name-entity-form'>";
    $form['#suffix'] = "</div>";
+   $form['#submit'][] = 'tripal_entity_form_submit';
    return $form;
  }
  /**
@@ -426,26 +425,21 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
      $form_state['redirect'] = 'bio_data/' . $entity->id .'/delete';
      return;
    }
-
-   // Allow the fields to perform actions prior to submit by calling
-   // a hook_field_submit() functino.
-   $fields = field_info_instances('TripalEntity', $entity->bundle);
-   foreach ($fields as $field_name => $instance) {
-     $field = field_info_field($field_name);
-     $module = $field['module'];
-     $function = $module . '_field_submit';
-     if (function_exists($function)) {
-       // Get the items from the form_state and allow the caller to alter them.
-       $items = array();
-       $langcode = 'und';
-       field_default_extract_form_values('TripalEntity', $entity, $field,
-           $instance, $langcode, $items, $form, $form_state);
-       $function('TripalEntity', $entity, $field, $instance, $langcode, $items,
-           $form, $form_state);
-       // Copy any updated items into the $form_state 'values' array.
-       foreach ($items as $delta => $item) {
-         foreach ($item as $subfield => $value) {
-           $form_state['values'][$field_name][$langcode][$delta][$subfield] = $value;
+   // Allow the fields to perform actions prior to submit.
+   $instances = field_info_instances('TripalEntity', $entity->bundle);
+   $langcode = 'und';
+   foreach ($instances as $field_name => $instance) {
+     $entity_type = $instance['entity_type'];
+     if($entity_type == 'TripalEntity') {
+       foreach ($form[$field_name][$langcode] as $delta => $field_form) {
+         if (!preg_match('/^\d+$/', $delta)) {
+           continue;
+         }
+         $field = $field_form['#field'];
+         $field_type = $field['type'];
+         if (class_exists($field_type)) {
+           $tfield = new $field_type($field, $instance);
+           $tfield->widgetFormSubmit($form, $form_state, $entity_type, $entity, $langcode, $delta);
          }
        }
      }

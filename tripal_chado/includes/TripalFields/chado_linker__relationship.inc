@@ -118,6 +118,7 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::widgetForm()
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -156,7 +157,7 @@ class chado_linker__relationship extends TripalField {
     $object_uniquename = '';
     $value = '';
     $rank = '';
-    
+
     // Handle special cases
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
@@ -424,7 +425,7 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::validate()
    */
-  function widgetFormValidate($entity_type, $entity, $langcode, $items, &$errors) {
+  function validate($entity_type, $entity, $langcode, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
@@ -449,7 +450,7 @@ class chado_linker__relationship extends TripalField {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    
+
     foreach ($items as $delta => $item) {
       $subject_id = $item[$field_table . '__' . $subject_id_key];
       $object_id = $item[ $field_table . '__' . $object_id_key];
@@ -583,15 +584,16 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::submit()
    */
-  public function widgetFormSubmit($entity_type, $entity, $langcode, &$items, $form, &$form_state) {
+  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 return;
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
-
     $chado_record_id = $entity->chado_record_id;
+
+    $items = $form_state['values'][$field_name][$langcode];
 
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
