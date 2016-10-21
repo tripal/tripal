@@ -140,8 +140,6 @@ class chado_linker__pub extends TripalField {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     // Get the field values.
     foreach ($items as $delta => $values) {
       $fkey_value = $values['value'];

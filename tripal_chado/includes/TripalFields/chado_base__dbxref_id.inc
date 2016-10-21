@@ -213,8 +213,6 @@ class chado_base__dbxref_id extends TripalField {
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     // Get the field values.
     foreach ($items as $delta => $values) {
       $fk_val = $values['chado-' . $field_table . '__' . $field_column];

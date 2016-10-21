@@ -593,8 +593,6 @@ return;
     $base_table = $this->field['settings']['base_table'];
     $chado_record_id = $entity->chado_record_id;
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
 

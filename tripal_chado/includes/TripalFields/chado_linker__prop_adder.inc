@@ -184,8 +184,6 @@ class chado_linker__prop_adder extends TripalField {
     // delta is always zero.
     $delta = 0;
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     // Add the new field to the entity but only if the property adder button
     // was clicked
     if (!array_key_exists('triggering_element', $form_state) or

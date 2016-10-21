@@ -210,8 +210,6 @@ class chado_linker__cvterm extends TripalField {
     $table_name = $element['#table_name'];
     $fkey = $element['#fkey_field'];
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     // If the form ID is field_ui_field_edit_form, then the user is editing the
     // field's values in the manage fields form of Drupal.  We don't want
     // to validate it as if it were being used in a data entry form.

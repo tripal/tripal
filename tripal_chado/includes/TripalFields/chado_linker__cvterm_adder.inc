@@ -87,8 +87,6 @@ class chado_linker__cvterm_adder extends TripalField {
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     // Add the new field to the entity
     if (array_key_exists('triggering_element', $form_state) and
         $form_state['triggering_element']['#name'] == 'cvterm_class_adder_button') {

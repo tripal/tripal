@@ -176,8 +176,6 @@ class chado_linker__prop extends TripalField {
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
-    $items = $form_state['values'][$field_name][$langcode];
-
     $field_table = $this->field['settings']['chado_table'];
     foreach ($items AS $delta => $item) {
       // Don't save if there is no value for prop
