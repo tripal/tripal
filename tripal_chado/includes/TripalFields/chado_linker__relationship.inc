@@ -596,52 +596,51 @@ return;
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
 
-    foreach ($items as $delta => $item) {
-      $type_name = array_key_exists('type_name', $item) ? $item['type_name'] : '';
-      $subject_id = $item[$field_table . '__subject_id'];
-      $object_id = $item[ $field_table . '__object_id'];
-      $type_id = $item[$field_table . '__type_id'];
+    $type_name = array_key_exists('type_name', $item) ? $item['type_name'] : '';
+    $subject_id = $form_state['values'][$field_name][$langcode][$delta][$field_table . '__subject_id'];
+    $object_id = $form_state['values'][$field_name][$langcode][$delta][ $field_table . '__object_id'];
+    $type_id = $form_state['values'][$field_name][$langcode][$delta][$field_table . '__type_id'];
 
-      $subject_name = $item['subject_name'];
-      $object_name = $item['object_name'];
+    $subject_name = $form_state['values'][$field_name][$langcode][$delta]['subject_name'];
+    $object_name = $form_state['values'][$field_name][$langcode][$delta]['object_name'];
 
-      // If the row is empty then skip this one, there's nothing to validate.
-      if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
-        continue;
-      }
-
-      // Get the subject ID.
-      $subject_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
-      $matches = array();
-      if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-        $subject_id =  $matches[1];
-      }
-      else {
-        $values = array('uniquename' => $subject_name);
-        $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-        $subject_id = $subject[0]->$fkey_rcolumn;
-      }
-
-      // Get the object ID.
-      $object_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
-      $matches = array();
-      if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-        $object_id = $matches[1];
-      }
-      else {
-        $values = array('uniquename' => $object_name);
-        $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-        $object_id = $object[0]->$fkey_rcolumn;
-      }
-
-      // Set the IDs according to the values that were determined above.
-      $items[$delta][$field_table . '__subject_id'] = $subject_id;
-      $items[$delta][$field_table . '__object_id'] = $object_id;
-      $items[$delta][$field_table . '__type_id'] = $type_name;
-      $items[$delta][$field_table . '__rank'] = $item['_weight'];
+    // If the row is empty then skip this one, there's nothing to validate.
+    if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
+      return;
     }
+
+    // Get the subject ID.
+    $subject_id = '';
+    $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
+    $matches = array();
+    if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+      $subject_id =  $matches[1];
+    }
+    else {
+      $values = array('uniquename' => $subject_name);
+      $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+      $subject_id = $subject[0]->$fkey_rcolumn;
+    }
+
+    // Get the object ID.
+    $object_id = '';
+    $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
+    $matches = array();
+    if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+      $object_id = $matches[1];
+    }
+    else {
+      $values = array('uniquename' => $object_name);
+      $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+      $object_id = $object[0]->$fkey_rcolumn;
+    }
+
+    // Set the IDs according to the values that were determined above.
+    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__subject_id'] = $subject_id;
+    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__object_id'] = $object_id;
+    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__type_id'] = $type_name;
+    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__rank'] = $item['_weight'];
+
   }
   /**
    * @see TripalField::load()

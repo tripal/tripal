@@ -165,6 +165,7 @@ class chado_linker__prop_adder extends TripalField {
       if (!preg_match('/^\d+$/', $cardinality) or $cardinality < 0) {
         form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values.");
       }
+
     }
   }
 
@@ -172,13 +173,18 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::widgetFormValidate
    */
   public function validate($entity_type, $entity, $field, $items, &$errors) {
-    // Nothing to validate.
+    // This form doesn't manage data in the database so we don't need to
+    // validate anything here.
   }
 
   /**
    * @see TripalField::widgetFormSubmit()
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    // Because we're going to add a new property we want to rebuild the form
+    // rather than have it fully submit.
+    $form_state['rebuild'] = TRUE;
+
     return;
     // We will never have more than one item for this field at a time, so
     // delta is always zero.
@@ -190,10 +196,6 @@ class chado_linker__prop_adder extends TripalField {
       $form_state['triggering_element']['#name'] != 'kvproperty_adder_button') {
       return;
     }
-
-    // Because we're going to add a new property we want to rebuild the form
-    // rather than have it fully submit.
-    $form_state['rebuild'] = TRUE;
 
     // Get the table and base table.
     $base_table = $this->field['settings']['base_table'];

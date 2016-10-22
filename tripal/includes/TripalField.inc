@@ -366,13 +366,19 @@ class TripalField {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $widget['#field'] = $this->field;
+    $widget['#instance'] = $this->instance;
     $widget['#element_validate'] = array('tripal_field_widget_form_validate');
   }
 
   /**
+   * Performs validation of the widgetForm.
    *
-   * @param unknown $form
-   * @param unknown $form_state
+   * Use this validate to ensure that form values are entered correctly.  Note
+   * this is different from the validate() function which ensures that the
+   * field data meets expectations.
+   *
+   * @param $form
+   * @param $form_state
    */
   public function widgetFormValidate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 

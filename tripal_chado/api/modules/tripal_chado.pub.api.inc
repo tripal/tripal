@@ -1008,6 +1008,10 @@ function tripal_pub_create_citation($pub) {
  *   'URL'. All keys are term names in the Tripal Publication Ontology :TPUB.
  */
 function tripal_get_minimal_pub_info($pub) {
+  if (!$pub) {
+    return array();
+  }
+
   // Chado has a null pub as default.  We don't return anything for this.
   if ($pub->uniquename == 'null') {
     return array();
@@ -1093,11 +1097,13 @@ function tripal_get_minimal_pub_info($pub) {
     'return_array' => 1,
     'include_fk' => array(),
   );
-  $urls = chado_generate_var('pubprop', $values, $options);
-  $urls = chado_expand_var($urls, 'field', 'pubprop.value');
   $url = '';
-  if (count($urls) > 0) {
-    $url = $urls[0]->value;
+  $urls = chado_generate_var('pubprop', $values, $options);
+  if ($urls) {
+    $urls = chado_expand_var($urls, 'field', 'pubprop.value');
+    if (count($urls) > 0) {
+      $url = $urls[0]->value;
+    }
   }
   return array(
     'Title' => $pub->title,

@@ -219,51 +219,47 @@ class chado_linker__synonym extends TripalField {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
 
-    // Get the field values.
-    foreach ($items as $delta => $values) {
+    $record_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey];
+    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey];
+    $synonym_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'];
+    $pub_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'];
+    $is_current = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'];
+    $is_internal = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'];
+    $syn_name = $form_state['values'][$field_name][$langcode][$delta]['name'];
+    $syn_type = $form_state['values'][$field_name][$langcode][$delta]['type_id'];
 
-      $record_id = $values['chado-' . $table_name . '__' . $pkey];
-      $fkey_value = $values['chado-' . $table_name . '__' . $fkey];
-      $synonym_id = $values['chado-' . $table_name . '__synonym_id'];
-      $pub_id = $values['chado-' . $table_name . '__pub_id'];
-      $is_current = $values['chado-' . $table_name . '__is_current'];
-      $is_internal = $values['chado-' . $table_name . '__is_internal'];
-      $syn_name = $values['name'];
-      $syn_type = $values['type_id'];
+    // If the user provided a $syn_name and a $syn_type then we want to set
+    // the foreign key value to be the chado_record_id.
+    if ($syn_name and $syn_type) {
 
-      // If the user provided a $syn_name and a $syn_type then we want to set
-      // the foreign key value to be the chado_record_id.
-      if ($syn_name and $syn_type) {
-
-        // Get the synonym. If one with the same name and type is already present
-        // then use that. Otherwise, insert a new one.
-        if (!$synonym_id) {
-          $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
-          if (!$synonym) {
-            $synonym = chado_insert_record('synonym', array(
-              'name' => $syn_name,
-              'type_id' => $syn_type,
-              'synonym_sgml' => '',
-            ));
-            $synonym = (object) $synonym;
-          }
-
-          // Set the synonym_id and FK value
-          $items[$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
+      // Get the synonym. If one with the same name and type is already present
+      // then use that. Otherwise, insert a new one.
+      if (!$synonym_id) {
+        $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+        if (!$synonym) {
+          $synonym = chado_insert_record('synonym', array(
+            'name' => $syn_name,
+            'type_id' => $syn_type,
+            'synonym_sgml' => '',
+          ));
+          $synonym = (object) $synonym;
         }
 
-        if (!$pub_id) {
-          $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-          $items[$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
-        }
+        // Set the synonym_id and FK value
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
       }
-      else {
-        // If the $syn_name is not set, then remove the linker FK value to the base table.
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-        $items[$delta]['chado-' . $table_name . '__synonym_id'] = '';
-        $items[$delta]['chado-' . $table_name . '__is_internal'] = '';
-        $items[$delta]['chado-' . $table_name . '__is_current'] = '';
+
+      if (!$pub_id) {
+        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
       }
+    }
+    else {
+      // If the $syn_name is not set, then remove the linker FK value to the base table.
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] = '';
     }
   }
 

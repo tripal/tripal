@@ -189,7 +189,7 @@ class chado_linker__contact extends TripalField {
     if (!$name and $contact_id) {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] = '';
-    };
+    }
   }
 
   /**

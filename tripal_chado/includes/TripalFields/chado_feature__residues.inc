@@ -103,11 +103,13 @@ class chado_feature__residues extends TripalField {
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
+    $field_name = $this->field['field_name'];
+
     // Remove any white spaces.
-    $residues = $items[0]['chado-feature__residues'];
+    $residues = $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'];
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      $items[0]['chado-feature__residues'] = $residues;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] = $residues;
     }
   }
 

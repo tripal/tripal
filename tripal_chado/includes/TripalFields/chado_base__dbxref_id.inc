@@ -213,26 +213,23 @@ class chado_base__dbxref_id extends TripalField {
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
 
-    // Get the field values.
-    foreach ($items as $delta => $values) {
-      $fk_val = $values['chado-' . $field_table . '__' . $field_column];
-      $db_id = $values['db_id'];
-      $accession = $values['accession'];
-      $version = $values['version'];
+    $fk_val = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column];
+    $db_id = $form_state['values'][$field_name][$langcode][$delta]['db_id'];
+    $accession = $form_state['values'][$field_name][$langcode][$delta]['accession'];
+    $version = $form_state['values'][$field_name][$langcode][$delta]['version'];
 
-      // If user did not select a database, we want to remove dbxref_id from the
-      // field.
-      if (!$db_id) {
-        $items[$delta]['chado-' . $field_table . '__dbxref_id'] = '__NULL__';
-      }
-      // If the dbxref_id does not match the db_id + accession then the user
-      // has selected a new dbxref record and we need to update the hidden
-      // value accordingly.
-      if ($db_id and $accession) {
-        $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-        if ($dbxref and $dbxref->dbxref_id != $fk_val) {
-          $items[$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
-        }
+    // If user did not select a database, we want to remove dbxref_id from the
+    // field.
+    if (!$db_id) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] = '__NULL__';
+    }
+    // If the dbxref_id does not match the db_id + accession then the user
+    // has selected a new dbxref record and we need to update the hidden
+    // value accordingly.
+    if ($db_id and $accession) {
+      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      if ($dbxref and $dbxref->dbxref_id != $fk_val) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
       }
     }
   }

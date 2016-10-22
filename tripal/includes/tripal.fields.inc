@@ -215,8 +215,9 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
 function tripal_field_settings_form($field, $instance, $has_data) {
   $form = array();
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  //$is_loaded = tripal_load_include_field_type($field_type);
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $form = $tfield->globalSettingsForm($field, $instance, $has_data);
   }
@@ -228,8 +229,8 @@ function tripal_field_settings_form($field, $instance, $has_data) {
 function tripal_field_instance_settings_form($field, $instance) {
   $form = array();
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $form = $tfield->instanceSettingsForm();
   }
@@ -242,8 +243,11 @@ function tripal_field_instance_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];
-  $tfield = new $field_type($field, $instance);
-  $form = $tfield->instanceSettingsFormValidate($form, $form_state);
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
+    $tfield = new $field_type($field, $instance);
+    $form = $tfield->instanceSettingsFormValidate($form, $form_state);
+  }
 }
 
 /**
@@ -255,10 +259,13 @@ function tripal_field_widget_form_validate($form, &$form_state) {
   $langcode = $form['#language'];
   $delta = $form['#delta'];
   $field = $form['#field'];
-  $instance = $form['#instance'];
   $field_type = $field['type'];
-  $tfield = new $field_type($field, $instance);
-  $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
+    $instance = $form['#instance'];
+    $tfield = new $field_type($field, $instance);
+    $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
+  }
 }
 
 
@@ -273,8 +280,8 @@ function tripal_field_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
   }
@@ -288,8 +295,8 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 
   $summary = '';
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $form = $tfield->formatterSettingsSummary($view_mode);
   }
@@ -304,8 +311,8 @@ function tripal_formatter_settings_form($field, $instance,
 
   $form = array();
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
   }
@@ -320,8 +327,8 @@ function tripal_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
   $widget = $element;
   $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
+  tripal_load_include_field_type($field_type);
+  if (class_exists($field_type)) {
     $tfield = new $field_type($field, $instance);
     $tfield->widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
   }

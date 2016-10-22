@@ -268,32 +268,28 @@ class chado_linker__dbxref extends TripalField {
     $fkey = $fkeys[0];
 
     // Get the field values.
-    foreach ($items as $delta => $values) {
+    $dbxref_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'];
+    $db_id = $form_state['values'][$field_name][$langcode][$delta]['db_id'];
+    $accession = $form_state['values'][$field_name][$langcode][$delta]['accession'];
+    $version = $form_state['values'][$field_name][$langcode][$delta]['version'];
+    $description = $form_state['values'][$field_name][$langcode][$delta]['description'];
 
-      // Get the field values.
-      $dbxref_id = $values['chado-' . $field_table . '__dbxref_id'];
-      $db_id = $values['db_id'];
-      $accession = $values['accession'];
-      $version = $values['version'];
-      $description = $values['description'];
-
-      // If the dbxref_id does not match the db_id + accession then the user
-      // has selected a new dbxref record and we need to update the hidden
-      // value accordingly.
-      if ($db_id and $accession) {
-        $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-        if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-          $items[$delta]['chado-' . $table_name . '__dbxref_id'] = $dbxref->dbxref_id;
-          $items[$delta]['dbxref_id'] = $dbxref->dbxref_id;
-        }
+    // If the dbxref_id does not match the db_id + accession then the user
+    // has selected a new dbxref record and we need to update the hidden
+    // value accordingly.
+    if ($db_id and $accession) {
+      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__dbxref_id'] = $dbxref->dbxref_id;
+        $form_state['values'][$field_name][$langcode][$delta]['dbxref_id'] = $dbxref->dbxref_id;
       }
-      // If the db_id and accession are not set, then remove the linker FK
-      // value to the base table, but leave the primary key so the record
-      // can be deleted.
-      else {
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-        $items[$delta]['chado-' . $table_name . '__dbxref_id'] = '';
-      }
+    }
+    // If the db_id and accession are not set, then remove the linker FK
+    // value to the base table, but leave the primary key so the record
+    // can be deleted.
+    else {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__dbxref_id'] = '';
     }
   }
 

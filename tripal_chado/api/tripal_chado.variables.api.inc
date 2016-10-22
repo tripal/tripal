@@ -599,6 +599,8 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
       TRIPAL_ERROR,
       'Cannot pass non array as argument, $object, to chado_expand_var function.',
       array());
+    $d=debug_backtrace();
+    dpm($d[0]);
     return $object;
   }
 

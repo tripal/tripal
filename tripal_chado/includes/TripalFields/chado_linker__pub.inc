@@ -131,7 +131,6 @@ class chado_linker__pub extends TripalField {
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
-
     // Get the FK column that links to the base table.
     $table_name = $this->field['settings']['chado_table'];
     $base_table = $this->field['settings']['base_table'];
@@ -139,35 +138,34 @@ class chado_linker__pub extends TripalField {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
+    $field_name = $this->field['field_name'];
 
     // Get the field values.
-    foreach ($items as $delta => $values) {
-      $fkey_value = $values['value'];
-      $pub_id = $values['chado-' . $table_name . '__pub_id'];
-      $uname = $values['uniquename'];
+    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['value'];
+    $pub_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'];
+    $uname = $form_state['values'][$field_name][$langcode][$delta]['uniquename'];
 
-      // If the user provided a uniquename then we want to set the foreign key
-      // value to be the chado_record_id
-      if ($uname and !$pub_id) {
-        $pub = chado_generate_var('pub', array('uniquename' => $uname));
-        $items[$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
-      }
+    // If the user provided a uniquename then we want to set the foreign key
+    // value to be the chado_record_id
+    if ($uname and !$pub_id) {
+      $pub = chado_generate_var('pub', array('uniquename' => $uname));
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+    }
 
-      // In the widgetFrom function we automatically add the foreign key
-      // record.  But if the user did not provide a publication we want to take
-      // it out so that the Chado field_storage infrastructure won't try to
-      // write a record.
-      if (!$uname and !$pub_id) {
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-      }
+    // In the widgetFrom function we automatically add the foreign key
+    // record.  But if the user did not provide a publication we want to take
+    // it out so that the Chado field_storage infrastructure won't try to
+    // write a record.
+    if (!$uname and !$pub_id) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+    }
 
-      // If the user removed the publication from the pub_uniquename field
-      // then we want to clear out the rest of the hidden values.
-      // Leave the primary key so the record can be deleted.
-      if (!$uname and $pub_id) {
-        $items[$delta]['chado-' . $table_name . '__' . $fkey] = '';
-        $items[$delta]['chado-' . $table_name . '__pub_id'] = '';
-      }
+    // If the user removed the publication from the pub_uniquename field
+    // then we want to clear out the rest of the hidden values.
+    // Leave the primary key so the record can be deleted.
+    if (!$uname and $pub_id) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = '';
     }
   }
 

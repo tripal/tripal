@@ -77,17 +77,17 @@ class chado_feature__md5checksum  extends TripalField {
     $field_column = $field['settings']['chado_column'];
 
     // Get the residues so we can calculate teh length.
-    $residues = $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'];
+    $residues = $form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues'];
 
     if ($residues) {
+      // Remove spaces and new lines from the residues string.
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'] = $residues;
-      $items[0]['chado-feature__md5checksum'] = md5($residues);
+      $form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues'] = $residues;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__md5checksum'] = md5($residues);
     }
     else {
       // Otherwise, remove the md5 value
-      $items[0]['chado-feature__md5checksum'] = '__NULL__';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__md5checksum'] = '__NULL__';
     }
   }
-
 }
