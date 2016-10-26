@@ -1404,3 +1404,4 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
     }
   }
 }
+

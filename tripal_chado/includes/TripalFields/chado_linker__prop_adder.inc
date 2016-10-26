@@ -137,7 +137,7 @@ class chado_linker__prop_adder extends TripalField {
         $widget['wrapper']['cardinality'] = array(
           '#title'       => t('Number of Values'),
           '#type'        => 'textfield',
-          '#description' => t("The number of values allowed for this property. 0 for unlimited values"),
+          '#description' => t("A number of 1 or more indicating the number of values allowed for this property. Enter -1 for unlimited values"),
           '#size' => 10,
           '#default_value' => 1,
         );
@@ -162,10 +162,10 @@ class chado_linker__prop_adder extends TripalField {
       // If the user has clicked the 'user_term_button' then we need to makes
       // sure that the cardinality textbox contains a positive integer.
       $cardinality = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['cardinality'];
-      if (!preg_match('/^\d+$/', $cardinality) or $cardinality < 0) {
-        form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values.");
+      if (!preg_match('/^-*\d+$/', $cardinality) or $cardinality < -2 or $cardinality == 0) {
+        form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values, or -1 for unlimited.");
       }
-      
+
       // Get selected terms
       $terms_list = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['terms_list'];
       $counter = 0;
@@ -203,7 +203,6 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::widgetFormSubmit()
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
 
     // Add the new field to the entity but only if the property adder button
     // was clicked
@@ -274,9 +273,11 @@ class chado_linker__prop_adder extends TripalField {
         'label' => ucfirst(preg_replace('/_/', ' ', $cvterm->name)),
         'description' => $cvterm->definition ? $cvterm->definition : '',
         'required' => FALSE,
-        'settings' => array(),
+        'settings' => array(
+          'auto_attach' => FALSE,
+        ),
         'widget' => array(
-          'type' => $field_name . '_widget',
+          'type' => 'chado_linker__prop_widget',
           'settings' => array(
             'display_label' => 1,
           ),
@@ -284,7 +285,7 @@ class chado_linker__prop_adder extends TripalField {
         'display' => array(
           'default' => array(
             'label' => 'inline',
-            'type' => $field_name . '_formatter',
+            'type' => 'chado_linker__prop_formatter',
             'settings' => array(),
           ),
         ),

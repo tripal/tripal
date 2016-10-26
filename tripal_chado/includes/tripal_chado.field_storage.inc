@@ -352,7 +352,10 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
+    $temp = array();
+
     foreach ($items as $delta => $item) {
+
       // A field may have multiple items. The field can use items
       // indexed with "chado-" to represent values that should map directly
       // to chado tables and fields.
@@ -361,25 +364,25 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
         if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
           $table_name = $matches[1];
           $column_name = $matches[2];
-          // If not seen this table and column then just add it. If we've
-          // already seen it then it means it's a FK field and we've already
-          // added subfields so do nothing.
-          if (!array_key_exists($table_name, $new_fields) or
-              !array_key_exists($delta, $new_fields[$table_name]) or
-              !array_key_exists($column_name, $new_fields[$table_name][$delta])) {
-            $new_fields[$table_name][$delta][$column_name] = $value;
-          }
+          $temp[$table_name][$delta][$column_name] = $value;
         }
       }
       // If there is no value set for the field using the
       // chado-[table_name]__[field name] naming schema then check if a 'value' item
       // is present and if so use that.
-      if ((!array_key_exists($chado_table, $new_fields) or
-           !array_key_exists($delta, $new_fields[$chado_table]) or
-           !array_key_exists($chado_column, $new_fields[$chado_table][$delta])) and
+      if ((!array_key_exists($chado_table, $temp) or
+           !array_key_exists($delta, $temp[$chado_table]) or
+           !array_key_exists($chado_column, $temp[$chado_table][$delta])) and
           array_key_exists('value', $items[$delta]) and
           !is_array($items[$delta]['value'])) {
-        $new_fields[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
+        $temp[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
+      }
+    }
+
+    // Now merge the records for this field with the $new_fields array
+    foreach ($temp as $table_name => $details) {
+      foreach ($details as $delta => $list) {
+        $new_fields[$table_name][] = $list;
       }
     }
   }

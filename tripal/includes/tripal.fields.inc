@@ -132,32 +132,6 @@ function tripal_field_no_delete() {
  *
  * Implements hook_form_FORM_ID_alter().
  *
- * The field_ui_field_edit_form is used for customizing the settings of
- * a field attached to an entity.
- *
- * This alter function disables some of the form widgets when the storage
- * backend indicates they are not appropriate.
- */
-function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-
-  // For entity fields added by Tripal Entities we don't want the
-  // the end-user to change the cardinality and the required fields
-  // such that record can't be saved in Chado.
-
-  // TODO: this shouldn't be hardcoded here.  These settings
-  // should be part of the field and handled by the tripal_entity module.
-  if ($form['#instance']['entity_type'] == 'TripalEntity') {
-    $form['field']['cardinality']['#access'] = FALSE;
-    $form['instance']['required']['#access'] = FALSE;
-  }
-
-  // TODO: don't the the maximum length be larger than the field size.
-}
-
-/**
- *
- * Implements hook_form_FORM_ID_alter().
- *
  * The field_ui_field_overview_form_ is used for adding and reordering the
  * fields attached to a bundle.  It also includes edit and delete links and
  * links for editing field types and widgets.

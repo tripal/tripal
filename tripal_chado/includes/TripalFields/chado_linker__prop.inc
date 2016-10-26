@@ -53,7 +53,7 @@ class chado_linker__prop extends TripalField {
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-
+    $instance = $this->instance;
 
     // Get the table name and cvterm that this field maps to.
     $matches = array();
@@ -81,17 +81,6 @@ class chado_linker__prop extends TripalField {
       $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
     }
 
-    // The group of elements all-together need some extra functionality
-    // after building up the full list (like draggable table rows).
-    $widget['#theme'] = 'field_multiple_value_form';
-    $widget['#title'] = $element['#title'];
-    $widget['#description'] = $element['#description'];
-    $widget['#field_name'] = $element['#field_name'];
-    $widget['#language'] = $element['#language'];
-    $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
-    //$widget['#element_validate'] = array('chado_linker__prop_widget_validate');
-    $widget['#cardinality'] = 1;
-
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -108,6 +97,8 @@ class chado_linker__prop extends TripalField {
     $widget['chado-' . $table_name . '__value'] = array(
       '#type' => 'textfield',
       '#default_value' => $propval,
+      '#title' => $instance['label'] . ' value',
+      '#description' => $instance['description'],
     );
     $widget['chado-' . $table_name . '__type_id'] = array(
       '#type' => 'hidden',
@@ -124,68 +115,32 @@ class chado_linker__prop extends TripalField {
    * @see TripalField::validate()
    */
   public function validate($entity_type, $entity, $field, $items, &$errors) {
-/*     $field_name = $this->field['field_name'];
 
-    $matches = array();
-
-    // Get the record and table mapping info.
-    $chado_table = $entity->chado_table;
-    $chado_column = $entity->chado_column;
-
-    // Get the table name and cvterm_id for this field.
-    preg_match('/(.*?)__(\d+)/', $field_name, $matches);
-    $table_name = $matches[1];
-    $cvterm_id = $matches[2];
-
-    // Get the name of the pkey field for this property table and the name
-    // of the FK field that links to the base table.
-    $schema = chado_get_schema($table_name);
-    $pkey = $schema['primary key'][0];
-    $lfkey_field = key($schema['foreign keys'][$chado_table]['columns']);
-
-    // If we don't have a property value then we need to set all other fields
-    // to be empty so that when the module tries to save the field on the
-    // entity it won't try to save a partial record.
-//     $pkey_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta);
-//     $prop_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . "__value");
-//     $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__' . $lfkey_field);
-//     $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
-
-    if (!$prop_value) {
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $lfkey_field);
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__value');
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__type_id');
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__rank');
-    }
-    else {
-      $rank = tripal_chado_get_field_form_values($field_name, $form_state, $delta, '_weight');
-      tripal_chado_set_field_form_values($field_name, $form_state, $rank, $delta, $table_name . '__rank');
-    }
-    // Remove the properties for this record. We will re-add it. Otherwise,
-    // if we change ranks, we wind up with multiple records in the property table.
-    if ($pkey_val) {
-      $match = array(
-        $pkey => $pkey_val
-      );
-      chado_delete_record($table_name, $match);
-    } */
   }
 
   /**
    * @see TripalField::widgetFormSubmit()
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    
-    $field_name = $this->field['field_name'];
-    $field_table = $this->field['settings']['chado_table'];
 
-    // Don't save if there is no value for the property
-    if (!trim($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . 'value'])) {
-      foreach($form_state['values'][$field_name][$langcode][$delta] AS $key => $value) {
-        if (preg_match('/^chado-/', $key)) {
-          $form_state['values'][$field_name][$langcode][$delta][$key] = '__NULL__';
-        }
-      }
+    $field_name = $this->field['field_name'];
+    $table_name = $this->field['settings']['chado_table'];
+    $schema = chado_get_schema($table_name);
+    $pkey = $schema['primary key'][0];
+    $base_table = $this->field['settings']['base_table'];
+    $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
+    $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
+
+    $prop_value = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value'];
+
+    // If the user removed the contact from the contact_name field
+    // then we want to clear out the rest of the hidden values.
+    // Leave the primary key so the record can be deleted.
+    if (!$prop_value) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__rank'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__type_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $lfkey_field] = '';
     }
   }
 
@@ -247,13 +202,4 @@ class chado_linker__prop extends TripalField {
       }
     }
   }
-}
-/**
- *
- * @param unknown $form
- * @param unknown $form_state
- */
-function chado_linker__prop_widget_form_ajax_callback($form, $form_state) {
-  $field_name = $form_state['triggering_element']['#parents'][0];
-  return $form[$field_name];
 }
