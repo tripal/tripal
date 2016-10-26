@@ -179,7 +179,7 @@ class chado_linker__prop extends TripalField {
     $field_name = $this->field['field_name'];
     $field_table = $this->field['settings']['chado_table'];
 
-    // Don't save if there is no value for prop
+    // Don't save if there is no value for the property
     if (!trim($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . 'value'])) {
       foreach($form_state['values'][$field_name][$langcode][$delta] AS $key => $value) {
         if (preg_match('/^chado-/', $key)) {
