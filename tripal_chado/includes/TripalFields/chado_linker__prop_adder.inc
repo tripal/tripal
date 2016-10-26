@@ -158,14 +158,36 @@ class chado_linker__prop_adder extends TripalField {
     $field = $this->field;
     $field_name = $field['field_name'];
 
-    // If the user has clicked the 'user_term_button' then we need to makes
-    // sure that the cardinality textbox contains a positive integer.
     if ($form_state['triggering_element']['#name'] == 'use_term_button') {
+      // If the user has clicked the 'user_term_button' then we need to makes
+      // sure that the cardinality textbox contains a positive integer.
       $cardinality = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['cardinality'];
       if (!preg_match('/^\d+$/', $cardinality) or $cardinality < 0) {
         form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values.");
       }
-
+      
+      // Get selected terms
+      $terms_list = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['terms_list'];
+      $counter = 0;
+      $selected_term_id = '';
+      foreach ($terms_list AS $term => $selected) {
+        if ($selected) {
+          $selected_term_id = str_replace('term-', '', $term);
+          $counter ++;
+        }
+      }
+      // Make sure at least a term is selected
+      if ($counter == 0) {
+        form_set_error("$field_name][$langcode][$delta][wrapper][terms_list", "Please select a term.");
+      }
+      // Make sure only one term is selected
+      if ($counter > 1) {
+        form_set_error("$field_name][$langcode][$delta][wrapper][terms_list", "Please select only one term.");
+      }
+      // Make sure this property doesn't already have a field
+      if (key_exists($field_name . '__' . $selected_term_id, $form_state['values'])) {
+        form_set_error("$field_name][$langcode][$delta][wrapper][terms_name", "Property already exists. Please select another term.");
+      }
     }
   }
 
@@ -181,28 +203,36 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::widgetFormSubmit()
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    // Because we're going to add a new property we want to rebuild the form
-    // rather than have it fully submit.
-    $form_state['rebuild'] = TRUE;
 
-    return;
-    // We will never have more than one item for this field at a time, so
-    // delta is always zero.
-    $delta = 0;
 
     // Add the new field to the entity but only if the property adder button
     // was clicked
     if (!array_key_exists('triggering_element', $form_state) or
-      $form_state['triggering_element']['#name'] != 'kvproperty_adder_button') {
+      $form_state['triggering_element']['#name'] != 'use_term_button') {
       return;
+    }
+    else {
+      // Because we're going to add a new property we want to rebuild the form
+      // rather than have it fully submit.
+      $form_state['rebuild'] = TRUE;
     }
 
     // Get the table and base table.
     $base_table = $this->field['settings']['base_table'];
 
     // Get the term for the property
-    $kvproperty = tripal_get_field_item_keyval($items, $delta, 'value', '');
-    $cvterm = chado_generate_var('cvterm', array('name' => $kvproperty));
+    $field = $this->field;
+    $fname = $field['field_name'];
+    $cardinality = $form_state['values'][$fname][$langcode][$delta]['wrapper']['cardinality'];
+    // Get selected terms
+    $terms_list = $form_state['values'][$fname][$langcode][$delta]['wrapper']['terms_list'];
+    $selected_term_id = '';
+    foreach ($terms_list AS $term => $selected) {
+      if ($selected) {
+        $selected_term_id = str_replace('term-', '', $term);
+      }
+    }
+    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $selected_term_id));
 
     // Generate the name for the property table and the field name that we'll
     // be creating.
@@ -220,7 +250,7 @@ class chado_linker__prop_adder extends TripalField {
       $field = field_create_field(array(
         'field_name' => $field_name,
         'type' => 'chado_linker__prop',
-        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+        'cardinality' => $cardinality,
         'locked' => FALSE,
         'storage' => array(
           'type' => 'field_chado_storage',
