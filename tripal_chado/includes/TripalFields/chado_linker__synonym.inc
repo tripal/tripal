@@ -219,14 +219,14 @@ class chado_linker__synonym extends TripalField {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
 
-    $record_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey];
-    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey];
-    $synonym_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'];
-    $pub_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'];
-    $is_current = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'];
-    $is_internal = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'];
-    $syn_name = $form_state['values'][$field_name][$langcode][$delta]['name'];
-    $syn_type = $form_state['values'][$field_name][$langcode][$delta]['type_id'];
+    $record_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey] : '';
+    $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] : '';
+    $synonym_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] : '';
+    $pub_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] : '';
+    $is_current = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] : '';
+    $is_internal = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] : '';
+    $syn_name = isset($form_state['values'][$field_name][$langcode][$delta]['name']) ? $form_state['values'][$field_name][$langcode][$delta]['name'] : '';
+    $syn_type = isset($form_state['values'][$field_name][$langcode][$delta]['type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['type_id'] : '';
 
     // If the user provided a $syn_name and a $syn_type then we want to set
     // the foreign key value to be the chado_record_id.

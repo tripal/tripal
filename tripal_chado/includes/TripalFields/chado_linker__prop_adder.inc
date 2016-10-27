@@ -58,7 +58,7 @@ class chado_linker__prop_adder extends TripalField {
           of this type.'),
     );
 
-    $term_name = array_key_exists('values', $form_state) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
+    $term_name = isset($form_state['values'][$field_name]['und'][0]['wrapper']['term_name']) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
 
     // Drupal's vertical feild set is a bit quirky in that we can't just
     // add a prefix and suffix to the weidget.  If we do, then the

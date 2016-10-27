@@ -268,11 +268,11 @@ class chado_linker__dbxref extends TripalField {
     $fkey = $fkeys[0];
 
     // Get the field values.
-    $dbxref_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'];
-    $db_id = $form_state['values'][$field_name][$langcode][$delta]['db_id'];
-    $accession = $form_state['values'][$field_name][$langcode][$delta]['accession'];
-    $version = $form_state['values'][$field_name][$langcode][$delta]['version'];
-    $description = $form_state['values'][$field_name][$langcode][$delta]['description'];
+    $dbxref_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] : '';
+    $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
+    $accession = isset($form_state['values'][$field_name][$langcode][$delta]['accession']) ? $form_state['values'][$field_name][$langcode][$delta]['accession'] : '';
+    $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
+    $description = isset($form_state['values'][$field_name][$langcode][$delta]['description']) ? $form_state['values'][$field_name][$langcode][$delta]['description'] : '';
 
     // If the dbxref_id does not match the db_id + accession then the user
     // has selected a new dbxref record and we need to update the hidden

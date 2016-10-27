@@ -141,9 +141,9 @@ class chado_linker__pub extends TripalField {
     $field_name = $this->field['field_name'];
 
     // Get the field values.
-    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['value'];
-    $pub_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'];
-    $uname = $form_state['values'][$field_name][$langcode][$delta]['uniquename'];
+    $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
+    $pub_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] : '';
+    $uname = isset($form_state['values'][$field_name][$langcode][$delta]['uniquename']) ? $form_state['values'][$field_name][$langcode][$delta]['uniquename'] : '';
 
     // If the user provided a uniquename then we want to set the foreign key
     // value to be the chado_record_id

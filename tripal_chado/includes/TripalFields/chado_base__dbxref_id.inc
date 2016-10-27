@@ -68,11 +68,11 @@ class chado_base__dbxref_id extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state)) {
-      $fk_val = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column];
-      $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
-      $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
-      $version = $form_state['values'][$field_name]['und'][$delta]['version'];
-      $description = $form_state['values'][$field_name]['und'][$delta]['description'];
+      $fk_val = isset($form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] : '';
+      $db_id = isset($form_state['values'][$field_name]['und'][$delta]['db_id']) ? $form_state['values'][$field_name]['und'][$delta]['db_id'] : '';
+      $accession = isset($form_state['values'][$field_name]['und'][$delta]['accession']) ? $form_state['values'][$field_name]['und'][$delta]['accession'] : '';
+      $version = isset($form_state['values'][$field_name]['und'][$delta]['version']) ? $form_state['values'][$field_name]['und'][$delta]['version'] : '';
+      $description = isset($form_state['values'][$field_name]['und'][$delta]['description']) ? $form_state['values'][$field_name]['und'][$delta]['description'] : '';
     }
 
     $schema = chado_get_schema('dbxref');
@@ -213,10 +213,10 @@ class chado_base__dbxref_id extends TripalField {
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
 
-    $fk_val = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column];
-    $db_id = $form_state['values'][$field_name][$langcode][$delta]['db_id'];
-    $accession = $form_state['values'][$field_name][$langcode][$delta]['accession'];
-    $version = $form_state['values'][$field_name][$langcode][$delta]['version'];
+    $fk_val = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column] : '';
+    $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
+    $accession = isset($form_state['values'][$field_name][$langcode][$delta]['accession']) ? $form_state['values'][$field_name][$langcode][$delta]['accession'] : '';
+    $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
 
     // If user did not select a database, we want to remove dbxref_id from the
     // field.

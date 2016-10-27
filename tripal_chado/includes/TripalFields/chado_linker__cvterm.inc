@@ -89,8 +89,6 @@ class chado_linker__cvterm extends TripalField {
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
-
-    $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
 
     $matches = array();
@@ -123,7 +121,6 @@ class chado_linker__cvterm extends TripalField {
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
       $record_id = $items[$delta]['value'];
-      $fkey_value = $items[$delta]['chado-' . $table_name . '__' . $fkey];
       $cvterm_name = $items[$delta]['cvterm__name'];
       $is_not = $items[$delta]['chado-' . $table_name . '__is_not'];
       $cvterm_id = $items[$delta]['chado-' . $table_name . '__cvterm_id'];
@@ -147,14 +144,13 @@ class chado_linker__cvterm extends TripalField {
 
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
-    $widget['#element_validate'] = array('chado_linker__cvterm_widget_validate');
     $widget['#theme'] = 'chado_linker__cvterm_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget['chado-' . $table_name . '__' . $pkey] = array(
@@ -206,7 +202,13 @@ class chado_linker__cvterm extends TripalField {
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
+    $table_name = $this->field['settings']['chado_table'];
+    $schema = chado_get_schema($table_name);
+    $pkey = $schema['primary key'][0];
+    $base_table = $this->field['settings']['base_table'];
+    $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
+    $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
+
 
     // If the form ID is field_ui_field_edit_form, then the user is editing the
     // field's values in the manage fields form of Drupal.  We don't want
@@ -215,35 +217,16 @@ class chado_linker__cvterm extends TripalField {
       return;
     }
 
-    // Get the field values.
-    //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-    //   $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
-    //   $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
-    //   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-    //   $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
-
     // If the user provided a cv_id and a name then we want to set the
     // foreign key value to be the chado_record_idd
-    if ($cvterm_name) {
+    $cvterm_name = isset($form_state['values'][$field_name][$langcode][$delta]['cvterm__name']) ? $form_state['values'][$field_name][$langcode][$delta]['cvterm__name'] : '';
 
-      $fkey_value = $element['#entity']->chado_record_id;
-      tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
-
-      // Get the cvterm ID. If one is not available because it's a newly added
-      // record, then we need to retrieve it and set the form element.
-      if (!$cvterm_id) {
-        $cvterm = tripal_get_cvterm(array('cv_id' => $cv_id, 'name' => $cvterm_name));
-        tripal_chado_set_field_form_values($field_name, $form_state, $cvterm->cvterm_id, $delta, $table_name . '__cvterm_id');
-      }
-
-      if (!$pub_id) {
-        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-        tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
-      }
+    if (!$cvterm_name) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__cvterm_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $lfkey_field] = '';
     }
     else {
-      // If the $cv_id and name are not set, then remove the linker FK value to the base table.
-      tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = 1;
     }
   }
 
@@ -252,12 +235,11 @@ class chado_linker__cvterm extends TripalField {
    */
   public function load($entity, $details = array()) {
 
-    $record = $details['record'];
-
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
+    $base_table = $this->field['settings']['base_table'];
 
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
@@ -271,6 +253,7 @@ class chado_linker__cvterm extends TripalField {
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
+    $chado_record = $entity->chado_record;
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
@@ -295,7 +278,7 @@ class chado_linker__cvterm extends TripalField {
     // Get the annotations associated with this base record for this fields type.
     $columns = array('*');
     $match = array(
-      $fkey_lcolumn => $record->$fkey_rcolumn,
+      $fkey_lcolumn => $chado_record->$fkey_rcolumn,
       'cvterm_id' => array(
         'cv_id' => $cv_id,
       ),

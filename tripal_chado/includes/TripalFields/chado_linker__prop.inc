@@ -131,7 +131,7 @@ class chado_linker__prop extends TripalField {
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
-    $prop_value = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value'];
+    $prop_value = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value'] : '';
 
     // If the user removed the contact from the contact_name field
     // then we want to clear out the rest of the hidden values.

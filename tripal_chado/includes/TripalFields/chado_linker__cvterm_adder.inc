@@ -48,7 +48,7 @@ class chado_linker__cvterm_adder extends TripalField {
     $widget['cvterm_class_adder_instructions'] = array(
       '#type' => 'item',
       '#markup' => t('You may add annotation types to this form by
-          providing a vocabulary name in the field below
+          providing a vocabulary name in the field above
           and clicking the "Add Annotation Type" button.  This will add a
           new field to the form above for the vocabulary you entered which
           will allow users to associate terms from that vocabulary to
@@ -83,6 +83,35 @@ class chado_linker__cvterm_adder extends TripalField {
   }
 
   /**
+   * @see TripalField::widgetFormValidate()
+   */
+  public function widgetFormValidate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  
+    if (array_key_exists('triggering_element', $form_state) and
+        $form_state['triggering_element']['#name'] == 'cvterm_class_adder_button') {
+          $this_field = $this->field;
+          $field_name = $this_field['field_name'];
+          $bundle = $entity->bundle;
+          
+          // Get the base table name from the field annotations.
+          $base_table = $entity->chado_table;
+          $cvterm_class_adder = $form_state['values'][$base_table . '_cvterm'][$langcode][$delta]['value'];
+          $cv = chado_generate_var('cv', array('cv_id' => $cvterm_class_adder));
+          
+          // Make sure a valid vocabulary is selected
+          if (!$cv) {
+            form_set_error("$field_name][$langcode][$delta][value", "Please select a vocabulary.");
+          }
+          else {
+            // Make sure this vocabulary doesn't already have a field
+            if (key_exists($field_name . '__' . $cv->cv_id, $form_state['values'])) {
+              form_set_error("$field_name][$langcode][$delta][wrapper][terms_name", "Field for this vocabulary already exists. Please select another vocabulary.");
+            }
+          }
+        }
+  }
+  
+  /**
    * @see TripalField::widgetFormSubmit()
    */
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
@@ -92,20 +121,19 @@ class chado_linker__cvterm_adder extends TripalField {
         $form_state['triggering_element']['#name'] == 'cvterm_class_adder_button') {
 
           $form_state['rebuild'] = TRUE;
-          $field_name = $element['#field_name'];
-          $entity_type = $element['#entity']->type;
-          $bundle = $element['#entity']->bundle;
-
+          $this_field = $this->field;
+          $field_name = $this_field['field_name'];
+          $bundle = $entity->bundle;
+          
           // Get the base table name from the field annotations.
-          $field = field_info_field($field_name);
-          $base_table = $field['settings']['base_table'];
+          $base_table = $entity->chado_table;
+          $cvterm_class_adder = $form_state['values'][$base_table . '_cvterm'][$langcode][$delta]['value'];
 
           // Get the vocabulary.
           //$cvterm_class_adder = tripal_chado_get_field_form_values($field_name, $form_state);
           $cv = chado_generate_var('cv', array('cv_id' => $cvterm_class_adder));
 
           if (!$cv) {
-            form_set_error(implode('][', $element ['#parents']) . '][value', t("Please select a vocabulary."));
             return;
           }
 
@@ -120,8 +148,8 @@ class chado_linker__cvterm_adder extends TripalField {
           $field = field_info_field('cvterm');
           if (!$field) {
             $create_info = array(
-              'field_name' => 'cvterm',
-              'type' => 'tripal_chado_cvterm_widget',
+              'field_name' => $type_field_name,
+              'type' => 'chado_linker__cvterm',
               'cardinality' => FIELD_CARDINALITY_UNLIMITED,
               'locked' => FALSE,
               'storage' => array(
@@ -141,15 +169,15 @@ class chado_linker__cvterm_adder extends TripalField {
               !array_key_exists('TripalEntity', $field['bundles']) or
               !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
                 $createInstanceInfo = array(
-                  'field_name' => 'cvtmerm',
+                  'field_name' => $type_field_name,
                   'entity_type' => 'TripalEntity',
-                  'bundle' => $this->bundle->name,
+                  'bundle' => $bundle,
                   'label' => ucfirst(preg_replace('/_/', ' ', $cv->name)),
                   'description' => "Annotations from the $cv->name vocabulary",
                   'required' => FALSE,
                   'settings' => array(),
                   'widget' => array(
-                    'type' => 'tripal_chado_cvterm_widget',
+                    'type' => 'chado_linker__cvterm_widget',
                     'settings' => array(
                       'display_label' => 1,
                     ),
@@ -157,7 +185,7 @@ class chado_linker__cvterm_adder extends TripalField {
                   'display' => array(
                     'default' => array(
                       'label' => 'above',
-                      'type' => 'tripal_chado_cvterm_formatter',
+                      'type' => 'chado_linker__cvterm_formatter',
                       'settings' => array(),
                     ),
                   ),

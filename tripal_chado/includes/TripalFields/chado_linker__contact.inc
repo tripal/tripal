@@ -164,9 +164,9 @@ class chado_linker__contact extends TripalField {
     $field_name = $this->field['field_name'];
 
     // Get the field values.
-    $fkey_value = $form_state['values'][$field_name][$langcode][$delta]['value'];
-    $contact_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'];
-    $name = $form_state['values'][$field_name][$langcode][$delta]['name'];
+    $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
+    $contact_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] : '';
+    $name = isset($form_state['values'][$field_name][$langcode][$delta]['name']) ? $form_state['values'][$field_name][$langcode][$delta]['name'] : '';
 
     // If the user provided a name then we want to set the foreign key
     // value to be the chado_record_id

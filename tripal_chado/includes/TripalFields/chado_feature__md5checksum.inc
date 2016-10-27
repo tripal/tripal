@@ -77,7 +77,7 @@ class chado_feature__md5checksum  extends TripalField {
     $field_column = $field['settings']['chado_column'];
 
     // Get the residues so we can calculate teh length.
-    $residues = $form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues'];
+    $residues = isset($form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues']) ? $form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues'] : '';
 
     if ($residues) {
       // Remove spaces and new lines from the residues string.

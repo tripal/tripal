@@ -106,7 +106,7 @@ class chado_feature__residues extends TripalField {
     $field_name = $this->field['field_name'];
 
     // Remove any white spaces.
-    $residues = $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'];
+    $residues = isset($form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] : '';
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
       $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] = $residues;
