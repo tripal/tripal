@@ -441,7 +441,7 @@ function chado_analysis_insert($node) {
     );
     $analysis = chado_insert_record('analysis', $values);
     if (!$analysis) {
-      drupal_set_message(t('Unable to add analysis.', 'warning'));
+      drupal_set_message(t('Unable to add analysis.'), 'warning');
       tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
         array('%values' => print_r($values, TRUE)));
       return;
