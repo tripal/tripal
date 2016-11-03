@@ -536,8 +536,13 @@ function tripal_core_reset_chado_schema() {
     print "Dropping existing 'frange' schema\n";
     db_query("drop schema frange cascade");
   }
-  if (chado_dbschema_exists('chado')) {
-    print "Dropping existing 'chado' schema\n";
+  if (chado_dbschema_exists($chado_schema)) {
+    if ($chado_schema != 'chado') {
+      print "Dropping existing Chado ('$chado_schema') schema\n";
+    }
+    else {
+      print "Dropping existing 'chado' schema\n";
+    }
     db_query("drop schema $chado_schema cascade");
   }
 
