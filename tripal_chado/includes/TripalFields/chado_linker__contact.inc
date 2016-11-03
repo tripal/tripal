@@ -99,13 +99,16 @@ class chado_linker__contact extends TripalField {
     $fkey_value = $element['#entity']->chado_record_id;
     $contact_id = '';
     $name = '';
-
+    
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $record_id);
       $contact_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__contact_id', $contact_id);
-      $name = tripal_get_field_item_keyval($items, $delta, 'name', $name);
+      if ($contact_id) {
+        $contact = chado_generate_var('contact', array('contact_id' => $contact_id));
+        $name = $contact->name;
+      }
     }
 
     $schema = chado_get_schema('contact');
@@ -241,14 +244,14 @@ class chado_linker__contact extends TripalField {
         $contact = $contact_linker->contact_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            'type' => $contact->type_id->name,
+            'type' => $contact->type_id ? $contact->type_id->name : '',
             'name' => $contact->name,
             'description' => $contact->description,
           ),
           // Add in the semantic web settings.  This array is expected by
           // other Tripal modules that handle semantic web for fields.
           'semantic_web' => array(
-            'type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
+            'type' => $contact->type_id ? $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession : '',
             'name' => tripal_get_chado_semweb_term('contact', 'name'),
             'description' => tripal_get_chado_semweb_term('contact', 'description'),
           ),
