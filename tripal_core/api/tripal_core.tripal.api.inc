@@ -97,6 +97,12 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       break;
   }
 
+  // If we are not set to return debugging information and the severity string is debug
+  // then don't report the error.
+  if (($severity == TRIPAL_DEBUG) AND (getenv('TRIPAL_DEBUG') != 1)) {
+    return FALSE;
+  }
+
   // get the backtrace and include in the error message, but only if the
   // TRIPAL_DEBUG environment variable is set.
   if (getenv('TRIPAL_DEBUG') == 1) {
@@ -109,7 +115,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     }
   }
 
-  // Send to watchdog
+  // Send to watchdog.
   try {
     watchdog($type, $message, $variables, $severity);
   }
@@ -126,14 +132,15 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $print_message = $message;
   }
 
-  // If print option supplied then print directly to the screen
+  // If print option supplied then print directly to the screen.
   if (isset($options['print'])) {
     print $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n";
   }
 
-  // Print to the Tripal error log
-  tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
-
+  // Print to the Tripal error log but only if the severity is not info.
+  if (($severity != TRIPAL_INFO)) {
+    tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
+  }
 }
 
 /**

@@ -224,7 +224,7 @@ function tripal_views_views_data() {
 
         tripal_report_error(
           'tripal_views',
-          TRIPAL_WARNING,
+          TRIPAL_DEBUG,
           "The name and help were not set for %table.%column. As a consequence the column
             name has been used... You should ensure that the 'name' and 'help' keys for
             this field are set in the integration array (priority = %priority)",
@@ -265,7 +265,7 @@ function tripal_views_views_data() {
       if ($num_handlers == 0) {
         tripal_report_error(
           'tripal_views',
-          TRIPAL_WARNING,
+          TRIPAL_DEBUG,
           "No handlers were registered for %table.%column. This means there is no views
             functionality for this column. To register handlers, make sure the 'handlers'
             key for this field is set in the integration array (priority = %priority).
