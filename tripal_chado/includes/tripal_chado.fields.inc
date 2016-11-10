@@ -448,6 +448,29 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
       ),
     );
   }
+  
+  // FEATUREPOS
+  if ($table_name == 'feature') {
+    $schema = chado_get_schema('featurepos');
+    $pkey = $schema['primary key'][0];
+    $field_name = 'featurepos';
+    $field_type = 'chado_linker__featurepos';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => 'featurepos',
+        'chado_column' => $pkey,
+        'base_table' => 'feature',
+        'semantic_web' => 'SO:position_of',
+      ),
+    );
+  }
   // GENOTYPE
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {
@@ -1197,6 +1220,36 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
       ),
     );
   }
+  
+  // FEATUREPOS
+  if ($table_name == 'feature') {
+    $field_name = 'featurepos';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Map Positions',
+      'description' => 'The positions on a genetic map.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
+      'widget' => array(
+        'type' => 'chado_linker__featurepos_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__featurepos_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+  
   // GENOTYPE
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {

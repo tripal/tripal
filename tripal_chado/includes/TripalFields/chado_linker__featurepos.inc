@@ -50,23 +50,20 @@ class chado_linker__featurepos extends TripalField {
     $settings = $display['settings'];
 
     $rows = array();
-    $headers = array('Map', 'Mapped Feature', 'Name', 'Position');
+    $headers = array('Map', 'Mapped Feature', 'Position');
 
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
       }
-
       $val = $item['value'];
       $map_name = $val['map_name'];
       $mapped_feature_name = $val['mapped_feature_name'];
-      $feature_name = $val['name'];
       $position = $val['position'];
 
       $rows[] = array(
         $map_name, 
         $mapped_feature_name,
-        $feature_name,
         $position
       );
     }
@@ -86,7 +83,7 @@ class chado_linker__featurepos extends TripalField {
       'sticky' => FALSE,
       'caption' => '',
       'colgroups' => array(),
-      'empty' => 'This record is not aligned to any locations.',
+      'empty' => 'This record is not found on any map.',
     );
 
     // once we have our table array structure defined, we call Drupal's theme_table()
@@ -127,10 +124,28 @@ class chado_linker__featurepos extends TripalField {
     );
     $feature = chado_expand_var($record, 'table', 'featurepos', $options);
 
-     // iterate through the results and add them to our featureposes array
-     $featureposes = array();
-     return $featureposes;
-   }
+    // iterate through the results and add them to our featureposes array
+    $featureposes = array();
+    if (isset($feature->featurepos->feature_id)) {
+       foreach ($feature->featurepos->feature_id AS $featurepos) {
+         $featuremap_id = $featurepos->featuremap_id;
+         $featuremap = chado_generate_var('featuremap', array('featuremap_id' => $featuremap_id));
+         $map_feature_id = $featurepos->map_feature_id;
+         $map_feature = chado_generate_var('feature', array('feature_id' => $map_feature_id));
+         $mappos = $featurepos->mappos;
+         $featureposes [] = array (
+           'map_name' => $featuremap->name,
+           'mapped_feature_name' => $map_feature->name,
+           'position' => $mappos
+         );
+      }
+    }
+    $i = 0;
+    foreach ($featureposes as $position) {
+      $entity->{$field_name}['und'][$i]['value'] = $position;
+      $i++;
+    }
+  }
 
   /**
    * We don't want a widget so override this function.

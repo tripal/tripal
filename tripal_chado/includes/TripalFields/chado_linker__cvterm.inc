@@ -114,6 +114,7 @@ class chado_linker__cvterm extends TripalField {
     $fkey_value = $element['#entity']->chado_record_id;
     $cvterm_name = '';
     $cvterm_id = '';
+    $title = '';
     $is_not = '';
     $cvterm = NULL;
 
@@ -122,6 +123,7 @@ class chado_linker__cvterm extends TripalField {
     if (array_key_exists($delta, $items)) {
       $record_id = $items[$delta]['value'];
       $cvterm_name = $items[$delta]['cvterm__name'];
+      $title =$items[$delta]['pub'];
       $is_not = $items[$delta]['chado-' . $table_name . '__is_not'];
       $cvterm_id = $items[$delta]['chado-' . $table_name . '__cvterm_id'];
     }
@@ -183,6 +185,20 @@ class chado_linker__cvterm extends TripalField {
         'effect' => 'fade',
         'method' => 'replace'
       ),
+    );
+    
+    $widget['pub'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Publication'),
+      '#default_value' => $title,
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
+      '#ajax' => array(
+        'callback' => "chado_linker__pub_widget_form_ajax_callback",
+        'wrapper' => "$table_name-$delta",
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
+      '#maxlength' => 100000,
     );
 
     $widget['chado-' . $table_name . '__is_not'] = array(

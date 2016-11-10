@@ -145,7 +145,7 @@ class chado_linker__cvterm_adder extends TripalField {
           $pkey = $schema['primary key'][0];
 
           // Add the field if it doesn't already exists.
-          $field = field_info_field('cvterm');
+          $field = field_info_field($type_field_name);
           if (!$field) {
             $create_info = array(
               'field_name' => $type_field_name,
@@ -167,7 +167,7 @@ class chado_linker__cvterm_adder extends TripalField {
           // Attach the field to the bundle if it isn't already.
           if (!$field or !array_key_exists('bundles', $field) or
               !array_key_exists('TripalEntity', $field['bundles']) or
-              !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+              !in_array($bundle, $field['bundles']['TripalEntity'])) {
                 $createInstanceInfo = array(
                   'field_name' => $type_field_name,
                   'entity_type' => 'TripalEntity',
