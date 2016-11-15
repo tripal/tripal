@@ -389,7 +389,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
   $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id, $match_type,
   $job = NULL) {
   $transaction = db_transaction();
-  print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
+  print "\nNOTE: Loading of this Fasta file is performed using a database transaction. \n" .
      "If the load fails or is terminated prematurely then the entire set of \n" .
      "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
@@ -410,10 +410,11 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
     }
 
     // Second, if there is a parent type then get that.
+    $parentcvterm = NULL;
     if ($parent_type) {
       $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type,':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
-        tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the paretne term type: '%type'", array(
+        tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the parent term type: '%type'", array(
           '%type' => $parentcvterm
         ));
         return 0;
@@ -421,6 +422,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
     }
 
     // Third, if there is a relationship type then get that.
+    $relcvterm = NULL;
     if ($rel_type) {
       $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
@@ -460,7 +462,10 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
     $num_seqs = 0;
     $prev_pos = 0;
     $set_start = FALSE;
+    $intv_read = 0;
+    $line_num = 0;
     while ($line = fgets($fh)) {
+      $line_num++;
       $num_read += strlen($line);
       $intv_read += strlen($line);
 
@@ -472,6 +477,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         $defline = preg_replace("/^>/", '', $line);
 
         // Get the feature name if a regular expression is provided.
+        $name = "";
         if ($re_name) {
           if (!preg_match("/$re_name/", $defline, $matches)) {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature name finds nothing. Line %line.", array(
@@ -506,6 +512,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         }
 
         // Get the feature uniquename if a regular expression is provided.
+        $uname = "";
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
             tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
@@ -515,7 +522,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         }
         // If the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise, we don't set the
-        // unqiuename.
+        // uniquename.
         elseif (strcmp($match_type, 'Unique name') == 0) {
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             $uname = trim($matches[1]);
@@ -527,19 +534,25 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         }
 
         // Get the accession if a regular expression is provided.
-        preg_match("/$re_accession/", $defline, $matches);
-        if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
-             "Cannot add cross reference. Line %line.", array('%line' => $i
-            ));
-        }
-        else {
-          $accession = trim($matches[1]);
+        $accession = "";
+        if (!empty($re_accession)) {
+            preg_match("/$re_accession/", $defline, $matches);
+            if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+              tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
+                 "Cannot add cross reference. Line %line.", array('%line' => $i
+                ));
+            }
+            else {
+              $accession = trim($matches[1]);
+            }
         }
 
         // Get the relationship subject
-        preg_match("/$re_subject/", $line, $matches);
-        $subject = trim($matches[1]);
+        $subject = "";
+        if (!empty($re_subject)) {
+            preg_match("/$re_subject/", $line, $matches);
+            $subject = trim($matches[1]);
+        }
 
         // Add the details to the sequence.
         $seqs[$num_seqs] = array(
@@ -566,18 +579,18 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         $intv_read = 0;
         $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
         if ($name) {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+          print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
              " bytes.\r";
         }
         else {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+          print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
              " bytes.\r";
         }
         tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
       }
     }
     $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-    print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
+    print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
        " bytes.\r";
     tripal_set_job_progress($job, 50);
 
@@ -586,9 +599,9 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
 
     // Now that we know where the sequences are in the file we need to add them.
     print "\nStep 2: Importing sequences\n";
-    for ($i = 0; $i < $num_seqs; $i++) {
-      $seq = $seqs[$i];
-      print "Importing " . ($i + 1) . " of $num_seqs. ";
+    for ($j = 0; $j < $num_seqs; $j++) {
+      $seq = $seqs[$j];
+      print "Importing " . ($j + 1) . " of $num_seqs. ";
       if ($name) {
         print "Current feature: " . $seq['name'] . ".\n";
       }
@@ -596,6 +609,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         print "Current feature: " . $seq['uname'] . ".\n";
       }
 
+      $source = NULL;
       tripal_feature_load_fasta_feature($fh, $seq['name'], $seq['uname'], $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], $seq['seq_end']);
     }
     tripal_set_job_progress($job, 100);
@@ -666,7 +680,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
 
   // If we don't have a feature and we're doing an insert then do the insert.
   $inserted = 0;
-  if (!$feature and (strcmp($method, 'Insert only') == 0 or strcmp($method, 'Insert and update') == 0)) {
+  if (!isset($feature) and (strcmp($method, 'Insert only') == 0 or strcmp($method, 'Insert and update') == 0)) {
     // If we have a unique name but not a name then set them to be the same
     if (!$uname) {
       $uname = $name;
@@ -711,7 +725,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   }
 
   // if we don't have a feature and the user wants to do an update then fail
-  if (!$feature and (strcmp($method, 'Update only') == 0 or
+  if (!isset($feature) and (strcmp($method, 'Update only') == 0 or
      drupal_strcmp($method, 'Insert and update') == 0)) {
     tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to find feature '%name' ('%uname') while matching on " .
       drupal_strtolower($match_type), array('%name' => $name,'%uname' => $uname));
@@ -912,7 +926,7 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
   fseek($fh, $seq_start, SEEK_SET);
   $chunk_size = 100000000;
   $chunk = '';
-  $seqlen = ($seq_end - $seq_start) + 1;
+  $seqlen = ($seq_end - $seq_start);
 
   // Calculate the interval at which we updated the precent complete.
   $interval = intval($seqlen * 0.01);
@@ -938,9 +952,11 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
   // get a specific bytes read then append the sequence to the one in the
   // database.
   print "Sequence complete: 0%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+  $partial_seq_size = 0;
   while ($line = fgets($fh)) {
     $num_read += strlen($line) + 1;
     $chunk_intv_read += strlen($line) + 1;
+    $partial_seq_size += strlen($line);
     $intv_read += strlen($line) + 1;
     $chunk .= trim($line);
 
@@ -956,7 +972,8 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
       if (!$success) {
         return FALSE;
       }
-      $total_seq_size += strlen($chunk);
+      $total_seq_size += $partial_seq_size;
+      $partial_seq_size = 0;
       $chunk = '';
       $chunk_intv_read = 0;
     }
@@ -967,7 +984,7 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
       $intv_read = 0;
     }
 
-    // If we've reached the ned of the sequence then break out of the loop
+    // If we've reached the end of the sequence then break out of the loop
     if (ftell($fh) == $seq_end) {
       break;
     }
@@ -985,7 +1002,7 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
     if (!$success) {
       return FALSE;
     }
-    $total_seq_size += strlen($chunk);
+    $total_seq_size += $partial_seq_size;
     $chunk = '';
     $chunk_intv_read = 0;
   }
@@ -995,7 +1012,7 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
   chado_query($sql, array(':feature_id' => $feature_id
   ));
 
-  $percent = sprintf("%.2f", ($num_read / $seqlen) * 100);
+  $percent = sprintf("%.2f", ($total_seq_size / $seqlen) * 100);
   print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) .
      " bytes. \r";
 }
