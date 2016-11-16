@@ -75,14 +75,14 @@ class chado_linker__pub extends TripalField {
     $record_id = '';
     $fkey_value = $element['#entity']->chado_record_id;
     $pub_id = '';
-    $title = '';
+    $uname = '';
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $record_id);
       $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
-      $title = tripal_get_field_item_keyval($items, $delta, 'uniquename', $title);
+      $uname = tripal_get_field_item_keyval($items, $delta, 'uniquename', $uname);
     }
 
     $schema = chado_get_schema('pub');
@@ -114,7 +114,7 @@ class chado_linker__pub extends TripalField {
     $widget['uniquename'] = array(
       '#type' => 'textfield',
       '#title' => t('Publication'),
-      '#default_value' => $title,
+      '#default_value' => $uname,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
       '#ajax' => array(
         'callback' => "chado_linker__pub_widget_form_ajax_callback",

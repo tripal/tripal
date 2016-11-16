@@ -115,7 +115,7 @@ class chado_linker__cvterm extends TripalField {
     $cvterm_name = '';
     $cvterm_id = '';
     $pub_id = '';
-    $title = '';
+    $uname = '';
     $is_not = '';
     $cvterm = NULL;
 
@@ -127,7 +127,7 @@ class chado_linker__cvterm extends TripalField {
       $pub_id =$items[$delta]['chado-' . $table_name . '__pub_id'];
       if ($pub_id && $pub_id != 1) {
         $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
-        $title = $pub->title;
+        $uname = $pub->uniquename;
       }
       $is_not = $items[$delta]['chado-' . $table_name . '__is_not'];
       $cvterm_id = $items[$delta]['chado-' . $table_name . '__cvterm_id'];
@@ -184,19 +184,13 @@ class chado_linker__cvterm extends TripalField {
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists('length', $schema['fields']['name']) ? $schema['fields']['name']['length'] : 255,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/' . $cv_id,
-      '#ajax' => array(
-        'callback' => "chado_linker__cvterm_widget_form_ajax_callback",
-        'wrapper' => "$table_name-$delta",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
       '#size' => 30
     );
-    
+
     $widget['pub'] = array(
       '#type' => 'textfield',
       '#title' => t('Publication'),
-      '#default_value' => $title,
+      '#default_value' => $uname,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
       '#ajax' => array(
         'callback' => "chado_linker__pub_widget_form_ajax_callback",
@@ -205,9 +199,8 @@ class chado_linker__cvterm extends TripalField {
         'method' => 'replace'
       ),
       '#maxlength' => 100000,
-      '#size' => 30
     );
-    
+
     $widget['chado-' . $table_name . '__pub_id'] = array(
       '#type' => 'value',
       '#default_value' => $pub_id ? $pub_id : 1,
