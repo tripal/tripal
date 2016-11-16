@@ -6,7 +6,7 @@
 .kvproperty-adder-widget-item,
 .chado-linker--relationship-widget-item,
 .chado-linker--relationship-instance-settings-option2-item,
-.annotation-cvterm-widget {
+.annotation-cvterm-widget-item {
    float: left;
    margin-right: 10px;
 }

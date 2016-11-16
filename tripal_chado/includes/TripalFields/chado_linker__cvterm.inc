@@ -114,6 +114,7 @@ class chado_linker__cvterm extends TripalField {
     $fkey_value = $element['#entity']->chado_record_id;
     $cvterm_name = '';
     $cvterm_id = '';
+    $pub_id = '';
     $title = '';
     $is_not = '';
     $cvterm = NULL;
@@ -123,7 +124,11 @@ class chado_linker__cvterm extends TripalField {
     if (array_key_exists($delta, $items)) {
       $record_id = $items[$delta]['value'];
       $cvterm_name = $items[$delta]['cvterm__name'];
-      $title =$items[$delta]['pub'];
+      $pub_id =$items[$delta]['chado-' . $table_name . '__pub_id'];
+      if ($pub_id && $pub_id != 1) {
+        $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
+        $title = $pub->title;
+      }
       $is_not = $items[$delta]['chado-' . $table_name . '__is_not'];
       $cvterm_id = $items[$delta]['chado-' . $table_name . '__cvterm_id'];
     }
@@ -185,6 +190,7 @@ class chado_linker__cvterm extends TripalField {
         'effect' => 'fade',
         'method' => 'replace'
       ),
+      '#size' => 30
     );
     
     $widget['pub'] = array(
@@ -199,6 +205,12 @@ class chado_linker__cvterm extends TripalField {
         'method' => 'replace'
       ),
       '#maxlength' => 100000,
+      '#size' => 30
+    );
+    
+    $widget['chado-' . $table_name . '__pub_id'] = array(
+      '#type' => 'value',
+      '#default_value' => $pub_id ? $pub_id : 1,
     );
 
     $widget['chado-' . $table_name . '__is_not'] = array(
@@ -240,9 +252,7 @@ class chado_linker__cvterm extends TripalField {
     if (!$cvterm_name) {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__cvterm_id'] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $lfkey_field] = '';
-    }
-    else {
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = 1;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = '';
     }
   }
 
@@ -342,6 +352,9 @@ function theme_chado_linker__cvterm_widget($variables) {
         </div>
         <div class=\"annotation-cvterm-widget-item\">" .
         drupal_render($element['cvterm__name']) . "
+        </div>
+        <div class=\"annotation-cvterm-widget-item\">" .
+        drupal_render($element['pub']) . "
         </div>
         <div class=\"annotation-cvterm-widget-item\">" .
         drupal_render($element['chado-' . $table_name . '__is_not']) . "
