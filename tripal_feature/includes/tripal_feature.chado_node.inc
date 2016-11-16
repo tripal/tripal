@@ -771,10 +771,7 @@ function tripal_feature_node_presave($node) {
         $organism_id = $node->feature->organism_id;
         $name        = $node->feature->name;
         $uname       = $node->feature->uniquename;
-        $type_id     = $node->feature->type_id;
-        $values = array('cvterm_id' => $type_id);
-        $ftype = chado_select_record('cvterm', array('name'), $values);
-        $type = $ftype[0]->name;
+        $type        = $node->feature->cvtname;
       }
 
       $values = array('organism_id' => $organism_id);
