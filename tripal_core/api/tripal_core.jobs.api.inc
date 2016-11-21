@@ -277,6 +277,26 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
   }
 }
 
+
+function tripal_execute_job($job_id, $redirect = TRUE) {
+  global $user;
+
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchObject();
+
+  // set the end time for this job
+  if ($job->start_time == 0 && $job->end_time == 0) {
+    exec("drush trp-run-jobs --username=".$user->name." --root=".DRUPAL_ROOT."");
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It is in progress or has finished.", array('%job_id' => $job_id)));
+  }
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
+  }
+}
+
 /**
  * A function used to manually launch all queued tripal jobs
  *
