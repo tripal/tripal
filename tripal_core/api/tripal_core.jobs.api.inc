@@ -278,6 +278,14 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
 }
 
 
+/**
+ * Execute a specific Tripal Job.
+ *
+ * @param $job_id
+ *          The job id to be exeuted
+ * @param bool $redirect [optional]
+ *          Whether to redirect to the job page or not
+ */
 function tripal_execute_job($job_id, $redirect = TRUE) {
   global $user;
 
@@ -289,7 +297,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   if ($job->end_time == 0) {
     $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT."";
     $o = exec($cmd, $output, $return);
-    drupal_set_message($cmd);
+    drupal_set_message($cmd.' '.$o);
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It is in progress or has finished.", array('%job_id' => $job_id)));
