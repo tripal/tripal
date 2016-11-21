@@ -291,6 +291,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
     drupal_set_message(t(implode(" ", $output)));
     drupal_set_message($o);
     drupal_set_message($job_id);
+    drupal_set_message("drush trp-run-jobs --username=".$user->name." --root=".DRUPAL_ROOT);
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It is in progress or has finished.", array('%job_id' => $job_id)));
