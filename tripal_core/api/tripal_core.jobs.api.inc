@@ -296,12 +296,12 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   // set the end time for this job
   if ($job->end_time == 0) {
     $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT."";
-    exec($cmd, $output, $return);
+    exec($cmd, $output, $return_code);
     $response = 'Response <br>';
     foreach($output as $line) {
       $response .= $line."<br>";
     }
-    drupal_set_message($cmd.'<br>'.$response);
+    drupal_set_message($cmd.'<br>'.$response."<br> exit code = $return_code");
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
