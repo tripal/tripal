@@ -289,9 +289,6 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   if ($job->end_time == 0) {
     $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT."";
     $o = exec($cmd, $output, $return);
-    drupal_set_message(t(implode(" ", $output)));
-    drupal_set_message($o);
-    drupal_set_message($job_id);
     drupal_set_message($cmd);
   }
   else {
