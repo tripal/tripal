@@ -297,7 +297,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   if ($job->end_time == 0) {
     $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT."";
     exec($cmd, $output, $return);
-    $response = '';
+    $response = 'Response <br>';
     foreach($output as $line) {
       $response .= $line."<br>";
     }
