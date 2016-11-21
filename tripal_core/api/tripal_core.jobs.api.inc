@@ -301,8 +301,8 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
     foreach($output as $line) {
       $response .= $line." ";
     }
-    str_replace("\e[31;40m\e[1m[error]\e[0m", " ", $response);
-    drupal_set_message($cmd.'<br>'.$response."<br> exit code = $return_code");
+    str_replace("[31;40m[1m[error][0m", " ", $response);
+    drupal_set_message($cmd.'<br>'.$response."<br> exit code = $return_code", 'error');
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
