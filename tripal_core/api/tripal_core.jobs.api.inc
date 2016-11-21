@@ -287,11 +287,12 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
 
   // set the end time for this job
   if ($job->end_time == 0) {
-    $o = exec("drush trp-run-jobs --job_id=".$job_id." --username=".$user->name." --root=".DRUPAL_ROOT."", $output, $return);
+    $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT."";
+    $o = exec($cmd, $output, $return);
     drupal_set_message(t(implode(" ", $output)));
     drupal_set_message($o);
     drupal_set_message($job_id);
-    drupal_set_message("drush trp-run-jobs --job_id=".$job_id." --username=".$user->name." --root=".DRUPAL_ROOT);
+    drupal_set_message($cmd);
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It is in progress or has finished.", array('%job_id' => $job_id)));
