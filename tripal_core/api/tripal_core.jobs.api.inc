@@ -286,7 +286,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   $job = $results->fetchObject();
 
   // set the end time for this job
-  if ($job->start_time == 0 && $job->end_time == 0) {
+  if ($job->end_time == 0) {
     exec("drush trp-run-jobs --username=".$user->name." --root=".DRUPAL_ROOT."", $output);
 
     var_dump($output);
