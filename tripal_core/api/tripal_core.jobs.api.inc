@@ -295,11 +295,11 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
 
   // set the end time for this job
   if ($job->end_time == 0) {
-    $cmd = "whoami; drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT." 2>&1";
+    $cmd = "drush trp-run-jobs --job_id=".escapeshellarg($job_id)." --username=".escapeshellarg($user->name)." --root=".DRUPAL_ROOT." 2>&1";
     exec($cmd, $output, $return_code);
     $response = 'Response <br>';
     foreach($output as $line) {
-      $response .= $line."<br>";
+      $response .= $line." ";
     }
     drupal_set_message($cmd.'<br>'.$response."<br> exit code = $return_code");
   }
