@@ -301,7 +301,6 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
     foreach($output as $line) {
       $response .= $line." ";
     }
-    str_replace("[31;40m[1m[error][0m", " ", $response);
     drupal_set_message($cmd.'<br>'.$response."<br> exit code = $return_code", 'error');
   }
   else {

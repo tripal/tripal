@@ -288,6 +288,9 @@ function tripal_jobs_view($job_id) {
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
   }
+  if($job->end_time == 0) {
+    $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
+  }
 
   // make our start and end times more legible
   $job->submit_date = tripal_get_job_submit_date($job);
