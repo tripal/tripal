@@ -176,9 +176,12 @@ function tripal_jobs_report() {
     $start = tripal_get_job_start($job);
     $end = tripal_get_job_end($job);
     $cancel_link = '';
+    $execute_link = '';
     if ($job->start_time == 0 and $job->end_time == 0) {
       $cancel_link = "<a href=\"" . url("admin/tripal/tripal_jobs/cancel/" . $job->job_id) . "\">Cancel</a><br />";
+      $execute_link = $cancel_link = "<a href=\"" . url("admin/tripal/tripal_jobs/execute/" . $job->job_id) . "\">Cancel</a><br />";
     }
+
     $rerun_link = "<a href=\"" . url("admin/tripal/tripal_jobs/rerun/" . $job->job_id) . "\">Re-run</a><br />";
     $view_link ="<a href=\"" . url("admin/tripal/tripal_jobs/view/" . $job->job_id) . "\">View</a>";
     $rows[] = array(
@@ -189,7 +192,7 @@ function tripal_jobs_report() {
       $job->priority,
       $job->progress . '%',
       $job->job_status,
-      "$cancel_link $rerun_link $view_link",
+      "$execute_link $cancel_link $rerun_link $view_link",
     );
   }
 
@@ -287,8 +290,6 @@ function tripal_jobs_view($job_id) {
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
-  }
-  if($job->end_time == 0) {
     $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
   }
 

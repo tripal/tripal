@@ -290,9 +290,9 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
-  
+
   // set the end time for this job
-  if ($job->end_time == 0) {
+  if ($job->start_time == 0 and $job->end_time == 0) {
     tripal_launch_job(1, $job_id);
   }
   else {
