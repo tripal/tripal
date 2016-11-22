@@ -290,13 +290,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
-
-  // Check if the job exists
-  if($job->rowCount() <= 0) {
-    drupal_set_message(t("Job %job_id does not exist in our records.", array('%job_id' => $job_id)));
-    return;
-  }
-
+  
   // set the end time for this job
   if ($job->end_time == 0) {
     tripal_launch_job(1, $job_id);
