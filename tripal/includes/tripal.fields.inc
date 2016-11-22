@@ -11,38 +11,87 @@
  */
 function tripal_field_info() {
 
-  $info = array();
-  $field_types = tripal_get_field_types();
-  foreach ($field_types as $field_type) {
-    $info[$field_type] = $field_type::globalInfo();
+//   $info = array();
+//   $field_types = tripal_get_field_types();
+//   foreach ($field_types as $field_type) {
+//     $info[$field_type] = $field_type::globalInfo();
+//   }
+//   return $info;
+
+  return array(
+    'tripal_key_value' => array(
+      'label' => 'Tripal complex field',
+      'description' => 'A field specific to data managed by Tripal. ',
+      'settings' => array(
+        'tripal_term' => '',
+      ),
+      'instance_settings' => array(),
+      'default_widget' => 'tripal_generic_key_value_widget',
+      'default_formatter' => 'tripal_generic_key_value_formatter',
+      'storage' => array(
+        'type' => 'tripal_no_storage',
+        'module' => 'tripal',
+        'active' => TRUE
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_info_alter().
+ */
+function tripal_field_info_alter(&$info) {
+  // Make sure all fields have a 'tripal_term' setting so we can map
+  // all fields to a vocabulary term for the semantic web.
+  foreach ($info as $field_name => $details) {
+    if(array_key_exists('settings', $details)) {
+      if (!array_key_exists('tripal_term', $details['settings'])) {
+        $info[$field_name]['settings']['tripal_term'] = '';
+      }
+    }
+    else {
+      $info[$field_name]['settings']['tripal_term'] = '';
+    }
   }
-  return $info;
 }
 
 /**
  * Implements hook_field_widget_info();
  */
 function tripal_field_widget_info() {
-  $info = array();
+//   $info = array();
 
-  $field_types = tripal_get_field_types();
-  foreach ($field_types as $field_type) {
-    $info += $field_type::widgetInfo();
-  }
-  return $info;
+//   $field_types = tripal_get_field_types();
+//   foreach ($field_types as $field_type) {
+//     $info += $field_type::widgetInfo();
+//   }
+//   return $info;
+  return array(
+    'tripal_generic_key_value_widget' => array(
+      'label' => 'Generic key/value',
+      'field types' => array('tripal_key_value')
+    ),
+  );
 }
 
 /**
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {
-  $info = array();
+//   $info = array();
 
-  $field_types = tripal_get_field_types();
-  foreach ($field_types as $field_type) {
-    $info += $field_type::formatterInfo();
-  }
-  return $info;
+//   $field_types = tripal_get_field_types();
+//   foreach ($field_types as $field_type) {
+//     $info += $field_type::formatterInfo();
+//   }
+//   return $info;
+  return array(
+    'tripal_generic_key_value_formatter' => array(
+      'label' => 'Values',
+      'field types' => array('tripal_key_value'),
+      'settings' => array(),
+    ),
+  );
 }
 
 /**
@@ -106,14 +155,14 @@ function tripal_create_tripalfield_instance($entity_type, $bundle) {
 function tripal_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
-  $element = array();
-  $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
-    $tfield = new $field_type($field, $instance);
-    $tfield->formatterView($element, $entity_type, $entity, $langcode, $items, $display);
-  }
-  return $element;
+//   $element = array();
+//   $field_type = $field['type'];
+//   $is_loaded = tripal_load_include_field_type($field_type);
+//   if ($is_loaded) {
+//     $tfield = new $field_type($field, $instance);
+//     $tfield->formatterView($element, $entity_type, $entity, $langcode, $items, $display);
+//   }
+//   return $element;
 }
 
 /**
@@ -140,12 +189,24 @@ function tripal_field_no_delete() {
  * the table to let the user know where fields are storing their data.
  */
 function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  //dpm($form);
+
   // Add the 'Storage Location' to the table header.
+  $form['fields']['#header'][] = 'Term';
   $form['fields']['#header'][] = 'Supported By * ';
+
+  // TODO: remove widgets that aren't appropriate for this entity, if the
+  // type is 'tripal_key_value'.
+  // Why is this sort not working!!??
+  $options = $form['fields']['_add_new_field']['widget_type']['#options']['Tripal complex field'];
+  asort($options);
+  $form['fields']['_add_new_field']['widget_type']['#options']['Tripal complex field'] = $options;
 
   // Add the storage location as the final column for each field.
   $storage_info = module_invoke_all('field_storage_info');
   foreach (element_children($form['fields']) as $field_name) {
+
+
     $field = field_info_field($field_name);
     // For rows in the tables that aren't fields, just add an empty value
     // for the storage column.
@@ -153,8 +214,16 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       $form['fields'][$field_name][] = array(
         '#markup' => '',
       );
+      $form['fields'][$field_name][] = array(
+        '#markup' => '',
+      );
       continue;
     }
+    $term = $field['settings']['tripal_term'] ? $field['settings']['tripal_term'] : 'N/A';
+    $form['fields'][$field_name][] = array(
+      '#markup' => $term,
+    );
+
     $storage_type = $field['storage']['type'];
     $storage_label = array_key_exists('label', $storage_info[$storage_type]) ? $storage_info[$storage_type]['label'] : '';
     if ($storage_type == 'field_sql_storage') {
@@ -181,65 +250,108 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
   );
 }
 
+/**
+ * Implements hook_module_implements_alter()
+ *
+ * We want our edits to the field_ui_field_overview_form form to occur after
+ * all modules have implemented their changes.
+ */
+function tripal_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter') {
+    $group = $implementations['tripal'];
+    unset($implementations['tripal']);
+    $implementations['tripal'] = $group;
+  }
+}
 
 
 /**
  * Implements hook_field_settings_form()
  */
 function tripal_field_settings_form($field, $instance, $has_data) {
-  $form = array();
-  $field_type = $field['type'];
-  //$is_loaded = tripal_load_include_field_type($field_type);
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->globalSettingsForm($field, $instance, $has_data);
-  }
-  return $form;
+//   $form = array();
+//   $field_type = $field['type'];
+//   //$is_loaded = tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->globalSettingsForm($field, $instance, $has_data);
+//   }
+//   return $form;
+}
+
+/**
+ * Allows for altering of a field's instance setting form.
+ *
+ * This appears to be a Drupal hook but is actually a custom function created
+ * by this module. It is called by the tripal_form_alter() function of this
+ * module.
+ *
+ * @param $form
+ *   The form array.  Alterations to the form can be made within this array.
+ * @param $form_state
+ *   The form state array.
+ */
+function tripal_field_instance_settings_form_alter(&$form, $form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+
+  $form['tripal_additions'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Tripal Settings',
+  );
+  $form['tripal_additions']['semantic_web'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Vocabulary Term'
+  );
+  $form['tripal_additions']['storage'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Storage Backend'
+  );
 }
 /**
  * Implements hook_instance_settings_form()
  */
 function tripal_field_instance_settings_form($field, $instance) {
-  $form = array();
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->instanceSettingsForm();
-  }
-  return $form;
+//   $form = array();
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->instanceSettingsForm();
+//   }
+//   return $form;
 }
 /**
  *
  */
 function tripal_field_instance_settings_form_validate($form, &$form_state) {
-  $field = $form['#field'];
-  $instance = $form['#instance'];
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->instanceSettingsFormValidate($form, $form_state);
-  }
+//   $field = $form['#field'];
+//   $instance = $form['#instance'];
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->instanceSettingsFormValidate($form, $form_state);
+//   }
 }
 
 /**
  *
  */
 function tripal_field_widget_form_validate($form, &$form_state) {
-  $entity = $form['#entity'];
-  $entity_type = $form['#entity_type'];
-  $langcode = $form['#language'];
-  $delta = $form['#delta'];
-  $field = $form['#field'];
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $instance = $form['#instance'];
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
-  }
+//   $entity = $form['#entity'];
+//   $entity_type = $form['#entity_type'];
+//   $langcode = $form['#language'];
+//   $delta = $form['#delta'];
+//   $field = $form['#field'];
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $instance = $form['#instance'];
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
+//   }
 }
 
 
@@ -251,14 +363,14 @@ function tripal_field_widget_form_validate($form, &$form_state) {
  * member function.
  */
 function tripal_field_settings_form_validate($form, &$form_state) {
-  $field = $form['#field'];
-  $instance = $form['#instance'];
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
-  }
+//   $field = $form['#field'];
+//   $instance = $form['#instance'];
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
+//   }
 }
 
 
@@ -267,14 +379,14 @@ function tripal_field_settings_form_validate($form, &$form_state) {
  */
 function tripal_field_formatter_settings_summary($field, $instance, $view_mode) {
 
-  $summary = '';
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->formatterSettingsSummary($view_mode);
-  }
-  return $summary;
+//   $summary = '';
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->formatterSettingsSummary($view_mode);
+//   }
+//   return $summary;
 }
 
 /**
@@ -283,14 +395,14 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 function tripal_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
 
-  $form = array();
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
-  }
-  return $form;
+//   $form = array();
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
+//   }
+//   return $form;
 }
 
 
@@ -299,14 +411,14 @@ function tripal_formatter_settings_form($field, $instance,
  */
 function tripal_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
-  $widget = $element;
-  $field_type = $field['type'];
-  tripal_load_include_field_type($field_type);
-  if (class_exists($field_type)) {
-    $tfield = new $field_type($field, $instance);
-    $tfield->widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
-  }
-  return $widget;
+//   $widget = $element;
+//   $field_type = $field['type'];
+//   tripal_load_include_field_type($field_type);
+//   if (class_exists($field_type)) {
+//     $tfield = new $field_type($field, $instance);
+//     $tfield->widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+//   }
+//   return $widget;
 
 
 }
@@ -353,13 +465,13 @@ function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
 function tripal_field_validate($entity_type, $entity, $field, $instance,
     $langcode, $items, &$errors) {
 
-  $field_type = $field['type'];
-  $is_loaded = tripal_load_include_field_type($field_type);
-  if ($is_loaded) {
-    $tfield = new $field_type($field, $instance);
-    $tfield->validate($entity_type, $entity, $langcode,
-        $items, $errors);
-  }
+//   $field_type = $field['type'];
+//   $is_loaded = tripal_load_include_field_type($field_type);
+//   if ($is_loaded) {
+//     $tfield = new $field_type($field, $instance);
+//     $tfield->validate($entity_type, $entity, $langcode,
+//         $items, $errors);
+//   }
 }
 
 /**

@@ -45,9 +45,21 @@ class TripalTerm extends Entity {
     return array('path' => '/vocabulary/' . $vocab . '/term/' . $this->id);
   }
 
+  // Getters //
+  public function getName() {
+    return $this->name;
+  }
+  public function getAccession() {
+    return $this->name;
+  }
   public function getDefinition() {
-
-    return '';
+    return $this->definition;
+  }
+  public function getURL() {
+    return $this->url;
+  }
+  public function getVocab() {
+    return $this->vocab;
   }
 
 }

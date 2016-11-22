@@ -1,5 +1,50 @@
 <?php
 
+function tripal_chado_field_widget_info() {
+  return array(
+    'chado_base_dbxref_id' => array(
+      'label' => 'Site specific Accession',
+      'field types' => array('tripal_key_value'),
+    ),
+    'chado_base_organism_id' => array(
+      'label' => 'Organism',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_feature_md5checsum' => array(
+      'label' => 'Sequence Checksum',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_feature_residues' => array(
+      'label' => 'Sequence',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_feature_seqlen' => array(
+      'label' => 'Sequence Length',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_gene_transcripts' => array(
+      'label' => 'Transcripts',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_linker_contact' => array(
+      'label' => 'Contacts',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_linker_dbxref' => array(
+      'label' => 'Cross References',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_linker_expression' => array(
+      'label' => 'Expression',
+      'field types' => array('tripal_key_value')
+    ),
+    'chado_linker_featureloc' => array(
+      'label' => 'Positions',
+      'field types' => array('tripal_key_value')
+    ),
+  );
+}
+
 /**
  * Implements hook_field_create_info().
  *
@@ -448,7 +493,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
       ),
     );
   }
-  
+
   // FEATUREPOS
   if ($table_name == 'feature') {
     $schema = chado_get_schema('featurepos');
@@ -1220,7 +1265,7 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
       ),
     );
   }
-  
+
   // FEATUREPOS
   if ($table_name == 'feature') {
     $field_name = 'featurepos';
@@ -1249,7 +1294,7 @@ function tripal_chado_create_tripalfield_instance_linker(&$info, $entity_type, $
       ),
     );
   }
-  
+
   // GENOTYPE
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {

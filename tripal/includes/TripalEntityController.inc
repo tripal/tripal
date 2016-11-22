@@ -435,7 +435,7 @@ class TripalEntityController extends EntityAPIController {
       $entities += $queried_entities;
     }
 
-    // Entitycache module support: Add entities to the entity cache if we are
+    // Entity cache module support: Add entities to the entity cache if we are
     // not loading a revision.
     if (!empty($this->entityInfo['entity cache']) && !empty($queried_entities) && !$revision_id) {
       EntityCacheControllerHelper::entityCacheSet($this, $queried_entities);
@@ -469,8 +469,6 @@ class TripalEntityController extends EntityAPIController {
    * A TripalEntity may have a large number of fields attached which may
    * slow down the loading of pages and web services.  Therefore, we only
    * want to attach fields that are needed.
-   *
-   *
    *
    * @param $queried_entities
    *   The list of queried

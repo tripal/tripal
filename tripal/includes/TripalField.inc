@@ -387,8 +387,8 @@ class TripalField {
   /**
    *  Perform validation of the field regardless how it is updated.
    *
-   *  Any errors encountered should be indicatd by adding a value to the $errors
-   *  array according to the instructions below.
+   *  Any errors encountered should be indicated by adding a value to the
+   *  $errors array according to the instructions below.
    *
    *  @param $entity_type
    *    The type of $entity.
