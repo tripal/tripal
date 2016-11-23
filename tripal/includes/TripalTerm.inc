@@ -61,5 +61,8 @@ class TripalTerm extends Entity {
   public function getVocab() {
     return $this->vocab;
   }
+  public function getID() {
+    return $this->id;
+  }
 
 }

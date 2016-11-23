@@ -1,5 +1,71 @@
 <?php
 
+/**
+ * Adds a new field type to Tripal.
+ *
+ * Before a new field can be added to an entity, Drupal must know about the
+ * field types.  This function is used to add new Tripal field types.
+ *
+ * @param $term
+ *   The term that this field is associated with.  This should be an array as
+ *   returned by tripal_get_term_details()
+ * @param $options
+ */
+function tripal_add_field_type($term, $options) {
+  // TODO: add checks to make sure we have properly formatted options.
+
+  // Add the term in case it doesn't already exist
+  tripal_add_term($term);
+
+  $field_type = $term['vocab']['short_name'] . '__' . $term['accession'];
+
+  // Make sure that the field type doesn't already exist
+  $type_id = db_select('tripal_field_types', 'TFT')
+    ->fields('TFT', array('term'))
+    ->condition('term', $field_type)
+    ->execute()
+    ->fetchField();
+  if ($type_id) {
+    return FALSE;
+  }
+  $type_id = db_insert('tripal_field_types')
+    ->fields(array(
+      'term' => $field_type,
+      'label' => $options['label'],
+      'description' => $options['description'],
+      'settings' => serialize($options['settings']),
+      'instance_settings' => serialize($options['instance_settings']),
+      'default_widget' => $options['default_widget'],
+      'default_formatter' => $options['default_formatter'],
+      'storage' => serialize($options['storage']),
+    ))
+    ->execute();
+}
+/**
+ *
+ */
+function tripal_get_field_type_info() {
+  // Make sure that the field type doesn't already exist
+  $records = db_select('tripal_field_types', 'TFT')
+    ->fields('TFT')
+    ->execute();
+  $info = array();
+  while($record = $records->fetchObject()) {
+    $info[$record->term] = array(
+      'label' => $record->label,
+      'description' => $record->description,
+      'settings' => unserialize($record->settings),
+      'instance_settings' => unserialize($record->instance_settings),
+      'default_widget' => $record->default_widget,
+      'default_formatter' => $record->default_formatter,
+      'storage' => unserialize($record->storage),
+      // Tripal fields should only be added to entities programmatically
+      // and not through the UI.
+      'no_ui' => TRUE,
+    );
+  }
+  return $info;
+}
 
 /**
  * Executes a TripalFieldQuery using the provided conditions.

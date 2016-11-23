@@ -59,6 +59,47 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
 }
 
 /**
+ * Implements hook_vocab_add_term().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_add_term($details) {
+  $vocabulary = $details['vocab']['name'];
+  $accession = $details['accession'];
+
+  // First check to make sure the term doesn't already exist
+  $term = tripal_chado_vocab_get_term($vocabulary, $accession);
+  if ($term) {
+    return TRUE;
+  }
+
+  // First make sure the vocabulary is added.
+  $values = array(
+    'name' => $vocabulary,
+    'description' => $details['vocab']['description'],
+    'url' => $details['vocab']['url'],
+    // TODO: deal with the URL prefix
+  );
+  $options = array('update_existing' => TRUE);
+  tripal_insert_db($values, $options);
+
+
+  // Second make sure the term is added.
+  $term = tripal_insert_cvterm(array(
+    'id' => $vocabulary . ':' . $accession,
+    'name' => $details['name'],
+    'definition' => $details['definition'],
+    'cv_name' => $details['vocab']['name'],
+  ));
+
+  // Return TRUE on success.
+  if (!$term) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Implements hook_vocab_import_form();
  */
 function tripal_chado_vocab_import_form($form, &$form_state) {

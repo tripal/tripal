@@ -555,6 +555,7 @@ function tripal_menu_alter(&$items) {
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
   module_load_include('inc', 'tripal', 'api/tripal.fields.api');
+  module_load_include('inc', 'tripal', 'api/tripal.terms.api');
   module_load_include('inc', 'tripal', 'api/tripal.entities.api');
   module_load_include('inc', 'tripal', 'api/tripal.files.api');
   module_load_include('inc', 'tripal', 'api/tripal.jobs.api');

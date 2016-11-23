@@ -10,31 +10,9 @@
  * discovered and listed for Drupal by this function.
  */
 function tripal_field_info() {
-
-//   $info = array();
-//   $field_types = tripal_get_field_types();
-//   foreach ($field_types as $field_type) {
-//     $info[$field_type] = $field_type::globalInfo();
-//   }
-//   return $info;
-
-  return array(
-    'tripal_key_value' => array(
-      'label' => 'Tripal complex field',
-      'description' => 'A field specific to data managed by Tripal. ',
-      'settings' => array(
-        'tripal_term' => '',
-      ),
-      'instance_settings' => array(),
-      'default_widget' => 'tripal_generic_key_value_widget',
-      'default_formatter' => 'tripal_generic_key_value_formatter',
-      'storage' => array(
-        'type' => 'tripal_no_storage',
-        'module' => 'tripal',
-        'active' => TRUE
-      ),
-    ),
-  );
+   $info = tripal_get_field_type_info();
+   dpm($info);
+   return $info;
 }
 
 /**
@@ -98,20 +76,45 @@ function tripal_field_formatter_info() {
  *
  */
 function tripal_create_tripalfields($entity_type, $bundle) {
-  $field_name = 'content_type';
-  $info = array();
-  $info[$field_name] = array(
-    'field_name' => $field_name,
-    'type' => 'content_type',
-    'cardinality' => 1,
-    'locked' => FALSE,
-    'storage' => array(
-      'type' => 'tripal_no_storage'
+
+  // Make sure the rdfs:type term exists.
+  $term = array(
+    'vocab' => array(
+      'name' => 'rdfs',
+      'short_name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/'
     ),
-    'settings' => array(
-      'semantic_web' => 'rdfs:type',
-    ),
+    'name' => 'type',
+    'accession' => 'type',
+    'definition' => 'The type of resource.',
+    'url' => 'https://www.w3.org/TR/rdf-schema/#ch_type',
   );
+  $options = array(
+    'label' => 'Content Type',
+    'description' => 'The Tripal content type.',
+    'settings' => array(),
+    'instance_settings' => array(),
+    'default_widget' => 'rdfs_type_widget',
+    'default_formatter' => 'rdfs_type_formatter',
+    'storage' => 'tripal_no_storage',
+  );
+  tripal_add_field_type($term, $options);
+
+//   $field_name = 'content_type';
+//   $info = array();
+//   $info[$field_name] = array(
+//     'field_name' => $field_name,
+//     'type' => 'content_type',
+//     'cardinality' => 1,
+//     'locked' => FALSE,
+//     'storage' => array(
+//       'type' => 'tripal_no_storage'
+//     ),
+//     'settings' => array(
+//       'semantic_web' => 'rdfs:type',
+//     ),
+//   );
   return $info;
 }
 

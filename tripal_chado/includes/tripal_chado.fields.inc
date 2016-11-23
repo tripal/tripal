@@ -51,7 +51,7 @@ function tripal_chado_field_widget_info() {
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_create_tripalfields($entity_type, $bundle) {
+function tripal_chado_create_tripalfields2($entity_type, $bundle) {
 
   // Get the table this bundle is mapped to.
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
@@ -663,7 +663,7 @@ function tripal_chado_create_tripalfields_linker(&$info, $details, $entity_type,
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_create_tripalfield_instance($entity_type, $bundle) {
+function tripal_chado_create_tripalfield_instance2($entity_type, $bundle) {
 
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
   $vocab = $term->vocab;

@@ -189,6 +189,9 @@ function tripal_schema() {
   $schema['tripal_entity'] = tripal_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
 
+  // Adds a table for managing fields created by the Tripal modules
+  $schema['tripal_field_types'] = tripal_tripal_field_types_schema();
+
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
 
@@ -377,6 +380,7 @@ function tripal_tripal_variables_schema() {
  * @section
  * Schema Definitions.
  */
+
 
 /**
  * The base table for Biological Data Entities.
@@ -638,6 +642,69 @@ function tripal_tripal_bundle_schema() {
   return $schema;
 }
 
+/**
+ * The table for storing fields created by the Tripal module.
+ */
+function tripal_tripal_field_types_schema() {
+  $schema = array(
+    'description' => 'Stores field types created by Tripal. Field types are
+       vocabulary terms.',
+    'fields' => array (
+      'field_type_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'term' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 1024,
+      ),
+      'label' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'settings' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'instance_settings' => array(
+        'type' => 'text'
+      ),
+      'default_widget' => array(
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+      ),
+      'default_formatter' => array(
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+      ),
+      'storage' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'field_type_id',
+    ),
+    'unique keys' => array (
+      'tripal_field_types_c1' => array (
+        0 => 'term',
+      ),
+    ),
+    'indexes' => array (
+      'tripal_field_types_idx1' => array (
+        0 => 'term',
+      ),
+    ),
+  );
+  return $schema;
+}
 /**
  * Additional Tripal Bundle Information.
  *
