@@ -586,42 +586,42 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
   $themes = array(
 
     // Theme fields.
-    'chado_base__dbxref_id_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_base__dbxref_id.inc',
-    ),
-    'chado_linker__dbxref_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__dbxref.inc',
-    ),
-    'chado_linker__cvterm_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__cvterm.inc',
-    ),
-    'chado_linker__synonym_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__synonym.inc',
-    ),
-    'chado_linker__relationship_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__relationship.inc',
-    ),
-    'chado_linker__relationship_instance_settings' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__relationship.inc',
-    ),
-    'chado_linker__pub_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__pub.inc',
-    ),
-    'chado_linker__contact_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__contact.inc',
-    ),
-    'chado_linker__prop_adder_widget' => array(
-      'render element' => 'element',
-      'file' => 'includes/TripalFields/chado_linker__prop_adder.inc',
-    ),
+//     'chado_base__dbxref_id_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_base__dbxref_id.inc',
+//     ),
+//     'chado_linker__dbxref_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__dbxref.inc',
+//     ),
+//     'chado_linker__cvterm_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__cvterm.inc',
+//     ),
+//     'chado_linker__synonym_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__synonym.inc',
+//     ),
+//     'chado_linker__relationship_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__relationship.inc',
+//     ),
+//     'chado_linker__relationship_instance_settings' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__relationship.inc',
+//     ),
+//     'chado_linker__pub_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__pub.inc',
+//     ),
+//     'chado_linker__contact_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__contact.inc',
+//     ),
+//     'chado_linker__prop_adder_widget' => array(
+//       'render element' => 'element',
+//       'file' => 'includes/TripalFields/chado_linker__prop_adder.inc',
+//     ),
     'tripal_chado_date_combo' => array(
       'render element' => 'element',
       'file' => 'theme/tripal_chado.theme.inc',

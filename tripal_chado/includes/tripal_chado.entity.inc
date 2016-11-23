@@ -1,19 +1,5 @@
 <?php
 
-/**
- * Implements hook_chado_bundle_create().
- *
- * This is a Tripal hook. It allows any module to perform tasks after
- * a bundle has been created.
- *
- * @param $bundle
- *  The TripalBundle object.
- */
-
-function tripal_chado_bundle_create($bundle) {
-
-}
-
 
 /**
  * Implements hook_entity_create().

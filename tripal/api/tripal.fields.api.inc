@@ -85,7 +85,7 @@ function tripal_get_field_widgets() {
     foreach ($field_files as $file) {
       $field_type = $file->name;
       module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type) and get_parent_class($field_type) == 'TripalFieldWidget') {
+      if (class_exists($field_type) and is_subclass_of($field_type) == 'TripalFieldWidget') {
         $widgets[] = $field_type;
       }
     }
@@ -115,7 +115,7 @@ function tripal_get_field_formatters() {
     foreach ($field_files as $file) {
       $field_type = $file->name;
       module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type) and get_parent_class($field_type) == 'TripalFieldFormatter') {
+      if (class_exists($field_type) and is_subclass_of($field_type) == 'TripalFieldFormatter') {
         $formatters[] = $field_type;
       }
     }

@@ -247,7 +247,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
   catch (Exception $e) {
     $transaction->rollback();
     $error = _drupal_decode_exception($e);
-    drupal_set_message(t("Failed to create content type': %message",
+    drupal_set_message(t("Failed to create content type: %message.",
         array('%message' => $error['!message'])), 'error');
     return FALSE;
   }

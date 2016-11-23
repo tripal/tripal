@@ -82,47 +82,51 @@ function tripal_field_formatter_info_alter(&$info) {
  */
 function tripal_bundle_create($bundle) {
   $field_type = 'rdfs__type';
-
-  // Add a field to this bundle for the content type.
   $field_name = $bundle->name . '_' . $field_type;
-  $field = field_create_field(array(
-    'field_name' => $field_name,
-    'type' => $field_type,
-    'cardinality' => 1,
-    'locked' => FALSE,
-    'storage' => array(
-      'type' => 'tripal_no_storage'
-    ),
-    'settings' => array(
-    ),
-  ));
+
+  // Add the field, unless it already exists.
+  if (!field_info_field($field_name)) {
+    $field = field_create_field(array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'tripal_no_storage'
+      ),
+      'settings' => array(
+      ),
+    ));
+  }
 
 
   // Add an instance of the field to the bundle.
-  $instance = field_create_instance(array(
-    'field_name' => $field_name,
-    'entity_type' => 'TripalEntity',
-    'bundle' => $bundle->name,
-    'label' => 'Resource Type',
-    'description' => 'The resource type',
-    'required' => FALSE,
-    'settings' => array(
-      'auto_attach' => TRUE,
-    ),
-    'widget' => array(
-      'type' => 'rdfs__type_widget',
+  if (!field_info_instance($bundle->type, $field_name, $bundle->name)) {
+    $instance = field_create_instance(array(
+      'field_name' => $field_name,
+      'entity_type' => 'TripalEntity',
+      'bundle' => $bundle->name,
+      'label' => 'Resource Type',
+      'description' => 'The resource type',
+      'required' => FALSE,
       'settings' => array(
-        'display_label' => 1,
+        'auto_attach' => TRUE,
       ),
-    ),
-    'display' => array(
-      'default' => array(
-        'label' => 'inline',
-        'type' => 'rdfs__type_formatter',
-        'settings' => array(),
+      'widget' => array(
+        'type' => 'rdfs__type_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
       ),
-    ),
-  ));
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'rdfs__type_formatter',
+          'settings' => array(),
+        ),
+      ),
+    ));
+  }
 }
 
 /**
