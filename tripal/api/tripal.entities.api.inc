@@ -243,54 +243,6 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-    // Get the list of fields created by Tripal modules and
-    // create them if they don't already exist.
-     foreach (module_implements('create_tripalfields') as $module) {
-      $function = $module . '_create_tripalfields';
-      if (function_exists($function)) {
-        $fields = $function('TripalEntity', $bundle);
-        if (!$fields){
-          continue;
-        }
-        foreach ($fields as $field_name => $info) {
-          $field_type = $info['type'];
-
-          // If the field already exists then skip it.
-          $field = field_info_field($info['field_name']);
-          if ($field) {
-            continue;
-          }
-          // Create the field.
-          $field = field_create_field($info);
-          if (!$field) {
-            tripal_set_message(t("Could not create new field: %field.",
-              array('%field' =>  $info['field_name'])), TRIPAL_ERROR);
-          }
-        }
-      }
-    }
-
-/*     // Now get the list of field instances to add to the bundle.
-    foreach (module_implements('create_tripalfield_instance') as $module) {
-      $function = $module . '_create_tripalfield_instance';
-      if (function_exists($function)) {
-        $fields = $function('TripalEntity', $bundle);
-        if (!$fields){
-          continue;
-        }
-        foreach ($fields as $field_name => $info) {
-          // If the field is already attached to this bundle then skip it.
-          $field = field_info_field($info['field_name']);
-          if ($field and array_key_exists('bundles', $field) and
-              array_key_exists('TripalEntity', $field['bundles']) and
-              in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-            continue;
-          }
-          // Create the field instance.
-          $instance = field_create_instance($info);
-        }
-      }
-    } */
   }
   catch (Exception $e) {
     $transaction->rollback();

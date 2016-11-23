@@ -69,6 +69,7 @@ function tripal_chado_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
+
   if ($type == 'TripalEntity') {
     foreach ($entities as $entity) {
 
@@ -105,10 +106,12 @@ function tripal_chado_entity_load($entities, $type) {
           ->condition('ce.entity_id', $entity->id)
           ->execute()
           ->fetchObject();
-        $schema = chado_get_schema($chado_table);
-        $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
-        $entity->chado_record = $record;
-        $entity->chado_record_id = $chado_entity->record_id;
+        if ($chado_entity) {
+          $schema = chado_get_schema($chado_table);
+          $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
+          $entity->chado_record = $record;
+          $entity->chado_record_id = $chado_entity->record_id;
+        }
       }
     }
   }

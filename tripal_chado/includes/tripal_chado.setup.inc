@@ -410,19 +410,19 @@ function tripal_chado_prepare_chado() {
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
     if (!tripal_create_bundle('OBI', '0100026', 'organism', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
     if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
     if (!tripal_create_bundle('local', 'project', 'project', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
 
     // Initialize the population of the tripal_cvterm_mapping table.

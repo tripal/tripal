@@ -26,7 +26,16 @@ class TripalBundleController extends EntityAPIControllerExportable {
       'is_new' => TRUE,
       'data' => '',
     );
-    return parent::create($values);
+    $bundle = parent::create($values);
+
+    // Allow modules to make additions to the entity when it's created.
+    $modules = module_implements('bundle_create');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_create';
+      $function($bundle);
+    }
+
+    return $bundle;
   }
 
   /**
@@ -62,6 +71,8 @@ class TripalBundleController extends EntityAPIControllerExportable {
             field_purge_field($field);
           }
         }
+
+        // TODO: this Chado sepcific code needs to be moved out of here!
 
         // Remove the entries in the chado_entity and tripal_entity t
         $query = db_select('chado_entity', 'ce');

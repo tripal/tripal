@@ -10,9 +10,13 @@
  * discovered and listed for Drupal by this function.
  */
 function tripal_field_info() {
-   $info = tripal_get_field_type_info();
-   dpm($info);
-   return $info;
+
+  $info = array();
+  $field_types = tripal_get_field_types();
+  foreach ($field_types as $field_type) {
+    $info[$field_type] = $field_type::info();
+  }
+  return $info;
 }
 
 /**
@@ -37,107 +41,76 @@ function tripal_field_info_alter(&$info) {
  * Implements hook_field_widget_info();
  */
 function tripal_field_widget_info() {
-//   $info = array();
+  $info = array();
+  $widgets = tripal_get_field_widgets();
+  foreach ($widgets as $widget) {
+    $info[$widget] = $widget::info();
+  }
+  return $info;
+}
+/**
+ * Implements hook_field_widget_info_alter();
+ */
+function tripal_field_widget_info_alter(&$info) {
 
-//   $field_types = tripal_get_field_types();
-//   foreach ($field_types as $field_type) {
-//     $info += $field_type::widgetInfo();
-//   }
-//   return $info;
-  return array(
-    'tripal_generic_key_value_widget' => array(
-      'label' => 'Generic key/value',
-      'field types' => array('tripal_key_value')
-    ),
-  );
 }
 
 /**
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {
-//   $info = array();
-
-//   $field_types = tripal_get_field_types();
-//   foreach ($field_types as $field_type) {
-//     $info += $field_type::formatterInfo();
-//   }
-//   return $info;
-  return array(
-    'tripal_generic_key_value_formatter' => array(
-      'label' => 'Values',
-      'field types' => array('tripal_key_value'),
-      'settings' => array(),
-    ),
-  );
-}
-
-/**
- *
- */
-function tripal_create_tripalfields($entity_type, $bundle) {
-
-  // Make sure the rdfs:type term exists.
-  $term = array(
-    'vocab' => array(
-      'name' => 'rdfs',
-      'short_name' => 'rdfs',
-      'description' => 'Resource Description Framework Schema',
-      'url' => 'https://www.w3.org/TR/rdf-schema/'
-    ),
-    'name' => 'type',
-    'accession' => 'type',
-    'definition' => 'The type of resource.',
-    'url' => 'https://www.w3.org/TR/rdf-schema/#ch_type',
-  );
-  $options = array(
-    'label' => 'Content Type',
-    'description' => 'The Tripal content type.',
-    'settings' => array(),
-    'instance_settings' => array(),
-    'default_widget' => 'rdfs_type_widget',
-    'default_formatter' => 'rdfs_type_formatter',
-    'storage' => 'tripal_no_storage',
-  );
-  tripal_add_field_type($term, $options);
-
-//   $field_name = 'content_type';
-//   $info = array();
-//   $info[$field_name] = array(
-//     'field_name' => $field_name,
-//     'type' => 'content_type',
-//     'cardinality' => 1,
-//     'locked' => FALSE,
-//     'storage' => array(
-//       'type' => 'tripal_no_storage'
-//     ),
-//     'settings' => array(
-//       'semantic_web' => 'rdfs:type',
-//     ),
-//   );
+  $info = array();
+  $formatters = tripal_get_field_formatters();
+  foreach ($formatters as $formatter) {
+    $info[$formatter] = $formatter::info();
+  }
   return $info;
 }
 
 /**
- *
- * @param unknown $entity_type
- * @param unknown $bundle
+ * Implements hook_field_formatter_info_alter();
  */
-function tripal_create_tripalfield_instance($entity_type, $bundle) {
-  $field_name = 'content_type';
-  $info = array();
-  $info[$field_name] = array(
+function tripal_field_formatter_info_alter(&$info) {
+
+}
+
+/**
+ * Implements hook_bundle_create().
+ *
+ * This is a Triapl defined hook and is called in the TripalBundle::create()
+ * function to allow modules to perform tasks when a bundle is created.
+ */
+function tripal_bundle_create($bundle) {
+  $field_type = 'rdfs__type';
+
+  // Add a field to this bundle for the content type.
+  $field_name = $bundle->name . '_' . $field_type;
+  $field = field_create_field(array(
+    'field_name' => $field_name,
+    'type' => $field_type,
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'storage' => array(
+      'type' => 'tripal_no_storage'
+    ),
+    'settings' => array(
+    ),
+  ));
+
+
+  // Add an instance of the field to the bundle.
+  $instance = field_create_instance(array(
     'field_name' => $field_name,
     'entity_type' => 'TripalEntity',
     'bundle' => $bundle->name,
     'label' => 'Resource Type',
-    'description' => '',
+    'description' => 'The resource type',
     'required' => FALSE,
     'settings' => array(
       'auto_attach' => TRUE,
     ),
     'widget' => array(
-      'type' => 'tripal_content_type_widget',
+      'type' => 'rdfs__type_widget',
       'settings' => array(
         'display_label' => 1,
       ),
@@ -145,27 +118,27 @@ function tripal_create_tripalfield_instance($entity_type, $bundle) {
     'display' => array(
       'default' => array(
         'label' => 'inline',
-        'type' => 'tripal_content_type_formatter',
+        'type' => 'rdfs__type_formatter',
         'settings' => array(),
       ),
     ),
-  );
-  return $info;
+  ));
 }
+
 /**
  * Implements hook_field_formatter_view().
  */
 function tripal_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
-//   $element = array();
-//   $field_type = $field['type'];
-//   $is_loaded = tripal_load_include_field_type($field_type);
-//   if ($is_loaded) {
-//     $tfield = new $field_type($field, $instance);
-//     $tfield->formatterView($element, $entity_type, $entity, $langcode, $items, $display);
-//   }
-//   return $element;
+   $element = array();
+   $formatter_class = $display['type'];
+   $is_loaded = tripal_load_include_field_class($formatter_class);
+   if ($is_loaded) {
+     $formatter = new $formatter_class($field, $instance);
+     $formatter->view($element, $entity_type, $entity, $langcode, $items, $display);
+   }
+   return $element;
 }
 
 /**
@@ -274,8 +247,8 @@ function tripal_module_implements_alter(&$implementations, $hook) {
 function tripal_field_settings_form($field, $instance, $has_data) {
 //   $form = array();
 //   $field_type = $field['type'];
-//   //$is_loaded = tripal_load_include_field_type($field_type);
-//   tripal_load_include_field_type($field_type);
+//   //$is_loaded = tripal_load_include_field_class($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->globalSettingsForm($field, $instance, $has_data);
@@ -318,7 +291,7 @@ function tripal_field_instance_settings_form_alter(&$form, $form_state) {
 function tripal_field_instance_settings_form($field, $instance) {
 //   $form = array();
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->instanceSettingsForm();
@@ -332,7 +305,7 @@ function tripal_field_instance_settings_form_validate($form, &$form_state) {
 //   $field = $form['#field'];
 //   $instance = $form['#instance'];
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->instanceSettingsFormValidate($form, $form_state);
@@ -349,7 +322,7 @@ function tripal_field_widget_form_validate($form, &$form_state) {
 //   $delta = $form['#delta'];
 //   $field = $form['#field'];
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $instance = $form['#instance'];
 //     $tfield = new $field_type($field, $instance);
@@ -369,7 +342,7 @@ function tripal_field_settings_form_validate($form, &$form_state) {
 //   $field = $form['#field'];
 //   $instance = $form['#instance'];
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
@@ -384,7 +357,7 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 
 //   $summary = '';
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->formatterSettingsSummary($view_mode);
@@ -400,7 +373,7 @@ function tripal_formatter_settings_form($field, $instance,
 
 //   $form = array();
 //   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
+//   tripal_load_include_field_class($field_type);
 //   if (class_exists($field_type)) {
 //     $tfield = new $field_type($field, $instance);
 //     $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
@@ -414,16 +387,14 @@ function tripal_formatter_settings_form($field, $instance,
  */
 function tripal_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
-//   $widget = $element;
-//   $field_type = $field['type'];
-//   tripal_load_include_field_type($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $tfield->widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
-//   }
-//   return $widget;
 
-
+   $widget_class = $instance['widget']['type'];
+   tripal_load_include_field_class($widget_class);
+   if (class_exists($widget_class)) {
+     $widget = new $widget_class($field, $instance);
+     $widget->form($element, $form, $form_state, $langcode, $items, $delta, $element);
+   }
+   return $element;
 }
 
 
@@ -469,7 +440,7 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
     $langcode, $items, &$errors) {
 
 //   $field_type = $field['type'];
-//   $is_loaded = tripal_load_include_field_type($field_type);
+//   $is_loaded = tripal_load_include_field_class($field_type);
 //   if ($is_loaded) {
 //     $tfield = new $field_type($field, $instance);
 //     $tfield->validate($entity_type, $entity, $langcode,
