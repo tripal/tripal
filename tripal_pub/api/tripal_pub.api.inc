@@ -276,3 +276,4 @@ function tripal_publication_exists($pub_details) {
 
   return $return;
 }
+

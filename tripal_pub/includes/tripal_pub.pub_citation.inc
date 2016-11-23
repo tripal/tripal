@@ -202,6 +202,7 @@ function tripal_pub_create_citation($pub) {
   else {
     $pub_type = $pub['Publication Type'];
   }
+
   //----------------------
   // Journal Article
   //----------------------

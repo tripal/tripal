@@ -22,6 +22,7 @@ require_once 'includes/tripal_core.mviews.inc';
 require_once 'includes/tripal_core.custom_tables.inc';
 require_once 'includes/tripal_core.chado_install.inc';
 require_once 'includes/tripal_core.form_elements.inc';
+require_once 'includes/tripal_core.search.inc';
 
 // Set some global variables.
 tripal_core_set_globals();
@@ -80,11 +81,9 @@ function tripal_core_init() {
   }
 
   // add some variables for all javasript to use for building URLs
-  $theme_dir = drupal_get_path('theme', 'tripal');
   $clean_urls = variable_get('clean_url', 0);
   drupal_add_js(
     " var baseurl  = '$base_url';
-      var themedir = '$theme_dir';
       var isClean  =  $clean_urls;",
     'inline', 'header');
 
@@ -212,6 +211,16 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
+
+  $items['admin/tripal/tripal_jobs/execute/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Execute an existing job'),
+    'page callback' => 'tripal_execute_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
     'description' => t('Re-run an existing job.'),
@@ -528,7 +537,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_job_describe_args().
- * Describes the arguements for the tripal_populate_mview job to allow for greater
+ * Describes the arguments for the tripal_populate_mview job to allow for greater
  * readability in the jobs details pages.
  *
  * @param $callback
@@ -655,6 +664,46 @@ function tripal_core_exclude_type_by_default() {
   return array('text' => 'strlen("<field_value> ") > 250');
 }
 
+/**
+ * Adds support for tokens in the field_resource_links field.
+ *
+ * The field_resource_links field is a special field that can be manually
+ * added by the site admin for providing links on the Tripal TOC sidebar.
+ * Using tokens will allow for creation of custom links. This function
+ * will add a fieldset contiaining the list of appropriate tokens for the
+ * content type.
+ *
+ * @param unknown $element
+ * @param unknown $form_state
+ * @param unknown $context
+ */
+function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  // If the name of the field is 'field_resource_links' then we want to
+  // add a fieldset of tokens.
+  if (isset($element['#field_name']) AND $element['#field_name'] == 'field_resource_links') {
+
+    // Add the tokens fieldset to the last element.
+    $num_elements = count($context['items']);
+    if ($num_elements == $element['#delta']) {
+      $bundle = $element['#bundle'];
+      $base_table = preg_replace('/^chado_(.*)$/', '\1', $bundle);
+      $tokens = chado_node_generate_tokens($base_table);
+      $token_list = chado_node_format_tokens($tokens);
+      $element['tokens'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Available tokens',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => 100
+      );
+      $element['tokens']['tokens_table'] = array(
+        '#type' => 'item',
+        '#markup' => $token_list
+      );
+    }
+  }
+}
 
 /**
  * Imports all of the Tripal API into scope.
@@ -689,6 +738,130 @@ function tripal_core_import_api() {
   module_load_include('inc', 'tripal_core', 'api/tripal_core.mviews.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.11.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.2.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.3.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.tripal_variables.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.tripal.api');
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function tripal_core_block_info() {
+
+  $blocks['tripal_search'] = array(
+    'info' => t('Tripal Search Block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function tripal_core_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'tripal_search':
+      $block['title'] = 'Search';
+
+      $form_render_arr = drupal_get_form('tripal_core_search_block');
+      $block['content'] = array(
+        '#markup' => drupal_render($form_render_arr),
+      );
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * A simple search box form.
+ */
+function tripal_core_search_block($form, $form_state) {
+
+  $form['wrapper'] = array(
+    '#prefix' => '<div id="search-block-form" class="container-inline">',
+    '#suffix' => '</div>',
+  );
+
+  $form['wrapper']['title'] = array(
+    '#markup' => '<h2 class="element-invisible">Search form</h2>',
+  );
+
+  $form['wrapper']['search_block_form'] = array(
+    '#title' => 'Search',
+    '#title_display' => 'invisible',
+    '#type' => 'textfield',
+    '#size' => 15,
+    '#maxlength' => 128,
+    '#attributes' =>array('placeholder' => t(variable_get('tripal_search_placeholder', 'Keywords')))
+  );
+
+  $form['wrapper']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Search',
+    '#prefix' => '<div class="form-actions form-wrapper" id="edit-actions">',
+    '#suffix' => '</div>'
+  );
+
+  return $form;
+}
+
+/**
+ * Submit for tripal_core_search_block form.
+ */
+function tripal_core_search_block_submit($form, &$form_state) {
+
+  $form_state['redirect'] = array(
+    variable_get('tripal_search_block_url', 'search/data'),
+    array(
+      'query' => array(
+        'keywords' => $form_state['values']['search_block_form']
+      ),
+    ),
+  );
+
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function tripal_core_block_configure ($delta = '') {
+  $form = array();
+
+  $form['search_url'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Search Page URL',
+    '#description' => 'The URL for the page you would like to redirect to when the user
+        clicks "Search". It is expected that this page will be a view with an exposed
+        filter having a "Filter Identifier" (in "More" fieldset on the edit filter form)
+        of "keywords".',
+    '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
+  );
+
+  $form['search_placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Placeholder Text',
+    '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
+    '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function tripal_core_block_save($delta = '', $edit = array()) {
+
+  // We simply want to save this information in a Drupal variable for use in the form submit.
+  if (!empty($edit['search_url'])) {
+    variable_set('tripal_search_block_url', $edit['search_url']);
+  }
+
+  if (!empty($edit['search_placeholder'])) {
+    variable_set('tripal_search_placeholder', $edit['search_placeholder']);
+  }
 }

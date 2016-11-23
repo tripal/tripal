@@ -307,10 +307,11 @@ function tripal_core_node_view_build_toc(&$build) {
 
 
       // For backwards compatibility we will handle the content type fields
-      // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
-      // these fields can be added on the Drupal content types page and were
-      // specifically recoginzed by Tripal v1.1.  If the mode type is "manage_type"
-      // then remove these content panes because they are node specific.
+      // named 'field_resource_blocks', 'field_resource_titles', and
+      // 'field_resource_links' these fields can be added on the Drupal content
+      // types page and were specifically recoginzed by Tripal v1.1.  If the
+      // mode type is "manage_type" then remove these content panes because
+      // they are node specific.
       if ($mode == "manage_type" and (
           $key == "field_resource_links" or
           $key == "field_resource_titles" or
@@ -335,6 +336,24 @@ function tripal_core_node_view_build_toc(&$build) {
           // array continue to the next one
           if ($mode == "display" and $overrides['hide'] == 1) {
             continue;
+          }
+
+          // This field supports tokens, so we need to perform the substitutions
+          // if one is needed. Get the tokens and format
+          $base_table = preg_replace('/^chado_(.*)$/', '\1', $node_type);
+          $tokens = chado_node_generate_tokens($base_table);
+          $markup = $element['#markup'];
+          // Determine which tokens were used in the format string
+          if (preg_match_all('/\[[^]]+\]/', $markup, $used_tokens)) {
+            // Get the value for each token used
+            foreach ($used_tokens[0] as $token) {
+              $token_info = $tokens[$token];
+              if (!empty($token_info)) {
+                $value = chado_get_token_value($token_info, $node);
+                $markup = str_replace($token, $value, $markup);
+              }
+            }
+            $element['#markup'] = $markup;
           }
 
           // Add the link to the TOC
@@ -635,7 +654,8 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
 
   $form["#tree"] = TRUE;
 
-  // Get a single node of this type so we can get all the possible content for it
+  // Get a single node of this type so we can get all the possible content
+  // for it.
   $sql = "SELECT nid FROM {node} WHERE type = :type LIMIT 1 OFFSET 0";
   $nid = db_query($sql, array(':type' => $content_type))->fetchField();
   if (!$nid) {
@@ -795,3 +815,4 @@ function tripal_core_content_type_toc_form_submit($form, &$form_state) {
     }
   }
 }
+

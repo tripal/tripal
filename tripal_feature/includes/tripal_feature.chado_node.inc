@@ -370,12 +370,11 @@ function chado_feature_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_feature
  */
-function chado_feature_node_access($node, $op, $account) {
+function tripal_feature_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
   }
-
   if($node_type == 'chado_feature') {
     if ($op == 'create') {
       if (!user_access('create chado_feature content', $account)) {
@@ -434,10 +433,10 @@ function chado_feature_insert($node) {
 
     // get the feature type id
     $values = array(
-        'cv_id' => array(
+      'cv_id' => array(
             'name' => 'sequence'
-        ),
-        'name' => $node->feature_type
+      ),
+      'name' => $node->feature_type
     );
     $type = chado_select_record('cvterm', array('cvterm_id'), $values);
 
@@ -772,10 +771,7 @@ function tripal_feature_node_presave($node) {
         $organism_id = $node->feature->organism_id;
         $name        = $node->feature->name;
         $uname       = $node->feature->uniquename;
-        $type_id     = $node->feature->type_id;
-        $values = array('cvterm_id' => $type_id);
-        $ftype = chado_select_record('cvterm', array('name'), $values);
-        $type = $ftype[0]->name;
+        $type        = $node->feature->cvtname;
       }
 
       $values = array('organism_id' => $organism_id);

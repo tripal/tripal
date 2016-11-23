@@ -299,11 +299,12 @@ function chado_insert_record($table, $values, $options = array()) {
 
   // get the table description
   $table_desc = chado_get_schema($table);
-  if (empty($table_desc)) {
+  if (!$table_desc) {
     tripal_report_error('tripal_core', TRIPAL_WARNING,
       'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
+    return FALSE;
   }
 
   // iterate through the values array and create a new 'insert_values' array
@@ -803,6 +804,8 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  */
 function chado_delete_record($table, $match, $options = NULL) {
 
+  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
+
   if (!is_array($match)) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass non array as values for matching.', array());
@@ -826,7 +829,7 @@ function chado_delete_record($table, $match, $options = NULL) {
   $table_desc = chado_get_schema($table);
   $fields = $table_desc['fields'];
   if (empty($table_desc)) {
-    tripal_report_error('tripal_core', TRIPAL_WARNING,
+    chado_delete_record('tripal_core', TRIPAL_WARNING,
       'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
@@ -1080,11 +1083,12 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
   // Get the table description.
   $table_desc = chado_get_schema($table);
-  if (empty($table_desc)) {
-    tripal_report_error('tripal_core', TRIPAL_WARNING,
+  if (!is_array($table_desc)) {
+    tripal_report_error('tripal_chado', TRIPAL_WARNING,
       'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
+    return FALSE;
   }
 
   $select = '';
@@ -1487,7 +1491,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * @ingroup tripal_chado_query_api
  */
 function chado_query($sql, $args = array()) {
-  $is_local = $GLOBALS["chado_is_local"];
+  $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
 
   // Args should be an array
   if (!is_array($args)) {
@@ -1508,17 +1512,28 @@ function chado_query($sql, $args = array()) {
     // Prefix the tables with their correct schema.
     // Chado tables should be enclosed in curly brackets (ie: {feature} )
     // and Drupal tables should be enclosed in square brackets (ie: [tripal_jobs] ).
-    // @todo: remove assumption that the chado schema is called 'chado' and the
-    // drupal schema is called 'public'.
-    $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    $sql = preg_replace('/\[(\w+)\]/', 'public.$1', $sql);
+    $chado_schema_name = tripal_get_schema_name('chado');
+    $drupal_schema_name = tripal_get_schema_name('drupal');
+    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
+    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
+
+    // Add an alter hook to allow module developers to change the query right before it's
+    // executed. Since all queriying of chado by Tripal eventually goes through this
+    // function, we only need to provide an alter hook at this point in order to ensure
+    // developers have complete control over the query being executed. For example,
+    // a module developer might want to remove schema prefixing from queries and rely
+    // on the search path. This alter hook would allow them to do that by implementing
+    // mymodule_chado_query_alter($sql, $args) and using a regular expression to remove
+    // table prefixing from the query.
+    // @see hook_chado_query_alter().
+    drupal_alter('chado_query', $sql, $args);
 
     // The featureloc table has some indexes that use function that call other
     // functions and those calls do not reference a schema, therefore, any
     // tables with featureloc must automaticaly have the chado schema set as
     // active to find.
-    if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
-      $previous_db = chado_set_active('chado') ;
+    if (preg_match('/'.$chado_schema_name.'.featureloc/i', $sql) or preg_match('/'.$chado_schema_name.'.feature/i', $sql)) {
+      $previous_db = chado_set_active('chado');
       $results = db_query($sql, $args);
       chado_set_active($previous_db);
     }
@@ -1548,6 +1563,42 @@ function chado_query($sql, $args = array()) {
   }
 
   return $results;
+}
+
+/**
+ * This hook provides a way for module developers to alter any/all queries on the chado
+ * schema by Tripal.
+ *
+ * Example: a module developer might want to remove schema prefixing from queries and rely
+ * on the search path. This alter hook would allow them to do that by implementing
+ * mymodule_chado_query_alter($sql, $args) and using a regular expression to remove
+ * table prefixing from the query.
+ *
+ * @param $sql
+ *    A string describing the SQL query to be executed by Tripal. All parameters should be
+ *    indicated by :tokens with values being in the $args array and all tables should
+ *    be prefixed with the schema name described in tripal_get_schema_name().
+ * @param $args
+ *    An array of arguments where the key is the token used in $sql (for example, :value)
+ *    and the value is the value you would like substituted in.
+ */
+function hook_chado_query_alter(&$sql, &$args) {
+
+  // The following code is an example of how this alter function might be used.
+  // Say you would like only a portion of node => feature connections available
+  // for a period of time or under a specific condition. To "hide" the other connections
+  // you might create a temporary view of the chado_feature table that only includes
+  // the connections you would like to be available. In order to ensure this view
+  // is used rather than the original chado_feature table you could alter all Tripal
+  // queries referring to chado_feature to instead refer to your view.
+  if (preg_match('/(\w+)\.chado_feature/', $sql, $matches)) {
+
+      $sql = str_replace(
+        $matches[1] . '.chado_feature',
+        'chado_feature_view',
+        $sql
+      );
+  }
 }
 
 /**
@@ -1607,6 +1658,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   $results = chado_query($query, $args);
   return $results;
 }
+
 /**
  * A function to retrieve the total number of records for a pager that
  * was generated using the chado_pager_query() function
@@ -1746,4 +1798,67 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
   }
 
   return array();
+}
+
+/**
+ * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
+ *
+ * @param $schema
+ *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the default.
+ * @return
+ *   The name of the PostgreSQL schema housing the $schema specified.
+ */
+function tripal_get_schema_name($schema = 'chado') {
+
+  // First we will set our default. This is what will be returned in most cases.
+  if ($schema == 'chado') {
+    $schema_name = 'chado';
+  }
+  else {
+    $schema_name = 'public';
+  }
+
+  // There are cases where modules or admin might need to change the default
+  // names for the schema. Thus we provide an alter hook here to allow
+  // the names to be changed and ensure that schema names are never hardcoded
+  // directly into queries.
+  $context = array('schema' => $schema);
+  drupal_alter('tripal_get_schema_name', $schema_name, $context);
+
+  return $schema_name;
+}
+
+/**
+ * Alter the name of the schema housing Chado and/or Drupal.
+ *
+ * This example implementation shows a solution for the case where your chado database
+ * was well established in the "public" schema and you added Drupal later in a
+ * "drupal" schema. Please note that this has not been tested and while we can ensure
+ * that Tripal will work as expected, we have no control over whether Drupal is
+ * compatible with not being in the public schema. That's why we recommened the
+ * organization we have (ie: Chado in a "chado" schema and Drupal in the "public schema).
+ *
+ * @param $schema_name
+ *   The current name of the schema as known by Tripal. This is likely the default
+ *   set in tripal_get_schema_name() but in the case of multiple alter hooks, it might
+ *   be different.
+ * @param $context
+ *   This is an array of items to provide context.
+ *     - schema: this is the schema that was passed to tripal_get_schema_name() and will
+ *       be either "chado" or "drupal". This should be used to determine you are changing
+ *       the name of the correct schema.
+ */
+function hook_tripal_get_schema_name_alter($schema_name, $context) {
+
+  // First we check which schema was passed to chado_get_schema().
+  // Notice that we do not use $schema_name since it may already have
+  // been altered by another module.
+  if ($context['schema'] == 'chado') {
+    $schema_name = 'public';
+  }
+  // Notice that we use elseif to capture the second case rather than else. This
+  // avoids the assumption that there is only one chado and one drupal schema.
+  elseif ($context['schema'] == 'drupal') {
+    $schema_name = 'drupal';
+  }
 }

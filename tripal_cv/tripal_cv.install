@@ -73,9 +73,9 @@ function tripal_cv_install() {
 function tripal_cv_uninstall() {
 
   // drop the tripal_obo_temp table
-  if (db_table_exists('chado.tripal_obo_temp')) {
-    $sql = "DROP TABLE chado.tripal_obo_temp";
-    db_query($sql);
+  if (chado_table_exists('tripal_obo_temp')) {
+    $sql = "DROP TABLE {tripal_obo_temp}";
+    chado_query($sql);
   }
 }
 
@@ -90,7 +90,7 @@ function tripal_cv_create_tripal_obo_temp() {
   // do not want to use the Tripal Custom Table API because we don't want it to appear in the
   // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
   // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
-  if (!db_table_exists('chado.tripal_obo_temp')) {
+  if (!chado_table_exists('tripal_obo_temp')) {
     $sql = "
       CREATE TABLE {tripal_obo_temp} (
         id character varying(255) NOT NULL,
@@ -203,10 +203,12 @@ function tripal_cv_add_cv_root_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cv_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -244,10 +246,10 @@ function tripal_cv_add_obo_defaults() {
 
   // Insert commonly used ontologies into the tables.
   $ontologies = array(
-    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+//    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
 //    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
-    array('Sequence Ontology', 'https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/master/so-xp-simple.obo'),
-    array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
+    array('Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo'),
+    array('Gene Ontology', 'http://purl.obolibrary.org/obo/go.obo'),
 //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
 //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
 //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
@@ -317,6 +319,47 @@ function tripal_cv_update_7201() {
       ))
       ->condition('name', $view_name)
       ->execute();
+  }
+}
+
+/**
+ * Changes the URLs for OBOs.
+ */
+function tripal_cv_update_7202() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
+  // add in the new tripal_cv_defaults table
+  try {
+
+    // Convert the OBO's to their appropriate PURL link
+    db_update('tripal_cv_obo')
+      ->fields(array(
+        'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      ))
+      ->condition('name', 'Sequence Ontology')
+      ->execute();
+
+    db_update('tripal_cv_obo')
+      ->fields(array(
+        'path' => 'http://purl.obolibrary.org/obo/go.obo',
+      ))
+      ->condition('name', 'Gene Ontology')
+      ->execute();
+
+    db_update('tripal_cv_obo')
+      ->fields(array(
+        'name' => 'Relationship Ontology (legacy)',
+        'path' => '{tripal_cv}/files/legacy_ro.obo',
+      ))
+      ->condition('name', 'Relationship Ontology')
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to create tripal_cv_defaults table: '. $error);
   }
 }
 

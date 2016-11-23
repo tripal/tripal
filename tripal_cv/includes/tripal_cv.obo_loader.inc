@@ -105,7 +105,7 @@ function tripal_cv_obo_form($form, &$form_state) {
       $matches = array();
       if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
         $modpath = drupal_get_path('module', $matches[1]);
-        $uobo_file = '/' . preg_replace('/\{.*?\}/', $modpath, $uobo_file);
+        $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
       }
     }
     // We don't want the previous value to remain. We want the new default to
@@ -955,26 +955,12 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
     'is_obsolete' => 0,
     'cv_name' => $defaultcv,
     'is_relationship' => TRUE,
-    'db_naame' => $default_db
+    'db_name' => $default_db
   );
   $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
 
   if (!$relcvterm) {
-    // if the relationship term couldn't be found in the default_db provided
-    // then do on more check to find it in the relationship ontology
-    $term = array(
-      'name' => $rel,
-      'id' => "OBO_REL:$rel",
-      'definition' => '',
-      'is_obsolete' => 0,
-      'cv_name' => $defaultcv,
-      'is_relationship' => TRUE,
-      'db_name' => 'OBO_REL'
-    );
-    $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
-    if (!$relcvterm) {
-      tripal_cv_obo_quiterror("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
-    }
+    tripal_cv_obo_quiterror("Cannot find the relationship term in the current ontology: $rel\n");
   }
 
   // get the object term
@@ -1433,7 +1419,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
       return FALSE;
     }
-    $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
+    $result = chado_select_record('dbxref', array('dbxref_id'), $values);
   }
   return $result[0];
 }

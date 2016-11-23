@@ -339,7 +339,7 @@ function mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>() {
  * @param $view
  *   The default view definition object
  * @return
- *   The default view with all relationships, fields, filters, sorts, arguements for
+ *   The default view with all relationships, fields, filters, sorts, arguments for
  *   Drupal tables removed.
  */
 function tripal_make_view_compatible_with_external($view) {

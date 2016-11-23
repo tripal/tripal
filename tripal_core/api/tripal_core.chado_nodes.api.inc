@@ -1077,10 +1077,8 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
   $clsql= "
     SELECT *
     FROM {" . $linking_table . "} LT
-      INNER JOIN {node} N ON N.nid = LT.nid
-    WHERE N.type = :node_type
     ORDER BY LT.nid LIMIT $nentries OFFSET $offset";
-  $res = db_query($clsql, array(':node_type' => $node_type));
+  $res = db_query($clsql);
   foreach ($res as $node) {
     $cnodes[$count] = $node;
     $count++;
@@ -1095,40 +1093,40 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
     if ($interval < 1) {
       $interval = 1;
     }
-    foreach ($cnodes as $nid) {
+    foreach ($cnodes as $linker) {
       // Update the job status every 1% analyses
       if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", ($i / $count) * 100);
         tripal_set_job_progress($job_id, intval($percent));
-        print "Percent complete: $percent%. Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        print "Percent complete: $percent%. Memory: " . number_format(memory_get_usage()) . " bytes.\n";
       }
 
       // See if the node exits, if not remove the entry from linking table table.
-      $nsql = "SELECT * FROM {node} WHERE nid = :nid";
-      $results = db_query($nsql, array(':nid' => $nid->nid));
+      $nsql = "SELECT * FROM {node} WHERE nid = :nid AND type = :node_type";
+      $results = db_query($nsql, array(':nid' => $linker->nid, ':node_type' => $node_type));
       $node = $results->fetchObject();
       if (!$node) {
         $deleted++;
-        db_query("DELETE FROM {" . $linking_table . "} WHERE nid = :nid", array(':nid' => $nid->nid));
-        //print "$linking_table missing node.... DELETING: $nid->nid\n";
+        db_query("DELETE FROM {" . $linking_table . "} WHERE nid = :nid", array(':nid' => $linker->nid));
+        //print "$linking_table missing node.... DELETING where nid=".$linker->nid." $linking_table entry.\n";
       }
 
       // Does record in chado exists, if not remove entry from $linking_table.
       $table_id = $table . "_id";
-      $lsql = "SELECT * FROM {" . $table . "} where " . $table . "_id = :" . $table . "_id";
-      $results = chado_query($lsql, array(":" . $table . "_id" => $nid->$table_id));
+      $lsql = "SELECT * FROM {" . $table . "} where " . $table_id . " = :chado_id";
+      $results = chado_query($lsql, array(":chado_id" => $linker->$table_id));
       $record = $results->fetchObject();
       if (!$record) {
         $deleted++;
-        $sql = "DELETE FROM {" . $linking_table . "} WHERE " . $table . "_id = :" . $table . "_id";
-        db_query($sql, array(":" . $table . "_id" => $nid->$table_id));
-        //print "$linking_table missing $table.... DELETING entry.\n";
+        $sql = "DELETE FROM {" . $linking_table . "} WHERE " . $table_id . " = :chado_id";
+        db_query($sql, array(":chado_id" => $linker->$table_id));
+        //print "$linking_table missing $table.... DELETING where $table_id=".$linker->$table_id." $linking_table entry.\n";
       }
       $i++;
     }
     $percent = sprintf("%.2f", ($i / $count) * 100);
     tripal_set_job_progress($job_id, intval($percent));
-    print "Percent complete: $percent%. Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+    print "Percent complete: $percent%. Memory: " . number_format(memory_get_usage()) . " bytes.\n";
   }
   print "\nDeleted $deleted record(s) from $linking_table missing either a node or chado entry.\n";
 
@@ -1249,7 +1247,7 @@ function hook_chado_node_sync_form($form, &$form_state) {
  *
  * Allows you to use this function as your own submit.
  *
- * This might be necessary if you want to add additional arguements to the
+ * This might be necessary if you want to add additional arguments to the
  * tripal job or to call your own sync'ing function if the generic
  * chado_node_sync_records() is not sufficient.
  *

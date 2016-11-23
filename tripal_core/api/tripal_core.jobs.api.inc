@@ -73,17 +73,21 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     $args = serialize($arguments);
   }
 
-  $record = new stdClass();
-  $record->job_name = $job_name;
-  $record->modulename = $modulename;
-  $record->callback = $callback;
-  $record->status = 'Waiting';
-  $record->submit_date = REQUEST_TIME;
-  $record->uid = $uid;
-  $record->priority = $priority;  # the lower the number the higher the priority
-  $record->arguments = $args;
+  $job_id = db_insert('tripal_jobs')
+    ->fields(array(
+      'job_name' => $job_name,
+      'modulename' => $modulename,
+      'callback' => $callback,
+      'status' => 'Waiting',
+      'submit_date' => REQUEST_TIME,
+      'uid' => $uid,
+      # The lower the number the higher the priority.
+      'priority' => $priority,
+      'arguments' => $args,
+    ))
+    ->execute();
 
-  if (drupal_write_record('tripal_jobs', $record)) {
+  if ($job_id) {
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
     if (user_access('administer tripal')) {
       $jobs_url = url("admin/tripal/tripal_jobs");
@@ -95,10 +99,10 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     }
   }
   else {
-    drupal_set_message(t("Failed to add job %job_name.", array('%job_name' => $job_name)), 'error');
+    drupal_set_message(t("Failed to add job: %job_name.", array('%job_name' => $job_name)), 'error');
   }
 
-  return $record->job_id;
+  return $job_id;
 }
 
 /**
@@ -138,7 +142,7 @@ function tripal_is_job_running() {
           "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
   foreach ($jobs as $job) {
-    $status = `ps -p $job->pid -o pid=`;
+    $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
     if ($job->pid && $status) {
       // the job is still running so let it go
       // we return 1 to indicate that a job is running
@@ -270,6 +274,33 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
   }
   if ($redirect) {
     drupal_goto("admin/tripal/tripal_jobs");
+  }
+}
+
+
+/**
+ * Execute a specific Tripal Job.
+ *
+ * @param $job_id
+ *          The job id to be exeuted
+ * @param bool $redirect [optional]
+ *          Whether to redirect to the job page or not
+ */
+function tripal_execute_job($job_id, $redirect = TRUE) {
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchObject();
+
+  // set the end time for this job
+  if ($job->start_time == 0 and $job->end_time == 0) {
+    tripal_launch_job(1, $job_id);
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
+  }
+
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
   }
 }
 

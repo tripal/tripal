@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains tripal_views_handler_filter_select_cvterm
+ * Contains tripal_views_handler_filter_select_string
  */
 
 /**
@@ -48,10 +48,10 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
     if (isset($this->options['show_all']) AND $this->options['show_all'] == TRUE) {
 
       // We still want to use any hidden fitlers on the parent table
-      // but the arguements will need to be field names rather than
+      // but the arguments will need to be field names rather than
       // generic placeholders so we need to tell get_select_option_where() that.
       $return = $this->get_select_option_where($this->parent_table, FALSE);
-      $args = $return['arguements'];
+      $args = $return['arguments'];
 
       // Simply grab all the values from the table referenced by
       // the foreign key constraint. Since we use the id as the key of
@@ -67,7 +67,7 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
 
       $return = $this->get_select_option_where($this->parent_table);
       $where_clauses = $return['where_clauses'];
-      $arguements = $return['arguements'];
+      $arguments = $return['arguments'];
       $where = '';
       if (!empty($where_clauses)) {
         $where = implode(' AND ', $where_clauses);
@@ -102,7 +102,7 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
         '!name_field' => $name_field
       ));
 
-      $resource = chado_query($sql, $arguements);
+      $resource = chado_query($sql, $arguments);
       $options = array();
 
       if ($this->options['select_optional']) {

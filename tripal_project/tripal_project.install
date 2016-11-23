@@ -143,34 +143,24 @@ function tripal_project_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
-  // add the project_property CV
+  // Add the project_property CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-        ->fields(array(
-          'name' => 'project_property',
-          'definition' => 'Contains properties for projects.'
-        ))
-        ->execute();
-    }
-    // use the new project_property CV we just added
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'projectprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-        'table_name' => 'projectprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-        ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'project_property',
+      'Contains properties for projects'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for contact types.
+      $is_set = tripal_get_default_cv('projectprop', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('projectprop','type_id', 'project_property', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -180,31 +170,20 @@ function tripal_project_update_7200() {
 
   // add the project_relationship CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_relationship'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'project_relationship',
-        'definition' => 'Contains types of relationships between projects.'
-      ))
-      ->execute();
-    }
-    // use the new project_property CV we just added
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'project_relationship')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'project_relationship',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'project_relationship',
+      'Contains types of relationships between projects.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for contact types.
+      $is_set = tripal_get_default_cv('project_relationship', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('project_relationship','type_id', 'project_relationship', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -216,19 +195,17 @@ function tripal_project_update_7200() {
   // 'tripal' CV.  It should be stored in the new project_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Project Description'
-  // We cannot use the Tripal API calls'because during upgrade the tripal_core
-  // should also be disabled
   $sql = "
-    UPDATE chado.cvterm CVT
+    UPDATE {cvterm} CVT
     SET
       name = 'Project Description',
-      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'project_property')
+      cv_id = (SELECT cv_id FROM {cv} WHERE name = 'project_property')
     WHERE
       name = 'project_description' AND
-      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
+      cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal')
   ";
   try {
-    db_query($sql);
+    chado_query($sql);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

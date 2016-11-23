@@ -114,14 +114,13 @@ function tripal_feature_menu() {
   $items['find/sequences'] = array(
     'title' => 'Sequence Retrieval',
     'description' => 'Download a file of sequences',
-    'page callback' => 'tripal_feature_seq_extract_page',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_seq_extract_form'),
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-
-  $items['find/sequences/ajax'] = array(
-    'title' => 'Sequence Retrieval',
-    'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
+  $items['find/sequences/download'] = array(
+    'page callback' => 'tripal_feature_seq_extract_download',
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
@@ -343,7 +342,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
 
   // Themed Forms
   $items['tripal_feature_seq_extract_form'] = array(
-     'arguments' => array('form'),
+    'render element' => 'form',
   );
 
   // D3 Charts.
@@ -366,32 +365,43 @@ function tripal_feature_job_describe_args($callback, $args) {
 
   $new_args = array();
   if ($callback == 'tripal_feature_load_fasta') {
+
     $new_args['FASTA file'] = $args[0];
-    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
-    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
+
+    // Add in the organism.
+    if ($args[1] AND is_numeric($args[1])) {
+      $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
+      $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
+    }
+
     $new_args['Sequence Type'] = $args[2];
-    $new_args['Name Match Type'] = $args[14];
-    $new_args['Name RE'] = $args[4];
-    $new_args['Unique Name RE'] = $args[5];
+
+    if (isset($args[14])) {
+      $new_args['Name Match Type'] = $args[14];
+      $new_args['Name RE'] = $args[4];
+      $new_args['Unique Name RE'] = $args[5];
+    }
 
     // add in the relationship arguments
-    $new_args['Relationship Type'] = $args[8];
-    $new_args['Relationship Parent RE'] = $args[9];
-    $new_args['Relationship Parent Type'] = $args[10];
+    if ($args[8]) {
+      $new_args['Relationship Type'] = $args[8];
+      $new_args['Relationship Parent RE'] = $args[9];
+      $new_args['Relationship Parent Type'] = $args[10];
+    }
 
     // add in the database reference arguments
-    if ($args[7]) {
+    if ($args[7] AND is_numeric($args[7])) {
       $db = chado_select_record('db', array('name'), array('db_id' => $args[7]));
+      $new_args['Database Reference'] = $db[0]->name;
+      $new_args['Accession RE'] = $args[6];
+      $new_args['Method'] = $args[11];
     }
-    $new_args['Database Reference'] = $db[0]->name;
-    $new_args['Accession RE'] = $args[6];
-    $new_args['Method'] = $args[11];
 
     // add in the analysis
-    if ($args[13]) {
-      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[13]));
+    if ($args[12] AND is_numeric($args[12])) {
+      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[12]));
+      $new_args['Analysis'] = $analysis[0]->name;
     }
-    $new_args['Analysis'] = $analysis[0]->name;
   }
   if ($callback == 'tripal_feature_delete_features') {
     if ($args[0]) {
@@ -531,13 +541,19 @@ function tripal_feature_match_features_page($id) {
   if ($num_matches == 1) {
     drupal_goto("node/" . $curr_match->nid);
   }
-  if ($num_matches == 0) {
-    return "<p>No features matched the given name '$id'</p>";
-  }
 
   $table_attrs = array('class' => 'tripal-data-table');
+  $params = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => $table_attrs,
+    'caption' => '',
+    'empty' => "No features matched the given name '$id'",
+    'sticky' => FALSE,
+    'colgroups' => array(),
+  );
   $output = "<p>The following features match the name '$id'.</p>";
-  $output .= theme_table($header, $rows, $table_attrs, $caption);
+  $output .= theme_table($params);
   return $output;
 }
 
@@ -551,12 +567,6 @@ function tripal_feature_match_features_page($id) {
  * @ingroup tripal_feature
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_feature_seq_extract_form") {
-    // updating the form through the ahah callback sets the action of
-    // the form to the ahah callback URL. We need to set it back
-    // to the normal form URL
-    $form['#action'] = url("find/sequences");
-  }
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
     $form['actions']['preview']['#access'] = FALSE;

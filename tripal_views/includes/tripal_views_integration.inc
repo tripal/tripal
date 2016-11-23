@@ -250,7 +250,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
         $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
       }
-      if (preg_match('/name/',$field_name)) {
+      if (preg_match('/name/', $field_name)) {
         $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
       }
     }

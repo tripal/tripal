@@ -915,7 +915,7 @@ function tripal_core_delete_property_by_id($basetable, $property_id) {
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. This requires manual
-      intervention since the arguements for the two functions are different.
+      intervention since the arguments for the two functions are different.
       Please update your code.",
     array(
       '%old_function'=>'tripal_core_delete_property_by_id',

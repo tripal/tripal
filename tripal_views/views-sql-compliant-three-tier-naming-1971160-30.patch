@@ -1,0 +1,90 @@
+diff --git a/includes/handlers.inc b/includes/handlers.inc
+index 680a54d..1d72aed 100644
+--- a/includes/handlers.inc
++++ b/includes/handlers.inc
+@@ -1637,7 +1637,17 @@ class views_join {
+       }
+     }
+ 
+-    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
++    $table_data = views_fetch_data($this->table);
++
++    $scoped_right_table = $right_table;
++
++    if (!empty($table_data['table']['base']['search_path'])) {
++      $scoped_right_table = $table_data['table']['base']['search_path'] . '.' . $right_table;
++    } elseif (!empty($table_data['table']['search_path'])) {
++      $scoped_right_table = $table_data['table']['search_path'] . '.' . $right_table;
++    }
++
++    $select_query->addJoin($this->type, $scoped_right_table, $table['alias'], $condition, $arguments);
+   }
+ }
+ 
+@@ -1728,7 +1738,17 @@ class views_join_subquery extends views_join {
+       }
+     }
+ 
+-    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
++    $table_data = views_fetch_data($this->table);
++
++    $scoped_right_table = $right_table;
++
++    if (!empty($table_data['table']['base']['search_path'])) {
++      $scoped_right_table = $table_data['table']['base']['search_path'] . '.' . $right_table;
++    } elseif (!empty($table_data['table']['search_path'])) {
++      $scoped_right_table = $table_data['table']['search_path'] . '.' . $right_table;
++    }
++
++    $select_query->addJoin($this->type, $scoped_right_table, $table['alias'], $condition, $arguments);
+   }
+ }
+ 
+diff --git a/includes/view.inc b/includes/view.inc
+index d9fb43f..1cf5c50 100644
+--- a/includes/view.inc
++++ b/includes/view.inc
+@@ -202,6 +202,11 @@ class view extends views_db_object {
+   var $base_database = NULL;
+ 
+   /**
++   * Allow to set the search_path for databases which, unlike MySQL, are actually SQL-compliant
++   */
++  var $search_path = NULL;
++
++  /**
+    * Here comes a list of the possible handler which are active on this view.
+    */
+ 
+@@ -897,6 +902,12 @@ class view extends views_db_object {
+       $this->base_database = $views_data['table']['base']['database'];
+     }
+ 
++    if (!empty($views_data['table']['base']['search_path'])) {
++      $this->search_path = $views_data['table']['base']['search_path'];
++    } elseif (!empty($views_data['table']['search_path'])) {
++      $this->search_path = $views_data['table']['search_path'];
++    }
++
+     // Load the options.
+     $query_options = $this->display_handler->get_option('query');
+ 
+diff --git a/plugins/views_plugin_query_default.inc b/plugins/views_plugin_query_default.inc
+index 7468dd9..f092515 100644
+--- a/plugins/views_plugin_query_default.inc
++++ b/plugins/views_plugin_query_default.inc
+@@ -1290,8 +1290,13 @@ class views_plugin_query_default extends views_plugin_query {
+ 
+     // Go ahead and build the query.
+     // db_select doesn't support to specify the key, so use getConnection directly.
++    $scoped_base_table = $this->base_table;
++    if (isset($this->view->search_path)) {
++      $scoped_base_table = $this->view->search_path . '.' . $this->base_table;
++    }
++
+     $query = Database::getConnection($target, $key)
+-      ->select($this->base_table, $this->base_table, $options)
++      ->select($scoped_base_table, $this->base_table, $options)
+       ->addTag('views')
+       ->addTag('views_' . $this->view->name);
+ 
