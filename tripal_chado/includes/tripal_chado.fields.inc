@@ -237,12 +237,11 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
-  return;
 
   // BASE DBXREF
   if (array_key_exists('dbxref_id', $schema['fields'])) {
-    $field_name = $table_name . '__dbxref_id';
-    $field_type = 'chado_base__dbxref_id';
+    $field_name = $bundle->name . '_data__accession';
+    $field_type = 'data__accession';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -258,7 +257,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
-
+  return;
 
 
   // FEATURE MD5CHECKSUM
@@ -920,11 +919,10 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       ),
     );
   }
-  return;
 
   // BASE DBXREF
   if (array_key_exists('dbxref_id', $schema['fields'])) {
-    $field_name = $table_name . '__dbxref_id';
+    $field_name = $bundle->name . '_data__accession';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -951,6 +949,8 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       ),
     );
   }
+  return;
+
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {

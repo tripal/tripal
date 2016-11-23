@@ -586,10 +586,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
   $themes = array(
 
     // Theme fields.
-//     'chado_base__dbxref_id_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_base__dbxref_id.inc',
-//     ),
+     'data__accession_widget' => array(
+       'render element' => 'element',
+       'file' => 'includes/TripalFields/data__accession_widget.inc',
+     ),
 //     'chado_linker__dbxref_widget' => array(
 //       'render element' => 'element',
 //       'file' => 'includes/TripalFields/chado_linker__dbxref.inc',

@@ -19,7 +19,7 @@ class TripalField {
   public static $term = 'schema:Thing';
 
   // The default lable for this field.
-  public static $label = 'Tripal Field.';
+  public static $label = 'Tripal Field';
 
   // The default description for this field.
   public static $description = 'The generic base class for all Tripal fields. ' .

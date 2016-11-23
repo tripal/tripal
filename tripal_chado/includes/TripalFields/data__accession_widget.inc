@@ -1,48 +1,16 @@
 <?php
-
-class chado_base__dbxref_id extends TripalField {
+class data__accession_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $default_label = 'Accession';
+  public static $label = 'Accession';
 
-  // The default description for this field.
-  public static $default_description = 'The unique stable accession (ID) for
-        this record on this site.';
-
-  // Add any default settings elements.  If you override the globalSettingsForm()
-  // or the instanceSettingsForm() functions then you need to be sure that
-  // any settings you want those functions to manage are listed in this
-  // array.
-  public static $default_settings = array(
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-    'semantic_web' => '',
-  );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $default_storage = 'field_chado_storage';
+  // The list of field types for which this formatter is appropriate.
+  public static $field_types = array('data__accession');
 
   /**
-   * @see TripalField::formatterView()
+   * @see TripalFieldWidget::form()
    */
-  public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
-
-    foreach ($items as $delta => $item) {
-      if ($item['value']) {
-        $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
-      }
-    }
-  }
-  /**
-   * @see TripalField::widgetForm()
-   */
-  public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
-    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+  public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
+    parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -79,7 +47,7 @@ class chado_base__dbxref_id extends TripalField {
     $options = tripal_get_db_select_options();
 
     //$widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
-    $widget['#theme'] = 'chado_base__dbxref_id_widget';
+    $widget['#theme'] = 'data__accession_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
     $widget['#suffix'] =  "</span>";
 
@@ -88,7 +56,7 @@ class chado_base__dbxref_id extends TripalField {
       '#title' => $element['#title'],
       '#description' =>  $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#theme' => 'chado_base__dbxref_id_widget',
+      '#theme' => 'data__accession_widget',
       //'#collapsible' => TRUE,
       //'#collapsed' => $collapsed,
     );
@@ -110,7 +78,7 @@ class chado_base__dbxref_id extends TripalField {
       '#required' => $element['#required'],
       '#default_value' => $db_id,
       '#ajax' => array(
-        'callback' => "chado_base__dbxref_id_widget_form_ajax_callback",
+        'callback' => "data__accession_widget_form_ajax_callback",
         'wrapper' => "$field_name-dbxref--db-id",
         'effect' => 'fade',
         'method' => 'replace'
@@ -153,59 +121,10 @@ class chado_base__dbxref_id extends TripalField {
     );
   }
 
-
   /**
-   * @see TripalField::validate()
+   * @see TripalFieldWidget::submit()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-    $field_name = $this->field['field_name'];
-    $settings = $this->field['settings'];
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-
-    // Get the field values.
-    foreach ($items as $delta => $values) {
-      $fk_val = $values['chado-' . $field_table . '__' . $field_column];
-      $db_id = $values['db_id'];
-      $accession = $values['accession'];
-      $version = $values['version'];
-      $description = $values['description'];
-
-      // Make sure that if a database ID is provided that an accession is also
-      // provided.  Here we use the form_set_error function rather than the
-      // form_error function because the form_error will add a red_highlight
-      // around all of the fields in the fieldset which is confusing as it's not
-      // clear to the user what field is required and which isn't. Therefore,
-      // we borrow the code from the 'form_error' function and append the field
-      // so that the proper field is highlighted on error.
-      if (!$db_id and $accession) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided for the primary cross reference."),
-          'error' => 'chado_base__dbxref',
-        );
-      }
-      if ($db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided for the primary cross reference."),
-          'error' => 'chado_base__dbxref',
-        );
-      }
-      if (!$db_id and !$accession and ($version or $description)) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided for the primary cross reference."),
-          'error' => 'chado_base__dbxref',
-        );
-      }
-    }
-  }
-
-  /**
-   * @see TripalField::widgetFormSubmit()
-   */
-  public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
@@ -233,59 +152,12 @@ class chado_base__dbxref_id extends TripalField {
       }
     }
   }
-
-  /**
-   * @see TripalField::load()
-   */
-  public function load($entity, $details = array()) {
-
-    $record = $details['record'];
-
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-
-
-    // Set some defauls for the empty record
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        'vocabulary' => '',
-        'accession' => '',
-        'URL' => '',
-      ),
-      'chado-' . $field_table . '__' . $field_column => '',
-      'db_id' => '',
-      'accession' => '',
-      'version' => '',
-      'description' => '',
-    );
-
-    // Get the primary dbxref record (if it's not NULL).  Because we have a
-    // dbxref_id passed in by the base record, we will only have one record.
-    if ($record->$field_column) {
-      $dbxref = $record->$field_column;
-      $value = $dbxref->db_id->name . ':' . $dbxref->accession;
-      $entity->{$field_name}['und'][0] = array(
-        'value' => array(
-          'vocabulary' => $dbxref->db_id->name,
-          'accession' => $dbxref->accession,
-          'URL' => tripal_get_dbxref_url($dbxref),
-        ),
-        'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
-        'db_id'       => $dbxref->db_id->db_id,
-        'accession'   => $dbxref->accession,
-        'version'     => $dbxref->version,
-        'description' => $dbxref->description,
-      );
-    }
-  }
 }
 
 /**
  * An Ajax callback for the tripal_chado_admin_publish_form..
  */
-function chado_base__dbxref_id_widget_form_ajax_callback($form, $form_state) {
+function data__accession_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
@@ -293,8 +165,8 @@ function chado_base__dbxref_id_widget_form_ajax_callback($form, $form_state) {
   $field_column = $field['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__' . $field_column;
 
-//   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
-//   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
+  //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
+  //   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
   if ($db_id and $accession) {
     $values = array(
       'db_id' => $db_id,
@@ -310,7 +182,7 @@ function chado_base__dbxref_id_widget_form_ajax_callback($form, $form_state) {
   return $form[$field_name];
 }
 
-function theme_chado_base__dbxref_id_widget($variables) {
+function theme_data__accession_widget($variables) {
   $element = $variables['element'];
   $field_name = $element['#field_name'];
   $field = field_info_field($field_name);
