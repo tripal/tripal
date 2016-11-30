@@ -221,7 +221,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {
-    $field_name = $bundle->name . '_obi__organism';
+    $field_name = 'obi__organism';
     $field_type = 'obi__organism';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -240,7 +240,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 
   // BASE DBXREF
   if (array_key_exists('dbxref_id', $schema['fields'])) {
-    $field_name = $bundle->name . '_data__accession';
+    $field_name = 'data__accession';
     $field_type = 'data__accession';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -260,7 +260,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {
-    $field_name = $bundle->name . '_data__sequence_checksum';
+    $field_name = 'data__sequence_checksum';
     $field_type = 'data__sequence_checksum';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -277,7 +277,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
-  
+
   return;
 
   // FEATURE RESIDUES
@@ -888,7 +888,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {
-    $field_name = $bundle->name . '_obi__organism';
+    $field_name = 'obi__organism';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['organism_id']) and
         $schema['fields']['organism_id']['not null']) {
@@ -922,7 +922,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
 
   // BASE DBXREF
   if (array_key_exists('dbxref_id', $schema['fields'])) {
-    $field_name = $bundle->name . '_data__accession';
+    $field_name = 'data__accession';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -952,7 +952,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {
-    $field_name = $bundle->name . '_data__sequence_checksum';
+    $field_name = 'data__sequence_checksum';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -985,7 +985,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   }
 
   return;
-  
+
   // FEATURE RESIDUES
   if ($table_name == 'feature') {
     $field_name = 'feature__residues';
