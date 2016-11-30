@@ -257,13 +257,11 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
-  return;
-
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {
-    $field_name = $table_name . '__md5checksum';
-    $field_type = 'chado_feature__md5checksum';
+    $field_name = $bundle->name . '_data__sequence_checksum';
+    $field_type = 'data__sequence_checksum';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -279,6 +277,8 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
+  
+  return;
 
   // FEATURE RESIDUES
   if ($table_name == 'feature') {
@@ -935,7 +935,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
         'auto_attach' => TRUE,
       ),
       'widget' => array(
-        'type' => 'chado_base__dbxref_id_widget',
+        'type' => 'data__accession_widget',
         'settings' => array(
           'display_label' => 1,
         ),
@@ -943,18 +943,16 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'display' => array(
         'default' => array(
           'label' => 'inline',
-          'type' => 'chado_base__dbxref_id_formatter',
+          'type' => 'data__accession_formatter',
           'settings' => array(),
         ),
       ),
     );
   }
-  return;
-
 
   // FEATURE MD5CHECKSUM
   if ($table_name == 'feature') {
-    $field_name = $table_name . '__md5checksum';
+    $field_name = $bundle->name . '_data__sequence_checksum';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -970,7 +968,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
         'auto_attach' => TRUE,
       ),
       'widget' => array(
-        'type' => 'chado_feature__md5checksum_widget',
+        'type' => 'data__sequence_checksum_widget',
         'settings' => array(
           'display_label' => 1,
           'md5_fieldname' => 'feature__md5checksum',
@@ -979,13 +977,15 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'display' => array(
         'default' => array(
           'label' => 'inline',
-          'type' => 'chado_feature__md5checksum_formatter',
+          'type' => 'data__sequence_checksum_formatter',
           'settings' => array(),
         ),
       ),
     );
   }
 
+  return;
+  
   // FEATURE RESIDUES
   if ($table_name == 'feature') {
     $field_name = 'feature__residues';
