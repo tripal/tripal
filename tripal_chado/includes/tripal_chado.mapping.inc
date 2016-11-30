@@ -37,6 +37,50 @@ function tripal_chado_map_cvterms() {
         }
       }
     }
+    
+    // Now we also want to map tripal terms for existing bundles
+    $sql = 
+      "SELECT 
+         (SELECT vocabulary FROM tripal_vocab TV WHERE id = TM.vocab_id),
+          accession, 
+          name 
+       FROM tripal_term TM";
+    $results = db_query($sql);
+    while ($tripal_term = $results->fetchObject()) {
+      $voc = $tripal_term->vocabulary;
+      $accession = $tripal_term->accession;
+      $name = $tripal_term->name;
+      $dbxref_sql = 
+        "SELECT dbxref_id 
+          FROM {dbxref} 
+          WHERE 
+            accession = :accession 
+          AND 
+            db_id = (SELECT db_id FROM {db} WHERE name = :voc)";
+      $dbxref_id = chado_query($dbxref_sql, array(':accession' => $accession, ':voc' => $voc))->fetchField();
+      if ($dbxref_id) {
+        $cvterm_sql = 
+          "SELECT cvterm_id 
+            FROM {cvterm} 
+            WHERE 
+              dbxref_id = :dbxref_id 
+            AND name = :name";
+        $cvterm_id = chado_query($cvterm_sql, array(':dbxref_id' => $dbxref_id, ':name' => $name))->fetchField();
+        if ($cvterm_id) {
+         // Check if this term is already mapped in the tripal_cvterm_mapping table
+         $check_sql = 
+           "SELECT mapping_id 
+             FROM tripal_cvterm_mapping 
+             WHERE cvterm_id = :cvterm_id";
+         $mapped = db_query($check_sql, array(':cvterm_id' => $cvterm_id))->fetchField();
+         // If mapping does not exist and a table name matches the term name, add it
+         if (!$mapped && db_table_exists('chado.' . $name)) {
+           print "Adding mapped tripal term: $name\n";
+           tripal_chado_add_cvterm_mapping($cvterm_id, $name, NULL);
+         }
+        }
+      }
+    }
   }
   catch (Exception $e) {
     print "\n"; // make sure we start errors on new line

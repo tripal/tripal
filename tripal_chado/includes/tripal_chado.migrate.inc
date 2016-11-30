@@ -627,7 +627,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'sync_node' => 1,
       'bundle_name' => $bundle_name
     );
-    //tripal_chado_publish_records($value);
+    tripal_chado_publish_records($value);
   }
 }
 
