@@ -55,7 +55,7 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle) {
 
   // Create custom fields.
   tripal_chado_bundle_create_fields_custom($info, $details, $entity_type, $bundle);
-dpm($info);
+
   // Create fields for linking tables.
   //tripal_chado_bundle_create_fields_linker($info, $details, $entity_type, $bundle);
 

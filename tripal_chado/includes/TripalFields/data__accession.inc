@@ -32,7 +32,6 @@ class data__accession extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Provide a list of instance specific settings. These can be access within

@@ -472,11 +472,11 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
   if ($chado_table) {
     $schema = chado_get_schema($chado_table);
     $pk = $schema['primary key'][0];
-    $cv_default = db_select('tripal_cv_defaults', 'tc')
-      ->fields('tc', array('field_name'))
-      ->condition('table_name', $chado_table)
-      ->execute()
-      ->fetchField();
+//     $cv_default = db_select('tripal_cv_defaults', 'tc')
+//       ->fields('tc', array('field_name'))
+//       ->condition('table_name', $chado_table)
+//       ->execute()
+//       ->fetchField();
     $columns = $schema['fields'];
     $headers = array(
       'Field Name',
@@ -505,9 +505,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
         $sw_desc = '';
         $sw_accession = '';
         if($cvterm_id) {
-          $term = tripal_get_cvterm(array(
-            'cvterm_id' => $cvterm_id
-          ));
+          $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
           $sw_voc = $term->cv_id->name;
           $sw_term = $term->name;
           $sw_accession = l($term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession,
