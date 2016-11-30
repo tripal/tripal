@@ -1,19 +1,5 @@
 <?php
 
-/**
- * Implements hook_chado_bundle_create().
- *
- * This is a Tripal hook. It allows any module to perform tasks after
- * a bundle has been created.
- *
- * @param $bundle
- *  The TripalBundle object.
- */
-
-function tripal_chado_bundle_create($bundle) {
-
-}
-
 
 /**
  * Implements hook_entity_create().
@@ -69,6 +55,7 @@ function tripal_chado_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
+
   if ($type == 'TripalEntity') {
     foreach ($entities as $entity) {
 
@@ -105,10 +92,12 @@ function tripal_chado_entity_load($entities, $type) {
           ->condition('ce.entity_id', $entity->id)
           ->execute()
           ->fetchObject();
-        $schema = chado_get_schema($chado_table);
-        $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
-        $entity->chado_record = $record;
-        $entity->chado_record_id = $chado_entity->record_id;
+        if ($chado_entity) {
+          $schema = chado_get_schema($chado_table);
+          $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
+          $entity->chado_record = $record;
+          $entity->chado_record_id = $chado_entity->record_id;
+        }
       }
     }
   }

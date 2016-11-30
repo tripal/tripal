@@ -120,7 +120,6 @@ class chado_base__organism_id extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
-        'chado-' . $field_table . '__organism_id' => '',
         'label' => '',
         'genus' => '',
         'species' => '',
@@ -168,7 +167,7 @@ class chado_base__organism_id extends TripalField {
   }
 
   /**
-   * @see TripalField::settings_form()
+   * @see TripalField::globalSettingsForm()
    */
   public function globalSettingsForm($has_data) {
     $element = parent::globalSettingsForm($has_data);

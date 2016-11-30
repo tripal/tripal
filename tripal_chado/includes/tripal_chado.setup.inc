@@ -123,7 +123,7 @@ function tripal_chado_prepare_chado() {
       'A vocabulary for storing synonym types.'
     );
     // set the default vocabularies
-    tripal_set_default_cv('synonym', 'type_id', 'synonym_type');
+    //tripal_set_default_cv('synonym', 'type_id', 'synonym_type');
 
     // Add cvterms.
     tripal_insert_misc_cvterms();
@@ -138,7 +138,7 @@ function tripal_chado_prepare_chado() {
     );
 
     // Set the default vocabularies.
-    tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
+    //tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
     // Add taxonomic terms.
     $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
@@ -160,7 +160,7 @@ function tripal_chado_prepare_chado() {
     tripal_analysis_add_mview_analysis_organism();
 
     // set the default vocabularies
-    tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
+    //tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
 
     /////////////////////////////////////////////////////////////////////////////
     //                        Chado Contact Module
@@ -190,9 +190,9 @@ function tripal_chado_prepare_chado() {
     tripal_contact_add_cvs();
 
     // Set the default vocabularies.
-    tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
-    tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
-    tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
+    //('contact', 'type_id', 'tripal_contact');
+    //tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
+    //tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
 
     /////////////////////////////////////////////////////////////////////////////
     //                        Chado Feature Module
@@ -226,9 +226,9 @@ function tripal_chado_prepare_chado() {
     }
 
     // Set the default vocabularies.
-    tripal_set_default_cv('feature', 'type_id', 'sequence');
-    tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
-    tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
+    //tripal_set_default_cv('feature', 'type_id', 'sequence');
+    //tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
+    //tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
 
     /////////////////////////////////////////////////////////////////////////////
     //                            Chado Map Module
@@ -241,9 +241,9 @@ function tripal_chado_prepare_chado() {
     tripal_featuremap_add_cvterms();
 
     // set the default vocabularies
-    tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
-    tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
-    tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
+    //tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
+    //tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
+    //tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
 
     /////////////////////////////////////////////////////////////////////////////
     //                          Chado Library Module
@@ -256,8 +256,8 @@ function tripal_chado_prepare_chado() {
     tripal_library_add_cvterms();
 
     // set the default vocabularies
-    tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
-    tripal_set_default_cv('library', 'type_id', 'library_type');
+    //tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
+    //tripal_set_default_cv('library', 'type_id', 'library_type');
 
     /////////////////////////////////////////////////////////////////////////////
     //                          Chado NatDiv Module
@@ -272,8 +272,8 @@ function tripal_chado_prepare_chado() {
     tripal_project_add_cvterms();
 
     // set the default vocabularies
-    tripal_set_default_cv('projectprop', 'type_id', 'project_property');
-    tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
+    //tripal_set_default_cv('projectprop', 'type_id', 'project_property');
+    ///tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
 
     /////////////////////////////////////////////////////////////////////////////
     //                          Chado Pub Module
@@ -295,9 +295,9 @@ function tripal_chado_prepare_chado() {
     tripal_pub_add_custom_tables();
 
     // set the default vocabularies
-    tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
-    tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
-    tripal_set_default_cv('pub_relationship', 'type_id', 'pub_relationship');
+    //tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
+    //tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
+    //tripal_set_default_cv('pub_relationship', 'type_id', 'pub_relationship');
 
     // Add the supported loaders
     variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
@@ -309,9 +309,9 @@ function tripal_chado_prepare_chado() {
     tripal_stock_add_cvs();
 
     // set the default vocabularies
-    tripal_set_default_cv('stock', 'type_id', 'stock_type');
-    tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
-    tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
+    //tripal_set_default_cv('stock', 'type_id', 'stock_type');
+    //tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
+    //tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
 
     // add the materialized view
     tripal_stock_add_organism_count_mview();
@@ -366,11 +366,11 @@ function tripal_chado_prepare_chado() {
       'definition' => 'The way in which two things are connected.',
       'cv_name' => 'local',
     ));
-    
+
     tripal_insert_cvterm(array(
       'id' => 'local:biomaterial',
       'name' => 'biomaterial',
-      'definition' => 'A biomaterial represents the MAGE concept of BioSource, BioSample, ' . 
+      'definition' => 'A biomaterial represents the MAGE concept of BioSource, BioSample, ' .
         'and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that ' .
         'may have been processed. Processed biomaterials should be traceable back to raw ' .
         'biomaterials via the biomaterialrelationship table.',
@@ -410,21 +410,21 @@ function tripal_chado_prepare_chado() {
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
     if (!tripal_create_bundle('OBI', '0100026', 'organism', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
     if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
     if (!tripal_create_bundle('local', 'project', 'project', $error)) {
-      throw new Exception($error);
+      throw new Exception($error['!message']);
     }
-    
+
     // Initialize the population of the tripal_cvterm_mapping table.
     tripal_chado_map_cvterms();
 

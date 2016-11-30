@@ -46,10 +46,10 @@ function tripal_entity_info() {
     'access callback' => 'tripal_entity_access',
 
     // FALSE disables caching. Caching functionality is handled by Drupal core.
-//    'static cache' => FALSE,
+    'static cache' => TRUE,
 
-    // Disable caching of fields
-//    'field cache' => FALSE,
+    // Caching of fields
+    'field cache' => TRUE,
 
     // This entity doesn't support bundles.
     'bundles' => array (),

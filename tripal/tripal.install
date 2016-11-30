@@ -378,6 +378,7 @@ function tripal_tripal_variables_schema() {
  * Schema Definitions.
  */
 
+
 /**
  * The base table for Biological Data Entities.
  *
@@ -637,6 +638,7 @@ function tripal_tripal_bundle_schema() {
   );
   return $schema;
 }
+
 
 /**
  * Additional Tripal Bundle Information.

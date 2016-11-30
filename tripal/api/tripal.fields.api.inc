@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * Executes a TripalFieldQuery using the provided conditions.
  *
@@ -33,16 +34,14 @@ function hook_field_storage_tquery($conditions, $orderBy) {
  * Retrieves a list of TripalField types.
  *
  * The TripalField classes can be added by a site developer and should be
- * placed in the [module]/includes/fields directory.  Tripal will support
+ * placed in the [module]/includes/TripalFields directory.  Tripal will support
  * any field as long as it is in this directory and extends the TripalField
  * class.  To support dynamic inclusion of new fields this function
  * will look for TripalField class files and return a type for
  * each one.
  *
- * @param $module
- *   The module that provides fields.
  * @return
- *   A list of TripalField field type.
+ *   A list of TripalField names.
  */
 function tripal_get_field_types() {
   $types = array();
@@ -56,7 +55,7 @@ function tripal_get_field_types() {
     foreach ($field_files as $file) {
       $field_type = $file->name;
       module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type)) {
+      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
         $types[] = $field_type;
       }
     }
@@ -64,22 +63,82 @@ function tripal_get_field_types() {
   return $types;
 }
 /**
+ * Retrieves a list of TripalFieldWidgets.
+ *
+ * The TripalFieldWidget classes can be added by a site developer and should be
+ * placed in the [module]/includes/TripalFields directory.  Tripal will support
+ * any widget as long as it is in this directory and extends the
+ * TripalFieldWidget class.
+ *
+ * @return
+ *   A list of TripalFieldWidget names.
+ */
+function tripal_get_field_widgets() {
+  $widgets = array();
+
+  $modules = module_list(TRUE);
+  foreach ($modules as $module) {
+    // Find all of the files in the tripal_chado/includes/fields directory.
+    $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
+    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
+    // Iterate through the fields, include the file and run the info function.
+    foreach ($field_files as $file) {
+      $field_type = $file->name;
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
+      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalFieldWidget')) {
+        $widgets[] = $field_type;
+      }
+    }
+  }
+  return $widgets;
+}
+/**
+ * Retrieves a list of TripalFieldFormatters.
+ *
+ * The TripalFieldFormatter classes can be added by a site developer and should
+ * be placed in the [module]/includes/TripalFields directory.  Tripal will
+ * support any widget as long as it is in this directory and extends the
+ * TripalFieldFormatter class.
+ *
+ * @return
+ *   A list of TripalFieldFormatter names.
+ */
+function tripal_get_field_formatters() {
+  $formatters = array();
+
+  $modules = module_list(TRUE);
+  foreach ($modules as $module) {
+    // Find all of the files in the tripal_chado/includes/fields directory.
+    $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
+    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
+    // Iterate through the fields, include the file and run the info function.
+    foreach ($field_files as $file) {
+      $field_type = $file->name;
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
+      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalFieldFormatter')) {
+        $formatters[] = $field_type;
+      }
+    }
+  }
+  return $formatters;
+}
+/**
  * Loads the TripalField class file into scope.
  *
- * @param $field_type
- *   The type of field to instantiate
+ * @param $class
+ *   The class to instantiate
  *
  * @return
  *   TRUE if the field type class file was found, FALSE otherwise.
  */
-function tripal_load_include_field_type($field_type) {
+function tripal_load_include_field_class($class) {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
-    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalFields/' . $field_type . '.inc';
+    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalFields/' . $class . '.inc';
     if (file_exists($file_path)) {
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type)) {
+      module_load_include('inc', $module, 'includes/TripalFields/' . $class);
+      if (class_exists($class)) {
         return TRUE;
       }
     }
