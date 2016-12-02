@@ -277,6 +277,34 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
   }
 }
 
+
+/**
+ * Execute a specific Tripal Job.
+ *
+ * @param $job_id
+ *          The job id to be exeuted
+ * @param bool $redirect [optional]
+ *          Whether to redirect to the job page or not
+ */
+function tripal_execute_job($job_id, $redirect = TRUE) {
+  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
+  $results = db_query($sql, array(':job_id' => $job_id));
+  $job = $results->fetchObject();
+
+  // set the end time for this job
+  if ($job->start_time == 0 and $job->end_time == 0) {
+    tripal_launch_job(1, $job_id);
+    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", array('%job_id' => $job_id)));
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
+  }
+
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
+  }
+}
+
 /**
  * A function used to manually launch all queued tripal jobs
  *

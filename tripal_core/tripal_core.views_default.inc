@@ -245,12 +245,20 @@ function tripal_core_admin_defaultview_jobs() {
   $handler->display->display_options['fields']['nothing_3']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/tripal_jobs/cancel/[job_id]';
   /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_4']['id'] = 'nothing_4';
+  $handler->display->display_options['fields']['nothing_4']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_4']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_4']['label'] = 'Execute link';
+  $handler->display->display_options['fields']['nothing_4']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing_4']['alter']['text'] = 'Execute';
+  $handler->display->display_options['fields']['nothing_4']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing_4']['alter']['path'] = 'admin/tripal/tripal_jobs/execute/[job_id]';
+  /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
   $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing_1']['label'] = 'Action';
-  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = '[nothing_2]<br />
-  [nothing_3]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = '[nothing_4]<br />[nothing_2]<br />[nothing_3]';
   $handler->display->display_options['fields']['nothing_1']['element_class'] = 'short-column';
   $handler->display->display_options['fields']['nothing_1']['element_label_class'] = 'short-column';
   /* Filter criterion: Tripal Jobs: Job Name */
