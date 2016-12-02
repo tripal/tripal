@@ -462,6 +462,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // to do the database query every time.
   $cvterm_lookup = array();
 
+  // An array that stores Landmarks that have been looked up so we don't have
+  // to do the database query every time.
+  $landmark_lookup = array();
+
   // empty the temp tables
   $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
@@ -803,9 +807,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // Make sure the landmark sequence exists in the database.  If the user
       // has not specified a landmark type (and it's not required in the GFF
       // format) then we don't know the type of the landmark so we'll hope
-      // that it's unique across all types for the orgnaism. Only do this
+      // that it's unique across all types for the organism. Only do this
       // test if the landmark and the feature are different.
-      if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
+      if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0) and !in_array($landmark, $landmark_lookup)) {
+
         $select = array(
           'organism_id' => $organism->organism_id,
           'uniquename'  => $landmark,
@@ -848,6 +853,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                 "The features cannot be associated", array('%landmark' => $landmark));
           return '';
         }
+
+        // The landmark was found, remember it
+        $landmark_lookup[] = $landmark;
       }
 /*
       // If the option is to remove or refresh then we want to remove
@@ -888,7 +896,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             'type_name' => $type,
             'uniquename' => $feature->uniquename
           );
-          // make sure this record doesn't already exist in oru temp table
+          // make sure this record doesn't already exist in our temp table
           $results = chado_select_record('tripal_gff_temp', array('*'), $values);
 
           if (count($results) == 0) {

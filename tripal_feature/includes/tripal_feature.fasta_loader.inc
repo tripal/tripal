@@ -670,7 +670,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     }
 
     // If the feature exists but this is an "insert only" then skip.
-    if ($feature and (strcmp($method, 'Insert only') == 0)) {
+    if (isset($feature) and (strcmp($method, 'Insert only') == 0)) {
       tripal_report_error('T_fasta_loader', TRIPAL_WARNING, "Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.", array(
         '%name' => $name,'%uname' => $uname,'%type' => drupal_strtolower($match_type)
       ));
@@ -733,7 +733,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   }
 
   // if we do have a feature and this is an update then proceed with the update
-  if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or
+  if (isset($feature) and !$inserted and (strcmp($method, 'Update only') == 0 or
      strcmp($method, 'Insert and update') == 0)) {
 
     // if the user wants to match on the Name field
