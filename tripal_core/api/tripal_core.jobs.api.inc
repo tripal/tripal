@@ -294,6 +294,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   // set the end time for this job
   if ($job->start_time == 0 and $job->end_time == 0) {
     tripal_launch_job(1, $job_id);
+    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", array('%job_id' => $job_id)));
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
