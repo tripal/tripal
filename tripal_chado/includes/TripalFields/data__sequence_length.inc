@@ -1,6 +1,6 @@
 <?php
 
-class data__sequence_checksum extends TripalField {
+class data__sequence_length extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,13 +16,13 @@ class data__sequence_checksum extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'data:2190';
+  public static $term = 'data:1249';
 
   // The default lable for this field.
-  public static $label = 'Sequence checksum';
+  public static $label = 'Sequence length';
 
   // The default description for this field.
-  public static $description = 'A field for generating MD5 checksum for a sequence.';
+  public static $description = 'A field for calculating the length of a sequence.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -44,10 +44,10 @@ class data__sequence_checksum extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'data__sequence_checksum_widget';
+  public static $default_widget = 'data__sequence_length_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'data__sequence_checksum_formatter';
+  public static $default_formatter = 'data__sequence_length_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -60,9 +60,8 @@ class data__sequence_checksum extends TripalField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
-
-
   /**
+   * 
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {

@@ -1,6 +1,6 @@
 <?php
 
-class data__sequence_checksum extends TripalField {
+class taxrank__infraspecific_taxon extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,13 +16,13 @@ class data__sequence_checksum extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'data:2190';
+  public static $term = 'TAXRANK:0000046';
 
   // The default lable for this field.
-  public static $label = 'Sequence checksum';
+  public static $label = 'Infraspecific Taxon';
 
   // The default description for this field.
-  public static $description = 'A field for generating MD5 checksum for a sequence.';
+  public static $description = 'Specifies the infraspecific taxon of an organism.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -44,10 +44,10 @@ class data__sequence_checksum extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'data__sequence_checksum_widget';
+  public static $default_widget = 'HERE_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'data__sequence_checksum_formatter';
+  public static $default_formatter = 'HERE_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -61,11 +61,37 @@ class data__sequence_checksum extends TripalField {
   protected $instance;
 
 
+  /**
+   *
+   * @see TripalField::validate()
+   */
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
+
+  }
+
 
   /**
+   *
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {
-
+    $record = $details['record'];
+    $settings = $this->field['settings'];
+    
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+    
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+      'organism__type_id' => '',
+    );
+    
+    if ($record->type_id) {
+      $entity->{$field_name}['und'][0]['value'] = $record->type_id->name;
+      $entity->{$field_name}['und'][0]['organism__type_id'] = $record->type_id->cvterm_id;
+    }
   }
 }

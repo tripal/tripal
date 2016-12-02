@@ -2,28 +2,17 @@
 
 class data__sequence_checksum_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Sequence MD5 checksum';
+  public static $label = 'Sequence checksum';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('no_widget');
-
-
-  /**
-   * 
-   * @param unknown $field
-   * @param unknown $instance
-   */
-  public function __construct($field, $instance = NULL) {
-    $this->field = $field;
-    $this->instance = $instance;
-  }
+  public static $field_types = array('data__sequence_checksum');
 
   /**
    * 
    * @see TripalFieldWidget::form()
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
-    parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
+    parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
     
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
