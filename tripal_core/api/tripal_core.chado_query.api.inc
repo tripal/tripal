@@ -829,8 +829,8 @@ function chado_delete_record($table, $match, $options = NULL) {
   $table_desc = chado_get_schema($table);
   $fields = $table_desc['fields'];
   if (empty($table_desc)) {
-    chado_delete_record('tripal_core', TRIPAL_WARNING,
-      'chado_insert_record; There is no table description for !table_name',
+    tripal_report_error('tripal_core', TRIPAL_WARNING,
+      'chado_delete_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
   }
