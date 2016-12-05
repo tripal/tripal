@@ -882,12 +882,24 @@ function chado_delete_record($table, $match, $options = NULL) {
       $sql .= ") AND ";
     }
     else {
-      if (strcmp($value, '__NULL__') == 0) {
-        $sql .= " $field = NULL AND ";
-      }
-      else {
-        $sql .= " $field = :$field AND ";
-        $args[":$field"] = $value;
+      if(is_array($value)) {
+        foreach($value as $v) {
+          if (strcmp($v, '__NULL__') == 0) {
+            $sql .= " $field = NULL AND ";
+          }
+          else {
+            $sql .= " $field = :$field AND ";
+            $args[":$field"] = $v;
+          }
+        }
+      } else {
+        if (strcmp($value, '__NULL__') == 0) {
+          $sql .= " $field = NULL AND ";
+        }
+        else {
+          $sql .= " $field = :$field AND ";
+          $args[":$field"] = $value;
+        }
       }
     }
   }
