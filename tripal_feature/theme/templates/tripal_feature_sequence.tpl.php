@@ -171,7 +171,7 @@ if ($residues or count($featureloc_sequences) > 0) {
       // that one mRNA is only aligned to a single location on the assembly so we
       // can access the CDS sequence with index 0.
       if ($cds_sequence[0]['residues']) {
-        $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequnece from alignment at  ' . $attrs['location'] . "</a>";
+        $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequence from alignment at  ' . $attrs['location'] . "</a>";
         $sequences_html .= '<a name="ccoding_' . $attrs['id'] . '"></a>';
         $sequences_html .= '<div id="coding_' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
         $sequences_html .= '<p><b>Coding sequence (CDS) from alignment at  ' . $attrs['location'] . '</b></p>';
