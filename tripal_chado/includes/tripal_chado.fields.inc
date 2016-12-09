@@ -57,7 +57,7 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle) {
   tripal_chado_bundle_create_fields_custom($info, $details, $entity_type, $bundle);
 
   // Create fields for linking tables.
-  //tripal_chado_bundle_create_fields_linker($info, $details, $entity_type, $bundle);
+  tripal_chado_bundle_create_fields_linker($info, $details, $entity_type, $bundle);
 
   foreach ($info as $field_name => $details) {
     $field_type = $details['type'];
@@ -383,16 +383,16 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'cardinality' => 1,
       'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
       'settings' => array(
         'chado_table' => $contact_table,
-        'chado_column' => 'contact_id',
         'base_table' => $table_name,
-        'semantic_web' => 'local:contact'
+        'chado_column' => 'contact_id',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'contact_id'),
       ),
     );
   }
@@ -439,6 +439,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       ),
     );
   }
+
   // EXPRESSION
   $expression_table = $table_name . '_expression';
   if (chado_table_exists($expression_table)) {
@@ -508,6 +509,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       ),
     );
   }
+
   // GENOTYPE
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {
@@ -676,7 +678,7 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
 
   tripal_chado_bundle_create_instances_base($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_create_instances_custom($info, $entity_type, $bundle, $details);
-  //tripal_chado_bundle_create_instances_linker($info, $entity_type, $bundle, $details);
+  tripal_chado_bundle_create_instances_linker($info, $entity_type, $bundle, $details);
 
   foreach ($info as $field_name => $details) {
     // If the field is already attached to this bundle then skip it.
@@ -1121,34 +1123,32 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
     $field_name = $table_name . '_contact';
-    $info[$field_name] = array(
+    $info[$field_name] =     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Contacts',
-      'description' => 'An individual, organization or entity that has had
-        some responsibility for the creation, delivery or maintenance of
-        the associated data.',
+      'label' => 'Contact',
+      'description' => 'Associates an indviddual or organization with this record',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => FALSE,
+        'auto_attach' => TRUE,
       ),
       'widget' => array(
-        'type' => 'chado_linker__contact_widget',
+        'type' => 'local__contact_widget',
         'settings' => array(
           'display_label' => 1,
         ),
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
-          'type' => 'chado_linker__contact_formatter',
+          'label' => 'inline',
+          'type' => 'local__contact_formatter',
           'settings' => array(),
         ),
       ),
     );
   }
-
+  
   // CVTERM
   $cvterm_table = $table_name . '_cvterm';
   if (chado_table_exists($cvterm_table)) {
