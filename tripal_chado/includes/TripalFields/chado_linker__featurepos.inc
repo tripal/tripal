@@ -16,10 +16,11 @@ class chado_linker__featurepos extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'SO:position_of';
+  // http://www.ebi.ac.uk/ols/ontologies/ogi/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FOGI_0000021
+  public static $term = 'OGI:0000021';
 
   // The default lable for this field.
-  public static $label = 'Map positions';
+  public static $label = 'Location on Map';
 
   // The default description for this field.
   public static $description = 'Map position of a sequence.';

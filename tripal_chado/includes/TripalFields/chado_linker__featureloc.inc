@@ -16,13 +16,14 @@ class chado_linker__featureloc extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'SO:position_of';
+  // http://www.ebi.ac.uk/ols/ontologies/swo/terms?iri=http%3A%2F%2Fedamontology.org%2Fdata_2012
+  public static $term = 'data:2012';
 
   // The default lable for this field.
-  public static $label = 'Aligned Locations';
+  public static $label = 'Sequence Coordinate';
 
   // The default description for this field.
-  public static $description = 'Locations on landmark sequences where the feature is aligned.';
+  public static $description = 'Locations on reference sequences where the feature is located.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
