@@ -134,6 +134,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => $column_name,
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, $column_name),
       ),
     );
@@ -234,6 +235,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
+        'base_table' => $table_name,
       ),
     );
   }
@@ -253,6 +255,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
       ),
     );
@@ -273,6 +276,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'md5checksum',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'md5checksum'),
       ),
     );
@@ -293,11 +297,12 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'residues',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
       ),
     );
   }
-  
+
   // FEATURE SEQLEN
   if ($table_name == 'feature') {
     $field_name = 'data__sequence_length';
@@ -313,6 +318,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'seqlen',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'seqlen'),
       ),
     );
@@ -341,24 +347,24 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
   }
 
   // ORGANISM TYPE_ID
-  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-    $field_name = 'taxarank__infraspecific_taxon';
-    $field_type = 'taxarank__infraspecific_taxon';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => 'organism',
-        'chado_column' => 'type_id',
-        'semantic_web' => 'TAXRANK:0000046',
-      ),
-    );
-  }
+//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+//     $field_name = 'taxarank__infraspecific_taxon';
+//     $field_type = 'taxarank__infraspecific_taxon';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => 1,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//       'settings' => array(
+//         'chado_table' => 'organism',
+//         'chado_column' => 'type_id',
+//         'semantic_web' => 'TAXRANK:0000046',
+//       ),
+//     );
+//   }
 }
 
 /**
@@ -1076,33 +1082,33 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   }
 
   // ORGANISM TYPE_ID
-  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-    $field_name = 'taxarank__infraspecific_taxon';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Infraspecific Taxon',
-      'description' => 'The Infraspecific Taxon.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => TRUE,
-      ),
-      'widget' => array(
-        'type' => 'taxarank__infraspecific_taxon_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'taxarank__infraspecific_taxon_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+//     $field_name = 'taxarank__infraspecific_taxon';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'entity_type' => $entity_type,
+//       'bundle' => $bundle->name,
+//       'label' => 'Infraspecific Taxon',
+//       'description' => 'The Infraspecific Taxon.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => TRUE,
+//       ),
+//       'widget' => array(
+//         'type' => 'taxarank__infraspecific_taxon_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'inline',
+//           'type' => 'taxarank__infraspecific_taxon_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
 }
 
 /**
@@ -1148,7 +1154,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       ),
     );
   }
-  
+
   // CVTERM
   $cvterm_table = $table_name . '_cvterm';
   if (chado_table_exists($cvterm_table)) {

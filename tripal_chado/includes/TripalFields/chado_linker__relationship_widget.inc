@@ -13,131 +13,141 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
+    // Get the field settings.
+    $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-    
-    // Get the instance settings
-    $instance = $this->instance;
-    $settings = $instance['settings']['relationships'];
-    
-    $option1_vocabs = $settings['option1_vocabs'];
-    $option2_vocab  = $settings['option2_vocab'];
-    $option2_parent = $settings['option2_parent'];
-    $option3_rtypes = $settings['relationship_types'];
-    
-    // For testing if there are selected vocabs for option1 we'll copy the
-    // contents in a special variable for later.
-    $option1_test   = $option1_vocabs;
-    
-    // Get the FK column that links to the base table.
-    $chado_table = $this->field['settings']['chado_table'];
     $base_table = $this->field['settings']['base_table'];
-    $schema = chado_get_schema($chado_table);
+
+    // Get the FK column that links to the base table.
+    $base_table = $this->field['settings']['base_table'];
+    $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
+    // Get the instance settings. There are three options for how this widget
+    // will be displayed. Those are controlled in the instance settings
+    // of the field.
+    // Option 1:  relationship types are limited to a specific vocabulary.
+    // Option 2:  relationship types are limited to a subset of one vocabulary.
+    // Option 3:  relationship types are limited to a predefined set.
+    $instance = $this->instance;
+    $settings = '';
+    $option1_vocabs = '';
+    $option2_parent = '';
+    $option2_vocab = '';
+    $option3_rtypes  = '';
+    if (array_key_exists('relationships', $instance)) {
+      $settings = $instance['settings']['relationships'];
+      $option1_vocabs = $settings['option1_vocabs'];
+      $option2_vocab  = $settings['option2_vocab'];
+      $option2_parent = $settings['option2_parent'];
+      $option3_rtypes = $settings['relationship_types'];
+    }
+
+    // For testing if there are selected vocabs for option1 we'll copy the
+    // contents in a special variable for later.
+    $option1_test = $option1_vocabs;
+
     // Get the field defaults.
     $record_id = '';
-    $fkey_value = $element['#entity'] ? $element['#entity']->chado_record_id : '';
     $subject_id = '';
-    $subject_uniquename = '';
-    $type_id = '';
-    $type = '';
     $object_id = '';
-    $object_uniquename = '';
+    $type_id = '';
     $value = '';
     $rank = '';
-    
+    $subject_uniquename = '';
+    $object_uniquename = '';
+    $type = '';
+
     // Handle special cases
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
-    if ($chado_table == 'organism_relationship') {
-      $subject_id_key = 'subject_organism_id';
-      $object_id_key = 'object_organism_id';
-    }
-    else if ($chado_table == 'nd_reagent_relationship') {
+    if ($field_table == 'nd_reagent_relationship') {
       $subject_id_key = 'subject_reagent_id';
       $object_id_key = 'object_reagent_id';
     }
-    else if ($chado_table == 'project_relationship') {
+    else if ($field_table == 'project_relationship') {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
-    if (array_key_exists($delta, $items)) {
-      $record_id = isset($items[$delta][$field_table . '__' . $pkey]) ? $items[$delta][$field_table . '__' . $pkey] : '';
-      $subject_id = isset($items[$delta][$field_table . '__' . $subject_id_key]) ? $items[$delta][$field_table . '__' . $subject_id_key] : '';
-      $type_id = isset($items[$delta][$field_table . '__type_id']) ? $items[$delta][$field_table . '__type_id'] : '';
-      $object_id = isset($items[$delta][$field_table . '__' . $object_id_key]) ? $items[$delta][$field_table . '__' . $object_id_key] : '';
-    
-      if (isset($items[$delta][$field_table . '__value'])) {
-        $value = $items[$delta][$field_table . '__value'];
+    if (count($items) > 0 and array_key_exists($delta, $items)) {
+      // Check for element values that correspond to fields in the Chado table.
+      $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
+      $subject_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $subject_id_key, $subject_id);
+      $object_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $object_id_key, $object_id);
+      $type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $type_id);
+      // Not all Chado tables have a value and rank.  So we'll only get
+      // those if applicable.
+      if (array_key_exists('value', $schema['fields'])) {
+        $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__value', $value);
       }
-      if (isset($items[$delta][$field_table . '__rank'])) {
-        $rank = $items[$delta][$field_table . '__rank'];
+      if (array_key_exists('rank', $schema['fields'])) {
+        $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
       }
-    
-      $object_uniquename = isset($items[$delta]['object_name']) ? $items[$delta]['object_name'] : '';
-      $subject_uniquename = isset($items[$delta]['subject_name']) ? $items[$delta]['subject_name'] : '';
-      $type = isset($items[$delta]['type_name']) ? $items[$delta]['type_name'] : '';
+      // Get element values added to help support insert/updates.
+      $object_uniquename = tripal_get_field_item_keyval($items, $delta, 'object_name', $object_uniquename);
+      $subject_uniquename = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_uniquename);
+      $type = tripal_get_field_item_keyval($items, $delta, 'type_name', $type);
     }
-    
+
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      //       $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__' . $pkey);
-      //       $subject_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__subject_id');
-      //       $subject_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'subject_name');
-      //       $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__type_id');
-      //       $type = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'type_name');
-      //       $object_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__object_id');
-      //       $object_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'object_name');
-      //       $value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__value');
-      //       $rank = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__rank');
+      $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
+      $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
+      $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
+      $type_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'];
+      if (array_key_exists('value', $schema['fields'])) {
+        $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
+      }
+      if (array_key_exists('rank', $schema['fields'])) {
+        $rank = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'];
+      }
+      $object_uniquename = $form_state['values'][$field_name]['und'][$delta]['object_name'];
+      $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
+      $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
     }
-    
-    $widget['#table_name'] = $chado_table;
-    
-    $widget['#fkeys'] = $schema['foreign keys'];
-    $widget['#base_table'] = $base_table;
-    $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
+
     //$widget['#element_validate'] = array('chado_linker__relationship_validate');
     $widget['#theme'] = 'chado_linker__relationship_widget';
-    $widget['#prefix'] =  "<span id='$chado_table-$delta'>";
+    $widget['#prefix'] =  "<span id='$field_table-$delta'>";
     $widget['#suffix'] =  "</span>";
-    
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    $widget[$field_table . '__' . $pkey] = array(
+    $widget['chado-' . $field_table . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
     );
-    $widget[$field_table . '__' . $subject_id_key] = array(
+    $widget['chado-' . $field_table . '__' . $subject_id_key] = array(
       '#type' => 'value',
       '#default_value' => $subject_id,
     );
-    $widget[$field_table . '__type_id'] = array(
+    $widget['chado-' . $field_table . '__type_id'] = array(
       '#type' => 'value',
       '#default_value' => $type_id,
     );
-    $widget[$field_table . '__' . $object_id_key] = array(
+    $widget['chado-' . $field_table . '__' . $object_id_key] = array(
       '#type' => 'value',
       '#default_value' => $object_id,
     );
     if (array_key_exists('value', $schema['fields'])) {
-      $widget[$field_table . '__value'] = array(
+      $widget['chado-' . $field_table . '__value'] = array(
         '#type' => 'value',
         '#default_value' => $value,
       );
     }
     if (array_key_exists('rank', $schema['fields'])) {
-      $widget[$field_table . '__rank'] = array(
+      $widget['chado-' . $field_table . '__rank'] = array(
         '#type' => 'value',
         '#default_value' => $rank,
       );
@@ -151,8 +161,8 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
-    
-    // Getting default values
+
+    // Getting default values for the relationship type element.
     $default_voc = '';
     if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['vocabulary'])) {
       $default_voc = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['vocabulary'];
@@ -161,7 +171,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
     if (isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'])) {
       $default_term = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_name'];
     }
-    
+
     $default_type_id = $type_id;
     if (!$type_id && isset($form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'])) {
       $default_type_id = $form_state['field'][$field_name]['und']['instance']['default_value'][0]['type_id'];
@@ -203,7 +213,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         'name' => $option2_parent
       );
       $parent_term = tripal_get_cvterm($values);
-    
+
       // If the term wasn't found then see if it's a synonym.
       if(!$parent_term) {
         $values = array(
@@ -217,16 +227,14 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         }
       }
       // Get the child terms of the parent term found above.
-      $sql =
-      "SELECT
-           subject_id,
-           (SELECT name from {cvterm} where cvterm_id = subject_id) AS name
-         FROM {cvtermpath}
-         WHERE
-           object_id = :parent_cvterm_id
-         AND
-           cv_id = :parent_cv_id
-         ORDER BY name
+      $sql = "
+        SELECT subject_id,
+          (SELECT name from {cvterm} where cvterm_id = subject_id) AS name
+        FROM {cvtermpath}
+        WHERE
+          object_id = :parent_cvterm_id AND
+          cv_id = :parent_cv_id
+        ORDER BY name
        ";
       $args = array(
         ':parent_cvterm_id' => $parent_term->cvterm_id,
@@ -288,7 +296,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         '#default_value' => $cv_id,
         '#ajax' => array(
           'callback' => "chado_linker__relationship_widget_form_ajax_callback",
-          'wrapper' => "$chado_table-$delta",
+          'wrapper' => "$field_table-$delta",
           'effect' => 'fade',
           'method' => 'replace'
         ),
@@ -304,7 +312,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         );
       }
     }
-    
+
     $widget['object_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Object'),
@@ -332,18 +340,14 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
-    
+
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
-    
+
     // Handle special cases
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
-    if ($field_table == 'organism_relationship') {
-      $subject_id_key = 'subject_organism_id';
-      $object_id_key = 'object_organism_id';
-    }
-    else if ($field_table == 'nd_reagent_relationship') {
+    if ($field_table == 'nd_reagent_relationship') {
       $subject_id_key = 'subject_reagent_id';
       $object_id_key = 'object_reagent_id';
     }
@@ -351,22 +355,22 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    
+
     foreach ($items as $delta => $item) {
-      $subject_id = $item[$field_table . '__' . $subject_id_key];
-      $object_id = $item[ $field_table . '__' . $object_id_key];
-      $type_id = $item[$field_table . '__type_id'];
-      $type_id = isset($item['type_id']) ? $item['type_id'] : $type_id;
+      $subject_id = $item['chado' . $field_table . '__' . $subject_id_key];
+      $object_id = $item['chado' . $field_table . '__' . $object_id_key];
+      $type_id = $item['chado' . $field_table . '__type_id'];
+      $type_id = isset($item['type_id']) ? $item['chado' . $field_table . '__type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
-    
-    
+
+
       // If the row is empty then just continue, there's nothing to validate.
       if (!$type_id and !$type_name and !$subject_name and !$object_name) {
         continue;
       }
-    
+
       // Make sure we have values for all of the fields.
       $form_error = FALSE;
       if (!$type_name && !$type_id) {
@@ -390,9 +394,9 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       if ($form_error) {
         continue;
       }
-    
+
       // Before submitting this form we need to make sure that our subject_id and
-      // object_ids are real values.  There are two ways to get the value, either
+      // object_ids are real records.  There are two ways to get the record, either
       // just with the text value or with an [id: \d+] string embedded.  If the
       // later we will pull it out.
       $subject_id = '';
@@ -427,7 +431,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           }
         }
       }
-    
+
       // Now check for a matching object.
       $object_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
@@ -461,7 +465,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           }
         }
       }
-    
+
       // Make sure that either our object or our subject refers to the base record.
       if ($entity) {
         $chado_record_id = $entity->chado_record_id;
@@ -471,7 +475,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
             'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
           );
         }
-    
+
         // Make sure that the object and subject are not both the same thing.
         if ($object_id == $subject_id) {
           $errors[$this->field['field_name']][$langcode][$delta][] = array(
@@ -495,23 +499,35 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
     $chado_record_id = $entity->chado_record_id;
-    
+
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
-    
+
+    // Handle special cases
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
+    if ($field_table == 'nd_reagent_relationship') {
+      $subject_id_key = 'subject_reagent_id';
+      $object_id_key = 'object_reagent_id';
+    }
+    else if ($field_table == 'project_relationship') {
+      $subject_id_key = 'subject_project_id';
+      $object_id_key = 'object_project_id';
+    }
+
     $type_name = array_key_exists('type_name', $item) ? $item['type_name'] : '';
-    $subject_id = $form_state['values'][$field_name][$langcode][$delta][$field_table . '__subject_id'];
-    $object_id = $form_state['values'][$field_name][$langcode][$delta][ $field_table . '__object_id'];
-    $type_id = $form_state['values'][$field_name][$langcode][$delta][$field_table . '__type_id'];
-    
+    $subject_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $subject_id_key];
+    $object_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $object_id_key];
+    $type_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__type_id'];
+
     $subject_name = $form_state['values'][$field_name][$langcode][$delta]['subject_name'];
     $object_name = $form_state['values'][$field_name][$langcode][$delta]['object_name'];
-    
+
     // If the row is empty then skip this one, there's nothing to validate.
     if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
       return;
     }
-    
+
     // Get the subject ID.
     $subject_id = '';
     $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
@@ -524,7 +540,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
       $subject_id = $subject[0]->$fkey_rcolumn;
     }
-    
+
     // Get the object ID.
     $object_id = '';
     $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
@@ -537,12 +553,12 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
       $object_id = $object[0]->$fkey_rcolumn;
     }
-    
+
     // Set the IDs according to the values that were determined above.
-    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__subject_id'] = $subject_id;
-    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__object_id'] = $object_id;
-    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__type_id'] = $type_name;
-    $form_state['values'][$field_name][$langcode][$delta][$field_table . '__rank'] = $item['_weight'];
+    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $subject_id_key] = $subject_id;
+    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $object_id_key] = $object_id;
+    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__type_id'] = $type_name;
+    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__rank'] = $item['_weight'];
   }
 }
 

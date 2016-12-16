@@ -13,9 +13,10 @@ class chado_linker__contact_widget extends TripalFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
     $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
-    
+
     // Get the FK column that links to the base table.
     $table_name = $this->field['settings']['chado_table'];
     $base_table = $this->field['settings']['base_table'];
@@ -23,13 +24,13 @@ class chado_linker__contact_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
     // Get the field defaults.
     $record_id = '';
     $fkey_value = $element['#entity']->chado_record_id;
     $contact_id = '';
     $name = '';
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
@@ -40,20 +41,20 @@ class chado_linker__contact_widget extends TripalFieldWidget {
         $name = $contact->name;
       }
     }
-    
+
     $schema = chado_get_schema('contact');
-    
+
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
     $widget['#theme'] = 'chado_linker__contact_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
-    
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
+
     $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
@@ -66,7 +67,7 @@ class chado_linker__contact_widget extends TripalFieldWidget {
       '#type' => 'value',
       '#default_value' => $contact_id,
     );
-    
+
     $widget['name'] = array(
       '#type' => 'textfield',
       '#title' => t('Contact'),
@@ -110,19 +111,19 @@ class chado_linker__contact_widget extends TripalFieldWidget {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
     $field_name = $this->field['field_name'];
-    
+
     // Get the field values.
     $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
     $contact_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] : '';
     $name = isset($form_state['values'][$field_name][$langcode][$delta]['name']) ? $form_state['values'][$field_name][$langcode][$delta]['name'] : '';
-    
+
     // If the user provided a name then we want to set the foreign key
     // value to be the chado_record_id
     if ($name and !$contact_id) {
       $contact = chado_generate_var('contact', array('name' => $name));
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__contact_id'] = $contact->contact_id;
     }
-    
+
     // In the widgetForm function we automatically add the foreign key
     // record.  But if the user did not provide a contact we want to take
     // it out so that the Chado field_storage infrastructure won't try to
@@ -130,7 +131,7 @@ class chado_linker__contact_widget extends TripalFieldWidget {
     if (!$name and !$contact_id) {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
     }
-    
+
     // If the user removed the contact from the contact_name field
     // then we want to clear out the rest of the hidden values.
     // Leave the primary key so the record can be deleted.

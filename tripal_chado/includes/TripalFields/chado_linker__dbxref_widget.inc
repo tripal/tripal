@@ -17,7 +17,7 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-    
+
     // Get the FK column that links to the base table.
     $chado_table = $this->field['settings']['chado_table'];
     $base_table = $this->field['settings']['base_table'];
@@ -25,16 +25,16 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
     // Get the field defaults.
     $record_id = '';
-    $fkey_value = $element['#entity']->chado_record_id;
+    $fkey_value = $element['#entity'] ? $element['#entity']->chado_record_id : '';
     $dbxref_id = '';
     $db_id = '';
     $accession = '';
     $version = '';
     $description = '';
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
@@ -46,7 +46,7 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
       $version = tripal_get_field_item_keyval($items, $delta, 'version', $version);
       $description = tripal_get_field_item_keyval($items, $delta, 'description', $description);
     }
-    
+
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta][$field_table . '__' . $pkey];
@@ -57,23 +57,23 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
       $version = $form_state['values'][$field_name]['und'][$delta]['version'];
       $description = $form_state['values'][$field_name]['und'][$delta]['description'];
     }
-    
+
     $schema = chado_get_schema('dbxref');
     $options = tripal_get_db_select_options();
-    
+
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
     //$widget['#element_validate'] = array('chado_linker__dbxref_widget_validate');
     $widget['#theme'] = 'chado_linker__dbxref_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
     $widget['#suffix'] =  "</span>";
-    
-    
+
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
+
     $widget['chado-' . $field_table . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
@@ -163,18 +163,18 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
-    
+
+
     // Get the field values.
     foreach ($items as $delta => $values) {
-    
+
       // Get the field values.
       $dbxref_id = $values['chado-' . $field_table . '__dbxref_id'];
       $db_id = $values['db_id'];
       $accession = $values['accession'];
       $version = $values['version'];
       $description = $values['description'];
-    
+
       // Make sure that if a database ID is provided that an accession is also
       // provided.  Here we use the form_set_error function rather than the
       // form_error function because the form_error will add a red_highlight
@@ -219,14 +219,14 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
     // Get the field values.
     $dbxref_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] : '';
     $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
     $accession = isset($form_state['values'][$field_name][$langcode][$delta]['accession']) ? $form_state['values'][$field_name][$langcode][$delta]['accession'] : '';
     $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
     $description = isset($form_state['values'][$field_name][$langcode][$delta]['description']) ? $form_state['values'][$field_name][$langcode][$delta]['description'] : '';
-    
+
     // If the dbxref_id does not match the db_id + accession then the user
     // has selected a new dbxref record and we need to update the hidden
     // value accordingly.

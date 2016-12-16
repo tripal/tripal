@@ -435,13 +435,11 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
          if (!preg_match('/^\d+$/', $delta)) {
            continue;
          }
-         if (array_key_exists('#field', $field_form)) {
+         $widget_type = $instance['widget']['type'];
+         if (tripal_load_include_field_class($widget_type)) {
            $field = $field_form['#field'];
-           $field_type = $field['type'];
-           if (class_exists($field_type)) {
-             $tfield = new $field_type($field, $instance);
-             $tfield->widgetFormSubmit($form, $form_state, $entity_type, $entity, $langcode, $delta);
-           }
+           $widget = new $widget_type($field, $instance);
+           $widget->submit($form, $form_state, $entity_type, $entity, $langcode, $delta);
          }
        }
      }

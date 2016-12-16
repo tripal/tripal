@@ -44,9 +44,9 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
 
   // First, write the record for the base table.  If we have a record id then
-  // this is an upate and we need to set the primary key.  If not, then this
+  // this is an update and we need to set the primary key.  If not, then this
   // is an insert and we need to set the type_id if the table supports it.
-  $values = $field_vals[$base_table][0];
+  $values = $field_vals[$base_table];
   if ($record_id) {
     $values[$base_pkey] = $record_id;
   }
@@ -109,93 +109,72 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  *   The unique record ID.
  */
 function tripal_chado_field_storage_write_table($table_name, $values) {
-   $schema = chado_get_schema($table_name);
-   $fkeys = $schema['foreign keys'];
-   $pkey = $schema['primary key'][0];
+  $schema = chado_get_schema($table_name);
+  $fkeys = $schema['foreign keys'];
+  $pkey = $schema['primary key'][0];
 
 
-//    // Before inserting or updating this table, recurse if there are any
-//    // nested FK array values.
-//    foreach ($values as $column => $value) {
-//      // If this value is an array then it must be a FK... let's recurse.
-//      if (is_array($value)) {
+  // Fields with a cardinality greater than 1 will often submit an
+  // empty form.  We want to remove these empty submissions.  We can detect
+  // them if all of the fields are empty.
+  $num_empty = 0;
+  foreach ($values as $column => $value) {
+    if (!$value) {
+      $num_empty++;
+    }
+  }
+  if ($num_empty == count(array_keys($values))) {
+    return '';
+  }
 
-//        // Find the name of the FK table for this column.
-//        $fktable_name = '';
-//        foreach ($fkeys as $fktable => $details) {
-//          foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
-//            if ($fkey_lcolumn == $column) {
-//              $fktable_name = $fktable;
-//            }
-//          }
-//        }
+  // If the primary key column has a value but all other values are empty then
+  // this is a delete.
+  if (array_key_exists($pkey, $values) and $values[$pkey]) {
+    $num_vals = 0;
+    foreach ($values as $value) {
+      if ($value) {
+        $num_vals++;
+      }
+    }
+    if ($num_vals == 1) {
+      $new_vals[$pkey] = $values[$pkey];
+      if (!chado_delete_record($table_name, $new_vals)) {
+        throw new Exception('Could not delete record from table: "' . $table_name . '".');
+      }
+      return '';
+    }
+  }
 
-//        // Recurse on this recod.
-//        $record_id = tripal_chado_field_storage_write_table($fktable_name, $values[$column]);
-//        $values[$column] = $record_id;
-//      }
-//    }
+  // If the primary key column does not have a value then this is an insert.
+  if (!array_key_exists($pkey, $values) or !$values[$pkey] or !isset($values[$pkey])) {
+    // Before inserting, we want to make sure the record does not
+    // already exist.  Using the unique constraint check for a matching record.
+    $options = array('is_duplicate' => TRUE);
+    $is_duplicate = chado_select_record($table_name, array('*'), $values, $options);
+    if($is_duplicate) {
+      $record = chado_select_record($table_name, array('*'), $values);
+      return $record[0]->$pkey;
+    }
 
-   // Fields with a cardinality greater than 1 will often submit an
-   // empty form.  We want to remove these empty submissions.  We can detect
-   // them if all of the fields are empty.
-   $num_empty = 0;
-   foreach ($values as $column => $value) {
-     if (!$value) {
-       $num_empty++;
-     }
-   }
-   if ($num_empty == count(array_keys($values))) {
-     return '';
-   }
-   // If the primary key column has a value but all other values are empty then
-   // this is a delete.
-   if (array_key_exists($pkey, $values) and $values[$pkey]) {
-     $num_vals = 0;
-     foreach ($values as $value) {
-       if ($value) {
-         $num_vals++;
-       }
-     }
-     if ($num_vals == 1) {
-       $new_vals[$pkey] = $values[$pkey];
-       if (!chado_delete_record($table_name, $new_vals)) {
-         throw new Exception('Could not delete record from table: "' . $table_name . '".');
-       }
-       return '';
-     }
-   }
+    // Insert the values array as a new record in the table but remove the
+    // pkey as it should be set.
+    $new_vals = $values;
+    unset($new_vals[$pkey]);
+    $record = chado_insert_record($table_name, $new_vals);
+    if ($record === FALSE) {
+      throw new Exception('Could not insert Chado record into table: "' . $table_name . '".');
+    }
+    return $record[$pkey];
+  }
 
-   // If the primary key column does not have a value then this is an insert.
-   if (!array_key_exists($pkey, $values) or !$values[$pkey] or !isset($values[$pkey])) {
-     // Before inserting, we want to make sure the record does not
-     // already exist.  Using the unique constraint check for a matching record.
-     $options = array('is_duplicate' => TRUE);
-     $is_duplicate = chado_select_record($table_name, array('*'), $values, $options);
-     if($is_duplicate) {
-       $record = chado_select_record($table_name, array('*'), $values);
-       return $record[0]->$pkey;
-     }
-
-     // Insert the values array as a new record in the table but remove the
-     // pkey as it should be set.
-     $new_vals = $values;
-     unset($new_vals[$pkey]);
-     $record = chado_insert_record($table_name, $new_vals);
-     if ($record === FALSE) {
-       throw new Exception('Could not insert Chado record into table: "' . $table_name . '".');
-     }
-     return $record[$pkey];
-   }
-
-   // If we've made it to this point then this is an update.
-   // TODO: what if the unique constraint matches another record?  That is
-   // not being tested for here.
-   $match[$pkey] = $values[$pkey];
-   if (!chado_update_record($table_name, $match, $values)) {
-     drupal_set_message("Could not update Chado record in table: $table_name.", 'error');
-   }
-   return $values[$pkey];
+  // If we've made it to this point then this is an update.
+  // TODO: what if the unique constraint matches another record?  That is
+  // not being tested for here.
+  $match[$pkey] = $values[$pkey];
+  if (!chado_update_record($table_name, $match, $values)) {
+    drupal_set_message("Could not update Chado record in table: $table_name.", 'error');
+  }
+  return $values[$pkey];
 }
 
 /**
@@ -331,7 +310,8 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
  * Merges the values of all fields into a single array keyed by table name.
  */
 function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity) {
-  $new_fields = array();
+  $all_fields = array();
+  $base_fields = array();
 
   // Iterate through all of the fields and organize them into a
   // new fields array keyed by the table name
@@ -348,12 +328,12 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     }
     $chado_table = $field['settings']['chado_table'];
     $chado_column = $field['settings']['chado_column'];
+    $base_table = $field['settings']['base_table'];
 
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
     $temp = array();
-
     foreach ($items as $delta => $item) {
 
       // A field may have multiple items. The field can use items
@@ -364,30 +344,45 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
         if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
           $table_name = $matches[1];
           $column_name = $matches[2];
-          $temp[$table_name][$delta][$column_name] = $value;
+          // If this field belongs to the base table then we just add
+          // those values in... there's no delta.
+          if ($table_name == $base_table) {
+            $base_fields[$table_name][$column_name] = $value;
+          }
+          else {
+            $temp[$table_name][$delta][$column_name] = $value;
+          }
         }
       }
       // If there is no value set for the field using the
-      // chado-[table_name]__[field name] naming schema then check if a 'value' item
-      // is present and if so use that.
+      // chado-[table_name]__[field name] naming schema then check if a 'value'
+      // item is present and if so use that for the table column value.
       if ((!array_key_exists($chado_table, $temp) or
            !array_key_exists($delta, $temp[$chado_table]) or
            !array_key_exists($chado_column, $temp[$chado_table][$delta])) and
           array_key_exists('value', $items[$delta]) and
           !is_array($items[$delta]['value'])) {
-        $temp[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
+        // If this field belongs to the base table then we just add
+        // those values in... there's no delta.
+        if ($base_table == $chado_table) {
+          $base_fields[$chado_table][$chado_column] = $items[$delta]['value'];
+        }
+        else {
+          $temp[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
+        }
       }
     }
 
     // Now merge the records for this field with the $new_fields array
     foreach ($temp as $table_name => $details) {
       foreach ($details as $delta => $list) {
-        $new_fields[$table_name][] = $list;
+        $all_fields[$table_name][] = $list;
       }
     }
   }
 
-  return $new_fields;
+  $all_fields = array_merge($base_fields, $all_fields);
+  return $all_fields;
 }
 
 /**
