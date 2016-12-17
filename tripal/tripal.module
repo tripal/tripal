@@ -521,7 +521,7 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  *
  * @see tripal_entity_load_multiple()
  */
-function TripalEntity_load($id, $reset = TRUE) {
+function TripalEntity_load($id, $reset = FALSE) {
   // $entity = entity_load('TripalEntity', array($id), array(), $reset);
   $entity = tripal_load_entity('TripalEntity', array($id), $reset);
   return reset($entity);

@@ -278,7 +278,10 @@ function chado_generate_var($table, $values, $base_options = array()) {
   $results = chado_select_record($table, $table_columns, $values, $base_options);
 
   if ($results) {
+
+    // Iterate through each result.
     foreach ($results as $key => $object) {
+
       // Add empty expandable_x arrays
       $object->expandable_fields = $all->expandable_fields;
       $object->expandable_foreign_keys = $all->expandable_foreign_keys;
@@ -290,7 +293,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       // For Tripal v2 compatibility
       // check if the current table maps to a node type-----------------------------------------------
       // if this table is connected to a node there will be a chado_tablename table in drupal
-      if (db_table_exists('chado_' . $table)) {
+      if (module_exists('tripal_core') and db_table_exists('chado_' . $table)) {
         // that has a foreign key to this one ($table_desc['primary key'][0]
         // and to the node table (nid)
         $sql = "

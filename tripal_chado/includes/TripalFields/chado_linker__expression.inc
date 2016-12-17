@@ -77,24 +77,23 @@ class chado_linker__expression extends TripalField {
    */
   public function load($entity, $details = array()) {
     $record = $details['record'];
-    
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-    
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $base_table = $details['record']->tablename;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
     );
-    
+
     $linker_table = $base_table . '_expression';
     $options = array(
       'return_array' => 1,
@@ -103,11 +102,11 @@ class chado_linker__expression extends TripalField {
     $exp_linkers = $record->$linker_table;
     if ($exp_linkers) {
       foreach ($exp_linkers as $i => $exp_linker) {
-    
+
         // Because the unqiuename is a text field we must expand it.
         $expression = $exp_linker->expression_id;
         $expression = chado_expand_var($expression, 'field', 'expression.uniquename', $options);
-    
+
         // Set the values that will be seen by the user on the page and in
         // web services, or anwhere this field is viewed.
         $entity->{$field_name}['und'][$i]['value'] = array(
@@ -115,22 +114,22 @@ class chado_linker__expression extends TripalField {
           'description' => $expression->description,
           //'md5checksum' => $expression->md5checksum,
         );
-    
+
         // Add the pub information if a real pub is associated with the record.
         $pub = $exp_linker->pub_id;
         if ($pub->uniquename != 'null') {
           $pub_details = tripal_get_minimal_pub_info($pub);
-    
+
           $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
           $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;
           if (property_exists($pub, 'entity_id')) {
             $entity->{$field_name}['und'][$i]['publication'][0]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
           }
         }
-    
+
         // Add the linker_expressionprop
         $linkerprop_table =  $linker_table . 'prop';
-        if (db_table_exists('chado.' . $linkerprop_table)) {
+        if (chado_table_exists($linkerprop_table)) {
           $exp_linker = chado_expand_var($exp_linker, 'table', $linkerprop_table, $options);
           $exp_linkerprops = $exp_linker->feature_expressionprop;
           if ($exp_linkerprops) {
@@ -146,7 +145,7 @@ class chado_linker__expression extends TripalField {
         $entity->{$field_name}['und'][$i][$linker_table . '__uniquename'] = $expression->uniquename;
         //$entity->{$field_name}['und'][$i][$linker_table . '__md5checksum'] = $expression->md5checksum;
         $entity->{$field_name}['und'][$i][$linker_table . '__description'] = $expression->description;
-    
+
       }
     }
   }

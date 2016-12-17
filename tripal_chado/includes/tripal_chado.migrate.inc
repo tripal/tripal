@@ -472,10 +472,11 @@ function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
  */
 function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $has_template = FALSE) {
   // Get all available Tripal v2 chado tables
-  $sql =
-  "SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public' AND table_name LIKE 'chado_%'";
+  $sql = "
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name LIKE 'chado_%'
+  ";
   $result = db_query($sql);
   // Store 'chado_*' tables that has at least one node
   $tables = array();

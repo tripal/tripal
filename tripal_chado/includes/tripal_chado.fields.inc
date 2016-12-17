@@ -1004,7 +1004,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Sequences',
+      'label' => 'Sequence',
       'description' => 'All available sequences for this record.',
       'required' => FALSE,
       'settings' => array(
@@ -1066,8 +1066,8 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Transcript',
-      'description' => 'These transcripts are associated with this gene.',
+      'label' => 'Transcripts',
+      'description' => 'Transcripts that are part of this gene.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,

@@ -1,6 +1,6 @@
 <?php
 
-class data__sequence_length extends TripalField {
+class data__protein_sequence extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,13 +16,13 @@ class data__sequence_length extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'data:1249';
+  public static $term = 'data:2976';
 
   // The default lable for this field.
-  public static $label = 'Sequence length';
+  public static $label = 'Protein Sequence';
 
   // The default description for this field.
-  public static $description = 'A field for calculating the length of a sequence.';
+  public static $description = 'polypeptide sequences.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -44,20 +44,38 @@ class data__sequence_length extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'data__sequence_length_widget';
+  public static $default_widget = 'data__protein_sequence_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'data__sequence_length_formatter';
+  public static $default_formatter = 'data__protein_sequence_formatter';
 
-  // --------------------------------------------------------------------------
-  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
-  // --------------------------------------------------------------------------
-  // An array containing details about the field. The format of this array
-  // is the same as that returned by field_info_fields()
-  protected $field;
-  // An array containing details about an instance of the field. A field does
-  // not have to have an instance.  But if dealing with an instance (such as
-  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
-  protected $instance;
 
+  /**
+   * @see TripalField::load()
+   */
+  public function load($entity, $details = array()) {
+    $field_name = $this->field['field_name'];
+    $feature = $details['record'];
+    $num_seqs = 0;
+
+    // Look for Protein sequences
+    $sql = "
+      SELECT F.*
+      FROM {feature_relationship} FR
+        INNER JOIN {feature} F on FR.subject_id = F.feature_id
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+        INNER JOIN {cvterm} RCVT on RCVT.cvterm_id = FR.type_id
+      WHERE
+        FR.object_id = :feature_id and
+        CVT.name = 'polypeptide' and
+        RCVT.name = 'derives_from'
+      ORDER BY FR.rank ASC
+    ";
+    $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
+    while ($protein = $results->fetchObject()) {
+      if ($protein->residues) {
+        $entity->{$field_name}['und'][$num_seqs++]['value'] = $protein->residues;
+      }
+    }
+  }
 }

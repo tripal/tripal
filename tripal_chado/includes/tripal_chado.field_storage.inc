@@ -223,17 +223,6 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     $record = chado_generate_var($base_table, $match);
     $entity->chado_record = $record;
 
-    // For now, expand all 'text' fields.
-    // TODO: we want to be a bit smarter and allow the user to configure this
-    // for now we'll expand.
-    if (isset($schema['fields'])) {
-      foreach ($schema['fields'] as $field_name => $details) {
-        if ($schema['fields'][$field_name]['type'] == 'text') {
-          $record = chado_expand_var($record, 'field', $base_table . '.' . $field_name);
-        }
-      }
-    }
-
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.
     $tables = array();

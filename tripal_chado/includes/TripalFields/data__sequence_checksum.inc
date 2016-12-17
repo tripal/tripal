@@ -61,11 +61,4 @@ class data__sequence_checksum extends TripalField {
   protected $instance;
 
 
-
-  /**
-   * @see TripalField::load()
-   */
-  public function load($entity, $details = array()) {
-
-  }
 }

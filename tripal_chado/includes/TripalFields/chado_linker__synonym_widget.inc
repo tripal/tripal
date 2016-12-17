@@ -15,7 +15,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
     $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
-    
+
     // Get the FK column that links to the base table.
     $table_name = $this->field['settings']['chado_table'];
     $base_table = $this->field['settings']['base_table'];
@@ -23,7 +23,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
     // Get the field defaults.
     $record_id = '';
     $fkey_value = $element['#entity']->chado_record_id;
@@ -33,7 +33,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     $is_internal = FALSE;
     $syn_name = '';
     $syn_type = '';
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
@@ -45,7 +45,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
       $syn_name = $items[$delta]['name'];
       $syn_type = $items[$delta]['type_id'];
     }
-    
+
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__' . $pkey];
@@ -56,7 +56,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
       $syn_name = $form_state['values'][$field_name]['und'][$delta]['name'];
       $syn_type = $form_state['values'][$field_name]['und'][$delta]['type_id'];
     }
-    
+
     $options = array();
     $value = array('cv_id' => array('name' => 'synonym_type'));
     $op = array('return_array' => 1);
@@ -66,22 +66,22 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
         $options[$type->cvterm_id] = $type->name;
       }
     }
-    
+
     // Get the schema for the synonym table so we can make sure we limit the
     // size of the name field to the proper size.
     $schema = chado_get_schema('synonym');
-    
+
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
     $widget['#theme'] = 'chado_linker__synonym_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
-    
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
+
     $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
@@ -111,14 +111,14 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
       '#default_value' => $syn_name,
       '#size' => 25,
     );
-    
+
     $widget['chado-' . $table_name . '__is_current'] = array(
       '#type' => 'checkbox',
       '#title' => t('Is Current'),
       '#default_value' => $is_current,
       '#required' => $element['#required'],
     );
-    
+
     $widget['chado-' . $table_name . '__is_internal'] = array(
       '#type' => 'checkbox',
       '#title' => t('Is Internal'),
@@ -157,7 +157,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-    
+
     $record_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey] : '';
     $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] : '';
     $synonym_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] : '';
@@ -166,11 +166,11 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     $is_internal = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] : '';
     $syn_name = isset($form_state['values'][$field_name][$langcode][$delta]['name']) ? $form_state['values'][$field_name][$langcode][$delta]['name'] : '';
     $syn_type = isset($form_state['values'][$field_name][$langcode][$delta]['type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['type_id'] : '';
-    
+
     // If the user provided a $syn_name and a $syn_type then we want to set
     // the foreign key value to be the chado_record_id.
     if ($syn_name and $syn_type) {
-    
+
       // Get the synonym. If one with the same name and type is already present
       // then use that. Otherwise, insert a new one.
       if (!$synonym_id) {
@@ -183,11 +183,11 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
           ));
           $synonym = (object) $synonym;
         }
-    
+
         // Set the synonym_id and FK value
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
       }
-    
+
       if (!$pub_id) {
         $pub = chado_generate_var('pub', array('uniquename' => 'null'));
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
