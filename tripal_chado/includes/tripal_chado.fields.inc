@@ -302,7 +302,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
         'chado_table' => $table_name,
         'chado_column' => 'residues',
         'base_table' => $table_name,
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
       ),
     );
   }
@@ -323,7 +322,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
         'chado_table' => $table_name,
         'chado_column' => 'seqlen',
         'base_table' => $table_name,
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'seqlen'),
       ),
     );
   }
@@ -345,7 +343,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
         'chado_table' => $rel_table,
         'chado_column' => '',
         'base_table' => $table_name,
-        'semantic_web' => 'SO:0000673',
       ),
     );
   }
@@ -365,7 +362,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 //       'settings' => array(
 //         'chado_table' => 'organism',
 //         'chado_column' => 'type_id',
-//         'semantic_web' => 'TAXRANK:0000046',
 //       ),
 //     );
 //   }
@@ -402,7 +398,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $contact_table,
         'base_table' => $table_name,
         'chado_column' => 'contact_id',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'contact_id'),
       ),
     );
   }
@@ -445,7 +440,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $dbxref_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000554',
       ),
     );
   }
@@ -469,7 +463,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $expression_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'local:expression',
       ),
     );
   }
@@ -492,7 +485,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => 'featureloc',
         'chado_column' => $pkey,
         'base_table' => 'feature',
-        'semantic_web' => 'SO:position_of',
       ),
     );
   }
@@ -515,7 +507,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => 'featurepos',
         'chado_column' => $pkey,
         'base_table' => 'feature',
-        'semantic_web' => 'SO:position_of',
       ),
     );
   }
@@ -538,7 +529,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $genotype_table,
         'chado_column' => $pkey,
-        'semantic_web' => 'SO:0001027',
         'base_table' => $table_name,
       ),
     );
@@ -563,7 +553,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $phenotype_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000358',
       ),
     );
   }
@@ -606,7 +595,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $pub_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'schema:publication',
       ),
     );
   }
@@ -631,7 +619,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $rel_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000374',
       ),
     );
   }
@@ -655,7 +642,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $syn_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'schema:alternateName',
       ),
     );
   }
@@ -1144,7 +1130,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'description' => 'Associates an indviddual or organization with this record',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => TRUE,
+        'auto_attach' => FALSE,
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
