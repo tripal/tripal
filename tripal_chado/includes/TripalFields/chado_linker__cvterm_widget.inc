@@ -117,7 +117,7 @@ class chado_linker__cvterm_widget extends TripalFieldWidget {
       '#default_value' => $uname,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
       '#ajax' => array(
-        'callback' => "chado_linker__pub_widget_form_ajax_callback",
+        'callback' => "schema__publication_widget_form_ajax_callback",
         'wrapper' => "$table_name-$delta",
         'effect' => 'fade',
         'method' => 'replace'

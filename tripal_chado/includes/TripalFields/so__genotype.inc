@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__phenotype extends TripalField {
+class so__genotype extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,13 +16,14 @@ class chado_linker__phenotype extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'SBO:0000358';
+  public static $term = 'SO:0001027';
 
   // The default lable for this field.
-  public static $label = 'Phenotypes';
+  public static $label = 'Genotype';
 
   // The default description for this field.
-  public static $description = 'Associates phenotypes with this record.';
+  public static $description = 'Associates an indviddual or organization with
+          this record.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -44,10 +45,10 @@ class chado_linker__phenotype extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__phenotype_widget';
+  public static $default_widget = 'so__genotype_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__phenotype_formatter';
+  public static $default_formatter = 'so__genotype_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -94,16 +95,16 @@ class chado_linker__phenotype extends TripalField {
       'value' => array(),
       $field_table . '__' . $pkey => '',
       $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'phenotype_id' => '',
+      $field_table . '__' . 'genotype_id' => '',
       // Ignore the synonym_sgml column for now.
     );
     
-    $linker_table = $base_table . '_phenotype';
+    $linker_table = $base_table . '_genotype';
     $options = array(
       'return_array' => 1,
       'include_fk' => array(
-        'phenotype_id' => array(
-          'attr_id' => array(
+        'genotype_id' => array(
+          'type_id' => array(
             'dbxref_id' => array(
               'db_id' => TRUE,
             ),
@@ -113,24 +114,24 @@ class chado_linker__phenotype extends TripalField {
       ),
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $phenotype_linkers = $record->$linker_table;
-    if ($phenotype_linkers) {
-      foreach ($phenotype_linkers as $i => $phenotype_linker) {
-        $phenotype = $phenotype_linker->phenotype_id;
+    $genotype_linkers = $record->$linker_table->$fkey_rcolumn;
+    if ($genotype_linkers) {
+      foreach ($genotype_linkers as $i => $genotype_linker) {
+        $genotype = $genotype_linker->genotype_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            '@type' => $phenotype->attr_id->dbxref_id->db_id->name . ':' . $phenotype->attr_id->dbxref_id->accession,
-            'type' => $phenotype->attr_id->name,
-            'name' => $phenotype->name,
-            'value' => $phenotype->value,
+            '@type' => $genotype->type_id->dbxref_id->db_id->name . ':' . $genotype->type_id->dbxref_id->accession,
+            'type' => $genotype->type_id->name,
+            'name' => $genotype->name,
+            'description' => $genotype->description,
           ),
-          $field_table . '__' . $pkey => $phenotype_linker->$pkey,
-          $field_table . '__' . $fkey_lcolumn => $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'phenotype_id' => $phenotype->phenotype_id
+          $field_table . '__' . $pkey => $genotype_linker->$pkey,
+          $field_table . '__' . $fkey_lcolumn => $genotype_linker->$fkey_lcolumn->$fkey_lcolumn,
+          $field_table . '__' . 'genotype_id' => $genotype->genotype_id
         );
     
-        if ($phenotype && property_exists($phenotype, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $phenotype->entity_id;
+        if ($genotype && property_exists($genotype, 'entity_id')) {
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $genotype->entity_id;
         }
       }
     }

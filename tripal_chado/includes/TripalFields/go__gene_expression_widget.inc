@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__featureloc_widget extends TripalFieldWidget {
+class go__gene_expression_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Aligned Locations';
+  public static $label = 'Gene expression';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__featureloc');
+  public static $field_types = array('go__gene_expression');
 
   /**
    *
@@ -37,4 +37,5 @@ class chado_linker__featureloc_widget extends TripalFieldWidget {
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
   }
+  
 }

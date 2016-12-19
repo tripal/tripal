@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__featureloc_formatter extends TripalFieldFormatter {
+class ogi__location_on_map_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Aligned Locations';
+  public static $label = 'Location on Map';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__featureloc');
+  public static $field_types = array('ogi__location_on_map');
 
   // The list of default settings for this formatter.
   public static $settings = array();

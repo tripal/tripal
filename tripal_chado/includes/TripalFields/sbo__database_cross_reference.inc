@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__dbxref extends TripalField {
+class sbo__database_cross_reference extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class chado_linker__dbxref extends TripalField {
   public static $term = 'SBO:0000554';
 
   // The default lable for this field.
-  public static $label = 'Cross references';
+  public static $label = 'Database cross reference';
 
   // The default description for this field.
   public static $description = 'This record can be cross referenced with a record in
@@ -46,10 +46,10 @@ class chado_linker__dbxref extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__dbxref_widget';
+  public static $default_widget = 'sbo__database_cross_reference_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__dbxref_formatter';
+  public static $default_formatter = 'sbo__database_cross_reference_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -170,7 +170,7 @@ class chado_linker__dbxref extends TripalField {
  *
  * @param $variables
  */
-function theme_chado_linker__dbxref_widget($variables) {
+function theme_sbo__database_cross_reference_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -202,7 +202,7 @@ function theme_chado_linker__dbxref_widget($variables) {
 /**
  * An Ajax callback for the dbxref widget.
  */
-function chado_linker__dbxref_widget_form_ajax_callback($form, $form_state) {
+function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];

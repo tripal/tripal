@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__pub_widget extends TripalFieldWidget {
+class schema__publication_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Publications';
+  public static $label = 'Publication';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__pub');
+  public static $field_types = array('schema__publication');
 
   /**
    *
@@ -42,7 +42,7 @@ class chado_linker__pub_widget extends TripalFieldWidget {
     
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-    $widget['#theme'] = 'chado_linker__pub_widget';
+    $widget['#theme'] = 'schema__publication_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
     
@@ -70,7 +70,7 @@ class chado_linker__pub_widget extends TripalFieldWidget {
       '#default_value' => $uname,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
       '#ajax' => array(
-        'callback' => "chado_linker__pub_widget_form_ajax_callback",
+        'callback' => "schema__publication_widget_form_ajax_callback",
         'wrapper' => "$table_name-$delta",
         'effect' => 'fade',
         'method' => 'replace'
@@ -141,7 +141,7 @@ class chado_linker__pub_widget extends TripalFieldWidget {
 /**
  * An Ajax callback for the pub widget.
  */
-function chado_linker__pub_widget_form_ajax_callback($form, $form_state) {
+function schema__publication_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
@@ -153,7 +153,7 @@ function chado_linker__pub_widget_form_ajax_callback($form, $form_state) {
  *
  * @param $variables
  */
-function theme_chado_linker__pub_widget($variables) {
+function theme_schema__publication_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields

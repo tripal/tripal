@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__synonym extends TripalField {
+class sbo__phenotype extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,13 +16,16 @@ class chado_linker__synonym extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'schema:alternateName';
+  // http://www.ebi.ac.uk/sbo/main/SBO:0000358
+  public static $term = 'SBO:0000358';
 
   // The default lable for this field.
-  public static $label = 'Synonyms';
+  public static $label = 'Phenotype';
 
   // The default description for this field.
-  public static $description = 'Adds an alternative name (synonym or alias) to this record.';
+  public static $description = 'A biochemical network can generate phenotypes or affects 
+      biological processes. Such processes can take place at different levels and are 
+      independent of the biochemical network itself.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -44,10 +47,10 @@ class chado_linker__synonym extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__synonym_widget';
+  public static $default_widget = 'sbo__phenotype_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__synonym_formatter';
+  public static $default_formatter = 'sbo__phenotype_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -76,59 +79,62 @@ class chado_linker__synonym extends TripalField {
    */
   public function load($entity, $details = array()) {
     $record = $details['record'];
-    $base_table = $this->field['settings']['base_table'];
-    
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     
-    // Get the PKey for this table
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
+    $base_table = $details['record']->tablename;
+    $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+    
     
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
-      'chado-' . $field_table . '__' . 'synonym_id' => '',
-      'chado-' . $field_table . '__' . 'pub_id' => '',
-      'chado-' . $field_table . '__' . 'is_current' => TRUE,
-      'chado-' . $field_table . '__' . 'is_internal' => '',
-      'name' => '',
-      'type_id' => '',
+      $field_table . '__' . $pkey => '',
+      $field_table . '__' . $fkey_lcolumn => '',
+      $field_table . '__' . 'phenotype_id' => '',
       // Ignore the synonym_sgml column for now.
     );
     
-    $linker_table = $base_table . '_synonym';
-    $options = array('return_array' => 1);
+    $linker_table = $base_table . '_phenotype';
+    $options = array(
+      'return_array' => 1,
+      'include_fk' => array(
+        'phenotype_id' => array(
+          'attr_id' => array(
+            'dbxref_id' => array(
+              'db_id' => TRUE,
+            ),
+          ),
+        ),
+        $fkey_lcolumn => TRUE,
+      ),
+    );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    if (count($record->$linker_table) > 0) {
-      $i = 0;
-      foreach ($record->$linker_table as $index => $linker) {
-        $synonym = $linker->synonym_id;
+    $phenotype_linkers = $record->$linker_table;
+    if ($phenotype_linkers) {
+      foreach ($phenotype_linkers as $i => $phenotype_linker) {
+        $phenotype = $phenotype_linker->phenotype_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            '@type' => $synonym->type_id->dbxref_id->db_id->name . ':' . $synonym->type_id->dbxref_id->accession,
-            'type' => $synonym->type_id->name,
-            'name' => $synonym->name,
+            '@type' => $phenotype->attr_id->dbxref_id->db_id->name . ':' . $phenotype->attr_id->dbxref_id->accession,
+            'type' => $phenotype->attr_id->name,
+            'name' => $phenotype->name,
+            'value' => $phenotype->value,
           ),
-          'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
-          'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
-          'chado-' . $field_table . '__' . 'synonym_id' => $synonym->synonym_id,
-          'chado-' . $field_table . '__' . 'pub_id' => $linker->pub_id->pub_id,
-          'chado-' . $field_table . '__' . 'is_current' => $linker->is_current,
-          'chado-' . $field_table . '__' . 'is_internal' => $linker->is_internal,
-          'name' => $synonym->name,
-          'type_id' => $synonym->type_id->cvterm_id,
+          $field_table . '__' . $pkey => $phenotype_linker->$pkey,
+          $field_table . '__' . $fkey_lcolumn => $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn,
+          $field_table . '__' . 'phenotype_id' => $phenotype->phenotype_id
         );
-        $i++;
+    
+        if ($phenotype && property_exists($phenotype, 'entity_id')) {
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $phenotype->entity_id;
+        }
       }
     }
   }

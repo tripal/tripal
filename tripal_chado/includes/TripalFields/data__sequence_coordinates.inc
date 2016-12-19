@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__pub extends TripalField {
+class data__sequence_coordinates extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,14 +16,14 @@ class chado_linker__pub extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'schema:publication';
+  // http://www.ebi.ac.uk/ols/ontologies/swo/terms?iri=http%3A%2F%2Fedamontology.org%2Fdata_2012
+  public static $term = 'data:2012';
 
   // The default lable for this field.
-  public static $label = 'Publications';
+  public static $label = 'Sequence Coordinates';
 
   // The default description for this field.
-  public static $description = 'Associates a publication (e.g. journal article,
-            conference proceedings, book chapter, etc.) with this record.';
+  public static $description = 'Locations on reference sequences where the feature is located.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -45,10 +45,10 @@ class chado_linker__pub extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__pub_widget';
+  public static $default_widget = 'data__sequence_coordinates_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__pub_formatter';
+  public static $default_formatter = 'data__sequence_coordinates_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -76,55 +76,7 @@ class chado_linker__pub extends TripalField {
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {
-    $record = $details['record'];
-    
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
-    
-    // Get the FK that links to the base record.
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
-      'chado-' . $field_table . '__' . 'pub_id' => '',
-      'uniquename' => '',
-    );
-    
-    $linker_table = $base_table . '_pub';
-    $options = array(
-      'return_array' => 1,
-    );
-    $record = chado_expand_var($record, 'table', $linker_table, $options);
-    
-    if (count($record->$linker_table) > 0) {
-      $i = 0;
-      foreach ($record->$linker_table as $index => $linker) {
-        $pub = $linker->pub_id;
-        $pub_details = tripal_get_minimal_pub_info($pub);
-        $pub_details['@type'] = $pub->type_id->dbxref_id->db_id->name . ':' . $pub->type_id->dbxref_id->accession;
-        $pub_details['publication']['type'] = $pub->type_id->name;
-    
-        $entity->{$field_name}['und'][$i]['value'] = $pub_details;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub->pub_id;
-        $entity->{$field_name}['und'][$i]['uniquename'] =  $pub->uniquename;
-    
-        if (property_exists($pub, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
-        }
-        $i++;
-      }
-    }
+
   }
 
 

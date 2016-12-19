@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__expression_widget extends TripalFieldWidget {
+class sbo__phenotype_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Expression';
+  public static $label = 'Phenotype';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__expression');
+  public static $field_types = array('sbo__phenotype');
 
   /**
    *
@@ -37,5 +37,4 @@ class chado_linker__expression_widget extends TripalFieldWidget {
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
   }
-  
 }

@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__featureloc extends TripalField {
+class ogi__location_on_map extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,14 +16,14 @@ class chado_linker__featureloc extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  // http://www.ebi.ac.uk/ols/ontologies/swo/terms?iri=http%3A%2F%2Fedamontology.org%2Fdata_2012
-  public static $term = 'data:2012';
+  // http://www.ebi.ac.uk/ols/ontologies/ogi/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FOGI_0000021
+  public static $term = 'OGI:0000021';
 
   // The default lable for this field.
-  public static $label = 'Sequence Coordinate';
+  public static $label = 'Location on Map';
 
   // The default description for this field.
-  public static $description = 'Locations on reference sequences where the feature is located.';
+  public static $description = 'Map position of a sequence.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -45,10 +45,10 @@ class chado_linker__featureloc extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__featureloc_widget';
+  public static $default_widget = 'ogi__location_on_map_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__featureloc_formatter';
+  public static $default_formatter = 'ogi__location_on_map_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE

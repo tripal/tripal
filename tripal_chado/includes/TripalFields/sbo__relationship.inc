@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__relationship extends TripalField {
+class sbo__relationship extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class chado_linker__relationship extends TripalField {
   public static $term = 'SBO:0000374';
 
   // The default lable for this field.
-  public static $label = 'Relationships';
+  public static $label = 'Relationship';
 
   // The default description for this field.
   public static $description = 'Relationships between records.';
@@ -44,10 +44,10 @@ class chado_linker__relationship extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__relationship_widget';
+  public static $default_widget = 'sbo__relationship_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__relationship_formatter';
+  public static $default_formatter = 'sbo__relationship_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -377,7 +377,7 @@ class chado_linker__relationship extends TripalField {
           term for the relationship type.'),
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
-      '#theme' => 'chado_linker__relationship_instance_settings'
+      '#theme' => 'sbo__relationship_instance_settings'
     );
     //     $element['instructions'] = array(
     //       '#type' => 'item',
@@ -420,7 +420,7 @@ class chado_linker__relationship extends TripalField {
       '#options' => $vocs,
       '#default_value' => $this->instance['settings']['relationships']['option2_vocab'],
       '#ajax' => array(
-        'callback' => "chado_linker__relationship_instance_settings_form_ajax_callback",
+        'callback' => "sbo__relationship_instance_settings_form_ajax_callback",
         'wrapper' => 'relationships-option2-parent',
         'effect' => 'fade',
         'method' => 'replace'

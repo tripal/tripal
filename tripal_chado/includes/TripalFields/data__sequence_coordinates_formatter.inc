@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__featurepos_formatter extends TripalFieldFormatter {
+class data__sequence_coordinates_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Map positions';
+  public static $label = 'Sequence Coordinates';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__featurepos');
+  public static $field_types = array('data__sequence_coordinates');
 
   // The list of default settings for this formatter.
   public static $settings = array();

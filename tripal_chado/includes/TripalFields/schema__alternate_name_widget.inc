@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__synonym_widget extends TripalFieldWidget {
+class schema__alternate_name_widget extends TripalFieldWidget {
   // The default lable for this field.
   public static $label = 'Synonyms';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__synonym');
+  public static $field_types = array('schema__alternate_name');
 
   /**
    *
@@ -73,7 +73,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
     
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-    $widget['#theme'] = 'chado_linker__synonym_widget';
+    $widget['#theme'] = 'schema__alternate_name_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
     
@@ -209,7 +209,7 @@ class chado_linker__synonym_widget extends TripalFieldWidget {
  *
  * @param $variables
  */
-function theme_chado_linker__synonym_widget($variables) {
+function theme_schema__alternate_name_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -240,7 +240,7 @@ function theme_chado_linker__synonym_widget($variables) {
 /**
  * An Ajax callback for the synonym widget.
  */
-function chado_linker__synonym_widget_form_ajax_callback($form, $form_state) {
+function schema__alternate_name_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];

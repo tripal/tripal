@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__expression extends TripalField {
+class schema__alternate_name extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,14 +16,13 @@ class chado_linker__expression extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'local:expression';
+  public static $term = 'schema:alternateName';
 
   // The default lable for this field.
-  public static $label = 'Expression';
+  public static $label = 'Synonyms';
 
   // The default description for this field.
-  public static $description = 'Associates an expression with
-          this record.';
+  public static $description = 'Adds an alternative name (synonym or alias) to this record.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -45,10 +44,10 @@ class chado_linker__expression extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__expression_widget';
+  public static $default_widget = 'schema__alternate_name_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__expression_formatter';
+  public static $default_formatter = 'schema__alternate_name_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -77,76 +76,59 @@ class chado_linker__expression extends TripalField {
    */
   public function load($entity, $details = array()) {
     $record = $details['record'];
+    $base_table = $this->field['settings']['base_table'];
     
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     
+    // Get the PKey for this table
+    $schema = chado_get_schema($field_table);
+    $pkey = $schema['primary key'][0];
+    
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
-    $base_table = $details['record']->tablename;
-    $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
     
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
+      'chado-' . $field_table . '__' . $pkey => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . 'synonym_id' => '',
+      'chado-' . $field_table . '__' . 'pub_id' => '',
+      'chado-' . $field_table . '__' . 'is_current' => TRUE,
+      'chado-' . $field_table . '__' . 'is_internal' => '',
+      'name' => '',
+      'type_id' => '',
+      // Ignore the synonym_sgml column for now.
     );
     
-    $linker_table = $base_table . '_expression';
-    $options = array(
-      'return_array' => 1,
-    );
+    $linker_table = $base_table . '_synonym';
+    $options = array('return_array' => 1);
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $exp_linkers = $record->$linker_table;
-    if ($exp_linkers) {
-      foreach ($exp_linkers as $i => $exp_linker) {
-    
-        // Because the unqiuename is a text field we must expand it.
-        $expression = $exp_linker->expression_id;
-        $expression = chado_expand_var($expression, 'field', 'expression.uniquename', $options);
-    
-        // Set the values that will be seen by the user on the page and in
-        // web services, or anwhere this field is viewed.
-        $entity->{$field_name}['und'][$i]['value'] = array(
-          'name' => $expression->uniquename,
-          'description' => $expression->description,
-          //'md5checksum' => $expression->md5checksum,
+    if (count($record->$linker_table) > 0) {
+      $i = 0;
+      foreach ($record->$linker_table as $index => $linker) {
+        $synonym = $linker->synonym_id;
+        $entity->{$field_name}['und'][$i] = array(
+          'value' => array(
+            '@type' => $synonym->type_id->dbxref_id->db_id->name . ':' . $synonym->type_id->dbxref_id->accession,
+            'type' => $synonym->type_id->name,
+            'name' => $synonym->name,
+          ),
+          'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
+          'chado-' . $field_table . '__' . 'synonym_id' => $synonym->synonym_id,
+          'chado-' . $field_table . '__' . 'pub_id' => $linker->pub_id->pub_id,
+          'chado-' . $field_table . '__' . 'is_current' => $linker->is_current,
+          'chado-' . $field_table . '__' . 'is_internal' => $linker->is_internal,
+          'name' => $synonym->name,
+          'type_id' => $synonym->type_id->cvterm_id,
         );
-    
-        // Add the pub information if a real pub is associated with the record.
-        $pub = $exp_linker->pub_id;
-        if ($pub->uniquename != 'null') {
-          $pub_details = tripal_get_minimal_pub_info($pub);
-    
-          $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
-          $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;
-          if (property_exists($pub, 'entity_id')) {
-            $entity->{$field_name}['und'][$i]['publication'][0]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
-          }
-        }
-    
-        // Add the linker_expressionprop
-        $linkerprop_table =  $linker_table . 'prop';
-        if (db_table_exists('chado.' . $linkerprop_table)) {
-          $exp_linker = chado_expand_var($exp_linker, 'table', $linkerprop_table, $options);
-          $exp_linkerprops = $exp_linker->feature_expressionprop;
-          if ($exp_linkerprops) {
-            foreach ($exp_linkerprops AS $linkerprop) {
-              $entity->{$field_name}['und'][$i]['value'][$linkerprop->type_id->name] = $linkerprop->value;
-            }
-          }
-        }
-        // Add the fields for the widget form.  The name requres the following
-        // format if the fields should be used as values for insertint/updating
-        // into the chado table:  [table_name]__[field_name]
-        $entity->{$field_name}['und'][$i][$linker_table . '__expression_id'] = $expression->expression_id;
-        $entity->{$field_name}['und'][$i][$linker_table . '__uniquename'] = $expression->uniquename;
-        //$entity->{$field_name}['und'][$i][$linker_table . '__md5checksum'] = $expression->md5checksum;
-        $entity->{$field_name}['und'][$i][$linker_table . '__description'] = $expression->description;
-    
+        $i++;
       }
     }
   }

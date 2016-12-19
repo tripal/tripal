@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__dbxref_widget extends TripalFieldWidget {
+class sbo__database_cross_reference_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Cross references';
+  public static $label = 'Database cross reference';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__dbxref');
+  public static $field_types = array('sbo__database_cross_reference');
 
   /**
    *
@@ -63,8 +63,8 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
     
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
-    //$widget['#element_validate'] = array('chado_linker__dbxref_widget_validate');
-    $widget['#theme'] = 'chado_linker__dbxref_widget';
+    //$widget['#element_validate'] = array('sbo__database_cross_reference_widget_validate');
+    $widget['#theme'] = 'sbo__database_cross_reference_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
     $widget['#suffix'] =  "</span>";
     
@@ -97,7 +97,7 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
       '#required' => $element['#required'],
       '#default_value' => $db_id,
       '#ajax' => array(
-        'callback' => "chado_linker__dbxref_widget_form_ajax_callback",
+        'callback' => "sbo__database_cross_reference_widget_form_ajax_callback",
         'wrapper' => "$field_name-dbxref--db-id-$delta",
         'effect' => 'fade',
         'method' => 'replace'
@@ -112,7 +112,7 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
       '#size' => 15,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
       '#ajax' => array(
-        'callback' => "chado_linker__dbxref_widget_form_ajax_callback",
+        'callback' => "sbo__database_cross_reference_widget_form_ajax_callback",
         'wrapper' => "$field_name-dbxref--db-id-$delta",
         'effect' => 'fade',
         'method' => 'replace'
@@ -185,19 +185,19 @@ class chado_linker__dbxref_widget extends TripalFieldWidget {
       if (!$db_id and $accession) {
         $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
-          'error' => 'chado_linker__dbxref',
+          'error' => 'sbo__database_cross_reference',
         );
       }
       if ($db_id and !$accession) {
         $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
-          'error' => 'chado_linker__dbxref',
+          'error' => 'sbo__database_cross_reference',
         );
       }
       if (!$db_id and !$accession and ($version or $description)) {
         $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
-          'error' => 'chado_linker__dbxref',
+          'error' => 'sbo__database_cross_reference',
         );
       }
     }

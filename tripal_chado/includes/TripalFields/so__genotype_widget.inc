@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__genotype_widget extends TripalFieldWidget {
+class so__genotype_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Genotypes';
+  public static $label = 'Genotype';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__genotype');
+  public static $field_types = array('so__genotype');
 
   /**
    *

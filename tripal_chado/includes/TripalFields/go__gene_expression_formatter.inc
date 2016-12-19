@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__expression_formatter extends TripalFieldFormatter {
+class go__gene_expression_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Expression';
+  public static $label = 'Gene expression';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__expression');
+  public static $field_types = array('go__gene_expression');
 
   // The list of default settings for this formatter.
   public static $settings = array();

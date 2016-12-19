@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__genotype extends TripalField {
+class go__gene_expression extends TripalField {
 
 
   // --------------------------------------------------------------------------
@@ -16,14 +16,18 @@ class chado_linker__genotype extends TripalField {
   // and [acession] is the unique accession number for the term.  This term
   // must already exist in the vocabulary storage backend. This
   // value should never be changed once fields exist for this type.
-  public static $term = 'SO:0001027';
+  public static $term = 'GO:0010467';
 
   // The default lable for this field.
-  public static $label = 'Genotypes';
+  public static $label = 'Gene expression';
 
   // The default description for this field.
-  public static $description = 'Associates an indviddual or organization with
-          this record.';
+  public static $description = 'The process in which a gene\'s sequence is converted into a 
+      mature gene product or products (proteins or RNA). This includes the production of an 
+      RNA transcript as well as any processing to produce a mature RNA product or an 
+      mRNA (for protein-coding genes) and the translation of that mRNA into protein. 
+      Protein maturation is included when required to form an active form of a product from 
+      an inactive precursor form.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -45,10 +49,10 @@ class chado_linker__genotype extends TripalField {
   public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__genotype_widget';
+  public static $default_widget = 'go__gene_expression_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__genotype_formatter';
+  public static $default_formatter = 'go__gene_expression_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -77,6 +81,7 @@ class chado_linker__genotype extends TripalField {
    */
   public function load($entity, $details = array()) {
     $record = $details['record'];
+    
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
@@ -89,50 +94,63 @@ class chado_linker__genotype extends TripalField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
     
-    
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
-      $field_table . '__' . $pkey => '',
-      $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'genotype_id' => '',
-      // Ignore the synonym_sgml column for now.
     );
     
-    $linker_table = $base_table . '_genotype';
+    $linker_table = $base_table . '_expression';
     $options = array(
       'return_array' => 1,
-      'include_fk' => array(
-        'genotype_id' => array(
-          'type_id' => array(
-            'dbxref_id' => array(
-              'db_id' => TRUE,
-            ),
-          ),
-        ),
-        $fkey_lcolumn => TRUE,
-      ),
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $genotype_linkers = $record->$linker_table->$fkey_rcolumn;
-    if ($genotype_linkers) {
-      foreach ($genotype_linkers as $i => $genotype_linker) {
-        $genotype = $genotype_linker->genotype_id;
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
-            '@type' => $genotype->type_id->dbxref_id->db_id->name . ':' . $genotype->type_id->dbxref_id->accession,
-            'type' => $genotype->type_id->name,
-            'name' => $genotype->name,
-            'description' => $genotype->description,
-          ),
-          $field_table . '__' . $pkey => $genotype_linker->$pkey,
-          $field_table . '__' . $fkey_lcolumn => $genotype_linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'genotype_id' => $genotype->genotype_id
+    $exp_linkers = $record->$linker_table;
+    if ($exp_linkers) {
+      foreach ($exp_linkers as $i => $exp_linker) {
+    
+        // Because the unqiuename is a text field we must expand it.
+        $expression = $exp_linker->expression_id;
+        $expression = chado_expand_var($expression, 'field', 'expression.uniquename', $options);
+    
+        // Set the values that will be seen by the user on the page and in
+        // web services, or anwhere this field is viewed.
+        $entity->{$field_name}['und'][$i]['value'] = array(
+          'name' => $expression->uniquename,
+          'description' => $expression->description,
+          //'md5checksum' => $expression->md5checksum,
         );
     
-        if ($genotype && property_exists($genotype, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $genotype->entity_id;
+        // Add the pub information if a real pub is associated with the record.
+        $pub = $exp_linker->pub_id;
+        if ($pub->uniquename != 'null') {
+          $pub_details = tripal_get_minimal_pub_info($pub);
+    
+          $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
+          $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;
+          if (property_exists($pub, 'entity_id')) {
+            $entity->{$field_name}['und'][$i]['publication'][0]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
+          }
         }
+    
+        // Add the linker_expressionprop
+        $linkerprop_table =  $linker_table . 'prop';
+        if (db_table_exists('chado.' . $linkerprop_table)) {
+          $exp_linker = chado_expand_var($exp_linker, 'table', $linkerprop_table, $options);
+          $exp_linkerprops = $exp_linker->feature_expressionprop;
+          if ($exp_linkerprops) {
+            foreach ($exp_linkerprops AS $linkerprop) {
+              $entity->{$field_name}['und'][$i]['value'][$linkerprop->type_id->name] = $linkerprop->value;
+            }
+          }
+        }
+        // Add the fields for the widget form.  The name requres the following
+        // format if the fields should be used as values for insertint/updating
+        // into the chado table:  [table_name]__[field_name]
+        $entity->{$field_name}['und'][$i][$linker_table . '__expression_id'] = $expression->expression_id;
+        $entity->{$field_name}['und'][$i][$linker_table . '__uniquename'] = $expression->uniquename;
+        //$entity->{$field_name}['und'][$i][$linker_table . '__md5checksum'] = $expression->md5checksum;
+        $entity->{$field_name}['und'][$i][$linker_table . '__description'] = $expression->description;
+    
       }
     }
   }

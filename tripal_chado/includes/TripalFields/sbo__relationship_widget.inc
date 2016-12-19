@@ -1,11 +1,11 @@
 <?php
 
-class chado_linker__relationship_widget extends TripalFieldWidget {
+class sbo__relationship_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Relationships';
+  public static $label = 'Relationship';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__relationship');
+  public static $field_types = array('sbo__relationship');
 
   /**
    *
@@ -105,8 +105,8 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
-    //$widget['#element_validate'] = array('chado_linker__relationship_validate');
-    $widget['#theme'] = 'chado_linker__relationship_widget';
+    //$widget['#element_validate'] = array('sbo__relationship_validate');
+    $widget['#theme'] = 'sbo__relationship_widget';
     $widget['#prefix'] =  "<span id='$chado_table-$delta'>";
     $widget['#suffix'] =  "</span>";
     
@@ -287,7 +287,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         '#required' => $element['#required'],
         '#default_value' => $cv_id,
         '#ajax' => array(
-          'callback' => "chado_linker__relationship_widget_form_ajax_callback",
+          'callback' => "sbo__relationship_widget_form_ajax_callback",
           'wrapper' => "$chado_table-$delta",
           'effect' => 'fade',
           'method' => 'replace'
@@ -371,19 +371,19 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
       $form_error = FALSE;
       if (!$type_name && !$type_id) {
         $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'chado_linker__relationship',
+          'error' => 'sbo__relationship',
           'message' => t("Please provide the type of relationship."),
         );
       }
       if ($entity and !$subject_name) {
         $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'chado_linker__relationship',
+          'error' => 'sbo__relationship',
           'message' => t("Please provide the subject of the relationship."),
         );
       }
       if ($entity and !$object_name) {
         $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'chado_linker__relationship',
+          'error' => 'sbo__relationship',
           'message' => t("Please provide the object of the relationship."),
         );
       }
@@ -405,7 +405,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
             );
           }
@@ -415,13 +415,13 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found. Please check spelling."),
             );
           }
           elseif (count($subject) > 1) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' => t("The subject is not unique and therefore the relationship cannot be made."),
             );
           }
@@ -439,7 +439,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
             );
           }
@@ -449,13 +449,13 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
           $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($object) == 0) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found. Please check spelling."),
             );;
           }
           elseif (count($object) > 1) {
             $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'chado_linker__relationship',
+              'error' => 'sbo__relationship',
               'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
             );
           }
@@ -467,7 +467,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         $chado_record_id = $entity->chado_record_id;
         if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
           $errors[$this->field['field_name']][$langcode][$delta][] = array(
-            'error' => 'chado_linker__relationship',
+            'error' => 'sbo__relationship',
             'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
           );
         }
@@ -475,7 +475,7 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
         // Make sure that the object and subject are not both the same thing.
         if ($object_id == $subject_id) {
           $errors[$this->field['field_name']][$langcode][$delta][] = array(
-            'error' => 'chado_linker__relationship',
+            'error' => 'sbo__relationship',
             'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
           );
         }
@@ -548,9 +548,9 @@ class chado_linker__relationship_widget extends TripalFieldWidget {
 
 
 /**
- * Theme function for the chado_linker__relationship_widget.
+ * Theme function for the sbo__relationship_widget.
  */
-function theme_chado_linker__relationship_widget($variables) {
+function theme_sbo__relationship_widget($variables) {
   $element = $variables['element'];
   $field_name = $element['#field_name'];
   $field = field_info_field($field_name);
@@ -579,7 +579,7 @@ function theme_chado_linker__relationship_widget($variables) {
         return $layout;
 }
 
-function theme_chado_linker__relationship_instance_settings ($variables) {
+function theme_sbo__relationship_instance_settings ($variables) {
   $element = $variables['element'];
   $option1 = $element['option1'];
   $option1_vocabs = $element['option1_vocabs'];
@@ -608,7 +608,7 @@ function theme_chado_linker__relationship_instance_settings ($variables) {
 /**
  * An Ajax callback for the relationshp widget.
  */
-function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
+function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
 
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
@@ -629,7 +629,7 @@ function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_stat
 /**
  * An Ajax callback for the relationshp instance setting form.
  */
-function chado_linker__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
+function sbo__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
   $acpath  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
   $acpath .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'] . '/';
   $urlval  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'];
