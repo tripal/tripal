@@ -1091,8 +1091,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     return FALSE;
   }
 
-  $select = '';
-  $from = '';
   $where = array();
   $args = array();
 
@@ -1196,8 +1194,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       );
       return array();
     }
-
-    $select[] = $field;
 
     // CASE 1: We have an array for a value.
     if (is_array($value)) {
