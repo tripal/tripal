@@ -22,7 +22,7 @@ class chado_linker__expression extends TripalField {
   // Set this to the name of the storage backend that by default will support
   // this field.
   public static $default_storage = 'field_chado_storage';
-  
+
   /**
    * @see TripalField::formatterView()
    */
@@ -154,7 +154,7 @@ class chado_linker__expression extends TripalField {
 
         // Add the linker_expressionprop
         $linkerprop_table =  $linker_table . 'prop';
-        if (db_table_exists('chado.' . $linkerprop_table)) {
+        if (chado_table_exists($linkerprop_table)) {
           $exp_linker = chado_expand_var($exp_linker, 'table', $linkerprop_table, $options);
           $exp_linkerprops = $exp_linker->feature_expressionprop;
           if ($exp_linkerprops) {
@@ -174,12 +174,12 @@ class chado_linker__expression extends TripalField {
       }
     }
   }
-  
+
   /**
    * We don't want a widget so override this function.
    */
   public static function widgetInfo() {
     return array();
   }
-  
+
 }

@@ -98,19 +98,22 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
   // Get the list of columns for this table and create a new field for each one.
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
-    $field_name = $table_name . '__' . $column_name;
+    $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    $semweb_term = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+    //$field_name = $table_name . '__' . $column_name;
+    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
 
-    // Skip fields with a custom field:
-    if ($field_name == 'dbxref_id' or $field_name == 'organism_id') {
-      continue;
-    }
-    if ($table_name == 'feature' and ($field_name == 'md5checksum' or
-        $field_name == 'residues' or $field_name == 'seqlen')) {
-      continue;
-    }
-    if ($table_name == 'organism' and ($field_name == 'type_id')) {
-      continue;
-    }
+//     // Skip fields with a custom field:
+//     if ($field_name == 'dbxref_id' or $field_name == 'organism_id') {
+//       continue;
+//     }
+//     if ($table_name == 'feature' and ($field_name == 'md5checksum' or
+//         $field_name == 'residues' or $field_name == 'seqlen')) {
+//       continue;
+//     }
+//     if ($table_name == 'organism' and ($field_name == 'type_id')) {
+//       continue;
+//     }
 
     // Skip the primary key field.
     if ($column_name == $schema['primary key'][0]) {
@@ -121,6 +124,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
     if ($table_name == $type_table and $column_name == $type_field) {
       continue;
     }
+
 
     // Set some defaults for the field.
     $base_info = array(
@@ -134,7 +138,8 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => $column_name,
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, $column_name),
+        'base_table' => $table_name,
+        'semantic_web' => $semweb_term,
       ),
     );
 
@@ -234,6 +239,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
+        'base_table' => $table_name,
       ),
     );
   }
@@ -253,6 +259,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
       ),
     );
@@ -273,6 +280,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'md5checksum',
+        'base_table' => $table_name,
         'semantic_web' => tripal_get_chado_semweb_term($table_name, 'md5checksum'),
       ),
     );
@@ -293,11 +301,11 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'residues',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
+        'base_table' => $table_name,
       ),
     );
   }
-  
+
   // FEATURE SEQLEN
   if ($table_name == 'feature') {
     $field_name = 'data__sequence_length';
@@ -313,7 +321,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'seqlen',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'seqlen'),
+        'base_table' => $table_name,
       ),
     );
   }
@@ -335,30 +343,28 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
         'chado_table' => $rel_table,
         'chado_column' => '',
         'base_table' => $table_name,
-        'semantic_web' => 'SO:0000673',
       ),
     );
   }
 
   // ORGANISM TYPE_ID
-  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-    $field_name = 'taxarank__infraspecific_taxon';
-    $field_type = 'taxarank__infraspecific_taxon';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => 'organism',
-        'chado_column' => 'type_id',
-        'semantic_web' => 'TAXRANK:0000046',
-      ),
-    );
-  }
+//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+//     $field_name = 'taxarank__infraspecific_taxon';
+//     $field_type = 'taxarank__infraspecific_taxon';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => 1,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//       'settings' => array(
+//         'chado_table' => 'organism',
+//         'chado_column' => 'type_id',
+//       ),
+//     );
+//   }
 }
 
 /**
@@ -392,7 +398,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $contact_table,
         'base_table' => $table_name,
         'chado_column' => 'contact_id',
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'contact_id'),
       ),
     );
   }
@@ -435,7 +440,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $dbxref_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000554',
       ),
     );
   }
@@ -459,7 +463,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $expression_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'GO:0010467',
       ),
     );
   }
@@ -482,7 +485,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => 'featureloc',
         'chado_column' => $pkey,
         'base_table' => 'feature',
-        'semantic_web' => 'data:2012',
       ),
     );
   }
@@ -505,7 +507,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => 'featurepos',
         'chado_column' => $pkey,
         'base_table' => 'feature',
-        'semantic_web' => 'OGI:0000021',
       ),
     );
   }
@@ -528,7 +529,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'settings' => array(
         'chado_table' => $genotype_table,
         'chado_column' => $pkey,
-        'semantic_web' => 'SO:0001027',
         'base_table' => $table_name,
       ),
     );
@@ -553,7 +553,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $phenotype_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000358',
       ),
     );
   }
@@ -596,7 +595,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $pub_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'schema:publication',
       ),
     );
   }
@@ -621,7 +619,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $rel_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'SBO:0000374',
       ),
     );
   }
@@ -645,7 +642,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $syn_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => 'schema:alternateName',
       ),
     );
   }
@@ -721,7 +717,10 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
 
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
-    $field_name = $table_name . '__' . $column_name;
+    $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    $semweb_term = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+    //$field_name = $table_name . '__' . $column_name;
+    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
 
     // Skip the primary key field.
     if ($column_name == $schema['primary key'][0]) {
@@ -991,7 +990,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Sequences',
+      'label' => 'Sequence',
       'description' => 'All available sequences for this record.',
       'required' => FALSE,
       'settings' => array(
@@ -1053,8 +1052,8 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Transcript',
-      'description' => 'These transcripts are associated with this gene.',
+      'label' => 'Transcripts',
+      'description' => 'Transcripts that are part of this gene.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
@@ -1076,33 +1075,33 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   }
 
   // ORGANISM TYPE_ID
-  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-    $field_name = 'taxarank__infraspecific_taxon';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Infraspecific Taxon',
-      'description' => 'The Infraspecific Taxon.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => TRUE,
-      ),
-      'widget' => array(
-        'type' => 'taxarank__infraspecific_taxon_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'taxarank__infraspecific_taxon_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+//     $field_name = 'taxarank__infraspecific_taxon';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'entity_type' => $entity_type,
+//       'bundle' => $bundle->name,
+//       'label' => 'Infraspecific Taxon',
+//       'description' => 'The Infraspecific Taxon.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => TRUE,
+//       ),
+//       'widget' => array(
+//         'type' => 'taxarank__infraspecific_taxon_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'inline',
+//           'type' => 'taxarank__infraspecific_taxon_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
 }
 
 /**
@@ -1131,7 +1130,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'description' => 'Associates an indviddual or organization with this record',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => TRUE,
+        'auto_attach' => FALSE,
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -1148,7 +1147,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       ),
     );
   }
-  
+
   // CVTERM
   $cvterm_table = $table_name . '_cvterm';
   if (chado_table_exists($cvterm_table)) {

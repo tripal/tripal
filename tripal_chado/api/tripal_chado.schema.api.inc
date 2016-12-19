@@ -38,22 +38,34 @@
  */
 function chado_table_exists($table) {
   global $databases;
-
   $default_db = $databases['default']['default']['database'];
-
+  $cached_obj = cache_get('chado_tables', 'cache');
+  $cached_tables = $cached_obj->data;
+  if (is_array($cached_tables) and array_key_exists($table, $cached_tables)) {
+    return $cached_tables[$table]['exists'];
+  }
   $sql = "
     SELECT 1
     FROM information_schema.tables
     WHERE
       table_name = :table_name AND
-      table_schema = 'chado' AND
-      table_catalog = '$default_db'
+      table_schema = :chado AND
+      table_catalog = :default_db
   ";
-  $results = db_query($sql, array(':table_name' => $table));
+  $args = array(
+    ':table_name' => $table,
+    ':chado' => tripal_get_schema_name('chado'),
+    ':default_db' => $default_db
+  );
+  $results = db_query($sql, $args);
   $exists = $results->fetchObject();
   if (!$exists) {
+    $cached_tables[$table]['exists'] = FALSE;
+    cache_set('chado_tables', $cached_tables, 'cache', CACHE_TEMPORARY);
     return FALSE;
   }
+  $cached_tables[$table]['exists'] = TRUE;
+  cache_set('chado_tables', $cached_tables, 'cache', CACHE_TEMPORARY);
   return TRUE;
 }
 /**
@@ -77,7 +89,13 @@ function chado_column_exists($table, $column) {
   global $databases;
 
   $default_db = $databases['default']['default']['database'];
-
+  $cached_obj = cache_get('chado_table_columns', 'cache');
+  $cached_cols = $cached_obj->data;
+  if (is_array($cached_cols) and
+      array_key_exists($table, $cached_cols) and
+      array_key_Exists($column, $cached_cols[$table])) {
+    return $cached_cols[$table][$column]['exists'];
+  }
   $sql = "
     SELECT 1
     FROM information_schema.columns
@@ -96,8 +114,12 @@ function chado_column_exists($table, $column) {
   $results = db_query($sql, $args);
   $exists = $results->fetchField();
   if (!$exists) {
+    $cached_cols[$table][$column]['exists'] = FALSE;
+    cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
     return FALSE;
   }
+  $cached_cols[$table][$column]['exists'] = TRUE;
+  cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
   return TRUE;
 }
 
@@ -118,7 +140,11 @@ function chado_sequence_exists($sequence) {
   global $databases;
 
   $default_db = $databases['default']['default']['database'];
-
+  $cached_obj = cache_get('chado_sequences', 'cache');
+  $cached_seqs = $cached_obj->data;
+  if (is_array($cached_seqs) and array_key_exists($sequence, $cached_seqs)) {
+    return $cached_seqs[$sequence]['exists'];
+  }
   $sql = "
     SELECT 1
     FROM information_schema.sequences
@@ -135,8 +161,12 @@ function chado_sequence_exists($sequence) {
   $results = db_query($sql, $args);
   $exists = $results->fetchField();
   if (!$exists) {
+    $cached_seqs[$sequence]['exists'] = FALSE;
+    cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
     return FALSE;
   }
+  $cached_seqs[$sequence]['exists'] = FALSE;
+  cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
   return TRUE;
 }
 /**
@@ -314,12 +344,12 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     }
     $is_local = 0;
     $previous_db = chado_set_active('chado');
-    $prop_exists = db_table_exists('chadoprop');
+    $prop_exists = chado_table_exists('chadoprop');
     chado_set_active($previous_db);
   }
   else {
     $is_local = 1;
-    $prop_exists = db_table_exists('chado.chadoprop');
+    $prop_exists = chado_table_exists('chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know

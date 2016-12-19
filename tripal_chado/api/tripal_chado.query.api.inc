@@ -1394,9 +1394,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           // Ensure that there were results returned.
           elseif (count($results)==0) {
             tripal_report_error('tripal_chado', TRIPAL_ERROR,
-              'chado_select_record: the foreign key definition for \'%field\' '.
+              'chado_select_record: the foreign key definition for \'%field\' on table \'%table\' '.
               'returned no results where the definition supplied was %value',
-              array('%field' => $field, '%value' => print_r($value, TRUE))
+              array('%field' => $field, '%table' => $table, '%value' => print_r($value, TRUE))
             );
             return array();
           }

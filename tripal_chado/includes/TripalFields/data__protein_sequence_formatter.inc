@@ -1,11 +1,11 @@
 <?php
 
-class data__sequence_formatter extends TripalFieldFormatter {
+class data__protein_sequence_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Sequence';
+  public static $label = 'Protein Sequence';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence');
+  public static $field_types = array('data__protein_sequence');
 
   // The list of default settings for this formatter.
   public static $settings = array();
@@ -28,8 +28,16 @@ class data__sequence_formatter extends TripalFieldFormatter {
 
     $num_bases = 50;
     foreach ($items as $delta => $item) {
-      $content = '<pre class="residues-formatter">';
-      $content .= wordwrap($item['value'], $num_bases, "<br>", TRUE);
+      // If there are no residues then skip this one.
+      if (!is_array($item['value']) or !array_key_exists('residues', $item['value'])) {
+        continue;
+      }
+
+      $residues = $item['value']['residues'];
+
+      $content .= '<pre class="residues-formatter">';
+      $content .= '>' . $defline . "<br>";
+      $content .= wordwrap($residues, $num_bases, "<br>", TRUE);
       $content .= '</pre>';
 
       $element[$delta] = array(

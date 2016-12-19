@@ -19,7 +19,7 @@ class so__transcript extends TripalField {
   public static $term = 'SO:0000673';
 
   // The default lable for this field.
-  public static $label = 'Transcript';
+  public static $label = 'Transcripts';
 
   // The default description for this field.
   public static $description = 'An RNA synthesized on a DNA or RNA template by an RNA polymerase.';
@@ -77,9 +77,11 @@ class so__transcript extends TripalField {
   public function load($entity, $details = array()) {
 
     $record = $details['record'];
-    
     $field_name = $this->field['field_name'];
-    
+    $field_type = $this->field['type'];
+    $field_table = $this->field['settings']['chado_table'];
+    $field_column = $this->field['settings']['chado_column'];
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
@@ -89,56 +91,46 @@ class so__transcript extends TripalField {
         'location' => '',
       ),
     );
-    
-    // TODO: If the tripal_get_feature_relationships() slows this down then
-    // we may need to write a custom function to get the data.
-    $rels = tripal_get_feature_relationships($record);
-    
-    // TODO: what if other transcripts names from SO are used. In that
-    // case we should support those too (using cvtermpath table to find them).
-    // mRNA should not be hard-coded below.
-    
-    // Set the value to be a array of "table" rows.
-    $transcripts = array();
-    if (key_exists('part of', $rels['object']) &&
-        key_exists('mRNA', $rels['object']['part of'])) {
-          $transcripts =  $rels['object']['part of']['mRNA'];
-        }
-    
-        $headers = array('Name' ,'Identifier', 'Location');
-        $rows = array();
-        $i = 0;
-        foreach ($transcripts as $transcript) {
-          // link the feature to it's node
-          $feature_name = $transcript->record->subject_id->name;
-    
-          $locations = $transcript->child_featurelocs;
-          $loc = "";
-          foreach ($locations AS $location) {
-            $loc .= $location->srcfeature_name . ":" . $location->fmin . ".." . $location->fmax;
-          }
-          $type = $transcript->record->subject_id->type_id;
-          $entity->{$field_name}['und'][$i]['value'] = array(
-            'type' => $type->name,
-            'name' => $feature_name,
-            'identifier' => $transcript->record->subject_id->uniquename,
-            'location' => $loc,
-    
-          );
-          // Add in the semantic web information that describes each key in the
-          // value array.
-          $entity->{$field_name}['und'][$i]['semantic_web'] = array(
-            'type' => $type->dbxref_id->db_id->name . ":" . $type->dbxref_id->accession,
-            'name' => tripal_get_chado_semweb_term('cvterm', 'name'),
-            'identifier' => tripal_get_chado_semweb_term('feature', 'uniquename'),
-            'location' => '',
-          );
-          if (property_exists($transcript->record->subject_id, 'entity_id')) {
-            $entity_id = $transcript->record->subject_id->entity_id;
-            $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
-          }
-          $i++;
-        }
+
+    // Get the mRNA features for this gene.
+    $sql = "
+      SELECT FS.name, FS.uniquename, FS.feature_id, FCVT.name as type
+      FROM {feature_relationship} FR
+        INNER JOIN {feature} FS on FS.feature_id = FR.subject_id
+        INNER JOIN {cvterm} FCVT on FCVT.cvterm_id = FS.type_id
+        INNER JOIN {cv} CV on CV.cv_id = FCVT.cv_id
+      WHERE
+        FR.object_id = :feature_id and
+        FCVT.name = 'mRNA' and
+        CV.name = 'sequence'
+    ";
+    $results = chado_query($sql, array(':feature_id' => $record->feature_id));
+    $i = 0;
+    while ($transcript = $results->fetchObject()) {
+      // Get the location of this mRNA.
+      $sql = "
+        SELECT FL.*, F.name as srcfeature_name
+        FROM {featureloc} FL
+          INNER JOIN {feature} F on F.feature_id = FL.srcfeature_id
+        WHERE FL.feature_id = :object_id
+      ";
+      $floc_results = chado_query($sql, array(':object_id' => $transcript->feature_id));
+      $loc = "";
+      while ($location = $floc_results->fetchObject()) {
+        $loc .= $location->srcfeature_name . ":" . $location->fmin . ".." . $location->fmax;
+      }
+      $entity->{$field_name}['und'][$i]['value'] = array(
+        'type' => $transcript->type,
+        'name' => $transcript->name,
+        'identifier' => $transcript->uniquename,
+        'location' => $loc,
+      );
+      $entity_id = tripal_get_chado_entity_id($field_table, $record->feature_id);
+      if ($entity_id) {
+         $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
+       }
+      $i++;
+    }
   }
 
 }

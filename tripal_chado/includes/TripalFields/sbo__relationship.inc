@@ -76,19 +76,19 @@ class sbo__relationship extends TripalField {
    */
   public function load($entity, $details = array()) {
     $settings = $this->field['settings'];
-    
+
     $record = $details['record'];
-    
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
-    
+
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-    
+
     // Get the Pkeys for the subject and object tables
     $subject_fkey_table = '';
     $object_fkey_table = '';
@@ -107,19 +107,19 @@ class sbo__relationship extends TripalField {
     $object_schema = chado_get_schema($object_fkey_table);
     $subject_pkey = $subject_schema['primary key'][0];
     $object_pkey = $object_schema['primary key'][0];
-    
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
-      $field_table . '__' . $pkey => '',
-      $field_table . '__subject_id' => '',
-      $field_table . '__object_id' => '',
-      $field_table . '__type_id' => '',
+      'chado-' . $field_table . '__' . $pkey => '',
+      'chado-' . $field_table . '__subject_id' => '',
+      'chado-' . $field_table . '__object_id' => '',
+      'chado-' . $field_table . '__type_id' => '',
       // These elements don't need to follow the naming scheme above
       // becasue we don't need the chado_field_storage to try and
       // save these values.
@@ -127,21 +127,21 @@ class sbo__relationship extends TripalField {
       'subject_name' => '',
       'type_name' => '',
     );
-    
+
     // If the table has rank and value fields then add those to the default
     // value array.
     if (array_key_exists('value', $schema['fields'])) {
-      $entity->{$field_name}['und'][0][$field_table . '__value'] = '';
+      $entity->{$field_name}['und'][0]['chado-' . $field_table . '__value'] = '';
     }
     if (array_key_exists('rank', $schema['fields'])) {
-      $entity->{$field_name}['und'][0][$field_table . '__rank'] = '';
+      $entity->{$field_name}['und'][0]['chado-' . $field_table . '__rank'] = '';
     }
-    
+
     // If we have no record then just return.
     if (!$record) {
       return;
     }
-    
+
     // Expand the object to include the relationships.
     $options = array(
       'return_array' => 1,
@@ -168,11 +168,7 @@ class sbo__relationship extends TripalField {
     }
     $srelationships = null;
     $orelationships = null;
-    if ($rel_table == 'organism_relationship') {
-      $srelationships = $record->$rel_table->subject_organism_id;
-      $orelationships = $record->$rel_table->object_organism_id;
-    }
-    else if ($rel_table == 'nd_reagent_relationship') {
+    if ($rel_table == 'nd_reagent_relationship') {
       $srelationships = $record->$rel_table->subject_reagent_id;
       $orelationships = $record->$rel_table->object_reagent_id;
     }
@@ -184,7 +180,7 @@ class sbo__relationship extends TripalField {
       $srelationships = $record->$rel_table->subject_id;
       $orelationships = $record->$rel_table->object_id;
     }
-    
+
     $i = 0;
     if ($orelationships) {
       foreach ($orelationships as $relationship) {
@@ -222,31 +218,31 @@ class sbo__relationship extends TripalField {
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'The ' . $subject_type . ', ' .
             $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
             $object_type . '.';
-    
+
             $entity->{$field_name}['und'][$i]['semantic_web'] = array(
               'type' => $rel_acc,
               'subject' => $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
               'object' => $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->object_id->type_id->dbxref_id->accession,
             );
-    
-            $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $relationship->$pkey;
-            $entity->{$field_name}['und'][$i][$field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
-            $entity->{$field_name}['und'][$i][$field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-            $entity->{$field_name}['und'][$i][$field_table . '__object_id'] = $relationship->object_id->$object_pkey;
-    
+
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__object_id'] = $relationship->object_id->$object_pkey;
+
             $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
             $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
             $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
             if (array_key_exists('value', $schema['fields'])) {
-              $entity->{$field_name}['und'][$i][$field_table . '__value'] = $relationship->value;
+              $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
             }
             if (array_key_exists('rank', $schema['fields'])) {
-              $entity->{$field_name}['und'][$i][$field_table . '__rank'] = $relationship->rank;
+              $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $relationship->rank;
             }
             $i++;
       }
     }
-    
+
     if ($srelationships) {
       foreach ($srelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
@@ -283,29 +279,29 @@ class sbo__relationship extends TripalField {
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'This  ' .
             $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
             $object_type . ', ' . $object_name . '.';
-    
-    
+
+
             $entity->{$field_name}['und'][$i]['semantic_web'] = array(
               'type' => $rel_acc,
               'subject' => $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
               'object' => $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->object_id->type_id->dbxref_id->accession,
             );
-    
-    
-            $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $relationship->$pkey;
-            $entity->{$field_name}['und'][$i][$field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
-            $entity->{$field_name}['und'][$i][$field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-            $entity->{$field_name}['und'][$i][$field_table . '__object_id'] = $relationship->object_id->$object_pkey;
-    
+
+
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
+            $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__object_id'] = $relationship->object_id->$object_pkey;
+
             $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
             $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name  . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
             $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
-    
+
             if (array_key_exists('value', $schema['fields'])) {
-              $entity->{$field_name}['und'][$i][$field_table . '__value'] = $relationship->value;
+              $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
             }
             if (array_key_exists('rank', $schema['fields'])) {
-              $entity->{$field_name}['und'][$i][$field_table . '__rank'] = $relationship->rank;
+              $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $relationship->rank;
             }
             $i++;
       }
@@ -355,17 +351,17 @@ class sbo__relationship extends TripalField {
       default:
         $verb = 'is';
     }
-  
+
     return $verb;
   }
-  
+
   /**
    *
    * @see TripalField::settingsForm()
    */
   public function settingsForm($has_data) {
     $element = parent::instanceSettingsForm();
-    
+
     //$element = parent::instanceSettingsForm();
     $element['relationships'] = array(
       '#type' => 'fieldset',
@@ -393,7 +389,7 @@ class sbo__relationship extends TripalField {
         could use to specify relationship types. With this option any term in .
         the vocabulary can be used for the relationship type. You may select
         more than one vocabulary.'),
-    
+
     );
     $element['relationships']['option1_vocabs'] = array(
       '#type' => 'select',
@@ -403,7 +399,7 @@ class sbo__relationship extends TripalField {
       '#default_value' => $this->instance['settings']['relationships']['option1_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
-    
+
     $element['relationships']['option2'] = array(
       '#type' => 'item',
       '#title' => '<b>Option #2</b>',
@@ -445,7 +441,7 @@ class sbo__relationship extends TripalField {
       '#type' => 'textarea',
       '#default_value' => $this->instance['settings']['relationships']['relationship_types'],
     );
-    
+
     return $element;
   }
   /**
@@ -457,7 +453,7 @@ class sbo__relationship extends TripalField {
     // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];
     $form_state['values']['instance']['settings']['relationships']['relationship_types']= trim($settings['relationship_types']);
-    
+
     // Make sure only one option is selected
     $option1test = $settings['option1_vocabs'];
     $option1 = isset($settings['option1_vocabs']) && array_pop($option1test);
@@ -473,7 +469,7 @@ class sbo__relationship extends TripalField {
               );
           return;
         }
-    
+
         // For option3, make sure the supplied types are valid cvterms
         if ($option3) {
           $rel_types = explode(PHP_EOL, $settings['relationship_types']);
@@ -546,7 +542,7 @@ class sbo__relationship extends TripalField {
             }
           }
         }
-    
+
         // For option2: Make sure the parent term is a valid cvterm
         if ($option2) {
           $cv_id = $settings['option2_vocab'];

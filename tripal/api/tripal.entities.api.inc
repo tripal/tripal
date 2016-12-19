@@ -16,7 +16,7 @@
  * @param $ids
  *   An array of entity IDs, or FALSE to load all entities.
  * @param $reset: Whether to reset the internal cache for the requested entity
- *   type. Unlike the entity_load() function this defaults to TRUE.
+ *   type. Defaults to FALSE.
  * @param $field_ids
  *   A list of numeric feild IDs that should be loaded.  The
  *   TripalField named 'content_type' is always automatically added.
@@ -25,7 +25,7 @@
  *   An array of entity objects indexed by their ids. When no results are
  *   found, an empty array is returned.
  */
-function tripal_load_entity($entity_type, $ids = FALSE, $reset = TRUE,
+function tripal_load_entity($entity_type, $ids = FALSE, $reset = FALSE,
     $field_ids = array()) {
 
   // The $conditions is deprecated in the funtion arguments of entity_load
@@ -45,7 +45,6 @@ function tripal_load_entity($entity_type, $ids = FALSE, $reset = TRUE,
   if ($reset) {
     $ec->resetCache();
   }
-
   return $ec->load($ids, $conditions, $field_ids);
 }
 /**
