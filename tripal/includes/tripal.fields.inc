@@ -294,11 +294,16 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
   $instance = $form['#instance'];
 
   // Get the term for this instance.
-  $vocabulary = $instance['settings']['term_vocabulary'];
-  $accession = $instance['settings']['term_accession'];
-  $term_name = $instance['settings']['term_name'];
-  $is_fixed = $instance['settings']['term_fixed'];
-  $term = tripal_get_term_details($vocabulary, $accession);
+  $vocabulary = '';
+  $accession = '';
+  $term_name = '';
+  $term = NULL;
+  if (array_key_exists('settings', $instance) and array_key_exists('term_vocabulary', $instance['settings'])) {
+    $vocabulary = $instance['settings']['term_vocabulary'];
+    $accession = $instance['settings']['term_accession'];
+    $term_name = $instance['settings']['term_name'];
+    $term = tripal_get_term_details($vocabulary, $accession);
+  }
 
   // Construct a table for the vocabulary information.
   $headers = array();
@@ -382,7 +387,13 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
       'method' => 'replace'
     ),
   );
-  $term_name = array_key_exists('values', $form_state) ? $form_state['values']['new_name'] : '';
+
+  // If a new term name has been specified by the user then give some extra
+  // fields to clarify the term.
+  $term_name = '';
+  if (array_key_exists('values', $form_state) and array_key_exists('new_name', $form_state['values'])) {
+    $term_name = array_key_exists('values', $form_state) ? $form_state['values']['new_name'] : '';
+  }
   if ($term_name) {
     $element['field_term']['instructions'] = array(
       '#type' => 'item',
