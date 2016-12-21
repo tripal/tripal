@@ -588,7 +588,7 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     // Theme fields.
      'data__accession_widget' => array(
        'render element' => 'element',
-       'file' => 'includes/TripalFields/data__accession_widget.inc',
+       'file' => 'includes/TripalFields/data__accession/data__accession_widget.inc',
      ),
 //     'chado_linker__dbxref_widget' => array(
 //       'render element' => 'element',
