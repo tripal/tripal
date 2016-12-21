@@ -95,10 +95,25 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
     return;
   }
 
+  $pkey = $schema['primary key'][0];
+ 
+
   // Get the list of columns for this table and create a new field for each one.
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
+    // Don't create base fields for the primary key and the type_id field.
+    if ($column_name == $pkey or $column_name == $type_field) {
+      continue;
+    }
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    if (!$cvterm) {
+      tripal_report_error('tripal', TRIPAL_ERROR, 
+        'Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term', 
+         array('%table_name' => $table_name, '%column_name' => $column_name));
+      drupal_set_message(t('Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term',
+        array('%table_name' => $table_name, '%column_name' => $column_name)), 'error');
+      continue;
+    }
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
 
     // Skip the primary key field.
@@ -125,7 +140,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
         'chado_table' => $table_name,
         'chado_column' => $column_name,
         'base_table' => $table_name,
-        'semantic_web' => $semweb_term,
       ),
     );
 
@@ -701,9 +715,21 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     return;
   }
 
+  $pkey = $schema['primary key'][0];
+
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
+    // Don't create base fields for the primary key and the type_id field.
+    if ($column_name == $pkey or $column_name == $type_field) {
+      continue;
+    }
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    if (!$cvterm) {
+      // We already provided an error when creating the base field.  So
+      // don't create another one here.
+      continue;
+    }
+
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
 
     // Skip the primary key field.
