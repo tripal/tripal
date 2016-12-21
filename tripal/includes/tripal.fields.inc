@@ -199,12 +199,13 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       );
       continue;
     }
-    $term = '';
+    $term_info = '';
     if (array_key_exists('term_accession', $instance['settings']) and $instance['settings']['term_accession']) {
-      $term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+      $term = tripal_get_term_details($instance['settings']['term_vocabulary'], $instance['settings']['term_accession']);
+      $term_info = $term['name'] . ' (' . $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'] . ')';
     }
     $form['fields'][$field_name][] = array(
-      '#markup' => $term,
+      '#markup' => $term_info,
     );
 
     $storage_type = $field['storage']['type'];
