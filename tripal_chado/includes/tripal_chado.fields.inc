@@ -681,7 +681,7 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
     $field = field_info_field($details['field_name']);
     if ($field and array_key_exists('bundles', $field) and
         array_key_exists('TripalEntity', $field['bundles']) and
-        in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+        in_array($bundle->name, $field['bundles']['TripalEntity'])) {
       continue;
     }
     // Create the field instance.

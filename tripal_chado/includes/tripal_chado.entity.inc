@@ -178,10 +178,12 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   $column = $mapped_table->chado_field;
   $cvterm_id = $mapped_table->cvterm->cvterm_id;
 
+  // TODO: the tables should not be hardcoded, but a the unique constraint should
+  // be used to create default titles
   // For organism titles  we want the genus and species with no comma separation.
   if ($table == 'organism') {
     $format[] = array(
-      'format' => '[organism__genus] [organism__species]',
+      'format' => '[taxrank__genus] [taxrank__species]',
       'weight' => -5
     );
   }
@@ -193,7 +195,7 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   }
   if ($table == 'feature') {
     $format[] = array(
-      'format' => '[feature__name]',
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
