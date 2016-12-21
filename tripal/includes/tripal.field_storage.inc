@@ -48,14 +48,15 @@ function tripal_field_storage_load($entity_type, $entities, $age,
       $field_type = $field['type'];
       $field_module = $field['module'];
 
+      // Get the instnace for this field
+      $instance = field_info_instance($entity_type, $field_name, $entity->bundle); 
+
       // Allow the creating module to alter the value if desired.  The
       // module should do this if the field has any other form elements
       // that need populationg besides the value which was set above.
       tripal_load_include_field_class($field_type);
       if (class_exists($field_type)) {
-
-
-        $tfield = new $field_type($field);
+        $tfield = new $field_type($field, $instance);
         $tfield->load($entity);
       }
 

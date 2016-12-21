@@ -82,7 +82,7 @@ function tripal_field_formatter_info_alter(&$info) {
  */
 function tripal_bundle_create($bundle) {
   $field_type = 'rdfs__type';
-  $field_name = $bundle->name . '_' . $field_type;
+  $field_name = 'rdfs__type';
 
   // Add the field, unless it already exists.
   if (!field_info_field($field_name)) {
@@ -93,8 +93,6 @@ function tripal_bundle_create($bundle) {
       'locked' => FALSE,
       'storage' => array(
         'type' => 'tripal_no_storage'
-      ),
-      'settings' => array(
       ),
     ));
   }
@@ -111,6 +109,9 @@ function tripal_bundle_create($bundle) {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
+        'term_vocabulary' => 'rdfs',
+        'term_accession' => 'type',
+        'term_name' => 'type',
       ),
       'widget' => array(
         'type' => 'rdfs__type_widget',
@@ -174,17 +175,9 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
   $form['fields']['#header'][] = 'Term';
   $form['fields']['#header'][] = 'Supported By * ';
 
-  // TODO: remove widgets that aren't appropriate for this entity, if the
-  // type is 'tripal_key_value'.
-  // Why is this sort not working!!??
-  $options = $form['fields']['_add_new_field']['widget_type']['#options']['Tripal complex field'];
-  asort($options);
-  $form['fields']['_add_new_field']['widget_type']['#options']['Tripal complex field'] = $options;
-
   // Add the storage location as the final column for each field.
   $storage_info = module_invoke_all('field_storage_info');
   foreach (element_children($form['fields']) as $field_name) {
-
 
     $field = field_info_field($field_name);
     $instance = field_info_instance('TripalEntity', $field_name, $form['#bundle']);

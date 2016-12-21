@@ -236,6 +236,9 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $field_type = $field['type'];
       $field_module = $field['module'];
 
+      // Get the instnace for this field
+      $instance = field_info_instance($entity_type, $field_name, $entity->bundle); 
+
       // Skip fields that don't map to a Chado table (e.g. kvproperty_adder).
       if (!array_key_exists('settings', $field) or !array_key_exists('chado_table', $field['settings'])) {
         continue;
@@ -273,7 +276,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // that need populationg besides the value which was set above.
         tripal_load_include_field_class($field_type);
         if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
-          $tfield = new $field_type($field);
+          $tfield = new $field_type($field, $instance);
           $tfield->load($entity, array('record' => $record));
         }
       }
@@ -287,7 +290,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         $entity->{$field_name}['und'][0]['value'] = '';
         tripal_load_include_field_class($field_type);
         if (class_exists($field_type) && method_exists($field_type, 'load')) {
-          $tfield = new $field_type($field);
+          $tfield = new $field_type($field, $instance);
           $tfield->load($entity, array('record' => $record));
         }
       }

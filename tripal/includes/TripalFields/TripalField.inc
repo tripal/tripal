@@ -76,25 +76,33 @@ class TripalField {
    * Instantiates a new TripalField object.
    *
    * @param $field
-   *   An array containing the field data as returned by field_info_field()
+   *   An array containing the field data as returned by field_info_field().
    * @param $instance
-   *   (Optional). Set the instance of this field when one is available. This
-   *   is necessary when working with instance specific functions such as the
-   *   formatterSettingsForm, widgetForm, etc.
+   *   An array containing the instance data as returned by field_instance_info().
    */
-  public function __construct($field, $instance = NULL) {
+  public function __construct($field, $instance) {
     $this->field = $field;
     $this->instance = $instance;
 
     $class = get_called_class();
 
     // Make sure the term exist.
-    $vocabulary = $instance->settings['term_vocabulary'];
-    $accession = $instance->settings['term_accession'];
-    $term = tripal_get_term_details($vocabulary, $accession);
-    if (!$term) {
-      //throw new Error(t('Cannot create TripalField of type "%term" as that
-      //    term does not exist.', array('%term' => $class::$term)));
+    if (!$instance) {
+      tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
+    } 
+    else {
+      if (!array_key_exists('term_vocabulary', $instance['settings'])) {
+        tripal_set_message(t('Missing controlled vocbulary for field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
+      } 
+      else {
+        $vocabulary = $instance['settings']['term_vocabulary'];
+        $accession = $instance['settings']['term_accession'];
+        $term = tripal_get_term_details($vocabulary, $accession);
+        if (!$term) {
+          //throw new Error(t('Cannot create TripalField of type "%term" as that
+          //    term does not exist.', array('%term' => $class::$term)));
+        }
+      }
     }
   }
 
