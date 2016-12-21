@@ -99,21 +99,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
-    $semweb_term = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
-    //$field_name = $table_name . '__' . $column_name;
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
-
-//     // Skip fields with a custom field:
-//     if ($field_name == 'dbxref_id' or $field_name == 'organism_id') {
-//       continue;
-//     }
-//     if ($table_name == 'feature' and ($field_name == 'md5checksum' or
-//         $field_name == 'residues' or $field_name == 'seqlen')) {
-//       continue;
-//     }
-//     if ($table_name == 'organism' and ($field_name == 'type_id')) {
-//       continue;
-//     }
 
     // Skip the primary key field.
     if ($column_name == $schema['primary key'][0]) {
@@ -718,8 +704,6 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
-    $semweb_term = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
-    //$field_name = $table_name . '__' . $column_name;
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
 
     // Skip the primary key field.
@@ -741,6 +725,9 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
+        'term_vocabulary' => $cvterm->dbxref_id->db_id->name,
+        'term_name' => $cvterm->name,
+        'term_accession' => $cvterm->dbxref_id->accession,
       ),
       'widget' => array(
         'settings' => array(
