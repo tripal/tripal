@@ -2,13 +2,13 @@
 
 class go__gene_expression_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Gene expression';
+  public static $default_label = 'Gene expression';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('go__gene_expression');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
@@ -24,7 +24,7 @@ class go__gene_expression_formatter extends TripalFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-    
+
     $content = '';
     $rows = array();
     foreach ($items as $delta => $item) {
@@ -33,9 +33,9 @@ class go__gene_expression_formatter extends TripalFieldFormatter {
       }
       // Iterate through all of the children of the $item['value']. Add each
       // one as an independent row in the table.
-    
+
       foreach ($item['value'] as $key => $value) {
-    
+
         // If this key is the name, then we want to link to the entity if one
         // exists.
         if ($key == 'name') {

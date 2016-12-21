@@ -2,7 +2,7 @@
 
 class sbo__relationship_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Relationship';
+  public static $default_label = 'Relationship';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__relationship');

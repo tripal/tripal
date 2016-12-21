@@ -16,7 +16,6 @@ class chado_linker__featurepos extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support
@@ -62,7 +61,7 @@ class chado_linker__featurepos extends TripalField {
       $position = $val['position'];
 
       $rows[] = array(
-        $map_name, 
+        $map_name,
         $mapped_feature_name,
         $position
       );
@@ -153,6 +152,6 @@ class chado_linker__featurepos extends TripalField {
   public static function widgetInfo() {
     return array();
   }
-  
+
 }
 

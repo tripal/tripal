@@ -16,7 +16,6 @@ class chado_linker__phenotype extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support
@@ -140,12 +139,12 @@ class chado_linker__phenotype extends TripalField {
       }
     }
   }
-  
+
   /**
    * We don't want a widget so override this function.
    */
   public static function widgetInfo() {
     return array();
   }
-  
+
 }

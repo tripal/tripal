@@ -2,13 +2,13 @@
 
 class sbo__relationship_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Relationship';
+  public static $default_label = 'Relationship';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__relationship');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
@@ -24,11 +24,11 @@ class sbo__relationship_formatter extends TripalFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-    
+
     $rows = array();
     $headers = array('Subject' ,'Type', 'Object');
     $headers = array('Relationship');
-    
+
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
@@ -38,7 +38,7 @@ class sbo__relationship_formatter extends TripalFieldFormatter {
       $object_name = $item['value']['object']['name'];
       $object_type = $item['value']['object']['type'];
       $phrase = $item['value']['phrase'];
-    
+
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
@@ -48,10 +48,10 @@ class sbo__relationship_formatter extends TripalFieldFormatter {
       if ($subject_type == 'mRNA' and ($object_type != 'gene')) {
         continue;
       }
-    
+
       $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
       $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
-    
+
       if (array_key_exists('entity', $item['value']['object'])) {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['object']['entity']);
         if ($object_entity_id != $entity->id) {
@@ -66,11 +66,11 @@ class sbo__relationship_formatter extends TripalFieldFormatter {
           $phrase = preg_replace("/$subject_name/", $link, $phrase);
         }
       }
-    
+
       $rows[] = array($phrase);
     }
-    
-    
+
+
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
@@ -87,7 +87,7 @@ class sbo__relationship_formatter extends TripalFieldFormatter {
       'colgroups' => array(),
       'empty' => 'There are no relationships',
     );
-    
+
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
     if (count($items) > 0) {

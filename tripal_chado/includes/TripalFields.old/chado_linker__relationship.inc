@@ -15,7 +15,6 @@ class chado_linker__relationship extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Provide a list of instance specific settings. These can be access within
@@ -1023,6 +1022,8 @@ return;
    * @see TripalField::instanceSettingsFormValidate()
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
+
+    $element = parent::instanceSettingsFormValidate();
 
     // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];

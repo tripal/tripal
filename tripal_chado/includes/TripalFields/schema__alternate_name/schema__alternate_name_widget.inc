@@ -2,7 +2,7 @@
 
 class schema__alternate_name_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Synonyms';
+  public static $default_label = 'Synonyms';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('schema__alternate_name');

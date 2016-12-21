@@ -2,7 +2,7 @@
 
 class chado_linker__prop_adder_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Add a Property Type';
+  public static $default_label = 'Add a Property Type';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__prop_adder');
@@ -14,13 +14,13 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
     $field_name = $widget['#field_name'];
-    
+
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
     $widget['#description'] = $element['#description'];
     $widget['#group'] = 'entity_form_vtabs';
-    
-    
+
+
     $widget['kvproperty_instructions'] = array(
       '#type' => 'item',
       '#markup' => t('You may add additional properties to this form by
@@ -32,9 +32,9 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
           In the future, this field will be present for all records
           of this type.'),
     );
-    
+
     $term_name = isset($form_state['values'][$field_name]['und'][0]['wrapper']['term_name']) ? $form_state['values'][$field_name]['und'][0]['wrapper']['term_name'] : '';
-    
+
     // Drupal's vertical feild set is a bit quirky in that we can't just
     // add a prefix and suffix to the weidget.  If we do, then the
     // field doesn't show up on the page after an AJAX call.  We have to add
@@ -43,7 +43,7 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
       '#prefix' =>  "<span id='$field_name-lookup-form'>",
       '#suffix' => '</span>',
     );
-    
+
     // If no term has been selected yet then provide the auto complete field.
     $widget['wrapper']['term_name'] = array(
       '#title'       => t('Term'),
@@ -56,7 +56,7 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
       '#default_value' => $term_name,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
     );
-    
+
     $widget['wrapper']['select_button'] = array(
       '#type' => 'button',
       '#value' => t('Lookup Term'),
@@ -139,7 +139,7 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
   public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field = $this->field;
     $field_name = $field['field_name'];
-    
+
     if ($form_state['triggering_element']['#name'] == 'use_term_button') {
       // If the user has clicked the 'user_term_button' then we need to makes
       // sure that the cardinality textbox contains a positive integer.
@@ -147,7 +147,7 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
       if (!preg_match('/^-*\d+$/', $cardinality) or $cardinality < -2 or $cardinality == 0) {
         form_set_error("$field_name][$langcode][$delta][wrapper][cardinality", "Please provide positive number for the number of values, or -1 for unlimited.");
       }
-    
+
       // Get selected terms
       $terms_list = $form_state['values'][$field_name][$langcode][$delta]['wrapper']['terms_list'];
       $counter = 0;
@@ -190,10 +190,10 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
           // rather than have it fully submit.
           $form_state['rebuild'] = TRUE;
         }
-    
+
         // Get the table and base table.
         $base_table = $this->field['settings']['base_table'];
-    
+
         // Get the term for the property
         $field = $this->field;
         $fname = $field['field_name'];
@@ -207,17 +207,17 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
           }
         }
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $selected_term_id));
-    
+
         // Generate the name for the property table and the field name that we'll
         // be creating.
         $prop_table = $base_table . 'prop';
         $field_name = $prop_table . '__' . $cvterm->cvterm_id;
-    
+
         // The field name is the table name in this case. We want to get the
         // primary key as this should be the field that maps th the value.
         $schema = chado_get_schema($prop_table);
         $pkey = $schema['primary key'][0];
-    
+
         // Add the field if it doesn't already exists.
         $field = field_info_field($field_name);
         if (!$field) {
@@ -233,11 +233,10 @@ class chado_linker__prop_adder_widget extends TripalFieldWidget {
               'chado_table' => $prop_table,
               'chado_column' => $pkey,
               'base_table' => $base_table,
-              'semantic_web' => $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession,
             ),
           ));
         }
-    
+
         // Create an instance of the field.
         $instance = field_info_instance($entity_type, $field_name,  $entity->bundle);
         if (!$instance) {

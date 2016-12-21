@@ -11,15 +11,8 @@ class chado_linker__prop_adder extends TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'local:property';
-
   // The default lable for this field.
-  public static $label = 'Add a Property Type';
+  public static $default_label = 'Add a Property Type';
 
   // The default description for this field.
   public static $description = 'This record may have any number of properties. Use
@@ -28,7 +21,7 @@ class chado_linker__prop_adder extends TripalField {
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array(
+  public static $default_settings = array(
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
@@ -38,7 +31,21 @@ class chado_linker__prop_adder extends TripalField {
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'local',
+    // The name of the term.
+    'term_name' => 'property',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'property',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -76,38 +83,6 @@ class chado_linker__prop_adder extends TripalField {
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {
-
-  }
-
-
-  /**
-   *
-   * @see TripalField::settingsForm()
-   */
-  public function settingsForm($has_data) {
-
-  }
-  /**
-   *
-   * @param unknown $form
-   * @param unknown $form_state
-   */
-  public function settingsFormValidate($form, &$form_state) {
-
-  }
-
-  /**
-   *
-   * @see TripalField::instanceSettingsForm()
-   */
-  public function instanceSettingsForm() {
-
-  }
-  /**
-   *
-   * @see TripalField::instanceSettingsFormValidate()
-   */
-  public function instanceSettingsFormValidate($form, &$form_state) {
 
   }
 

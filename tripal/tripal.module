@@ -24,9 +24,9 @@ require_once "includes/TripalEntityViewsController.inc";
 require_once "includes/TripalBundle.inc";
 require_once "includes/TripalBundleController.inc";
 require_once "includes/TripalBundleUIController.inc";
-require_once "includes/TripalField.inc";
-require_once "includes/TripalFieldWidget.inc";
-require_once "includes/TripalFieldFormatter.inc";
+require_once "includes/TripalFields/TripalField.inc";
+require_once "includes/TripalFields/TripalFieldWidget.inc";
+require_once "includes/TripalFields/TripalFieldFormatter.inc";
 require_once "includes/TripalFieldQuery.inc";
 
 /**
@@ -569,10 +569,11 @@ function tripal_import_api() {
  * Implements hook_form_alter().
  */
 function tripal_form_alter(&$form, $form_state, $form_id) {
-  // If this i the field_ui_field_edit_form (i.e. the form that appears
+  // If this is the field_ui_field_edit_form (i.e. the form that appears
   // when editing a field that is attached to an entity). Then we want
-  // to add semantic web settings.
-  if ($form_id == 'field_ui_field_edit_form') {
+  // to add term settings for any field attached to a TripalEntity
+  // content type.
+  if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
     tripal_field_instance_settings_form_alter($form, $form_state);
   }
 }

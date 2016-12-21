@@ -16,7 +16,6 @@ class chado_organism__type_id extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support

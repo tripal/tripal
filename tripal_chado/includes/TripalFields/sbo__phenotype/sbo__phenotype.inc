@@ -11,26 +11,18 @@ class sbo__phenotype extends TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  // http://www.ebi.ac.uk/sbo/main/SBO:0000358
-  public static $term = 'SBO:0000358';
-
   // The default lable for this field.
-  public static $label = 'Phenotype';
+  public static $default_label = 'Phenotype';
 
   // The default description for this field.
-  public static $description = 'A biochemical network can generate phenotypes or affects 
-      biological processes. Such processes can take place at different levels and are 
+  public static $description = 'A biochemical network can generate phenotypes or affects
+      biological processes. Such processes can take place at different levels and are
       independent of the biochemical network itself.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array(
+  public static $default_settings = array(
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
@@ -40,11 +32,25 @@ class sbo__phenotype extends TripalField {
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'SBO',
+    // The name of the term.
+    'term_name' => 'Phenotype',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => '0000358',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
-  public static $storage = 'tripal_no_storage';
+  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'sbo__phenotype_widget';
@@ -83,15 +89,15 @@ class sbo__phenotype extends TripalField {
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-    
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $base_table = $details['record']->tablename;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
-    
+
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
@@ -100,7 +106,7 @@ class sbo__phenotype extends TripalField {
       $field_table . '__' . 'phenotype_id' => '',
       // Ignore the synonym_sgml column for now.
     );
-    
+
     $linker_table = $base_table . '_phenotype';
     $options = array(
       'return_array' => 1,
@@ -131,44 +137,12 @@ class sbo__phenotype extends TripalField {
           $field_table . '__' . $fkey_lcolumn => $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn,
           $field_table . '__' . 'phenotype_id' => $phenotype->phenotype_id
         );
-    
+
         if ($phenotype && property_exists($phenotype, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $phenotype->entity_id;
         }
       }
     }
-  }
-
-
-  /**
-   *
-   * @see TripalField::settingsForm()
-   */
-  public function settingsForm($has_data) {
-
-  }
-  /**
-   *
-   * @param unknown $form
-   * @param unknown $form_state
-   */
-  public function settingsFormValidate($form, &$form_state) {
-
-  }
-
-  /**
-   *
-   * @see TripalField::instanceSettingsForm()
-   */
-  public function instanceSettingsForm() {
-
-  }
-  /**
-   *
-   * @see TripalField::instanceSettingsFormValidate()
-   */
-  public function instanceSettingsFormValidate($form, &$form_state) {
-
   }
 
 }

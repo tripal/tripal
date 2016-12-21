@@ -16,7 +16,6 @@ class chado_linker__featureloc extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support
@@ -302,6 +301,6 @@ class chado_linker__featureloc extends TripalField {
   public static function widgetInfo() {
     return array();
   }
-  
+
 }
 

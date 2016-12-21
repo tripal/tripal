@@ -11,15 +11,8 @@ class data__sequence extends TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'data:2044';
-
   // The default lable for this field.
-  public static $label = 'Sequence';
+  public static $default_label = 'Sequence';
 
   // The default description for this field.
   public static $description = 'A field for managing nucleotide and protein residues.';
@@ -27,7 +20,7 @@ class data__sequence extends TripalField {
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array(
+  public static $default_settings = array(
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
@@ -37,11 +30,25 @@ class data__sequence extends TripalField {
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'data',
+    // The name of the term.
+    'term_name' => 'sequence',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => '2044',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
-  public static $storage = 'tripal_no_storage';
+  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'data__sequence_widget';

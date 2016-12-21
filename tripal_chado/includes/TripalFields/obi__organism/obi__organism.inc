@@ -2,15 +2,8 @@
 
 class obi__organism extends TripalField {
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'OBI:organism';
-
   // The default lable for this field.
-  public static $label = 'Organism';
+  public static $default_label = 'Organism';
 
   // The default description for this field.
   public static $description = 'The organism to which this resource is sssociated.';
@@ -19,19 +12,33 @@ class obi__organism extends TripalField {
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.
-  public static $settings = array(
+  public static $default_settings = array(
     'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'OBI',
+    // The name of the term.
+    'term_name' => 'organism',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'organism',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
+
   // Set this to the name of the storage backend that by default will support
   // this field.
   public static $storage = 'field_chado_storage';

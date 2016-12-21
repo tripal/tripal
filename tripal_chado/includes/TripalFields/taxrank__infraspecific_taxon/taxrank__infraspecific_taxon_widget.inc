@@ -2,7 +2,7 @@
 
 class taxrank__infraspecific_taxon_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Infraspecific Taxon';
+  public static $default_label = 'Infraspecific Taxon';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('taxrank__infraspecific_taxon');

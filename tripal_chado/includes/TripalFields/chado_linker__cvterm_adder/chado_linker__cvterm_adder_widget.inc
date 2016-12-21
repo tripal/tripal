@@ -2,7 +2,7 @@
 
 class chado_linker__cvterm_adder_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Add an Annotation Type';
+  public static $default_label = 'Add an Annotation Type';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__cvterm_adder');

@@ -15,7 +15,6 @@ class chado_feature__md5checksum  extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
 

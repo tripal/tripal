@@ -3,7 +3,7 @@
 class obi__organism_widget extends TripalFieldWidget {
 
   // The default lable for this field.
-  public static $label = 'Organism';
+  public static $default_label = 'Organism';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('obi__organism');

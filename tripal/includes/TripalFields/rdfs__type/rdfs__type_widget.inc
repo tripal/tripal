@@ -2,7 +2,7 @@
 
 class rdfs__type_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Content Type';
+  public static $default_label = 'Content Type';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('rdfs__type');

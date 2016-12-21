@@ -2,13 +2,13 @@
 
 class data__sequence_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Sequence';
+  public static $default_label = 'Sequence';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
 
   /**
    *

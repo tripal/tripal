@@ -11,30 +11,40 @@ class TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'schema:Thing';
-
   // The default lable for this field.
-  public static $label = 'Tripal Field';
+  public static $default_label = 'Tripal Field';
 
   // The default description for this field.
-  public static $description = 'The generic base class for all Tripal fields. ' .
+  public static $default_description = 'The generic base class for all Tripal fields. ' .
     'Replace this text as appropriate for the child implementation.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array();
+  // Once instances exist for a field type then these settings cannot be
+  // changed.
+  public static $default_settings = array(
+  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'schema',
+    // The name of the term.
+    'term_name' => 'Thing',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'Thing',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -77,8 +87,10 @@ class TripalField {
     $this->instance = $instance;
 
     $class = get_called_class();
+
     // Make sure the term exist.
-    list($vocabulary, $accession) = preg_split('/:/', $class::$term);
+    $vocabulary = $instance->settings['term_vocabulary'];
+    $accession = $instance->settings['term_accession'];
     $term = tripal_get_term_details($vocabulary, $accession);
     if (!$term) {
       //throw new Error(t('Cannot create TripalField of type "%term" as that
@@ -104,12 +116,12 @@ class TripalField {
   public static function info() {
     $class = get_called_class();
     return array(
-      'label' => $class::$label,
-      'description' => $class::$description,
+      'label' => $class::$default_label,
+      'description' => $class::$default_description,
       'default_widget' => $class::$default_widget,
       'default_formatter' => $class::$default_formatter,
-      'settings' => $class::$settings,
-      'instance_settings' => $class::$instance_settings,
+      'settings' => $class::$default_settings,
+      'instance_settings' => $class::$default_instance_settings,
       'storage' => array(
         'type' => $class::$storage,
         'module' => 'tripal',
@@ -226,18 +238,6 @@ class TripalField {
     $settings = $this->field['settings'];
     $element = array();
 
-//     $element['semantic_web'] = array(
-//       '#type' => 'textfield',
-//       '#title' => 'Semantic Web',
-//       '#description' => t('Each field must be associated with a term
-//           from a controlled vocabulary.  This allows computer programs to understand
-//           the data provided on this site.  Please be cautions changing these
-//           values.  Defaults are set by Tripal and sites that use the same
-//           terms can exchange information.'),
-//       '#collapsed' => TRUE,
-//       '#collapsible' => TRUE,
-//       '#tree' => TRUE,
-//     );
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_settings_form_validate';
@@ -292,22 +292,9 @@ class TripalField {
     $settings = $this->instance['settings'];
     $element = array();
 
-    //     $element['semantic_web'] = array(
-    //       '#type' => 'textfield',
-    //       '#title' => 'Semantic Web',
-    //       '#description' => t('Each field must be associated with a term
-    //           from a controlled vocabulary.  This allows computer programs to understand
-    //           the data provided on this site.  Please be cautions changing these
-    //           values.  Defaults are set by Tripal and sites that use the same
-    //           terms can exchange information.'),
-    //       '#collapsed' => TRUE,
-    //       '#collapsible' => TRUE,
-    //       '#tree' => TRUE,
-    //     );
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
-
     return $element;
   }
   /**

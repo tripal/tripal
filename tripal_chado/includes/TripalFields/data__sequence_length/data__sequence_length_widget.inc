@@ -2,7 +2,7 @@
 
 class data__sequence_length_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Sequence length';
+  public static $default_label = 'Sequence length';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_length');

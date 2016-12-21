@@ -2,13 +2,13 @@
 
 class sbo__database_cross_reference_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Database cross reference';
+  public static $default_label = 'Database cross reference';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__database_cross_reference');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
@@ -37,7 +37,7 @@ class sbo__database_cross_reference_formatter extends TripalFieldFormatter {
         '#markup' => $content,
       );
     }
-    
+
     if (count($element) == 0) {
       $element[0] = array(
         '#type' => 'markup',

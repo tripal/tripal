@@ -16,7 +16,6 @@ class chado_linker__cvterm_adder extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support
@@ -86,18 +85,18 @@ class chado_linker__cvterm_adder extends TripalField {
    * @see TripalField::widgetFormValidate()
    */
   public function widgetFormValidate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-  
+
     if (array_key_exists('triggering_element', $form_state) and
         $form_state['triggering_element']['#name'] == 'cvterm_class_adder_button') {
           $this_field = $this->field;
           $field_name = $this_field['field_name'];
           $bundle = $entity->bundle;
-          
+
           // Get the base table name from the field annotations.
           $base_table = $entity->chado_table;
           $cvterm_class_adder = $form_state['values'][$base_table . '_cvterm'][$langcode][$delta]['value'];
           $cv = chado_generate_var('cv', array('cv_id' => $cvterm_class_adder));
-          
+
           // Make sure a valid vocabulary is selected
           if (!$cv) {
             form_set_error("$field_name][$langcode][$delta][value", "Please select a vocabulary.");
@@ -110,7 +109,7 @@ class chado_linker__cvterm_adder extends TripalField {
           }
         }
   }
-  
+
   /**
    * @see TripalField::widgetFormSubmit()
    */
@@ -124,7 +123,7 @@ class chado_linker__cvterm_adder extends TripalField {
           $this_field = $this->field;
           $field_name = $this_field['field_name'];
           $bundle = $entity->bundle;
-          
+
           // Get the base table name from the field annotations.
           $base_table = $entity->chado_table;
           $cvterm_class_adder = $form_state['values'][$base_table . '_cvterm'][$langcode][$delta]['value'];

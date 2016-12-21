@@ -11,15 +11,8 @@ class chado_linker__prop extends TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'local:property';
-
   // The default lable for this field.
-  public static $label = 'Property';
+  public static $default_label = 'Property';
 
   // The default description for this field.
   public static $description = 'Add details about this property.';
@@ -27,7 +20,7 @@ class chado_linker__prop extends TripalField {
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array(
+  public static $default_settings = array(
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
@@ -37,11 +30,25 @@ class chado_linker__prop extends TripalField {
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'local',
+    // The name of the term.
+    'term_name' => 'property',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'property',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => FALSE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
-  public static $storage = 'tripal_no_storage';
+  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'chado_linker__prop_widget';
@@ -80,7 +87,7 @@ class chado_linker__prop extends TripalField {
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
-    
+
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
     $table_name = $matches[1];
@@ -90,7 +97,7 @@ class chado_linker__prop extends TripalField {
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
+
     // Set some defaults for the empty record.
     $chado_record = $entity->chado_record;
     $entity->{$field_name}['und'][0] = array(
@@ -101,7 +108,7 @@ class chado_linker__prop extends TripalField {
       'chado-' . $field_table . '__type_id' => '',
       'chado-' . $field_table . '__rank' => '',
     );
-    
+
     // Get the properties associated with this base record for this fields
     // given type.
     $columns = array('*');
@@ -128,37 +135,4 @@ class chado_linker__prop extends TripalField {
       }
     }
   }
-
-
-  /**
-   *
-   * @see TripalField::settingsForm()
-   */
-  public function settingsForm($has_data) {
-
-  }
-  /**
-   *
-   * @param unknown $form
-   * @param unknown $form_state
-   */
-  public function settingsFormValidate($form, &$form_state) {
-
-  }
-
-  /**
-   *
-   * @see TripalField::instanceSettingsForm()
-   */
-  public function instanceSettingsForm() {
-
-  }
-  /**
-   *
-   * @see TripalField::instanceSettingsFormValidate()
-   */
-  public function instanceSettingsFormValidate($form, &$form_state) {
-
-  }
-
 }

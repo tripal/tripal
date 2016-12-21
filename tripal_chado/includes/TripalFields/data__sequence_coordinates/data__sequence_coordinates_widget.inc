@@ -2,7 +2,7 @@
 
 class data__sequence_coordinates_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Sequence Coordinates';
+  public static $default_label = 'Sequence Coordinates';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_coordinates');

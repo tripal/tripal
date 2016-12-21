@@ -64,7 +64,6 @@ function tripal_field_formatter_info() {
   foreach ($formatters as $formatter) {
     $info[$formatter] = $formatter::info();
   }
-  dpm($info);
   return $info;
 }
 
@@ -170,7 +169,6 @@ function tripal_field_no_delete() {
  * the table to let the user know where fields are storing their data.
  */
 function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
-  //dpm($form);
 
   // Add the 'Storage Location' to the table header.
   $form['fields']['#header'][] = 'Term';
@@ -189,6 +187,7 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
 
 
     $field = field_info_field($field_name);
+    $instance = field_info_instance('TripalEntity', $field_name, $form['#bundle']);
     // For rows in the tables that aren't fields, just add an empty value
     // for the storage column.
     if (!$field) {
@@ -200,7 +199,10 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       );
       continue;
     }
-    $term = $field['settings']['tripal_term'] ? $field['settings']['tripal_term'] : 'N/A';
+    $term = '';
+    if (array_key_exists('term_accession', $instance['settings']) and $instance['settings']['term_accession']) {
+      $term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+    }
     $form['fields'][$field_name][] = array(
       '#markup' => $term,
     );
@@ -268,27 +270,175 @@ function tripal_field_settings_form($field, $instance, $has_data) {
  * by this module. It is called by the tripal_form_alter() function of this
  * module.
  *
+ * Here we put additional form elements for any field, regardless if it is
+ * a tripalField or not.
+ *
  * @param $form
  *   The form array.  Alterations to the form can be made within this array.
  * @param $form_state
  *   The form state array.
  */
 function tripal_field_instance_settings_form_alter(&$form, $form_state) {
+  global $language;
+
+  // It's not possible to add AJAX to a form element in the hook_form_alter
+  // function.  To make it work we have to add a process function. Inisde
+  // of that process function is where the form additions get added that use
+  // Ajax.
+  $form['field_term'][$language->language][0]['#process'] = array('tripal_field_instance_settings_form_process');
+  $form['#submit'][] = 'tripal_field_instance_settings_form_submit';
+}
+
+/**
+ * Implements a process function for the instnace settings form.
+ *
+ * See the comment in the tripal_field_instance_settings_form_alter() for
+ * more details.
+ */
+function tripal_field_instance_settings_form_process($element, &$form_state, $form) {
   $field = $form['#field'];
   $instance = $form['#instance'];
 
-  $form['tripal_additions'] = array(
+  // Get the term for this instance.
+  $vocabulary = $instance['settings']['term_vocabulary'];
+  $accession = $instance['settings']['term_accession'];
+  $term_name = $instance['settings']['term_name'];
+  $is_fixed = $instance['settings']['term_fixed'];
+  $term = tripal_get_term_details($vocabulary, $accession);
+
+  // Construct a table for the vocabulary information.
+  $headers = array();
+  $rows = array();
+  $rows[] = array(
+    array(
+      'data' => 'Vocabulary',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $term['vocabulary']['name'] . ' (' . $term['vocabulary']['short_name'] . ') ' . $term['vocabulary']['description']
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Term',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $term['name'] . ':' . $term['accession']
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Definition',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $term['definition']
+  );
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  $element['field_term'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Tripal Settings',
+    '#title' => 'Controlled Vocabulary Term',
+    '#description' => t('All fields attached to a Tripal-based content type must
+        be associated with a controlled vocabulary term.  Please use caution
+        when changing the term for this field as other sites may expect this term
+        when querying web services.'),
+    '#prefix' => '<div id = "tripal-field-term-fieldset">',
+    '#suffix' => '</div>',
   );
-  $form['tripal_additions']['semantic_web'] = array(
+  $element['field_term']['term_vocabulary'] = array(
+    '#type' => 'value',
+    '#value' => $vocabulary,
+  );
+  $element['field_term']['term_name'] = array(
+    '#type' => 'value',
+    '#value' => $term_name,
+  );
+  $element['field_term']['term_accession'] = array(
+    '#type' => 'value',
+    '#value' => $accession,
+  );
+  $element['field_term']['details'] = array(
+    '#type' => 'item',
+    '#title' => 'Current Term',
+    '#markup' => theme_table($table),
+  );
+  $element['field_term']['new_name'] = array(
     '#type' => 'textfield',
-    '#title' => 'Vocabulary Term'
+    '#title' => 'Change the term',
+    // TODO: This autocomplete path should not use Chado.
+    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
   );
-  $form['tripal_additions']['storage'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Storage Backend'
+  $element['field_term']['select_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Lookup Term'),
+    '#name' => 'select_cvterm',
+    '#ajax' => array(
+      'callback' => "tripal_fields_select_term_form_ajax_callback",
+      'wrapper' => "tripal-field-term-fieldset",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
   );
+  $term_name = array_key_exists('values', $form_state) ? $form_state['values']['new_name'] : '';
+  if ($term_name) {
+    $element['field_term']['instructions'] = array(
+      '#type' => 'item',
+      '#title' => 'Matching terms',
+      '#markup' => t('Please select the term the best matches the
+        content type you want to associate with this field. If the same term exists in
+        multiple vocabularies you will see more than one option below.')
+    );
+    $match = array(
+      'name' => $term_name,
+    );
+    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    $num_terms = 0;
+    foreach ($terms as $term) {
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
+      $element['field_term']['term-' . $term->cvterm_id] = array(
+        '#type' => 'checkbox',
+        '#title' =>  $term->name,
+        '#default_value' => $default,
+        '#attributes' => $attrs,
+        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $term->definition,
+      );
+      $num_terms++;
+    }
+    if ($num_terms == 0) {
+      $element['field_term']['none'] = array(
+        '#type' => 'item',
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
+      );
+    }
+  }
+  $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
+  return $element;
+}
+
+/**
+ * Implements an AJAX callback for the tripal_field_vocab_select_term_form.
+ */
+function tripal_fields_select_term_form_ajax_callback($form, $form_state) {
+  return $form['field_term'];
 }
 /**
  * Implements hook_instance_settings_form()
@@ -304,17 +454,29 @@ function tripal_field_instance_settings_form($field, $instance) {
 //   return $form;
 }
 /**
- *
+ * Validate our custom instance settings form fields.
  */
 function tripal_field_instance_settings_form_validate($form, &$form_state) {
-//   $field = $form['#field'];
-//   $instance = $form['#instance'];
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->instanceSettingsFormValidate($form, $form_state);
-//   }
+  // If the user clicked the submit button then we want set the
+  // instance settings values accordingly.
+  foreach ($form_state['input'] as $key => $value) {
+    $matches = array();
+    if (preg_match("/^term-(\d+)$/", $key, $matches) and
+        $form_state['input']['term-' . $matches[1]]) {
+      $cvterm_id = $matches[1];
+      // TODO: this should not call a Chado function.
+      $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      $form_state['values']['instance']['settings']['term_vocabulary'] = $term->dbxref_id->db_id->name;
+      $form_state['values']['instance']['settings']['term_accession'] = $term->dbxref_id->accession;
+      $form_state['values']['instance']['settings']['term_name'] = $term->name;
+    }
+  }
+}
+/**
+ * Custom submit function for instance settings form.
+ */
+function tripal_field_instance_settings_form_submit($form, &$form_state) {
+
 }
 
 /**

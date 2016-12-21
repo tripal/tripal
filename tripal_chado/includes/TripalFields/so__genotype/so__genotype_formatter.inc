@@ -2,13 +2,13 @@
 
 class so__genotype_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Genotype';
+  public static $default_label = 'Genotype';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('so__genotype');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
@@ -24,21 +24,21 @@ class so__genotype_formatter extends TripalFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-    
+
     $headers = array('Name', 'Description', 'Type');
     $rows = array();
-    
+
     foreach ($items as $delta => $item) {
       $genotype = $item['value'];
       if (!$genotype) {
         continue;
       }
-    
+
       // Get the field values
       $genotype_name = $genotype['name'];
       $description = $genotype['description'];
       $type = $genotype['type'];
-    
+
       // Add a link i there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
         list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
@@ -46,7 +46,7 @@ class so__genotype_formatter extends TripalFieldFormatter {
       }
       $rows[] = array($genotype_name, $description, $type);
     }
-    
+
     $table = array(
       'header' => $headers,
       'rows' => $rows,

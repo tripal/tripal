@@ -2,14 +2,8 @@
 
 class rdfs__type extends TripalField {
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'rdfs:type';
-
   // The default lable for this field.
-  public static $label = 'Content Type';
+  public static $default_label = 'Content Type';
 
   // The default description for this field.
   public static $description = 'The resource content type.';
@@ -17,13 +11,27 @@ class rdfs__type extends TripalField {
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array();
+  public static $default_settings = array();
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'rdfs',
+    // The name of the term.
+    'term_name' => 'type',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'type',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -51,18 +59,6 @@ class rdfs__type extends TripalField {
     $settings = $this->field['settings'];
     $element = array();
 
-//     $element['semantic_web'] = array(
-//       '#type' => 'textfield',
-//       '#title' => 'Semantic Web',
-//       '#description' => t('Each field must be associated with a term
-//           from a controlled vocabulary.  This allows computer programs to understand
-//           the data provided on this site.  Please be cautions changing these
-//           values.  Defaults are set by Tripal and sites that use the same
-//           terms can exchange information.'),
-//       '#collapsed' => TRUE,
-//       '#collapsible' => TRUE,
-//       '#tree' => TRUE,
-//     );
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_settings_form_validate';

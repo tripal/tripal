@@ -2,13 +2,13 @@
 
 class so__transcript_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Transcript';
+  public static $default_label = 'Transcript';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('so__transcript');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
@@ -25,22 +25,22 @@ class so__transcript_formatter extends TripalFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
-    
+
     $headers = array('Transcript Name', 'Identifier', 'Type', 'Location');
     $rows = array();
     foreach ($items as $delta => $item) {
-    
+
       if (!$item['value']) {
         continue;
       }
       $transcript = $item['value'];
-    
+
       // Get the field values
       $feature_name = $transcript['name'];
       $feature_uname = $transcript['identifier'];
       $loc = $transcript['location'];
       $type = $transcript['type'];
-    
+
       // Add a link i there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
         list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
@@ -61,7 +61,7 @@ class so__transcript_formatter extends TripalFieldFormatter {
       'empty' => 'This feature has no transcripts',
     );
     $content = theme_table($table);
-    
+
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
     if (count($items) > 0) {

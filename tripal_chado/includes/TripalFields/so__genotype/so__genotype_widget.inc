@@ -2,7 +2,7 @@
 
 class so__genotype_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Genotype';
+  public static $default_label = 'Genotype';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('so__genotype');

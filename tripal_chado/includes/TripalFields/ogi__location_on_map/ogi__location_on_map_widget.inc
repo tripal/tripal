@@ -2,7 +2,7 @@
 
 class ogi__location_on_map_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Location on Map';
+  public static $default_label = 'Location on Map';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('ogi__location_on_map');

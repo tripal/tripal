@@ -2,13 +2,13 @@
 
 class chado_linker__prop_formatter extends TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Property';
+  public static $default_label = 'Property';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__prop');
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()

@@ -1,7 +1,7 @@
 <?php
 class data__accession_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Accession';
+  public static $default_label = 'Accession';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__accession');

@@ -2,13 +2,13 @@
 
 class TripalFieldFormatter {
   // The default lable for this field.
-  public static $label = 'Tripal Field.';
+  public static $default_label = 'Tripal Field.';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array();
 
   // The list of default settings for this formatter.
-  public static $settings = array();
+  public static $default_settings = array();
 
   /**
    * Instantiates a new TripalFieldFormatter object.
@@ -43,9 +43,9 @@ class TripalFieldFormatter {
   public static function info() {
     $class = get_called_class();
     return array(
-      'label' => $class::$label,
+      'label' => $class::$default_label,
       'field types' => $class::$field_types,
-      'settings' => $class::$settings,
+      'settings' => $class::$default_settings,
     );
   }
 

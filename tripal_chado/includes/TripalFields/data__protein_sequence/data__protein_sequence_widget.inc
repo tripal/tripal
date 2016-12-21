@@ -2,7 +2,7 @@
 
 class data__protein_sequence_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Protein Sequence';
+  public static $default_label = 'Protein Sequence';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__protein_sequence');

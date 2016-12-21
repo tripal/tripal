@@ -2,7 +2,7 @@
 
 class TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Tripal Field.';
+  public static $default_label = 'Tripal Field.';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('no_widget');
@@ -40,7 +40,7 @@ class TripalFieldWidget {
   public static function info() {
     $class = get_called_class();
     return array(
-      'label' => $class::$label,
+      'label' => $class::$default_label,
       'field types' => $class::$field_types,
     );
   }

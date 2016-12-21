@@ -191,11 +191,15 @@ function tripal_add_term($details) {
  *
  * @return
  *   An array with at least the following keys:
- *     vocabulary : The short name of the vocabulary (e.g. SO, PATO, foaf).
- *     accession : The name unique ID of the term.
- *     url : The URL for the term.
- *     name : The name of the term.
- *     definition : The term's description.
+ *     - vocabulary : An array containing the following keys:
+ *       - name : The full name of the vocabulary.
+ *       - short_name : The short name abbreviation for the vocabulary.
+ *       - description : A brief description of the vocabulary.
+ *       - url : (optional) A URL for the online resources for the vocabulary.
+ *     - accession : The name unique ID of the term.
+ *     - url : The URL for the term.
+ *     - name : The name of the term.
+ *     - definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
  */

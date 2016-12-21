@@ -17,7 +17,6 @@ class chado_linker__contact extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
   // Set this to the name of the storage backend that by default will support
@@ -99,7 +98,7 @@ class chado_linker__contact extends TripalField {
     $fkey_value = $element['#entity']->chado_record_id;
     $contact_id = '';
     $name = '';
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {

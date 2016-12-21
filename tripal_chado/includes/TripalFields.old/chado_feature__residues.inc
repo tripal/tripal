@@ -16,7 +16,6 @@ class chado_feature__residues extends TripalField {
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
-    'semantic_web' => '',
   );
 
 

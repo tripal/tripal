@@ -2,7 +2,7 @@
 
 class data__sequence_checksum_widget extends TripalFieldWidget {
   // The default lable for this field.
-  public static $label = 'Sequence checksum';
+  public static $default_label = 'Sequence checksum';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_checksum');

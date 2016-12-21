@@ -11,15 +11,8 @@ class schema__alternate_name extends TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The term that this field maps to.  The format for the term should be:
-  // [vocab]:[accession] where [vocab] is the short name of the vocabulary
-  // and [acession] is the unique accession number for the term.  This term
-  // must already exist in the vocabulary storage backend. This
-  // value should never be changed once fields exist for this type.
-  public static $term = 'schema:alternateName';
-
   // The default lable for this field.
-  public static $label = 'Synonyms';
+  public static $default_label = 'Synonyms';
 
   // The default description for this field.
   public static $description = 'Adds an alternative name (synonym or alias) to this record.';
@@ -27,7 +20,7 @@ class schema__alternate_name extends TripalField {
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $settings = array(
+  public static $default_settings = array(
     'chado_table' => '',
     'chado_column' => '',
     'base_table' => '',
@@ -37,11 +30,25 @@ class schema__alternate_name extends TripalField {
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instnace.
   // It is recommended to put settings at the instance level whenever possible.
-  public static $instance_settings  = array();
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'schema',
+    // The name of the term.
+    'term_name' => 'alternateName',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => 'alternateName',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => TRUE,
+  );
 
   // Set this to the name of the storage backend that by default will support
   // this field.
-  public static $storage = 'tripal_no_storage';
+  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'schema__alternate_name_widget';
@@ -77,21 +84,21 @@ class schema__alternate_name extends TripalField {
   public function load($entity, $details = array()) {
     $record = $details['record'];
     $base_table = $this->field['settings']['base_table'];
-    
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
-    
+
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-    
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
@@ -105,7 +112,7 @@ class schema__alternate_name extends TripalField {
       'type_id' => '',
       // Ignore the synonym_sgml column for now.
     );
-    
+
     $linker_table = $base_table . '_synonym';
     $options = array('return_array' => 1);
     $record = chado_expand_var($record, 'table', $linker_table, $options);
@@ -131,38 +138,6 @@ class schema__alternate_name extends TripalField {
         $i++;
       }
     }
-  }
-
-
-  /**
-   *
-   * @see TripalField::settingsForm()
-   */
-  public function settingsForm($has_data) {
-
-  }
-  /**
-   *
-   * @param unknown $form
-   * @param unknown $form_state
-   */
-  public function settingsFormValidate($form, &$form_state) {
-
-  }
-
-  /**
-   *
-   * @see TripalField::instanceSettingsForm()
-   */
-  public function instanceSettingsForm() {
-
-  }
-  /**
-   *
-   * @see TripalField::instanceSettingsFormValidate()
-   */
-  public function instanceSettingsFormValidate($form, &$form_state) {
-
   }
 
 }
