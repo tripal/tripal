@@ -121,6 +121,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
  * Adds the EDAM database and terms.
  */
 function tripal_chado_populate_vocab_EDAM() {
+
   tripal_insert_db(array(
     'name' => 'data',
     'description' => 'Bioinformatics operations, data types, formats, identifiers and topics.',
@@ -173,6 +174,14 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).',
   ));
   tripal_associate_chado_semweb_term(NULL, 'uniquename', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2968',
+    'name' => 'Image',
+    'cv_name' => 'EDAM',
+    'definition' => 'Biological or biomedical data has been rendered into an image, typically for display on screen.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
 }
 
 /**
@@ -370,7 +379,7 @@ function tripal_chado_populate_vocab_SWO() {
   $term = tripal_insert_cvterm(array(
     'id' => 'SWO:0000001',
     'name' => 'software',
-    'cv_name' => 'schema',
+    'cv_name' => 'swo',
     'definition' => 'Computer software, or generally just software, is any ' .
       'set of machine-readable instructions (most often in the form of a ' .
       'computer program) that conform to a given syntax (sometimes ' .
@@ -379,6 +388,7 @@ function tripal_chado_populate_vocab_SWO() {
       'specific operations.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
+
 }
 
 /**

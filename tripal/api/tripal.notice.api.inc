@@ -32,8 +32,8 @@ define('TRIPAL_DEBUG',7);
  * information to the message.
  *
  * @param $type
- *   The catagory to which this message belongs. Can be any string, but the general
- *   practice is to use the name of the module.
+ *   The catagory to which this message belongs. Can be any string, but the
+ *   general practice is to use the name of the module.
  * @param $severity
  *   The severity of the message; one of the following values:
  *     - TRIPAL_CRITICAL: Critical conditions.
@@ -43,16 +43,18 @@ define('TRIPAL_DEBUG',7);
  *     - TRIPAL_INFO: Informational messages.
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $message
- *   The message to store in the log. Keep $message translatable by not concatenating
- *   dynamic values into it! Variables in the message should be added by using placeholder
- *   strings alongside the variables argument to declare the value of the placeholders.
- *   See t() for documentation on how $message and $variables interact.
+ *   The message to store in the log. Keep $message translatable by not
+ *   concatenating dynamic values into it! Variables in the message should be
+ *   added by using placeholder strings alongside the variables argument to
+ *   declare the value of the placeholders. See t() for documentation on how
+ *   $message and $variables interact.
  * @param $variables
- *   Array of variables to replace in the message on display or NULL if message is
- *   already translated or not possible to translate.
+ *   Array of variables to replace in the message on display or NULL if message
+ *   is already translated or not possible to translate.
  * @param $options
  *   An array of options. Some available options include:
- *     - print: prints the error message to the terminal screen. Useful when display is the command-line
+ *     - print: prints the error message to the terminal screen. Useful when
+ *       display is the command-line
  *
  * @ingroup tripal_api
  */
