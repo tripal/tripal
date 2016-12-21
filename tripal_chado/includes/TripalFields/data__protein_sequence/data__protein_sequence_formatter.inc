@@ -1,14 +1,12 @@
 <?php
 
-class data__protein_sequence_formatter extends TripalFieldFormatter {
+class data__protein_sequence_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
   public static $default_label = 'Protein Sequence';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__protein_sequence');
 
-  // The list of default settings for this formatter.
-  public static $default_settings = array();
 
   /**
    *

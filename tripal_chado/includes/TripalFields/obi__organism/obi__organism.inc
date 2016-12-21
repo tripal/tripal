@@ -1,23 +1,12 @@
 <?php
 
-class obi__organism extends TripalField {
+class obi__organism extends ChadoField {
 
   // The default lable for this field.
   public static $default_label = 'Organism';
 
   // The default description for this field.
   public static $description = 'The organism to which this resource is sssociated.';
-
-  // Add any default settings elements.  If you override the globalSettingsForm()
-  // or the instanceSettingsForm() functions then you need to be sure that
-  // any settings you want those functions to manage are listed in this
-  // array.
-  public static $default_settings = array(
-    'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -38,10 +27,6 @@ class obi__organism extends TripalField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
   );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'OBI__organism_widget';

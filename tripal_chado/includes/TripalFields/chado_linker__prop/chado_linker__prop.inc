@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__prop extends TripalField {
+class chado_linker__prop extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -16,15 +16,6 @@ class chado_linker__prop extends TripalField {
 
   // The default description for this field.
   public static $description = 'Add details about this property.';
-
-  // Provide a list of global settings. These can be accessed witihn the
-  // globalSettingsForm.  When the globalSettingsForm is submitted then
-  // Drupal will automatically change these settings for all fields.
-  public static $default_settings = array(
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -46,36 +37,11 @@ class chado_linker__prop extends TripalField {
     'term_fixed' => FALSE,
   );
 
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'field_chado_storage';
-
   // The default widget for this field.
   public static $default_widget = 'chado_linker__prop_widget';
 
   // The default formatter for this field.
   public static $default_formatter = 'chado_linker__prop_formatter';
-
-  // --------------------------------------------------------------------------
-  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
-  // --------------------------------------------------------------------------
-  // An array containing details about the field. The format of this array
-  // is the same as that returned by field_info_fields()
-  protected $field;
-  // An array containing details about an instance of the field. A field does
-  // not have to have an instance.  But if dealing with an instance (such as
-  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
-  protected $instance;
-
-
-  /**
-   *
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-  }
-
 
   /**
    *
@@ -88,10 +54,18 @@ class chado_linker__prop extends TripalField {
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
 
-    $matches = array();
-    preg_match('/(.*?)__(\d+)/', $field_name, $matches);
-    $table_name = $matches[1];
-    $cvterm_id = $matches[2];
+    $vocabulary = $this->instance['settings']['term_vocabulary'];
+    $accession = $this->instance['settings']['term_accession'];
+    $cvterm = tripal_get_cvterm(array(
+      'dbxref_id' => array(
+        'db_id' => array(
+          'name' => $vocabulary,
+        ),
+        'accession' => $accession,
+      ),
+    ));
+    $cvterm_id = $cvterm->cvterm_id;
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
@@ -109,8 +83,7 @@ class chado_linker__prop extends TripalField {
       'chado-' . $field_table . '__rank' => '',
     );
 
-    // Get the properties associated with this base record for this fields
-    // given type.
+    // Get the properties associated with this record for the given type.
     $columns = array('*');
     $match = array(
       $fkey_lcolumn => $chado_record->{$fkey_lcolumn},

@@ -40,6 +40,10 @@ require_once "includes/tripal_chado.field_storage.inc";
 require_once "includes/tripal_chado.fields.inc";
 require_once "includes/tripal_chado.mapping.inc";
 
+require_once "includes/TripalFields/ChadoField.inc";
+require_once "includes/TripalFields/ChadoFieldWidget.inc";
+require_once "includes/TripalFields/ChadoFieldFormatter.inc";
+
 tripal_chado_set_globals();
 
 /**

@@ -1,5 +1,5 @@
 <?php
-class data__accession_widget extends TripalFieldWidget {
+class data__accession_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Accession';
 

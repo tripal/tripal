@@ -1,6 +1,6 @@
 <?php
 
-class data__protein_sequence_widget extends TripalFieldWidget {
+class data__protein_sequence_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Protein Sequence';
 

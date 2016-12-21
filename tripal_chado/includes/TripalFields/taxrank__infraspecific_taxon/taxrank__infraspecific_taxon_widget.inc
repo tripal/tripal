@@ -1,6 +1,6 @@
 <?php
 
-class taxrank__infraspecific_taxon_widget extends TripalFieldWidget {
+class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Infraspecific Taxon';
 

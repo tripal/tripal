@@ -24,6 +24,7 @@ class TripalField {
   // Once instances exist for a field type then these settings cannot be
   // changed.
   public static $default_settings = array(
+    'storage' => 'tripal_no_storage',
   );
 
   // Provide a list of instance specific settings. These can be access within
@@ -45,10 +46,6 @@ class TripalField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
   );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'tripal_no_storage';
 
   // The default widget for this field.
   public static $default_widget = '';
@@ -89,11 +86,11 @@ class TripalField {
     // Make sure the term exist.
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
-    } 
+    }
     else {
       if (!array_key_exists('term_vocabulary', $instance['settings'])) {
         tripal_set_message(t('Missing controlled vocbulary for field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
-      } 
+      }
       else {
         $vocabulary = $instance['settings']['term_vocabulary'];
         $accession = $instance['settings']['term_accession'];
@@ -126,15 +123,10 @@ class TripalField {
     return array(
       'label' => $class::$default_label,
       'description' => $class::$default_description,
-      'default_widget' => $class::$default_widget,
-      'default_formatter' => $class::$default_formatter,
       'settings' => $class::$default_settings,
       'instance_settings' => $class::$default_instance_settings,
-      'storage' => array(
-        'type' => $class::$storage,
-        'module' => 'tripal',
-        'active' => TRUE
-      ),
+      'default_widget' => $class::$default_widget,
+      'default_formatter' => $class::$default_formatter,
     );
   }
 

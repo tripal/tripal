@@ -1,15 +1,12 @@
 <?php
 
-class obi__organism_formatter extends TripalFieldFormatter {
+class obi__organism_formatter extends ChadoFieldFormatter {
 
   // The default lable for this field.
   public static $default_label = 'Organism';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('obi__organism');
-
-  // The list of default settings for this formatter.
-  public static $default_settings = array();
 
   /**
    * @see TripalFieldFormatter::view()

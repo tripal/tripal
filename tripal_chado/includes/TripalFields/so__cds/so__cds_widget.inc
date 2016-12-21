@@ -1,6 +1,6 @@
 <?php
 
-class so__cds_widget extends TripalFieldWidget {
+class so__cds_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Coding Sequence';
 

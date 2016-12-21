@@ -1,6 +1,6 @@
 <?php
 
-class data__sequence_checksum_widget extends TripalFieldWidget {
+class data__sequence_checksum_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Sequence checksum';
 

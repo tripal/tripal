@@ -1,6 +1,6 @@
 <?php
 
-class sbo__phenotype extends TripalField {
+class sbo__phenotype extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -18,15 +18,6 @@ class sbo__phenotype extends TripalField {
   public static $description = 'A biochemical network can generate phenotypes or affects
       biological processes. Such processes can take place at different levels and are
       independent of the biochemical network itself.';
-
-  // Provide a list of global settings. These can be accessed witihn the
-  // globalSettingsForm.  When the globalSettingsForm is submitted then
-  // Drupal will automatically change these settings for all fields.
-  public static $default_settings = array(
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -47,10 +38,6 @@ class sbo__phenotype extends TripalField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
   );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'sbo__phenotype_widget';

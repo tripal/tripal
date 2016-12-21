@@ -1,6 +1,6 @@
 <?php
 
-class sbo__phenotype_widget extends TripalFieldWidget {
+class sbo__phenotype_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Phenotype';
 

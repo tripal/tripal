@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__prop_widget extends TripalFieldWidget {
+class chado_linker__prop_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Property';
 

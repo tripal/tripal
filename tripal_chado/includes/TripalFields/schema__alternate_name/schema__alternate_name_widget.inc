@@ -1,6 +1,6 @@
 <?php
 
-class schema__alternate_name_widget extends TripalFieldWidget {
+class schema__alternate_name_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Synonyms';
 

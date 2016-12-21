@@ -1,6 +1,6 @@
 <?php
 
-class obi__organism_widget extends TripalFieldWidget {
+class obi__organism_widget extends ChadoFieldWidget {
 
   // The default lable for this field.
   public static $default_label = 'Organism';

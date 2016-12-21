@@ -1,6 +1,6 @@
 <?php
 
-class go__gene_expression_widget extends TripalFieldWidget {
+class go__gene_expression_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Gene expression';
 

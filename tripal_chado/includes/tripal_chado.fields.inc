@@ -96,7 +96,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
   }
 
   $pkey = $schema['primary key'][0];
- 
+
 
   // Get the list of columns for this table and create a new field for each one.
   $columns = $schema['fields'];
@@ -107,8 +107,8 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
     }
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
     if (!$cvterm) {
-      tripal_report_error('tripal', TRIPAL_ERROR, 
-        'Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term', 
+      tripal_report_error('tripal', TRIPAL_ERROR,
+        'Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term',
          array('%table_name' => $table_name, '%column_name' => $column_name));
       drupal_set_message(t('Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term',
         array('%table_name' => $table_name, '%column_name' => $column_name)), 'error');
@@ -125,7 +125,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
     if ($table_name == $type_table and $column_name == $type_field) {
       continue;
     }
-
 
     // Set some defaults for the field.
     $base_info = array(
@@ -560,20 +559,28 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
-    $field_name = $table_name . 'prop';
-    $field_type = 'chado_linker__prop_adder';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'base_table' => $table_name
-      ),
-    );
+    // Get the list of existing property types for this table.
+    $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+    $props = chado_query($sql);
+    while ($prop = $props->fetchObject()) {
+      $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+      $field_name = strtolower($term->dbxref_id->db_id->name . '__' . $term->name);
+      $field_type = 'chado_linker__prop';
+      $info[$field_name] = array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => 1,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+        'settings' => array(
+          'base_table' => $table_name,
+          'chado_table' => $prop_table,
+          'chado_column' => $pkey,
+        ),
+      );
+    }
   }
 
   // PUBLICATIONS
@@ -1370,35 +1377,47 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
     );
   }
 
-  // PROPERTIES
-  $prop_table = $table_name . 'prop';
-  if (chado_table_exists($prop_table)) {
-    $field_name = $table_name . 'prop';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Add Properties',
-      'description' => 'Add additional property types to this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-      ),
-      'widget' => array(
-        'type' => 'chado_linker__prop_adder_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'chado_linker__prop_adder_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+  // TODO: we need to add a property for each type that already exists
+  // in the prop table.
+   // PROPERTIES
+   $prop_table = $table_name . 'prop';
+   if (chado_table_exists($prop_table)) {
+     // Get the list of existing property types for this table.
+     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+     $props = chado_query($sql);
+     while ($prop = $props->fetchObject()) {
+       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+       $field_name = strtolower($term->dbxref_id->db_id->name . '__' . $term->name);
+       $info[$field_name] = array(
+         'field_name' => $field_name,
+         'entity_type' => $entity_type,
+         'bundle' => $bundle->name,
+         'label' => ucwords(preg_replace('/_/', ' ', $term->name)),
+         'description' => $term->definition,
+         'required' => FALSE,
+         'settings' => array(
+           'auto_attach' => TRUE,
+           'term_vocabulary' => $term->dbxref_id->db_id->name,
+           'term_accession' => $term->dbxref_id->accession,
+           'term_name' => $term->name,
+         ),
+         'widget' => array(
+           'type' => 'chado_linker__prop_widget',
+           'settings' => array(
+             'display_label' => 1,
+           ),
+         ),
+         'display' => array(
+           'default' => array(
+             'label' => 'inline',
+             'type' => 'chado_linker__prop_formatter',
+             'settings' => array(),
+           ),
+         ),
+       );
+     }
+   }
+
 
   // PUBLICATIONS
   $pub_table = $table_name . '_pub';

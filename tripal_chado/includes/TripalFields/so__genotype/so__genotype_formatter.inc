@@ -1,14 +1,12 @@
 <?php
 
-class so__genotype_formatter extends TripalFieldFormatter {
+class so__genotype_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
   public static $default_label = 'Genotype';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('so__genotype');
 
-  // The list of default settings for this formatter.
-  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()

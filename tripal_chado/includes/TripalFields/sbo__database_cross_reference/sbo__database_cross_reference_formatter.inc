@@ -1,14 +1,12 @@
 <?php
 
-class sbo__database_cross_reference_formatter extends TripalFieldFormatter {
+class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
   public static $default_label = 'Database cross reference';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__database_cross_reference');
 
-  // The list of default settings for this formatter.
-  public static $default_settings = array();
   /**
    *
    * @see TripalFieldFormatter::settingsForm()

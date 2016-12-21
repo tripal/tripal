@@ -1,6 +1,6 @@
 <?php
 
-class sbo__database_cross_reference extends TripalField {
+class sbo__database_cross_reference extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -18,15 +18,6 @@ class sbo__database_cross_reference extends TripalField {
   public static $description = 'This record can be cross referenced with a record in
           another online database. This field is intended for one or more
           references.  At a minimum, the database and accession must be provided.';
-
-  // Provide a list of global settings. These can be accessed witihn the
-  // globalSettingsForm.  When the globalSettingsForm is submitted then
-  // Drupal will automatically change these settings for all fields.
-  public static $default_settings = array(
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -47,10 +38,6 @@ class sbo__database_cross_reference extends TripalField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
   );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'sbo__database_cross_reference_widget';

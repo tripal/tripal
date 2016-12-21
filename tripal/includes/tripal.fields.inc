@@ -1,6 +1,12 @@
 <?php
 
 /**
+ * Implements hook_field_create_instance().
+ */
+function tripal_field_create_instance($instance) {
+  // When a field is added to an entity and instance are created on
+}
+/**
  * Implements hook_field_info().
  *
  * We want the Tripal module to handle all TripalFields.  This will allow

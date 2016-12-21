@@ -1,6 +1,6 @@
 <?php
 
-class ogi__location_on_map_widget extends TripalFieldWidget {
+class ogi__location_on_map_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Location on Map';
 

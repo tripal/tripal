@@ -1,6 +1,6 @@
 <?php
 
-class sbo__database_cross_reference_widget extends TripalFieldWidget {
+class sbo__database_cross_reference_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Database cross reference';
 

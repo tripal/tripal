@@ -1,6 +1,6 @@
 <?php
 
-class data__protein_sequence extends TripalField {
+class data__protein_sequence extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -16,15 +16,6 @@ class data__protein_sequence extends TripalField {
 
   // The default description for this field.
   public static $description = 'polypeptide sequences.';
-
-  // Provide a list of global settings. These can be accessed witihn the
-  // globalSettingsForm.  When the globalSettingsForm is submitted then
-  // Drupal will automatically change these settings for all fields.
-  public static $default_settings = array(
-    'chado_table' => '',
-    'chado_column' => '',
-    'base_table' => '',
-  );
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -45,10 +36,6 @@ class data__protein_sequence extends TripalField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
   );
-
-  // Set this to the name of the storage backend that by default will support
-  // this field.
-  public static $storage = 'field_chado_storage';
 
   // The default widget for this field.
   public static $default_widget = 'data__protein_sequence_widget';
