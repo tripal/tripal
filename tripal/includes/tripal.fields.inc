@@ -64,6 +64,7 @@ function tripal_field_formatter_info() {
   foreach ($formatters as $formatter) {
     $info[$formatter] = $formatter::info();
   }
+  dpm($info);
   return $info;
 }
 

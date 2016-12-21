@@ -48,13 +48,17 @@ function tripal_get_field_types() {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
-    // Find all of the files in the tripal_chado/includes/fields directory.
+    // Find all of the files in the tripal_chado/includes/TripalFields/ directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
     $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
     // Iterate through the fields, include the file and run the info function.
     foreach ($field_files as $file) {
+      // Ignore the formatter and widget classes for now.
+      if (preg_match('/_formatter|_widget/', $file->name)) {
+        continue;
+      }
       $field_type = $file->name;
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $field_type);
       if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
         $types[] = $field_type;
       }
@@ -80,13 +84,14 @@ function tripal_get_field_widgets() {
   foreach ($modules as $module) {
     // Find all of the files in the tripal_chado/includes/fields directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
-    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
+    $field_files = file_scan_directory($fields_path, '/.*_widget\.inc$/');
     // Iterate through the fields, include the file and run the info function.
     foreach ($field_files as $file) {
-      $field_type = $file->name;
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalFieldWidget')) {
-        $widgets[] = $field_type;
+      $widget_type = $file->name;
+      $field_type = preg_replace('/(^.*)_widget/', '$1', $widget_type);
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $widget_type);
+      if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
+        $widgets[] = $widget_type;
       }
     }
   }
@@ -110,13 +115,14 @@ function tripal_get_field_formatters() {
   foreach ($modules as $module) {
     // Find all of the files in the tripal_chado/includes/fields directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
-    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
+    $field_files = file_scan_directory($fields_path, '/.*_formatter\.inc$/');
     // Iterate through the fields, include the file and run the info function.
     foreach ($field_files as $file) {
-      $field_type = $file->name;
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type);
-      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalFieldFormatter')) {
-        $formatters[] = $field_type;
+      $formatter_type = $file->name;
+      $field_type = preg_replace('/(^.*)_formatter/', '$1', $formatter_type);
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $formatter_type);
+      if (class_exists($formatter_type) and is_subclass_of($formatter_type, 'TripalFieldFormatter')) {
+        $formatters[] = $formatter_type;
       }
     }
   }
@@ -126,7 +132,8 @@ function tripal_get_field_formatters() {
  * Loads the TripalField class file into scope.
  *
  * @param $class
- *   The class to instantiate
+ *   The class to include.  This can be a TripalField, TripalFieldWidget or
+ *   TripalFieldFormatter class name.
  *
  * @return
  *   TRUE if the field type class file was found, FALSE otherwise.
@@ -135,9 +142,10 @@ function tripal_load_include_field_class($class) {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
-    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalFields/' . $class . '.inc';
+    $field_type = preg_replace('/(^.*)_(formatter|widget)/', '$1', $class);
+    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalFields/' . $field_type . '/' . $class . '.inc';
     if (file_exists($file_path)) {
-      module_load_include('inc', $module, 'includes/TripalFields/' . $class);
+      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $class);
       if (class_exists($class)) {
         return TRUE;
       }
