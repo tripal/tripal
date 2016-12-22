@@ -131,7 +131,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'field_name' => $field_name,
       'type' => '',
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -231,7 +231,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -251,7 +251,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -272,7 +272,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -293,7 +293,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -313,7 +313,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -334,7 +334,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -354,7 +354,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 //       'field_name' => $field_name,
 //       'type' => $field_type,
 //       'cardinality' => 1,
-//       'locked' => FALSE,
+//       'locked' => TRUE,
 //       'storage' => array(
 //         'type' => 'field_chado_storage',
 //       ),
@@ -389,7 +389,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -397,24 +397,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'chado_table' => $contact_table,
         'base_table' => $table_name,
         'chado_column' => 'contact_id',
-      ),
-    );
-  }
-
-  // CVTERM
-  $cvterm_table = $table_name . '_cvterm';
-  if (chado_table_exists($cvterm_table)) {
-    $field_name = $table_name . '_cvterm';
-    $field_type = 'chado_linker__cvterm_adder';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
       ),
     );
   }
@@ -431,7 +413,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' =>  $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -454,7 +436,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -476,7 +458,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -498,7 +480,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -521,7 +503,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -544,7 +526,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -562,6 +544,8 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     // Get the list of existing property types for this table.
     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
     $props = chado_query($sql);
+    $schema = chado_get_schema($prop_table);
+    $pkey = $schema['primary key'][0];
     while ($prop = $props->fetchObject()) {
       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
       $field_name = strtolower($term->dbxref_id->db_id->name . '__' . $term->name);
@@ -594,7 +578,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -618,7 +602,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -641,7 +625,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -1168,36 +1152,6 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
     );
   }
 
-  // CVTERM
-  $cvterm_table = $table_name . '_cvterm';
-  if (chado_table_exists($cvterm_table)) {
-    $field_name = $table_name . '_cvterm';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Add Annotation Types',
-      'description' => 'Add additional annotations types to this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-      ),
-      'widget' => array(
-        'type' => 'chado_linker__cvterm_adder_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'chado_linker__cvterm_adder_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
-
   // DBXREF
   $dbxref_table = $table_name . '_dbxref';
   if (chado_table_exists($dbxref_table)) {
@@ -1537,3 +1491,140 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
   }
 }
 
+/**
+ * Implements hook_form_field_ui_field_overview_add_new().
+ */
+function tripal_chado_form_field_ui_field_overview_add_new($new_field, $bundle) {
+  // Get the table this bundle is mapped to.
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $vocab = $term->vocab;
+  $params = array(
+    'vocabulary' => $vocab->vocabulary,
+    'accession' => $term->accession,
+  );
+  $mapped_table = chado_get_cvterm_mapping($params);
+  $chado_table = $mapped_table->chado_table;
+  $chado_type_table = $mapped_table->chado_table;
+  $chado_type_column = $mapped_table->chado_field;
+
+  // We allow site admins to add new chado_linker__prop fields to an entity.
+  // This function will allow us to properly add them.  But at this point we
+  // don't know the controlled vocabulary term.  We'll have to use the
+  // defaults and let the user set it using the interface.
+  if ($new_field['type'] == 'chado_linker__prop') {
+    $table_name = $chado_table . 'prop';
+
+    if (chado_table_exists($table_name)) {
+      $schema = chado_get_schema($table_name);
+      $pkey = $schema['primary key'][0];
+      $field_name = $new_field['field_name'];
+      $field_type = 'chado_linker__prop';
+
+      // First add the field.
+      field_create_field(array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+        'settings' => array(
+          'base_table' => $chado_table,
+          'chado_table' => $table_name,
+          'chado_column' => $pkey,
+        ),
+      ));
+
+      // Now add the instance
+      field_create_instance(array(
+        'field_name' => $field_name,
+        'entity_type' => 'TripalEntity',
+        'bundle' => $bundle->name,
+        'label' => $new_field['label'],
+        'description' => '',
+        'required' => FALSE,
+        'settings' => array(
+          'auto_attach' => TRUE,
+        ),
+        'widget' => array(
+          'type' => 'chado_linker__prop_widget',
+          'settings' => array(
+            'display_label' => 1,
+          ),
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'inline',
+            'type' => 'chado_linker__prop_formatter',
+            'settings' => array(),
+          ),
+        ),
+      ));
+    }
+    else {
+      drupal_set_message('Cannot add a property field to this entity. Chado does not support properties for this data type.', 'error');
+    }
+  }
+
+  // We allow site admins to add new chado_linker__cvterm fields to an entity.
+  // This function will allow us to properly add them.  But at this point we
+  // don't know the controlled vocabulary term.  We'll have to use the
+  // defaults and let the user set it using the interface.
+
+  if ($new_field['type'] == 'chado_linker__cvterm') {
+    $table_name = $chado_table . '_cvterm';
+
+    if (chado_table_exists($table_name)) {
+      $schema = chado_get_schema($table_name);
+      $pkey = $schema['primary key'][0];
+      $field_name = $new_field['field_name'];
+      $field_type = 'chado_linker__cvterm';
+
+      // First add the field.
+      field_create_field(array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+        'settings' => array(
+          'base_table' => $chado_table,
+          'chado_table' => $table_name,
+          'chado_column' => $pkey,
+        ),
+      ));
+
+      // Now add the instance
+      field_create_instance(array(
+        'field_name' => $field_name,
+        'entity_type' => 'TripalEntity',
+        'bundle' => $bundle->name,
+        'label' => $new_field['label'],
+        'description' => '',
+        'required' => FALSE,
+        'settings' => array(
+          'auto_attach' => TRUE,
+        ),
+        'widget' => array(
+          'type' => 'chado_linker__cvterm_widget',
+          'settings' => array(
+            'display_label' => 1,
+          ),
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'type' => 'chado_linker__cvterm_formatter',
+            'settings' => array(),
+          ),
+        ),
+      ));
+    }
+    else {
+      drupal_set_message('Cannot add a property field to this entity. Chado does not support annotations for this data type.', 'error');
+    }
+  }
+}

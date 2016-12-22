@@ -12,7 +12,7 @@ class chado_linker__prop extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default lable for this field.
-  public static $default_label = 'Property';
+  public static $default_label = 'Chado Property';
 
   // The default description for this field.
   public static $description = 'Add details about this property.';
@@ -42,6 +42,12 @@ class chado_linker__prop extends ChadoField {
 
   // The default formatter for this field.
   public static $default_formatter = 'chado_linker__prop_formatter';
+
+  // A boolean specifying that users should not be allowed to create
+  // fields and instances of this field type through the UI. Such
+  // fields can only be created programmatically with field_create_field()
+  // and field_create_instance().
+  public static $no_ui = FALSE;
 
   /**
    *
@@ -79,7 +85,7 @@ class chado_linker__prop extends ChadoField {
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
       'chado-' . $field_table . '__value' => '',
-      'chado-' . $field_table . '__type_id' => '',
+      'chado-' . $field_table . '__type_id' => $cvterm_id,
       'chado-' . $field_table . '__rank' => '',
     );
 

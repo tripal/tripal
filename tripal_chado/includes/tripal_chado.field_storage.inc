@@ -237,7 +237,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $field_module = $field['module'];
 
       // Get the instnace for this field
-      $instance = field_info_instance($entity_type, $field_name, $entity->bundle); 
+      $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
       // Skip fields that don't map to a Chado table (e.g. kvproperty_adder).
       if (!array_key_exists('settings', $field) or !array_key_exists('chado_table', $field['settings'])) {
@@ -346,6 +346,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
           }
         }
       }
+
       // If there is no value set for the field using the
       // chado-[table_name]__[field name] naming schema then check if a 'value'
       // item is present and if so use that for the table column value.
@@ -357,10 +358,10 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
         // If this field belongs to the base table then we just add
         // those values in... there's no delta.
         if ($base_table == $chado_table) {
-          $base_fields[$chado_table][$chado_column] = $items[$delta]['value'];
+          $base_fields[$chado_table][$chado_column] = $item['value'];
         }
         else {
-          $temp[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
+          $temp[$chado_table][$delta][$chado_column] = $item['value'];
         }
       }
     }

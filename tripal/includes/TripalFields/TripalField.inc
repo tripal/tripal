@@ -53,6 +53,15 @@ class TripalField {
   // The default formatter for this field.
   public static $default_formatter = '';
 
+  // The module that manages this field.
+  public static $module = 'tripal';
+
+  // A boolean specifying that users should not be allowed to create
+  // fields and instances of this field type through the UI. Such
+  // fields can only be created programmatically with field_create_field()
+  // and field_create_instance().
+  public static $no_ui = TRUE;
+
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
@@ -127,6 +136,7 @@ class TripalField {
       'instance_settings' => $class::$default_instance_settings,
       'default_widget' => $class::$default_widget,
       'default_formatter' => $class::$default_formatter,
+      'no_ui' => $class::$no_ui,
     );
   }
 

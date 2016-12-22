@@ -2,7 +2,7 @@
 
 class chado_linker__prop_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
-  public static $default_label = 'Property';
+  public static $default_label = 'Chado Property';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__prop');

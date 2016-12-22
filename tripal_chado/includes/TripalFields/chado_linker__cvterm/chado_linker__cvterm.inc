@@ -12,7 +12,7 @@ class chado_linker__cvterm extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default lable for this field.
-  public static $default_label = 'Annotations';
+  public static $default_label = 'Chado Annotation';
 
   // The default description for this field.
   public static $description = 'This record can be annotated with terms from other
@@ -44,17 +44,11 @@ class chado_linker__cvterm extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'chado_linker__cvterm_formatter';
 
-  // --------------------------------------------------------------------------
-  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
-  // --------------------------------------------------------------------------
-  // An array containing details about the field. The format of this array
-  // is the same as that returned by field_info_fields()
-  protected $field;
-  // An array containing details about an instance of the field. A field does
-  // not have to have an instance.  But if dealing with an instance (such as
-  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
-  protected $instance;
-
+  // A boolean specifying that users should not be allowed to create
+  // fields and instances of this field type through the UI. Such
+  // fields can only be created programmatically with field_create_field()
+  // and field_create_instance().
+  public static $no_ui = FALSE;
 
   /**
    *
@@ -76,10 +70,17 @@ class chado_linker__cvterm extends ChadoField {
     $field_column = $this->field['settings']['chado_column'];
     $base_table = $this->field['settings']['base_table'];
 
-    $matches = array();
-    preg_match('/(.*?)__(\d+)/', $field_name, $matches);
-    $table_name = $matches[1];
-    $cv_id = $matches[2];
+    $vocabulary = $this->instance['settings']['term_vocabulary'];
+    $accession = $this->instance['settings']['term_accession'];
+    $cvterm = tripal_get_cvterm(array(
+      'dbxref_id' => array(
+        'db_id' => array(
+          'name' => $vocabulary,
+        ),
+        'accession' => $accession,
+      ),
+    ));
+    $cvterm_id = $cvterm->cvterm_id;
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
@@ -114,9 +115,7 @@ class chado_linker__cvterm extends ChadoField {
     $columns = array('*');
     $match = array(
       $fkey_lcolumn => $chado_record->$fkey_rcolumn,
-      'cvterm_id' => array(
-        'cv_id' => $cv_id,
-      ),
+      'cvterm_id' => $cvterm_id,
     );
     $options = array(
       'return_array' => TRUE,

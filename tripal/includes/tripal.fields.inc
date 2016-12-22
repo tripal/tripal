@@ -231,6 +231,55 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       want all biological content to be stored in Chado, be sure that the
       respective fields are "supported by" Chado.',
   );
+
+  $form['#submit'] = array_merge(array('tripal_form_field_ui_field_overview_form_submit'), $form['#submit']);
+}
+
+/**
+ * A submit function for the field_ui_field_overview_form.
+ */
+function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
+  $form_values = $form_state['values']['fields'];
+  $admin_path = _field_ui_bundle_admin_path('TripalEntity', $form['#bundle']);
+
+  $destinations = array();
+
+  if (!empty($form_values['_add_new_field']['field_name'])) {
+    try {
+      // Is the field type a TripalField? If so then we want
+      // to pass of creation of the field to the module that manages that field.
+      $type = $form_values['_add_new_field']['type'];
+      if (tripal_load_include_field_class($type)) {
+        $module = $type::$module;
+        $function = $module . '_form_field_ui_field_overview_add_new';
+        $bundle = tripal_load_bundle_entity(array('name' => $form['#bundle']));
+        $field_name = $form_values['_add_new_field']['field_name'];
+        if (function_exists($function)) {
+          $function($form_values['_add_new_field'], $bundle);
+        }
+        $destinations[] = $admin_path . '/fields/' . $field_name . '/field-shcef';
+        $destinations[] = $admin_path . '/fields/' . $field_name;
+
+        // Store new field information for any additional submit handlers.
+        $form_state['fields_added']['_add_new_field'] = $field['field_name'];
+        unset($form_state['values']['fields']['_add_new_field']);
+        drupal_set_message('Please set the controlled vocabulary that best describes the data of this field. See the "Controlled Vocabulary Term" section below.');
+      }
+    }
+    catch (Exception $e) {
+      drupal_set_message(t('There was a problem creating field %label: !message', array('%label' => $instance['label'], '!message' => $e->getMessage())), 'error');
+    }
+
+    if ($destinations) {
+      $destination = drupal_get_destination();
+      $destinations[] = $destination['destination'];
+      unset($_GET['destination']);
+      $form_state['redirect'] = field_ui_get_destinations($destinations);
+    }
+    else {
+      drupal_set_message(t('Your settings have been saved.'));
+    }
+  }
 }
 
 /**
@@ -320,7 +369,7 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
       'header' => TRUE,
       'width' => '20%',
     ),
-    $term['vocabulary']['name'] . ' (' . $term['vocabulary']['short_name'] . ') ' . $term['vocabulary']['description']
+    $term['vocabulary']['name'] . ' (' . $vocabulary. ') ' . $term['vocabulary']['description']
   );
   $rows[] = array(
     array(
@@ -328,7 +377,7 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
       'header' => TRUE,
       'width' => '20%',
     ),
-    $term['name'] . ':' . $term['accession']
+    $vocabulary . ':' . $accession
   );
   $rows[] = array(
     array(
@@ -400,6 +449,9 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
   if (array_key_exists('values', $form_state) and array_key_exists('new_name', $form_state['values'])) {
     $term_name = array_key_exists('values', $form_state) ? $form_state['values']['new_name'] : '';
   }
+  if (array_key_exists('input', $form_state) and array_key_exists('new_name', $form_state['input'])) {
+    $term_name = array_key_exists('input', $form_state) ? $form_state['input']['new_name'] : '';
+  }
   if ($term_name) {
     $element['field_term']['instructions'] = array(
       '#type' => 'item',
@@ -468,18 +520,52 @@ function tripal_field_instance_settings_form($field, $instance) {
  * Validate our custom instance settings form fields.
  */
 function tripal_field_instance_settings_form_validate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+
   // If the user clicked the submit button then we want set the
   // instance settings values accordingly.
-  foreach ($form_state['input'] as $key => $value) {
-    $matches = array();
-    if (preg_match("/^term-(\d+)$/", $key, $matches) and
-        $form_state['input']['term-' . $matches[1]]) {
-      $cvterm_id = $matches[1];
-      // TODO: this should not call a Chado function.
-      $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-      $form_state['values']['instance']['settings']['term_vocabulary'] = $term->dbxref_id->db_id->name;
-      $form_state['values']['instance']['settings']['term_accession'] = $term->dbxref_id->accession;
-      $form_state['values']['instance']['settings']['term_name'] = $term->name;
+
+  if (array_key_exists('clicked_button', $form_state) and $form_state['clicked_button']['#executes_submit_callback'] == TRUE) {
+    $has_default = FALSE;
+    if ($form_state['values']['term_vocabulary']) {
+      $has_default = TRUE;
+    }
+
+    $started_new_term = FALSE;
+    if (array_key_exists('new_name', $form_state['values']) and $form_state['values']['new_name']) {
+      $started_new_term = TRUE;
+    }
+
+    $num_selected = 0;
+    $selected_term = FALSE;
+    foreach ($form_state['input'] as $key => $value) {
+
+      $matches = array();
+
+      if (preg_match("/^term-(\d+)$/", $key, $matches) and
+          $form_state['input']['term-' . $matches[1]]) {
+        $cvterm_id = $matches[1];
+        // TODO: this should not call a Chado function.
+        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $form_state['values']['instance']['settings']['term_vocabulary'] = $term->dbxref_id->db_id->name;
+        $form_state['values']['instance']['settings']['term_accession'] = $term->dbxref_id->accession;
+        $form_state['values']['instance']['settings']['term_name'] = $term->name;
+        $selected_term = TRUE;
+        $num_selected++;
+      }
+    }
+
+    if ($num_selected > 1) {
+      form_set_error('term-', 'Please select only one term
+          from the "Controlled Vocabulary Term" section below.');
+    }
+    if ($started_new_term and !$selected_term) {
+      form_set_error('term-', 'Please select a controlled vocabulary term for
+          from the "Controlled Vocabulary Term" section below.');
+    }
+    if (!$has_default) {
+      form_set_error('term_name', 'Fields attached to this content type must be associated with a controlled vocabulary term. Please provide one.');
     }
   }
 }
@@ -494,18 +580,7 @@ function tripal_field_instance_settings_form_submit($form, &$form_state) {
  *
  */
 function tripal_field_widget_form_validate($form, &$form_state) {
-//   $entity = $form['#entity'];
-//   $entity_type = $form['#entity_type'];
-//   $langcode = $form['#language'];
-//   $delta = $form['#delta'];
-//   $field = $form['#field'];
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $instance = $form['#instance'];
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->widgetFormValidate($form, $form_state, $entity_type, $entity, $langcode, $delta);
-//   }
+
 }
 
 

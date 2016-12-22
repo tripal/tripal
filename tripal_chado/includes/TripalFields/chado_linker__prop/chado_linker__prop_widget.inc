@@ -2,7 +2,7 @@
 
 class chado_linker__prop_widget extends ChadoFieldWidget {
   // The default lable for this field.
-  public static $default_label = 'Property';
+  public static $default_label = 'Chado Property';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__prop');
@@ -13,64 +13,74 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->field['settings']['chado_table'];
     $field_column = $this->field['settings']['chado_column'];
     $instance = $this->instance;
-    
-    // Get the table name and cvterm that this field maps to.
-    $matches = array();
-    preg_match('/(.*?)__(\d+)/', $field_name, $matches);
-    // If the field name is not properly formatted then we can't tell what
-    // table and type this is.  So just return.
-    if (count($matches) != 3) {
-      return $widget;
-    }
-    $table_name = $matches[1];
-    $cvterm_id = $matches[2];
-    
+
     // Get the name of the pkey field for this property table and the name
     // of the FK field that links to the base table.
-    $schema = chado_get_schema($table_name);
+    $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $base_table = $this->field['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
-    
+
     // Get the field defaults.
-    $fk_value =key_exists(0, $items) ? $items[0]['chado-' . $field_table . '__' . $lfkey_field] : '';
-    $propval = '';
-    if (array_key_exists($delta, $items)) {
-      $propval = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__value', $propval);
+    $record_id = '';
+    $fk_value = '';
+    $value = '';
+    $rank = $delta;
+    $type_id = '';
+
+    // If the field already has a value then it will come through the $items
+    // array.  This happens when editing an existing record.
+    if (count($items) > 0 and array_key_exists($delta, $items)) {
+      // Check for element values that correspond to fields in the Chado table.
+      $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
+      $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $lfkey_field, $fk_value);
+      $type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $type_id);
+      $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__value', $value);
+      $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
     }
-    
+
+    // Check $form_state['values'] to see if an AJAX call set the values.
+    if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
+      $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
+      $fk_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field];
+      $type_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'];
+      $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
+      $rank = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'];
+    }
+
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => key_exists($delta, $items) ? $items[$delta]['value'] : '',
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
-    $widget['chado-' . $table_name . '__' . $pkey] = array(
+
+    $widget['chado-' . $field_table . '__' . $pkey] = array(
       '#type' => 'hidden',
-      '#default_value' => !empty($items[$delta]['chado-' . $field_table . '__' . $pkey]) ? $items[$delta]['chado-' . $field_table . '__' . $pkey] : '',
+      '#default_value' => $record_id,
     );
-    $widget['chado-' . $table_name . '__' . $lfkey_field] = array(
+    $widget['chado-' . $field_table . '__' . $lfkey_field] = array(
       '#type' => 'hidden',
       '#value' => $fk_value,
     );
-    $widget['chado-' . $table_name . '__value'] = array(
+    $widget['chado-' . $field_table . '__value'] = array(
       '#type' => 'textfield',
-      '#default_value' => $propval,
+      '#default_value' => $value,
       '#title' => $instance['label'] . ' value',
       '#description' => $instance['description'],
     );
-    $widget['chado-' . $table_name . '__type_id'] = array(
+    $widget['chado-' . $field_table . '__type_id'] = array(
       '#type' => 'hidden',
-      '#value' => $cvterm_id,
+      '#value' => $type_id,
     );
-    $widget['chado-' . $table_name . '__rank'] = array(
+    $widget['chado-' . $field_table . '__rank'] = array(
       '#type' => 'hidden',
-      '#value' => $delta,
+      '#value' => $rank,
     );
   }
 
@@ -95,23 +105,24 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
-    $table_name = $this->field['settings']['chado_table'];
-    $schema = chado_get_schema($table_name);
+    $field_table = $this->field['settings']['chado_table'];
+    $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $base_table = $this->field['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
-    
-    $prop_value = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__value'] : '';
-    
-    // If the user removed the contact from the contact_name field
-    // then we want to clear out the rest of the hidden values.
-    // Leave the primary key so the record can be deleted.
-    if (!$prop_value) {
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__rank'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__type_id'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $lfkey_field] = '';
+
+    $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
+    $form_state['values'][$field_name]['und'][$delta]['value'] = $value;
+
+    // If the user removed the property then we want to clear out the other
+    // fields so there is no insert.
+    if (!$value) {
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'] = '';
     }
   }
 }
