@@ -86,7 +86,7 @@ function tripal_field_formatter_info_alter(&$info) {
  * This is a Triapl defined hook and is called in the TripalBundle::create()
  * function to allow modules to perform tasks when a bundle is created.
  */
-function tripal_bundle_create($bundle) {
+function tripal_bundle_create($bundle, $args) {
   $field_type = 'rdfs__type';
   $field_name = 'rdfs__type';
 

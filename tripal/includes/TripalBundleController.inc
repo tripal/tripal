@@ -32,7 +32,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle);
+      $function($bundle, array());
     }
 
     return $bundle;

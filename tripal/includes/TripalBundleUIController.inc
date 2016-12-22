@@ -73,10 +73,10 @@ class TripalBundleUIController extends EntityDefaultUIController {
  */
 function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
-  $entity_type = $form_state['build_info']['args'][0];
+  $bundle = $form_state['build_info']['args'][0];
   $term = NULL;
   $vocab = NULL;
-  if (preg_match('/bio_data_(\d+)/', $entity_type->name, $matches)) {
+  if (preg_match('/bio_data_(\d+)/', $bundle->name, $matches)) {
     $term = entity_load('TripalTerm', array('id' => $matches[1]));
     $term = reset($term);
     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
@@ -86,6 +86,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   // Add a validate and submit handler to save the data in this form.
   $form['#validate'] = array('tripal_tripal_bundle_form_validate');
   $form['#submit'] = array('tripal_tripal_bundle_form_submit');
+  $form['#bundle'] = $bundle;
 
   // @TODO: Move this into a css file.
   $form['#attached']['css'] = array(
@@ -149,7 +150,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       displayed as part of the list on the <em>Add new content page</em>. It is recommended that
       this name begin with a capital letter and contain only letters, numbers, and spaces.
       This name must be unique.'),
-    '#default_value' => $entity_type->label,
+    '#default_value' => $bundle->label,
   );
 
   $form['description'] = array(
@@ -172,7 +173,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
   // Set Title Format.
   //-------------------------
-  $title_format = tripal_get_title_format($entity_type);
+  $title_format = tripal_get_title_format($bundle);
 
   $form['set_titles'] = array(
     '#type' => 'fieldset',
@@ -192,7 +193,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       <p>Keep in mind that it might be confusing to users if more than
       one page has the same title. We recommend you <strong>choose a combination of tokens that
       will uniquely identify your content</strong>.</p>',
-      array('%type' => $entity_type->label)),
+      array('%type' => $bundle->label)),
   );
 
   $form['set_titles']['title_format'] = array(
@@ -214,7 +215,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#collapsed' => TRUE
   );
 
-  $tokens = tripal_get_entity_tokens($entity_type);
+  $tokens = tripal_get_entity_tokens($bundle);
   $form['set_titles']['tokens'] = array(
     '#type' => 'hidden',
     '#value' => serialize($tokens)
@@ -227,7 +228,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
   // Set URL Alias Pattern.
   //-------------------------
-  $url_pattern = tripal_get_bundle_variable('url_format', $entity_type->id, '');
+  $url_pattern = tripal_get_bundle_variable('url_format', $bundle->id, '');
   if (!$url_pattern) $url_pattern = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
 
   $form['url'] = array(
@@ -245,7 +246,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     This allows you to present more friendly, informative URLs to your user.</p>
     <p><strong>You must choose a combination of tokens that results in a unique path for
     each page!</strong></p>',
-    array('%type' => $entity_type->label)),
+    array('%type' => $bundle->label)),
   );
 
   $form['url']['url_pattern'] = array(
@@ -259,7 +260,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#rows' => 1
   );
 
-  $tokens = tripal_get_entity_tokens($entity_type, array('required only' => TRUE));
+  $tokens = tripal_get_entity_tokens($bundle, array('required only' => TRUE));
   $form['url']['tokens'] = array(
     '#type' => 'hidden',
     '#value' => serialize($tokens)
@@ -463,7 +464,13 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
     $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
     if (!$term) {
       $error = '';
-      $success = tripal_create_bundle($vocabulary, $accession, $term_name, $error);
+      $args = array(
+        'vocabulary' => $vocabulary,
+        'accession' => $accession,
+        'term_name' => $term_name,
+        'form_values' => $form_state['values'],
+      );
+      $success = tripal_create_bundle($args, $error);
       if (!$success) {
         drupal_set_message($error, 'error');
         $form_state['redirect'] = "admin/structure/bio_data";

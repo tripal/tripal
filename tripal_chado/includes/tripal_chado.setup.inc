@@ -425,6 +425,12 @@ function tripal_chado_prepare_chado() {
       throw new Exception($error['!message']);
     }
 
+    // Create the 'Project' entity type. This uses the local:project term.
+    $error = '';
+    if (!tripal_create_bundle('data', '1278', 'Genetic map', $error)) {
+      throw new Exception($error['!message']);
+    }
+
     // Initialize the population of the tripal_cvterm_mapping table.
     tripal_chado_map_cvterms();
 

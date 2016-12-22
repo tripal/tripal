@@ -182,6 +182,30 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'Biological or biomedical data has been rendered into an image, typically for display on screen.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1274',
+    'name' => 'Map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map of (typically one) DNA sequence annotated with positional or non-positional features.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1278',
+    'name' => 'Genetic map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.',
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1280',
+    'name' => 'Physical map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map of DNA (linear or circular) annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.',
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
 }
 
 /**

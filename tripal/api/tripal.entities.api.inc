@@ -165,29 +165,35 @@ function tripal_load_bundle_entity($values) {
  *
  * @param $bundle
  *   The newly created TripalBundle object.
+ * @param $args
+ *   Arguments used to create the TripalBundle, as well as
+ *   arugments from the form submission.
  */
-function hook_bundle_create(&$bundle) {
+function hook_bundle_create(&$bundle, $args) {
 
 }
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
- * @param $vocabulary
- *   The abbreviated vocabulary for the vocabulary (e.g. RO, SO, PATO).
- * @param $accession
- *   The unique term ID in the vocabulary $vocabulary (i.e. an accession).
- * @param $term_name
- *   A human-readable name for this term.  This will became the name that
- *   appears for the content type.  In practice, this should be the name
- *   of the term. (E.g. the name for SO:0000704 is gene).
+ * @param $args
+ *   An array of arguments that must include the following keys:
+ *     - vocabulary:  The abbreviated vocabulary for the vocabulary
+ *       (e.g. RO, SO, PATO).
+ *     - accession:  The unique term ID in the vocabulary $vocabulary
+ *       (i.e. an accession).
+ *     - term_name: A human-readable name for this term.  This will became
+ *       the name that appears for the content type.  In practice, this
+ *       should be the name of the term. (E.g. the name for SO:0000704 is gene).
  * @param $error
  *  A string, passed by reference, that is filled with the error message
  *  if the function fails.
- *
  * @return
  *  TRUE if the entity type (bundle) was succesfully created.  FALSE otherwise.
  */
-function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '') {
+function tripal_create_bundle($args, &$error = '') {
+  $vocabulary = $args['vocabulary'];
+  $accession = $args['accession'];
+  $term_name = $args['term_name'];
 
   $transaction = db_transaction();
   try {
@@ -204,8 +210,8 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
       'accession' => $accession
     ));
     if (!$term) {
-      $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
-      $term = entity_get_controller('TripalTerm')->create($args);
+      $targs = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
+      $term = entity_get_controller('TripalTerm')->create($targs);
       $term = $term->save();
     }
 
@@ -229,7 +235,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle);
+      $function($bundle, $args);
     }
 
     // Clear the entity cache so that Drupal will read our

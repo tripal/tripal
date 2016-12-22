@@ -10,8 +10,16 @@
  *  The TripalBundle object.
  */
 
-function tripal_chado_bundle_create($bundle) {
+function tripal_chado_bundle_create($bundle, $args) {
   $entity_type = $bundle->type;
+
+  //dpm($args);
+  // Before adding fields to the bundle we need to story the Chado table that
+  // this bundle maps to.  That information is in the $args['form_values']
+  // array.  The $args['form_values'] array contains values that indicate the
+  // Chado table.
+  // TODO: we need to store the chado table and type field used for this
+  // bundle.
 
   // Create/Add the new fields for this bundle.
   tripal_chado_bundle_create_fields($entity_type, $bundle);
@@ -1653,12 +1661,70 @@ function tripal_chado_field_instance_settings_form_alter(&$form, $form_state) {
     '#type' => 'fieldset',
     '#title' => 'Chado Mapping',
     '#description' => t('This field maps to data in Chado to the following table:'),
-    '#prefix' => '<div id = "tripal-field-term-fieldset">',
-    '#suffix' => '</div>',
   );
   $form['chado_mapping']['details'] = array(
     '#type' => 'item',
     '#markup' => theme_table($table),
   );
 
+}
+
+/**
+ * Implements hook_form_FROM_ID_alter()
+ */
+function tripal_chado_form_tripalbundle_form_alter(&$form, $form_state) {
+  global $language;
+  $bundle = $form['#bundle'];
+
+  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+  $term = reset($term);
+  $vocab = $term->vocab;
+  $params = array(
+    'vocabulary' => $vocab->vocabulary,
+    'accession' => $term->accession,
+  );
+  $mapped_table = chado_get_cvterm_mapping($params);
+  $chado_table = $mapped_table->chado_table;
+  $chado_column = $mapped_table->chado_field;
+
+  // Construct a table for the vocabulary information.
+  $headers = array();
+  $rows = array();
+  $rows[] = array(
+    array(
+      'data' => 'Chado Table',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $chado_table
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Type Column',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $chado_column
+  );
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  $form['chado_mapping'] = array(
+    '#type' => 'item',
+    '#title' => 'Chado Mapping',
+    '#markup' => theme_table($table),
+    '#description' => t('This content type maps to the table in Chado
+        listed above.  Chado allows multiple data types to be housed
+        in a single table. Therefore, the column that is used to
+        differentiate between data types is also listed above.'),
+    '#weight' => 0,
+  );
 }
