@@ -38,7 +38,7 @@ class chado_linker__dbxref extends TripalField {
    */
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     $content = '';
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
@@ -70,12 +70,12 @@ class chado_linker__dbxref extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the FK column that links to the base table.
-    $chado_table = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -203,10 +203,10 @@ class chado_linker__dbxref extends TripalField {
   public function validate($entity_type, $entity, $field, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $table_name = $this->field['settings']['chado_table'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -257,10 +257,10 @@ class chado_linker__dbxref extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $table_name = $this->field['settings']['chado_table'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -301,8 +301,8 @@ class chado_linker__dbxref extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     $base_table = $record->tablename;
 
     $schema = chado_get_schema($field_table);

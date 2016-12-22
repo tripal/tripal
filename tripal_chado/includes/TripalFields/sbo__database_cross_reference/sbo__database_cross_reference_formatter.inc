@@ -20,7 +20,7 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     $content = '';
     foreach ($items as $delta => $item) {
       if (!$item['value']) {

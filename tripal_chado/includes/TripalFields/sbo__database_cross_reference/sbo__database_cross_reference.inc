@@ -75,20 +75,20 @@ class sbo__database_cross_reference extends ChadoField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     $base_table = $record->tablename;
 
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-    $fkey = $fkeys[0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__dbxref_id' => '',
       'dbxref_id' => '',
       'db_id' => '',
@@ -112,7 +112,7 @@ class sbo__database_cross_reference extends ChadoField {
             'URL' => $URL,
           ),
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
-          'chado-' . $field_table . '__' . $fkey => $linker->$fkey->$fkey,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
           'chado-' . $field_table . '__dbxref_id' => $dbxref->dbxref_id,
           'dbxref_id' => $dbxref->dbxref_id,
           'db_id' => $dbxref->db_id->db_id,
@@ -169,8 +169,8 @@ function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_st
   $delta = $form_state['triggering_element']['#parents'][2];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
+  $field_table = $this->instance['settings']['chado_table'];
+  $field_column = $this->instance['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__dbxref_id';
 
   // Check to see if this dbxref already exists. If not then

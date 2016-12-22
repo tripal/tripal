@@ -240,13 +240,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
       // Skip fields that don't map to a Chado table (e.g. kvproperty_adder).
-      if (!array_key_exists('settings', $field) or !array_key_exists('chado_table', $field['settings'])) {
+      if (!array_key_exists('settings', $instance) or !array_key_exists('chado_table', $instance['settings'])) {
         continue;
       }
 
       // Get the Chado table and column for this field.
-      $field_table = $field['settings']['chado_table'];
-      $field_column = $field['settings']['chado_column'];
+      $field_table = $instance['settings']['chado_table'];
+      $field_column = $instance['settings']['chado_column'];
 
       // There are only two types of fields: 1) fields that represent a single
       // column of the base table, or 2) fields that represent a linked record

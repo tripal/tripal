@@ -53,8 +53,8 @@ class chado_base__organism_id extends TripalField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     $organism_id = 0;
     if (count($items) > 0 and array_key_exists('chado-' . $field_table . '__organism_id', $items[0])) {
@@ -86,8 +86,8 @@ class chado_base__organism_id extends TripalField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field values.
     foreach ($items as $delta => $values) {
@@ -113,8 +113,8 @@ class chado_base__organism_id extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(

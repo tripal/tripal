@@ -29,7 +29,7 @@ class chado_linker__pub extends TripalField {
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $list_items = array();
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__pub_id']) {
         $pub = chado_generate_var('pub', array('pub_id' => $item['chado-' . $chado_table . '__pub_id']));
@@ -63,8 +63,8 @@ class chado_linker__pub extends TripalField {
     $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
-    $table_name = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -131,8 +131,8 @@ class chado_linker__pub extends TripalField {
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     // Get the FK column that links to the base table.
-    $table_name = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -177,9 +177,9 @@ class chado_linker__pub extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);

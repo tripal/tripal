@@ -381,6 +381,14 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
   );
   $rows[] = array(
     array(
+      'data' => 'Name',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $term['name']
+  );
+  $rows[] = array(
+    array(
       'data' => 'Definition',
       'header' => TRUE,
       'width' => '20%',

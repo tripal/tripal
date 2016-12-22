@@ -26,6 +26,8 @@ class obi__organism extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
+    // The format for display of the organism.
+    'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
   );
 
   // The default widget for this field.
@@ -43,8 +45,8 @@ class obi__organism extends ChadoField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field values.
     foreach ($items as $delta => $values) {
@@ -66,12 +68,12 @@ class obi__organism extends ChadoField {
   public function load($entity, $details = array()) {
 
     $record = $details['record'];
-    $settings = $this->field['settings'];
+    $settings = $this->instance['settings'];
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the terms for each of the keys for the 'values' property.
     $label_term = 'rdfs:label';

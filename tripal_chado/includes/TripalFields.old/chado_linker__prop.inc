@@ -27,7 +27,7 @@ class chado_linker__prop extends TripalField {
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $field_name = $this->field['field_name'];
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
 
     $properties = array();
     foreach ($items as $delta => $item) {
@@ -50,8 +50,8 @@ class chado_linker__prop extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
 
     // Get the table name and cvterm that this field maps to.
@@ -69,7 +69,7 @@ class chado_linker__prop extends TripalField {
     // of the FK field that links to the base table.
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
@@ -123,10 +123,10 @@ class chado_linker__prop extends TripalField {
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     $field_name = $this->field['field_name'];
-    $table_name = $this->field['settings']['chado_table'];
+    $table_name = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
@@ -150,9 +150,9 @@ class chado_linker__prop extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);

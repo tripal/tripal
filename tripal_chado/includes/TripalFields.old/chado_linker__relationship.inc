@@ -121,8 +121,8 @@ class chado_linker__relationship extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the instance settings
     $instance = $this->instance;
@@ -138,8 +138,8 @@ class chado_linker__relationship extends TripalField {
     $option1_test   = $option1_vocabs;
 
     // Get the FK column that links to the base table.
-    $chado_table = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -427,9 +427,9 @@ class chado_linker__relationship extends TripalField {
   function validate($entity_type, $entity, $langcode, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
@@ -587,9 +587,9 @@ class chado_linker__relationship extends TripalField {
 return;
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
     $chado_record_id = $entity->chado_record_id;
 
     $schema = chado_get_schema($field_table);
@@ -651,9 +651,9 @@ return;
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);

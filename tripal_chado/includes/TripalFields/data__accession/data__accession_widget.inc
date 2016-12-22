@@ -14,8 +14,8 @@ class data__accession_widget extends ChadoFieldWidget {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field defaults.
     $fk_val = '';
@@ -129,8 +129,8 @@ class data__accession_widget extends ChadoFieldWidget {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     $fk_val = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column] : '';
     $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
@@ -161,8 +161,8 @@ function data__accession_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
+  $field_table = $this->instance['settings']['chado_table'];
+  $field_column = $this->instance['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__' . $field_column;
 
   //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
@@ -187,8 +187,8 @@ function theme_data__accession_widget($variables) {
   $field_name = $element['#field_name'];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
+  $field_table = $this->instant['settings']['chado_table'];
+  $field_column = $this->instant['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__' . $field_column;
 
   $layout = "

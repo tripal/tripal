@@ -75,9 +75,9 @@ class sbo__relationship extends ChadoField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);

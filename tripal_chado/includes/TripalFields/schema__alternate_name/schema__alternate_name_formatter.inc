@@ -20,7 +20,7 @@ class schema__alternate_name_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if (array_key_exists('chado-' . $chado_table . '__synonym_id', $item) and
           $item['chado-' . $chado_table . '__synonym_id']) {

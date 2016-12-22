@@ -216,7 +216,7 @@ class chado_linker__prop_adder extends TripalField {
     }
 
     // Get the table and base table.
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // Get the term for the property
     $field = $this->field;

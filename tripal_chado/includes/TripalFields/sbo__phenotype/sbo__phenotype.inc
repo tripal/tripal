@@ -74,8 +74,8 @@ class sbo__phenotype extends ChadoField {
     $record = $details['record'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);

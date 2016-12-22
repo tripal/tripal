@@ -18,12 +18,12 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK column that links to the base table.
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -115,7 +115,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
     }
    $widget['#table_name'] = $chado_table;
-    
+
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
@@ -341,9 +341,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
@@ -499,9 +499,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
     $chado_record_id = $entity->chado_record_id;
 
     $schema = chado_get_schema($field_table);
@@ -575,8 +575,8 @@ function theme_sbo__relationship_widget($variables) {
   $field_name = $element['#field_name'];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
+  $field_table = $this->instance['settings']['chado_table'];
+  $field_column = $this->instance['settings']['chado_column'];
   $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .

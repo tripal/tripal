@@ -26,8 +26,8 @@ class chado_linker__cvterm_widget extends ChadoFieldWidget {
     $cv_id = $matches[2];
 
     // Get the FK column that links to the base table.
-    $chado_table = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -164,10 +164,10 @@ class chado_linker__cvterm_widget extends ChadoFieldWidget {
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
-    $table_name = $this->field['settings']['chado_table'];
+    $table_name = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 

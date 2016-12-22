@@ -8,18 +8,18 @@ class data__sequence_widget extends ChadoFieldWidget {
   public static $field_types = array('data__sequence');
 
   /**
-   * 
+   *
    * @see TripalFieldWidget::form()
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
-    
+
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
     // Get the field defaults.
     $residues = '';
     if (count($items) > 0 and array_key_exists('chado-feature__residues', $items[0])) {
@@ -28,7 +28,7 @@ class data__sequence_widget extends ChadoFieldWidget {
     if (array_key_exists('values', $form_state)) {
       //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
     }
-    
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -60,12 +60,12 @@ class data__sequence_widget extends ChadoFieldWidget {
 
 
   /**
-   * 
+   *
    * @see TripalFieldWidget::submit()
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
-    
+
     // Remove any white spaces.
     $residues = isset($form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] : '';
     if ($residues) {

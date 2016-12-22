@@ -31,8 +31,8 @@ class chado_organism__type_id extends TripalField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     $type_id = 0;
     if (count($items) > 0 and array_key_exists('organism__type_id', $items[0])) {
@@ -71,8 +71,8 @@ class chado_organism__type_id extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(

@@ -70,12 +70,12 @@ class schema__alternate_name extends ChadoField {
    */
   public function load($entity, $details = array()) {
     $record = $details['record'];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);

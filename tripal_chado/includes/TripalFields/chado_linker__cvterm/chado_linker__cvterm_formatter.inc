@@ -16,7 +16,7 @@ class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
     $headers = array('Term', 'Definition', 'Is Not', 'Reference');
     $rows = array();
 
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));
@@ -77,7 +77,7 @@ class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
     $headers = array('Term', 'Definition', 'Is Not', 'Publication');
     $rows = array();
 
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));

@@ -74,8 +74,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(

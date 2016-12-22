@@ -135,11 +135,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => $column_name,
-        'base_table' => $table_name,
-      ),
     );
 
     // Alter the field info array depending on the column details.
@@ -235,11 +230,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'organism_id',
-        'base_table' => $table_name,
-      ),
     );
   }
 
@@ -254,12 +244,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'dbxref_id',
-        'base_table' => $table_name,
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
       ),
     );
   }
@@ -276,12 +260,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'md5checksum',
-        'base_table' => $table_name,
-        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'md5checksum'),
-      ),
     );
   }
 
@@ -297,11 +275,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'residues',
-        'base_table' => $table_name,
-      ),
     );
   }
 
@@ -316,11 +289,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'locked' => TRUE,
       'storage' => array(
         'type' => 'field_chado_storage',
-      ),
-      'settings' => array(
-        'chado_table' => $table_name,
-        'chado_column' => 'seqlen',
-        'base_table' => $table_name,
       ),
     );
   }
@@ -338,11 +306,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $rel_table,
-        'chado_column' => '',
-        'base_table' => $table_name,
-      ),
     );
   }
 
@@ -359,8 +322,6 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 //         'type' => 'field_chado_storage',
 //       ),
 //       'settings' => array(
-//         'chado_table' => 'organism',
-//         'chado_column' => 'type_id',
 //       ),
 //     );
 //   }
@@ -393,20 +354,12 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $contact_table,
-        'base_table' => $table_name,
-        'chado_column' => 'contact_id',
-      ),
     );
   }
 
   // DBXREF
   $dbxref_table = $table_name . '_dbxref';
   if (chado_table_exists($dbxref_table)) {
-    $dbxref_table = $table_name . '_dbxref';
-    $schema = chado_get_schema($dbxref_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'sbo__database_cross_reference';
     $field_type = 'sbo__database_cross_reference';
     $info[$field_name] = array(
@@ -417,19 +370,12 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $dbxref_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
   // EXPRESSION
   $expression_table = $table_name . '_expression';
   if (chado_table_exists($expression_table)) {
-    $schema = chado_get_schema($expression_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'go__gene_expression';
     $field_type = 'go__gene_expression';
     $info[$field_name] = array(
@@ -440,18 +386,11 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $expression_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
   // FEATURELOC
   if ($table_name == 'feature') {
-    $schema = chado_get_schema('featureloc');
-    $pkey = $schema['primary key'][0];
     $field_name = 'data__sequence_coordinates';
     $field_type = 'data__sequence_coordinates';
     $info[$field_name] = array(
@@ -462,18 +401,11 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => 'featureloc',
-        'chado_column' => $pkey,
-        'base_table' => 'feature',
-      ),
     );
   }
 
   // FEATUREPOS
   if ($table_name == 'feature') {
-    $schema = chado_get_schema('featurepos');
-    $pkey = $schema['primary key'][0];
     $field_name = 'ogi__location_on_map';
     $field_type = 'ogi__location_on_map';
     $info[$field_name] = array(
@@ -484,19 +416,12 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => 'featurepos',
-        'chado_column' => $pkey,
-        'base_table' => 'feature',
-      ),
     );
   }
 
   // GENOTYPE
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {
-    $schema = chado_get_schema($genotype_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'so__genotype';
     $field_type = 'so__genotype';
     $info[$field_name] = array(
@@ -507,19 +432,12 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $genotype_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
   // PHENOTYPE
   $phenotype_table = $table_name . '_phenotype';
   if (chado_table_exists($phenotype_table)) {
-    $schema = chado_get_schema($phenotype_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'sbo__phenotype';
     $field_type = 'sbo__phenotype';
     $info[$field_name] = array(
@@ -530,11 +448,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $phenotype_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
@@ -544,11 +457,9 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     // Get the list of existing property types for this table.
     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
     $props = chado_query($sql);
-    $schema = chado_get_schema($prop_table);
-    $pkey = $schema['primary key'][0];
     while ($prop = $props->fetchObject()) {
       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
-      $field_name = strtolower($term->dbxref_id->db_id->name . '__' . $term->name);
+      $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
       $field_type = 'chado_linker__prop';
       $info[$field_name] = array(
         'field_name' => $field_name,
@@ -558,11 +469,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'storage' => array(
           'type' => 'field_chado_storage',
         ),
-        'settings' => array(
-          'base_table' => $table_name,
-          'chado_table' => $prop_table,
-          'chado_column' => $pkey,
-        ),
       );
     }
   }
@@ -570,8 +476,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
   // PUBLICATIONS
   $pub_table = $table_name . '_pub';
   if (chado_table_exists($pub_table)) {
-    $schema = chado_get_schema($pub_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'schema__publication';
     $field_type = 'schema__publication';
     $info[$field_name] =  array(
@@ -582,11 +486,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $pub_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
@@ -594,8 +493,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
   // If the linker table does not exists then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
-    $schema = chado_get_schema($rel_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'sbo__relationship';
     $field_type = 'sbo__relationship';
     $info[$field_name] =  array(
@@ -606,19 +503,12 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
-      'settings' => array(
-        'chado_table' => $rel_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
     );
   }
 
   // SYNONYMS
   $syn_table = $table_name . '_synonym';
   if (chado_table_exists($syn_table)) {
-    $schema = chado_get_schema($syn_table);
-    $pkey = $schema['primary key'][0];
     $field_name = 'schema__alternate_name';
     $field_type = 'schema__alternate_name';
     $info[$field_name] =  array(
@@ -630,9 +520,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
         'type' => 'field_chado_storage',
       ),
       'settings' => array(
-        'chado_table' => $syn_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
       ),
     );
   }
@@ -745,6 +632,9 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
         'term_vocabulary' => $cvterm->dbxref_id->db_id->name,
         'term_name' => $cvterm->name,
         'term_accession' => $cvterm->dbxref_id->accession,
+        'chado_table' => $table_name,
+        'chado_column' => $column_name,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'settings' => array(
@@ -906,6 +796,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => $is_required,
       'settings' => array(
         'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'organism_id',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'obi__organism_widget',
@@ -936,6 +829,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'dbxref_id',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'data__accession_widget',
@@ -969,6 +865,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'md5checksum',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'data__sequence_checksum_widget',
@@ -999,6 +898,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $table_name,
+        'chado_column' => 'residues',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'data__sequence_widget',
@@ -1031,6 +933,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'seqlen',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'data__sequence_length_widget',
@@ -1061,6 +966,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $rel_table,
+        'chado_column' => '',
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'so__transcript_widget',
@@ -1090,6 +998,9 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
 //       'required' => FALSE,
 //       'settings' => array(
 //         'auto_attach' => TRUE,
+//         'chado_table' => 'organism',
+//         'chado_column' => 'type_id',
+//         'base_table' => 'organism',
 //       ),
 //       'widget' => array(
 //         'type' => 'taxarank__infraspecific_taxon_widget',
@@ -1135,6 +1046,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $contact_table,
+        'base_table' => $table_name,
+        'chado_column' => 'contact_id',
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -1144,7 +1058,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       ),
       'display' => array(
         'default' => array(
-          'label' => 'inline',
+          'label' => 'above',
           'type' => 'local__contact_formatter',
           'settings' => array(),
         ),
@@ -1156,6 +1070,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $dbxref_table = $table_name . '_dbxref';
   if (chado_table_exists($dbxref_table)) {
     $field_name = 'sbo__database_cross_reference';
+    $schema = chado_get_schema($dbxref_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] =  array(
       'field_name' =>  $field_name,
       'entity_type' => $entity_type,
@@ -1165,6 +1081,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $dbxref_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'sbo__database_cross_reference_widget',
@@ -1186,6 +1105,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $expression_table = $table_name . '_expression';
   if (chado_table_exists($expression_table)) {
     $field_name = 'go__gene_expression';
+    $schema = chado_get_schema($expression_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1195,6 +1116,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $expression_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'go__gene_expression_widget',
@@ -1215,6 +1139,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   // FEATURELOC
   if ($table_name == 'feature') {
     $field_name = 'data__sequence_coordinates';
+    $schema = chado_get_schema('featureloc');
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1225,6 +1151,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => 'featureloc',
+        'chado_column' => $pkey,
+        'base_table' => 'feature',
       ),
       'widget' => array(
         'type' => 'data__sequence_coordinates_widget',
@@ -1245,6 +1174,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   // FEATUREPOS
   if ($table_name == 'feature') {
     $field_name = 'ogi__location_on_map';
+    $schema = chado_get_schema('featurepos');
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1254,6 +1185,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => 'featurepos',
+        'chado_column' => $pkey,
+        'base_table' => 'feature',
       ),
       'widget' => array(
         'type' => 'ogi__location_on_map_widget',
@@ -1275,6 +1209,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $genotype_table = $table_name . '_genotype';
   if (chado_table_exists($genotype_table)) {
     $field_name = 'so__genotype';
+    $schema = chado_get_schema($genotype_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1284,6 +1220,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $genotype_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'so__genotype_widget',
@@ -1305,6 +1244,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $phenotype_table = $table_name . '_phenotype';
   if (chado_table_exists($phenotype_table)) {
     $field_name = 'sbo__phenotype';
+    $schema = chado_get_schema($phenotype_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1314,6 +1255,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $phenotype_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'sbo__phenotype_widget',
@@ -1331,17 +1275,17 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
     );
   }
 
-  // TODO: we need to add a property for each type that already exists
-  // in the prop table.
-   // PROPERTIES
-   $prop_table = $table_name . 'prop';
-   if (chado_table_exists($prop_table)) {
+  // PROPERTIES
+  $prop_table = $table_name . 'prop';
+  if (chado_table_exists($prop_table)) {
      // Get the list of existing property types for this table.
      $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
      $props = chado_query($sql);
+     $schema = chado_get_schema($prop_table);
+     $pkey = $schema['primary key'][0];
      while ($prop = $props->fetchObject()) {
        $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
-       $field_name = strtolower($term->dbxref_id->db_id->name . '__' . $term->name);
+       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
        $info[$field_name] = array(
          'field_name' => $field_name,
          'entity_type' => $entity_type,
@@ -1354,6 +1298,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
            'term_vocabulary' => $term->dbxref_id->db_id->name,
            'term_accession' => $term->dbxref_id->accession,
            'term_name' => $term->name,
+           'base_table' => $table_name,
+           'chado_table' => $prop_table,
+           'chado_column' => $pkey,
          ),
          'widget' => array(
            'type' => 'chado_linker__prop_widget',
@@ -1377,16 +1324,20 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $pub_table = $table_name . '_pub';
   if (chado_table_exists($pub_table)) {
     $field_name = 'schema__publication';
+    $schema = chado_get_schema($pub_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Publication',
-      'description' => 'This record has been referenced or is sourced from
-        these publications.',
+      'description' => 'This record has been referenced or is sourced from these publications.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $pub_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'schema__publication_widget',
@@ -1409,6 +1360,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';
+    $schema = chado_get_schema($rel_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1418,6 +1371,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $rel_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'sbo__relationship_widget',
@@ -1439,6 +1395,8 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $syn_table = $table_name . '_synonym';
   if (chado_table_exists($syn_table)) {
     $field_name = 'schema__alternate_name';
+    $schema = chado_get_schema($syn_table);
+    $pkey = $schema['primary key'][0];
     $info[$field_name] = array(
       'field_name' => $field_name,
       'entity_type' => $entity_type,
@@ -1448,6 +1406,9 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'chado_table' => $syn_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
       ),
       'widget' => array(
         'type' => 'schema__alternate_name_widget',
@@ -1627,4 +1588,77 @@ function tripal_chado_form_field_ui_field_overview_add_new($new_field, $bundle) 
       drupal_set_message('Cannot add a property field to this entity. Chado does not support annotations for this data type.', 'error');
     }
   }
+}
+
+
+/**
+ * Allows for altering of a field's instance setting form.
+ *
+ * This appears to be a Drupal hook but is actually a custom function created
+ * by this module. It is called by the tripal_form_alter() function of this
+ * module.
+ *
+ * Here we put additional form elements for any field, regardless if it is
+ * a tripalField or not.
+ *
+ * @param $form
+ *   The form array.  Alterations to the form can be made within this array.
+ * @param $form_state
+ *   The form state array.
+ */
+function tripal_chado_field_instance_settings_form_alter(&$form, $form_state) {
+  global $language;
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+
+  // Construct a table for the vocabulary information.
+  $headers = array();
+  $rows = array();
+  $rows[] = array(
+    array(
+      'data' => 'Base Table',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $instance['settings']['base_table']
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Record Table',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $instance['settings']['chado_table']
+  );
+  $rows[] = array(
+    array(
+      'data' => 'ID Column',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $instance['settings']['chado_column']
+  );
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  $form['chado_mapping'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Chado Mapping',
+    '#description' => t('This field maps to data in Chado to the following table:'),
+    '#prefix' => '<div id = "tripal-field-term-fieldset">',
+    '#suffix' => '</div>',
+  );
+  $form['chado_mapping']['details'] = array(
+    '#type' => 'item',
+    '#markup' => theme_table($table),
+  );
+
 }

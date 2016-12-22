@@ -16,15 +16,15 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
 
     // Get the name of the pkey field for this property table and the name
     // of the FK field that links to the base table.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
@@ -105,10 +105,10 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
-    $field_table = $this->field['settings']['chado_table'];
+    $field_table = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 

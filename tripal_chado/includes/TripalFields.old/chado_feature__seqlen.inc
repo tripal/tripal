@@ -41,8 +41,8 @@ class chado_feature__seqlen extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     $widget['value'] = array(
       '#type' => 'value',
@@ -65,8 +65,8 @@ class chado_feature__seqlen extends TripalField {
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the residues so we can calculate teh length.
     $residues = $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'];

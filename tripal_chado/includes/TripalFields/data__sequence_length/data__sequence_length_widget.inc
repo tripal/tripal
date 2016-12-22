@@ -8,21 +8,21 @@ class data__sequence_length_widget extends ChadoFieldWidget {
   public static $field_types = array('data__sequence_length');
 
   /**
-   * 
+   *
    * @see TripalFieldWidget::form()
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
+
     $widget['chado-feature__seqlen'] =  array(
       '#type' => 'value',
       '#value' => 0,
@@ -49,15 +49,15 @@ class data__sequence_length_widget extends ChadoFieldWidget {
 
 
   /**
-   * 
+   *
    * @see TripalFieldWidget::submit()
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
     // Get the residues so we can calculate teh length.
     $residues = $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'];
     // Remove any white spaces.

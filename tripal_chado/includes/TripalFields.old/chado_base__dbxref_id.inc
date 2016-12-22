@@ -45,8 +45,8 @@ class chado_base__dbxref_id extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field defaults.
     $fk_val = '';
@@ -162,8 +162,8 @@ class chado_base__dbxref_id extends TripalField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field values.
     foreach ($items as $delta => $values) {
@@ -209,8 +209,8 @@ class chado_base__dbxref_id extends TripalField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     $fk_val = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column] : '';
     $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
@@ -242,8 +242,8 @@ class chado_base__dbxref_id extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
 
     // Set some defauls for the empty record

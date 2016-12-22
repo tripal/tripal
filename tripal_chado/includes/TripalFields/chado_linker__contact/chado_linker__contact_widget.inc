@@ -18,8 +18,8 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
-    $table_name = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -104,8 +104,8 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     // Get the FK column that links to the base table.
-    $table_name = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $table_name = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);

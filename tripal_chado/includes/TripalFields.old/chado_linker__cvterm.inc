@@ -30,7 +30,7 @@ class chado_linker__cvterm extends TripalField {
     $headers = array('Term', 'Definition', 'Is Not', 'Reference');
     $rows = array();
 
-    $chado_table = $this->field['settings']['chado_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));
@@ -101,8 +101,8 @@ class chado_linker__cvterm extends TripalField {
     $cv_id = $matches[2];
 
     // Get the FK column that links to the base table.
-    $chado_table = $this->field['settings']['chado_table'];
-    $base_table = $this->field['settings']['base_table'];
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -222,10 +222,10 @@ class chado_linker__cvterm extends TripalField {
   public function widgetFormSubmit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
     $field_name = $this->field['field_name'];
-    $table_name = $this->field['settings']['chado_table'];
+    $table_name = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
-    $base_table = $this->field['settings']['base_table'];
+    $base_table = $this->instance['settings']['base_table'];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
     $rfkey_field = $schema['foreign keys'][$base_table]['columns'][$lfkey_field];
 
@@ -255,9 +255,9 @@ class chado_linker__cvterm extends TripalField {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
-    $field_table = $this->field['settings']['chado_table'];
-    $field_column = $this->field['settings']['chado_column'];
-    $base_table = $this->field['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $matches = array();
     preg_match('/(.*?)__(\d+)/', $field_name, $matches);
