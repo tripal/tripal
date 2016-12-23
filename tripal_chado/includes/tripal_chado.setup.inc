@@ -449,19 +449,19 @@ function tripal_chado_prepare_chado() {
       throw new Exception($error['!message']);
     }
 
-//     // Create the 'Genetic Map' entity type. This uses the local:project term.
-//     $error = '';
-//     $args = array(
-//       'vocabulary' => 'data',
-//       'accession' => '1278',
-//       'term_name' => 'Genetic map',
-//       'storage_args' => array(
-//         'data_table' => 'featuremap',
-//       )
-//     );
-//     if (!tripal_create_bundle($args, $error)) {
-//       throw new Exception($error['!message']);
-//     }
+    // Create the 'Genetic Map' entity type. This uses the local:project term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'data',
+      'accession' => '1274',
+      'term_name' => 'Map',
+      'storage_args' => array(
+        'data_table' => 'featuremap',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
 
     // Create the 'Publication' entity type.
     $error = '';

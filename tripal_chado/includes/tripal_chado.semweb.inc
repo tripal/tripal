@@ -31,6 +31,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
   tripal_chado_populate_vocab_TPUB();
+  tripal_chado_populate_vocab_UO();
 }
 
 /**
@@ -446,6 +447,27 @@ function tripal_chado_populate_vocab_TPUB() {
 
   $term = tripal_get_cvterm(array('id' => 'TPUB:0000245'));
   tripal_associate_chado_semweb_term('pub', 'pubplace', $term);
+}
+
+/**
+ * Adds the Uni Ontology database, terms and mappings.
+ */
+function tripal_chado_populate_vocab_UO() {
+  tripal_insert_db(array(
+    'name' => 'UO',
+    'description' => 'Units of Measurement Ontology',
+    'url' => 'http://purl.obolibrary.org/obo/uo',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
+  ));
+  tripal_insert_cv('uo','Units of Measurement Ontology');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'UO:0000000',
+    'name' => 'unit',
+    'cv_name' => 'uo',
+    'description' => 'A unit of measurement is a standardized quantity of a physical quality.'
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'unittype_id', $term);
 }
 
 /**
