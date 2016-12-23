@@ -1,59 +1,19 @@
 <?php
 
 /**
- * Implements hook_chado_bundle_create().
- *
- * This is a Tripal hook. It allows any module to perform tasks after
- * a bundle has been created.
- *
- * @param $bundle
- *  The TripalBundle object.
- */
-
-function tripal_chado_bundle_create($bundle, $args) {
-  $entity_type = $bundle->type;
-
-  //dpm($args);
-  // Before adding fields to the bundle we need to story the Chado table that
-  // this bundle maps to.  That information is in the $args['form_values']
-  // array.  The $args['form_values'] array contains values that indicate the
-  // Chado table.
-  // TODO: we need to store the chado table and type field used for this
-  // bundle.
-
-  // Create/Add the new fields for this bundle.
-  tripal_chado_bundle_create_fields($entity_type, $bundle);
-
-  // Create/Add the new field instances for this bundle.
-  tripal_chado_bundle_create_instances($entity_type, $bundle);
-}
-
-
-
-/**
  * Implements hook_field_create_info().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_fields($entity_type, $bundle) {
-
-  // Get the table this bundle is mapped to.
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-  $vocab = $term->vocab;
-  $params = array(
-    'vocabulary' => $vocab->vocabulary,
-    'accession' => $term->accession,
-  );
-  $mapped_table = chado_get_cvterm_mapping($params);
+function tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle) {
 
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
-    'chado_cv_id' => $mapped_table->cvterm->cv_id->cv_id,
-    'chado_cvterm_id' => $mapped_table->cvterm->cvterm_id,
-    'chado_table' => $mapped_table->chado_table,
-    'chado_type_table' => $mapped_table->chado_table,
-    'chado_type_column' => $mapped_table->chado_field,
+    'chado_cvterm_id' => $chado_bundle['type_id'],
+    'chado_table' => $chado_bundle['data_table'],
+    'chado_type_table' => $chado_bundle['type_linker_table'],
+    'chado_type_column' => $chado_bundle['type_column'],
   );
 
   $info = array();
@@ -93,7 +53,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
 
   // Iterate through the columns of the table and see if fields have been
@@ -116,9 +75,9 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
     if (!$cvterm) {
       tripal_report_error('tripal', TRIPAL_ERROR,
-        'Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term',
+        'Cannot create field for "%table_name.%column_name". Missing an appropriate vocabulary term',
          array('%table_name' => $table_name, '%column_name' => $column_name));
-      drupal_set_message(t('Cannot create term for "%table_name.%column_name". Missing an appropriate vocabulary term',
+      drupal_set_message(t('Cannot create field for "%table_name.%column_name". Missing an appropriate vocabulary term',
         array('%table_name' => $table_name, '%column_name' => $column_name)), 'error');
       continue;
     }
@@ -221,13 +180,13 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
+
   $schema = chado_get_schema($table_name);
 
-
   // BASE ORGANISM_ID
-  if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {
+  if ($table_name != 'organism' and
+      array_key_exists('organism_id', $schema['fields'])) {
     $field_name = 'obi__organism';
     $field_type = 'obi__organism';
     $info[$field_name] = array(
@@ -344,7 +303,6 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
 
   // CONTACTS
@@ -539,23 +497,13 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_instances($entity_type, $bundle) {
+function tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bundle) {
 
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-  $vocab = $term->vocab;
-  $params = array(
-    'vocabulary' => $vocab->vocabulary,
-    'accession' => $term->accession,
-  );
-  $mapped_table = chado_get_cvterm_mapping($params);
-
-  // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
-    'chado_cv_id' => $mapped_table->cvterm->cv_id->cv_id,
-    'chado_cvterm_id' => $mapped_table->cvterm->cvterm_id,
-    'chado_table' => $mapped_table->chado_table,
-    'chado_type_table' => $mapped_table->chado_table,
-    'chado_type_column' => $mapped_table->chado_field,
+    'chado_cvterm_id' => $chado_bundle['type_id'],
+    'chado_table' => $chado_bundle['data_table'],
+    'chado_type_table' => $chado_bundle['type_linker_table'],
+    'chado_type_column' => $chado_bundle['type_column'],
   );
 
   tripal_chado_bundle_create_instances_base($info, $entity_type, $bundle, $details);
@@ -591,7 +539,6 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
 
   // Iterate through the columns of the table and see if fields have been
@@ -783,7 +730,6 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
   $schema = chado_get_schema($table_name);
 
@@ -1038,7 +984,6 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
-  $cv_id      = $details['chado_cv_id'];
   $cvterm_id  = $details['chado_cvterm_id'];
 
   // CONTACTS

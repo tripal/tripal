@@ -5,7 +5,8 @@
  * Implements hook_entity_create().
  *
  * This hook is called when brand new entities are created, but
- * they are not loaded so the hook_entity_load() is not yet called.
+ * they are not loaded so the hook_entity_load() is not yet called. We
+ * can use this hook to add properties to the entity before saving.
  */
 function tripal_chado_entity_create(&$entity, $type) {
   if ($type == 'TripalEntity') {
@@ -17,18 +18,9 @@ function tripal_chado_entity_create(&$entity, $type) {
 
       // Add in the Chado table information for this entity type.
       $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-      $vocab = $term->vocab;
-      $params = array(
-        'vocabulary' => $vocab->vocabulary,
-        'accession' => $term->accession,
-      );
-      $mapped_table = chado_get_cvterm_mapping($params);
-      $chado_table = $mapped_table->chado_table;
-      $chado_column = $mapped_table->chado_field;
-      if ($chado_table) {
-        $entity->chado_table = $chado_table;
-        $entity->chado_column = $chado_column;
+      if ($bundle->data_table) {
+        $entity->chado_table = $bundle->data_table;
+        $entity->chado_column = $bundle->type_column;
       }
     }
     if (!property_exists($entity, 'chado_record')) {
@@ -56,12 +48,27 @@ function tripal_chado_entity_postsave($entity, $type) {
  */
 function tripal_chado_entity_load($entities, $type) {
 
+  if ($type == 'TripalBundle') {
+    foreach ($entities as $bundle) {
+      // We want to add in the record ID to the entity.
+      if (property_exists($bundle, 'id')) {
+        $chado_bundle = db_select('chado_bundle', 'cb')
+          ->fields('cb')
+          ->condition('cb.bundle_id', $bundle->id)
+          ->execute()
+          ->fetchObject();
+        $bundle->data_table = $chado_bundle->data_table;
+        $bundle->type_linker_table = $chado_bundle->type_linker_table;
+        $bundle->type_column = $chado_bundle->type_column;
+        $bundle->type_id = $chado_bundle->type_id;
+      }
+    }
+  }
   if ($type == 'TripalEntity') {
     foreach ($entities as $entity) {
 
       // We want to add in the record ID to the entity.
       if (property_exists($entity, 'id')) {
-
         // Set some defaults on vars needed by this module.
         $entity->chado_table = NULL;
         $entity->chado_column = NULL;
@@ -73,19 +80,10 @@ function tripal_chado_entity_load($entities, $type) {
         if (!$bundle) {
           continue;
         }
-        $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-        $vocab = $term->vocab;
-        $params = array(
-          'vocabulary' => $vocab->vocabulary,
-          'accession' => $term->accession,
-        );
-        $mapped_table = chado_get_cvterm_mapping($params);
-        $chado_table = $mapped_table->chado_table;
-        $chado_column = $mapped_table->chado_field;
-        if ($chado_table) {
-          $entity->chado_table = $chado_table;
-          $entity->chado_column = $chado_column;
-        }
+        // TODO: this may need fixing. The chado_column may not always
+        // be the type_id of the base table. Is it expected to be so here?
+        $entity->chado_table = $bundle->data_table;
+        $entity->chado_column = $bundle->type_column;
 
         $chado_entity = db_select('chado_entity' ,'ce')
           ->fields('ce')
@@ -93,8 +91,8 @@ function tripal_chado_entity_load($entities, $type) {
           ->execute()
           ->fetchObject();
         if ($chado_entity) {
-          $schema = chado_get_schema($chado_table);
-          $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
+          $schema = chado_get_schema($entity->chado_table);
+          $record = chado_generate_var($entity->chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
           $entity->chado_record = $record;
           $entity->chado_record_id = $chado_entity->record_id;
         }
@@ -160,27 +158,14 @@ function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
 
 /**
  * Implements hook_tripal_default_title_format().
+ *
+ * Overrides the default titles.
  */
-function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
+function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
   $format = array();
 
-  // Load the bundle
-  $bundle = tripal_load_bundle_entity(array('term_id' => $entity->term_id));
-  $bundle_id = $bundle->id;
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-  $vocab = $term->vocab;
-  $params = array(
-    'vocabulary' => $vocab->vocabulary,
-    'accession' => $term->accession,
-  );
-  $mapped_table = chado_get_cvterm_mapping($params);
-  $table = $mapped_table->chado_table;
-  $column = $mapped_table->chado_field;
-  $cvterm_id = $mapped_table->cvterm->cvterm_id;
+  $table = $bundle->data_table;
 
-  // TODO: the tables should not be hardcoded, but a the unique constraint should
-  // be used to create default titles
-  // For organism titles  we want the genus and species with no comma separation.
   if ($table == 'organism') {
     $format[] = array(
       'format' => '[taxrank__genus] [taxrank__species]',
@@ -189,7 +174,7 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   }
   if ($table == 'analysis') {
     $format[] = array(
-      'format' => '[analysis__name]',
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
@@ -203,6 +188,12 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
     $format[] = array(
       'format' => '[stock__name]',
       'weight' => -5
+    );
+  }
+  if ($table == 'pub') {
+    $format[] = array(
+      'format' => '[tpub__title]',
+      'weight' => -5,
     );
   }
   return $format;
@@ -288,15 +279,8 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
 
       // Get the Chado table for this data type.
       $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-      $vocab = $term->vocab;
-      $params = array(
-        'vocabulary' => $vocab->vocabulary,
-        'accession' => $term->accession,
-      );
-      $mapped_table = chado_get_cvterm_mapping($params);
-      $chado_table = $mapped_table->chado_table;
-      $chado_field = $mapped_table->chado_field;
+      $chado_table = $bundle->data_table;
+      $chado_field = $bundle->type_column;
 
       // Get the list of templates that should be used for entities and generatte
       // the key in the array for this entity type (using the chado table the

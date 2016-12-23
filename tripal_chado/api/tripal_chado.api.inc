@@ -68,51 +68,73 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $bundle_name = $values['bundle_name'];
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
-
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $bundle_id = $bundle->id;
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-  $vocab = $term->vocab;
-  $params = array(
-    'vocabulary' => $vocab->vocabulary,
-    'accession' => $term->accession,
-  );
-  $mapped_table = chado_get_cvterm_mapping($params);
-  $table = $mapped_table->chado_table;
-  $column = $mapped_table->chado_field;
-  $cvterm_id = $mapped_table->cvterm->cvterm_id;
+  if (!$bundle) {
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+        "Unknown bundle. Could not publish record: @error",
+        array('@error' => 'The bundle name must be provided'));
+    return FALSE;
+  }
+
+  $table = $bundle->data_table;
+  $type_column = $bundle->type_column;
+  $type_linker_table = $bundle->type_linker_table;
+  $cvterm_id  = $bundle->type_id;
 
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
 
   // Construct the SQL for identifying which records should be published.
+  $args = array();
   $select = "SELECT $pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
       LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-    AND CE.data_table = '$table'
+         AND CE.data_table = :table
   ";
 
   // For migration of Tripal v2 nodes to entities we want to include the
   // coresponding chado linker table.
   if ($sync_node && db_table_exists('chado_' . $table)) {
     $select = "SELECT T.$pkey_field as record_id, CT.nid ";
-    $from .= "INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
+    $from .= " INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
   }
   $where = " WHERE CE.record_id IS NULL ";
-  // TODO: here we have hard-coded the analysis and organism tables, but
-  // there may be more that don't hve a type field.  I think if the $column
-  // value is null then that check is good enough, but it needs to be looked at.
-  if ($table != 'analysis' and $table != 'organism') {
-    $where .= "AND $column = $cvterm_id";
+  $args[':table'] = $table;
+
+  // Handle bundles that use a linker property table for identifying the type
+  // of record to publish.
+  if ($type_linker_table and $type_column) {
+    $propschema = chado_get_schema($type_linker_table);
+    $fkeys = $propschema['foreign keys'][$table]['columns'];
+    foreach ($fkeys as $leftkey => $rightkey) {
+      if ($rightkey == $pkey_field) {
+        $from .= " INNER JOIN {" . $type_linker_table . "} LT ON T.$pkey_field = LT.$leftkey ";
+      }
+    }
+    $where .= "AND LT.$type_column = :cvterm_id";
+    $args[':cvterm_id'] = $cvterm_id;
+  }
+
+  // If the type column is in the base table then add in the SQL for that.
+  if (!type_linker_table and $type_column) {
+    $where .= "AND T.$type_column = :cvterm_id";
+    $args[':cvterm_id'] = $cvterm_id;
+  }
+  // If no type column is specified then we have a problem.
+  if ($type_linker_table and !$type_column) {
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+        "Could not publish record: @error",
+        array('@error' => 'The bundle does not properly map to Chado.'));
+    return FALSE;
   }
 
   // First get the count
   $sql = "SELECT count(*) as num_records " . $from . $where;
-    $result = chado_query($sql);
+  $result = chado_query($sql, $args);
   $count = $result->fetchField();
 
   // calculate the interval for updates
@@ -123,8 +145,12 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
 
   // Perform the query.
   $sql = $select . $from . $where;
-  $records = chado_query($sql);
+  $records = chado_query($sql, $args);
   $transaction  = db_transaction();
+
+  print "\nNOTE: publishing records is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "is rolled back with no changes to the database\n\n";
 
   printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
   try {
@@ -157,8 +183,6 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         'entity_id' => $entity->id,
         'record_id' => $record_id,
         'data_table' => $table,
-        'type_table' => $table,
-        'field' => $column,
       );
 
       // For the Tv2 to Tv3 migration we want to add the nid to the

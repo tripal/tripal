@@ -37,6 +37,7 @@ require_once "includes/tripal_chado.entity.inc";
 require_once "includes/tripal_chado.schema.inc";
 require_once "includes/tripal_chado.vocab_storage.inc";
 require_once "includes/tripal_chado.field_storage.inc";
+require_once "includes/tripal_chado.bundle.inc";
 require_once "includes/tripal_chado.fields.inc";
 require_once "includes/tripal_chado.mapping.inc";
 

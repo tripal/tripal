@@ -156,6 +156,7 @@ function tripal_chado_schema() {
 
   // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
+  $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
   $schema['chado_semweb'] = tripal_chado_chado_semweb_schema();
 
   $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
@@ -180,7 +181,7 @@ function tripal_chado_schema() {
   }
 
   // Map cvterm usage to chado tables
-  $schema['tripal_cvterm_mapping'] = tripal_chado_tripal_cvterm_mapping_schema();
+  $schema['chado_cvterm_mapping'] = tripal_chado_chado_cvterm_mapping_schema();
 
   return $schema;
 }
@@ -584,31 +585,17 @@ function tripal_chado_chado_entity_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'data_table' => array(
+        'description' => 'The table in that this record belongs to',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'record_id' => array(
         'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'data_table' => array(
-        'description' => 'Indicates the table in Chado that this term services (e.g. feature, stock, library, etc.)',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'type_table' => array(
-        'description' => 'Sometimes the record in the data table doesn’t have a field that specifies  the record type.  For example, an analysis type is stored in the analysisprop table.  If the data_table does have a type field then this value will be the same as the data_table.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'field' => array(
-        'description' => 'The name of the field in the typetable that contains the cvterm record.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-        'default' => ''
       ),
       'nid' => array(
         'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
@@ -622,7 +609,7 @@ function tripal_chado_chado_entity_schema() {
       'nid' => array('nid'),
     ),
     'unique keys' => array(
-      'record' => array('data_table', 'record_id'),
+      'table_record' => array('data_table', 'record_id'),
       'entity_id' => array('entity_id'),
     ),
     'primary key' => array('chado_entity_id'),
@@ -631,13 +618,75 @@ function tripal_chado_chado_entity_schema() {
 }
 
 /**
+ * Links Biological Data Entities to the chado "base" table the data is stored in.
+ * This is where we would specify that a particular gene maps to the record in the
+ * chado.feature table with a feature_id=2432;
+ */
+function tripal_chado_chado_bundle_schema() {
+
+  $schema = array(
+    'description' => 'Describes how a bundle maps data to Chado',
+    'fields' => array(
+      'chado_bundle_id' => array(
+        'description' => 'The primary identifier for this table.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'bundle_id' => array(
+        'description' => 'The unique entity id.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'data_table' => array(
+        'description' => 'The table in Chado that this term services (e.g. feature, stock, library, etc.)',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'type_linker_table' => array(
+        'description' => 'The table in Chado that identifies the data type. This column should be used if the data type is not specified by a "type_id" (or similar) field in the data table. The linker table must have a foreign key to the data table.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'type_column' => array(
+        'description' => 'The column in the data table that distinguishes the data types. This must be in a foreign key relationship to the cvterm table.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'type_id' => array(
+        'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'indexes' => array(
+      'bundle_id' => array('bundle_id'),
+      'data_table' => array('data_table'),
+    ),
+    'unique keys' => array(
+      'record' => array('bundle_id'),
+    ),
+    'primary key' => array('chado_bundle_id'),
+  );
+  return $schema;
+}
+
+/**
  * Tripal cvterm mapping schema
  * Map cvterms to chado tables that use them
  */
-function tripal_chado_tripal_cvterm_mapping_schema() {
+function tripal_chado_chado_cvterm_mapping_schema() {
 
   $schema = array (
-    'table' => 'tripal_cvterm_mapping',
+    'table' => 'chado_cvterm_mapping',
     'fields' => array (
       'mapping_id' => array(
         'type' => 'serial',

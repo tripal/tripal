@@ -421,7 +421,7 @@ function _chado_views_add_table_joins(&$handler) {
   $alias = $handler->query->add_relationship('chado_entity', $join, $handler->table_alias, $handler->relationship);
 
   // Restrict the chado_entity join to only return the table this field is from.
-  $handler->query->add_where(0, $alias .'.data_table', $handler->definition['chado_table'], '=');
+  $handler->query->add_where(0, $alias . '.data_table', $handler->definition['chado_table'], '=');
 
   // Now, we need to join from chado_entity to the chado table needed by this field.
   // This only works if the field is from the base table.

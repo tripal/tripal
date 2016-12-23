@@ -180,7 +180,6 @@ function tripal_panes_update_dependencies() {
   // site upgrade when the tripal_core module is disabled.
   //module_load_include('module', 'tripal', 'tripal');
   //tripal_import_api();
-print "HI!!!\n";
   module_load_include('module', 'tripal_ws', 'tripal_ws');
 
   $dependencies = array();

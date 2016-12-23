@@ -30,6 +30,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SCHEMA();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
+  tripal_chado_populate_vocab_TPUB();
 }
 
 /**
@@ -413,6 +414,38 @@ function tripal_chado_populate_vocab_SWO() {
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
 
+}
+
+/**
+ * Adds the pub table mapping.
+ */
+function tripal_chado_populate_vocab_TPUB() {
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000039'));
+  tripal_associate_chado_semweb_term('pub', 'title', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000243'));
+  tripal_associate_chado_semweb_term('pub', 'volumetitle', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000042'));
+  tripal_associate_chado_semweb_term('pub', 'volume', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000256'));
+  tripal_associate_chado_semweb_term('pub', 'series_name', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000043'));
+  tripal_associate_chado_semweb_term('pub', 'issue', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000059'));
+  tripal_associate_chado_semweb_term('pub', 'pyear', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000044'));
+  tripal_associate_chado_semweb_term('pub', 'pages', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000244'));
+  tripal_associate_chado_semweb_term('pub', 'publisher', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000245'));
+  tripal_associate_chado_semweb_term('pub', 'pubplace', $term);
 }
 
 /**

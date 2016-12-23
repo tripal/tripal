@@ -10,7 +10,7 @@ function tripal_chado_map_cvterms() {
 
   // Perform this action in a transaction
   $transaction = db_transaction();
-  print "\nNOTE: Populating of tripal_cvterm_mapping table is performed using a database transaction. \n" .
+  print "\nNOTE: Populating of chado_cvterm_mapping table is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
@@ -67,10 +67,10 @@ function tripal_chado_map_cvterms() {
             AND name = :name";
         $cvterm_id = chado_query($cvterm_sql, array(':dbxref_id' => $dbxref_id, ':name' => $name))->fetchField();
         if ($cvterm_id) {
-         // Check if this term is already mapped in the tripal_cvterm_mapping table
+         // Check if this term is already mapped in the chado_cvterm_mapping table
          $check_sql =
            "SELECT mapping_id
-             FROM tripal_cvterm_mapping
+             FROM chado_cvterm_mapping
              WHERE cvterm_id = :cvterm_id";
          $mapped = db_query($check_sql, array(':cvterm_id' => $cvterm_id))->fetchField();
          // If mapping does not exist and a table name matches the term name, add it
@@ -94,31 +94,31 @@ function tripal_chado_map_cvterms() {
 /*
  * Add a cvterm mapping record
  *
- * Check if the cvterm mapping record exists. If not, add it to the tripal_cvterm_mapping
+ * Check if the cvterm mapping record exists. If not, add it to the chado_cvterm_mapping
  * table
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists
-  $record = db_select('tripal_cvterm_mapping', 'tcm')
+  $record = db_select('chado_cvterm_mapping', 'tcm')
     ->fields('tcm', array('mapping_id'))
     ->condition('cvterm_id', $cvterm_id)
     ->execute()
     ->fetchField();
-  // insert records into the tripal_cvterm_mapping table.
+  // insert records into the chado_cvterm_mapping table.
   if (!$record) {
-    db_insert('tripal_cvterm_mapping')
+    db_insert('chado_cvterm_mapping')
     ->fields(
         array(
           'cvterm_id' => $cvterm_id,
           'chado_table' => $tablename,
           'chado_field' => $chado_field
         )
-        )
-        ->execute();
+      )
+      ->execute();
   }
   // if the record exists, update the term mapping
   else {
-    db_update('tripal_cvterm_mapping')
+    db_update('chado_cvterm_mapping')
     ->fields(
         array(
           'chado_table' => $tablename,
