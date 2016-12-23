@@ -35,7 +35,7 @@ class ChadoField extends TripalField {
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
-    'term_fixed' => TRUE,
+    'term_fixed' => FALSE,
     // The table in Chado that the instance maps to.
     'chado_table' => '',
     // The primary key column of hte table in Dhado.

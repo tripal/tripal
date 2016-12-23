@@ -406,13 +406,19 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
     'empty' => '',
   );
 
+  $description = t('All fields attached to a Tripal-based content type must
+        be associated with a controlled vocabulary term.  Please use caution
+        when changing the term for this field as other sites may expect this term
+        when querying web services.');
+  if (array_key_exists('term_fixed', $instance['settings']) and $instance['settings']['term_fixed']) {
+    $description = t('All fields attached to a Tripal-based content type must
+        be associated with a controlled vocabulary term. This field mapping is
+        required and cannot be changed');
+  }
   $element['field_term'] = array(
     '#type' => 'fieldset',
     '#title' => 'Controlled Vocabulary Term',
-    '#description' => t('All fields attached to a Tripal-based content type must
-        be associated with a controlled vocabulary term.  Please use caution
-        when changing the term for this field as other sites may expect this term
-        when querying web services.'),
+    '#description' => $description,
     '#prefix' => '<div id = "tripal-field-term-fieldset">',
     '#suffix' => '</div>',
   );
@@ -433,23 +439,27 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
     '#title' => 'Current Term',
     '#markup' => theme_table($table),
   );
-  $element['field_term']['new_name'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Change the term',
-    // TODO: This autocomplete path should not use Chado.
-    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-  );
-  $element['field_term']['select_button'] = array(
-    '#type' => 'button',
-    '#value' => t('Lookup Term'),
-    '#name' => 'select_cvterm',
-    '#ajax' => array(
-      'callback' => "tripal_fields_select_term_form_ajax_callback",
-      'wrapper' => "tripal-field-term-fieldset",
-      'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+
+  // If this field mapping is fixed then don't let the user change it.
+  if (!array_key_exists('term_fixed', $instance['settings']) or $instance['settings']['term_fixed'] != TRUE) {
+    $element['field_term']['new_name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Change the term',
+      // TODO: This autocomplete path should not use Chado.
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+    );
+    $element['field_term']['select_button'] = array(
+      '#type' => 'button',
+      '#value' => t('Lookup Term'),
+      '#name' => 'select_cvterm',
+      '#ajax' => array(
+        'callback' => "tripal_fields_select_term_form_ajax_callback",
+        'wrapper' => "tripal-field-term-fieldset",
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
+    );
+  }
 
   // If a new term name has been specified by the user then give some extra
   // fields to clarify the term.

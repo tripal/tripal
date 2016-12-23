@@ -1611,6 +1611,12 @@ function tripal_chado_field_instance_settings_form_alter(&$form, $form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
 
+  // Only show the Chado mapping information for field instances that map
+  // to Chado.
+  if (!array_key_exists('chado_table',$instance['settings'])) {
+    return;
+  }
+
   // Construct a table for the vocabulary information.
   $headers = array();
   $rows = array();
