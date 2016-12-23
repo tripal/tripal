@@ -29,7 +29,7 @@
 function hook_vocab_storage_info() {
   return array(
     'term_chado_storage' => array(
-      'label' => t('Chado storage'),
+      'label' => t('Chado'),
       'description' => t('Integrates terms stored in the local Chado database with Tripal entities.'),
       'settings' => array(),
     ),

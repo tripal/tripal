@@ -151,9 +151,10 @@ function chado_generate_var($table, $values, $base_options = array()) {
   $table_desc = chado_get_schema($table);
   if (!$table_desc or count($table_desc) == 0) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
-      "chado_generate_var: The table '%table' has not been defined. " .
+      "chado_generate_var: The table '%table' has not been defined " .
       "and cannot be expanded. If this is a custom table, please add it using the Tripal " .
-      "custom table interface.", array('%table' => $table));
+      "custom table interface. Values: %values",
+        array('%table' => $table, '%values' => print_r($values, TRUE)));
     if ($return_array) {
       return array();
     }

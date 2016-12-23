@@ -165,29 +165,38 @@ function tripal_load_bundle_entity($values) {
  *
  * @param $bundle
  *   The newly created TripalBundle object.
+ * @param $storage_args
+ *   Arguments passed to the storage backend for this bundle.  These arguments
+ *   typically provide details for how to associate this bundle with records
+ *   in the storage system.  Each storage system will have its own set of
+ *   arguments that it will expect.
  */
-function hook_bundle_create(&$bundle) {
+function hook_bundle_create(&$bundle, $storage_args) {
 
 }
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
- * @param $vocabulary
- *   The abbreviated vocabulary for the vocabulary (e.g. RO, SO, PATO).
- * @param $accession
- *   The unique term ID in the vocabulary $vocabulary (i.e. an accession).
- * @param $term_name
- *   A human-readable name for this term.  This will became the name that
- *   appears for the content type.  In practice, this should be the name
- *   of the term. (E.g. the name for SO:0000704 is gene).
+ * @param $args
+ *   An array of arguments that must include the following keys:
+ *     - vocabulary:  The abbreviated vocabulary for the vocabulary
+ *       (e.g. RO, SO, PATO).
+ *     - accession:  The unique term ID in the vocabulary $vocabulary
+ *       (i.e. an accession).
+ *     - term_name: A human-readable name for this term.  This will became
+ *       the name that appears for the content type.  In practice, this
+ *       should be the name of the term. (E.g. the name for SO:0000704 is gene).
  * @param $error
  *  A string, passed by reference, that is filled with the error message
  *  if the function fails.
- *
  * @return
- *  TRUE if the entity type (bundle) was succesfully created.  FALSE otherwise.
+ *   The bundle object or FALSE if failure.
  */
-function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '') {
+function tripal_create_bundle($args, &$error = '') {
+  $vocabulary = $args['vocabulary'];
+  $accession = $args['accession'];
+  $term_name = $args['term_name'];
+  $storage_args = $args['storage_args'];
 
   $transaction = db_transaction();
   try {
@@ -204,8 +213,8 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
       'accession' => $accession
     ));
     if (!$term) {
-      $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
-      $term = entity_get_controller('TripalTerm')->create($args);
+      $targs = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
+      $term = entity_get_controller('TripalTerm')->create($targs);
       $term = $term->save();
     }
 
@@ -229,7 +238,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle);
+      $function($bundle, $storage_args);
     }
 
     // Clear the entity cache so that Drupal will read our
@@ -251,7 +260,7 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
     return FALSE;
   }
 
-  return TRUE;
+  return $bundle;
 }
 
 /**
@@ -480,19 +489,19 @@ function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
 /**
  * Get Page Title Format for a given Tripal Entity Type.
  *
- * @param TripalBundle $entity
+ * @param TripalBundle $bundle
  *   The Entity object for the Tripal Bundle the title format is for.
  */
-function tripal_get_title_format($entity) {
+function tripal_get_title_format($bundle) {
 
   // Get the existing title format if it exists.
-  $title_format = tripal_get_bundle_variable('title_format', $entity->id);
+  $title_format = tripal_get_bundle_variable('title_format', $bundle->id);
 
   // If there isn't yet a title format for this bundle/type then we should
   // determine the default.
   if (!$title_format) {
-    $title_format = tripal_get_default_title_format($entity);
-    tripal_save_title_format($entity, $title_format);
+    $title_format = tripal_get_default_title_format($bundle);
+    tripal_save_title_format($bundle, $title_format);
   }
 
   return $title_format;
@@ -514,22 +523,22 @@ function tripal_save_title_format($entity, $format) {
 /**
  * Determine the default title format to use for an entity.
  *
- * @param TripalBundle $entity
+ * @param TripalBundle $bundle
  *   The Entity object for the Tripal Bundle that the title format is for.
  *
  * @return string
  *   A default title format.
  */
-function tripal_get_default_title_format($entity) {
+function tripal_get_default_title_format($bundle) {
   $format = '';
 
   // Retrieve all available tokens.
-  $tokens = tripal_get_entity_tokens($entity);
+  $tokens = tripal_get_entity_tokens($bundle);
 
   // A) Check to see if more informed modules have suggested a title for this
   //    type. Invoke hook_tripal_default_title_format() to get all suggestions
   //    from other modules.
-  $suggestions = module_invoke_all('tripal_default_title_format', $entity, $tokens);
+  $suggestions = module_invoke_all('tripal_default_title_format', $bundle, $tokens);
   if ($suggestions) {
     // Use the suggestion with the lightest weight.
     $lightest_key = NULL;
@@ -541,15 +550,7 @@ function tripal_get_default_title_format($entity) {
     return $format;
   }
 
-  // B) Check to see if any fields contain "name" in the machine name and if
-  //    so, use them.
-  $name_fields = preg_grep('/name/', array_keys($tokens));
-  if ($name_fields AND !$format) {
-    $format = implode(', ', $name_fields);
-    return $format;
-  }
-
-  // C) Generate our own ugly title by simply comma-separating all the
+  // B) Generate our own ugly title by simply comma-separating all the
   //    required fields.
   if (!$format) {
     $tmp = array();
@@ -570,7 +571,7 @@ function tripal_get_default_title_format($entity) {
 /**
  * Implement this hook to define default formats for Tripal Content Types.
  *
- * @param TripalBundle $entity
+ * @param TripalBundle $bundle
  *   A tripal content type entity with information to be used for determining the default title format.
  * @param array $available_tokens
  *   An array of available tokens for this particular tripal content type.
@@ -587,13 +588,13 @@ function tripal_get_default_title_format($entity) {
  *    - format: a string including approved tokens used to determine the title
  *        on Tripal content pages.
  */
-function hook_tripal_default_title_format($entity, $available_tokens) {
+function hook_tripal_default_title_format($bundle, $available_tokens) {
   $format = array();
 
   // If you want to suggest a default format for a particular vocabulary term:
   //---------------------------------------------------------------------------
   // Load the term associated with this Tripal Content type.
-  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
   $term = reset($term);
 
   // If it's the term you are interested in then suggest a format.

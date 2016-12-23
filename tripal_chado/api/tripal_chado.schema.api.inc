@@ -647,7 +647,7 @@ function chado_get_cvterm_mapping($params) {
     $cvterm = chado_generate_var('cvterm', $match);
   }
 
-  $result = db_select('tripal_cvterm_mapping', 'tcm')
+  $result = db_select('chado_cvterm_mapping', 'tcm')
     ->fields('tcm')
     ->condition('cvterm_id', $cvterm->cvterm_id)
     ->execute();

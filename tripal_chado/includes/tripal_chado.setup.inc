@@ -409,23 +409,75 @@ function tripal_chado_prepare_chado() {
 
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
-    if (!tripal_create_bundle('OBI', '0100026', 'organism', $error)) {
+    $args = array(
+     'vocabulary' => 'OBI',
+     'accession' => '0100026',
+     'term_name' => 'organism',
+     'storage_args' => array(
+       'data_table' => 'organism',
+     )
+    );
+    if (!tripal_create_bundle($args, $error)) {
       throw new Exception($error['!message']);
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
-    if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
+    $args = array(
+      'vocabulary' => 'local',
+      'accession' => 'analysis',
+      'term_name' => 'analysis',
+      'storage_args' => array(
+        'data_table' => 'analysis',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
       throw new Exception($error['!message']);
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
-    if (!tripal_create_bundle('local', 'project', 'project', $error)) {
+    $args = array(
+      'vocabulary' => 'local',
+      'accession' => 'project',
+      'term_name' => 'project',
+      'storage_args' => array(
+        'data_table' => 'project',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
       throw new Exception($error['!message']);
     }
 
-    // Initialize the population of the tripal_cvterm_mapping table.
+    // Create the 'Genetic Map' entity type. This uses the local:project term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'data',
+      'accession' => '1274',
+      'term_name' => 'Map',
+      'storage_args' => array(
+        'data_table' => 'featuremap',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
+
+    // Create the 'Publication' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'TPUB',
+      'accession' => '0000002',
+      'term_name' => 'Publication',
+      'storage_args' => array(
+        'data_table' => 'pub',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
+
+    // Initialize the population of the chado_cvterm_mapping table.
     tripal_chado_map_cvterms();
 
     // Set a variable to indicate the site is prepared.

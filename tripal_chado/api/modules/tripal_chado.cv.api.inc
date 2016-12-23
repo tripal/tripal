@@ -147,6 +147,8 @@ function tripal_get_cv_select_options() {
  *   An array apropriate for use with the chado_generate_var for uniquely
  *   identifying a cvterm record. Alternativley, there are also some specially
  *   handled keys. They are:
+ *    - id: an ID for the term of the for [dbname]:[accession], where [dbname]
+ *      is the short name of the vocabulary and accession is the unique ID.
  *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the
  *      name of the cv.
  *    - synonym: an array with 'name' => the name of the synonym of the cvterm
@@ -233,6 +235,17 @@ function tripal_get_cvterm($identifiers, $options = array()) {
       array('type_name' => $property),
       $options
     );
+  }
+  if (isset($identifiers['id'])) {
+    list($db_name, $accession) = preg_split('/:/', $identifiers['id']);
+    $cvterm = chado_generate_var('cvterm',array(
+      'dbxref_id' => array(
+        'db_id' => array(
+          'name' => $db_name,
+        ),
+        'accession' => $accession,
+      )
+    ));
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm

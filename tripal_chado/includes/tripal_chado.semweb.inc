@@ -30,6 +30,8 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SCHEMA();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
+  tripal_chado_populate_vocab_TPUB();
+  tripal_chado_populate_vocab_UO();
 }
 
 /**
@@ -182,6 +184,30 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'Biological or biomedical data has been rendered into an image, typically for display on screen.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1274',
+    'name' => 'Map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map of (typically one) DNA sequence annotated with positional or non-positional features.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1278',
+    'name' => 'Genetic map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.',
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1280',
+    'name' => 'Physical map',
+    'cv_name' => 'EDAM',
+    'definition' => 'A map of DNA (linear or circular) annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.',
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
 }
 
 /**
@@ -389,6 +415,59 @@ function tripal_chado_populate_vocab_SWO() {
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
 
+}
+
+/**
+ * Adds the pub table mapping.
+ */
+function tripal_chado_populate_vocab_TPUB() {
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000039'));
+  tripal_associate_chado_semweb_term('pub', 'title', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000243'));
+  tripal_associate_chado_semweb_term('pub', 'volumetitle', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000042'));
+  tripal_associate_chado_semweb_term('pub', 'volume', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000256'));
+  tripal_associate_chado_semweb_term('pub', 'series_name', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000043'));
+  tripal_associate_chado_semweb_term('pub', 'issue', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000059'));
+  tripal_associate_chado_semweb_term('pub', 'pyear', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000044'));
+  tripal_associate_chado_semweb_term('pub', 'pages', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000244'));
+  tripal_associate_chado_semweb_term('pub', 'publisher', $term);
+
+  $term = tripal_get_cvterm(array('id' => 'TPUB:0000245'));
+  tripal_associate_chado_semweb_term('pub', 'pubplace', $term);
+}
+
+/**
+ * Adds the Uni Ontology database, terms and mappings.
+ */
+function tripal_chado_populate_vocab_UO() {
+  tripal_insert_db(array(
+    'name' => 'UO',
+    'description' => 'Units of Measurement Ontology',
+    'url' => 'http://purl.obolibrary.org/obo/uo',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
+  ));
+  tripal_insert_cv('uo','Units of Measurement Ontology');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'UO:0000000',
+    'name' => 'unit',
+    'cv_name' => 'uo',
+    'description' => 'A unit of measurement is a standardized quantity of a physical quality.'
+  ));
+  tripal_associate_chado_semweb_term('featuremap', 'unittype_id', $term);
 }
 
 /**

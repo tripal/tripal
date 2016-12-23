@@ -607,7 +607,7 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
  */
 function tripal_chado_migrate_selected_types($tv3_content_types) {
 
-  // Initialize the population of the tripal_cvterm_mapping table before migration.
+  // Initialize the population of the chado_cvterm_mapping table before migration.
   tripal_chado_map_cvterms();
 
   foreach ($tv3_content_types AS $tv3_content_type) {

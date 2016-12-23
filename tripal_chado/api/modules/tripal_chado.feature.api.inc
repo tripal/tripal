@@ -1125,7 +1125,7 @@ function chado_get_feature_relationships($feature_id, $side = 'as_subject') {
   $esql = "
     SELECT entity_id
     FROM {chado_entity}
-    WHERE data_table = 'feature' AND record_id = :feature_id";
+    WHERE record_id = :feature_id";
   $relationships = array();
   while ($rel = $results->fetchObject()) {
     $entity = db_query($esql, array(':feature_id' => $rel->subject_id))->fetchObject();

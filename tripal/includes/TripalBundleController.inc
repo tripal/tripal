@@ -32,7 +32,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle);
+      $function($bundle, array());
     }
 
     return $bundle;
@@ -45,19 +45,19 @@ class TripalBundleController extends EntityAPIControllerExportable {
    * @param DatabaseTransaction $transaction
    */
   public function delete($ids, DatabaseTransaction $transaction = NULL) {
-    $entities = $ids ? $this->load($ids) : FALSE;
+    $bundles = $ids ? $this->load($ids) : FALSE;
 
     if (!$transaction) {
       $transaction = db_transaction();
     }
 
-    if ($entities) {
+    if ($bundles) {
 
-      foreach ($entities as $id => $entity) {
+      foreach ($bundles as $id => $bundle) {
 
         // Find any TripalEntity fields that are attached to this bundle and
         // remove them.
-        $instances = field_info_instances('TripalEntity', $entity->name);
+        $instances = field_info_instances('TripalEntity', $bundle->name);
         foreach ($instances as $instance) {
           // Mark the instance as deleted and purge it.
           $field = field_info_field($instance['field_name']);
@@ -67,18 +67,18 @@ class TripalBundleController extends EntityAPIControllerExportable {
           // If the field has no more instances then purge it too.
           if (count($field['bundles']) == 1 and
               count($field['bundles']['TripalEntity']) == 1 and
-              in_array($entity->name, $field['bundles']['TripalEntity'])) {
+              in_array($bundle->name, $field['bundles']['TripalEntity'])) {
             field_purge_field($field);
           }
         }
 
         // TODO: this Chado sepcific code needs to be moved out of here!
 
-        // Remove the entries in the chado_entity and tripal_entity t
+        // Remove the entries in the chado_entity and tripal_entity
         $query = db_select('chado_entity', 'ce');
         $query->join('tripal_entity', 'te', 'te.id = ce.entity_id');
         $records = $query->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-          ->condition('te.bundle', $entity->name)
+          ->condition('te.bundle', $bundle->name)
           ->execute();
         $num_removed = 0;
         while ($record = $records->fetchObject()) {
@@ -90,13 +90,16 @@ class TripalBundleController extends EntityAPIControllerExportable {
             ->execute();
           $num_removed++;
         }
+        db_delete('chado_bundle')
+          ->condition('bundle_id', $bundle->id)
+          ->execute();
         if ($num_removed > 0) {
           drupal_set_message(t('Removed %num records', array('%num' => $num_removed)));
         }
 
         // Remove the terms for the bundles that are to be deleted.
         db_delete('tripal_term')
-          ->condition('id', $entity->term_id)
+          ->condition('id', $bundle->term_id)
           ->execute();
       }
 
@@ -106,8 +109,8 @@ class TripalBundleController extends EntityAPIControllerExportable {
       // Not sure what this does, but copied from the
       // EntityAPIControllerExportable->delete() function which this one
       // overrides.
-      foreach ($entities as $id => $entity) {
-        if (entity_has_status($this->entityType, $entity, ENTITY_IN_CODE)) {
+      foreach ($bundles as $id => $bundle) {
+        if (entity_has_status($this->entityType, $bundle, ENTITY_IN_CODE)) {
           entity_defaults_rebuild(array($this->entityType));
           break;
         }

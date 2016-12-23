@@ -63,8 +63,6 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
       'entity_id' => $entity->id,
       'record_id' => $base_record_id,
       'data_table' => $base_table,
-      'type_table' => $base_table,
-      'field' => $type_field,
     );
     $success = drupal_write_record('chado_entity', $record);
     if (!$success) {
@@ -191,13 +189,18 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   $langcode = $language->language;
 
   foreach ($entities as $id => $entity) {
+
     if (property_exists($entity, 'chado_table')) {
       // Get the base table and record id for the fields of this entity.
       $base_table = $entity->chado_table;
       $type_field = $entity->chado_column;
       $record_id  = $entity->chado_record_id;
-    }
+   }
     else {
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $base_table = $bundle->data_table;
+      $type_field = $bundle->type_column;
+
       // Get the base table and record id for the fields of this entity.
       $details = db_select('chado_entity', 'ce')
         ->fields('ce')
@@ -207,9 +210,6 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       if (!$details) {
         // TODO: what to do if record is missing!
       }
-      // Get some values needed for loading the values from Chado.
-      $base_table = isset($details->data_table) ? $details->data_table : '';
-      $type_field = isset($details->field) ? $details->field : '';
       $record_id  = isset($details->record_id) ? $details->record_id : '';
     }
 
