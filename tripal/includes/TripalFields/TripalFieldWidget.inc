@@ -109,19 +109,19 @@ class TripalFieldWidget {
     $widget['#field'] = $this->field;
     $widget['#instance'] = $this->instance;
     $widget['#element_validate'] = array('tripal_field_widget_form_validate');
+    $widget['#theme'] = 'tripal_field_default';
   }
 
   /**
    * Performs validation of the widgetForm.
    *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
+   * Use this validate to ensure that form values are entered correctly.
+   * The 'value' key of this field must be set in the $form_state['values']
+   * array anytime data is entered by the user.  It may be the case that there
+   * are other fields for helping select a value. In the end those helper
+   * fields must be used to set the 'value' field.
    */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
 
   }
 
@@ -163,5 +163,37 @@ class TripalFieldWidget {
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
 
+  }
+
+  /**
+   * The theme function for the widget.
+   *
+   * @param $element
+   * A form element array containing basic properties for the widget:
+   *  - #entity_type: The name of the entity the field is attached to.
+   *  - #bundle: The name of the field bundle the field is contained in.
+   *  - #field_name: The name of the field.
+   *  - #language: The language the field is being edited in.
+   *  - #field_parents: The 'parents' space for the field in the form. Most
+   *    widgets can simply overlook this property. This identifies the location
+   *    where the field values are placed within $form_state['values'], and is
+   *    used to access processing information for the field through the
+   *    field_form_get_state() and field_form_set_state() functions.
+   *  - #columns: A list of field storage columns of the field.
+   *  - #title: The sanitized element label for the field instance, ready for
+   *    output.
+   *  - #description: The sanitized element description for the field instance,
+   *    ready for output.
+   *  - #required: A Boolean indicating whether the element value is required;
+   *    for required multiple value fields, only the first widget's values are
+   *    required.
+   *  - #delta: The order of this item in the array of subelements; see
+   *    $delta above
+   *
+   * @return
+   *   A drupal renderable array or HTML or an empty string if no
+   *   theming is to be applied.
+   */
+  public function theme($element) {
   }
 }

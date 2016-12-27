@@ -50,14 +50,6 @@ class chado_linker__cvterm extends ChadoField {
   // and field_create_instance().
   public static $no_ui = FALSE;
 
-  /**
-   *
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-  }
-
 
   /**
    *

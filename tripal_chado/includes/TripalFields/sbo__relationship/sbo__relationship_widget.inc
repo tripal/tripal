@@ -120,7 +120,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
     //$widget['#element_validate'] = array('sbo__relationship_validate');
-    $widget['#theme'] = 'sbo__relationship_widget';
     $widget['#prefix'] =  "<span id='$field_table-$delta'>";
     $widget['#suffix'] =  "</span>";
 
@@ -329,170 +328,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   }
 
   /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->instance['settings']['chado_table'];
-    $field_column = $this->instance['settings']['chado_column'];
-    $base_table = $this->instance['settings']['base_table'];
-
-    $schema = chado_get_schema($field_table);
-    $fkeys = $schema['foreign keys'];
-
-    // Handle special cases
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    if ($field_table == 'nd_reagent_relationship') {
-      $subject_id_key = 'subject_reagent_id';
-      $object_id_key = 'object_reagent_id';
-    }
-    else if ($field_table == 'project_relationship') {
-      $subject_id_key = 'subject_project_id';
-      $object_id_key = 'object_project_id';
-    }
-
-    foreach ($items as $delta => $item) {
-      $subject_id = $item['chado' . $field_table . '__' . $subject_id_key];
-      $object_id = $item['chado' . $field_table . '__' . $object_id_key];
-      $type_id = $item['chado' . $field_table . '__type_id'];
-      $type_id = isset($item['type_id']) ? $item['chado' . $field_table . '__type_id'] : $type_id;
-      $type_name = isset($item['type_name']) ? $item['type_name'] : '';
-      $subject_name = $item['subject_name'];
-      $object_name = $item['object_name'];
-
-
-      // If the row is empty then just continue, there's nothing to validate.
-      if (!$type_id and !$type_name and !$subject_name and !$object_name) {
-        continue;
-      }
-
-      // Make sure we have values for all of the fields.
-      $form_error = FALSE;
-      if (!$type_name && !$type_id) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'sbo__relationship',
-          'message' => t("Please provide the type of relationship."),
-        );
-      }
-      if ($entity and !$subject_name) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'sbo__relationship',
-          'message' => t("Please provide the subject of the relationship."),
-        );
-      }
-      if ($entity and !$object_name) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
-          'error' => 'sbo__relationship',
-          'message' => t("Please provide the object of the relationship."),
-        );
-      }
-      if ($form_error) {
-        continue;
-      }
-
-      // Before submitting this form we need to make sure that our subject_id and
-      // object_ids are real records.  There are two ways to get the record, either
-      // just with the text value or with an [id: \d+] string embedded.  If the
-      // later we will pull it out.
-      $subject_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
-      $matches = array();
-      if ($entity) {
-        if(preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-          $subject_id =  $matches[1];
-          $values = array($fkey_rcolumn => $subject_id);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
-            );
-          }
-        }
-        else {
-          $values = array('uniquename' => $subject_name);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject record cannot be found. Please check spelling."),
-            );
-          }
-          elseif (count($subject) > 1) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject is not unique and therefore the relationship cannot be made."),
-            );
-          }
-        }
-      }
-
-      // Now check for a matching object.
-      $object_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
-      $matches = array();
-      if ($entity) {
-        if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-          $object_id = $matches[1];
-          $values = array($fkey_rcolumn => $object_id);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
-            );
-          }
-        }
-        else {
-          $values = array('uniquename' => $object_name);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($object) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The object record cannot be found. Please check spelling."),
-            );;
-          }
-          elseif (count($object) > 1) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
-              'error' => 'sbo__relationship',
-              'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
-            );
-          }
-        }
-      }
-
-      // Make sure that either our object or our subject refers to the base record.
-      if ($entity) {
-        $chado_record_id = $entity->chado_record_id;
-        if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-          $errors[$this->field['field_name']][$langcode][$delta][] = array(
-            'error' => 'sbo__relationship',
-            'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
-          );
-        }
-
-        // Make sure that the object and subject are not both the same thing.
-        if ($object_id == $subject_id) {
-          $errors[$this->field['field_name']][$langcode][$delta][] = array(
-            'error' => 'sbo__relationship',
-            'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
-          );
-        }
-      }
-    }
-  }
-
-
-  /**
    *
    * @see TripalFieldWidget::submit()
    */
@@ -564,39 +399,33 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__type_id'] = $type_name;
     $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__rank'] = $item['_weight'];
   }
-}
 
-
-/**
- * Theme function for the sbo__relationship_widget.
- */
-function theme_sbo__relationship_widget($variables) {
-  $element = $variables['element'];
-  $field_name = $element['#field_name'];
-  $field = field_info_field($field_name);
-  $field_type = $field['type'];
-  $field_table = $this->instance['settings']['chado_table'];
-  $field_column = $this->instance['settings']['chado_column'];
-  $layout = "
+  /**
+   * Theme function for the sbo__relationship_widget.
+   */
+  public function theme($element) {
+    $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .
-        drupal_render($element['subject_name']) . "
+          drupal_render($element['subject_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-        drupal_render($element['vocabulary']) . "
+          drupal_render($element['vocabulary']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-        drupal_render($element['type_name']) . "
+          drupal_render($element['type_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-        drupal_render($element['type_id']) . "
+          drupal_render($element['type_id']) . "
         </div>
-        <div class=\"chado-linker--relationship-widget-item\">" .
-        drupal_render($element['object_name']) . "
+        <div>" .
+          drupal_render($element['object_name']) . "
         </div>
       </div>
     ";
-        return $layout;
+    return $layout;
+  }
+
 }
 
 function theme_sbo__relationship_instance_settings ($variables) {
@@ -611,15 +440,15 @@ function theme_sbo__relationship_instance_settings ($variables) {
   $layout = drupal_render($option1);
   $layout .= drupal_render($option1_vocabs);
   $layout .=
-  drupal_render($option2) .
-  "<div class=\"chado-linker--relationship-instance-settings-option2\">" .
-  "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
-  drupal_render($option2_vocab) .
-  "</div>" .
-  "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
-  drupal_render($option2_parent) .
-  "</div>" .
-  "</div>";
+    drupal_render($option2) .
+    "<div class=\"chado-linker--relationship-instance-settings-option2\">" .
+    "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
+    drupal_render($option2_vocab) .
+    "</div>" .
+    "<div class=\"chado-linker--relationship-instance-settings-option2-item\">" .
+    drupal_render($option2_parent) .
+    "</div>" .
+    "</div>";
   $layout .= drupal_render($option3);
   $layout .= drupal_render($rtype);
   return $layout;

@@ -64,7 +64,6 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
     //$widget['#element_validate'] = array('sbo__database_cross_reference_widget_validate');
-    $widget['#theme'] = 'sbo__database_cross_reference_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
     $widget['#suffix'] =  "</span>";
 
@@ -142,67 +141,6 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     }
   }
 
-  /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $table_name = $this->instance['settings']['chado_table'];
-    $field_table = $this->instance['settings']['chado_table'];
-    $field_column = $this->instance['settings']['chado_column'];
-    $base_table = $this->instance['settings']['base_table'];
-    $schema = chado_get_schema($table_name);
-    $pkey = $schema['primary key'][0];
-    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-    $fkey = $fkeys[0];
-
-
-    // Get the field values.
-    foreach ($items as $delta => $values) {
-
-      // Get the field values.
-      $dbxref_id = $values['chado-' . $field_table . '__dbxref_id'];
-      $db_id = $values['db_id'];
-      $accession = $values['accession'];
-      $version = $values['version'];
-      $description = $values['description'];
-
-      // Make sure that if a database ID is provided that an accession is also
-      // provided.  Here we use the form_set_error function rather than the
-      // form_error function because the form_error will add a red_highlight
-      // around all of the fields in the fieldset which is confusing as it's not
-      // clear to the user what field is required and which isn't. Therefore,
-      // we borrow the code from the 'form_error' function and append the field
-      // so that the proper field is highlighted on error.
-      if (!$db_id and $accession) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided."),
-          'error' => 'sbo__database_cross_reference',
-        );
-      }
-      if ($db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided."),
-          'error' => 'sbo__database_cross_reference',
-        );
-      }
-      if (!$db_id and !$accession and ($version or $description)) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided."),
-          'error' => 'sbo__database_cross_reference',
-        );
-      }
-    }
-  }
-
 
   /**
    *
@@ -245,4 +183,69 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__dbxref_id'] = '';
     }
   }
+
+  /**
+   * @see TripalFieldWidget::theme()
+   */
+  public function theme($element) {
+    $element = $variables['element'];
+
+    // These two fields were added to the widget to help identify the fields
+    // for layout.
+    $table_name = $element['#table_name'];
+    $fkey = $element['#fkey_field'];
+
+    $layout = "
+      <div class=\"secondary-dbxref-widget\">
+        <div class=\"secondary-dbxref-widget-item\">" .
+          drupal_render($element['db_id']) . "
+        </div>
+        <div class=\"secondary-dbxref-widget-item\">" .
+          drupal_render($element['accession']) . "
+        </div>
+        <div class=\"secondary-dbxref-widget-item\">" .
+          drupal_render($element['version']) . "
+        </div>
+        <div class=\"secondary-dbxref-widget-item\">" .
+          drupal_render($element['description']) . "
+        </div>
+        <div class=\"secondary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
+      </div>
+    ";
+
+    return $layout;
+  }
+}
+
+
+/**
+ * An Ajax callback for the dbxref widget.
+ */
+function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_state) {
+
+  $field_name = $form_state['triggering_element']['#parents'][0];
+  $delta = $form_state['triggering_element']['#parents'][2];
+  $field = field_info_field($field_name);
+  $field_type = $field['type'];
+  $field_table = $this->instance['settings']['chado_table'];
+  $field_column = $this->instance['settings']['chado_column'];
+  $field_prefix = 'chado-' . $field_table . '__dbxref_id';
+
+  // Check to see if this dbxref already exists. If not then
+  // give a notice to the user that the dbxref will be added.
+  $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
+  $db_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
+  if ($db_id and $accession) {
+    $values = array(
+      'db_id' => $db_id,
+      'accession' => $accession,
+    );
+    $options = array('is_duplicate' => TRUE);
+    $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
+    if (!$has_duplicate) {
+      drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
+    }
+  }
+
+  return $form[$field_name]['und'][$delta];
 }

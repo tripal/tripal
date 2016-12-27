@@ -400,7 +400,6 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
  */
 function tripal_chado_field_storage_query($query) {
 //print_r($query->fieldConditions);
-
   // The conditions and order bys are reorganized into a filters array for the
   // chado_select_record function()
   $filters = array();
@@ -421,89 +420,110 @@ function tripal_chado_field_storage_query($query) {
     $field_type = $field['type'];
     $field_module = $field['module'];
     $settings = $field['settings'];
-    $chado_table = $settings['chado_table'];
-    $chado_column = $settings['chado_column'];
 
-    // Set the value for this field search.
-    $subfields = explode('.', $column);
-    //print_r($subfields);
-    if (count($subfields) > 1) {
-      // Get the term for this field's column and replace the field_name with
-      // the term.  We need to do this for the recursive function to work.
-      // We must lowercase the term and underscore it because that's how we
-      // can support case-insensitivity and lack of spacing such as for
-      // web services.
-      $subfield1 = tripal_get_chado_semweb_term($chado_table, $chado_column, array('return_object' => TRUE));
-      $subfields[0] = strtolower(preg_replace('/ /', '_', $subfield1->name));
-      $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value);
-      $value = array_shift($value);
-    }
-    else {
-      $value = $condition['value'];
-    }
+    // The Chado settings for a field are part of the instance and each bundle
+    // can have the same field but with different Chado mappings. Therefore,
+    // we need to iterate through the bundles to get the field instances.
+    $bundles = $field['bundles'];
+    foreach ($bundles['TripalEntity'] as $bundle_name) {
 
-    // Use the appropriate operator.
-    $operator = $condition['operator'] ? $condition['operator'] : '=';
-    switch ($operator) {
-      case '=':
-        $filters[$chado_table][$chado_column] = $value;
-        break;
-      case '>':
-      case '>=':
-      case '<':
-      case '<=':
-        $filters[$chado_table][$chado_column] = array(
-          'op' => $operator,
-          'data' => $value,
-        );
-        break;
-      case '<>':
-        $filters[$chado_table][$chado_column] = array(
-          'op' => '<>',
-          'data' => $value,
-        );
-        break;
-      case 'CONTAINS':
-        $filters[$chado_table][$chado_column] = array(
-          'op' => 'LIKE',
+      // If there is a bundle filter for the entity and if this bundle is not in
+      if (array_key_exists('bundle', $query->entityConditions)) {
+        if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
+            !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
+          continue;
+        }
+        else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
+          continue;
+        }
+      }
+
+      // Get the Chado mapping for this instance.
+      $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+      $chado_table = $instance['settings']['chado_table'];
+      $chado_column = $instance['settings']['chado_column'];
+
+      // Set the value for this field search.
+      $subfields = explode('.', $column);
+      //print_r($subfields);
+      if (count($subfields) > 1) {
+        // Get the term for this field's column and replace the field_name with
+        // the term.  We need to do this for the recursive function to work.
+        // We must lowercase the term and underscore it because that's how we
+        // can support case-insensitivity and lack of spacing such as for
+        // web services.
+        $subfield1 = tripal_get_chado_semweb_term($chado_table, $chado_column, array('return_object' => TRUE));
+        $subfields[0] = strtolower(preg_replace('/ /', '_', $subfield1->name));
+        $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value);
+        $value = array_shift($value);
+      }
+      else {
+        $value = $condition['value'];
+      }
+
+      // Use the appropriate operator.
+      $operator = $condition['operator'] ? $condition['operator'] : '=';
+      switch ($operator) {
+        case '=':
+          $filters[$chado_table][$chado_column] = $value;
+          break;
+        case '>':
+        case '>=':
+        case '<':
+        case '<=':
+          $filters[$chado_table][$chado_column] = array(
+            'op' => $operator,
+            'data' => $value,
+          );
+          break;
+        case '<>':
+          $filters[$chado_table][$chado_column] = array(
+            'op' => '<>',
+            'data' => $value,
+          );
+          break;
+        case 'CONTAINS':
+          $filters[$chado_table][$chado_column] = array(
+            'op' => 'LIKE',
+            'data' => '%' . $value . '%',
+          );
+          break;
+        case 'NOT':
+          $filters[$chado_table][$chado_column] = array(
+          'op' => 'NOT LIKE',
           'data' => '%' . $value . '%',
-        );
-        break;
-      case 'NOT':
-        $filters[$chado_table][$chado_column] = array(
-        'op' => 'NOT LIKE',
-        'data' => '%' . $value . '%',
-        );
-        break;
-      case 'STARTS WITH':
-        $filters[$chado_table][$chado_column] = array(
-          'op' => 'LIKE',
+          );
+          break;
+        case 'STARTS WITH':
+          $filters[$chado_table][$chado_column] = array(
+            'op' => 'LIKE',
+            'data' => $value . '%',
+          );
+          break;
+        case 'NOT STARTS':
+          $filters[$chado_table][$chado_column] = array(
+          'op' => 'NOT LIKE',
           'data' => $value . '%',
-        );
-        break;
-      case 'NOT STARTS':
-        $filters[$chado_table][$chado_column] = array(
-        'op' => 'NOT LIKE',
-        'data' => $value . '%',
-        );
-        break;
-      case 'ENDS WITH':
-        $filters[$chado_table][$chado_column] = array(
-        'op' => 'LIKE',
-        'data' => '%' . $value,
-        );
-        break;
-      case 'NOT ENDS':
-        $filters[$chado_table][$chado_column] = array(
-        'op' => 'NOT LIKE',
-        'data' => '%' . $value,
-        );
-        break;
-      default:
-        // unrecognized operation.
-        break;
+          );
+          break;
+        case 'ENDS WITH':
+          $filters[$chado_table][$chado_column] = array(
+          'op' => 'LIKE',
+          'data' => '%' . $value,
+          );
+          break;
+        case 'NOT ENDS':
+          $filters[$chado_table][$chado_column] = array(
+          'op' => 'NOT LIKE',
+          'data' => '%' . $value,
+          );
+          break;
+        default:
+          // unrecognized operation.
+          break;
+      }
     }
-  }
+  } // end foreach ($query->fieldConditions as $index => $condition) {
 
   // Now get the list for sorting.
   foreach ($query->order as $index => $sort) {
@@ -524,8 +544,9 @@ function tripal_chado_field_storage_query($query) {
 
     $sorting[$chado_table][$chado_column] = $direction;
   }
+  //print_r($filters);
 
-  // Iterate through the filters and perform the query
+  // Iterate through the filters and perform the query.
   $entity_ids = array();
   foreach ($filters as $chado_table => $values) {
     //print_r($chado_table);
@@ -550,8 +571,14 @@ function tripal_chado_field_storage_query($query) {
       $select->condition('record_id', $record_ids);
       // If a bundle is specified then make sure we match on the bundle.
       if (array_key_exists('bundle', $query->entityConditions)) {
-        $select->condition('bundle', $query->entityConditions['bundle']);
+        if (strtolower($query->entityConditions['bundle']['operator']) == 'in') {
+          $select->condition('bundle', $query->entityConditions['bundle'], $operator);
+        }
+        else {
+          $select->condition('bundle', $query->entityConditions['bundle']);
+        }
       }
+
       $results = $select->execute();
       while ($result = $results->fetchObject()) {
         $entity_ids[] = array($result->entity_id, 0, $result->bundle);

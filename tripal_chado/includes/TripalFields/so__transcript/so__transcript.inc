@@ -57,15 +57,6 @@ class so__transcript extends ChadoField {
 
   /**
    *
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-  }
-
-
-  /**
-   *
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {

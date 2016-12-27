@@ -324,25 +324,29 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $response['label'] = $bundle->label . " collection";
 
   // Iterate through the fields and create a $field_mapping array that makes
-  // it easier to determine which filter criteria belongs to which field.
+  // it easier to determine which filter criteria belongs to which field. The
+  // key is the label for the field and the value is the field name. This way
+  // user's can use the field label or the field name to form a query.
   $field_mapping = array();
   $fields = field_info_fields();
   foreach ($fields as $field) {
     if (array_key_exists('TripalEntity', $field['bundles'])) {
       foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
         if ($bundle_name == $bundle->name) {
-          if (array_key_exists('semantic_web', $field['settings'])) {
-            list($vocabulary, $accession) = explode(':', $field['settings']['semantic_web']);
+          $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+          if (array_key_exists('term_accession', $instance['settings'])){
+            $vocabulary = $instance['settings']['term_vocabulary'];
+            $accession = $instance['settings']['term_accession'];
             $term = tripal_get_term_details($vocabulary, $accession);
             $key = $term['name'];
             $key = strtolower(preg_replace('/ /', '_', $key));
             $field_mapping[$key] = $field['field_name'];
+            $field_mapping[$field['field_name']] = $field['field_name'];
           }
         }
       }
     }
   }
-
   // Convert the filters to their field names
   $new_params = array();
   foreach ($params as $param => $value) {
@@ -425,6 +429,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $cquery = clone $query;
   $cquery->count();
   $num_records = $cquery->execute();
+
   if (!$num_records) {
     $num_records = 0;
   }

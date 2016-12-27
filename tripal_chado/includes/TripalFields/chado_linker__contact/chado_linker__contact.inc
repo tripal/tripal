@@ -57,14 +57,6 @@ class chado_linker__contact extends ChadoField {
   protected $instance;
 
 
-  /**
-   *
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-  }
-
 
   /**
    *

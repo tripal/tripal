@@ -587,8 +587,17 @@ function tripal_field_instance_settings_form_submit($form, &$form_state) {
 /**
  *
  */
-function tripal_field_widget_form_validate($form, &$form_state) {
-
+function tripal_field_widget_form_validate($element, &$form_state, $form) {
+  $field = $element['#field'];
+  $instance = $element['#instance'];
+  $widget_class = $element['#field_name'] . '_widget';
+  $langcode = $element['#language'];
+  $delta = $element['#delta'];
+  tripal_load_include_field_class($widget_class);
+  if (class_exists($widget_class)) {
+    $widget = new $widget_class($field, $instance);
+    $widget->validate($element, $form, $form_state, $langcode, $delta);
+  }
 }
 
 
@@ -755,4 +764,23 @@ function tripal_field_is_empty($item, $field) {
 
   // Otherwise, the field is empty.
   return TRUE;
+}
+
+/**
+ * Theme function for all TripalFieldWidget objects.
+ *
+ * @param $variables
+ */
+function theme_tripal_field_default($variables) {
+  $element = $variables['element'];
+  $field = $element['#field'];
+  $instance = $element['#instance'];
+  $widget_class = $element['#field_name'] . '_widget';
+  $langcode = $element['#language'];
+  $delta = $element['#delta'];
+  tripal_load_include_field_class($widget_class);
+  if (class_exists($widget_class)) {
+    $widget = new $widget_class($field, $instance);
+    return $widget->theme($element);
+  }
 }

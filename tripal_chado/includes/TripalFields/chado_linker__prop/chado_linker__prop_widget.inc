@@ -85,21 +85,6 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
   }
 
   /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
-
-  /**
    *
    * @see TripalFieldWidget::submit()
    */

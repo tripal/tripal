@@ -123,7 +123,7 @@ function tripal_ws_services() {
     // TODO: What do we do if no version is provided?
   }
 
-  drupal_add_http_header('Content-Type', 'application/ld+json');
+  drupal_add_http_header('Content-Type', 'application/json');
   print drupal_json_encode($response);
 }
 

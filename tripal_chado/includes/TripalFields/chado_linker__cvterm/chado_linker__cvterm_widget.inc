@@ -75,7 +75,6 @@ class chado_linker__cvterm_widget extends ChadoFieldWidget {
 
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
-    $widget['#theme'] = 'chado_linker__cvterm_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
@@ -142,21 +141,6 @@ class chado_linker__cvterm_widget extends ChadoFieldWidget {
       '#markup' => '',
     );
   }
-
-  /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
 
   /**
    *

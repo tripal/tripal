@@ -37,21 +37,6 @@ class data__sequence_checksum_widget extends ChadoFieldWidget {
   }
 
   /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
-
-  /**
    *
    * @see TripalFieldWidget::submit()
    */
@@ -63,7 +48,7 @@ class data__sequence_checksum_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    // Get the residues so we can calculate teh length.
+    // Get the residues so we can calculate the length.
     $residues = isset($form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues']) ? $form_state['values']['feature__residues'][$langcode][0]['chado-feature__residues'] : '';
 
     if ($residues) {

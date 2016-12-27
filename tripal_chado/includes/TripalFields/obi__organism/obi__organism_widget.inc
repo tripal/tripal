@@ -43,4 +43,17 @@ class obi__organism_widget extends ChadoFieldWidget {
       '#delta' => $delta,
     );
   }
+
+  /**
+   * @see TripalFieldWidget::validate()
+   */
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
+
+    $field_name = $this->field['field_name'];
+    $field_table = $this->instance['settings']['chado_table'];
+
+    // Make sure the value is set to the organism_id
+    $organism_id = $form_state['values'][$field_name][$langcode][0]['chado-' . $field_table . '__organism_id'];
+    $form_state['values'][$field_name][$langcode][0]['value'] = $organism_id;
+  }
 }

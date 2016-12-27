@@ -18,17 +18,17 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    
+
     $type_id = 0;
     if (count($items) > 0 and array_key_exists('organism__type_id', $items[0])) {
       $type_id = $items[0]['organism__type_id'];
     }
-    
+
     $form['value'] = array(
       '#type' => 'value',
       '#value' =>  array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    
+
     $cv = tripal_get_default_cv($field_table, $field_column);
     $options = array();
     if ($cv) {
@@ -45,21 +45,6 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
       '#delta' => $delta,
     );
   }
-
-  /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
 
   /**
    *

@@ -9,6 +9,7 @@ class TripalFieldQuery extends EntityFieldQuery {
   protected $field_storage = array();
 
   public function execute() {
+
     // Give a chance to other modules to alter the query.
     drupal_alter('entity_query', $this);
     $this->altered = TRUE;

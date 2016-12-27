@@ -47,7 +47,6 @@ class data__accession_widget extends ChadoFieldWidget {
     $options = tripal_get_db_select_options();
 
     //$widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
-    $widget['#theme'] = 'data__accession_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
     $widget['#suffix'] =  "</span>";
 
@@ -56,7 +55,7 @@ class data__accession_widget extends ChadoFieldWidget {
       '#title' => $element['#title'],
       '#description' =>  $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#theme' => 'data__accession_widget',
+//      '#theme' => 'data__accession_widget',
       //'#collapsible' => TRUE,
       //'#collapsed' => $collapsed,
     );
@@ -152,6 +151,45 @@ class data__accession_widget extends ChadoFieldWidget {
       }
     }
   }
+
+  /**
+   * @see TripalFieldWidget::theme()
+   */
+  public function theme($element) {
+    $layout = "
+      <div class=\"primary-dbxref-widget\">
+        <div class=\"primary-dbxref-widget-item\">" .
+          drupal_render($element['db_id']) . "
+        </div>
+        <div class=\"primary-dbxref-widget-item\">" .
+          drupal_render($element['accession']) . "
+        </div>
+        <div class=\"primary-dbxref-widget-item\">" .
+          drupal_render($element['version']) . "
+        </div>
+        <div class=\"primary-dbxref-widget-item\">" .
+          drupal_render($element['description']) . "
+        </div>
+        <div class=\"primary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
+      </div>
+    ";
+
+    //   $classes = array();
+    //   $classes[] = 'collapsible';
+    //   $theme_settings = $element['#theme_settings'];
+    //   if ($theme_settings['#collapsed'] == FALSE) {
+    //     $classes[] = 'collapsed';
+    //   }
+    $fieldset = array(
+      '#title' => $element['#title'],
+      '#value' => '',
+      '#description' => $element['#description'],
+      '#children' => $layout,
+      //    '#attributes' => array('class' => $classes),
+    );
+
+    return theme('fieldset', array('element' => $fieldset));
+  }
 }
 
 /**
@@ -182,46 +220,3 @@ function data__accession_widget_form_ajax_callback($form, $form_state) {
   return $form[$field_name];
 }
 
-function theme_data__accession_widget($variables) {
-  $element = $variables['element'];
-  $field_name = $element['#field_name'];
-  $field = field_info_field($field_name);
-  $field_type = $field['type'];
-  $field_table = $this->instant['settings']['chado_table'];
-  $field_column = $this->instant['settings']['chado_column'];
-  $field_prefix = 'chado-' . $field_table . '__' . $field_column;
-
-  $layout = "
-      <div class=\"primary-dbxref-widget\">
-        <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['db_id']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['accession']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['version']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['description']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
-      </div>
-    ";
-
-  //   $classes = array();
-  //   $classes[] = 'collapsible';
-  //   $theme_settings = $element['#theme_settings'];
-  //   if ($theme_settings['#collapsed'] == FALSE) {
-  //     $classes[] = 'collapsed';
-  //   }
-  $fieldset = array(
-    '#title' => $element['#title'],
-    '#value' => '',
-    '#description' => $element['#description'],
-    '#children' => $layout,
-    //    '#attributes' => array('class' => $classes),
-  );
-
-  return theme('fieldset', array('element' => $fieldset));
-}

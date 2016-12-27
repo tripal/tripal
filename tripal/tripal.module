@@ -346,7 +346,13 @@ function tripal_theme($existing, $type, $theme, $path) {
     'tripal_add_list' => array(
       'variables' => array('content' => NULL),
     ),
+    // Themeing for all fields.
+    'tripal_field_default' => array(
+      'render element' => 'element',
+      'file' => 'includes/tripal.fields.inc',
+    ),
   );
+
   return $themes;
 }
 

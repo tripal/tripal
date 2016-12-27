@@ -73,7 +73,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
 
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-    $widget['#theme'] = 'schema__alternate_name_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
@@ -126,21 +125,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
     );
   }
-
-  /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
 
   /**
    *
@@ -201,40 +185,37 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] = '';
     }
   }
-}
 
+  /**
+   * @see TripalFieldWidget::theme()
+   */
+  public function theme($element) {
 
-/**
- * Theme function for the synonym widget.
- *
- * @param $variables
- */
-function theme_schema__alternate_name_widget($variables) {
-  $element = $variables['element'];
+    // These two fields were added to the widget to help identify the fields
+    // for layout.
+    $table_name = $element['#table_name'];
+    $fkey = $element['#fkey_field'];
 
-  // These two fields were added to the widget to help identify the fields
-  // for layout.
-  $table_name = $element['#table_name'];
-  $fkey = $element['#fkey_field'];
-
-  $layout = "
+    $layout = "
       <div class=\"synonym-widget\">
         <div class=\"synonym-widget-item\">" .
-        drupal_render($element['name']) . "
+          drupal_render($element['name']) . "
         </div>
         <div>" .
-        drupal_render($element['type_id']) . "
+          drupal_render($element['type_id']) . "
         </div>
         <div class=\"synonym-widget-item\">" .
-        drupal_render($element['chado-' . $table_name . '__is_internal']) . "
+          drupal_render($element['chado-' . $table_name . '__is_internal']) . "
         </div>
         <div>" .
-        drupal_render($element['chado-' . $table_name . '__is_current']) . "
+          drupal_render($element['chado-' . $table_name . '__is_current']) . "
         </div>
       </div>
     ";
 
-        return $layout;
+    return $layout;
+  }
+
 }
 
 /**

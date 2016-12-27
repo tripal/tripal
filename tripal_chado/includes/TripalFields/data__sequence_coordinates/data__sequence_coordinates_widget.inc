@@ -15,20 +15,6 @@ class data__sequence_coordinates_widget extends ChadoFieldWidget {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
   }
 
-  /**
-   * Performs validation of the widgetForm.
-   *
-   * Use this validate to ensure that form values are entered correctly.  Note
-   * this is different from the validate() function which ensures that the
-   * field data meets expectations.
-   *
-   * @param $form
-   * @param $form_state
-   */
-  public function validate($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-
-  }
-
 
   /**
    *

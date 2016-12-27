@@ -54,16 +54,6 @@ class taxrank__infraspecific_taxon extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
-
-  /**
-   *
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
-
-  }
-
-
   /**
    *
    * @see TripalField::load()

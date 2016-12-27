@@ -42,7 +42,6 @@ function tripal_chado_views_data_alter(&$data) {
  * for our storage engine.
  */
 function tripal_chado_add_field_views_data(&$data) {
-return;
   foreach (field_info_fields() as $field) {
     if ($field['storage']['type'] != 'field_chado_storage') {
       continue;
