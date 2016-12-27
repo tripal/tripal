@@ -41,10 +41,9 @@ class TripalField {
     'term_name' => 'Thing',
     // The unique ID (i.e. accession) of the term.
     'term_accession' => 'Thing',
-    // Set to TRUE if the site admin is allowed to change the term
-    // type. This will create form elements when editing the field instance
-    // to allow the site admin to change the term settings above.
-    'term_fixed' => TRUE,
+    // Set to TRUE if the site admin is not allowed to change the term
+    // type, otherwise the admin can change the term mapped to a field.
+    'term_fixed' => FALSE,
   );
 
   // The default widget for this field.

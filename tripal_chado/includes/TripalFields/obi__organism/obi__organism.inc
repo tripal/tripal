@@ -25,7 +25,7 @@ class obi__organism extends ChadoField {
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
-    'term_fixed' => TRUE,
+    'term_fixed' => FALSE,
     // The format for display of the organism.
     'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
   );
