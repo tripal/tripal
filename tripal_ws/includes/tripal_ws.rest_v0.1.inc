@@ -527,13 +527,11 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
 
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.
-  // TODO: should we allow for custom ordering of fields for web services
-  // or use the default display ordering?
   $instances = field_info_instances('TripalEntity', $bundle->name);
 
   uasort($instances, function($a, $b) {
-    $a_weight = (is_array($a) && isset($a['display']['default']['weight'])) ? $a['display']['default']['weight'] : 0;
-    $b_weight = (is_array($b) && isset($b['display']['default']['weight'])) ? $b['display']['default']['weight'] : 0;
+    $a_weight = (is_array($a) && isset($a['widget']['weight'])) ? $a['widget']['weight'] : 0;
+    $b_weight = (is_array($b) && isset($b['widget']['weight'])) ? $b['widget']['weight'] : 0;
 
     if ($a_weight == $b_weight) {
       return 0;
@@ -563,27 +561,25 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
     // term from the vocabulary that the field is assigned. But in the
     // case that the field is not assigned a term, we must use the field name.
     $field_name = $instance['field_name'];
-    $field_settings = $field['settings'];
-    $key = $field_name;
-    $key_adj = strtolower(preg_replace('/ /', '_', $key));
-    if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
-      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
-      $term = tripal_get_term_details($vocabulary, $accession);
-      if ($term) {
-        $key = $term['name'];
-        $key_adj = strtolower(preg_replace('/ /', '_', $key));
-        $response['@context'][$key_adj] = array(
-          '@id' => $term['url'],
-        );
-      }
+    $vocabulary = $instance['settings']['term_vocabulary'];
+    $accession = $instance['settings']['term_accession'];
+    $term = tripal_get_term_details($vocabulary, $accession);
+    $term = tripal_get_term_details($vocabulary, $accession);
+    if ($term) {
+      $key = $term['name'];
+      $key_adj = strtolower(preg_replace('/ /', '_', $key));
+      $response['@context'][$key_adj] = $term['url'];
     }
 
     // If this field should not be attached by default then just add a link
     // so that the caller can get the information separately.
     $instance_settings = $instance['settings'];
-    if (array_key_exists('auto_attach', $instance_settings) and
+    if (array_key_exists('auto_attach', $instance['settings']) and
         $instance_settings['auto_attach'] != TRUE) {
-      $response['@context'][$key_adj]['@type'] = '@id';
+      $response['@context'][$key_adj] = array(
+        '@id' => $response['@context'][$key_adj],
+        '@type' => '@id'
+      );
       $response[$key_adj] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
       continue;
     }
@@ -593,8 +589,8 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
   }
 
   // Lastly, add in the terms used into the @context section.
-  $response['@context']['label'] = 'rdfs:label';
-  $response['@context']['itemPage'] = 'schema:itemPage';
+  $response['@context']['label'] = 'https://www.w3.org/TR/rdf-schema/#ch_label';
+  $response['@context']['itemPage'] = 'https://schema.org/ItemPage';
 
   //   $response['operation'][] = array(
   //     '@type' => 'hydra:DeleteResourceOperation',
@@ -655,7 +651,7 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
 
   // If we have an argument in the 4th element (3rd index) then the user
-  // is requesting to epxand the details of a field that was not
+  // is requesting to expand the details of a field that was not
   // initially attached to the enity.
   $field_arg = '';
   if (array_key_exists(3, $ws_path)) {
@@ -781,7 +777,7 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
       }
     }
 
-    // Recurse through the values array and set the entity elemtns
+    // Recurse through the values array and set the entity elemetns
     // and add the fields to the context.
     tripal_ws_services_v0_1_get_content_add_field_context($items[$i], $response, $api_url);
 
@@ -813,13 +809,13 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
   // If we have more than one value then set the response to be a collection.
   if (count($values) > 1) {
 
-  // If this is the field page then the Collection is added directly to the
+    // If this is the field page then the Collection is added directly to the
     // response, otherwise, it's added under the field $key.
     if ($is_field_page) {
-    $response['@type'] = 'Collection';
-        $response['totalItems'] = count($values);
-        $response['label'] = $instance['label'];
-        $response['member'] = $values;
+      $response['@type'] = 'Collection';
+      $response['totalItems'] = count($values);
+      $response['label'] = $instance['label'];
+      $response['member'] = $values;
     }
     else {
       $response[$key] = array(

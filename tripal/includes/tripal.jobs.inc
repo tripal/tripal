@@ -236,6 +236,7 @@ function tripal_jobs_report() {
  * @ingroup tripal_jobs
  */
 function tripal_jobs_view($job_id) {
+
   // get the job record
   $sql =
     "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
@@ -277,7 +278,10 @@ function tripal_jobs_view($job_id) {
   // generate the list of arguments for display
   $arguments = '';
   foreach ($job->arguments as $key => $value) {
-     $arguments .= "$key: $value<br>";
+    if (is_array($value)) {
+      $value = print_r($value,TRUE);
+    }
+    $arguments .= "$key: $value<br>";
   }
 
   // build the links

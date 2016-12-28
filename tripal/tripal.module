@@ -92,22 +92,6 @@ function tripal_menu() {
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
-  $items['admin/tripal/tripal_jobs'] = array(
-    'title' => 'Jobs',
-    'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
-        cases, long-running tasks are too slow to complete within a single
-        browser session.  The Tripal jobs system allows long-running tasks
-        to be submitted to a queue that can be executed manually by the
-        site admin or automatically using a module such as the ') .
-        l('Tripal Daemon', 'https://www.drupal.org/project/tripal_daemon', array('attributes' => array('target' => '_blank'))) .
-        ' extension module.',
-    'page callback' => 'tripal_jobs_admin_view',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 0,
-    'file' => 'includes/tripal.jobs.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-  );
 
   $items['admin/tripal/storage'] = array(
     'title' => 'Data Storage',
@@ -191,6 +175,21 @@ function tripal_menu() {
 */
 
   // Jobs Management
+  $items['admin/tripal/tripal_jobs'] = array(
+    'title' => 'Jobs',
+    'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
+        cases, long-running tasks are too slow to complete within a single
+        browser session.  The Tripal jobs system allows long-running tasks
+        to be submitted to a queue that can be executed manually by the
+        site admin or automatically using a module such as the ') .
+    l('Tripal Daemon', 'https://www.drupal.org/project/tripal_daemon', array('attributes' => array('target' => '_blank'))) .
+    ' extension module.',
+    'page callback' => 'tripal_jobs_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal.jobs.inc',
+  );
   $items['admin/tripal/tripal_jobs/help'] = array(
     'title' => 'Help',
     'description' => t('Help for the tripal job management system'),
@@ -207,6 +206,7 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
@@ -215,6 +215,7 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/view/%'] = array(
     'title' => 'Jobs Details',
@@ -223,6 +224,7 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
     'title' => 'Enable Jobs Administrative View',
@@ -230,6 +232,7 @@ function tripal_menu() {
     'page arguments' => array('tripal_admin_jobs', 'admin/tripal/tripal_jobs'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
 
   /*

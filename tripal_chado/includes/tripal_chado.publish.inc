@@ -10,6 +10,7 @@ function tripal_chado_publish_form($form, &$form_state) {
     $bundle_name = $form_state['values']['bundle_name'];
   }
 
+  // Build the list of available TripalEntity content types.
   $bundles = db_select('tripal_bundle', 'tb')
     ->fields('tb')
     ->orderBy('label', 'ASC')
@@ -56,7 +57,15 @@ function tripal_chado_publish_form($form, &$form_state) {
           in_array($bundle_name, $details['bundles']['TripalEntity'])) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+        $base_table = $instance['settings']['base_table'];
+        $chado_table = $instance['settings']['chado_table'];
+        $chado_field = $instance['settings']['chado_field'];
 
+        // For now, only handle filtering by fields that are mapped directly
+        // to the base table.
+        if ($base_table != $chado_table) {
+          continue;
+        }
 
         // Create a default element for this field.  This code
         // is adapted from the field_multiple-value_form() function.
@@ -143,6 +152,7 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
     foreach ($fields as $field_name => $details) {
       if (array_key_exists('TripalEntity', $details['bundles']) and
           in_array($bundle_name, $details['bundles']['TripalEntity']) and
+          array_key_exists($field_name, $form_state['values']) and
           array_key_exists('value', $form_state['values'][$field_name][$langcode][0])) {
         $value = $form_state['values'][$field_name][$langcode][0]['value'];
         if ($value) {
@@ -151,7 +161,10 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
       }
     }
     $args = array(
-      array('bundle_name' => $bundle_name, 'filters' => $filters),
+      array(
+        'bundle_name' => $bundle_name,
+        'filters' => $filters,
+      ),
     );
     $includes = array(
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),

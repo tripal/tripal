@@ -13,14 +13,15 @@
  * @params tablename: the name of the chado table you want to select the max rank from
  *    this table must contain a rank column of type integer
  * @params where_options: array(
- *                          <column_name> => array(
- *                            'type' => <type of column: INT/STRING>,
- *                            'value' => <the value you want to filter on>,
- *                            'exact' => <if TRUE use =; if FALSE use ~>,
- *                          )
- *        )
- *     where options should include the id and type for that table to correctly
- *     group a set of records together where the only difference are the value and rank
+ *   <column_name> => array(
+ *     'type' => <type of column: INT/STRING>,
+ *     'value' => <the value you want to filter on>,
+ *     'exact' => <if TRUE use =; if FALSE use ~>,
+ *    )
+ *  )
+ *  where options should include the id and type for that table to correctly
+ *  group a set of records together where the only difference are the value and rank
+ *
  * @return the maximum rank
  *
  * @ingroup tripal_chado_api

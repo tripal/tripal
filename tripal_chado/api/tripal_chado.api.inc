@@ -65,7 +65,9 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
 
+  // Get the incoming arguments from the $values array.
   $bundle_name = $values['bundle_name'];
+  $filters = array_key_exists('filters', $values) ? $values['filters'] : array();
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
   // Load the bundle entity so we can get information about which Chado
@@ -120,7 +122,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   }
 
   // If the type column is in the base table then add in the SQL for that.
-  if (!type_linker_table and $type_column) {
+  if (!$type_linker_table and $type_column) {
     $where .= "AND T.$type_column = :cvterm_id";
     $args[':cvterm_id'] = $cvterm_id;
   }
@@ -132,10 +134,26 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
 
+  // Now add in any additional filters
+  $fields = field_info_field_map();
+  foreach ($fields as $field_name => $details) {
+    if (array_key_exists('TripalEntity', $details['bundles']) and
+        in_array($bundle_name, $details['bundles']['TripalEntity']) and
+        in_array($field_name, array_keys($filters))){
+      $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+      $chado_table = $instance['settings']['chado_table'];
+      $chado_column = $instance['settings']['chado_column'];
+      if ($chado_table == $table) {
+        $where .= " AND T.$chado_column = :$field_name";
+        $args[":$field_name"] = $filters[$field_name];
+      }
+    }
+  }
   // First get the count
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
+
 
   // calculate the interval for updates
   $interval = intval($count / 1000);
