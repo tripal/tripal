@@ -142,14 +142,31 @@ function tripal_bundle_create($bundle, $args) {
 function tripal_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
-   $element = array();
-   $formatter_class = $display['type'];
-   $is_loaded = tripal_load_include_field_class($formatter_class);
-   if ($is_loaded) {
-     $formatter = new $formatter_class($field, $instance);
-     $formatter->view($element, $entity_type, $entity, $langcode, $items, $display);
-   }
-   return $element;
+  // Don't show any fields that don't have a controlled vocabulary term in
+  // the database.
+  $vocabulary = $instance['settings']['term_vocabulary'];
+  $accession = $instance['settings']['term_accession'];
+  $term = tripal_get_term_details($vocabulary, $accession);
+  if (!$term) {
+    tripal_set_message(t("The controlled vocabulary term, ':term (:term_name)', assigned to the
+        field, ':field', is not in the database. The field cannot be shown.
+        Please add the term and the field will appear below. ",
+        array(':field' => $field['field_name'],
+              ':term' => $vocabulary . ":" . $accession,
+              ':term_name' => $instance['settings']['term_name']
+        )),
+        TRIPAL_WARNING);
+    return;
+  }
+
+  $element = array();
+  $formatter_class = $display['type'];
+  $is_loaded = tripal_load_include_field_class($formatter_class);
+  if ($is_loaded) {
+    $formatter = new $formatter_class($field, $instance);
+    $formatter->view($element, $entity_type, $entity, $langcode, $items, $display);
+  }
+  return $element;
 }
 
 /**

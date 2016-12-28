@@ -12,7 +12,7 @@ class data__accession extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default lable for this field.
-  public static $default_label = 'Accession';
+  public static $default_label = 'Site Accession';
 
   // The default description for this field.
   public static $description = 'The unique stable accession (ID) for
@@ -59,11 +59,7 @@ class data__accession extends ChadoField {
 
     // Set some defauls for the empty record
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        'vocabulary' => '',
-        'accession' => '',
-        'URL' => '',
-      ),
+      'value' => '',
       'chado-' . $field_table . '__' . $field_column => '',
       'db_id' => '',
       'accession' => '',
@@ -77,11 +73,7 @@ class data__accession extends ChadoField {
       $dbxref = $record->$field_column;
       $value = $dbxref->db_id->name . ':' . $dbxref->accession;
       $entity->{$field_name}['und'][0] = array(
-        'value' => array(
-          'vocabulary' => $dbxref->db_id->name,
-          'accession' => $dbxref->accession,
-          'URL' => tripal_get_dbxref_url($dbxref),
-        ),
+        'value' => $dbxref->accession,
         'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
         'db_id'       => $dbxref->db_id->db_id,
         'accession'   => $dbxref->accession,

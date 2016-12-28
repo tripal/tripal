@@ -134,9 +134,7 @@ function tripal_ws_services() {
  */
 function tripal_ws_entity_load($entities, $type) {
   foreach ($entities as $entity) {
-    //if ($entiy->type = 'TripalEntity') {
-    //  dpm($entity);
-    //}
+
   }
 }
 

@@ -83,9 +83,9 @@ class chado_linker__prop extends ChadoField {
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
+      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__value' => '',
-      'chado-' . $field_table . '__type_id' => $cvterm_id,
+      'chado-' . $field_table . '__type_id' => '',
       'chado-' . $field_table . '__rank' => '',
     );
 
@@ -104,7 +104,7 @@ class chado_linker__prop extends ChadoField {
       $property = $properties[$i];
       foreach ($schema['fields'] as $fname => $details) {
         $entity->{$field_name}['und'][$i] = array(
-          'value' => array(),
+          'value' => $property->value,
           'chado-' . $field_table . '__' . $pkey => $property->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $property->$fkey_lcolumn,
           'chado-' . $field_table . '__value' => $property->value,

@@ -20,20 +20,11 @@ class schema__alternate_name_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      if (array_key_exists('chado-' . $chado_table . '__synonym_id', $item) and
-          $item['chado-' . $chado_table . '__synonym_id']) {
-            $synonym = chado_generate_var('synonym', array('synonym_id' => $item['chado-' . $chado_table . '__synonym_id']));
-            $name = $synonym->name;
-            if ($synonym->type_id->name != 'exact') {
-              $name .= ' (<i>' . $synonym->type_id->name . '</i>)';
-            }
-            $element[$delta] = array(
-              '#type' => 'markup',
-              '#markup' => $name,
-            );
-          }
+      $element[$delta] = array(
+        '#type' => 'markup',
+        '#markup' => $item['value'],
+      );
     }
   }
 }

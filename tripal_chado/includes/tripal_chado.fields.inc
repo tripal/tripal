@@ -1231,11 +1231,19 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
-     // Get the list of existing property types for this table.
-     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
-     $props = chado_query($sql);
+     $tschema = chado_get_schema($table_name);
      $schema = chado_get_schema($prop_table);
+     $tpkey = $tschema['primary key'][0];
      $pkey = $schema['primary key'][0];
+     // Get the list of existing property types for this table.
+     $sql = "
+       SELECT DISTINCT P.type_id
+       FROM {" . $prop_table . "} P
+         INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+       WHERE T.type_id = :cvterm_id
+     ";
+     $args = array(':cvterm_id' => $cvterm_id);
+     $props = chado_query($sql, $args);
      while ($prop = $props->fetchObject()) {
        $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
        $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));

@@ -79,7 +79,7 @@ class schema__alternate_name extends ChadoField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+      'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__' . 'synonym_id' => '',
@@ -99,11 +99,7 @@ class schema__alternate_name extends ChadoField {
       foreach ($record->$linker_table as $index => $linker) {
         $synonym = $linker->synonym_id;
         $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
-            '@type' => $synonym->type_id->dbxref_id->db_id->name . ':' . $synonym->type_id->dbxref_id->accession,
-            'type' => $synonym->type_id->name,
-            'name' => $synonym->name,
-          ),
+          'value' => $synonym->name,
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
           'chado-' . $field_table . '__' . 'synonym_id' => $synonym->synonym_id,

@@ -21,7 +21,7 @@ class obi__organism extends ChadoField {
     // The name of the term.
     'term_name' => 'organism',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'organism',
+    'term_accession' => '0100026',
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.

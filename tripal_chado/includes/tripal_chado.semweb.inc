@@ -25,6 +25,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_LOCAL();
   tripal_chado_populate_vocab_NCBITAXON();
   tripal_chado_populate_vocab_OBI();
+  tripal_chado_populate_vocab_OGI();
   tripal_chado_populate_vocab_RDFS();
   tripal_chado_populate_vocab_SBO();
   tripal_chado_populate_vocab_SCHEMA();
@@ -69,7 +70,7 @@ function tripal_chado_populate_vocab_RDFS() {
   ));
   $name = tripal_insert_cvterm(array(
     'id' => 'rdfs:label',
-    'name' => 'type',
+    'name' => 'label',
     'cv_name' => 'rdfs',
     'definition' => 'A human-readable version of a resource\'s name.',
   ));
@@ -118,6 +119,14 @@ function tripal_chado_populate_vocab_SCHEMA() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'description', $term);
   tripal_associate_chado_semweb_term('organism', 'comment', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:publication',
+    'name' => 'publication',
+    'cv_name' => 'schema',
+    'definition' => 'A publication event associated with the item.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'pub_id', $term);
 }
 /**
  * Adds the EDAM database and terms.
@@ -208,6 +217,14 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'A map of DNA (linear or circular) annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.',
   ));
   tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2012',
+    'name' => 'Sequence coordinates',
+    'cv_name' => 'EDAM',
+    'definition' => 'A position in a map (for example a genetic map), either a single position (point) or a region / interval.',
+  ));
 }
 
 /**
@@ -227,6 +244,27 @@ function tripal_chado_populate_vocab_OBI() {
     'name' => 'organism',
     'cv_name' => 'obi',
     'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
+}
+
+/**
+ * Adds the Ontology for genetic interval database and terms.
+ */
+function tripal_chado_populate_vocab_OGI() {
+  tripal_insert_db(array(
+    'name' => 'OGI',
+    'description' => 'Ontology for genetic interval.',
+    'url' => 'http://purl.bioontology.org/ontology/OGI',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv('obi','Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'OGI:0000021',
+    'name' => 'location on map',
+    'cv_name' => 'ogi',
+    'definition' => '',
   ));
   tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
 }

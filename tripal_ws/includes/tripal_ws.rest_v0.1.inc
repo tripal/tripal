@@ -564,18 +564,20 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
     $vocabulary = $instance['settings']['term_vocabulary'];
     $accession = $instance['settings']['term_accession'];
     $term = tripal_get_term_details($vocabulary, $accession);
-    $term = tripal_get_term_details($vocabulary, $accession);
     if ($term) {
       $key = $term['name'];
       $key_adj = strtolower(preg_replace('/ /', '_', $key));
       $response['@context'][$key_adj] = $term['url'];
+    }
+    else {
+      continue;
     }
 
     // If this field should not be attached by default then just add a link
     // so that the caller can get the information separately.
     $instance_settings = $instance['settings'];
     if (array_key_exists('auto_attach', $instance['settings']) and
-        $instance_settings['auto_attach'] != TRUE) {
+        !$instance_settings['auto_attach']) {
       $response['@context'][$key_adj] = array(
         '@id' => $response['@context'][$key_adj],
         '@type' => '@id'
@@ -753,36 +755,33 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
   if (!$items) {
     return;
   }
+
   $values = array();
   for ($i = 0; $i < count($items); $i++) {
 
     // See if the keys in the values array have been mapped to semantic
     // web terms.
-    if (array_key_exists('semantic_web', $items[$i])) {
-      foreach ($items[$i]['semantic_web'] as $k => $v) {
+    if (is_array($items[$i]['value'])) {
+      $temp = array();
+      foreach ($items[$i]['value'] as $k => $v) {
         $matches = array();
-        if (preg_match('/^(.+):(.+)$/', $v, $matches)) {
+        if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
           $vocabulary = $matches[1];
           $accession = $matches[2];
           $term = tripal_get_term_details($vocabulary, $accession);
-          if ($k == 'type') {
-            $items[$i]['value']['@type'] = $items[$i]['value']['type'];
-            unset($items[$i]['value']['type']);
-            $response['@context'][$term['name']] = $term['url'];
-          }
-          else {
-            $response['@context'][$k] = $term['url'];
-          }
+          $temp[$term['name']] = $v;
+          $response['@context'][$term['name']] = $term['url'];
         }
       }
+      $values[] = $temp;
+    }
+    else {
+      $values[] = $items[$i]['value'];
     }
 
     // Recurse through the values array and set the entity elemetns
     // and add the fields to the context.
     tripal_ws_services_v0_1_get_content_add_field_context($items[$i], $response, $api_url);
-
-    // Add the remaining values to the $values array.
-    $values[] = $items[$i]['value'];
   }
 
   // If we only have one value then set the response with just the value.
