@@ -1,0 +1,67 @@
+<?php
+
+class uo__unit extends ChadoField {
+
+  // The default lable for this field.
+  public static $default_label = 'Unit';
+
+  // The default description for this field.
+  public static $description = 'The unit of measurement.';
+
+  // Provide a list of instance specific settings. These can be access within
+  // the instanceSettingsForm.  When the instanceSettingsForm is submitted
+  // then Drupal with automatically change these settings for the instnace.
+  // It is recommended to put settings at the instance level whenever possible.
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'UO',
+    // The name of the term.
+    'term_name' => 'unit',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => '0000000',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => FALSE,
+  );
+
+  // The default widget for this field.
+  public static $default_widget = 'UO__unit_widget';
+
+  // The default formatter for this field.
+  public static $default_formatter = 'UO__unit_formatter';
+
+
+  /**
+   * @see TripalField::validate()
+   */
+  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  }
+
+  /**
+   * @see TripalField::load()
+   */
+  public function load($entity, $details = array()) {
+
+    $record = $details['record'];
+    $settings = $this->instance['settings'];
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+    );
+
+    if ($record) {
+      $entity->{$field_name}['und'][0]['value'] = $record->unittype_id->name;
+    }
+  }
+}

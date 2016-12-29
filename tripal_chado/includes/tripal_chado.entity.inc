@@ -57,10 +57,12 @@ function tripal_chado_entity_load($entities, $type) {
           ->condition('cb.bundle_id', $bundle->id)
           ->execute()
           ->fetchObject();
-        $bundle->data_table = $chado_bundle->data_table;
-        $bundle->type_linker_table = $chado_bundle->type_linker_table;
-        $bundle->type_column = $chado_bundle->type_column;
-        $bundle->type_id = $chado_bundle->type_id;
+        if ($chado_bundle) {
+          $bundle->data_table = $chado_bundle->data_table;
+          $bundle->type_linker_table = $chado_bundle->type_linker_table;
+          $bundle->type_column = $chado_bundle->type_column;
+          $bundle->type_id = $chado_bundle->type_id;
+        }
       }
     }
   }
@@ -179,6 +181,12 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
     );
   }
   if ($table == 'feature') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'featuremap') {
     $format[] = array(
       'format' => '[schema__name]',
       'weight' => -5

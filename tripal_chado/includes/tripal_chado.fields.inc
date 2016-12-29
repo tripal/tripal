@@ -292,6 +292,21 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 //       ),
 //     );
 //   }
+
+  // FEATUREMAP UNITTYPE_ID
+  if ($table_name == 'featuremap') {
+    $field_name = 'uo__unit';
+    $field_type = 'uo__unit';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => TRUE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 }
 
 /**
@@ -971,6 +986,39 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
 //       ),
 //     );
 //   }
+
+
+  // FEATURE SEQLEN
+  if ($table_name == 'featuremap') {
+    $field_name = 'uo__unit';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Units',
+      'description' => 'The map\'s unit type.',
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'unittype_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'uo__unit_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'uo__unit_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 }
 
 /**
@@ -1236,13 +1284,18 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
      $tpkey = $tschema['primary key'][0];
      $pkey = $schema['primary key'][0];
      // Get the list of existing property types for this table.
+     $args = array();
      $sql = "
        SELECT DISTINCT P.type_id
        FROM {" . $prop_table . "} P
-         INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-       WHERE T.type_id = :cvterm_id
      ";
-     $args = array(':cvterm_id' => $cvterm_id);
+     if ($type_field) {
+       $sql .= "
+           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+         WHERE T.type_id = :cvterm_id
+       ";
+       $args[':cvterm_id'] = $cvterm_id;
+     }
      $props = chado_query($sql, $args);
      while ($prop = $props->fetchObject()) {
        $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));

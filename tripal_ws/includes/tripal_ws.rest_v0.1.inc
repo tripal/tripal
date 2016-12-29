@@ -694,7 +694,7 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
       FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
 
     tripal_ws_services_v0_1_get_content_add_field($key_adj, $entity, $field, $instance, $api_url, $response, TRUE);
-
+    tripal_ws_services_v0_1_write_context($response, $ctype);
     return;
   }
 
@@ -728,7 +728,6 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
   tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
-
   tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
