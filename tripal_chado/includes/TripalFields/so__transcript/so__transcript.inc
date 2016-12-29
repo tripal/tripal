@@ -70,10 +70,12 @@ class so__transcript extends ChadoField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
-        'type' => '',
-        'name' => '',
-        'identifier' => '',
-        'location' => '',
+        'rdfs:type' => '',
+        'schema:name' => '',
+        // Identifier
+        'data:0842' => '',
+        // sequence location
+        'SO:0000735' => '',
       ),
     );
 
@@ -105,10 +107,10 @@ class so__transcript extends ChadoField {
         $loc .= $location->srcfeature_name . ":" . $location->fmin . ".." . $location->fmax;
       }
       $entity->{$field_name}['und'][$i]['value'] = array(
-        'type' => $transcript->type,
-        'name' => $transcript->name,
-        'identifier' => $transcript->uniquename,
-        'location' => $loc,
+        'rdfs:type' => $transcript->type,
+        'schema:name' => $transcript->name,
+        'data:0842' => $transcript->uniquename,
+        'SO:0000735' => $loc,
       );
       $entity_id = tripal_get_chado_entity_id($field_table, $record->feature_id);
       if ($entity_id) {

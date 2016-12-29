@@ -567,7 +567,17 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
     if ($term) {
       $key = $term['name'];
       $key_adj = strtolower(preg_replace('/ /', '_', $key));
-      $response['@context'][$key_adj] = $term['url'];
+      // The term schema:url also points to a recource so we need
+      // to make sure we set the type to be '@id'.
+      if ($vocabulary == 'schema' and $accession == 'url') {
+        $response['@context'][$key_adj] = array(
+          '@id' => $term['url'],
+          '@type' => '@id',
+        );
+      }
+      else {
+        $response['@context'][$key_adj] = $term['url'];
+      }
     }
     else {
       continue;
@@ -582,7 +592,17 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
         '@id' => $response['@context'][$key_adj],
         '@type' => '@id'
       );
-      $response[$key_adj] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
+      // Add a URL only if there are values. If there are no values then
+      // don't add a URL which would make the end-user think they can get
+      // that information.
+      $items = field_get_items('TripalEntity', $entity, $field_name);
+      if ($items and count($items) > 0 and $items[0]['value']) {
+        $response[$key_adj] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
+      }
+      else {
+        $response[$key_adj] = NULL;
+      }
+
       continue;
     }
 
@@ -626,14 +646,11 @@ function tripal_ws_services_v0_1_get_content_find_field($field_arg, $ctype, $ent
   foreach ($instances as $instance) {
     $field_name = $instance['field_name'];
     $field = field_info_field($field_name);
-    $field_settings = $field['settings'];
-    if (array_key_exists('semantic_web', $field_settings) and
-        $field_settings['semantic_web']) {
-      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
-      $temp_term = tripal_get_term_details($vocabulary, $accession);
-      if ($temp_term['name'] == $field_arg) {
-        return array($entity, $bundle, $field, $instance, $temp_term);
-      }
+    $vocabulary = $instance['settings']['term_vocabulary'];
+    $accession = $instance['settings']['term_accession'];
+    $temp_term = tripal_get_term_details($vocabulary, $accession);
+    if ($temp_term['name'] == $field_arg) {
+      return array($entity, $bundle, $field, $instance, $temp_term);
     }
   }
 }
@@ -668,14 +685,15 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
 
     // Next add in the ID and Type for this resources.
     $key = $term['name'];
-    $response['@context'][$key] = $term['url'];
+    $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+    $response['@context'][$key_adj] = $term['url'];
     $response['@id'] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
 
     // Attach the field and then add it's values to the response.
-    field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
-        array('field_id' => $field['id']));
+    field_attach_load($entity->type, array($entity->id => $entity),
+      FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
 
-    tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $instance, $api_url, $response, TRUE);
+    tripal_ws_services_v0_1_get_content_add_field($key_adj, $entity, $field, $instance, $api_url, $response, TRUE);
 
     return;
   }
@@ -759,8 +777,8 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
   $values = array();
   for ($i = 0; $i < count($items); $i++) {
 
-    // See if the keys in the values array have been mapped to semantic
-    // web terms.
+    // If the value is an array rather than a scalar then map the sub elements
+    // to controlled vocabulary terms.
     if (is_array($items[$i]['value'])) {
       $temp = array();
       foreach ($items[$i]['value'] as $k => $v) {
@@ -769,14 +787,25 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
           $vocabulary = $matches[1];
           $accession = $matches[2];
           $term = tripal_get_term_details($vocabulary, $accession);
-          $temp[$term['name']] = $v;
-          $response['@context'][$term['name']] = $term['url'];
+          $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+          $temp[$key_adj] = $v != "" ? $v : NULL;
+          // The term schema:url also points to a recource so we need
+          // to make sure we set the type to be '@id'.
+          if ($vocabulary == 'schema' and $accession == 'url') {
+            $response['@context'][$key_adj] = array(
+              '@id' => $term['url'],
+              '@type' => '@id',
+            );
+          }
+          else {
+            $response['@context'][$key_adj] = $term['url'];
+          }
         }
       }
       $values[] = $temp;
     }
     else {
-      $values[] = $items[$i]['value'];
+      $values[] = $items[$i]['value'] != "" ? $items[$i]['value'] : NULL;
     }
 
     // Recurse through the values array and set the entity elemetns

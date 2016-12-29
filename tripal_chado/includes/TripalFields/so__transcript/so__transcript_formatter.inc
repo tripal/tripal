@@ -34,10 +34,10 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       $transcript = $item['value'];
 
       // Get the field values
-      $feature_name = $transcript['name'];
-      $feature_uname = $transcript['identifier'];
-      $loc = $transcript['location'];
-      $type = $transcript['type'];
+      $feature_name = $transcript['schema:name'];
+      $feature_uname = $transcript['data:0842'];
+      $loc = $transcript['SO:0000735'];
+      $type = $transcript['rdfs:type'];
 
       // Add a link i there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {

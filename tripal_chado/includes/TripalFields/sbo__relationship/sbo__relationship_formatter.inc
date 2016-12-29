@@ -31,11 +31,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       if (!$item['value']) {
         continue;
       }
-      $subject_name = $item['value']['subject']['name'];
-      $subject_type = $item['value']['subject']['type'];
-      $object_name = $item['value']['object']['name'];
-      $object_type = $item['value']['object']['type'];
-      $phrase = $item['value']['phrase'];
+      $subject_name = $item['value']['local:relationship_subject']['schema:name'];
+      $subject_type = $item['value']['local:relationship_subject']['rdfs:type'];
+      $object_name = $item['value']['local:relationship_object']['schema:name'];
+      $object_type = $item['value']['local:relationship_object']['rdfs:type'];
+      $phrase = $item['value']['SIO:000493'];
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.

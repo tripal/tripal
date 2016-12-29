@@ -26,9 +26,9 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
       if (!$item['value']) {
         continue;
       }
-      $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
+      $content = $item['value']['data:1056'] . ':' . $item['value']['data:2091'];
       if ($item['value']['URL']) {
-        $content = l($content, $item['value']['URL'], array('attributes' => array('target' => '_blank')));
+        $content = l($content, $item['value']['schema:url'], array('attributes' => array('target' => '_blank')));
       }
       $element[$delta] = array(
         '#type' => 'markup',

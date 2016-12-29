@@ -84,7 +84,7 @@ class schema__alternate_name extends ChadoField {
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__' . 'synonym_id' => '',
       'chado-' . $field_table . '__' . 'pub_id' => '',
-      'chado-' . $field_table . '__' . 'is_current' => TRUE,
+      'chado-' . $field_table . '__' . 'is_current' => '',
       'chado-' . $field_table . '__' . 'is_internal' => '',
       'name' => '',
       'type_id' => '',

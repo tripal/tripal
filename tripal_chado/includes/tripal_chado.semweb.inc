@@ -20,6 +20,7 @@ function tripal_chado_populate_chado_semweb_table() {
 
   // Now set defaults!
   tripal_chado_populate_vocab_EDAM();
+  tripal_chado_populate_vocab_ERO();
   tripal_chado_populate_vocab_FOAF();
   tripal_chado_populate_vocab_IAO();
   tripal_chado_populate_vocab_LOCAL();
@@ -29,6 +30,8 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_RDFS();
   tripal_chado_populate_vocab_SBO();
   tripal_chado_populate_vocab_SCHEMA();
+  tripal_chado_populate_vocab_SIO();
+  tripal_chado_populate_vocab_SO();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
   tripal_chado_populate_vocab_TPUB();
@@ -127,6 +130,34 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'definition' => 'A publication event associated with the item.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'pub_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:url',
+    'name' => 'url',
+    'cv_name' => 'schema',
+    'definition' => 'URL of the item.',
+  ));
+  tripal_associate_chado_semweb_term('db', 'URL', $term);
+}
+
+/**
+ * Adds the SemanticScience database and terms.
+ */
+function tripal_chado_populate_vocab_SIO() {
+  tripal_insert_db(array(
+    'name' => 'SIO',
+    'description' => 'Semanticscience Integrated Ontology.',
+    'url' => 'http://sio.semanticscience.org/',
+    'urlprefix' => 'http://semanticscience.org/resource/{db}_{accession}',
+  ));
+  tripal_insert_cv('SIO',' The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:000493',
+    'name' => 'clause',
+    'cv_name' => 'SIO',
+    'definition' => 'A clause consists of a subject and a predicate.',
+  ));
 }
 /**
  * Adds the EDAM database and terms.
@@ -145,6 +176,8 @@ function tripal_chado_populate_vocab_EDAM() {
     'url' => 'http://edamontology.org/page',
     'urlprefix' => 'http://edamontology.org/{db}_{accession}',
   ));
+  tripal_insert_cv('data','Bioinformatics operations, data types, formats, identifiers and topics.');
+
 
   $term = tripal_insert_cvterm(array(
     'id' => 'data:1249',
@@ -218,12 +251,39 @@ function tripal_chado_populate_vocab_EDAM() {
   ));
   tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
 
-
   $term = tripal_insert_cvterm(array(
     'id' => 'data:2012',
     'name' => 'Sequence coordinates',
     'cv_name' => 'EDAM',
     'definition' => 'A position in a map (for example a genetic map), either a single position (point) or a region / interval.',
+  ));
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1056',
+    'name' => 'Databse name',
+    'cv_name' => 'EDAM',
+    'definition' => 'The name of a biological or bioinformatics database.',
+  ));
+  tripal_associate_chado_semweb_term('db', 'name', $term);
+}
+
+/**
+ * Adds the Eagle-i Resource Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_ERO() {
+  tripal_insert_db(array(
+    'name' => 'ERO',
+    'description' => 'The Eagle-I Research Resource Ontology',
+    'url' => 'http://purl.bioontology.org/ontology/ERO',
+    'urlprefix' => 'http://purl.bioontology.org/ontology/ERO/{db}:{accession}',
+  ));
+  tripal_insert_cv('ero','The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'ERO:0001716',
+    'name' => 'database',
+    'cv_name' => 'ero',
+    'definition' => 'A database is an organized collection of data, today typically in digital form.',
   ));
 }
 
@@ -392,6 +452,43 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:relationship_subject',
+    'name' => 'clause subject',
+    'definition' => 'The subject of a relationship clause.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'subject_id', $term);
+  tripal_associate_chado_semweb_term(NULL, 'subject_reagent_id', $term);
+  tripal_associate_chado_semweb_term(NULL, 'subject_project_id', $term);
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:relationship_object',
+    'name' => 'clause predicate',
+    'definition' => 'The object of a relationship clause.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'object_id', $term);
+  tripal_associate_chado_semweb_term(NULL, 'object_reagent_id', $term);
+  tripal_associate_chado_semweb_term(NULL, 'object_project_id', $term);
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:relationship_type',
+    'name' => 'relationship type',
+    'definition' => 'The relationship type.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('acquisition_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('biomaterial_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('cell_line_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('contact_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('element_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('elementresult_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('feature_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('nd_reagent_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('phylonode_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('project_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('pub_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('quantification_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('stock_relationship', 'type_id', $term);
 }
 /**
  * Adds the Systems Biology Ontology database and terms.
@@ -425,6 +522,19 @@ function tripal_chado_populate_vocab_SBO() {
     'cv_name' => 'sbo',
     'definition' => 'Connectedness between entities and/or interactions representing their relatedness or influence.',
   ));
+}
+
+/**
+ * Adds the Sequence Ontology
+ */
+function tripal_chado_populate_vocab_SO() {
+  tripal_insert_db(array(
+    'name' => 'SO',
+    'description' => 'Sequence Ontology',
+    'url' => 'http://www.sequenceontology.org',
+    'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
+  ));
+  tripal_insert_cv('sequence','The Sequence Ontology.');
 }
 
 /**

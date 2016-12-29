@@ -77,7 +77,13 @@ class sbo__database_cross_reference extends ChadoField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+      'value' => array(
+        // Database name
+        'data:1056' => '',
+        // Accession
+        'data:2091' => '',
+        'schema:url' => '',
+      ),
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__dbxref_id' => '',
@@ -98,9 +104,9 @@ class sbo__database_cross_reference extends ChadoField {
         $URL = tripal_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            'vocabulary' => $dbxref->db_id->name,
-            'accession' => $dbxref->accession,
-            'URL' => $URL,
+            'data:1056' => $dbxref->db_id->name,
+            'data:2091' => $dbxref->accession,
+            'schema:url' => $URL,
           ),
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,

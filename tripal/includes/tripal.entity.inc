@@ -268,7 +268,7 @@ function tripal_entity_access($entity) {
 }
 
 function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
-  //dpm($form);
+
 }
 
 /**
