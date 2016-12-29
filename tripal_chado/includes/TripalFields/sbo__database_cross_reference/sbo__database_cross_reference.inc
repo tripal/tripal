@@ -78,11 +78,13 @@ class sbo__database_cross_reference extends ChadoField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
+        /* sub elements that may be present in the values array
         // Database name
         'data:1056' => '',
         // Accession
         'data:2091' => '',
         'schema:url' => '',
+        */
       ),
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',

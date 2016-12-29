@@ -729,7 +729,7 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
 
   tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
 
-  //tripal_ws_services_v0_1_write_context($response, $ctype);
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**
@@ -738,27 +738,18 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
  * @param $ctype
  */
 function tripal_ws_services_v0_1_write_context(&$response, $ctype) {
-  // We want to write the context to a file. Try to open the lock file. if we
-  // can't then just leave the context in the response.
-  $context_uri = file_build_uri("ws.v0_1.$ctype.context.jsonld");
-  $context_file = drupal_realpath($context_uri);
-  $context_URL = file_create_url($context_uri);
-  $lock_fp = fopen("$context_file.lock", "w");
-  if (flock($lock_fp, LOCK_EX|LOCK_NB)) {
-    $fp = fopen("$context_file", "w");
-    if ($fp) {
-      $context = array('@context' => $response['@context']);
-      fwrite($fp, json_encode($context));
-      fflush($fp);
-      // Release the lock.
-      flock($lock_fp, LOCK_UN);
-      // Close the files.
-      fclose($lock_fp);
-      fclose($fp);
-      // Change the context to point to the file
-      $response['@context'] = $context_URL;
-    }
-  }
+  // Save the response '@context' into a temporary file
+  $context = array('@context' => $response['@context']);
+  $file_name = drupal_tempnam(file_default_scheme() . '://', 'tws_context-') . '.json';
+  $context_file = file_save_data(json_encode($context), $file_name, FILE_EXISTS_REPLACE );
+
+  // Mark the file as temporary by setting it's status
+  $context_file->status = 0;
+  file_save($context_file);
+
+  // Return the response with the '@context' section replaced with the file URL.
+  $response['@context'] = file_create_url($context_file->uri);
+
 }
 
 /**
