@@ -299,7 +299,63 @@ class sbo__relationship extends ChadoField {
    * @see ChadoField::query()
    */
   public function query($condition, &$query) {
+    $alias = $this->field['field_name'];
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
 
+    // Filter by the name of the subject or object.
+    if ($condition['column'] == 'relationship.clause_subject.schema:name' or
+        $condition['column'] == 'relationship.clause_subject.name') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $query->condition("base2.name", $condition['value']);
+    }
+    if ($condition['column'] == 'relationship.clause_predicate.schema:name' or
+        $condition['column'] == 'relationship.clause_predicate.name') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $query->condition("base2.name", $condition['value']);
+    }
+
+    // Filter by unique name of the subject or object.
+    if ($condition['column'] == 'relationship.clause_subject.data:0842' or
+        $condition['column'] == 'relationship.clause_subject.identifier') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $query->condition("base2.uniquename", $condition['value']);
+    }
+    if ($condition['column'] == 'relationship.clause_predicate.data:0842' or
+        $condition['column'] == 'relationship.clause_predicate.identifier') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $query->condition("base2.uniquename", $condition['value']);
+    }
+
+    // Filter by the type of the subject or object
+    if ($condition['column'] == 'relationship.clause_subject.rdfs:type' or
+        $condition['column'] == 'relationship.clause_subject.type') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $query->join('cvterm', 'SubjectCVT', "SubjectCVT.cvterm_id = base2.type_id");
+      $query->condition("SubjectCVT.name", $condition['value']);
+    }
+    if ($condition['column'] == 'relationship.clause_predicate.rdfs:type' or
+        $condition['column'] == 'relationship.clause_predicate.type') {
+      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $query->join('cvterm', 'ObjectCVT', "ObjectCVT.cvterm_id = base2.type_id");
+      $query->condition("ObjectCVT.name", $condition['value']);
+    }
+
+    // Filter by relationship type
+    if ($condition['column'] == 'relationship.relationship_type') {
+      // This filter commented out because it's way to slow...
+//       $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id OR base.$bpkey = $alias.object_id");
+//       $query->join('cvterm', 'RelTypeCVT', "RelTypeCVT.cvterm_id = $alias.type_id");
+//       $query->condition("RelTypeCVT.name", $condition['value']);
+    }
   }
 
   /**

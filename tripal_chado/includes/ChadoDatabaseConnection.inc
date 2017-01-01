@@ -47,7 +47,9 @@ class ChadoDatabaseConnection extends DatabaseConnection_pgsql {
   }
 
   public function prefixTables($sql) {
-    return str_replace($this->prefixSearch, $this->prefixReplace, $sql);
+    $sql = str_replace($this->prefixSearch, $this->prefixReplace, $sql);
+    print_r($sql);
+    return $sql;
   }
 
 
