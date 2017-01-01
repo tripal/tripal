@@ -28,6 +28,7 @@ require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
 
+
 //
 // REQUIRED INCLUDE FILES
 //
@@ -44,6 +45,8 @@ require_once "includes/tripal_chado.mapping.inc";
 require_once "includes/TripalFields/ChadoField.inc";
 require_once "includes/TripalFields/ChadoFieldWidget.inc";
 require_once "includes/TripalFields/ChadoFieldFormatter.inc";
+
+require_once "includes/ChadoDatabaseConnection.inc";
 
 tripal_chado_set_globals();
 

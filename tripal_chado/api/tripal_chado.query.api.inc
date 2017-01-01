@@ -1873,3 +1873,27 @@ function tripal_get_schema_name($schema = 'chado') {
   return $schema_name;
 }
 
+/**
+ * A replacment for db_select when querying Chado.
+ *
+ * Use this function instead of db_select when querying Chado tables.
+ *
+ * @param $table
+ *   The base table for this query. May be a string or another SelectQuery
+ *   object. If a query object is passed, it will be used as a subselect.
+ * @param $alias
+ *   The alias for the base table of this query.
+ * @param $options
+ *   An array of options to control how the query operates.
+ *
+ * @return
+ *   A new SelectQuery object for this connection.
+ */
+function chado_db_select($table, $alias = NULL, array $options = array()) {
+  if (empty($options['target'])) {
+    $options['target'] = 'default';
+  }
+  $conninfo = Database::getConnectionInfo();
+  $conn = new ChadoDatabaseConnection($conninfo['default']);
+  return $conn->select($table, $alias, $options);
+}

@@ -188,4 +188,18 @@ class obi__organism extends ChadoField {
     return $element;
   }
 
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($condition, &$query) {
+    $alias = $this->field['field_name'];
+    $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
+
+    if ($condition['column'] == 'organism.species') {
+      $query->condition("$alias.species", $condition['value']);
+    }
+    if ($condition['column'] == 'organism.genus') {
+      $query->condition("$alias.genus", $condition['value']);
+    }
+  }
 }

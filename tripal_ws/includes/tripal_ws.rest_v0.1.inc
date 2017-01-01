@@ -778,7 +778,7 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
           $accession = $matches[2];
           $term = tripal_get_term_details($vocabulary, $accession);
           $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
-          $temp[$key_adj] = $v != "" ? $v : NULL;
+          $temp[$key_adj] = $v !== "" ? $v : NULL;
           // The term schema:url also points to a recource so we need
           // to make sure we set the type to be '@id'.
           if ($vocabulary == 'schema' and $accession == 'url') {
@@ -795,7 +795,7 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
       $values[] = $temp;
     }
     else {
-      $values[] = $items[$i]['value'] != "" ? $items[$i]['value'] : NULL;
+      $values[] = $items[$i]['value'] !== "" ? $items[$i]['value'] : NULL;
     }
 
     // Recurse through the values array and set the entity elemetns

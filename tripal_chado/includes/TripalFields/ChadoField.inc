@@ -47,4 +47,24 @@ class ChadoField extends TripalField {
   // The module that manages this field.
   public static $module = 'tripal_chado';
 
+  /**
+   * A query function used to find records that match a given condition.
+   *
+   * Entities can be filtered using the fields.  This function should be
+   * implemented if the field  supports filtering.  To provide filtering,
+   * the $query object should be updated to including any joins and
+   * conditions necessary. When giving alias to joined tables be sure to
+   * use aliases that are unique to avoid conflicts with other fields.  When
+   * joining with the base table its alias is 'base'.  This function should
+   * never set the fields that should be returned nor ordering or group by.
+   *
+   * @param $condition
+   *   The field specific condition as set in the TripalFieldQuery object.
+   * @param $query
+   *   A SelectQuery object.
+   */
+  public function query($condition, &$query) {
+
+  }
+
 }

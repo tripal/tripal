@@ -192,3 +192,38 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
     return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
   }
 }
+/**
+ * Retreive the column name in a Chado table that matches a given term.
+ *
+ * @param $chado_table
+ *   The name of the Chado table.
+ * @param $term
+ *   The term. This can be a term name or a unique identifer of the form
+ *   {db}:{accession}
+ *
+ * @return
+ *   The name of the Chado column that matches the given term or FALSE if the
+ *   term is not mapped to the Chado table.
+ */
+function tripal_get_chado_semweb_column($chado_table, $term) {
+  $columns = db_select('chado_semweb', 'CS')
+    ->fields('CS')
+    ->condition('chado_table', $chado_table)
+    ->execute();
+  while($column = $columns->fetchObject()) {
+    $cvterm_id = $column->cvterm_id;
+    if ($cvterm_id) {
+      $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      if ($term == $cvterm->name) {
+        return $column->chado_column;
+      }
+      else if ($term == preg_replace('/ /', '_', $cvterm->name)) {
+        return $column->chado_column;
+      }
+      else if ($term == $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession) {
+        return $column->chado_column;
+      }
+    }
+  }
+  return FALSE;
+}

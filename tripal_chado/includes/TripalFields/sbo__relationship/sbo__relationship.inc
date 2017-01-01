@@ -296,6 +296,13 @@ class sbo__relationship extends ChadoField {
   }
 
   /**
+   * @see ChadoField::query()
+   */
+  public function query($condition, &$query) {
+
+  }
+
+  /**
    * A helper function to define English verbs for relationship types.
    *
    * @param $rel_type

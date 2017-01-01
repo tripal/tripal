@@ -379,55 +379,51 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
 }
 
 /**
- * Recurses through a field's items breaking it into a nested array.
- */
-function tripal_chado_field_storage_expand_field($item_name, $value) {
-
-   $matches = array();
-   if (preg_match('/^(.*?)--(.*?)$/', $item_name, $matches)) {
-     $parent_item_name = $matches[1];
-     $sub_item_name = $matches[2];
-     $sub_item = tripal_chado_field_storage_expand_field($sub_item_name, $value);
-     return array($parent_item_name => $sub_item);
-   }
-   else {
-     return array($item_name => $value);
-   }
-}
-
-/**
  * Implements hook_field_storage_query().
  */
 function tripal_chado_field_storage_query($query) {
 
-  // The conditions and order bys are reorganized into a filters array for the
-  // chado_select_record function()
-  $filters = array();
+  // Initialize the result array.
+  $result = array(
+    'TripalEntity' => array()
+  );
+
+  // There must always be an entity filter that includes the bundle. Otherwise
+  // it would be too overwhelming to search every table of every content type
+  // for a matching field.
+  if (!array_key_exists('bundle', $query->entityConditions)) {
+    return $result;
+  }
+  $bundle = tripal_load_bundle_entity(array('name' => $query->entityConditions['bundle']));
+  $data_table = $bundle->data_table;
+  $type_column = $bundle->type_column;
+  $type_id = $bundle->type_id;
+  $schema = chado_get_schema($data_table);
+  $pkey = $schema['primary key'][0];
+
+
+  // Initialize the Query object.
+  $cquery = chado_db_select($data_table, 'base');
+  $cquery->fields('base', array($pkey));
 
   // Iterate through all the conditions and add to the filters array
   // a chado_select_record compatible set of filters.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
+    $field_type = $field['type'];
 
     // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'field_chado_storage') {
       continue;
     }
 
-    $column = $condition['column'];
-    $value = $condition['value'];
-
-    $field_type = $field['type'];
-    $field_module = $field['module'];
-    $settings = $field['settings'];
-
     // The Chado settings for a field are part of the instance and each bundle
     // can have the same field but with different Chado mappings. Therefore,
     // we need to iterate through the bundles to get the field instances.
-    $bundles = $field['bundles'];
-    foreach ($bundles['TripalEntity'] as $bundle_name) {
+    foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
 
-      // If there is a bundle filter for the entity and if this bundle is not in
+      // If there is a bundle filter for the entity and if the field is not
+      // associated with the bundle then skip it.
       if (array_key_exists('bundle', $query->entityConditions)) {
         if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
             !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
@@ -438,92 +434,15 @@ function tripal_chado_field_storage_query($query) {
         }
       }
 
-      // Get the Chado mapping for this instance.
+      // Allow the field to update the query object.
       $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-      $chado_table = $instance['settings']['chado_table'];
-      $chado_column = $instance['settings']['chado_column'];
-
-      // Set the value for this field search.
-      $subfields = explode('.', $column);
-      //print_r($subfields);
-      if (count($subfields) > 1) {
-        // Get the term for this field's column and replace the field_name with
-        // the term.  We need to do this for the recursive function to work.
-        // We must lowercase the term and underscore it because that's how we
-        // can support case-insensitivity and lack of spacing such as for
-        // web services.
-        $subfield1 = tripal_get_chado_semweb_term($chado_table, $chado_column, array('return_object' => TRUE));
-        $subfields[0] = strtolower(preg_replace('/ /', '_', $subfield1->name));
-        $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value);
-        $value = array_shift($value);
-      }
-      else {
-        $value = $condition['value'];
-      }
-
-      // Use the appropriate operator.
-      $operator = $condition['operator'] ? $condition['operator'] : '=';
-      switch ($operator) {
-        case '=':
-          $filters[$chado_table][$chado_column] = $value;
-          break;
-        case '>':
-        case '>=':
-        case '<':
-        case '<=':
-          $filters[$chado_table][$chado_column] = array(
-            'op' => $operator,
-            'data' => $value,
-          );
-          break;
-        case '<>':
-          $filters[$chado_table][$chado_column] = array(
-            'op' => '<>',
-            'data' => $value,
-          );
-          break;
-        case 'CONTAINS':
-          $filters[$chado_table][$chado_column] = array(
-            'op' => 'LIKE',
-            'data' => '%' . $value . '%',
-          );
-          break;
-        case 'NOT':
-          $filters[$chado_table][$chado_column] = array(
-          'op' => 'NOT LIKE',
-          'data' => '%' . $value . '%',
-          );
-          break;
-        case 'STARTS WITH':
-          $filters[$chado_table][$chado_column] = array(
-            'op' => 'LIKE',
-            'data' => $value . '%',
-          );
-          break;
-        case 'NOT STARTS':
-          $filters[$chado_table][$chado_column] = array(
-          'op' => 'NOT LIKE',
-          'data' => $value . '%',
-          );
-          break;
-        case 'ENDS WITH':
-          $filters[$chado_table][$chado_column] = array(
-          'op' => 'LIKE',
-          'data' => '%' . $value,
-          );
-          break;
-        case 'NOT ENDS':
-          $filters[$chado_table][$chado_column] = array(
-          'op' => 'NOT LIKE',
-          'data' => '%' . $value,
-          );
-          break;
-        default:
-          // unrecognized operation.
-          break;
+      if (tripal_load_include_field_class($field_type)) {
+        $field_obj = new $field_type($field, $instance);
+        $field_obj->query($condition, $cquery);
       }
     }
   } // end foreach ($query->fieldConditions as $index => $condition) {
+/*
 
   // Now get the list for sorting.
   foreach ($query->order as $index => $sort) {
@@ -544,108 +463,156 @@ function tripal_chado_field_storage_query($query) {
 
     $sorting[$chado_table][$chado_column] = $direction;
   }
-  //print_r($filters);
+ */
 
-  // Iterate through the filters and perform the query.
-  $entity_ids = array();
-  foreach ($filters as $chado_table => $values) {
-    //print_r($chado_table);
-    //print_r($values);
-    // First get the matching record IDs from the Chado table.
-    $schema = chado_get_schema($chado_table);
-    $pkey = $schema['primary key'][0];
-    $results = chado_select_record($chado_table, array($pkey), $values);
-
-    $record_ids = array();
-    foreach ($results as $result) {
-      $record_ids[] = $result->$pkey;
-    }
-
-    // Next look for matching IDs in the chado_entity table.
-    $filter_ids = array();
-    if (count($record_ids) > 0) {
-      $select = db_select('chado_entity', 'CE');
-      $select->join('tripal_entity', 'TE', 'TE.id = CE.entity_id');
-      $select->fields('CE', array('entity_id'));
-      $select->fields('TE', array('bundle'));
-      $select->condition('record_id', $record_ids);
-      // If a bundle is specified then make sure we match on the bundle.
-      if (array_key_exists('bundle', $query->entityConditions)) {
-        if (strtolower($query->entityConditions['bundle']['operator']) == 'in') {
-          $select->condition('bundle', $query->entityConditions['bundle'], $operator);
-        }
-        else {
-          $select->condition('bundle', $query->entityConditions['bundle']);
-        }
-      }
-
-      $results = $select->execute();
-      while ($result = $results->fetchObject()) {
-        $entity_ids[] = array($result->entity_id, 0, $result->bundle);
-      }
-    }
+  // Now join with the chado_entity table to get published records only.
+  $cquery->join('chado_entity', 'CE', "CE.record_id = base.$pkey");
+  $cquery->fields('CE', array('entity_id'));
+  $cquery->condition('CE.data_table', $data_table);
+  if (array_key_exists('start', $condition['range'])) {
+    $cquery->range($condition['ragne']['start'], $condition['ragne']['length']);
   }
+  $records = $cquery->execute();
 
-  $result = array(
-    'TripalEntity' => array()
-  );
-  foreach ($entity_ids as $ids) {
-    $result['TripalEntity'][$ids[0]] = entity_create_stub_entity('TripalEntity', $ids);
+  $result = array();
+  while ($record = $records->fetchObject()) {
+    $ids = array($record->entity_id, 0, $bundle_name);
+    $result['TripalEntity'][$record->entity_id] = entity_create_stub_entity('TripalEntity', $ids);
   }
   return $result;
 }
 
 /**
- *
- * @param $subfields
- * @param $value
+ * @return
+ *   An array containing the chado_select_record() compatible array.
  */
-function tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value) {
-   $sub_value = array();
+function tripal_chado_field_storage_query_build_sql(&$sql, $prev_table, $prev_column, $prev_term, $chado_table, $query_terms, $condition, $value, $depth = 0) {
 
-   // Get the subvalue for this iteration
-   $subfield = array_shift($subfields);
+  // Get schema information for the previous (linker) Chado table.
+  $pschema = chado_get_schema($prev_table);
+  $ppkey = $pschema['primary key'][0];
+  $pfkeys = $pschema['foreign keys'];
 
-   // Get the cvterms mapped to this table.
-   $columns = db_select('chado_semweb', 'CS')
-     ->fields('CS', array('chado_column', 'cvterm_id'))
-     ->condition('chado_table', $chado_table)
-     ->execute();
+  // Get schema information for the current Chado table.
+  $schema = chado_get_schema($chado_table);
+  $pkey = $schema['primary key'][0];
+  $fkeys = $schema['foreign keys'];
 
-   // Iterate through the columns and find the one with cvterm that matches
-   // the subfield name.
-   $chado_column = '';
-   while($column = $columns->fetchObject()) {
-     $cvterm_id = $column->cvterm_id;
-     $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
-     // Convert the term name to lower-case and replace spaces with underscores
-     // so we can perform case insensitive comparisions and ingore spacing.
-     $term_name = strtolower(preg_replace('/ /', '_', $cvterm->name));
-     if ($subfield == $term_name) {
-       $chado_column = $column->chado_column;
-     }
-   }
+  // Get the first query term from the list and find out what column this
+  // term maps to in the Chado table.
+  $term = array_shift($query_terms);
+  $chado_column = tripal_get_chado_semweb_column($chado_table, $term);
+  if (!$chado_column) {
+    // TODO: we could get to this point because a field has a value that
+    // doesn't map to a database column but is a manually created
+    // element.  How do we deal with those?
+    return FALSE;
+  }
+
+  // reformat that term so it's compatible with SQL
+  $term = preg_replace('/[^\w]/', '_', $term);
+
+  // A query can be an array of column names separated by a period.  We
+  // want to split them apart and just deal with the column at the head
+  // of the array.  But before dealing with that head, we will recurse so that
+  // we build our filters array from the bottom up.
+  if (count($query_terms) > 0) {
+    // Since the $query_terms is not a single element that implies this
+    // query term represents a foreign key.
+    // We don't know which direction the foreign key is going, so we'll have
+    // to check both the previous and current tables to build the join
+    // statement correctly.
+    if (array_key_exists($prev_table, $fkeys) and
+        array_key_exists($chado_column, $fkeys[$prev_table]['columns'])) {
+      $fkey = $fkeys[$prev_table]['columns'][$chado_column];
+      $sql['join'][] = 'INNER JOIN {' . $chado_table . '} ' . $term . ' ON ' . $prev_term . '.' . $fkey . ' = ' . $term . '.' . $chado_column;
+    }
+    else {
+      $sql['join'][] = 'INNER JOIN {' . $chado_table . '} ' . $term . ' ON ' . $prev_term . '.' . $prev_column . ' = ' . $term . '.' . $chado_column;
+    }
 
 
-   // If we have more subfields then this should be a foreign key and we should
-   // recurse.
-   if (count($subfields) > 0) {
+    // Get the table that this foreign key links to.
+    $next_table = '';
+    foreach ($fkeys as $fktable_name => $fk_details) {
+      foreach ($fk_details['columns'] as $lfkey => $rfkey) {
+        if ($lfkey == $chado_column) {
+          $next_table = $fktable_name;
+        }
+      }
+    }
+    if ($next_table) {
+      tripal_chado_field_storage_query_build_sql($sql, $chado_table, $chado_column, $term, $next_table, $query_terms, $condition, $value, $depth++);
+    }
+    else {
+      // TODO: we could get to this point because a field has a value that
+      // doesn't map to a database column but is a manually created
+      // element.  How do we deal with those?
+      return FALSE;
+    }
+    return FALSE;
+  }
 
-    // Get the foreign keys for this Chado table.
-     $schema = chado_get_schema($chado_table);
-     $fkeys = $schema['foreign keys'];
+  // We don't know which direction the foreign key is going, so we'll have
+  // to check both the previous and current tables to build the join
+  // statement correctly.
+  if (array_key_exists($prev_table, $fkeys) and
+      array_key_exists($chado_column, $fkeys[$prev_table]['columns'])) {
+    $fkey = $fkeys[$prev_table]['columns'][$chado_column];
+    $sql['join'][] = 'INNER JOIN {' . $chado_table . '} ' . $term . ' ON ' . $prev_term . '.' . $fkey . ' = ' . $term . '.' . $chado_column;
+  }
+  else {
+    $sql['join'][] = 'INNER JOIN {' . $chado_table . '} ' . $term . ' ON ' . $prev_term . '.' . $prev_column . ' = ' . $term . '.' . $chado_column;
+  }
 
-     // Iterate through the FKs to find the one that matches this Chado field.
-     foreach ($fkeys as $fk_table => $details) {
-       foreach ($details['columns'] as $lkey => $rkey) {
-         if ($lkey == $chado_column) {
-           $sub_value = tripal_chado_field_storage_recurse_subfilters($fk_table, $subfields, $value);
-           return array($chado_column => $sub_value);
-         }
-       }
-     }
-   }
-   return array($chado_column => $value);
+  // Use the appropriate operator.
+  $operator = $condition['operator'] ? $condition['operator'] : '=';
+  switch ($operator) {
+    case '=':
+      $sql['where'][] = "$term.$chado_column = :value";
+      $sql['args'][':value'] = $value;
+      break;
+    case '>':
+    case '>=':
+    case '<':
+    case '<=':
+      $sql['where'][] = "$term.$chado_column $op :value";
+      $sql['args'][':value'] = $value;
+      break;
+    case '<>':
+      $sql['where'][] = "$term.$chado_column $op :value";
+      $sql['args'][':value'] = $value;
+      break;
+    case 'CONTAINS':
+      $sql['where'][] = "$term.$chado_column LIKE :value";
+      $sql['args'][':value'] = '%' . $value . '%';
+      break;
+    case 'NOT':
+      $subfilters[$chado_column] = array(
+      'op' => 'NOT LIKE',
+      'data' => '%' . $value . '%',
+      );
+      $sql['where'][] = "$term.$chado_column NOT LIKE :value";
+      $sql['args'][':value'] = '%' . $value . '%';
+      break;
+    case 'STARTS WITH':
+      $sql['where'][] = "$term.$chado_column LIKE :value";
+      $sql['args'][':value'] =  $value . '%';
+      break;
+    case 'NOT STARTS':
+      $sql['where'][] = "$term.$chado_column NOT LIKE :value";
+      $sql['args'][':value'] =  $value . '%';
+      break;
+    case 'ENDS WITH':
+      $sql['where'][] = "$term.$chado_column LIKE :value";
+      $sql['args'][':value'] =  '%' . $value;
+      break;
+    case 'NOT ENDS':
+      $sql['where'][] = "$term.$chado_column NOT LIKE :value";
+      $sql['args'][':value'] =  '%' . $value;
+      break;
+    default:
+      // unrecognized operation.
+      break;
+  }
 }
-
-
