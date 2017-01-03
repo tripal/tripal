@@ -410,6 +410,7 @@ function tripal_chado_field_storage_query($query) {
   // a chado_select_record compatible set of filters.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
+    $field_name = $field['field_name'];
     $field_type = $field['type'];
 
     // Skip conditions that don't belong to this storage type.
@@ -438,39 +439,65 @@ function tripal_chado_field_storage_query($query) {
       $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
       if (tripal_load_include_field_class($field_type)) {
         $field_obj = new $field_type($field, $instance);
-        $field_obj->query($condition, $cquery);
+        $field_obj->query($cquery, $condition);
       }
     }
   } // end foreach ($query->fieldConditions as $index => $condition) {
-/*
 
   // Now get the list for sorting.
   foreach ($query->order as $index => $sort) {
+    // We only handle ordering by field type here.
+    if ($sort['type'] != 'field') {
+      continue;
+    }
+
     $field = $sort['specifier']['field'];
+    $field_type = $field['type'];
+    $field_name = $field['field_name'];
 
     // Skip sorts that don't belong to this storage type.
     if ($field['storage']['type'] != 'field_chado_storage') {
       continue;
     }
-
+    $column = $sort['specifier']['column'];
     $direction = $sort['direction'];
 
-    $field_type = $field['type'];
-    $field_module = $field['module'];
-    $settings = $field['settings'];
-    $chado_table = $settings['chado_table'];
-    $chado_column = $settings['chado_column'];
-
-    $sorting[$chado_table][$chado_column] = $direction;
+    // See if there is a ChadoField class for this instance. If not then do
+    // our best to order the field.
+    $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+    if (tripal_load_include_field_class($field_type)) {
+      $field_obj = new $field_type($field, $instance);
+      $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
+    }
+    // There is no class so do our best to order the data by this field
+    else {
+      $base_table = $instance['settings']['base_table'];
+      $chado_table = $instance['settings']['chado_table'];
+      $table_column = tripal_get_chado_semweb_column($chado_table, $column);
+      if ($table_column) {
+         if ($chado_table == $base_table) {
+           $cquery->orderBy('base.' . $table_column, $direction);
+         }
+         else {
+           // TODO: how do we handle a field that doesn't map to the base table.
+           // We would expect that all of these would be custom field and
+           // the ChadoField::queryOrder() function would be implemented.
+         }
+      }
+      else {
+        // TODO: handle when the name can't be matched to a table column.
+      }
+    }
   }
- */
+
 
   // Now join with the chado_entity table to get published records only.
   $cquery->join('chado_entity', 'CE', "CE.record_id = base.$pkey");
+  $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
   $cquery->fields('CE', array('entity_id'));
   $cquery->condition('CE.data_table', $data_table);
-  if (array_key_exists('start', $condition['range'])) {
-    $cquery->range($condition['ragne']['start'], $condition['ragne']['length']);
+  if (array_key_exists('start', $query->range)) {
+    $cquery->range($query->range['start'], $query->range['length']);
   }
   $records = $cquery->execute();
 

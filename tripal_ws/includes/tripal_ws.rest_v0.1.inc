@@ -349,10 +349,42 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   }
   // Convert the filters to their field names
   $new_params = array();
+  $order = array();
+  $order_dir = array();
+  $URL_add = array();
   foreach ($params as $param => $value) {
+    $URL_add[] = "$param=$value";
 
     // Ignore non filter parameters
     if ($param == 'page' or $param == 'limit') {
+      continue;
+    }
+
+    // Handle order separately
+    if ($param == 'order') {
+      $temp = explode(',', $value);
+      foreach ($temp as $key) {
+        $matches = array();
+        $dir = 'ASC';
+        // The user can provide a direction by separating the field key and the
+        // direction with a '|' character.
+        if (preg_match('/^(.*)\|(.*)$/', $key, $matches)) {
+          $key = $matches[1];
+          if ($matches[2] == 'ASC' or $matches[2] == 'DESC') {
+            $dir = $matches[2];
+          }
+          else {
+            // TODO: handle error of providing an incorrect direction.
+          }
+        }
+        if (array_key_exists($key, $field_mapping)) {
+          $order[$field_mapping[$key]] = $key;
+          $order_dir[] = $dir;
+        }
+        else {
+          // TODO: handle error of providing a non existing field name.
+        }
+      }
       continue;
     }
 
@@ -442,41 +474,49 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $page = array_key_exists('page', $params) ? $params['page'] : 1;
   if ($num_records > 0) {
     $response['view'] = array(
-      '@id' => $URL . "?page=$page&limit=$limit",
+      '@id' => $URL . '?' . implode('&', array_merge($URL_add, array("page=$page", "limit=$limit"))),
       '@type' => 'PartialCollectionView',
-      'first' => $URL . "?page=1&limit=$limit",
-      'last' => $URL . "?page=$total_pages&limit=$limit",
+      'first' => $URL . '?' . implode('&', array_merge($URL_add, array("page=1", "limit=$limit"))),
+      'last' => $URL . '?' . implode('&', array_merge($URL_add, array("page=$total_pages", "limit=$limit"))),
     );
     $prev = $page - 1;
     $next = $page + 1;
     if ($prev > 0) {
-      $response['view']['previous'] = $URL . "?page=$prev&limit=$limit";
+      $response['view']['previous'] = $URL . '?' . implode('&', array_merge($URL_add, array("page=$prev", "limit=$limit")));
     }
     if ($next < $total_pages) {
-      $response['view']['next'] = $URL . "?page=$next&limit=$limit";
+      $response['view']['next'] = $URL . '?' . implode('&', array_merge($URL_add, array("page=$next", "limit=$limit")));
     }
   }
 
-  // Now perform the query.
+  // Set the query order
+  $order_keys = array_keys($order);
+  for($i = 0; $i < count($order_keys); $i++) {
+    $query->fieldOrderBy($order_keys[$i], $order[$order_keys[$i]], $order_dir[$i]);
+  }
+
+  // Set the query range
   $start = ($page - 1) * $limit;
   $query->range($start, $limit);
+
+  // Now perform the query.
   $results = $query->execute();
 
   // Iterate through the entities and add them to the list.
   $i = 0;
   foreach ($results['TripalEntity'] as $entity_id => $stub) {
-   $vocabulary = '';
-   $term_name = '';
+    $vocabulary = '';
+    $term_name = '';
 
-   // We don't need all of the attached fields for an entity so, we'll
-   // not use the entity_load() function.  Instead just pull it from the
-   // database table.
-   $query = db_select('tripal_entity', 'TE');
-   $query->join('tripal_term', 'TT', 'TE.term_id = TT.id');
-   $query->fields('TE');
-   $query->fields('TT', array('name'));
-   $query->condition('TE.id', $entity_id);
-   $entity = $query->execute()->fetchObject();
+    // We don't need all of the attached fields for an entity so, we'll
+    // not use the entity_load() function.  Instead just pull it from the
+    // database table.
+    $query = db_select('tripal_entity', 'TE');
+    $query->join('tripal_term', 'TT', 'TE.term_id = TT.id');
+    $query->fields('TE');
+    $query->fields('TT', array('name'));
+    $query->condition('TE.id', $entity_id);
+    $entity = $query->execute()->fetchObject();
 
     //$entity = tripal_load_entity('TripalEntity', array($entity->id));
     $response['member'][] = array(

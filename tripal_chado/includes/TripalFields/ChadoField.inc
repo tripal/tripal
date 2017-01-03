@@ -48,7 +48,7 @@ class ChadoField extends TripalField {
   public static $module = 'tripal_chado';
 
   /**
-   * A query function used to find records that match a given condition.
+   * Used to filter records that match a given condition.
    *
    * Entities can be filtered using the fields.  This function should be
    * implemented if the field  supports filtering.  To provide filtering,
@@ -65,13 +65,25 @@ class ChadoField extends TripalField {
    *   nor ordering or group by.
    * - You may join to materialized views if need be to help speed queries.
    *
-   * @param $condition
-   *   The field specific condition as set in the TripalFieldQuery object.
    * @param $query
    *   A SelectQuery object.
+   * @param $condition
+   *   The field specific condition as set in the TripalFieldQuery object.
    */
-  public function query($condition, &$query) {
+  public function query($query, $condition) {
 
   }
 
+  /**
+   * Used to sort records that have been filtered.
+   *
+   * @param $query
+   *   A SelectQuery object.
+   * @param $order
+   *   The field ordering as set in the TripalFieldQuery object.  This function
+   *   should handle the ordering request as specified by this object.
+   */
+  public function queryOrder($query, $order) {
+
+  }
 }

@@ -298,7 +298,8 @@ class sbo__relationship extends ChadoField {
   /**
    * @see ChadoField::query()
    */
-  public function query($condition, &$query) {
+  public function query($query, $condition) {
+
     $alias = $this->field['field_name'];
     $chado_table = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
@@ -780,4 +781,11 @@ class sbo__relationship extends ChadoField {
   }
 
 
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+
+  }
 }

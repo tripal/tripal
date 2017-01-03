@@ -191,7 +191,7 @@ class obi__organism extends ChadoField {
   /**
    * @see ChadoField::query()
    */
-  public function query($condition, &$query) {
+  public function query($query, $condition) {
     $alias = $this->field['field_name'];
     $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
 
@@ -200,6 +200,27 @@ class obi__organism extends ChadoField {
     }
     if ($condition['column'] == 'organism.genus') {
       $query->condition("$alias.genus", $condition['value']);
+    }
+  }
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+
+    // If the table hasn't yet been joined then add it.
+    $joins = $query->getTables();
+    if (!in_array($this->field['field_name'], $joins)) {
+      $alias = $this->field['field_name'];
+      $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
+    }
+
+    // Now perform the sort.
+    if ($order['column'] == 'organism.species') {
+      $query->orderBy("$alias.genus", $order['direction']);
+    }
+    if ($order['column'] == 'organism.genus') {
+      $query->orderBy("$alias.species", $order['direction']);
     }
   }
 }
