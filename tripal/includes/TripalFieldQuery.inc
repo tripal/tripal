@@ -62,7 +62,7 @@ class TripalFieldQuery extends EntityFieldQuery {
     }
 
     if ($results and $this->count) {
-      return count(array_keys($results['TripalEntity']));
+      return $results;
     }
     else {
       return $results;

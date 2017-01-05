@@ -226,7 +226,19 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      //$query->fieldOrderBy('content_type', 'content_type', 'DESC');
      //$query->fieldCondition('organism__genus', 'organism__genus', 'Oryza');
    }
-   $query->range(0, 25);
+
+   // Find out the total number of records and determine what page we're on, and
+   // initialize the pager.
+   $cquery = clone $query;
+   $cquery->count();
+   $num_records = $cquery->execute();
+   $num_per_page = 25;
+   $page = pager_default_initialize($num_records, $num_per_page);
+   $offset = $num_per_page * $page;
+   $pager = theme('pager');
+
+
+   $query->range($offset, $num_per_page);
    $results = $query->execute();
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
@@ -295,9 +307,11 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      'colgroups'  => array(),
      'empty'      => '',
    );
+
+   $output = "<div><strong>Found $num_records records</strong></div>" . $pager . theme('table', $table_vars) . $pager;
    $form['results'] = array(
      '#type' => 'markup',
-     '#markup' => theme('table', $table_vars),
+     '#markup' => $output,
    );
 
    return $form;
