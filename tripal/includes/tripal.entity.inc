@@ -299,20 +299,17 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       // field is unattached.  this will allow JS code to automatically load
       // the field.
       $instance = field_info_instance('TripalEntity', $child_name, $entity->bundle);
-      if (array_key_exists('auto_attach', $instance['settings']) and
-          $instance['settings']['auto_attach'] == FALSE) {
-        $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
-        $entity->content[$child_name]['#suffix'] .= '</div>';
-      }
+      if ($instance and array_key_exists('settings', $instance)) {
+        if (array_key_exists('auto_attach', $instance['settings']) and
+            $instance['settings']['auto_attach'] == FALSE) {
+          $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
+          $entity->content[$child_name]['#suffix'] .= '</div>';
+        }
 
-      // Add a tooltip to the field for the term.
-      $field = field_info_field($child_name);
-      if (array_key_exists('settings', $field) and
-          array_key_exists('semantic_web', $field['settings'])) {
         $matches = array();
-        if (preg_match('/^(.+):(.+)$/', $field['settings']['semantic_web'], $matches)) {
-          $vocabulary = $matches[1];
-          $accession = $matches[2];
+        if (array_key_exists('term_vocabulary', $instance['settings'])) {
+          $vocabulary = $instance['settings']['term_vocabulary'];
+          $accession = $instance['settings']['term_accession'];
           $term = tripal_get_term_details($vocabulary, $accession);
           if ($term) {
             $tooltip_img = url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif');
