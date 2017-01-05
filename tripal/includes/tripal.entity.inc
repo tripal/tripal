@@ -339,12 +339,13 @@ function tripal_ajax_attach_field($id) {
   if (preg_match('/^tripal-entity-(\d+)--(.+)$/', $id, $matches)) {
     $entity_id = $matches[1];
     $field_name = $matches[2];
-    $field = field_info_fields($field_name);
+    $field = field_info_field($field_name);
     $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, array($field['id']));
     reset($result);
     $entity = $result[$entity_id];
 
-    $content = drupal_render(field_view_field('TripalEntity', $entity, $field_name));
+    $element = field_view_field('TripalEntity', $entity, $field_name);
+    $content = drupal_render($element);
     return drupal_json_output(array(
       'id' => $id,
       'content' => $content

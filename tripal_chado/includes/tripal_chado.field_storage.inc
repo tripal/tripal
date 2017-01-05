@@ -279,6 +279,14 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           $tfield = new $field_type($field, $instance);
           $tfield->load($entity, array('record' => $record));
         }
+        // For text fields that were not handled by a TripalField class we 
+        // want to automatically expand those fields. 
+        else {
+          if ($schema['fields'][$field_column]['type'] == 'text') {
+            $record = chado_expand_var($record, 'field', "$field_table.$field_column");
+            $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+          }
+        }
       }
 
       // Type 2: fields for linked records.  These fields will have any number
