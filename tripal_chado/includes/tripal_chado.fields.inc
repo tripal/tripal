@@ -634,7 +634,8 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
         break;
       case 'text':
         $base_info['widget']['type'] = 'text_textarea';
-        $base_info['widget']['settings']['format'] = filter_default_format();
+        $base_info['settings']['text_processing'] = '1';
+        $base_info['settings']['format'] = 'full_html';
         break;
       case 'blob':
         // not sure how to support a blob field.
