@@ -40,10 +40,13 @@ function chado_table_exists($table) {
   global $databases;
   $default_db = $databases['default']['default']['database'];
   $cached_obj = cache_get('chado_tables', 'cache');
-  $cached_tables = $cached_obj->data;
-  if (is_array($cached_tables) and array_key_exists($table, $cached_tables)) {
-    return $cached_tables[$table]['exists'];
+  if ($cached_obj) {
+    $cached_tables = $cached_obj->data;
+    if (is_array($cached_tables) and array_key_exists($table, $cached_tables)) {
+      return $cached_tables[$table]['exists'];
+    }
   }
+
   $sql = "
     SELECT 1
     FROM information_schema.tables

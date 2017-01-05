@@ -92,24 +92,24 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
     );
-    $items['bio_data/' . $wildcard . '/layout'] = array(
-      'title' => 'Layout',
-      'page callback' => 'drupal_goto',
-      'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/display")),
-      'access callback' => 'tripal_entity_access',
-      'access arguments' => array('admin', 1),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => -8,
-    );
-    $items['bio_data/' . $wildcard . '/fields'] = array(
-      'title' => 'Fields',
-      'page callback' => 'drupal_goto',
-      'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/fields")),
-      'access callback' => 'tripal_entity_access',
-      'access arguments' => array('admin', 1),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => -8,
-    );
+//     $items['bio_data/' . $wildcard . '/layout'] = array(
+//       'title' => 'Layout',
+//       'page callback' => 'drupal_goto',
+//       'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/display")),
+//       'access callback' => 'tripal_entity_access',
+//       'access arguments' => array('admin', 1),
+//       'type' => MENU_LOCAL_TASK,
+//       'weight' => -8,
+//     );
+//     $items['bio_data/' . $wildcard . '/fields'] = array(
+//       'title' => 'Fields',
+//       'page callback' => 'drupal_goto',
+//       'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/fields")),
+//       'access callback' => 'tripal_entity_access',
+//       'access arguments' => array('admin', 1),
+//       'type' => MENU_LOCAL_TASK,
+//       'weight' => -8,
+//     );
 
     // Menu item for deleting tripal data entities.
     $items['bio_data/' . $wildcard . '/delete'] = array(

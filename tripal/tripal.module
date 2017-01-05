@@ -543,8 +543,8 @@ function tripal_menu_alter(&$items) {
   // We don't want to allow deletion of fields added by the storage backend.
   // TODO: this shouldn't be hardcoded here.  These settings
   // should be part of the field and handled by the tripal_entity module.
-  $items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
-  $items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
+  //$items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
+  //$items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
 }
 
 
