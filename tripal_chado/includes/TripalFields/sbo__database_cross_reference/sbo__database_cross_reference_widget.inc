@@ -222,12 +222,13 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
  */
 function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_state) {
 
+  $instance = $form['#instance'];
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $this->instance['settings']['chado_table'];
-  $field_column = $this->instance['settings']['chado_column'];
+  $field_table = $instance['settings']['chado_table'];
+  $field_column = $instance['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__dbxref_id';
 
   // Check to see if this dbxref already exists. If not then

@@ -410,7 +410,8 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
  function tripal_entity_form_validate($form, &$form_state) {
 
    // If the user is cancelling or deleting the entity then don't validate.
-   if ($form_state['clicked_button']['#name'] =='cancel_data' or
+   if (array_key_exists('clicked_button', $form_state) and
+       $form_state['clicked_button']['#name'] =='cancel_data' or
        $form_state['clicked_button']['#name'] =='delete_data') {
      return;
    }

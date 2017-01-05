@@ -27,6 +27,7 @@ require_once 'api/modules/tripal_chado.feature.api.inc';
 require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
+require_once 'api/modules/tripal_chado.phylotree.api.inc';
 
 
 //
@@ -377,6 +378,27 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/tripal/storage/chado/loaders/ncbi_taxonomy_loader'] = array(
+    'title' => 'NCBI Taxonomy Loader',
+    'description' => 'Loads taxonomic details about installed organisms.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_taxonomy_load_form'),
+    'access arguments' => array('administer tripal phylotree'),
+    'file' => 'includes/loaders/tripal_chado.taxonomy_importer.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Data Loaders
+  $items['admin/tripal/storage/chado/loaders/newic_phylotree_loader'] = array(
+    'title' => 'Phylogenetic Trees (Newic format)',
+    'description' => 'Loads phylogenetic trees in Newic format.',
+    'page callback' => 'drupal_goto',
+    'page arguments' => array('node/add/chado-phylotree'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   $items['admin/tripal/storage/chado/loaders/pub'] = array(
     'title' => t('Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
@@ -459,6 +481,7 @@ function tripal_chado_menu() {
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
+
 
   //////////////////////////////////////////////////////////////////////////////
   //                           Migrate Content

@@ -489,6 +489,94 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_associate_chado_semweb_term('pub_relationship', 'type_id', $term);
   tripal_associate_chado_semweb_term('quantification_relationship', 'type_id', $term);
   tripal_associate_chado_semweb_term('stock_relationship', 'type_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'locak:rank',
+    'name' => 'rank',
+    'definition' => 'A taxonmic rank',
+    'cv_name' => 'local',
+  ));
+
+
+  tripal_insert_cv(
+    'organism_property',
+    'Contains locally defined properties for organisms'
+  );
+  $terms = array(
+    'lineage',
+    'genetic_code',
+    'genetic_code_name',
+    'mitochondrial_genetic_code',
+    'mitochondrial_genetic_code_name',
+    'division',
+    'genbank_common_name',
+    'synonym',
+    'other_name',
+    'equivalent_name',
+    'anamorph'
+  );
+  $options = array('update_existing' => TRUE);
+  foreach ($terms as $term) {
+    $value = array(
+      'name' => $term,
+      'definition' => '',
+      'cv_name' => 'organism_property',
+      'is_relationship' => 0,
+      'db_name' => 'local'
+    );
+    tripal_insert_cvterm($value, $options);
+  }
+
+
+  tripal_insert_cv(
+      'tripal_phylogeny',
+      'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees.'
+  );
+
+  // Add the terms used to identify nodes in the tree.
+  tripal_insert_cvterm(
+      array(
+        'name' => 'phylo_leaf',
+        'definition' => 'A leaf node in a phylogenetic tree.',
+        'cv_name' => 'tripal_phylogeny',
+        'is_relationship' => 0,
+        'db_name' => 'local'
+      ),
+      array('update_existing' => TRUE)
+  );
+  // Add the terms used to identify nodes in the tree.
+  tripal_insert_cvterm(
+      array(
+        'name' => 'phylo_root',
+        'definition' => 'The root node of a phylogenetic tree.',
+        'cv_name' => 'tripal_phylogeny',
+        'is_relationship' => 0,
+        'db_name' => 'local'
+      ),
+      array('update_existing' => TRUE)
+  );
+  // Add the terms used to identify nodes in the tree.
+  tripal_insert_cvterm(
+      array(
+        'name' => 'phylo_interior',
+        'definition' => 'An interior node in a phylogenetic tree.',
+        'cv_name' => 'tripal_phylogeny',
+        'is_relationship' => 0,
+        'db_name' => 'local'
+      ),
+      array('update_existing' => TRUE)
+  );
+  // Add the terms used to identify nodes in the tree.
+  tripal_insert_cvterm(
+      array(
+        'name' => 'taxonomy',
+        'definition' => 'A term used to indicate if a phylotree is a taxonomic tree',
+        'cv_name' => 'tripal_phylogeny',
+        'is_relationship' => 0,
+        'db_name' => 'local'
+      ),
+      array('update_existing' => TRUE)
+  );
 }
 /**
  * Adds the Systems Biology Ontology database and terms.

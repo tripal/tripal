@@ -82,6 +82,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       continue;
     }
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
+    $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.
     if ($column_name == $schema['primary key'][0]) {
@@ -441,6 +442,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     while ($prop = $props->fetchObject()) {
       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
+      $field_name = substr($field_name, 0, 32);
       $field_type = 'chado_linker__prop';
       $info[$field_name] = array(
         'field_name' => $field_name,
@@ -579,6 +581,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     }
 
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
+    $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.
     if ($column_name == $schema['primary key'][0]) {
@@ -1301,6 +1304,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
      while ($prop = $props->fetchObject()) {
        $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
        $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
+       $field_name = substr($field_name, 0, 32);
        $info[$field_name] = array(
          'field_name' => $field_name,
          'entity_type' => $entity_type,

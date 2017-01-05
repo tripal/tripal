@@ -114,25 +114,6 @@ function tripal_phylogeny_menu() {
     'access arguments' => array('administer tripal phylotree'),
     'type' => MENU_CALLBACK,
   );
-  // Data Loaders
-   $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
-     'title' => 'Phylogenetic Trees (Newic format)',
-     'description' => 'Loads phylogenetic trees in Newic format. (Redirects to create a phylogenetic tree content type)',
-     'page callback' => 'drupal_goto',
-     'page arguments' => array('node/add/chado-phylotree'),
-     'access arguments' => array('administer tripal phylotree'),
-     'type' => MENU_NORMAL_ITEM,
-   );
-
-   $items['admin/tripal/loaders/ncbi_taxonomy_loader'] = array(
-     'title' => 'NCBI Taxonomy Loader',
-     'description' => 'Loads taxonomic details about installed organisms.',
-     'page callback' => 'drupal_get_form',
-     'page arguments' => array('tripal_phylogeny_taxonomy_load_form'),
-     'access arguments' => array('administer tripal phylotree'),
-     'file' => '/includes/tripal_phylogeny.taxonomy.inc',
-     'type' => MENU_NORMAL_ITEM,
-   );
 
    $items['taxonomy_view'] = array(
      'title' => 'Taxonomy',
