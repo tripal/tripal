@@ -489,6 +489,7 @@ class TripalEntityController extends EntityAPIController {
     $ct = field_info_field('content_type');
     $ids[] = $ct['id'];
     $field_ids += $ids;
+    $unattached = array();
 
 
     // Attach fields.
@@ -515,27 +516,15 @@ class TripalEntityController extends EntityAPIController {
                 else {
                   $instance = $instances[$field_name . '-' . $bundle_name];
                 }
-                // If the 'auto_attach' is set then add this field id to our
-                // list.
+                // If the 'auto_attach' is set to FALSE then we don't want
+                // to add this field to our list of IDs to auto attach.
                 if (array_key_exists('settings', $instance) and
                     array_key_exists('auto_attach', $instance['settings']) and
-                    $instance['settings']['auto_attach'] === TRUE) {
-                  $field_ids[] = $field['id'];
+                    $instance['settings']['auto_attach'] == FALSE) {
+                  // Skip this field.
                 }
-                // If the field is not auto attached then we want to add an
-                // empty default valuea and add an 'unattached' key to
-                // clue in other things that there may be data, it's just
-                // not attached.
                 else {
-                   $value = array(
-                     'und' => array(
-                       0 => array(
-                         'value' => '',
-                         '#unattached' => TRUE,
-                       ),
-                     ),
-                   );
-                   $entity->$field_name = $value;
+                  $field_ids[] = $field['id'];
                 }
               }
             }
@@ -553,6 +542,7 @@ class TripalEntityController extends EntityAPIController {
       $function = $module . '_entity_load';
       $function($queried_entities, $this->entityType);
     }
+
     // Call hook_TYPE_load(). The first argument for hook_TYPE_load() are
     // always the queried entities, followed by additional arguments set in
     // $this->hookLoadArguments.

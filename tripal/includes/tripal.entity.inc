@@ -298,12 +298,9 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       // Surround the field with a <div> box for AJAX loading if this
       // field is unattached.  this will allow JS code to automatically load
       // the field.
-      $child = $entity->content[$child_name];
-      if (array_key_exists('#items', $child) and
-          array_key_exists('0', $child['#items']) and
-          is_array($child['#items'][0]) and
-          array_key_exists('#unattached', $child['#items'][0])
-          and $child['#items'][0]['#unattached'] === TRUE) {
+      $instance = field_info_instance('TripalEntity', $child_name, $entity->bundle);
+      if (array_key_exists('auto_attach', $instance['settings']) and
+          $instance['settings']['auto_attach'] == FALSE) {
         $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
         $entity->content[$child_name]['#suffix'] .= '</div>';
       }

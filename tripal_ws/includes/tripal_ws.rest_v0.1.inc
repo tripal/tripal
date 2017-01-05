@@ -627,7 +627,7 @@ function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_u
     // so that the caller can get the information separately.
     $instance_settings = $instance['settings'];
     if (array_key_exists('auto_attach', $instance['settings']) and
-        !$instance_settings['auto_attach']) {
+        $instance_settings['auto_attach'] == FALSE) {
       $response['@context'][$key_adj] = array(
         '@id' => $response['@context'][$key_adj],
         '@type' => '@id'
@@ -804,6 +804,12 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
     return;
   }
 
+  // Give modules the opportunity to edit values for web services. This hook
+  // really should be used sparingly. Where it helps is with non Tripal fields
+  // that are added to a TripalEntity content type and it doesn't follow
+  // the rules (e.g. Image field).
+  drupal_alter('tripal_ws_value', $items, $field, $instance);
+
   $values = array();
   for ($i = 0; $i < count($items); $i++) {
 
@@ -891,6 +897,9 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
  */
 function tripal_ws_services_v0_1_get_content_add_field_context(&$items, &$response, $api_url) {
 
+  if (!$items) {
+    return;
+  }
   foreach ($items as $key => $value) {
     if (is_array($value)) {
       tripal_ws_services_v0_1_get_content_add_field_context($items[$key], $response, $api_url);
@@ -996,4 +1005,25 @@ function tripal_ws_services_v0_1_handle_no_service($api_url, &$response) {
   $response['@context']['Service'] = 'dc:Service';
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['description'] = 'hydra:description';
+}
+
+/**
+ * Implements hook_tripal_ws_value_alter().
+ *
+ * The hook_tripal_ws_value_alter is a hook created by the Tripal WS module.
+ * It allows the modules to adjust the values of a field for display in
+ * web services. This hook should be used sparingly. It is meant primarily
+ * to adjust 3rd Party (non Tripal) fields so that they work with web
+ * services.
+ */
+function tripal_ws_tripal_ws_value_alter(&$items, $field, $instance) {
+  // The image module doesn't properly set the 'value' field, so we'll do it
+  // here.
+  if($field['type'] == 'image' and $field['module'] == 'image') {
+    foreach ($items as $delta => $details) {
+      if ($items[$delta] and array_key_exists('uri', $items[$delta])) {
+        $items[$delta]['value']['schema:url'] = file_create_url($items[$delta]['uri']);
+      }
+    }
+  }
 }
