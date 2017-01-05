@@ -69,7 +69,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
       '#value' => $fk_value,
     );
     $widget['chado-' . $field_table . '__value'] = array(
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#default_value' => $value,
       '#title' => $instance['label'] . ' value',
       '#description' => $instance['description'],
