@@ -114,7 +114,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
     }
-   $widget['#table_name'] = $chado_table;
+   $widget['#table_name'] = $field_table;
 
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
@@ -160,7 +160,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#title' => t('Subject'),
       '#default_value' => $subject_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists('length', $schema['fields'][$subject_id_key]) ? $schema['fields'][$subject_id_key]['length'] : 255,
+      '#maxlength' => array_key_exists($subject_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$subject_id_key]) ? $schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
@@ -321,7 +321,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#title' => t('Object'),
       '#default_value' => $object_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists('length', $schema['fields'][$object_id_key]) ? $schema['fields'][$object_id_key]['length'] : 255,
+      '#maxlength' => array_key_exists($object_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$object_id_key]) ? $schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
@@ -354,10 +354,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $object_id_key = 'object_project_id';
     }
 
-    $type_name = array_key_exists('type_name', $item) ? $item['type_name'] : '';
-    $subject_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $subject_id_key];
-    $object_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $object_id_key];
-    $type_id = $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__type_id'];
+    $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
+    $subject_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key];
+    $object_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key];
+    $type_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'];
 
     $subject_name = $form_state['values'][$field_name][$langcode][$delta]['subject_name'];
     $object_name = $form_state['values'][$field_name][$langcode][$delta]['object_name'];
@@ -367,6 +367,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       return;
     }
 
+    // Do not proceed if subject ID or object ID does not exist
+    if (!key_exists('subject_id', $fkeys[$base_table]['columns']) || 
+        !key_exists('object_id', $fkeys[$base_table]['columns'])) {
+      return;
+    }
     // Get the subject ID.
     $subject_id = '';
     $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
@@ -377,7 +382,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     else {
       $values = array('uniquename' => $subject_name);
       $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-      $subject_id = $subject[0]->$fkey_rcolumn;
+      if(count($subject) > 0) {dpm($subject);
+        $subject_id = $subject[0]->$fkey_rcolumn;
+      }
     }
 
     // Get the object ID.
@@ -390,14 +397,16 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     else {
       $values = array('uniquename' => $object_name);
       $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-      $object_id = $object[0]->$fkey_rcolumn;
+      if (count($object) > 0) {
+        $object_id = $object[0]->$fkey_rcolumn;
+      }
     }
 
     // Set the IDs according to the values that were determined above.
-    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $subject_id_key] = $subject_id;
-    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__' . $object_id_key] = $object_id;
-    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__type_id'] = $type_name;
-    $form_state['values'][$field_name][$langcode][$delta]['chado' . $field_table . '__rank'] = $item['_weight'];
+    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
+    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
+    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_name;
+    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
   }
 
   /**

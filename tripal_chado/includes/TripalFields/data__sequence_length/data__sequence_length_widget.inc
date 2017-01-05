@@ -44,15 +44,15 @@ class data__sequence_length_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Get the residues so we can calculate teh length.
-    $residues = $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'];
+    $residues = $form_state['values']['data__sequence']['und'][0]['value'];
     // Remove any white spaces.
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values']['feature__residues']['und'][0]['chado-feature__residues'] = $residues;
-      $items[0]['chado-feature__seqlen'] = strlen($residues);
+      $form_state['values']['data__sequence']['und'][0]['value'] = $residues;
+      $form_state['values']['data__sequence_length']['und'][0]['chado-feature__seqlen'] = strlen($residues);
     }
     else {
-      $items[0]['chado-feature__seqlen'] = '__NULL__';
+      $form_state['values']['data__sequence_length']['und'][0]['chado-feature__seqlen'] = '__NULL__';
     }
   }
 }

@@ -692,6 +692,11 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       );
       $mapped_table = chado_get_cvterm_mapping($params);
 
+      // Do not proceed if there is not a mapped_table
+      if (!$mapped_table) {
+        return;
+      }
+      
       $chado_table = $mapped_table->chado_table;
       $legacy_template = 'legacy_template--chado_' . $chado_table;
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
