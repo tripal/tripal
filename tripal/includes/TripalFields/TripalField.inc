@@ -236,10 +236,6 @@ class TripalField {
    * This is an optional hook function and is similar to the
    * hook_field_settings_form function().
    *
-   * @param $field
-   *   The field structure being configured.
-   * @param $instance
-   *   The instance structure being configured.
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */

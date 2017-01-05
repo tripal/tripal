@@ -188,7 +188,6 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
    * @see TripalFieldWidget::theme()
    */
   public function theme($element) {
-    $element = $variables['element'];
 
     // These two fields were added to the widget to help identify the fields
     // for layout.

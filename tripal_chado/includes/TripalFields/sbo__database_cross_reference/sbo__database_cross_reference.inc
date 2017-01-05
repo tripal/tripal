@@ -141,7 +141,7 @@ class sbo__database_cross_reference extends ChadoField {
 
 
     // Get the field values.
-    foreach ($form_state[$field_name] as $delta => $values) {
+    foreach ($items as $delta => $values) {
 
       // Get the field values.
       $dbxref_id = $values['chado-' . $field_table . '__dbxref_id'];
@@ -158,23 +158,23 @@ class sbo__database_cross_reference extends ChadoField {
       // we borrow the code from the 'form_error' function and append the field
       // so that the proper field is highlighted on error.
       if (!$db_id and $accession) {
-      $errors[$field_name][$delta]['und'][] = array(
-      'message' => t("A database and the accession must both be provided."),
+        $errors[$field_name][$delta]['und'][] = array(
+          'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',
         );
       }
-          if ($db_id and !$accession) {
-          $errors[$field_name][$delta]['und'][] = array(
-            'message' => t("A database and the accession must both be provided."),
+      if ($db_id and !$accession) {
+        $errors[$field_name][$delta]['und'][] = array(
+          'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',
         );
       }
-                if (!$db_id and !$accession and ($version or $description)) {
-                $errors[$field_name][$delta]['und'][] = array(
-                  'message' => t("A database and the accession must both be provided."),
+      if (!$db_id and !$accession and ($version or $description)) {
+        $errors[$field_name][$delta]['und'][] = array(
+          'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',
         );
-                }
-                }
+      }
     }
+  }
 }

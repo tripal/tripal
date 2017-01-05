@@ -312,15 +312,16 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     // Get the field name and information about it.
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
+    $instance = field_info_instance('TripalEntity', $field['field_name'], $entity->bundle);
     // Some fields (e.g. chado_linker_cvterm_adder) don't add data to
     // Chado so they don't have a table, but they are still attached to the
     // entity. Just skip these.
-    if (!array_key_exists('chado_table', $field['settings'])) {
+    if (!array_key_exists('chado_table', $instance['settings'])) {
       continue;
     }
-    $chado_table = $field['settings']['chado_table'];
-    $chado_column = $field['settings']['chado_column'];
-    $base_table = $field['settings']['base_table'];
+    $chado_table = $instance['settings']['chado_table'];
+    $chado_column = $instance['settings']['chado_column'];
+    $base_table = $instance['settings']['base_table'];
 
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.

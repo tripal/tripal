@@ -1625,54 +1625,60 @@ function tripal_chado_field_instance_settings_form_alter(&$form, $form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
 
-  // Construct a table for the vocabulary information.
-  $headers = array();
-  $rows = array();
-  $rows[] = array(
-    array(
-      'data' => 'Base Table',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $instance['settings']['base_table']
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Record Table',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $instance['settings']['chado_table']
-  );
-  $rows[] = array(
-    array(
-      'data' => 'ID Column',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $instance['settings']['chado_column']
-  );
-  $table = array(
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => array(
-    ),
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => '',
-  );
+  $base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
+  $chado_table = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
+  $chado_column = array_key_exists('chado_column', $instance['settings']) ? $instance['settings']['chado_column'] : '';
 
-  $form['chado_mapping'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Chado Mapping',
-    '#description' => t('This field maps to data in Chado to the following table:'),
-  );
-  $form['chado_mapping']['details'] = array(
-    '#type' => 'item',
-    '#markup' => theme_table($table),
-  );
 
+  if ($chado_table) {
+    // Construct a table for the vocabulary information.
+    $headers = array();
+    $rows = array();
+    $rows[] = array(
+      array(
+        'data' => 'Base Table',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $base_table
+    );
+    $rows[] = array(
+      array(
+        'data' => 'Record Table',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_table
+    );
+    $rows[] = array(
+      array(
+        'data' => 'ID Column',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_column
+    );
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+
+    $form['chado_mapping'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Chado Mapping',
+      '#description' => t('This field maps to data in Chado to the following table:'),
+    );
+    $form['chado_mapping']['details'] = array(
+      '#type' => 'item',
+      '#markup' => theme_table($table),
+    );
+  }
 }
 
 /**

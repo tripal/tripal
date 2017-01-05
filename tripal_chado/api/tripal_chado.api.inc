@@ -164,7 +164,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql, $args);
-  $transaction  = db_transaction();
+  //$transaction  = db_transaction();
 
   print "\nNOTE: publishing records is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .

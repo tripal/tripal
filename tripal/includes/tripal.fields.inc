@@ -318,15 +318,39 @@ function tripal_module_implements_alter(&$implementations, $hook) {
  * Implements hook_field_settings_form()
  */
 function tripal_field_settings_form($field, $instance, $has_data) {
-//   $form = array();
-//   $field_type = $field['type'];
-//   //$is_loaded = tripal_load_include_field_class($field_type);
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->globalSettingsForm($field, $instance, $has_data);
-//   }
-//   return $form;
+  $field_class = $field['type'];
+  if (tripal_load_include_field_class($field_type)) {
+    $field = new $field_class($field, $instance);
+    return $field->settingsForm($has_data);
+  }
+}
+
+/**
+ * Implements hook_instance_settings_form()
+ */
+function tripal_field_instance_settings_form($field, $instance) {
+  $field_class = $field['type'];
+  if (tripal_load_include_field_class($field_type)) {
+    $field = new $field_class($field, $instance);
+    return $field->instanceSettingsForm();
+  }
+}
+/**
+ * Validates the TripalField instance settings form.
+ *
+ * This function is called because the TripalField::instanceSettingsForm()
+ * adds it to the form element.  By default, Drupal does not provide a
+ * validate hook for the instance settings form.
+ */
+function tripal_field_instance_settings_form_validate($element, &$form_state, $form) {
+  $field = $element['#field'];
+  $instance = $element['#instance'];
+
+  $field_class = $field['type'];
+  if (tripal_load_include_field_class($field_type)) {
+    $field = new $field_class($field, $instance);
+    return $field->instanceSettingsForm();
+  }
 }
 
 /**
@@ -351,17 +375,17 @@ function tripal_field_instance_settings_form_alter(&$form, $form_state) {
   // function.  To make it work we have to add a process function. Inisde
   // of that process function is where the form additions get added that use
   // Ajax.
-  $form['field_term'][$language->language][0]['#process'] = array('tripal_field_instance_settings_form_process');
+  $form['field_term'][$language->language][0]['#process'] = array('tripal_field_instance_settings_form_alter_process');
   $form['#submit'][] = 'tripal_field_instance_settings_form_submit';
 }
 
 /**
- * Implements a process function for the instnace settings form.
+ * Implements a process function for the instance settings form.
  *
  * See the comment in the tripal_field_instance_settings_form_alter() for
  * more details.
  */
-function tripal_field_instance_settings_form_process($element, &$form_state, $form) {
+function tripal_field_instance_settings_form_alter_process($element, &$form_state, $form) {
   $field = $form['#field'];
   $instance = $form['#instance'];
 
@@ -528,7 +552,7 @@ function tripal_field_instance_settings_form_process($element, &$form_state, $fo
       );
     }
   }
-  $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
+  $element['#element_validate'][] = 'tripal_field_instance_settings_form_alter_validate';
   return $element;
 }
 
@@ -539,24 +563,9 @@ function tripal_fields_select_term_form_ajax_callback($form, $form_state) {
   return $form['field_term'];
 }
 /**
- * Implements hook_instance_settings_form()
- */
-function tripal_field_instance_settings_form($field, $instance) {
-//   $form = array();
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->instanceSettingsForm();
-//   }
-//   return $form;
-}
-/**
  * Validate our custom instance settings form fields.
  */
-function tripal_field_instance_settings_form_validate($form, &$form_state) {
-  $field = $form['#field'];
-  $instance = $form['#instance'];
+function tripal_field_instance_settings_form_alter_validate($form, &$form_state) {
 
   // If the user clicked the submit button then we want set the
   // instance settings values accordingly.
@@ -588,6 +597,7 @@ function tripal_field_instance_settings_form_validate($form, &$form_state) {
         $form_state['values']['instance']['settings']['term_name'] = $term->name;
         $selected_term = TRUE;
         $num_selected++;
+        $has_default =  TRUE;
       }
     }
 
@@ -600,7 +610,9 @@ function tripal_field_instance_settings_form_validate($form, &$form_state) {
           from the "Controlled Vocabulary Term" section below.');
     }
     if (!$has_default) {
-      form_set_error('term_name', 'Fields attached to this content type must be associated with a controlled vocabulary term. Please provide one.');
+      form_set_error('new_name', 'Fields attached to this content type must ' .
+          'be associated with a controlled vocabulary term. Please ' .
+          'provide one below.');
     }
   }
 }
@@ -631,19 +643,19 @@ function tripal_field_widget_form_validate($element, &$form_state, $form) {
 /**
  * Implements hook_field_settings_form_validate().
  *
- * This is not an actual Drpual hook, but rather a Tripal created hook
- * to alow the TripalField objects to have a globalSettingsFormValidate()
- * member function.
+ * This function is called because the TripalField::settingsForm()
+ * adds it to the form element.  By default, Drupal does not provide a
+ * validate hook for the settings form.
  */
-function tripal_field_settings_form_validate($form, &$form_state) {
-//   $field = $form['#field'];
-//   $instance = $form['#instance'];
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->globalSettingsFormValidate($field, $instance, $form, $form_state);
-//   }
+function tripal_field_settings_form_validate($element, &$form_state, $form) {
+  $field = $element['#field'];
+  $instance = $element['#instance'];
+
+  $field_class = $field['type'];
+  if (tripal_load_include_field_class($field_type)) {
+    $field = new $field_class($field, $instance);
+    $field->settingsFormValidate($form, $form_state);
+  }
 }
 
 
@@ -651,15 +663,11 @@ function tripal_field_settings_form_validate($form, &$form_state) {
  * Implements hook_field_formatter_settings_summary().
  */
 function tripal_field_formatter_settings_summary($field, $instance, $view_mode) {
-
-//   $summary = '';
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->formatterSettingsSummary($view_mode);
-//   }
-//   return $summary;
+  $formatter_class = $field['type'] . '_formatter';
+  if (tripal_load_include_field_class($formatter_class)) {
+    $formatter = new $formatter_class($field, $instance);
+    return $formatter->settingsSummary($form, $form_state);
+  }
 }
 
 /**
@@ -668,14 +676,11 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 function tripal_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
 
-//   $form = array();
-//   $field_type = $field['type'];
-//   tripal_load_include_field_class($field_type);
-//   if (class_exists($field_type)) {
-//     $tfield = new $field_type($field, $instance);
-//     $form = $tfield->formatterSettingsForm($view_mode, $form, $form_state);
-//   }
-//   return $form;
+  $formatter_class = $field['type'] . '_formatter';
+  if (tripal_load_include_field_class($formatter_class)) {
+    $formatter = new $formatter_class($field, $instance);
+    return $formatter->settingsSummaryForm($view_mode, $form, $form_state);
+  }
 }
 
 
@@ -736,13 +741,11 @@ function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
 function tripal_field_validate($entity_type, $entity, $field, $instance,
     $langcode, $items, &$errors) {
 
-//   $field_type = $field['type'];
-//   $is_loaded = tripal_load_include_field_class($field_type);
-//   if ($is_loaded) {
-//     $tfield = new $field_type($field, $instance);
-//     $tfield->validate($entity_type, $entity, $langcode,
-//         $items, $errors);
-//   }
+   $field_type = $field['type'];
+   if (tripal_load_include_field_class($field_type)) {
+     $tfield = new $field_type($field, $instance);
+     $tfield->validate($entity_type, $entity, $langcode,$items, $errors);
+   }
 }
 
 /**

@@ -158,10 +158,10 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#description' => t('Describe this content type. The text will be displayed on the <em>Add new content page</em>.'),
   );
   if ($term) {
-    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $entity_type->id, $term->definition);
+    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, $term->definition);
   }
   else {
-    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $entity_type->id, '');
+    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, '');
   }
 
   $form['additional_settings'] = array(
