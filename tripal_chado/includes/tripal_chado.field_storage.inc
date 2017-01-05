@@ -261,7 +261,15 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           // and because $record object is created by the chado_generate_var()
           // function we must go one more level deeper to get the value
           if (is_object($record->$field_column)) {
-            $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column->$field_column;
+            $fkey_column = $field_column;
+            foreach($schema['foreign keys'] as $table => $fk_details) {
+              foreach($fk_details['columns'] as $lfkey => $rfkey) {
+                if ($lfkey == $field_column) {
+                  $fkey_column = $rfkey;
+                }
+              }
+            }
+            $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column->$fkey_column;
           }
           else {
             // For non FK fields we'll make the field value be the same
@@ -279,8 +287,8 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           $tfield = new $field_type($field, $instance);
           $tfield->load($entity, array('record' => $record));
         }
-        // For text fields that were not handled by a TripalField class we 
-        // want to automatically expand those fields. 
+        // For text fields that were not handled by a TripalField class we
+        // want to automatically expand those fields.
         else {
           if ($schema['fields'][$field_column]['type'] == 'text') {
             $record = chado_expand_var($record, 'field', "$field_table.$field_column");
