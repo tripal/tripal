@@ -180,8 +180,12 @@ class sbo__relationship extends ChadoField {
       $orelationships = $record->$rel_table->object_project_id;
     }
     else {
-      $srelationships = $record->$rel_table->subject_id;
-      $orelationships = $record->$rel_table->object_id;
+      if (isset($record->$rel_table->subject_id)) {
+        $srelationships = $record->$rel_table->subject_id;
+      }
+      if (isset($record->$rel_table->object_id)) {
+        $orelationships = $record->$rel_table->object_id;
+      }
     }
 
     $i = 0;
@@ -650,10 +654,10 @@ class sbo__relationship extends ChadoField {
     }
 
     foreach ($items as $delta => $item) {
-      $subject_id = $item['chado' . $field_table . '__' . $subject_id_key];
-      $object_id = $item['chado' . $field_table . '__' . $object_id_key];
-      $type_id = $item['chado' . $field_table . '__type_id'];
-      $type_id = isset($item['type_id']) ? $item['chado' . $field_table . '__type_id'] : $type_id;
+      $subject_id = $item['chado-' . $field_table . '__' . $subject_id_key];
+      $object_id = $item['chado-' . $field_table . '__' . $object_id_key];
+      $type_id = $item['chado-' . $field_table . '__type_id'];
+      $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
       $subject_name = $item['subject_name'];
       $object_name = $item['object_name'];
