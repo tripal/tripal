@@ -5,6 +5,20 @@
  */
 function tripal_chado_populate_chado_semweb_table() {
 
+  // Insert commonly used ontologies into the tables.
+  $ontologies = array(
+    // array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+    array('Relationship Ontology (legacy)', '{tripal_chado}/files/legacy_ro.obo'),
+    array('Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo'),
+    array('Gene Ontology', 'http://purl.obolibrary.org/obo/go.obo'),
+    //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
+    //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
+    //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
+  );
+  foreach ($ontologies as $o) {
+  db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
+  }
+
   // Add in all tables and fields into the chado_semweb table.
   $chado_tables = chado_get_table_names(TRUE);
   foreach ($chado_tables as $chado_table) {
@@ -36,6 +50,51 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_TAXRANK();
   tripal_chado_populate_vocab_TPUB();
   tripal_chado_populate_vocab_UO();
+
+  // Add TAXRANK vocabulary for full import.
+  $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
+  $cv = chado_select_record('cv', array('name'), array('name' => 'taxonomic_rank'));
+  if (count($cv) == 0 and $obo_id) {
+    tripal_chado_load_obo_v1_2_id($obo_id);
+  }
+  //tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+  // Add Tripal Contact vocabulary for full import.
+  $obo_path = '{tripal_chado}/files/tcontact.obo';
+  $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
+  $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_contact'));
+  if (count($cv) == 0 and $obo) {
+    tripal_chado_load_obo_v1_2_id($obo_id);
+  }
+  //tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+  // Add Tripal Publication vocabulary for full import.
+  $obo_path = '{tripal_chado}/files/tpub.obo';
+  $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
+  $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_pub'));
+  if (count($cv) == 0 and $obo) {
+    tripal_chado_load_obo_v1_2_id($obo_id);
+  }
+
+  // Load the sequence ontology if it isn't already loaded
+  $cv = chado_select_record('cv', array('name'), array('name' => 'sequence'));
+  $obo = tripal_get_obo(array('obo_name' => 'Sequence Ontology'));
+  if (count($cv) == 0 and $obo) {
+    print "Installing the Sequence Ontology... This may take a while...\n";
+    tripal_chado_load_obo_v1_2_id($obo->obo_id);
+  }
+
+  // Add the Chado ontology CV.
+  //$obo_path = '{tripal_chado}/files/cv_property.obo';
+  //$obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
+  //tripal_chado_load_obo_v1_2_id($obo_id);
+  //tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+  // $obo_path = '{tripal_feature}/files/feature_property.obo';
+  // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
+  // tripal_chado_load_obo_v1_2_id($obo_id);
+  //// tripal_submit_obo_job(array('obo_id' => $obo_id));
+
 }
 
 /**
@@ -381,6 +440,7 @@ function tripal_chado_populate_vocab_IAO() {
  * ontology.
  */
 function tripal_chado_populate_vocab_LOCAL() {
+
   tripal_insert_db(array(
     'name' => 'local',
     'description' => 'Terms created for this site.',
@@ -388,6 +448,152 @@ function tripal_chado_populate_vocab_LOCAL() {
     'urlprefix' => '/cv/lookup/{db}/{accession}',
   ));
 
+
+  // ----------------
+  // Add the various CV's that fall under the local DB.
+  // ----------------
+  tripal_insert_cv(
+    'local',
+    'Locally created terms.'
+  );
+  tripal_insert_cv(
+    'organism_property',
+    'A local vocabulary that contains locally defined properties for organisms'
+  );
+  tripal_insert_cv(
+    'tripal_phylogeny',
+    'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees.'
+  );
+  tripal_insert_cv(
+    'synonym_type',
+    'A local vocabulary that contains synonym types (e.g. exact, broad, narrow, related).'
+  );
+  // Add cv for relationship types
+  tripal_insert_cv(
+    'feature_relationship',
+    'A local vocabulary that contains types of relationships between features.'
+  );
+
+  // The feature_property CV may already exists. It comes with Chado, but
+  // we need to  add it just in case it doesn't get added before the feature
+  // module is installed. But as of Tripal v3.0 the Chado version of this
+  // vocabulary is no longer loaded by default.
+  tripal_insert_cv(
+    'feature_property',
+    'A local vocabulary that contains properties for genomic features'
+  );
+  // Add the cv for contact properties. This is a default vocabulary in the event
+  // that a user does not want to use the tripal_contact vocabulary
+  tripal_insert_cv(
+    'contact_property',
+    'A local vocabulary that contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+  );
+
+  // add the cv for the contact type. This is a default vocabulary in the event
+  // that a user does not want to use the tripal_contact vocabulary
+  tripal_insert_cv(
+    'contact_type',
+    'A local vocabulary that contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+  );
+
+  // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
+  tripal_insert_cv(
+    'tripal_contact',
+    'A local vocabulary that contains a heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+  );
+
+  // add the cv for contact relationships
+  tripal_insert_cv(
+    'contact_relationship',
+    'A local vocabulary that contains types of relationships between contacts.'
+  );
+  tripal_insert_cv(
+    'featuremap_units',
+    'A local vocabulary that contains map unit types for the unittype_id column of the featuremap table.'
+  );
+
+  tripal_insert_cv(
+    'featurepos_property',
+    'A local vocabulary that contains terms map properties.'
+  );
+
+  tripal_insert_cv(
+    'featuremap_property',
+    'A local vocabulary that contains positional types for the feature positions'
+  );
+  tripal_insert_cv(
+    'library_property',
+    'A local vocabulary that contains properties for libraries.'
+  );
+  tripal_insert_cv(
+    'library_type',
+    'A local vocabulary that contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
+  );
+  // Add the cv for project properties
+  tripal_insert_cv(
+    'project_property',
+    'A local vocabulary that contains properties for projects'
+  );
+  // Add cv for relationship types
+  tripal_insert_cv(
+    'project_relationship',
+    'A local vocabulary that contains Types of relationships between projects.'
+  );
+  // Add the cv for pub properties
+  tripal_insert_cv(
+    'tripal_pub',
+    'A local vocabulary that contains a heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
+  );
+
+  // Add the cv for pub types
+  tripal_insert_cv(
+    'pub_type',
+    'A local vocabulary that contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
+  );
+
+  // Add the cv for pub properties
+  tripal_insert_cv(
+    'pub_property',
+    'A local vocabulary that contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
+  );
+
+  // Add cv for relationship types
+  tripal_insert_cv(
+    'pub_relationship',
+    'A local vocabulary that contains types of relationships between publications.'
+  );
+
+  // Add cv for relationship types
+  tripal_insert_cv(
+    'stock_relationship',
+    'A local vocabulary that contains types of relationships between stocks.'
+  );
+  tripal_insert_cv(
+    'stock_property',
+    'A local vocabulary that contains properties for stocks.'
+  );
+  tripal_insert_cv(
+    'stock_type',
+    'A local vocabulary that contains a list of types for stocks.'
+  );
+  tripal_insert_cv(
+    'tripal_analysis',
+    'A local vocabulary that contains terms used for analyses.'
+  );
+
+  //-----------------------------
+  // Misc Terms
+  //-----------------------------
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:property',
+    'name' => 'property',
+    'cv_name' => 'local',
+    'definition' => 'A generic term indicating that represents an attribute, quality or characteristic of something.',
+  ));
+
+  //-----------------------------
+  // Terms for base table fields
+  //-----------------------------
   $term = tripal_insert_cvterm(array(
     'id' => 'local:timelastmodified',
     'name' => 'time_last_modified',
@@ -395,7 +601,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'The time at which the record was last modified.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'timelastmodified', $term);
-
 
   $term = tripal_insert_cvterm(array(
     'id' => 'local:timeaccessioned',
@@ -452,6 +657,10 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
 
+
+  //-----------------------------
+  // Relationship Terms
+  //-----------------------------
   $term = tripal_insert_cvterm(array(
     'id' => 'local:relationship_subject',
     'name' => 'clause subject',
@@ -461,6 +670,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_associate_chado_semweb_term(NULL, 'subject_id', $term);
   tripal_associate_chado_semweb_term(NULL, 'subject_reagent_id', $term);
   tripal_associate_chado_semweb_term(NULL, 'subject_project_id', $term);
+
   $term = tripal_insert_cvterm(array(
     'id' => 'local:relationship_object',
     'name' => 'clause predicate',
@@ -470,6 +680,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_associate_chado_semweb_term(NULL, 'object_id', $term);
   tripal_associate_chado_semweb_term(NULL, 'object_reagent_id', $term);
   tripal_associate_chado_semweb_term(NULL, 'object_project_id', $term);
+
   $term = tripal_insert_cvterm(array(
     'id' => 'local:relationship_type',
     'name' => 'relationship type',
@@ -490,6 +701,11 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_associate_chado_semweb_term('quantification_relationship', 'type_id', $term);
   tripal_associate_chado_semweb_term('stock_relationship', 'type_id', $term);
 
+  //-----------------------------
+  // NCBI Organism Property Terms
+  //-----------------------------
+  // TODO: these probably have real terms we can use.
+
   $term = tripal_insert_cvterm(array(
     'id' => 'locak:rank',
     'name' => 'rank',
@@ -497,11 +713,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
 
-
-  tripal_insert_cv(
-    'organism_property',
-    'Contains locally defined properties for organisms'
-  );
   $terms = array(
     'lineage',
     'genetic_code',
@@ -527,11 +738,9 @@ function tripal_chado_populate_vocab_LOCAL() {
     tripal_insert_cvterm($value, $options);
   }
 
-
-  tripal_insert_cv(
-      'tripal_phylogeny',
-      'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees.'
-  );
+  //---------------------
+  // Phylogeny Tree Terms
+  //---------------------
 
   // Add the terms used to identify nodes in the tree.
   tripal_insert_cvterm(
@@ -545,38 +754,312 @@ function tripal_chado_populate_vocab_LOCAL() {
       array('update_existing' => TRUE)
   );
   // Add the terms used to identify nodes in the tree.
-  tripal_insert_cvterm(
-      array(
-        'name' => 'phylo_root',
-        'definition' => 'The root node of a phylogenetic tree.',
-        'cv_name' => 'tripal_phylogeny',
-        'is_relationship' => 0,
-        'db_name' => 'local'
-      ),
-      array('update_existing' => TRUE)
-  );
+  tripal_insert_cvterm(array(
+    'name' => 'phylo_root',
+    'definition' => 'The root node of a phylogenetic tree.',
+    'cv_name' => 'tripal_phylogeny',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
+
   // Add the terms used to identify nodes in the tree.
-  tripal_insert_cvterm(
-      array(
-        'name' => 'phylo_interior',
-        'definition' => 'An interior node in a phylogenetic tree.',
-        'cv_name' => 'tripal_phylogeny',
-        'is_relationship' => 0,
-        'db_name' => 'local'
-      ),
-      array('update_existing' => TRUE)
-  );
+  tripal_insert_cvterm(array(
+    'name' => 'phylo_interior',
+    'definition' => 'An interior node in a phylogenetic tree.',
+    'cv_name' => 'tripal_phylogeny',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
+
   // Add the terms used to identify nodes in the tree.
-  tripal_insert_cvterm(
-      array(
-        'name' => 'taxonomy',
-        'definition' => 'A term used to indicate if a phylotree is a taxonomic tree',
-        'cv_name' => 'tripal_phylogeny',
-        'is_relationship' => 0,
-        'db_name' => 'local'
-      ),
-      array('update_existing' => TRUE)
-  );
+  tripal_insert_cvterm(array(
+    'name' => 'taxonomy',
+    'definition' => 'A term used to indicate if a phylotree is a taxonomic tree',
+    'cv_name' => 'tripal_phylogeny',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
+
+  //---------------------
+  // Synonym Types Terms
+  //---------------------
+  tripal_insert_cvterm(array(
+    'name' => 'exact',
+    'definition' => 'An exact equivalent; interchangeable with the term name.',
+    'cv_name' => 'synonym_type',
+    'db_name' => 'local',
+  ), array('force_db_change' => TRUE));
+
+  tripal_insert_cvterm(array(
+    'name' => 'broad',
+    'definition' => 'The synonym is broader than the name.',
+    'cv_name' => 'synonym_type',
+    'db_name' => 'local',
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'narrow',
+    'definition' => 'The synonym is narrower or more precise than the name.',
+    'cv_name' => 'synonym_type',
+    'db_name' => 'local',
+  ), array('force_db_change' => TRUE));
+
+  tripal_insert_cvterm(array(
+    'name' => 'related',
+    'definition' => 'The synonym is related in some way.',
+    'cv_name' => 'synonym_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+
+  //--------------
+  // Project Terms
+  //--------------
+  // Insert cvterm 'Project Description' into cvterm table of chado
+  // database. This CV term is used to keep track of the project
+  // description in the projectprop table.
+  tripal_insert_cvterm(array(
+    'name' => 'Project Description',
+    'definition'  => 'Description of a project',
+    'cv_name' => 'project_property',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+  //--------------
+  // Natural Diversity Terms
+  //--------------
+  // add cvterms for the nd_experiment_types
+  tripal_insert_cvterm(array(
+    'name' => 'Genotyping',
+    'definition' => 'An experiment where genotypes of individuals are identified.',
+    'cv_name' => 'nd_experiment_types',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+  tripal_insert_cvterm(array(
+    'name' => 'Phenotyping',
+    'definition' => 'An experiment where phenotypes of individuals are identified.',
+    'cv_name' => 'nd_experiment_types',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+  tripal_insert_cvterm(array(
+    'name' => 'Location',
+    'definition' => 'The name of the location.',
+    'cv_name' => 'nd_geolocation_property',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+
+  //--------------
+  // Library Terms
+  //--------------
+  // Insert cvterm 'library_description' into cvterm table of chado
+  // database. This CV term is used to keep track of the library
+  // description in the libraryprop table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:library_description',
+    'name' => 'Library Description',
+    'definition' => 'Description of a library',
+    'cv_name' => 'library_property',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+  // add cvterms for the map unit types
+  tripal_insert_cvterm(array(
+    'id' => 'local:cdna_library',
+    'name' => 'cdna_library',
+    'definition' => 'cDNA library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'id' => 'local:bac_library',
+    'name' => 'bac_library',
+    'definition' => 'Bacterial Artifical Chromsome (BAC) library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'id' => 'local:fosmid_library',
+    'name' => 'fosmid_library',
+    'definition' => 'Fosmid library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'id' => 'local:cosmid_library',
+    'name' => 'cosmid_library',
+    'definition' => 'Cosmid library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'id' => 'local:yac_library',
+    'name' => 'yac_library',
+    'definition' => 'Yeast Artificial Chromosome (YAC) library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'id' => 'local:genomic_library',
+    'name' => 'genomic_library',
+    'definition' => 'Genomic Library',
+    'cv_name' => 'library_type',
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+  //--------------
+  // Feature Map
+  //--------------
+  // add cvterms for the map unit types
+  tripal_insert_cvterm(array(
+    'name' => 'cM',
+    'definition' => 'Centimorgan units',
+    'cv_name' => 'featuremap_units',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'bp',
+    'definition' => 'Base pairs units',
+    'cv_name' => 'featuremap_units',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'bin_unit',
+    'definition' => 'The bin unit',
+    'cv_name' => 'featuremap_units',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'marker_order',
+    'definition' => 'Units simply to define marker order.',
+    'cv_name' => 'featuremap_units',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'undefined',
+    'definition' => 'A catch-all for an undefined unit type',
+    'cv_name' => 'featuremap_units',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  // featurepos properties
+  tripal_insert_cvterm(array(
+    'name' => 'start',
+    'definition' => 'The start coordinate for a map feature.',
+    'cv_name' => 'featurepos_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'stop',
+    'definition' => 'The end coordinate for a map feature',
+    'cv_name' => 'featurepos_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  // add cvterms for map properties
+  tripal_insert_cvterm(array(
+    'name' => 'Map Dbxref',
+    'definition' => 'A unique identifer for the map in a remote database.  The '
+      . 'format is a database abbreviation and a unique accession separated '
+      . 'by a colon.  (e.g. Gramene:tsh1996a)',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Map Type',
+    'definition' => 'The type of Map (e.g. QTL, Physical, etc.)',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Genome Group',
+    'definition' => '',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'URL',
+    'definition' => 'A univeral resource locator (URL) reference where the '
+      . 'publication can be found.  For maps found online, this would be '
+      . 'the web address for the map.',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Population Type',
+    'definition' => 'A brief description of the population type used to generate '
+    . 'the map (e.g. RIL, F2, BC1, etc).',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Population Size',
+    'definition' => 'The size of the population used to construct the map.',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Methods',
+    'definition' => 'A brief description of the methods used to construct the map.',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+  tripal_insert_cvterm(array(
+    'name' => 'Software',
+    'definition' => 'The software used to construct the map.',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('force_db_change' => TRUE));
+
+
+  //--------------
+  // Analysis Terms
+  //--------------
+  // add analysis_date.  This is no longer used (as far as we can tell) but we don't
+  // get rid of it in case it is used, so just keep it in the Tripal CV
+  tripal_insert_cvterm(array(
+    'name' => 'analysis_date',
+    'definition' => 'The date that an analysis was performed.',
+    'cv_name' => 'tripal_analysis',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('update_existing' => TRUE));
+
+  // add analysis_short_name.  This is no longer used (as far as we can tell) but we don't
+  // get rid of it in case it is used, so just keep it in the Tripal CV
+  tripal_insert_cvterm(array(
+      'name' => 'analysis_short_name',
+      'definition' => 'A computer legible (no spaces or special characters) '
+        . 'abbreviation for the analysis.',
+      'cv_name' => 'tripal_analysis',
+      'is_relationship' => 0,
+      'db_name' => 'local'
+    ), array('update_existing' => TRUE));
+
+
+  // the 'analysis_property' vocabulary is for user definable properties wo we
+  // will add an 'Analysis Type' to this vocubulary
+  tripal_insert_cvterm(array(
+    'name' => 'Analysis Type',
+    'definition' => 'The type of analysis that was performed.',
+    'cv_name' => 'analysis_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ), array('update_existing' => TRUE));
 }
 /**
  * Adds the Systems Biology Ontology database and terms.

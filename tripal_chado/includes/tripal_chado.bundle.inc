@@ -37,10 +37,10 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
   // Before adding fields to this bundle, let's make sure we associate
   // what table in Chado this bundle is mapped to
   $chado_bundle = db_select('chado_bundle', 'cb')
-    ->fields('cb', array('chado_bundle_id'))
+    ->fields('cb')
     ->condition('bundle_id', $bundle->id)
     ->execute()
-    ->fetchField();
+    ->fetchObject();
   if (!$chado_bundle) {
     $record = array(
       'bundle_id' => $bundle->id,
@@ -57,19 +57,16 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
     if (!$success) {
       throw new Exception('Cannot create content type. Problem associating type with Chado.');
     }
+    $chado_bundle = db_select('chado_bundle', 'cb')
+      ->fields('cb')
+      ->condition('bundle_id', $bundle->id)
+      ->execute()
+      ->fetchObject();
   }
 
-
-  // Before adding fields to the bundle we need to story the Chado table that
-  // this bundle maps to.  That information is in the $args['form_values']
-  // array.  The $args['form_values'] array contains values that indicate the
-  // Chado table.
-  // TODO: we need to store the chado table and type field used for this
-  // bundle.
-
   // Create/Add the new fields for this bundle.
-  tripal_chado_bundle_create_fields($entity_type, $bundle, $record);
+  tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle);
 
   // Create/Add the new field instances for this bundle.
-  tripal_chado_bundle_create_instances($entity_type, $bundle, $record);
+  tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bundle);
 }

@@ -10,10 +10,10 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle)
 
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
-    'chado_cvterm_id' => $chado_bundle['type_id'],
-    'chado_table' => $chado_bundle['data_table'],
-    'chado_type_table' => $chado_bundle['type_linker_table'],
-    'chado_type_column' => $chado_bundle['type_column'],
+    'chado_cvterm_id' => $chado_bundle->type_id,
+    'chado_table' => $chado_bundle->data_table,
+    'chado_type_table' => $chado_bundle->type_linker_table,
+    'chado_type_column' => $chado_bundle->type_column,
   );
 
   $info = array();
@@ -517,10 +517,10 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
 function tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bundle) {
 
   $details = array(
-    'chado_cvterm_id' => $chado_bundle['type_id'],
-    'chado_table' => $chado_bundle['data_table'],
-    'chado_type_table' => $chado_bundle['type_linker_table'],
-    'chado_type_column' => $chado_bundle['type_column'],
+    'chado_cvterm_id' => $chado_bundle->type_id,
+    'chado_table' => $chado_bundle->data_table,
+    'chado_type_table' => $chado_bundle->type_linker_table,
+    'chado_type_column' => $chado_bundle->type_column,
   );
 
   tripal_chado_bundle_create_instances_base($info, $entity_type, $bundle, $details);

@@ -9,7 +9,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
   }
 
   /**
-   * Create a type - we first set up the values that are specific
+   * Create a type we first set up the values that are specific
    * to our type schema but then also go through the EntityAPIController
    * function.
    *

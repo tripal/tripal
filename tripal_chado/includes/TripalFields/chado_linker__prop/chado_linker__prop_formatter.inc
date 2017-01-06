@@ -22,7 +22,6 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $field_name = $this->field['field_name'];
-    dpm($this->instance);
     $chado_table = $this->instance['settings']['chado_table'];
 
     foreach ($items as $delta => $item) {

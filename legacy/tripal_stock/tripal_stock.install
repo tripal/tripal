@@ -47,11 +47,6 @@ function tripal_stock_requirements($phase) {
  * @ingroup tripal_stock
  */
 function tripal_stock_install() {
-  // add some controlled vocabularies
-  tripal_stock_add_cvs();
-
-  tripal_stock_add_cvterms();
-
   // set the default vocabularies
   tripal_set_default_cv('stock', 'type_id', 'stock_type');
   tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
@@ -105,35 +100,4 @@ function tripal_stock_schema() {
   );
 
   return $schema;
-}
-
-/**
- * Add cvs related to publications
- *
- * @ingroup tripal_pub
- */
-function tripal_stock_add_cvs() {
-
-  // Add cv for relationship types
-  tripal_insert_cv(
-    'stock_relationship',
-    'Contains types of relationships between stocks.'
-  );
-  tripal_insert_cv(
-    'stock_property',
-    'Contains properties for stocks.'
-  );
-  tripal_insert_cv(
-    'stock_type',
-    'Contains a list of types for stocks.'
-  );
-}
-
-/**
- * Add cvterms related to publications
- *
- * @ingroup tripal_pub
- */
-function tripal_stock_add_cvterms() {
-
 }

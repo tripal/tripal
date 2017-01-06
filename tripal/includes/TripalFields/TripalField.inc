@@ -102,16 +102,17 @@ class TripalField {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
     }
     else {
-      if (!array_key_exists('term_vocabulary', $instance['settings'])) {
-        tripal_set_message(t('Missing controlled vocbulary for field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
-      }
-      else {
+      // If the vocabulary and accession are set then make sure that the
+      // term is a real term. It is possible that the vocabulary and accession
+      // may not be set initially. This occurs when a field is created
+      // dynamically be a priviledge site admin.
+      if (array_key_exists('term_vocabulary', $instance['settings'])) {
         $vocabulary = $instance['settings']['term_vocabulary'];
         $accession = $instance['settings']['term_accession'];
         $term = tripal_get_term_details($vocabulary, $accession);
         if (!$term) {
-          //throw new Error(t('Cannot create TripalField of type "%term" as that
-          //    term does not exist.', array('%term' => $class::$term)));
+          throw new Error(t('Cannot create TripalField of type "%term" as that
+              term does not exist.', array('%term' => "$vocabulary:$accession")));
         }
       }
     }
