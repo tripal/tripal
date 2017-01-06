@@ -324,4 +324,15 @@ class TripalField {
 
   }
 
+  /**
+   * Afte a field instance is created the following function is run.
+   *
+   * This function is equivalent to the hook_field_create_field() hook of
+   * the Drupal Field API. This function is invoked after a new field
+   * instance is created.
+   */
+  public function createInstance() {
+
+  }
+
 }

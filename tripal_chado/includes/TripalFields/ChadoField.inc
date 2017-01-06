@@ -86,4 +86,26 @@ class ChadoField extends TripalField {
   public function queryOrder($query, $order) {
 
   }
+
+  /**
+   * @see TripalField::instanceSettingsForm()
+   */
+  public function instanceSettingsForm() {
+    // Make sure we don't lose our Chado table mappings when the settings
+    // are updated.  Setting them as values in the form ensures they don't
+    // get accidentally overwritten.
+    $element['base_table'] = array(
+      '#type' => 'value',
+      '#value' => $this->instance['settings']['base_table'],
+    );
+    $element['chado_table'] = array(
+      '#type' => 'value',
+      '#value' => $this->instance['settings']['chado_table'],
+    );
+    $element['chado_column'] = array(
+      '#type' => 'value',
+      '#value' => $this->instance['settings']['chado_column'],
+    );
+    return $element;
+  }
 }

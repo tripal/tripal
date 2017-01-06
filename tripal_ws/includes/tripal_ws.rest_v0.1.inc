@@ -461,6 +461,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $cquery = clone $query;
   $cquery->count();
   $num_records = $cquery->execute();
+  $num_records = count($num_records['TripalEntity']);
 
   if (!$num_records) {
     $num_records = 0;

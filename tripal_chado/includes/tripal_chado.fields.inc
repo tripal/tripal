@@ -715,7 +715,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     }
     elseif ($table_name == 'analysis' and $column_name == 'sourceversion') {
       $base_info['label'] = 'Source Version';
-      $base_info['description'] = 'If hte source data set has a version include it here.';
+      $base_info['description'] = 'If the source data set has a version include it here.';
     }
     elseif ($table_name == 'analysis' and $column_name == 'algorithm') {
       $base_info['label'] = 'Source Version';
@@ -1447,34 +1447,18 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_bundle_create_user_field().
  *
- * The field_ui_field_overview_form is used for ordering and configuring the
- * fields attached to an entity.
- *
- * This function removes the property adder field as that is really not meant
- * for users to show or manage.
+ * A priviledged user has the ability to add new fields to the bundle. The
+ * chado_linker__prop and chado_linker__cvterm fields are allowed to be
+ * added dynamically by the user.  But, Drupal doesn't know whot to deal with
+ * it, so this function is called for any field attached to a TripalEntity
+ * bundle type. Any fields whose TripalField::$module argument is set to
+ * 'tripal_chado' and that can be added dynamically will result in a call
+ * to this function.
  */
-function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+function tripal_chado_bundle_create_user_field($new_field, $bundle) {
 
-  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
-  // on the add/edit form of an entity for adding new property fields.
-  $fields_names = element_children($form['fields']);
-  foreach ($fields_names as $field_name) {
-    $field_info = field_info_field($field_name);
-    if ($field_info['type'] == 'kvproperty_adder') {
-      unset($form['fields'][$field_name]);
-    }
-    if ($field_info['type'] == 'cvterm_class_adder') {
-      unset($form['fields'][$field_name]);
-    }
-  }
-}
-
-/**
- * Implements hook_form_field_ui_field_overview_add_new().
- */
-function tripal_chado_form_field_ui_field_overview_add_new($new_field, $bundle) {
   // Get the table this bundle is mapped to.
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
   $vocab = $term->vocab;
@@ -1509,11 +1493,6 @@ function tripal_chado_form_field_ui_field_overview_add_new($new_field, $bundle) 
         'storage' => array(
           'type' => 'field_chado_storage',
         ),
-        'settings' => array(
-          'base_table' => $chado_table,
-          'chado_table' => $table_name,
-          'chado_column' => $pkey,
-        ),
       ));
 
       // Now add the instance
@@ -1526,6 +1505,9 @@ function tripal_chado_form_field_ui_field_overview_add_new($new_field, $bundle) 
         'required' => FALSE,
         'settings' => array(
           'auto_attach' => TRUE,
+          'base_table' => $chado_table,
+          'chado_table' => $table_name,
+          'chado_column' => $pkey,
         ),
         'widget' => array(
           'type' => 'chado_linker__prop_widget',

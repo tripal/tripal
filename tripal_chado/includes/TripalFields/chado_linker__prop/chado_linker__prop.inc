@@ -35,6 +35,12 @@ class chado_linker__prop extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // The table in Chado that the instance maps to.
+    'chado_table' => '',
+    // The primary key column of hte table in Dhado.
+    'chado_column' => '',
+    // The base table.
+    'base_table' => '',
   );
 
   // The default widget for this field.

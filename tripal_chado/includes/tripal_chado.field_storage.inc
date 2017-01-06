@@ -227,6 +227,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     // that need to be selected from each of the tables represented.
     $tables = array();
     foreach ($fields as $field_id => $ids) {
+
       // By the time this hook runs, the relevant field definitions have been
       // populated and cached in FieldInfo, so calling field_info_field_by_id()
       // on each field individually is more efficient than loading all fields in
@@ -236,11 +237,18 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $field_type = $field['type'];
       $field_module = $field['module'];
 
-      // Get the instnace for this field
+      // Get the instance for this field.  If no instance exists then skip
+      // loading of this field. This can happen when a field is deleted from
+      // a bundle using the user UI form.
+      // TODO: how to deal with deleted fields?
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
+      if (!$instance) {
+        continue;
+      }
 
-      // Skip fields that don't map to a Chado table (e.g. kvproperty_adder).
-      if (!array_key_exists('settings', $instance) or !array_key_exists('chado_table', $instance['settings'])) {
+      // Skip fields that don't map to a Chado table.
+      if (!array_key_exists('settings', $instance) or
+          !array_key_exists('chado_table', $instance['settings'])) {
         continue;
       }
 
@@ -487,39 +495,57 @@ function tripal_chado_field_storage_query($query) {
     $column = $sort['specifier']['column'];
     $direction = $sort['direction'];
 
-    // See if there is a ChadoField class for this instance. If not then do
-    // our best to order the field.
-    $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-    if (tripal_load_include_field_class($field_type)) {
-      $field_obj = new $field_type($field, $instance);
-      $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
-    }
-    // There is no class so do our best to order the data by this field
-    else {
-      $base_table = $instance['settings']['base_table'];
-      $chado_table = $instance['settings']['chado_table'];
-      $table_column = tripal_get_chado_semweb_column($chado_table, $column);
-      if ($table_column) {
-         if ($chado_table == $base_table) {
-           $cquery->orderBy('base.' . $table_column, $direction);
-         }
-         else {
-           // TODO: how do we handle a field that doesn't map to the base table.
-           // We would expect that all of these would be custom field and
-           // the ChadoField::queryOrder() function would be implemented.
-         }
+    // The Chado settings for a field are part of the instance and each bundle
+    // can have the same field but with different Chado mappings. Therefore,
+    // we need to iterate through the bundles to get the field instances.
+    foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+
+      // If there is a bundle filter for the entity and if the field is not
+      // associated with the bundle then skip it.
+      if (array_key_exists('bundle', $query->entityConditions)) {
+        if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
+            !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
+          continue;
+        }
+        else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
+          continue;
+        }
       }
+
+      // See if there is a ChadoField class for this instance. If not then do
+      // our best to order the field.
+      $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+      if (tripal_load_include_field_class($field_type)) {
+        $field_obj = new $field_type($field, $instance);
+        $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
+      }
+      // There is no class so do our best to order the data by this field
       else {
-        // TODO: handle when the name can't be matched to a table column.
+        $base_table = $instance['settings']['base_table'];
+        $chado_table = $instance['settings']['chado_table'];
+        $table_column = tripal_get_chado_semweb_column($chado_table, $column);
+        if ($table_column) {
+           if ($chado_table == $base_table) {
+             $cquery->orderBy('base.' . $table_column, $direction);
+           }
+           else {
+             // TODO: how do we handle a field that doesn't map to the base table.
+             // We would expect that all of these would be custom field and
+             // the ChadoField::queryOrder() function would be implemented.
+           }
+        }
+        else {
+          // TODO: handle when the name can't be matched to a table column.
+        }
       }
     }
   }
-
 
   // Now join with the chado_entity table to get published records only.
   $cquery->join('chado_entity', 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
   $cquery->fields('CE', array('entity_id'));
+  $cquery->fields('TE', array('bundle'));
   $cquery->condition('CE.data_table', $data_table);
   if (array_key_exists('start', $query->range)) {
     $cquery->range($query->range['start'], $query->range['length']);
@@ -528,7 +554,7 @@ function tripal_chado_field_storage_query($query) {
 
   $result = array();
   while ($record = $records->fetchObject()) {
-    $ids = array($record->entity_id, 0, $bundle_name);
+    $ids = array($record->entity_id, 0, $record->bundle);
     $result['TripalEntity'][$record->entity_id] = entity_create_stub_entity('TripalEntity', $ids);
   }
   return $result;

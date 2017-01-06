@@ -4,7 +4,12 @@
  * Implements hook_field_create_instance().
  */
 function tripal_field_create_instance($instance) {
-  // When a field is added to an entity and instance are created on
+  $field = field_info_field($instance['field_name']);
+  $field_class = $field['type'];
+  if (tripal_load_include_field_class($field_class)) {
+    $field = new $field_class($field, $instance);
+    return $field->createInstance();
+  }
 }
 /**
  * Implements hook_field_info().
@@ -254,13 +259,16 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
 
 /**
  * A submit function for the field_ui_field_overview_form.
+ *
  */
 function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
   $form_values = $form_state['values']['fields'];
   $admin_path = _field_ui_bundle_admin_path('TripalEntity', $form['#bundle']);
-
   $destinations = array();
 
+  // If the form Field UI form is adding a new field to the bundle we want
+  // to preempt Drupal from creating the field in it's field_sql_storage
+  // backend. We want to create it.
   if (!empty($form_values['_add_new_field']['field_name'])) {
     try {
       // Is the field type a TripalField? If so then we want
@@ -268,9 +276,12 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
       $type = $form_values['_add_new_field']['type'];
       if (tripal_load_include_field_class($type)) {
         $module = $type::$module;
-        $function = $module . '_form_field_ui_field_overview_add_new';
+        $function = $module . '_bundle_create_user_field';
         $bundle = tripal_load_bundle_entity(array('name' => $form['#bundle']));
         $field_name = $form_values['_add_new_field']['field_name'];
+
+        // If the module implements the hook then we'll have it create the
+        // field and instance.
         if (function_exists($function)) {
           $function($form_values['_add_new_field'], $bundle);
         }
@@ -278,7 +289,10 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
         $destinations[] = $admin_path . '/fields/' . $field_name;
 
         // Store new field information for any additional submit handlers.
-        $form_state['fields_added']['_add_new_field'] = $field['field_name'];
+        $form_state['fields_added']['_add_new_field'] = $field_name;
+
+        // Unset the the _add_new_field entry so Drupal doesn't try to
+        // Create the field.
         unset($form_state['values']['fields']['_add_new_field']);
         drupal_set_message('Please set the controlled vocabulary that best describes the data of this field. See the "Controlled Vocabulary Term" section below.');
       }
@@ -319,7 +333,7 @@ function tripal_module_implements_alter(&$implementations, $hook) {
  */
 function tripal_field_settings_form($field, $instance, $has_data) {
   $field_class = $field['type'];
-  if (tripal_load_include_field_class($field_type)) {
+  if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
     return $field->settingsForm($has_data);
   }
@@ -330,7 +344,7 @@ function tripal_field_settings_form($field, $instance, $has_data) {
  */
 function tripal_field_instance_settings_form($field, $instance) {
   $field_class = $field['type'];
-  if (tripal_load_include_field_class($field_type)) {
+  if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
     return $field->instanceSettingsForm();
   }
@@ -347,7 +361,7 @@ function tripal_field_instance_settings_form_validate($element, &$form_state, $f
   $instance = $element['#instance'];
 
   $field_class = $field['type'];
-  if (tripal_load_include_field_class($field_type)) {
+  if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
     return $field->instanceSettingsForm();
   }
@@ -652,7 +666,7 @@ function tripal_field_settings_form_validate($element, &$form_state, $form) {
   $instance = $element['#instance'];
 
   $field_class = $field['type'];
-  if (tripal_load_include_field_class($field_type)) {
+  if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
     $field->settingsFormValidate($form, $form_state);
   }
