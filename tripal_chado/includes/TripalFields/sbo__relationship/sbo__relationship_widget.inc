@@ -368,7 +368,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     }
 
     // Do not proceed if subject ID or object ID does not exist
-    if (!key_exists('subject_id', $fkeys[$base_table]['columns']) || 
+    if (!key_exists('subject_id', $fkeys[$base_table]['columns']) ||
         !key_exists('object_id', $fkeys[$base_table]['columns'])) {
       return;
     }
@@ -382,7 +382,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     else {
       $values = array('uniquename' => $subject_name);
       $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-      if(count($subject) > 0) {dpm($subject);
+      if(count($subject) > 0) {
         $subject_id = $subject[0]->$fkey_rcolumn;
       }
     }

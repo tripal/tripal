@@ -277,9 +277,6 @@ function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
  * Here we want to overwite unattached fields with a div box that will be
  * recognized by JavaScript that will then use AJAX to load the field.
  *
- * We also want to add tooltips to each field that describes to the user
- * the meaning of the field.
- *
  * The tripal_ajax_attach_field() function is called by an AJAX call to
  * retrieve the field.
  */
@@ -306,21 +303,22 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
           $entity->content[$child_name]['#suffix'] .= '</div>';
         }
 
-        $matches = array();
-        if (array_key_exists('term_vocabulary', $instance['settings'])) {
-          $vocabulary = $instance['settings']['term_vocabulary'];
-          $accession = $instance['settings']['term_accession'];
-          $term = tripal_get_term_details($vocabulary, $accession);
-          if ($term) {
-            $tooltip_img = url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif');
-            $tooltip_text = $term['definition'] ? $term['definition'] : $term['name'];
-            $entity->content[$child_name]['#prefix'] .= '' .
-              '<div class="tripal-tooltip">' .
-                '<img src="' . $tooltip_img . '">' .
-                '<div class="tripal-tooltiptext">' . $tooltip_text . '</div>' .
-              '</div>';
-          }
-        }
+        // Add tooltip to each item.
+//         $matches = array();
+//         if (array_key_exists('term_vocabulary', $instance['settings'])) {
+//           $vocabulary = $instance['settings']['term_vocabulary'];
+//           $accession = $instance['settings']['term_accession'];
+//           $term = tripal_get_term_details($vocabulary, $accession);
+//           if ($term) {
+//             $tooltip_img = url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif');
+//             $tooltip_text = $term['definition'] ? $term['definition'] : $term['name'];
+//             $entity->content[$child_name]['#prefix'] .= '' .
+//               '<div class="tripal-tooltip">' .
+//                 '<img src="' . $tooltip_img . '">' .
+//                 '<div class="tripal-tooltiptext">' . $tooltip_text . '</div>' .
+//               '</div>';
+//           }
+//         }
       }
     }
   }

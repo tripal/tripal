@@ -9,8 +9,7 @@ class TripalFieldQuery extends EntityFieldQuery {
   protected $field_storage = array();
 
   public function execute() {
-
-    // Give a chance to other modules to alter the query.
+    // Give a chance for other modules to alter the query.
     drupal_alter('entity_query', $this);
     $this->altered = TRUE;
 
@@ -29,6 +28,7 @@ class TripalFieldQuery extends EntityFieldQuery {
 
       // Initialize the results array.
       $results = array();
+      dpm($this->field_storage);
 
       // Iterate through the field storage types and call each one.
       foreach ($this->field_storage as $storage_type => $storage_module) {
@@ -60,7 +60,6 @@ class TripalFieldQuery extends EntityFieldQuery {
     else {
       $results = call_user_func($this->queryCallback(), $this);
     }
-
     if ($results and $this->count) {
       return $results;
     }

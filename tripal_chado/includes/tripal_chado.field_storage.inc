@@ -477,70 +477,6 @@ function tripal_chado_field_storage_query($query) {
     }
   } // end foreach ($query->fieldConditions as $index => $condition) {
 
-  // Now get the list for sorting.
-  foreach ($query->order as $index => $sort) {
-    // We only handle ordering by field type here.
-    if ($sort['type'] != 'field') {
-      continue;
-    }
-
-    $field = $sort['specifier']['field'];
-    $field_type = $field['type'];
-    $field_name = $field['field_name'];
-
-    // Skip sorts that don't belong to this storage type.
-    if ($field['storage']['type'] != 'field_chado_storage') {
-      continue;
-    }
-    $column = $sort['specifier']['column'];
-    $direction = $sort['direction'];
-
-    // The Chado settings for a field are part of the instance and each bundle
-    // can have the same field but with different Chado mappings. Therefore,
-    // we need to iterate through the bundles to get the field instances.
-    foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
-
-      // If there is a bundle filter for the entity and if the field is not
-      // associated with the bundle then skip it.
-      if (array_key_exists('bundle', $query->entityConditions)) {
-        if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
-            !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
-          continue;
-        }
-        else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
-          continue;
-        }
-      }
-
-      // See if there is a ChadoField class for this instance. If not then do
-      // our best to order the field.
-      $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-      if (tripal_load_include_field_class($field_type)) {
-        $field_obj = new $field_type($field, $instance);
-        $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
-      }
-      // There is no class so do our best to order the data by this field
-      else {
-        $base_table = $instance['settings']['base_table'];
-        $chado_table = $instance['settings']['chado_table'];
-        $table_column = tripal_get_chado_semweb_column($chado_table, $column);
-        if ($table_column) {
-           if ($chado_table == $base_table) {
-             $cquery->orderBy('base.' . $table_column, $direction);
-           }
-           else {
-             // TODO: how do we handle a field that doesn't map to the base table.
-             // We would expect that all of these would be custom field and
-             // the ChadoField::queryOrder() function would be implemented.
-           }
-        }
-        else {
-          // TODO: handle when the name can't be matched to a table column.
-        }
-      }
-    }
-  }
-
   // Now join with the chado_entity table to get published records only.
   $cquery->join('chado_entity', 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
@@ -550,7 +486,77 @@ function tripal_chado_field_storage_query($query) {
   if (array_key_exists('start', $query->range)) {
     $cquery->range($query->range['start'], $query->range['length']);
   }
+
+  // Now set any ordering.
+  foreach ($query->order as $index => $sort) {
+    // Add in property ordering.
+    if ($order['type'] == 'property') {
+
+    }
+    // Add in filter ordering
+    if ($sort['type'] == 'field') {
+
+      $field = $sort['specifier']['field'];
+      $field_type = $field['type'];
+      $field_name = $field['field_name'];
+
+      // Skip sorts that don't belong to this storage type.
+      if ($field['storage']['type'] != 'field_chado_storage') {
+        continue;
+      }
+      $column = $sort['specifier']['column'];
+      $direction = $sort['direction'];
+
+      // The Chado settings for a field are part of the instance and each bundle
+      // can have the same field but with different Chado mappings. Therefore,
+      // we need to iterate through the bundles to get the field instances.
+      foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+
+        // If there is a bundle filter for the entity and if the field is not
+        // associated with the bundle then skip it.
+        if (array_key_exists('bundle', $query->entityConditions)) {
+          if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
+              !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
+            continue;
+          }
+          else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
+            continue;
+          }
+        }
+
+        // See if there is a ChadoField class for this instance. If not then do
+        // our best to order the field.
+        $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+        if (tripal_load_include_field_class($field_type)) {
+          $field_obj = new $field_type($field, $instance);
+          $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
+        }
+        // There is no class so do our best to order the data by this field
+        else {
+          $base_table = $instance['settings']['base_table'];
+          $chado_table = $instance['settings']['chado_table'];
+          $table_column = tripal_get_chado_semweb_column($chado_table, $column);
+          if ($table_column) {
+             if ($chado_table == $base_table) {
+               $cquery->orderBy('base.' . $table_column, $direction);
+             }
+             else {
+               // TODO: how do we handle a field that doesn't map to the base table.
+               // We would expect that all of these would be custom field and
+               // the ChadoField::queryOrder() function would be implemented.
+             }
+          }
+          else {
+            // TODO: handle when the name can't be matched to a table column.
+          }
+        }
+      } // end foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+    } // end if ($sort['type'] == 'field') {
+  } // end foreach ($query->order as $index => $sort) {
+
+dpm($cquery);
   $records = $cquery->execute();
+  dpm($records);
 
   $result = array();
   while ($record = $records->fetchObject()) {

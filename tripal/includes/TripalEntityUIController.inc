@@ -175,74 +175,171 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   *   A form array describing this listing to the Form API.
   */
  function tripal_content_overview_form($form, &$form_state) {
-   $filter_status = '';
-   $filter_type = '';
-   if (array_key_exists('values', $form_state)) {
-     if ($form_state['values']['status'] != '[any]') {
-       $filter_status = preg_replace('/status-(\d+)/', '\1', $form_state['values']['status']);
-     }
-     if ($form_state['values']['type'] != '[any]') {
-       $filter_type = $form_state['values']['type'];
+
+   // Set form defaults.  The $_SESSION contains the last known selection
+   // by this user. That should be overridden if the $_GET variable contains
+   // values.
+   $etype = '';
+   $status = '';
+   if (array_key_exists('tripal_content_overview', $_SESSION)) {
+     $etype = $_SESSION['tripal_content_overview']['type'];
+     $status = $_SESSION['tripal_content_overview']['status'];
+   }
+   $etype = array_key_exists('type', $_GET) ? $_GET['type'] : $etype;
+   $status = array_key_exists('status', $_GET) ? $_GET['status'] : $status;
+
+   $headers = array(
+     'title' => array(
+       'data' => t('Title'),
+       'type' => 'property',
+       'specifier' => 'title'
+     ),
+     'Type',
+     'Term',
+     'Author',
+     'status' => array(
+       'data' => t('Status'),
+       'type' => 'property',
+       'specifier' => 'status'
+     ),
+     'changed' => array(
+       'data' => t('Updated'),
+       'type' => 'property',
+       'specifier' => 'changed',
+       'sort' => 'desc',
+     ),
+     'Operations',
+   );
+   $rows = array();
+
+   // Get the Options arrays used by the fields below. We need to build them
+   // here because we will use them both for creating the item list below
+   // and for the fields.
+   $etypes = db_select('tripal_bundle', 'tb')
+     ->fields('tb', array('name', 'label'))
+     ->execute()
+     ->fetchAllKeyed();
+   $etypes = array('0' => 'any') +  $etypes;
+   $statuses = array(
+     '0' => 'any',
+     'status-1' => 'published',
+     'status-0' => 'not published'
+   );
+
+   // Build the list of existing filters.
+   $items = array();
+   if ($etype) {
+     $items[] = 'where <strong>type</strong> is <strong>' . $etypes[$etype] . '</strong>';
+   }
+   if ($status) {
+     $items[] = 'where <strong>status</strong> is <strong>' . $statuses[$status] . '</strong>';
+   }
+   // Add 'and' to the beginning of every filter after the first
+   if (count($items) > 1) {
+     for ($i = 1; $i < count($items); $i++) {
+       $items[$i] = 'and ' . $items[$i];
      }
    }
+   $list = theme_item_list(array(
+     'items' => $items,
+     'title' => '',
+     'type' => 'ul',
+     'attributes' => array(),
+   ));
+
    // Set the title to be informative (defaults to content for some reason).
    drupal_set_title('Tripal Content');
 
    $form['filter'] = array(
      '#type' => 'fieldset',
-     '#title' => 'Filter',
-     '#collapsible' => TRUE,
-     '#collapsed' => TRUE,
+     '#title' => 'Show only items where',
+     '#collapsible' => FALSE,
+     '#collapsed' => FALSE,
+     '#prefix' => '<div class="exposed-filters">',
+     '#suffix' => '</div>',
    );
-   $etypes = db_select('tripal_bundle', 'tb')
-     ->fields('tb', array('name', 'label'))
-     ->execute()
-     ->fetchAllKeyed();
-   $etypes = array('[any]' => 'any') +  $etypes;
-   $form['filter']['type'] = array(
-     '#type' => 'select',
-     '#title' => 'Content Type',
-     '#options' => $etypes,
-   );
-   $form['filter']['status'] = array(
-     '#type' => 'select',
-     '#title' => 'Status',
-     '#options' => array(
-       '[any]' => 'any',
-       'status-1' => 'published',
-       'status-0' => 'not published'
-     ),
-   );
-   $form['filter']['filterbtn'] = array(
-     '#type' => 'submit',
-     '#value' => 'Filter',
-   );
-
-   $query = new TripalFieldQuery();
-   $query->entityCondition('entity_type', 'TripalEntity');
-   if ($filter_type) {
-     $query->entityCondition('bundle', $filter_type);
-     //$query->fieldCondition('content_type', 'content_type', 'organism');
-     //$query->fieldOrderBy('content_type', 'content_type', 'DESC');
-     //$query->fieldCondition('organism__genus', 'organism__genus', 'Oryza');
+   if (count($items) > 0) {
+     $form['filter']['filters'] = array(
+       '#type' => 'item',
+       '#markup' => $list,
+     );
    }
+   if (!$status) {
+     $form['filter']['status'] = array(
+       '#type' => 'select',
+       '#title' => 'Status',
+       '#options' => $statuses,
+     );
+   }
+   else {
+     $form['filter']['status'] = array(
+       '#type' => 'value',
+       '#value' => $status,
+     );
+   }
+
+   if (!$etype) {
+     $form['filter']['type'] = array(
+       '#type' => 'select',
+       '#title' => 'Content Type',
+       '#options' => $etypes,
+     );
+   }
+   else {
+     $form['filter']['type'] = array(
+       '#type' => 'value',
+       '#value' => $etype,
+     );
+   }
+
+   $form['filter']['buttons'] = array(
+     '#type' => 'value',
+     '#prefix' => '<div id="edit-actions" class="container-inline form-actions form-wrapper">',
+     '#suffix' => '</div>',
+   );
+   if (count($items) > 0) {
+     if (count($items) < 2) {
+       $form['filter']['buttons']['refinebtn'] = array(
+         '#type' => 'submit',
+         '#value' => 'Refine',
+         '#name' => 'refine',
+       );
+     }
+     $form['filter']['buttons']['filterbtn'] = array(
+       '#type' => 'submit',
+       '#value' => 'Reset',
+       '#name' => 'reset',
+     );
+   }
+   else {
+     $form['filter']['buttons']['filterbtn'] = array(
+       '#type' => 'submit',
+       '#value' => 'Filter',
+       '#name' => 'filter',
+     );
+   }
+
+   $query = new EntityFieldQuery();
+   $query->entityCondition('entity_type', 'TripalEntity');
+   if ($etype) {
+     $query->entityCondition('bundle', $etype);
+   }
+   //$query->propertyOrderBy('created', 'DESC');
 
    // Find out the total number of records and determine what page we're on, and
    // initialize the pager.
    $cquery = clone $query;
    $cquery->count();
    $num_records = $cquery->execute();
+
+   // Calculate the range and create a pager.
    $num_per_page = 25;
-   $page = pager_default_initialize($num_records, $num_per_page);
-   $offset = $num_per_page * $page;
+   $offset = array_key_exists('page', $_GET) ? $_GET['page'] : 0;
+   $query->pager($num_per_page);
+   $query->tableSort($headers);
+   $results = $query->execute();
    $pager = theme('pager');
 
-
-   $query->range($offset, $num_per_page);
-   $results = $query->execute();
-
-   $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
-   $rows = array();
 
    // For each entity retrieved add a row to the data listing.
    //while ($entity = $entities->fetchObject()) {
@@ -254,11 +351,15 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      // We don't need all of the attached fields for an entity so, we'll
      // not use the entity_load() function.  Instead just pull it from the
      // database table.
-     $entity = db_select('tripal_entity', 'TE')
-       ->fields('TE')
-       ->condition('TE.id', $entity_id)
-       ->execute()
-       ->fetchObject();
+     $equery = db_select('tripal_entity', 'TE');
+     $equery->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
+     $equery->fields('TB', array('label'));
+     $equery->fields('TE');
+     $equery->condition('TE.id', $entity_id);
+     $entity = $equery->execute()->fetchObject();
+     if (!$entity) {
+       continue;
+     }
 
      // Get the term
      $term = entity_load('TripalTerm', array('id' => $entity->term_id));
@@ -272,12 +373,11 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
      // Retrieve details about the user who created this data.
      $author = user_load($entity->uid);
-
      // Add information to the table.
      $rows[] = array(
        l($entity->title, 'bio_data/' . $entity->id),
-       $vocabulary,
-       $term_name,
+       $entity->label,
+       $vocabulary . ':' . $term_name,
        l($author->name, 'user/' . $entity->uid),
        $entity->status == 1 ? 'published' : 'unpublished',
        format_date($entity->changed, 'short'),
@@ -330,6 +430,16 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    // Always just rebuild the form on submit.  that will update the
    // result table using the filters provided.
    $form_state['rebuild'] = TRUE;
+
+   // Save the current user filter settings.
+   if ($form_state['clicked_button']['#name'] == 'filter' or
+       $form_state['clicked_button']['#name'] == 'refine') {
+     $_SESSION['tripal_content_overview']['type'] = array_key_exists('type', $form_state['values']) ? $form_state['values']['type'] : '';
+     $_SESSION['tripal_content_overview']['status'] = array_key_exists('status', $form_state['values']) ? $form_state['values']['status'] : '';
+   }
+   if ($form_state['clicked_button']['#name'] == 'reset') {
+     unset($_SESSION['tripal_content_overview']);
+   }
  }
 
  /**
