@@ -911,7 +911,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   print "\n$count $base_table records found.\n";
 
   $i = 0;
-  $transaction = db_transaction();
+  //$transaction = db_transaction();
   print "\nNOTE: Syncing is performed using a database transaction. \n" .
       "If the sync fails or is terminated prematurely then the entire set of \n" .
       "synced items is rolled back and will not be found in the database\n\n";

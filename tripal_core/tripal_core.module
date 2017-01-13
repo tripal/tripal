@@ -211,6 +211,16 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
+
+  $items['admin/tripal/tripal_jobs/execute/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Execute an existing job'),
+    'page callback' => 'tripal_execute_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
     'description' => t('Re-run an existing job.'),
