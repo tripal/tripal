@@ -683,7 +683,7 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
             $pub['Structured Abstract Part'][] = $part;
           }
           else {
-            $abstract .= '<p>' . $xml->value . '</p>';
+            $abstract .= "<p>" . $xml->value . "</p>";
           }
           break;
         case 'CopyrightInformation':

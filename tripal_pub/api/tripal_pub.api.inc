@@ -91,6 +91,7 @@ function tripal_get_publication($identifiers, $options = array()) {
           'name' => $dbname
         ),
       );
+
       $dbxref = chado_select_record('dbxref', array('dbxref_id'), $values);
       if (count($dbxref) == 0) {
         return FALSE;
@@ -127,7 +128,6 @@ function tripal_get_publication($identifiers, $options = array()) {
     // Try to get the pub
     $pub = chado_generate_var('pub', $identifiers, $options);
   }
-
   // Ensure the pub is singular. If it's an array then it is not singular
   if (is_array($pub)) {
     tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
@@ -135,7 +135,6 @@ function tripal_get_publication($identifiers, $options = array()) {
       array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
-
   // Report an error if $pub is FALSE since then chado_generate_var has failed
   elseif ($pub === FALSE) {
     tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
@@ -144,7 +143,6 @@ function tripal_get_publication($identifiers, $options = array()) {
       array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
-
   // Else, as far we know, everything is fine so give them their pub :)
   else {
     return $pub;
@@ -181,8 +179,8 @@ function tripal_get_publication($identifiers, $options = array()) {
  * @ingroup tripal_pub_api
  */
 function tripal_publication_exists($pub_details) {
-
-  // first try to find the publication using the accession number if that key exists in the details array
+  // First try to find the publication using the accession number if that key
+  // exists in the details array
   if (array_key_exists('Publication Dbxref', $pub_details)) {
     $pub = tripal_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
     if($pub) {
@@ -190,7 +188,7 @@ function tripal_publication_exists($pub_details) {
     }
   }
 
-  // make sure the citation is unique
+  // Make sure the citation is unique
   if (array_key_exists('Citation', $pub_details)) {
     $pub = tripal_get_publication(array('uniquename' => $pub_details['Citation']));
     if($pub) {
@@ -198,7 +196,7 @@ function tripal_publication_exists($pub_details) {
     }
   }
 
-  // get the publication type (use the first publication type)
+  // Gget the publication type (use the first publication type)
   if (array_key_exists('Publication Type', $pub_details)) {
     $type_name = '';
     if(is_array($pub_details['Publication Type'])) {

@@ -956,7 +956,6 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // before proceeding check to see if the publication already exists. If there is only one match
   // and the $update_if_exists is NOT set then return FALSE
   $pub_ids = tripal_publication_exists($pub_details);
-
   if(count($pub_ids) == 1 and !$update_if_exists) {
     tripal_report_error('tripal_pub', TRIPAL_NOTICE,
      "There is a publication that is a duplicate of this publication. Cannot continue. It either ".
@@ -987,6 +986,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     );
     $action = 'skipped';
     return FALSE;
+  }
+  if(count($pub_ids) == 1 and $update_if_exists) {
+    $pub_id = $pub_ids[0];
   }
 
   // get the publication type (use the first publication type)
@@ -1500,7 +1502,8 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
     print "Syncing publications with Drupal...\n";
     chado_node_sync_records('pub');
 
-    // iterate through each of the reports and generate a final report with HTML links
+    // Iterate through each of the reports and generate a final report with
+    // HTML links.
     $HTML_report = '';
     if ($report_email) {
       $HTML_report .= "<html>";

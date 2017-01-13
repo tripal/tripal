@@ -1,6 +1,6 @@
-<?php 
-// the $headers array is an array of fields to use as the colum headers. 
-// additional documentation can be found here 
+<?php
+// the $headers array is an array of fields to use as the colum headers.
+// additional documentation can be found here
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 // This table for the analysis has a vertical header (down the first column)
 // so we do not provide headers here, but specify them in the $rows array below.
@@ -9,7 +9,7 @@ $headers = array();
 // the $rows array contains an array of rows where each row is an array
 // of values for each column of the table in that row.  Additional documentation
 // can be found here:
-// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 $rows = array();
 
 // Title row
@@ -142,5 +142,5 @@ $table = array(
 print theme_table($table);
 if ($abstract_text) { ?>
   <p><b>Abstract</b></p>
-  <div style="text-align: justify"><?php print $abstract_text; ?></div> <?php 
-} 
+  <div style="text-align: justify"><?php print $abstract_text; ?></div> <?php
+}

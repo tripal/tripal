@@ -34,7 +34,7 @@ $abstract = chado_generate_var('pubprop', $values);
 $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
 $abstract_text = '';
 if ($abstract) {
-  $abstract_text = htmlspecialchars($abstract->value);
+  $abstract_text = $abstract->value;
 }
 
 // get the author list
