@@ -197,6 +197,26 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'definition' => 'URL of the item.',
   ));
   tripal_associate_chado_semweb_term('db', 'URL', $term);
+
+  // Typically the type_id field is used for distinguishing between records
+  // but in the case that it isn't then we need to associate a term with it
+  // An entity already has a type so if that type is not dicated by the
+  // type_id field then what is in the type_id should therefore be an
+  // "additionalType".  Therefore we need to add and map this term to all
+  // of the appropriate type_id fields.
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:additionalType',
+    'name' => 'additionalType',
+    'cv_name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
+    'definition' => 'URL of the item.',
+  ));
+  $tables = chado_get_table_names(TRUE);
+  foreach ($tables as $table) {
+    $schema = chado_get_schema($table);
+    if (in_array("type_id", array_keys($schema['fields']))) {
+      tripal_associate_chado_semweb_term($table, 'type_id', $term);
+    }
+  }
 }
 
 /**
@@ -1060,6 +1080,56 @@ function tripal_chado_populate_vocab_LOCAL() {
     'is_relationship' => 0,
     'db_name' => 'local'
   ), array('update_existing' => TRUE));
+
+  // Add a term to be used for an inherent 'type_id' for the organism table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:analysis',
+    'name' => 'analysis',
+    'definition' => 'A process as a method of studying the nature of something ' .
+    'or of determining its essential features and their relations. ' .
+    '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
+    'Dictionaries Ltd).',
+    'cv_name' => 'local',
+  ));
+
+  // TODO: change this to foaf:Project
+  tripal_insert_cvterm(array(
+    'id' => 'local:project',
+    'name' => 'project',
+    'definition' => 'A plan or proposal for accomplishing something. ' .
+    '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
+    'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+    'cv_name' => 'local',
+  ));
+
+  //--------------
+  // Terms for Content Types
+  //--------------
+  tripal_insert_cvterm(array(
+    'id' => 'local:contact',
+    'name' => 'contact',
+    'definition' => 'An entity (e.g. individual or organization) through ' .
+    'whom a person can gain access to information, favors, ' .
+    'influential people, and the like.',
+    'cv_name' => 'local',
+  ));
+
+  tripal_insert_cvterm(array(
+    'id' => 'local:relationship',
+    'name' => 'relationship',
+    'definition' => 'The way in which two things are connected.',
+    'cv_name' => 'local',
+  ));
+
+  tripal_insert_cvterm(array(
+    'id' => 'local:biomaterial',
+    'name' => 'biomaterial',
+    'definition' => 'A biomaterial represents the MAGE concept of BioSource, BioSample, ' .
+    'and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that ' .
+    'may have been processed. Processed biomaterials should be traceable back to raw ' .
+    'biomaterials via the biomaterialrelationship table.',
+    'cv_name' => 'local',
+  ));
 }
 /**
  * Adds the Systems Biology Ontology database and terms.
@@ -1106,6 +1176,22 @@ function tripal_chado_populate_vocab_SO() {
     'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
   ));
   tripal_insert_cv('sequence','The Sequence Ontology.');
+
+  // Add the terms we need for default content types.  This needs to be
+  // done because the sequence ontology may not already be loaded but we
+  // still want to provide these default content types.
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SO:0000704',
+    'name' => 'gene',
+    'cv_name' => 'sequence',
+    'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions. [SO:immuno_workshop]',
+  ));
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SO:0000234',
+    'name' => 'mRNA',
+    'cv_name' => 'sequence',
+    'definition' => 'Messenger RNA is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns. [SO:ma]',
+  ));
 }
 
 /**

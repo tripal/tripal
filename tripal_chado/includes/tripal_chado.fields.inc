@@ -89,8 +89,9 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       continue;
     }
 
-    // Skip the type field.
-    if ($table_name == $type_table and $column_name == $type_field) {
+    // Skip the type field that will always be custom
+    if (($table_name == $type_table and $column_name == $type_field) or
+         $column_name == 'type_id') {
       continue;
     }
 
@@ -184,6 +185,21 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
   $cvterm_id  = $details['chado_cvterm_id'];
 
   $schema = chado_get_schema($table_name);
+
+  // BASE TYPE_ID
+  if (array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'schema__additional_type';
+    $field_type = 'schema__additional_type';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => TRUE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and
@@ -573,6 +589,13 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     if ($column_name == $pkey or $column_name == $type_field) {
       continue;
     }
+
+    // Skip the type field that will always be custom
+    if (($table_name == $type_table and $column_name == $type_field) or
+        $column_name == 'type_id') {
+      continue;
+    }
+
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
     if (!$cvterm) {
       // We already provided an error when creating the base field.  So
@@ -751,6 +774,43 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   $type_field = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
   $schema = chado_get_schema($table_name);
+
+  // BASE TYPE_ID
+  if (array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'schema__additional_type';
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema['fields']['type_id']) and
+        $schema['fields']['type_id']['not null']) {
+      $is_required = TRUE;
+    }
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Type',
+      'description' => 'Select a type for this record.',
+      'required' => $is_required,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'type_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'schema__additional_type_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'schema__additional_type_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {

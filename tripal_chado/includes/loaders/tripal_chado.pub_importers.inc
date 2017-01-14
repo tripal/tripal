@@ -1001,6 +1001,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $action = 'skipped';
     return FALSE;
   }
+  if(count($pub_ids) == 1 and $update_if_exists) {
+    $pub_id = $pub_ids[0];
+  }
 
   // get the publication type (use the first publication type)
   if (array_key_exists('Publication Type', $pub_details)) {

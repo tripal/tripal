@@ -110,10 +110,18 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       array(
         array(
           'header' => TRUE,
-          'data' => 'Term',
+          'data' => 'Term Name',
           'class' => array('side-header')
         ),
         $term->name
+      ),
+      array(
+        array(
+          'header' => TRUE,
+          'data' => 'Accession',
+          'class' => array('side-header')
+        ),
+        $term->accession
       ),
       array(
         array(

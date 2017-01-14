@@ -333,9 +333,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    $num_records = $cquery->execute();
 
    // Calculate the range and create a pager.
-   $num_per_page = 25;
-   $offset = array_key_exists('page', $_GET) ? $_GET['page'] : 0;
-   $query->pager($num_per_page);
+   $query->pager(25);
    $query->tableSort($headers);
    $results = $query->execute();
    $pager = theme('pager');

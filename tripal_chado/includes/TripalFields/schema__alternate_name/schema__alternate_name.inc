@@ -15,7 +15,7 @@ class schema__alternate_name extends ChadoField {
   public static $default_label = 'Synonyms';
 
   // The default description for this field.
-  public static $description = 'Adds an alternative name (synonym or alias) to this record.';
+  public static $description = 'An alternative name (synonym or alias) to this record.';
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -42,18 +42,6 @@ class schema__alternate_name extends ChadoField {
 
   // The default formatter for this field.
   public static $default_formatter = 'schema__alternate_name_formatter';
-
-  // --------------------------------------------------------------------------
-  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
-  // --------------------------------------------------------------------------
-  // An array containing details about the field. The format of this array
-  // is the same as that returned by field_info_fields()
-  protected $field;
-  // An array containing details about an instance of the field. A field does
-  // not have to have an instance.  But if dealing with an instance (such as
-  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
-  protected $instance;
-
 
   /**
    *

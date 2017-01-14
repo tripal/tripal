@@ -222,10 +222,16 @@ function tripal_create_bundle($args, &$error = '') {
     $bundle_name = 'bio_data_' . $term->id;
     $einfo = entity_get_info('TripalEntity');
     if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
+      // Make the label for the content type have capitalized words.  The
+      // exception is 'mRNA' which we know should not be uppercased.
+      $label = ucwords(preg_replace('/_/', ' ', $term_name));
+      if ($term_name == 'mRNA') {
+        $label = $term_name;
+      }
       // Insert the bundle.
       db_insert('tripal_bundle')
         ->fields(array(
-          'label' => $term_name,
+          'label' => $label,
           'type' => 'TripalEntity',
           'name' => $bundle_name,
           'term_id' => $term->id,

@@ -220,58 +220,6 @@ function tripal_chado_prepare_chado() {
     module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
     tripal_chado_populate_chado_semweb_table();
 
-    // Unfortunately, some Chado base tables do not have a type_id, so we must
-    // take special action for those tables.  These include: organism and
-    // analysis. Until we can find an appropriate controlled vocabulary
-    // that is well supported by the community with types for these tables we
-    // will have to use in-house terms.
-
-    // Add a term to be used for an inherent 'type_id' for the organism table.
-    tripal_insert_cvterm(array(
-      'id' => 'local:analysis',
-      'name' => 'analysis',
-      'definition' => 'A process as a method of studying the nature of something ' .
-        'or of determining its essential features and their relations. ' .
-        '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
-        'Dictionaries Ltd).',
-      'cv_name' => 'local',
-    ));
-
-    // TODO: change this to foaf:Project
-    tripal_insert_cvterm(array(
-      'id' => 'local:project',
-      'name' => 'project',
-      'definition' => 'A plan or proposal for accomplishing something. ' .
-        '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
-        'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
-      'cv_name' => 'local',
-    ));
-
-    tripal_insert_cvterm(array(
-      'id' => 'local:contact',
-      'name' => 'contact',
-      'definition' => 'An entity (e.g. individual or organization) through ' .
-         'whom a person can gain access to information, favors, ' .
-         'influential people, and the like.',
-      'cv_name' => 'local',
-    ));
-
-    tripal_insert_cvterm(array(
-      'id' => 'local:relationship',
-      'name' => 'relationship',
-      'definition' => 'The way in which two things are connected.',
-      'cv_name' => 'local',
-    ));
-
-    tripal_insert_cvterm(array(
-      'id' => 'local:biomaterial',
-      'name' => 'biomaterial',
-      'definition' => 'A biomaterial represents the MAGE concept of BioSource, BioSample, ' .
-        'and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that ' .
-        'may have been processed. Processed biomaterials should be traceable back to raw ' .
-        'biomaterials via the biomaterialrelationship table.',
-      'cv_name' => 'local',
-    ));
 
     // We want to provide a set of commonly used entity types by default. This
     // way when a user first installs Tripal there are some commonly used
@@ -321,7 +269,7 @@ function tripal_chado_prepare_chado() {
       throw new Exception($error['!message']);
     }
 
-    // Create the 'Genetic Map' entity type. This uses the local:project term.
+    // Create the 'Map' entity type. This uses the local:project term.
     $error = '';
     $args = array(
       'vocabulary' => 'data',
@@ -343,6 +291,36 @@ function tripal_chado_prepare_chado() {
       'term_name' => 'Publication',
       'storage_args' => array(
         'data_table' => 'pub',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
+
+    // Create the 'Gene' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'SO',
+      'accession' => '0000704',
+      'term_name' => 'gene',
+      'storage_args' => array(
+        'data_table' => 'feature',
+        'type_column' => 'type_id',
+      )
+    );
+    if (!tripal_create_bundle($args, $error)) {
+      throw new Exception($error['!message']);
+    }
+
+    // Create the 'mRNA' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'SO',
+      'accession' => '0000234',
+      'term_name' => 'mRNA',
+      'storage_args' => array(
+        'data_table' => 'feature',
+        'type_column' => 'type_id',
       )
     );
     if (!tripal_create_bundle($args, $error)) {
