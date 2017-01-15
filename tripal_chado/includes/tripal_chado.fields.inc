@@ -179,7 +179,9 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
   $schema = chado_get_schema($table_name);
 
   // BASE TYPE_ID
-  if (array_key_exists('type_id', $schema['fields'])) {
+  // Exculde the type_id field on the organism table that will be handled
+  // by the infraspecific type field.
+  if (array_key_exists('type_id', $schema['fields']) and $table_name != 'organism') {
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -781,7 +783,10 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
   $schema = chado_get_schema($table_name);
 
   // BASE TYPE_ID
-  if (array_key_exists('type_id', $schema['fields'])) {
+  // Exculde the type_id field on the organism table that will be handled
+  // by the infraspecific type field.
+  if (array_key_exists('type_id', $schema['fields']) and $table_name != 'organism') {
+
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
