@@ -272,6 +272,17 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Adds a +Check for new fields link on the 'Tripal Content Types' page.
+  $items['admin/structure/bio_data/manage/%/fields/check'] = array(
+    'title' => 'Check for new fields',
+    'description' => t('Check if new fields should be added to this content type.'),
+    'page callback' => 'tripal_check_new_fields',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'file' => 'api/tripal.entities.api.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_LOCAL_ACTION,
+  );
   return $items;
 }
 
@@ -585,4 +596,9 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
     tripal_field_instance_settings_form_alter($form, $form_state);
   }
+}
+
+function tripal_check_new_fields($bundle_name) {
+  tripal_refresh_bundle_fields($bundle_name);
+  drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
 }

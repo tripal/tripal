@@ -6,7 +6,13 @@
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle) {
+function tripal_chado_bundle_create_fields($entity_type, $bundle) {
+
+  $chado_bundle = db_select('chado_bundle', 'cb')
+    ->fields('cb')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
 
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
@@ -27,22 +33,8 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle)
   // Create fields for linking tables.
   tripal_chado_bundle_create_fields_linker($info, $details, $entity_type, $bundle);
 
-  foreach ($info as $field_name => $details) {
-    $field_type = $details['type'];
+  return $info;
 
-    // If the field already exists then skip it.
-    $field = field_info_field($details['field_name']);
-    if ($field) {
-      continue;
-    }
-
-    // Create the field.
-    $field = field_create_field($details);
-    if (!$field) {
-      tripal_set_message(t("Could not create new field: %field.",
-          array('%field' =>  $details['field_name'])), TRIPAL_ERROR);
-    }
-  }
 }
 /**
  *
@@ -488,6 +480,23 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     );
   }
 
+  // PUBLICATIONS (in reverse)
+  // We want to be able to show all of the content that a publication links
+  // to. The sio__references field does that.
+  if ($table_name == 'pub') {
+    $field_name = 'sio__references';
+    $field_type = 'sio__references';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => TRUE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
   // RELATIONSHIPS
   // If the linker table does not exists then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
@@ -530,7 +539,13 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bundle) {
+function tripal_chado_bundle_create_instances($entity_type, $bundle) {
+
+  $chado_bundle = db_select('chado_bundle', 'cb')
+    ->fields('cb')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
 
   $details = array(
     'chado_cvterm_id' => $chado_bundle->type_id,
@@ -543,17 +558,7 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bund
   tripal_chado_bundle_create_instances_custom($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_create_instances_linker($info, $entity_type, $bundle, $details);
 
-  foreach ($info as $field_name => $details) {
-    // If the field is already attached to this bundle then skip it.
-    $field = field_info_field($details['field_name']);
-    if ($field and array_key_exists('bundles', $field) and
-        array_key_exists('TripalEntity', $field['bundles']) and
-        in_array($bundle->name, $field['bundles']['TripalEntity'])) {
-      continue;
-    }
-    // Create the field instance.
-    $instance = field_create_instance($details);
-  }
+  return $info;
 
 }
 /**
@@ -1428,6 +1433,42 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
         'default' => array(
           'label' => 'above',
           'type' => 'schema__publication_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+  // PUBLICATIONS (in reverse)
+  // We want to be able to show all of the content that a publication links
+  // to. The sio__references field does that.
+  if ($table_name == 'pub') {
+    $field_name = 'sio__references';
+    $schema = chado_get_schema($table_name);
+    $pkey = $schema['primary key'][0];
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'References',
+      'description' => 'Records that are referred to by the publication.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $table_name,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sio__references_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'sio__references_formatter',
           'settings' => array(),
         ),
       ),

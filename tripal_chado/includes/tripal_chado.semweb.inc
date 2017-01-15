@@ -237,6 +237,13 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'A clause consists of a subject and a predicate.',
   ));
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:000631',
+    'name' => 'references',
+    'cv_name' => 'SIO',
+    'definition' => 'references is a relation between one entity and the entity that it makes reference to by name, but is not described by it.',
+  ));
 }
 /**
  * Adds the EDAM database and terms.

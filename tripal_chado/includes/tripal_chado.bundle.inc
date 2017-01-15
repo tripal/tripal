@@ -57,16 +57,5 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
     if (!$success) {
       throw new Exception('Cannot create content type. Problem associating type with Chado.');
     }
-    $chado_bundle = db_select('chado_bundle', 'cb')
-      ->fields('cb')
-      ->condition('bundle_id', $bundle->id)
-      ->execute()
-      ->fetchObject();
   }
-
-  // Create/Add the new fields for this bundle.
-  tripal_chado_bundle_create_fields($entity_type, $bundle, $chado_bundle);
-
-  // Create/Add the new field instances for this bundle.
-  tripal_chado_bundle_create_instances($entity_type, $bundle, $chado_bundle);
 }

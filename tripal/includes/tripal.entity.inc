@@ -302,23 +302,6 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
           $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
           $entity->content[$child_name]['#suffix'] .= '</div>';
         }
-
-        // Add tooltip to each item.
-//         $matches = array();
-//         if (array_key_exists('term_vocabulary', $instance['settings'])) {
-//           $vocabulary = $instance['settings']['term_vocabulary'];
-//           $accession = $instance['settings']['term_accession'];
-//           $term = tripal_get_term_details($vocabulary, $accession);
-//           if ($term) {
-//             $tooltip_img = url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif');
-//             $tooltip_text = $term['definition'] ? $term['definition'] : $term['name'];
-//             $entity->content[$child_name]['#prefix'] .= '' .
-//               '<div class="tripal-tooltip">' .
-//                 '<img src="' . $tooltip_img . '">' .
-//                 '<div class="tripal-tooltiptext">' . $tooltip_text . '</div>' .
-//               '</div>';
-//           }
-//         }
       }
     }
   }
@@ -342,7 +325,11 @@ function tripal_ajax_attach_field($id) {
     reset($result);
     $entity = $result[$entity_id];
 
+    // Get the element render array for this field and turn off the label
+    // display. It's already on the page.
     $element = field_view_field('TripalEntity', $entity, $field_name);
+    $element['#label_display'] = 'hidden';
+
     $content = drupal_render($element);
     return drupal_json_output(array(
       'id' => $id,
