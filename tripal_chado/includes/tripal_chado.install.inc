@@ -400,7 +400,7 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
   foreach ($new_tables as $table) {
 
     // Get the schema for this table.
-    $function = 'tripal_chado_schema_v1_3_' . $table;
+    $function = 'tripal_chado_chado_schema_v1_3_' . $table;
     $schema = $function();
 
     // If the table exists then fix the pkeys and fkeys.

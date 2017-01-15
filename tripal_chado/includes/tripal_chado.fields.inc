@@ -556,6 +556,7 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
     'chado_type_column' => $chado_bundle->type_column,
   );
 
+  $info = array();
   tripal_chado_bundle_create_instances_base($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_create_instances_custom($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_create_instances_linker($info, $entity_type, $bundle, $details);
