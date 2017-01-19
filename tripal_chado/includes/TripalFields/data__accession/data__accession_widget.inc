@@ -50,16 +50,6 @@ class data__accession_widget extends ChadoFieldWidget {
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
     $widget['#suffix'] =  "</span>";
 
-    // A temporary element used for theming the fieldset.
-    $widget['#theme_settings'] = array(
-      '#title' => $element['#title'],
-      '#description' =>  $element['#description'],
-      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-//      '#theme' => 'data__accession_widget',
-      //'#collapsible' => TRUE,
-      //'#collapsed' => $collapsed,
-    );
-
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -174,12 +164,6 @@ class data__accession_widget extends ChadoFieldWidget {
       </div>
     ";
 
-    //   $classes = array();
-    //   $classes[] = 'collapsible';
-    //   $theme_settings = $element['#theme_settings'];
-    //   if ($theme_settings['#collapsed'] == FALSE) {
-    //     $classes[] = 'collapsed';
-    //   }
     $fieldset = array(
       '#title' => $element['#title'],
       '#value' => '',

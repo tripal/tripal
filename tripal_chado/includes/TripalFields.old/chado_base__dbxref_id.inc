@@ -78,19 +78,8 @@ class chado_base__dbxref_id extends TripalField {
     $options = tripal_get_db_select_options();
 
     //$widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
-    $widget['#theme'] = 'chado_base__dbxref_id_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
     $widget['#suffix'] =  "</span>";
-
-    // A temporary element used for theming the fieldset.
-    $widget['#theme_settings'] = array(
-      '#title' => $element['#title'],
-      '#description' =>  $element['#description'],
-      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#theme' => 'chado_base__dbxref_id_widget',
-      //'#collapsible' => TRUE,
-      //'#collapsed' => $collapsed,
-    );
 
     $widget['value'] = array(
       '#type' => 'value',
@@ -336,12 +325,6 @@ function theme_chado_base__dbxref_id_widget($variables) {
       </div>
     ";
 
-  //   $classes = array();
-  //   $classes[] = 'collapsible';
-  //   $theme_settings = $element['#theme_settings'];
-  //   if ($theme_settings['#collapsed'] == FALSE) {
-  //     $classes[] = 'collapsed';
-  //   }
   $fieldset = array(
     '#title' => $element['#title'],
     '#value' => '',

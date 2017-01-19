@@ -25,7 +25,7 @@ class ChadoField extends TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = array(
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -38,7 +38,7 @@ class ChadoField extends TripalField {
     'term_fixed' => FALSE,
     // The table in Chado that the instance maps to.
     'chado_table' => '',
-    // The primary key column of hte table in Dhado.
+    // The column of the table in Chado where the value of the field comes from.
     'chado_column' => '',
     // The base table.
     'base_table' => '',

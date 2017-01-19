@@ -92,7 +92,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'field_name' => $field_name,
       'type' => '',
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -188,7 +188,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -204,7 +204,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -219,7 +219,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -234,7 +234,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -249,7 +249,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -264,7 +264,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -280,7 +280,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -295,7 +295,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
 //       'field_name' => $field_name,
 //       'type' => $field_type,
 //       'cardinality' => 1,
-//       'locked' => TRUE,
+//       'locked' => FALSE,
 //       'storage' => array(
 //         'type' => 'field_chado_storage',
 //       ),
@@ -312,7 +312,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -342,7 +342,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -358,7 +358,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' =>  $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -374,7 +374,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -389,7 +389,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -404,7 +404,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -420,7 +420,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -436,7 +436,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -475,7 +475,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -492,7 +492,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -509,7 +509,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -525,7 +525,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => TRUE,
+      'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
@@ -733,7 +733,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     //
     elseif ($table_name == 'analysis' and $column_name == 'program') {
       $base_info['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
-      $base_info['label'] = 'Program, Pipeline, Workflow or Method Name.';
+      $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
     }
     elseif ($table_name == 'analysis' and $column_name == 'sourceuri') {
       $base_info['widget_type'] = 'text_textfield';
