@@ -378,8 +378,8 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
           else {
             $temp[$table_name][$delta][$column_name] = $value;
           }
+          $value_set = TRUE;
         }
-        $value_set = TRUE;
       }
 
       // If there is no value set for the field using the
