@@ -667,6 +667,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
         $base_info['widget']['type'] = 'text_textfield';
         break;
       case 'text':
+        $base_info['display']['default']['label'] = 'above';
         $base_info['widget']['type'] = 'text_textarea';
         $base_info['settings']['text_processing'] = '1';
         $base_info['settings']['format'] = 'full_html';

@@ -655,7 +655,7 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       );
       $mapped_table = chado_get_cvterm_mapping($params);
 
-      // Do not proceed if there is not a mapped_table
+      // Do not proceed if there is not a mapped_table.
       if (!$mapped_table) {
         continue;
       }
