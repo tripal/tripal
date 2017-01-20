@@ -364,6 +364,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
       // A field may have multiple items. The field can use items
       // indexed with "chado-" to represent values that should map directly
       // to chado tables and fields.
+      $value_set = FALSE;
       foreach ($item as $item_name => $value) {
         $matches = array();
         if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
@@ -378,15 +379,13 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
             $temp[$table_name][$delta][$column_name] = $value;
           }
         }
+        $value_set = TRUE;
       }
 
       // If there is no value set for the field using the
       // chado-[table_name]__[field name] naming schema then check if a 'value'
       // item is present and if so use that for the table column value.
-      if ((!array_key_exists($chado_table, $temp) or
-           !array_key_exists($delta, $temp[$chado_table]) or
-           !array_key_exists($chado_column, $temp[$chado_table][$delta])) and
-          array_key_exists('value', $items[$delta]) and
+      if (!$value_set and array_key_exists('value', $items[$delta]) and
           !is_array($items[$delta]['value'])) {
         // If this field belongs to the base table then we just add
         // those values in... there's no delta.
