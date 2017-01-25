@@ -120,8 +120,6 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
     if (count($items) > 0) {
-      dpm(debug_backtrace());
-      dpm(theme_table($table));
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => theme_table($table),
