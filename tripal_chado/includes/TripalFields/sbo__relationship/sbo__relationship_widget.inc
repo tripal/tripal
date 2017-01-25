@@ -401,12 +401,21 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $object_id = $object[0]->$fkey_rcolumn;
       }
     }
-
-    // Set the IDs according to the values that were determined above.
-    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
-    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
-    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_name;
-    $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+    
+    if ($subject_id && $object_id && $type_id) {
+      // Set the IDs according to the values that were determined above.
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+    }
+    else {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+    }
   }
 
   /**
