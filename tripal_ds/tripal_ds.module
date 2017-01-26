@@ -36,20 +36,25 @@ function tripal_ds_ds_layout_info() {
 * to target fields
 
 function tripal_ds_preprocess(&$vars, $hook) {
-  if (isset($vars['elements']['#entity_type'])) { 
+  if (isset($vars['elements']['#entity_type'])) {
     $function = __FUNCTION__ . '_' . $vars['elements']['#entity_type'];
     if (function_exists($function)) {
       $function($vars, $hook);
     }
   }
-}*/
-/*
- * Implements hook_bundle_create().
+}
+*/
+/**
+ * Implements hook_bundle_postcreate().
  *
  * This is a Triapl defined hook and is called in the TripalBundle::create()
  * function to allow modules to perform tasks when a bundle is created.
+ */
+function tripal_ds_bundle_postcreate($bundle, $args) {
+  $bundle_name = $bundle->name;
+  $instances = field_info_instances('TripalEntity', $bundle_name);
+  _ds_layout_settings_info($bundle_name, $instances);
+}
 
-function tripal_ds_bundle_create($bundle, $args) {
-    _ds_layout_settings_info($bundle);
-} */
+
 

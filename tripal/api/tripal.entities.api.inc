@@ -175,6 +175,15 @@ function hook_bundle_create(&$bundle, $storage_args) {
 
 }
 /**
+ * Allows a module to perform tasks after fields are added to a TripalBundle.
+ *
+ * @param $bundle
+ *   The newly created TripalBundle object.
+ */
+function hook_bundle_postcreate(&$bundle) {
+
+}
+/**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
  * @param $args
@@ -247,7 +256,6 @@ function tripal_create_bundle($args, &$error = '') {
       $function($bundle, $storage_args);
     }
 
-
     // Clear the entity cache so that Drupal will read our
     // hook_entity_info() implementation.
     global $language;
@@ -298,8 +306,12 @@ function tripal_create_bundle($args, &$error = '') {
         $instance = field_create_instance($details);
       }
     }
-  //build the display suite field settings
-  tripal_ds_content_type_fields($bundle_name);
+
+    $modules = module_implements('bundle_postcreate');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_postcreate';
+      $function($bundle);
+    }
   }
   catch (Exception $e) {
     $transaction->rollback();

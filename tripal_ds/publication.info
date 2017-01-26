@@ -1,0 +1,14 @@
+name = Publication
+core = 7.x
+package = Features
+dependencies[] = ctools
+dependencies[] = ds
+dependencies[] = field_group
+features[ctools][] = ds:ds:1
+features[ctools][] = field_group:field_group:1
+features[ds_layout_settings][] = TripalEntity|bio_data_45|default
+features[features_api][] = api:2
+features[field_group][] = group_citation|TripalEntity|bio_data_45|default
+features[field_group][] = group_properties|TripalEntity|bio_data_45|default
+features[field_group][] = group_property_table|TripalEntity|bio_data_45|default
+features[field_group][] = group_references|TripalEntity|bio_data_45|default
