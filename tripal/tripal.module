@@ -162,18 +162,6 @@ function tripal_menu() {
 //     'weight' => -100,
 //   );
 
-
-/*
-  $items['admin/tripal/setup/customize'] = array(
-    'title' => 'Customize Tripal',
-    'description' => t('Information on how to customize tripal'),
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_customize'),
-    'access arguments' => array('administer tripal'),
-    'weight' => 10
-  );
-*/
-
   // Jobs Management
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
@@ -326,27 +314,6 @@ function tripal_permission() {
  */
 function tripal_theme($existing, $type, $theme, $path) {
   $themes = array(
-    'tripal_customize' => array(
-      'arguments' => array('job_id' => NULL),
-      'template' => 'tripal_customize',
-      'path' => "$path/theme/templates"
-    ),
-    'theme_file_upload_combo' => array(
-      'render element' => 'element',
-    ),
-    'theme_sequence_combo' => array(
-      'render element' => 'element',
-    ),
-    'tripal_jobs_help' => array(
-      'template' => 'tripal_jobs_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
-    'tripal_customtables_help' => array(
-      'template' => 'tripal_customtables_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
     // Admin messages theme
     'tripal_admin_message' => array(
       'function' => 'theme_tripal_admin_message',

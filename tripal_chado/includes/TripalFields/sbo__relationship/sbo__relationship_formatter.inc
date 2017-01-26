@@ -7,12 +7,43 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__relationship');
 
+  public static $default_settings = array(
+    'title' => 'Relationship',
+    'empty' => 'There are no relationships',
+  );
+
   /**
    *
    * @see TripalFieldFormatter::settingsForm()
    */
   public function settingsForm($view_mode, $form, &$form_state) {
+    $display = $this->instance['display'][$view_mode];
+    $settings = $display['settings'];
+    $element = array();
+    $element['title'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Relationship Title',
+      '#default_value' => array_key_exists('title', $settings) ? $settings['title'] : 'Relationship',
+    );
+    $element['empty'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Empty text',
+      '#default_value' => array_key_exists('empty', $settings) ? $settings['empty'] : 'There are no relationships',
+    );
 
+    return $element;
+  }
+
+  /**
+   * @see TripalFieldFormatter::settingsSummary()
+   */
+  public function settingsSummary($view_mode) {
+    $display = $this->instance['display'][$view_mode];
+    $settings = $display['settings'];
+
+    $summary = t('Title: @title<br>Empty: @empty', array('@title' => $settings['title'], '@empty' => $settings['empty']));
+
+    return $summary;
   }
 
   /**
@@ -24,8 +55,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $settings = $display['settings'];
 
     $rows = array();
-    $headers = array('Subject' ,'Type', 'Object');
-    $headers = array('Relationship');
+    $headers = array($settings['title']);
 
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
@@ -73,6 +103,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+
     $table = array(
       'header' => $headers,
       'rows' => $rows,
@@ -83,7 +114,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       'sticky' => FALSE,
       'caption' => '',
       'colgroups' => array(),
-      'empty' => 'There are no relationships',
+      'empty' => $settings['empty'],
     );
 
     // once we have our table array structure defined, we call Drupal's theme_table()

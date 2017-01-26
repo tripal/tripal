@@ -24,8 +24,8 @@ class schema__publication_formatter extends ChadoFieldFormatter {
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       
-      $title = $item['value']['Title'];
-      $citation = $item['value']['Citation'];
+      $title = isset($item['value']['Title']) ? $item['value']['Title'] : '';
+      $citation = isset($item['value']['Citation']) ? $item['value']['Citation'] : '';
       $entity = array_key_exists('entity', $item['value']) ? $item['value']['entity'] : '';
       if ($entity) {
         list($entity_type, $entity_id) = explode(':', $entity);

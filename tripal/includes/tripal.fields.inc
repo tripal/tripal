@@ -687,13 +687,13 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 /**
  * Implements hook_field_formatter_settings_form().
  */
-function tripal_formatter_settings_form($field, $instance,
+function tripal_field_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
 
   $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
-    return $formatter->settingsSummaryForm($view_mode, $form, $form_state);
+    return $formatter->settingsForm($view_mode, $form, $form_state);
   }
 }
 

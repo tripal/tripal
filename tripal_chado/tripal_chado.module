@@ -616,43 +616,6 @@ function tripal_chado_permission() {
 function tripal_chado_theme($existing, $type, $theme, $path) {
   $themes = array(
 
-    // Theme fields.
-     'data__accession_widget' => array(
-       'render element' => 'element',
-       'file' => 'includes/TripalFields/data__accession/data__accession_widget.inc',
-     ),
-     'sbo__database_cross_reference_widget' => array(
-       'render element' => 'element',
-       'file' => 'includes/TripalFields/sbo__database_cross_reference/sbo__database_cross_reference_widget.inc',
-     ),
-//     'chado_linker__cvterm_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__cvterm.inc',
-//     ),
-     'schema__alternate_name_widget' => array(
-       'render element' => 'element',
-       'file' => 'includes/TripalFields/schema__alternate_name/schema__alternate_name_widget.inc',
-     ),
-//     'chado_linker__relationship_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__relationship.inc',
-//     ),
-//     'chado_linker__relationship_instance_settings' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__relationship.inc',
-//     ),
-//     'chado_linker__pub_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__pub.inc',
-//     ),
-//     'chado_linker__contact_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__contact.inc',
-//     ),
-//     'chado_linker__prop_adder_widget' => array(
-//       'render element' => 'element',
-//       'file' => 'includes/TripalFields/chado_linker__prop_adder.inc',
-//     ),
     'tripal_chado_date_combo' => array(
       'render element' => 'element',
       'file' => 'theme/tripal_chado.theme.inc',
@@ -681,7 +644,7 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       ->execute();
 
     // Iterate through all of the TripalEntity bundles and see which ones
-    // map to tables that used had Tripal v2 nodes.  For those, if the
+    // map to tables that used to have Tripal v2 nodes.  For those, if the
     // legacy support is turned on then we want to use the legacy template.
     while ($bundle = $bundles->fetchObject()) {
       $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
@@ -692,9 +655,9 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       );
       $mapped_table = chado_get_cvterm_mapping($params);
 
-      // Do not proceed if there is not a mapped_table
+      // Do not proceed if there is not a mapped_table.
       if (!$mapped_table) {
-        return;
+        continue;
       }
 
       $chado_table = $mapped_table->chado_table;
