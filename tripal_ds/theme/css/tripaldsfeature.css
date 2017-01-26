@@ -1,0 +1,20 @@
+.ds-top {
+  width: 100%;
+  border-bottom: 1px solid grey;
+}
+
+.ds-left {
+  width: 25%;
+  float: left;
+  border-right: 1px solid grey;
+
+}
+
+.ds-right {
+  width: 73%;
+  float: right;
+}
+
+.ds-bottom {
+  width: 100%;
+}

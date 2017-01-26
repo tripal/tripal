@@ -564,6 +564,8 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
   return $info;
 
 }
+
+
 /**
  * Helper function for the hook_create_tripalfield_instance().
  *
@@ -648,6 +650,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
       'display' => array(
         'default' => array(
           'label' => 'inline',
+          'region' =>'Left',
           'settings' => array(),
         ),
       ),

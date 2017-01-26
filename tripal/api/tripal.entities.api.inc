@@ -298,6 +298,8 @@ function tripal_create_bundle($args, &$error = '') {
         $instance = field_create_instance($details);
       }
     }
+  //build the display suite field settings
+  tripal_ds_content_type_fields($bundle_name);
   }
   catch (Exception $e) {
     $transaction->rollback();
