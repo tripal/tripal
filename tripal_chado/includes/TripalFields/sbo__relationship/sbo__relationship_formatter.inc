@@ -52,7 +52,8 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
-    $settings = $display['settings'];
+    //$settings = $display['settings'];
+    $settings = $this->instance['display']['default']['settings'];
 
     $rows = array();
     $headers = array($settings['title']);
@@ -70,10 +71,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
-      if ($object_type == 'mRNA' and ($subject_type != 'polypeptide')) {
-        continue;
-      }
-      if ($subject_type == 'mRNA' and ($object_type != 'gene')) {
+      if ($object_type == 'mRNA' and (in_array($subject_type, array('CDS', 'exon', 'five_prime_UTR', 'three_prime_UTR')))) {
         continue;
       }
 
@@ -97,7 +95,6 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
       $rows[] = array($phrase);
     }
-
 
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional

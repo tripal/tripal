@@ -78,13 +78,17 @@ class sbo__relationship extends ChadoField {
     $subject_fkey_table = '';
     $object_fkey_table = '';
     $fkeys = $schema['foreign keys'];
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
     foreach ($fkeys as $fktable => $details) {
       foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
-        if ($fkey_lcolumn == 'subject_id') {
+        if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
           $subject_fkey_table = $fktable;
+          $subject_id_key = $fkey_lcolumn;
         }
-        if ($fkey_lcolumn == 'object_id') {
+        if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
           $object_fkey_table = $fktable;
+          $object_id_key = $fkey_lcolumn;
         }
       }
     }
@@ -120,8 +124,8 @@ class sbo__relationship extends ChadoField {
       */
       ),
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__subject_id' => '',
-      'chado-' . $field_table . '__object_id' => '',
+      'chado-' . $field_table . '__' . $subject_id_key => '',
+      'chado-' . $field_table . '__' . $object_id_key => '',
       'chado-' . $field_table . '__type_id' => '',
       // These elements don't need to follow the naming scheme above
       // becasue we don't need the chado_field_storage to try and
@@ -152,10 +156,10 @@ class sbo__relationship extends ChadoField {
       // relationship type and the object and subject
       'include_fk' => array(
         'type_id' => 1,
-        'object_id' => array(
+        $object_id_key => array(
           'type_id' => 1,
         ),
-        'subject_id'  => array(
+        $subject_id_key  => array(
           'type_id' => 1,
         ),
       ),
@@ -171,21 +175,12 @@ class sbo__relationship extends ChadoField {
     }
     $srelationships = null;
     $orelationships = null;
-    if ($rel_table == 'nd_reagent_relationship') {
-      $srelationships = $record->$rel_table->subject_reagent_id;
-      $orelationships = $record->$rel_table->object_reagent_id;
+
+    if (isset($record->$rel_table->$subject_id_key)) {
+      $srelationships = $record->$rel_table->$subject_id_key;
     }
-    else if ($rel_table == 'project_relationship') {
-      $srelationships = $record->$rel_table->subject_project_id;
-      $orelationships = $record->$rel_table->object_project_id;
-    }
-    else {
-      if (isset($record->$rel_table->subject_id)) {
-        $srelationships = $record->$rel_table->subject_id;
-      }
-      if (isset($record->$rel_table->object_id)) {
-        $orelationships = $record->$rel_table->object_id;
-      }
+    if (isset($record->$rel_table->$object_id_key)) {
+      $orelationships = $record->$rel_table->$object_id_key;
     }
 
     $i = 0;
@@ -194,10 +189,10 @@ class sbo__relationship extends ChadoField {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
         $verb = self::get_rel_verb($rel_type);
-        $subject_name = $relationship->subject_id->name;
-        $subject_type = $relationship->subject_id->type_id->name;
-        $object_name = $relationship->object_id->name;
-        $object_type = $relationship->object_id->type_id->name;
+        $subject_name = $relationship->$subject_id_key->name;
+        $subject_type = $relationship->$subject_id_key->type_id->name;
+        $object_name = $relationship->$object_id_key->name;
+        $object_type = $relationship->$object_id_key->type_id->name;
         $entity->{$field_name}['und'][$i]['value'] = array(
           'local:relationship_subject' => array(
             'rdfs:type' => $subject_type,
@@ -210,14 +205,14 @@ class sbo__relationship extends ChadoField {
             'entity' => 'TripalEntity:' . $entity->id,
           )
         );
-        if (property_exists($relationship->subject_id, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] =  $relationship->subject_id->uniquename;;
+        if (property_exists($relationship->$subject_id_key, 'uniquename')) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] =  $relationship->$subject_id_key->uniquename;;
         }
-        if (property_exists($relationship->object_id, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->object_id->uniquename;
+        if (property_exists($relationship->$object_id_key, 'uniquename')) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
         }
-        if (property_exists($relationship->subject_id, 'entity_id')) {
-          $entity_id = $relationship->subject_id->entity_id;
+        if (property_exists($relationship->$subject_id_key, 'entity_id')) {
+          $entity_id = $relationship->$subject_id_key->entity_id;
           $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $entity_id;
         }
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
@@ -225,14 +220,15 @@ class sbo__relationship extends ChadoField {
         $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
         $object_type . '.';
 
+        //dpm("OR:" . $entity->{$field_name}['und'][$i]['value']['SIO:000493']);
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__object_id'] = $relationship->object_id->$object_pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
 
         $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->$subject_id_key->name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->$object_id_key->name  . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
         if (array_key_exists('value', $schema['fields'])) {
           $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
         }
@@ -248,10 +244,21 @@ class sbo__relationship extends ChadoField {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
         $verb = self::get_rel_verb($rel_type);
-        $subject_name = $relationship->subject_id->name;
-        $subject_type = $relationship->subject_id->type_id->name;
-        $object_name = $relationship->object_id->name;
-        $object_type = $relationship->object_id->type_id->name;
+
+        $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
+        if (!$subject_name) {
+          if ($relationship->tablename == 'organism_relationship') {
+            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species; 
+          }
+        }
+        $subject_type =  isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : ' ';
+        $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
+        if (!$object_name) {
+          if ($relationship->tablename == 'organism_relationship') {
+            $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
+          }
+        }
+        $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : ' ';
         $entity->{$field_name}['und'][$i]['value'] = array(
           'local:relationship_subject' => array(
             'rdfs:type' => $subject_type,
@@ -264,29 +271,30 @@ class sbo__relationship extends ChadoField {
             'schema:name' => $object_name,
           )
         );
-        if (property_exists($relationship->subject_id, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] = $relationship->subject_id->uniquename;
+        if (property_exists($relationship->$subject_id_key, 'uniquename')) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;
         }
-        if (property_exists($relationship->object_id, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->object_id->uniquename;
+        if (property_exists($relationship->$object_id_key, 'uniquename')) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
         }
-        if (property_exists($relationship->object_id, 'entity_id')) {
-          $entity_id = $relationship->object_id->entity_id;
+        if (property_exists($relationship->$object_id_key, 'entity_id')) {
+          $entity_id = $relationship->$object_id_key->entity_id;
           $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $entity_id;
         }
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-        $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This  ' .
-        $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
+        $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This ' .
+        $subject_name . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
         $object_type . ', ' . $object_name . '.';
 
+        //dpm("SR:" . $entity->{$field_name}['und'][$i]['value']['SIO:000493']);
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__object_id'] = $relationship->object_id->$object_pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
 
         $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name  . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['object_name'] = $object_name . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
 
         if (array_key_exists('value', $schema['fields'])) {
           $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
@@ -374,7 +382,7 @@ class sbo__relationship extends ChadoField {
    */
   public static function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-    $verb = $rel_type_clean;
+    $verb = '';
     switch ($rel_type_clean) {
       case 'integral part of':
       case 'instance of':
@@ -652,6 +660,10 @@ class sbo__relationship extends ChadoField {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
+    else if ($field_table == 'organism_relationship') {
+      $subject_id_key = 'subject_organism_id';
+      $object_id_key = 'object_organism_id';
+    }
 
     foreach ($items as $delta => $item) {
       $subject_id = $item['chado-' . $field_table . '__' . $subject_id_key];
@@ -671,19 +683,19 @@ class sbo__relationship extends ChadoField {
       // Make sure we have values for all of the fields.
       $form_error = FALSE;
       if (!$type_name && !$type_id) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'error' => 'sbo__relationship',
           'message' => t("Please provide the type of relationship."),
         );
       }
       if ($entity and !$subject_name) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'error' => 'sbo__relationship',
           'message' => t("Please provide the subject of the relationship."),
         );
       }
       if ($entity and !$object_name) {
-        $errors[$this->field['field_name']][$langcode][$delta][] = array(
+        $errors[$field_name][$delta]['und'][] = array(
           'error' => 'sbo__relationship',
           'message' => t("Please provide the object of the relationship."),
         );
@@ -705,7 +717,7 @@ class sbo__relationship extends ChadoField {
           $values = array($fkey_rcolumn => $subject_id);
           $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
             );
@@ -715,13 +727,13 @@ class sbo__relationship extends ChadoField {
           $values = array('uniquename' => $subject_name);
           $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found. Please check spelling."),
             );
           }
           elseif (count($subject) > 1) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' => t("The subject is not unique and therefore the relationship cannot be made."),
             );
@@ -739,7 +751,7 @@ class sbo__relationship extends ChadoField {
           $values = array($fkey_rcolumn => $object_id);
           $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
             );
@@ -749,13 +761,13 @@ class sbo__relationship extends ChadoField {
           $values = array('uniquename' => $object_name);
           $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($object) == 0) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found. Please check spelling."),
             );;
           }
           elseif (count($object) > 1) {
-            $errors[$this->field['field_name']][$langcode][$delta][] = array(
+            $errors[$field_name][$delta]['und'][] = array(
               'error' => 'sbo__relationship',
               'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
             );
@@ -767,7 +779,7 @@ class sbo__relationship extends ChadoField {
       if ($entity) {
         $chado_record_id = $entity->chado_record_id;
         if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-          $errors[$this->field['field_name']][$langcode][$delta][] = array(
+          $errors[$field_name][$delta]['und'][] = array(
             'error' => 'sbo__relationship',
             'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
           );
@@ -775,7 +787,7 @@ class sbo__relationship extends ChadoField {
 
         // Make sure that the object and subject are not both the same thing.
         if ($object_id == $subject_id) {
-          $errors[$this->field['field_name']][$langcode][$delta][] = array(
+          $errors[$field_name][$delta]['und'][] = array(
             'error' => 'sbo__relationship',
             'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
           );

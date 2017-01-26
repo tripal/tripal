@@ -157,20 +157,18 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
 
       // Get the synonym. If one with the same name and type is already present
       // then use that. Otherwise, insert a new one.
-      if (!$synonym_id) {
-        $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
-        if (!$synonym) {
-          $synonym = chado_insert_record('synonym', array(
-            'name' => $syn_name,
-            'type_id' => $syn_type,
-            'synonym_sgml' => '',
-          ));
-          $synonym = (object) $synonym;
-        }
-
-        // Set the synonym_id and FK value
-        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
+      $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+      if (!$synonym) {
+        $synonym = chado_insert_record('synonym', array(
+          'name' => $syn_name,
+          'type_id' => $syn_type,
+          'synonym_sgml' => '',
+        ));
+        $synonym = (object) $synonym;
       }
+
+      // Set the synonym_id and FK value
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
 
       if (!$pub_id) {
         $pub = chado_generate_var('pub', array('uniquename' => 'null'));
@@ -183,6 +181,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = '';
     }
   }
 

@@ -124,6 +124,9 @@ class data__accession_widget extends ChadoFieldWidget {
     $fk_val = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column] : '';
     $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
     $accession = isset($form_state['values'][$field_name][$langcode][$delta]['accession']) ? $form_state['values'][$field_name][$langcode][$delta]['accession'] : '';
+    if (!$accession) {
+      $accession = $form_state['values'][$field_name][$langcode][$delta]['value'];
+    }
     $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
 
     // If user did not select a database, we want to remove dbxref_id from the
@@ -180,11 +183,13 @@ class data__accession_widget extends ChadoFieldWidget {
  * An Ajax callback for the tripal_chado_admin_publish_form..
  */
 function data__accession_widget_form_ajax_callback($form, $form_state) {
+  
+  $instance = $form['#instance'];
   $field_name = $form_state['triggering_element']['#parents'][0];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
-  $field_table = $this->instance['settings']['chado_table'];
-  $field_column = $this->instance['settings']['chado_column'];
+  $field_table = $instance['settings']['chado_table'];
+  $field_column = $instance['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__' . $field_column;
 
   //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');

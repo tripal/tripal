@@ -75,6 +75,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
+    else if ($field_table == 'organism_relationship') {
+      $subject_id_key = 'subject_organism_id';
+      $object_id_key = 'object_organism_id';
+    }
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -353,10 +357,15 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
+    else if ($field_table == 'organism_relationship') {
+      $subject_id_key = 'subject_organism_id';
+      $object_id_key = 'object_organism_id';
+    }
 
+    $voc_id = array_key_exists('vocabulary', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : '';
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
-    $subject_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key];
-    $object_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key];
+    $subject_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] : '';
+    $object_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]: '';
     $type_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'];
 
     $subject_name = $form_state['values'][$field_name][$langcode][$delta]['subject_name'];
@@ -366,15 +375,23 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
       return;
     }
+    else if ($type_name && $voc_id) {
+      $val = array(
+        'cv_id' => $voc_id,
+        'name' => $type_name
+      );
+      $cvterm = chado_generate_var('cvterm', $val);
+      $type_id = $cvterm->cvterm_id;
+    }
 
     // Do not proceed if subject ID or object ID does not exist
-    if (!key_exists('subject_id', $fkeys[$base_table]['columns']) ||
-        !key_exists('object_id', $fkeys[$base_table]['columns'])) {
+    if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
+        !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
       return;
     }
     // Get the subject ID.
     $subject_id = '';
-    $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
+    $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
     $matches = array();
     if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
       $subject_id =  $matches[1];
@@ -389,7 +406,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Get the object ID.
     $object_id = '';
-    $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
+    $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
     $matches = array();
     if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
       $object_id = $matches[1];
@@ -401,13 +418,15 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $object_id = $object[0]->$fkey_rcolumn;
       }
     }
-    
+
     if ($subject_id && $object_id && $type_id) {
       // Set the IDs according to the values that were determined above.
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+      if ($field_table == 'feature_relationship') {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+      }
     }
     else {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
@@ -476,13 +495,13 @@ function theme_sbo__relationship_instance_settings ($variables) {
  * An Ajax callback for the relationshp widget.
  */
 function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
-
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
   preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
   $field = $matches[1];
   $lang = $matches[2];
   $delta = $matches[3];
+
   // Return the widget that triggered the AJAX call
   if (isset($form[$field][$lang][$delta])) {
     return $form[$field][$lang][$delta];

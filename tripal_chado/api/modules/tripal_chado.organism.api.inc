@@ -262,7 +262,7 @@ function tripal_autocomplete_organism($text) {
   $items = array();
   foreach ($results as $organism) {
     $name = $organism->genus . ' ' .$organism->species;
-    $items[$name] = $name;
+    $items["$name [id: $organism->organism_id]"] = $name;
   }
   drupal_json_output($items);
 }
