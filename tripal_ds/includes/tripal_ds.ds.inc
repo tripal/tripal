@@ -3,7 +3,54 @@
  * Implements hook_ds_layout_settings_info().
  */
 function _ds_layout_settings_info($bundle_name, $instances) {
-  $export = array();
+  $region_right = array();
+  $region_left = array();
+  $region_top = array();
+  $region_bottom = array();
+  $fields_with_regions = array();
+
+  $i = 0;
+  foreach ($instances as $key => $instance){
+      $instance_name = $instance['field_name'];
+
+      if($instance_name=="rdfs__type"){
+        array_push($region_top, $instance_name);
+        $fields_with_regions[$instance_name]= 'top';
+
+      } else {
+        $instance_base_table = $instance['settings']['base_table'];
+        $instance_base_chado = $instance['settings']['chado_table'];
+
+        if ($instance_base_chado && $instance_base_table){
+          if ($instance_base_chado == $instance_base_table){
+              //overview section instances
+              array_push($region_top, $instance_name);
+              $fields_with_regions[$instance_name]= 'top';
+
+          } elseif ($instance_base_chado != $instance_base_table){
+            watchdog('debug', '<pre>_ds_layout_settings_info  $instance_base_chado: '. print_r($instance_base_chado, TRUE) .'</pre>');
+
+            if (strpos($instance_base_chado, 'prop') !== FALSE){
+              //Properties section instances
+              array_push($region_bottom, $instance_name);
+              $fields_with_regions[$instance_name]= 'bottom';
+
+            } elseif (strpos($instance_base_chado, 'data__sequence') !== FALSE){
+              array_push($region_left, $instance_name);
+              $fields_with_regions[$instance_name]= 'left';
+
+            } else {
+              //Linker section instances
+              array_push($region_right, $instance_name);
+              $fields_with_regions[$instance_name]= 'right';
+
+            }
+          } 
+        }
+      }
+    $i++;
+  }
+
   $record = new stdClass;
   $record->id ='TripalEntity|' . $bundle_name . '|default';
   $record->entity_type = 'TripalEntity';
@@ -12,28 +59,17 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $record->layout = 'tripal_ds_feature';
   $settings = array(
     'regions' => array(
-      'top' => array(),
-      'left' => array(),
-      'right' => array(
-        0 => 'project_contact',
-        1 => 'rdfs__type',
-        2 => 'sbo__database_cross_reference',
-        3 => 'sbo__relationship',
-        4 => 'schema__description',
-        5 => 'schema__name',
-        6 => 'schema__publication',
-      ),
-      'bottom' => array(),
+      'top' => 
+        $region_top,
+      'left' => 
+        $region_left,
+      'right' => 
+        $region_right,
+      'bottom' => 
+        $region_bottom,
     ),
-    'fields' => array(
-      'project_contact' => 'right',
-      'rdfs__type' => 'right',
-      'sbo__database_cross_reference' => 'right',
-      'sbo__relationship' => 'right',
-      'schema__description' => 'right',
-      'schema__name' => 'right',
-      'schema__publication' => 'right',
-    ),
+    'fields' => 
+      $fields_with_regions,
     'classes' => array(),
     'wrappers' => array(
       'top' => 'div',
@@ -49,9 +85,12 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     'layout_disable_css' => 0,
   );
   $record->settings = $settings;
+
+  watchdog('debug', '<pre>_ds_layout_settings_info  $record: '. print_r($record, TRUE) .'</pre>');
+
   drupal_write_record('ds_layout_settings', $record);
 }
-
+/*
 
 function tripal_ds_content_type_fields($bundle_name){
   dpm(debug_backtrace());
@@ -98,10 +137,10 @@ function tripal_ds_content_type_fields($bundle_name){
   return $all_fields;
 
 }
-
+*/
 /*
  * Implements hook_ds_custom_fields_info().
- */
+
 
 function tripal_ds_ds_custom_fields_info($field) {
   $export = array();
@@ -123,3 +162,4 @@ function tripal_ds_ds_custom_fields_info($field) {
 
   return $export;
 }
+ */

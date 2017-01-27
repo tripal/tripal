@@ -50,7 +50,7 @@ function tripal_ds_preprocess(&$vars, $hook) {
  * This is a Triapl defined hook and is called in the TripalBundle::create()
  * function to allow modules to perform tasks when a bundle is created.
  */
-function tripal_ds_bundle_postcreate($bundle, $args) {
+function tripal_ds_bundle_postcreate($bundle) {
   $bundle_name = $bundle->name;
   $instances = field_info_instances('TripalEntity', $bundle_name);
   _ds_layout_settings_info($bundle_name, $instances);
