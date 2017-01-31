@@ -2,9 +2,12 @@
 
 require_once "includes/tripal_ds.inc";
 require_once "includes/tripal_ds.ds.inc";
+require_once "includes/tripal_ds.field_group.inc";
 
 function tripal_ds_init() {
   drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripaldsfeature.css');
+  drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/bootstrap.css');
+
 }
 
 /**

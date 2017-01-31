@@ -1,20 +1,50 @@
 .ds-top {
   width: 100%;
-  border-bottom: 1px solid grey;
-}
-
-.ds-left {
-  width: 25%;
-  float: left;
-  border-right: 1px solid grey;
-
+  padding: 25px 0;
 }
 
 .ds-right {
-  width: 73%;
+  width: 100%;
   float: right;
 }
 
 .ds-bottom {
   width: 100%;
 }
+
+fieldset {
+	border: none!important;
+}
+
+th {
+	border-bottom: none;
+}
+
+.tripal-entity-unattached {
+    vertical-align: top;
+    border-top: 1px solid #CCCCCC;
+    font-size: 14px;
+}
+
+.tripal-entity-unattached .field-label {
+	font-weight: bold;
+	font-size: 16px;
+	padding: 10px 0;
+}
+.tripal-entity-unattached .field {
+	padding: 10px 0 0 20px;
+}
+
+.tripal-entity-unattached tr.odd {
+	border:	none;
+	background: none;
+	padding: 0;
+}
+
+.tripal-entity-unattached tbody {
+	border: none;
+}
+fieldset.collapsed {
+	height: 2em!important;
+}
+

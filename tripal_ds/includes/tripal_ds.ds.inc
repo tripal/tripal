@@ -3,93 +3,138 @@
  * Implements hook_ds_layout_settings_info().
  */
 function _ds_layout_settings_info($bundle_name, $instances) {
-  $region_right = array();
-  $region_left = array();
-  $region_top = array();
-  $region_bottom = array();
-  $fields_with_regions = array();
+    $region_right = array();
+    $region_left = array();
+    $region_top = array();
+    $region_bottom = array();
+    $prop_fields = array();
+    $data_sequence_fields = array();
+    $all_other_fields = array();
+    $fields_with_regions = array();
+    $i = 0;
 
-  $i = 0;
-  foreach ($instances as $key => $instance){
-      $instance_name = $instance['field_name'];
+    foreach ($instances as $key => $instance){
+        $instance_name = $instance['field_name'];
 
-      if($instance_name=="rdfs__type"){
-        array_push($region_top, $instance_name);
-        $fields_with_regions[$instance_name]= 'top';
+        if($instance_name=="rdfs__type"){
+            array_push($region_top, $instance_name);
+            $fields_with_regions[$instance_name]= 'top';
 
-      } else {
-        $instance_base_table = $instance['settings']['base_table'];
-        $instance_base_chado = $instance['settings']['chado_table'];
+        } else {
+            $instance_base_table = $instance['settings']['base_table'];
+            $instance_base_chado = $instance['settings']['chado_table'];
+            $prop_table = strpos($instance_base_chado, 'prop');
+            $data_sequence = strpos($instance_name, 'data__sequence');
 
-        if ($instance_base_chado && $instance_base_table){
-          if ($instance_base_chado == $instance_base_table){
-              //overview section instances
-              array_push($region_top, $instance_name);
-              $fields_with_regions[$instance_name]= 'top';
+            if ($instance_base_chado && $instance_base_table){
 
-          } elseif ($instance_base_chado != $instance_base_table){
-            watchdog('debug', '<pre>_ds_layout_settings_info  $instance_base_chado: '. print_r($instance_base_chado, TRUE) .'</pre>');
+                if ($instance_base_chado == $instance_base_table){
+                    if ($prop_table !== FALSE){
+                        //Properties section instances
+                        array_push($prop_fields, $instance_name);
+                        $fields_with_regions[$instance_name]= 'right';
 
-            if (strpos($instance_base_chado, 'prop') !== FALSE){
-              //Properties section instances
-              array_push($region_bottom, $instance_name);
-              $fields_with_regions[$instance_name]= 'bottom';
+                    } elseif ($data_sequence !== FALSE) {
+                        //data sequence section instances
+                        array_push($data_sequence_fields, $instance_name);
+                        $fields_with_regions[$instance_name] = 'right';
 
-            } elseif (strpos($instance_base_chado, 'data__sequence') !== FALSE){
-              array_push($region_left, $instance_name);
-              $fields_with_regions[$instance_name]= 'left';
+                    }else {
+                        //overview section instances
+                        array_push($region_top, $instance_name);
+                        $fields_with_regions[$instance_name] = 'top';
+                    }
 
-            } else {
-              //Linker section instances
-              array_push($region_right, $instance_name);
-              $fields_with_regions[$instance_name]= 'right';
+                } elseif ($instance_base_chado != $instance_base_table){
+                    if ($prop_table !== FALSE){
+                        //Properties section instances
+                        array_push($prop_fields, $instance_name);
+                        $fields_with_regions[$instance_name]= 'right';
 
+                    } elseif ($data_sequence !== FALSE){
+                        //data sequence section instances
+                        array_push($data_sequence_fields, $instance_name);
+                        $fields_with_regions[$instance_name]= 'right';
+
+                    } else {
+                        //Linker section instances
+                        array_push($region_right, $instance_name);
+                        $fields_with_regions[$instance_name]= 'right';
+
+                    }
+                }
             }
-          } 
         }
-      }
-    $i++;
-  }
+        $i++;
+    }
 
-  $record = new stdClass;
-  $record->id ='TripalEntity|' . $bundle_name . '|default';
-  $record->entity_type = 'TripalEntity';
-  $record->bundle = $bundle_name;
-  $record->view_mode = 'default';
-  $record->layout = 'tripal_ds_feature';
-  $settings = array(
-    'regions' => array(
-      'top' => 
-        $region_top,
-      'left' => 
-        $region_left,
-      'right' => 
-        $region_right,
-      'bottom' => 
-        $region_bottom,
-    ),
-    'fields' => 
-      $fields_with_regions,
-    'classes' => array(),
-    'wrappers' => array(
-      'top' => 'div',
-      'left' => 'div',
-      'right' => 'div',
-      'bottom' => 'div',
-    ),
-    'layout_wrapper' => 'div',
-    'layout_attributes' => '',
-    'layout_attributes_merge' => 1,
-    'layout_link_attribute' => '',
-    'layout_link_custom' => '',
-    'layout_disable_css' => 0,
-  );
-  $record->settings = $settings;
+    //add the field sets to the region arrays
+    if(!empty($region_top)){
+        tripal_ds_overview_field_group_info($bundle_name, $region_top);
+        array_unshift($region_top, 'group_overview', 'group_overview_table');
+        $fields_with_regions['group_overview']= 'top';
+        $fields_with_regions['group_overview_table']= 'top';
+    }
+    if (!empty($prop_fields)){
+        tripal_ds_prop_field_group_info($bundle_name, $prop_fields);
+        array_unshift($prop_fields, 'group_prop', 'group_prop_table');
+        $region_right = array_merge($prop_fields, $region_right);
+        $fields_with_regions['group_prop']= 'right';
+        $fields_with_regions['group_prop_table']= 'right';
+    }
+    if (!empty($data_sequence_fields)){
+        tripal_ds_data_sequence_field_group_info($bundle_name, $data_sequence_fields);
+        array_unshift($data_sequence_fields, 'group_sequence', 'group_sequence_table');
+        $region_right = array_merge($data_sequence_fields, $region_right);
+        $fields_with_regions['group_sequence']= 'right';
+        $fields_with_regions['group_sequence_table']= 'right';
+    }
 
-  watchdog('debug', '<pre>_ds_layout_settings_info  $record: '. print_r($record, TRUE) .'</pre>');
+    //build the ds layout
+    $record = new stdClass;
+    $record->id ='TripalEntity|' . $bundle_name . '|default';
+    $record->entity_type = 'TripalEntity';
+    $record->bundle = $bundle_name;
+    $record->view_mode = 'default';
+    $record->layout = 'tripal_ds_feature';
+    $settings = array(
+        'regions' => array(
+            'top' =>
+                $region_top,
+            'left' =>
+                $region_left,
+            'right' =>
+                $region_right,
+            'bottom' =>
+                $region_bottom,
+        ),
+        'fields' =>
+            $fields_with_regions,
+        'classes' => array(),
+        'wrappers' => array(
+            'top' => 'div',
+            'left' => 'div',
+            'right' => 'div',
+            'bottom' => 'div',
+        ),
+        'layout_wrapper' => 'div',
+        'layout_attributes' => '',
+        'layout_attributes_merge' => 1,
+        'layout_link_attribute' => '',
+        'layout_link_custom' => '',
+        'layout_disable_css' => 0,
+    );
+    $record->settings = $settings;
 
-  drupal_write_record('ds_layout_settings', $record);
+    watchdog('debug', '<pre>_ds_layout_settings_info  $record: '. print_r($record, TRUE) .'</pre>');
+
+    drupal_write_record('ds_layout_settings', $record);
+
 }
+
+
+
+
 /*
 
 function tripal_ds_content_type_fields($bundle_name){
