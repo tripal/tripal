@@ -1,28 +1,69 @@
-/* Tooltip container */
-.tripal-tooltip {
-    position: relative;
-    display: inline-block;
-    padding-left: 5px;
-    padding-right: 5px;
+
+ /******************************************************************************
+ * Administrative CSS classes
+ *****************************************************************************/
+
+ /**
+  * This class is used when providing hints or other instructions to the
+  * site administrator
+  */
+
+div.messages.tripal-site-admin-only{
+  background-image: url("../images/TripalLogo-sm.png");
+  background-repeat: no-repeat;
+  background-color: #cce3ff;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border: 1px solid #7DA1D4;
+  min-height: 65px;
+  clear: both;
+  padding: 0px;
 }
 
-/* Tooltip text */
-.tripal-tooltip .tripal-tooltiptext {
-    visibility: hidden;
-    width: 300px;
-    background-color: #888888;
-    color: #FFFFFF;
-    text-align: left;
-    padding: 10px;
-    border-radius: 6px;
- 
-    /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 1;
+.tripal-code {
+  font-family: "Courier New", Courier, monospace;
+  word-wrap: break-word;
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-/* Show the tooltip text when you mouse over the tooltip container */
-.tripal-tooltip:hover .tripal-tooltiptext {
-    visibility: visible;
+.tripal-severity-string {
+  font-weight: bold;
 }
-</style>
+
+.tripal-severity-string-critical, .tripal-severity-string-error, 
+.tripal-severity-string.critical, .tripal-severity-string.error {
+  color: #FF0000;
+}
+
+.tripal-severity-string-warning,
+.tripal-severity-string.warning {
+  color: #FF8000;
+}
+
+.tripal-site-admin-message {
+  padding: 15px 10px 10px 70px;
+  font-style: italic;
+}
+
+.tripal-site-admin-only-table-row {
+  background-color: #cce3ff;
+  /* border: 1px solid #7DA1D4; */
+  color: black;
+}
+
+/******************************************************************************
+ * Misc CSS classes
+ *****************************************************************************/
+.tripal-dl {
+  width: 100%;
+  overflow: hidden;
+}
+.tripal-dl dt {
+  float: left;
+}
+.tripal-dl dd {
+}
