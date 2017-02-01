@@ -22,18 +22,14 @@ class data__sequence_widget extends ChadoFieldWidget {
 
     // Get the field defaults.
     $residues = '';
-    if (count($items) > 0 and array_key_exists('chado-feature__residues', $items[0])) {
-      $residues = $items[0]['chado-feature__residues'];
+    if (count($items) > 0 and array_key_exists('value', $items[0])) {
+      $residues = $items[0]['value'];
     }
     if (array_key_exists('values', $form_state)) {
-      //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
+      $residues = $form_state['values'][$field_name][$langcode][$delta]['value'];
     }
 
     $widget['value'] = array(
-      '#type' => 'value',
-      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-    $widget['chado-feature__residues'] = array(
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -53,10 +49,10 @@ class data__sequence_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
 
     // Remove any white spaces.
-    $residues = isset($form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] : '';
+    $residues = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__residues'] = $residues;
+      $form_state['values'][$field_name][$langcode][$delta]['value'] = $residues;
     }
   }
 }
