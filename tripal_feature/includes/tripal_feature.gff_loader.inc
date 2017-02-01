@@ -676,7 +676,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $attr_fmax_partial = 'f';
       $attr_is_obsolete = 'f';
       $attr_is_analysis = 'f';
-      $attr_others = '';
+      $attr_others = [];
       $residues = '';
 
       // the organism to which a feature belongs can be set in the GFF
