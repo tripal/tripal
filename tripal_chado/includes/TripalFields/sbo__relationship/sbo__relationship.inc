@@ -248,7 +248,7 @@ class sbo__relationship extends ChadoField {
         $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
         if (!$subject_name) {
           if ($relationship->tablename == 'organism_relationship') {
-            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species; 
+            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
           }
         }
         $subject_type =  isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : ' ';
@@ -660,10 +660,10 @@ class sbo__relationship extends ChadoField {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    else if ($field_table == 'organism_relationship') {
-      $subject_id_key = 'subject_organism_id';
-      $object_id_key = 'object_organism_id';
-    }
+//     else if ($field_table == 'organism_relationship') {
+//       $subject_id_key = 'subject_organism_id';
+//       $object_id_key = 'object_organism_id';
+//     }
 
     foreach ($items as $delta => $item) {
       $subject_id = $item['chado-' . $field_table . '__' . $subject_id_key];

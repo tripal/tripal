@@ -75,10 +75,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    else if ($field_table == 'organism_relationship') {
-      $subject_id_key = 'subject_organism_id';
-      $object_id_key = 'object_organism_id';
-    }
+//     else if ($field_table == 'organism_relationship') {
+//       $subject_id_key = 'subject_organism_id';
+//       $object_id_key = 'object_organism_id';
+//     }
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -357,10 +357,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_id_key = 'subject_project_id';
       $object_id_key = 'object_project_id';
     }
-    else if ($field_table == 'organism_relationship') {
-      $subject_id_key = 'subject_organism_id';
-      $object_id_key = 'object_organism_id';
-    }
+//     else if ($field_table == 'organism_relationship') {
+//       $subject_id_key = 'subject_organism_id';
+//       $object_id_key = 'object_organism_id';
+//     }
 
     $voc_id = array_key_exists('vocabulary', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : '';
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
@@ -424,7 +424,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
-      if ($field_table == 'feature_relationship') {
+      if (array_key_exists('rank', $schema['fields'])) {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
       }
     }
@@ -433,7 +433,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+      if (array_key_exists('rank', $schema['fields'])) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
     }
   }
 
