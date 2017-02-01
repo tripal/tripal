@@ -52,8 +52,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
-    //$settings = $display['settings'];
-    $settings = $this->instance['display']['default']['settings'];
+    $settings = $display['settings'];
 
     $rows = array();
     $headers = array($settings['title']);

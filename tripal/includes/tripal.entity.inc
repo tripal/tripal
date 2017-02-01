@@ -326,8 +326,12 @@ function tripal_ajax_attach_field($id) {
     $entity = $result[$entity_id];
 
     // Get the element render array for this field and turn off the label
-    // display. It's already on the page.
-    $element = field_view_field('TripalEntity', $entity, $field_name);
+    // display. It's already on the page.  We need to get the display from the
+    // instance and pass it into the field_view_field. Otherwise it uses the
+    // instance default display settings. Not sure why it does this. It needs
+    // more investigation.
+    $instance = field_info_instance('TripalEntity', $field_name, $entity->bundle);
+    $element = field_view_field('TripalEntity', $entity, $field_name, $instance['display']['default']);
     $element['#label_display'] = 'hidden';
 
     $content = drupal_render($element);
