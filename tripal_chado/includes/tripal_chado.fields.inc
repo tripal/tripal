@@ -1619,6 +1619,9 @@ function tripal_chado_bundle_create_user_field($new_field, $bundle) {
           'base_table' => $chado_table,
           'chado_table' => $table_name,
           'chado_column' => $pkey,
+          'term_vocabulary' => $vocab->vocabulary,
+          'term_accession' => $term->accession,
+          'term_name' => $term->name
         ),
         'widget' => array(
           'type' => 'chado_linker__prop_widget',

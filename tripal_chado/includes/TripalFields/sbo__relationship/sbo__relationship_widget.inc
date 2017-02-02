@@ -64,21 +64,18 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $object_uniquename = '';
     $type = '';
 
-    // Handle special cases
+    // 'nd_reagent_relationship' and 'project_relationship' have different column names from
+    // subject_id/object_id. Do a pattern matching to get the column names.
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
-    if ($field_table == 'nd_reagent_relationship') {
-      $subject_id_key = 'subject_reagent_id';
-      $object_id_key = 'object_reagent_id';
+    foreach ($schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
+      if (preg_match('/^subject_.*id/', $lcolum)) {
+        $subject_id_key = $lcolum;
+      }
+      else if (preg_match('/^object_.*id/', $lcolum)) {
+        $object_id_key = $lcolum;
+      }
     }
-    else if ($field_table == 'project_relationship') {
-      $subject_id_key = 'subject_project_id';
-      $object_id_key = 'object_project_id';
-    }
-//     else if ($field_table == 'organism_relationship') {
-//       $subject_id_key = 'subject_organism_id';
-//       $object_id_key = 'object_organism_id';
-//     }
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -346,21 +343,18 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
 
-    // Handle special cases
+    // 'nd_reagent_relationship' and 'project_relationship' have different column names from
+    // subject_id/object_id. Do a pattern matching to get the column names.
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
-    if ($field_table == 'nd_reagent_relationship') {
-      $subject_id_key = 'subject_reagent_id';
-      $object_id_key = 'object_reagent_id';
+    foreach ($schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
+      if (preg_match('/^subject_.*id/', $lcolum)) {
+        $subject_id_key = $lcolum;
+      }
+      else if (preg_match('/^object_.*id/', $lcolum)) {
+        $object_id_key = $lcolum;
+      }
     }
-    else if ($field_table == 'project_relationship') {
-      $subject_id_key = 'subject_project_id';
-      $object_id_key = 'object_project_id';
-    }
-//     else if ($field_table == 'organism_relationship') {
-//       $subject_id_key = 'subject_organism_id';
-//       $object_id_key = 'object_organism_id';
-//     }
 
     $voc_id = array_key_exists('vocabulary', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : '';
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';

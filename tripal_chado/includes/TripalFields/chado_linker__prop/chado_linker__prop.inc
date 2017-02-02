@@ -89,9 +89,9 @@ class chado_linker__prop extends ChadoField {
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->$fkey_lcolumn,
       'chado-' . $field_table . '__value' => '',
-      'chado-' . $field_table . '__type_id' => '',
+      'chado-' . $field_table . '__type_id' => $cvterm_id,
       'chado-' . $field_table . '__rank' => '',
     );
 
