@@ -3,6 +3,7 @@
 require_once "includes/tripal_ds.inc";
 require_once "includes/tripal_ds.ds.inc";
 require_once "includes/tripal_ds.field_group.inc";
+require_once "includes/tripal_ds.field_formatter.inc";
 
 function tripal_ds_init() {
   drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripaldsfeature.css');
@@ -34,19 +35,6 @@ function tripal_ds_ds_layout_info() {
   return $layouts;
 }
 
-/*
-* General preprocess function to determine the HOOK for the subsequent preprocess functions
-* to target fields
-
-function tripal_ds_preprocess(&$vars, $hook) {
-  if (isset($vars['elements']['#entity_type'])) {
-    $function = __FUNCTION__ . '_' . $vars['elements']['#entity_type'];
-    if (function_exists($function)) {
-      $function($vars, $hook);
-    }
-  }
-}
-*/
 /**
  * Implements hook_bundle_postcreate().
  *

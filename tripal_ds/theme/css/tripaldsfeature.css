@@ -11,7 +11,7 @@
 .ds-bottom {
   width: 100%;
 }
-
+/*
 fieldset {
 	border: none!important;
 }
@@ -44,7 +44,9 @@ th {
 .tripal-entity-unattached tbody {
 	border: none;
 }
+
+
 fieldset.collapsed {
 	height: 2em!important;
 }
-
+*/
