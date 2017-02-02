@@ -21,12 +21,12 @@ function tripal_ds_overview_field_group_info($bundle_name, $fields){
         'children' => array(
             0 => 'group_summary_table',
         ),
-        'format_type' => 'tripalpane',
+        'format_type' => 'fieldset',
         'format_settings' => array(
             'label' => 'Summary',
             'instance_settings' => array(
                 'id' => '',
-                'classes' => 'group-summary field-group-tripalpane',
+                'classes' => 'group-summary field-group-fieldset',
                 'description' => '',
             ),
             'formatter' => 'collapsible',
@@ -90,12 +90,12 @@ function tripal_ds_prop_field_group_info($bundle_name, $fields){
         'children' => array(
             0 => 'group_prop_table',
         ),
-        'format_type' => 'tripalpane',
+        'format_type' => 'fieldset',
         'format_settings' => array(
             'label' => 'Prop',
             'instance_settings' => array(
                 'id' => '',
-                'classes' => 'group-prop field-group-tripalpane',
+                'classes' => 'group-prop field-group-fieldset',
                 'description' => '',
                 ),
             'formatter' => 'collapsible',
@@ -158,12 +158,12 @@ function tripal_ds_data_sequence_field_group_info($bundle_name, $fields){
         'children' => array(
             0 => 'group_sequence_table',
         ),
-        'format_type' => 'tripalpane',
+        'format_type' => 'fieldset',
         'format_settings' => array(
             'label' => 'Data Sequences',
             'instance_settings' => array(
                 'id' => '',
-                'classes' => 'group-sequence field-group-tripalpane',
+                'classes' => 'group-sequence field-group-fieldset',
                 'description' => '',
             ),
             'formatter' => 'collapsible',
@@ -231,12 +231,12 @@ function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label
         'children' => array(
             0 => $field_name,
         ),
-        'format_type' => 'tripalpane',
+        'format_type' => 'fieldset',
         'format_settings' => array(
             'label' => $field_label,
             'instance_settings' => array(
                 'id' => '',
-                'classes' => $field_name.' field-group-tripalpane',
+                'classes' => $field_name.' field-group-fieldset',
                 'description' => '',
             ),
             'formatter' => 'collapsible',
