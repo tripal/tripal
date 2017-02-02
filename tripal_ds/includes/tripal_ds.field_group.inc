@@ -210,33 +210,30 @@ function tripal_ds_data_sequence_field_group_info($bundle_name, $fields){
  * Processes all additional fields into Tripal Panes
  */
 
-function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label, $field_name){
-     watchdog('debug', '<pre>tripal_ds_additional_fields_field_group_info  $field_name: '. print_r($field_name, TRUE) .'</pre>');
-    //shorten $field_name to 5 characters because identifier is limited to 32 characters
-    $short_field_name = substr($field_name, 10);
-    $short_field_name = 'field_group_'.$short_field_name;
+function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $fieldset_field_name, $field_name){
+
     //fieldset field to nest the table within
     $field_group_fieldset = new stdClass();
     $field_group_fieldset->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
     $field_group_fieldset->api_version = 1;
-    $field_group_fieldset->identifier = $short_field_name.'|TripalEntity|'.$bundle_name.'|default';
-    $field_group_fieldset->group_name = $short_field_name;
+    $field_group_fieldset->identifier = $group_field_name.'|TripalEntity|'.$bundle_name.'|default';
+    $field_group_fieldset->group_name = $group_field_name;
     $field_group_fieldset->entity_type = 'TripalEntity';
     $field_group_fieldset->bundle = $bundle_name;
     $field_group_fieldset->mode = 'default';
     $field_group_fieldset->parent_name = '';
     $field_group_fieldset->data = array(
-        'label' => $field_label,
+        'label' => $field_label.' Fieldgroup',
         'weight' => '5',
         'children' => array(
-            0 => $field_name,
+            0 => $fieldset_field_name,
         ),
         'format_type' => 'fieldset',
         'format_settings' => array(
-            'label' => $field_label,
+            'label' => $field_label.' Fieldgroup',
             'instance_settings' => array(
                 'id' => '',
-                'classes' => $field_name.' field-group-fieldset',
+                'classes' => $group_field_name.' field-group-fieldset',
                 'description' => '',
             ),
             'formatter' => 'collapsible',
@@ -244,7 +241,36 @@ function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label
     );
 
     drupal_write_record('field_group', $field_group_fieldset);
-    watchdog('debug', '<pre>tripal_ds_additional_fields_field_group_info  $field_group_fieldset: '. print_r($field_group_fieldset, TRUE) .'</pre>');
 
+    //table of fields
+    $field_group = new stdClass();
+    $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
+    $field_group->api_version = 1;
+    $field_group->identifier =  $fieldset_field_name.'|TripalEntity|'.$bundle_name.'|default';
+    $field_group->group_name =  $fieldset_field_name;
+    $field_group->entity_type = 'TripalEntity';
+    $field_group->bundle = $bundle_name;
+    $field_group->mode = 'default';
+    $field_group->parent_name =  $group_field_name;
+    $field_group->data = array(
+        'label' => $field_label.' Fieldset',
+        'weight' => '30',
+        'children' => array(
+            0 =>$field_name,
+        ),
+        'format_type' => 'table',
+        'format_type' => 'fieldset',
+        'format_settings' => array(
+            'label' => $field_label.' Fieldset',
+            'instance_settings' => array(
+                'id' => '',
+                'classes' => $fieldset_field_name.' field-group-fieldset',
+                'description' => '',
+            ),
+            'formatter' => 'collapsible',
+        ),
+    );
+
+    drupal_write_record('field_group', $field_group);
 }
 

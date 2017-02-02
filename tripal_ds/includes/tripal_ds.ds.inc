@@ -95,14 +95,19 @@ function _ds_layout_settings_info($bundle_name, $instances) {
           //temporary fields
           $temporary_field = array();
           $group_field_name = 'group_'.$other_field['field_name'];
-          watchdog('debug', '<pre>_ds_layout_settings_info  $group_field_name: '. print_r($group_field_name, TRUE) .'</pre>');
+          $fieldset_field_name = 'fieldset_'.$other_field['field_name'];
+
+          //need to truncate the names because of database field size restrictions
+          $group_field_name = substr($group_field_name, 0, 15);
+          $fieldset_field_name = substr($fieldset_field_name, 0, 15);
+
           //build the field group
-          tripal_ds_additional_fields_field_group_info($bundle_name, $other_field['label'], $other_field['field_name']);
+          tripal_ds_additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
           //update arrays
-          array_push($temporary_field, $group_field_name, $other_field['field_name']);
+          array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
           $region_right = array_merge($region_right, $temporary_field);
-          watchdog('debug', '<pre>_ds_layout_settings_info  $temporary_field: '. print_r($temporary_field, TRUE) .'</pre>');
           $fields_with_regions[$group_field_name]= 'right';
+          $fields_with_regions[$fieldset_field_name]= 'right';
 
         }
 
