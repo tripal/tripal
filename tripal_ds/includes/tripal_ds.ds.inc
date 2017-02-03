@@ -71,24 +71,27 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
     //add the field sets to the region arrays
     if(!empty($region_top)){
-        tripal_ds_overview_field_group_info($bundle_name, $region_top);
-        array_unshift($region_top, 'group_overview', 'group_overview_table');
-        $fields_with_regions['group_summary']= 'top';
-        $fields_with_regions['group_summary_table']= 'top';
+        _overview_field_group_info($bundle_name, $region_top);
+
+        //add the fields to the regions
+        array_unshift($region_top, 'group_summary_tripalpane', 'group_summary', 'group_summary_table');
+        $fields_with_regions += [ 'group_summary_tripalpane' =>'top', 'group_summary' => 'top', 'group_summary_table' => 'top' ];
     }
     if (!empty($prop_fields)){
-        tripal_ds_prop_field_group_info($bundle_name, $prop_fields);
-        array_unshift($prop_fields, 'group_prop', 'group_prop_table');
+        _prop_field_group_info($bundle_name, $prop_fields);
+        array_unshift($prop_fields, 'group_prop_tripalpane', 'group_prop', 'group_prop_table');
+
+        //add the fields to the regions
         $region_right = array_merge($prop_fields, $region_right);
-        $fields_with_regions['group_prop']= 'right';
-        $fields_with_regions['group_prop_table']= 'right';
+        $fields_with_regions += [ 'group_prop_tripalpane' => 'right', 'group_prop' => 'right', 'group_prop_table' => 'right' ];
     }
     if (!empty($data_sequence_fields)){
-        tripal_ds_data_sequence_field_group_info($bundle_name, $data_sequence_fields);
-        array_unshift($data_sequence_fields, 'group_sequence', 'group_sequence_table');
+        _data_sequence_field_group_info($bundle_name, $data_sequence_fields);
+        array_unshift($data_sequence_fields, 'group_sequence_tripalpane', 'group_sequence', 'group_sequence_table');
+
+        //add the fields to the regions
         $region_right = array_merge($data_sequence_fields, $region_right);
-        $fields_with_regions['group_sequence']= 'right';
-        $fields_with_regions['group_sequence_table']= 'right';
+        $fields_with_regions += [ 'group_sequence_tripalpane' => 'right', 'group_sequence' => 'right', 'group_sequence_table' => 'right' ];
     }
     if (!empty($all_other_fields)){
         foreach ($all_other_fields as $key => $other_field) {
@@ -97,17 +100,16 @@ function _ds_layout_settings_info($bundle_name, $instances) {
           $group_field_name = 'group_'.$other_field['field_name'];
           $fieldset_field_name = 'fieldset_'.$other_field['field_name'];
 
-          //need to truncate the names because of database field size restrictions
+          //need to truncate the names because of database field size restrictions, updating fields here to ensure name consistency
           $group_field_name = substr($group_field_name, 0, 15);
           $fieldset_field_name = substr($fieldset_field_name, 0, 15);
 
           //build the field group
-          tripal_ds_additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
+          _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
           //update arrays
           array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
           $region_right = array_merge($region_right, $temporary_field);
-          $fields_with_regions[$group_field_name]= 'right';
-          $fields_with_regions[$fieldset_field_name]= 'right';
+          $fields_with_regions+= [ $group_field_name => 'right', $fieldset_field_name => 'right' ];
 
         }
 
@@ -148,9 +150,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         'layout_disable_css' => 0,
     );
     $record->settings = $settings;
-
-    watchdog('debug', '<pre>_ds_layout_settings_info  $record: '. print_r($record, TRUE) .'</pre>');
-
     drupal_write_record('ds_layout_settings', $record);
 
 }

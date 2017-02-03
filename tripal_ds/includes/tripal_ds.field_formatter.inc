@@ -9,7 +9,7 @@ function tripal_ds_field_group_formatter_info() {
         'label' => t('Tripal Pane'),
         'description' => t('This fieldgroup renders the inner content in a Tripal Pane with the title as legend.'),
         'format_types' => array('open', 'collapsible', 'collapsed'),
-        'instance_settings' => array('description' => '', 'classes' => '', 'required_fields' => 1, 'id' => ''),
+        'instance_settings' => array('description' => '', 'classes' => '', 'id' => ''),
         'default_formatter' => 'collapsible',
       ),
     ),
@@ -43,14 +43,14 @@ function tripal_ds_field_group_format_settings($group) {
 
   return $form;
 }
-/**
+/*
  * Implements field_group_pre_render_<format-type>.
  * Format type: Tripalpane.
  *
  * @param $element The field group form element.
  * @param $group The Field group object prepared for pre_render.
  * @param $form The root element or form.
- */
+
 function field_group_pre_render_tripalpane(&$element, $group, &$form) {
 
   $element += array(
@@ -67,11 +67,11 @@ function field_group_pre_render_tripalpane(&$element, $group, &$form) {
     $element['#attached']['library'][] = array('system', 'drupal.collapse');
   }
 }
-
-/**
+ */
+/*
  * Implements hook_field_group_build_pre_re2 nder_alter().
  * @param Array $elements by address.
- */
+
 function tripal_ds_field_group_build_pre_render_alter(&$element) {
   // While custom fields and groups are present at the root level of the form
   // e.g. $element['field_custom_field'] they will later be moved into
@@ -89,8 +89,9 @@ function tripal_ds_field_group_build_pre_render_alter(&$element) {
   }
 }
 
-/**
+**
  * Implements hook_field_group_format_summary().
- */
+
 function tripal_ds_field_group_format_summary($group) {
 }
+ */
