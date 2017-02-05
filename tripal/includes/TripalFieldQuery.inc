@@ -28,7 +28,6 @@ class TripalFieldQuery extends EntityFieldQuery {
 
       // Initialize the results array.
       $results = array();
-      dpm($this->field_storage);
 
       // Iterate through the field storage types and call each one.
       foreach ($this->field_storage as $storage_type => $storage_module) {
