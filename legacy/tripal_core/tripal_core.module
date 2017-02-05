@@ -169,7 +169,11 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     // Theme function for the extension admin page.
     'tripal_core_extensions_form_tables' => array(
       'render element' => 'element',
-    )
+    ),
+    'administer controlled vocabularies' => array(
+      'title' => t('Administer controlled vocabularies (CVs).'),
+      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
+    ),
   );
 }
 

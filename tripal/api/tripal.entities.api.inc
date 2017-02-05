@@ -311,6 +311,37 @@ function tripal_create_bundle($args, &$error = '') {
 }
 
 /**
+ * Retrieves a list of the content types.
+ *
+ * @return
+ *   An array of bundles. Each bundle is an object containing information
+ *   about that bundle.
+ */
+function tripal_get_content_types() {
+  return db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute()
+    ->fetchAll();
+}
+
+/**
+ * Retrieves information about a given content type.
+ *
+ * @param $bundle_name
+ *   The name of a bundle.
+ *
+ * @return
+ *   An object containing information about the bundle.
+ */
+function tripal_get_content_type($bundle_name) {
+  return db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->condition('tb.name', $bundle_name)
+    ->execute()
+    ->fetchAll();
+}
+
+/**
  * Refreshes the bundle such that new fields added by modules will be found.
  *
  * @param $bundle_name

@@ -29,6 +29,7 @@ class TripalEntityController extends EntityAPIController {
 
     // Add some items to the values array passed to the constructor
     global $user;
+
     $values['uid'] = $user->uid;
     $values['created'] = time();
     $values['changed'] = time();

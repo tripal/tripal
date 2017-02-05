@@ -72,6 +72,9 @@ function tripal_init() {
 
 }
 
+function tripal_menu_alter(&$items) {
+  //drupal_debug($items);
+}
 /**
  * Implements hook_menu().
  * Defines all menu items needed by Tripal Core
@@ -238,16 +241,17 @@ function tripal_menu() {
   /*
    * Term Lookup
    */
-  $items['cv/lookup'] = array(
-    'title' => 'Vocabulary Lookup',
-    'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
-    'access arguments' => array('access content'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_vocabulary_lookup_form'),
-    'file' => 'includes/tripal.term_lookup.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-    'type' => MENU_NORMAL_ITEM,
-  );
+// TODO: finish this menu callback.
+//   $items['cv/lookup'] = array(
+//     'title' => 'Vocabulary Lookup',
+//     'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
+//     'access arguments' => array('access content'),
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_vocabulary_lookup_form'),
+//     'file' => 'includes/tripal.term_lookup.inc',
+//     'file path' => drupal_get_path('module', 'tripal'),
+//     'type' => MENU_NORMAL_ITEM,
+//   );
 
   $items['cv/lookup/%/%'] = array(
     'title' => 'Vocabulary Lookup',
@@ -278,10 +282,18 @@ function tripal_menu() {
  * Implements hook_permission().
  */
 function tripal_permission() {
-  return array(
+  $permissions = array(
     'administer tripal' => array(
       'title' => t('Administer Tripal'),
-      'description' => t('Allow the user to access administrative pages of Tripal.')
+      'description' => t('Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.')
+    ),
+    'access tripal content overview' => array(
+      'title' => t('Access the Tripal content overview page'),
+      'description' => t('Get an overview of all Tripal content')
+    ),
+    'manage tripal content types' => array(
+      'title' => t('Manage Tripal content types'),
+      'description' => t('Allows the user to create, update and delete Tripal content types.'),
     ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
@@ -291,19 +303,30 @@ function tripal_permission() {
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
     ),
-    'administer tripal data types' => array(
-      'title' => t('Administer Tripal data types'),
-      'description' => t('Create and delete fields for Tripal data types, and set their permissions.'),
-    ),
-    'administer tripal data' => array(
-      'title' => t('Administer Tripal data'),
-      'description' => t('Edit and delete all tripal data'),
-    ),
-    'administer controlled vocabularies' => array(
-      'title' => t('Administer controlled vocabularies (CVs).'),
-      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
-    ),
+
   );
+
+  // Add permissions for each content type.
+  $bundles = tripal_get_content_types();
+  foreach ($bundles as $bundle) {
+    $permissions['view ' . $bundle->name] = array(
+      'title' => t('%label: View Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to view %label content', array('%label' => $bundle->label)),
+    );
+    $permissions['create ' . $bundle->name] = array(
+      'title' => t('%label: Create Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to create %label content', array('%label' => $bundle->label)),
+    );
+    $permissions['edit ' . $bundle->name] = array(
+      'title' => t('%label: Edit Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to edit %label content', array('%label' => $bundle->label)),
+    );
+    $permissions['delete ' . $bundle->name] = array(
+      'title' => t('%label: Delete Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to delete %label content', array('%label' => $bundle->label)),
+    );
+  }
+  return $permissions;
 }
 
 /**
@@ -513,18 +536,6 @@ function TripalEntity_load($id, $reset = FALSE) {
   $entity = tripal_load_entity('TripalEntity', array($id), $reset);
   return reset($entity);
 }
-
-/**
- * Implements hook_menu_alter().
- */
-function tripal_menu_alter(&$items) {
-  // We don't want to allow deletion of fields added by the storage backend.
-  // TODO: this shouldn't be hardcoded here.  These settings
-  // should be part of the field and handled by the tripal_entity module.
-  //$items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
-  //$items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
-}
-
 
 /**
  * Imports all of the Tripal API into scope.

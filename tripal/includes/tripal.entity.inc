@@ -177,7 +177,7 @@ function tripal_entity_info() {
       'path' => 'admin/content/bio_data',
       'controller class' => 'TripalEntityUIController',
       'menu wildcard' => '%TripalEntity',
-      'file' => 'includes/TripalEntityUIController.inc'
+      'file' => 'includes/TripalEntityUIController.inc',
     ),
     'view modes' => array (
       'full' => array (
@@ -251,7 +251,7 @@ function tripal_entity_info_alter(&$entity_info){
           'real path' => 'admin/structure/bio_data/manage/' . $bundle_name,
           'bundle argument' => 4,
           'access arguments' => array (
-            'administer tripal data types'
+            'manage tripal content types'
           )
         )
       );
@@ -261,15 +261,45 @@ function tripal_entity_info_alter(&$entity_info){
 
 /**
  * Checks access permissions for a given entity.
+ *
+ * This function is set for TripalEntity access checking in the
+ * tripal_entity_info() under the 'access callback' element.
+ *
+ * @param $op
+ *   The operation. One of: create, view, edit, delete.
+ * @param $entity
+ *   The entity to check access for.
+ * @param $account
+ *   The user account.
+ * @param $entity_type
+ *   The type of entity (will always be TripalEntity).
  */
-function tripal_entity_access($entity) {
-  // TODO: need to implement this function.
-  return TRUE;
+function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
+  global $user;
+
+  if ($entity) {
+    $bundle_name = $entity->bundle;
+  }
+  else {
+    return FALSE;
+  }
+
+  if (!isset($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('create ' . $bundle_name, $account);
+    case 'view':
+      return user_access('view ' . $bundle_name, $account);
+    case 'edit':
+      return user_access('edit ' . $bundle_name, $account);
+    case 'delete':
+      return user_access('delete ' . $bundle_name, $account);
+  }
+  return FALSE;
 }
 
-function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
-
-}
 
 /**
  * Implements hook_entity_view.

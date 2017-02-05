@@ -128,37 +128,6 @@ function tripal_chado_entity_delete($entity, $type) {
 }
 
 /**
- * Determines whether the given user has access to a tripal data entity.
- *
- * TODO: I'm not sure this function should be at this level. I think all
- * access controls should be handled by the tripal_entity module and that
- * storage backends should just attach data as requested.
- *
- * @param $op
- *   The operation being performed. One of 'view', 'update', 'create', 'delete'
- *   or just 'edit' (being the same as 'create' or 'update').
- * @param $entity
- *   Optionally a tripal data entity or a tripal data type to check access for.
- *   If nothing is given, access for all types is determined.
- * @param $account
- *   The user to check for. Leave it to NULL to check for the global user.
- * @return boolean
- *   Whether access is allowed or not.
- */
-function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
-  if (user_access('administer tripal data', $account)) {
-    return TRUE;
-  }
-  if (isset($entity) && $type_name = $entity->type) {
-    $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $type_name data", $account)) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
  * Implements hook_tripal_default_title_format().
  *
  * Overrides the default titles.

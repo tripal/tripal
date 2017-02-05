@@ -32,7 +32,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
       'description' => 'Add data type content',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_admin_add_type_form'),
-      'access arguments' => array('administer tripal data types'),
+      'access arguments' => array('manage tripal content types'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 2
     );
@@ -398,7 +398,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
  * Access callback for the entity API.
  */
 function tripal_bundle_access($op, $type = NULL, $account = NULL) {
-  return user_access('administer tripal data types', $account);
+  return user_access('manage tripal content types', $account);
 }
 
 /**

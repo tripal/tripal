@@ -453,7 +453,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['title'] = 'Controlled Vocabularies';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'administer controlled vocabularies';
+  $handler->display->display_options['access']['perm'] = 'administer tripal';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'input_required';
@@ -646,7 +646,7 @@ function tripal_chado_defaultview_admin_cvterms_listing() {
   $handler->display->display_options['title'] = 'Controlled Vocabulary Terms';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'administer controlled vocabularies';
+  $handler->display->display_options['access']['perm'] = 'administer tripal';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'input_required';

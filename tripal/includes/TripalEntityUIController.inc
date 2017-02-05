@@ -22,7 +22,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'page callback' => 'tripal_content_view',
       'file' =>  'includes/tripal.admin.inc',
       'file path' => drupal_get_path('module', 'tripal'),
-      'access arguments' => array('administer tripal data'),
+      'access arguments' => array('access tripal content overview'),
       'type' => MENU_LOCAL_TASK,
       'weight' => -9
     );
@@ -30,7 +30,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     $items['bio_data/add'] = array(
       'title' => 'Add Tripal Content',
       'page callback' => 'tripal_add_page',
-      'access arguments' => array('administer tripal data'),
+      'access callback' => '_tripal_entity_add_access',
     );
 
     // Add a menu item for creating each bundle
@@ -54,8 +54,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
           'description' => tripal_get_bundle_variable('description', $bundle->id, $default_description),
           'page callback'  => 'drupal_get_form',
           'page arguments' => array('tripal_entity_form', 2),
-          'access callback'  => 'tripal_entity_access',
-          'access arguments' => array('edit'),
+          'access arguments' => array('create bio_data_' . $term->id),
         );
       }
     }
@@ -92,32 +91,13 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
     );
-//     $items['bio_data/' . $wildcard . '/layout'] = array(
-//       'title' => 'Layout',
-//       'page callback' => 'drupal_goto',
-//       'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/display")),
-//       'access callback' => 'tripal_entity_access',
-//       'access arguments' => array('admin', 1),
-//       'type' => MENU_LOCAL_TASK,
-//       'weight' => -8,
-//     );
-//     $items['bio_data/' . $wildcard . '/fields'] = array(
-//       'title' => 'Fields',
-//       'page callback' => 'drupal_goto',
-//       'page arguments' => array(url("admin/structure/bio_data/manage/bio_data_$term_id/fields")),
-//       'access callback' => 'tripal_entity_access',
-//       'access arguments' => array('admin', 1),
-//       'type' => MENU_LOCAL_TASK,
-//       'weight' => -8,
-//     );
-
     // Menu item for deleting tripal data entities.
     $items['bio_data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entity_delete_form', 1),
       'access callback' => 'tripal_entity_access',
-      'access arguments' => array('edit', 1),
+      'access arguments' => array('delete', 1),
       'type' => MENU_CALLBACK,
       'weight' => 10,
     );
@@ -175,6 +155,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   *   A form array describing this listing to the Form API.
   */
  function tripal_content_overview_form($form, &$form_state) {
+   global $user;
 
    // Set form defaults.  The $_SESSION contains the last known selection
    // by this user. That should be overridden if the $_GET variable contains
@@ -371,6 +352,16 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
      // Retrieve details about the user who created this data.
      $author = user_load($entity->uid);
+
+     // Build the action links
+     $links = '';
+     if (entity_access('edit', 'TripalEntity', $entity, $user)) {
+       $links .= '&nbsp;&nbsp;' . l('edit', 'bio_data/' . $entity->id . '/edit');
+     }
+     if (entity_access('delete', 'TripalEntity', $entity, $user)) {
+       $links .= '&nbsp;&nbsp;' . l('delete', 'bio_data/' . $entity->id . '/delete');
+     }
+
      // Add information to the table.
      $rows[] = array(
        l($entity->title, 'bio_data/' . $entity->id),
@@ -379,8 +370,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        l($author->name, 'user/' . $entity->uid),
        $entity->status == 1 ? 'published' : 'unpublished',
        format_date($entity->changed, 'short'),
-       l('edit', 'bio_data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
-       l('delete', 'bio_data/' . $entity->id . '/delete')
+       $links,
      );
    }
 
@@ -444,6 +434,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   *
   */
  function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
+   global $user;
    $bundle_name = 'bio_data_' . $term_id;
 
    // Add a vertical tabs element
@@ -479,13 +470,15 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
      // Put the delete button on the far-right so that it's harder
      // to accidentally click it.
-     $form['delete_button'] = array(
-       '#type' => 'submit',
-       '#value' => t('Delete'),
-       '#name' => 'delete_data',
-       '#weight' => 1002,
-       '#attributes' => array('style' => 'float: right')
-     );
+     if (entity_access('delete', 'TripalEntity', $entity, $user)) {
+       $form['delete_button'] = array(
+         '#type' => 'submit',
+         '#value' => t('Delete'),
+         '#name' => 'delete_data',
+         '#weight' => 1002,
+         '#attributes' => array('style' => 'float: right')
+       );
+     }
    }
    $form['cancel_button'] = array(
      '#type' => 'submit',
@@ -587,9 +580,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   */
  function tripal_add_page() {
    $item = menu_get_item();
-
    $content = system_admin_menu_block($item);
-
    // Bypass the node/add listing if only one content type is available.
    if (count($content) == 1) {
      $item = array_shift($content);
@@ -660,6 +651,12 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
  function tripal_entity_delete_form_submit($form, &$form_state) {
    $entity = $form_state['entity'];
 
+   if (!entity_access('delete', 'TripalEntity', $entity, $user)) {
+     drupal_set_message(t('You do not have permission to delete this content.'), "error");
+     $form_state['redirect'] = 'admin/content/bio_data';
+     return;
+   }
+
    $entity_controller = new TripalEntityController($entity->type);
 
    if ($entity_controller->delete(array($entity->id))) {
@@ -669,4 +666,23 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    else {
      drupal_set_message(t('The tripal_entity %name was not deleted.', array('%name' => $entity->title)), "error");
    }
+ }
+
+ /**
+  * A helper function for checking if a user can add Tripal Content.
+  *
+  * This function is a callback for the bio_data/add menu path.
+  */
+ function _tripal_entity_add_access() {
+   global $user;
+
+
+   $types = tripal_get_content_types();
+   foreach ($types as $type) {
+     if (user_access('create ' . $type->name, $user)) {
+       return TRUE;
+     }
+   }
+   return FALSE;
+
  }
