@@ -154,8 +154,8 @@ function tripal_load_bundle_entity($values) {
   $bundle = $query->execute()->fetchObject();
 
   if ($bundle) {
-    $entity = entity_load('TripalBundle', array($bundle->id));
-    return reset($entity);
+    $entity = entity_load_unchanged('TripalBundle', $bundle->id);
+    return $entity;
   }
   return NULL;
 }

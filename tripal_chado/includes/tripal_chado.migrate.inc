@@ -418,10 +418,15 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
           $vocabulary = $matches[1];
           $accession = $matches[2];
           $type = $matches[3];
+          $table = str_replace('chado_', '', $tv2_content_type);
           $tv3_content_type [] = array(
             'vocabulary' => $vocabulary,
             'accession' => $accession,
-            'term_name' => $type
+            'term_name' => $type,
+            'storage_args' => array (
+              'data_table' => $table,
+              'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
+            )
           );
         }
       }
@@ -579,7 +584,11 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
         array_push($types, array(
           'vocabulary' => $tv3_content_type->vocabulary,
           'accession' => $tv3_content_type->accession,
-          'term_name' => $tv3_content_type->type
+          'term_name' => $tv3_content_type->type,
+          'storage_args' => array (
+            'data_table' => $table,
+            'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
+          )
         ));
       }
     }
@@ -587,14 +596,20 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
       array_push($types, array(
         'vocabulary' => 'OBI',
         'accession' => '0100026',
-        'term_name' => 'organism'
+        'term_name' => 'organism',
+        'storage_args' => array (
+          'data_table' => $table
+        )
       ));
     }
     else if ($table == 'analysis') {
       array_push($types, array(
         'vocabulary' => 'local',
         'accession' => 'analysis',
-        'term_name' => 'analysis'
+        'term_name' => 'analysis',
+        'storage_args' => array (
+          'data_table' => $table
+        )
       ));
     }
   }
@@ -616,8 +631,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     // If term doesn't exist, create a new bundle for this term
     if (!$term) {
       print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");
-      $success = tripal_create_bundle($tv3_content_type['vocabulary'],
-      $tv3_content_type['accession'], $tv3_content_type['term_name']);
+      $success = tripal_create_bundle($tv3_content_type);
       $term = tripal_load_term_entity($tv3_content_type);
     }
     // Create bundle name
