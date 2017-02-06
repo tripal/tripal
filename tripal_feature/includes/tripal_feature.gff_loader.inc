@@ -676,7 +676,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $attr_fmax_partial = 'f';
       $attr_is_obsolete = 'f';
       $attr_is_analysis = 'f';
-      $attr_others = '';
+      $attr_others = [];
       $residues = '';
 
       // the organism to which a feature belongs can be set in the GFF
@@ -982,13 +982,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             CVT.cvterm_id, CVT.name as feature_type,
             min(TGCT.fmin) as fmin, max(TGCT.fmax) as fmax,
             TGPT.feature_id as protein_id, TGPT.fmin as protein_fmin,
-            TGPT.fmax as protein_fmax
+            TGPT.fmax as protein_fmax, FLM.uniquename as landmark
           FROM {tripal_gffcds_temp} TGCT
             INNER JOIN {feature} F on F.feature_id = TGCT.parent_id
             INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+            INNER JOIN {featureloc} L on F.feature_id = L.feature_id
+            INNER JOIN {feature} FLM on L.srcfeature_id = FLM.feature_id
             LEFT JOIN {tripal_gffprotein_temp} TGPT on TGPT.parent_id = F.feature_id
           GROUP BY F.feature_id, F.name, F.uniquename, CVT.cvterm_id, CVT.name,
-            TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand
+            TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand, FLM.uniquename
         ";
         $results = chado_query($sql);
         $protein_cvterm = tripal_get_cvterm(array(
@@ -1041,8 +1043,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               $result->uniquename, $organism, $pfmin, $pfmax);
             // Add the featureloc record. Set the start of the protein to
             // be the start of the coding sequence minus the phase.
-            tripal_feature_load_gff3_featureloc($feature, $organism, $landmark,
-              $pfmin, $pfmax, $strand, '', 'f', 'f', '', 0);
+            tripal_feature_load_gff3_featureloc($feature, $organism, $result->landmark,
+              $pfmin, $pfmax, $result->strand, '', 'f', 'f', '', 0);
           }
         }
       }
