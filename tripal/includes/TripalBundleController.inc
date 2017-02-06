@@ -55,6 +55,13 @@ class TripalBundleController extends EntityAPIControllerExportable {
 
       foreach ($bundles as $id => $bundle) {
 
+        // Allow modules to perform actions when the bundle is deleted.
+        $modules = module_implements('bundle_delete');
+        foreach ($modules as $module) {
+          $function = $module . '_bundle_delete';
+          $function($bundle);
+        }
+
         // Find any TripalEntity fields that are attached to this bundle and
         // remove them.
         $instances = field_info_instances('TripalEntity', $bundle->name);
