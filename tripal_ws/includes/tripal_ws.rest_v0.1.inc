@@ -793,8 +793,8 @@ function tripal_ws_services_v0_1_write_context(&$response, $ctype) {
 }
 
 /**
-*
-*/
+ *
+ */
 function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $instance, $api_url, &$response, $is_field_page = NULL) {
   // Get the field  settings.
   $field_name = $field['field_name'];
@@ -813,43 +813,10 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
 
   $values = array();
   for ($i = 0; $i < count($items); $i++) {
-
-    // If the value is an array rather than a scalar then map the sub elements
-    // to controlled vocabulary terms.
-    if (is_array($items[$i]['value'])) {
-      $temp = array();
-      foreach ($items[$i]['value'] as $k => $v) {
-        $matches = array();
-        if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
-          $vocabulary = $matches[1];
-          $accession = $matches[2];
-          $term = tripal_get_term_details($vocabulary, $accession);
-          $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
-          $temp[$key_adj] = $v !== "" ? $v : NULL;
-          // The term schema:url also points to a recource so we need
-          // to make sure we set the type to be '@id'.
-          if ($vocabulary == 'schema' and $accession == 'url') {
-            $response['@context'][$key_adj] = array(
-              '@id' => $term['url'],
-              '@type' => '@id',
-            );
-          }
-          else {
-            $response['@context'][$key_adj] = $term['url'];
-          }
-        }
-      }
-      $values[] = $temp;
-    }
-    else {
-      $values[] = $items[$i]['value'] !== "" ? $items[$i]['value'] : NULL;
-    }
-
-    // Recurse through the values array and set the entity elemetns
-    // and add the fields to the context.
-    tripal_ws_services_v0_1_get_content_add_field_context($items[$i], $response, $api_url);
+    $values[$i] = tripal_ws_services_v0_1_rewrite_field_items_keys($items[$i]['value'], $response, $api_url);
   }
 
+  // Add the $values array to the WS response.
   // If we only have one value then set the response with just the value.
   if (count($values) == 1) {
     // If the value is an array and this is the field page then all of those
@@ -892,18 +859,69 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
     }
   }
 }
-
 /**
  *
  */
-function tripal_ws_services_v0_1_get_content_add_field_context(&$items, &$response, $api_url) {
+function tripal_ws_services_v0_1_rewrite_field_items_keys($value, &$response, $api_url) {
+
+  $new_value = '';
+  // If the value is an array rather than a scalar then map the sub elements
+  // to controlled vocabulary terms.
+  if (is_array($value)) {
+    $temp = array();
+    foreach ($value as $k => $v) {
+      $matches = array();
+      if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
+        $vocabulary = $matches[1];
+        $accession = $matches[2];
+        $term = tripal_get_term_details($vocabulary, $accession);
+        $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+        if (is_array($v)) {
+          $temp[$key_adj] = tripal_ws_services_v0_1_rewrite_field_items_keys($v, $response, $api_url);
+        }
+        else {
+          $temp[$key_adj] = $v !== "" ? $v : NULL;
+        }
+        // The term schema:url also points to a recource so we need
+        // to make sure we set the type to be '@id'.
+        if ($vocabulary == 'schema' and $accession == 'url') {
+          $response['@context'][$key_adj] = array(
+            '@id' => $term['url'],
+            '@type' => '@id',
+          );
+        }
+        else {
+          $response['@context'][$key_adj] = $term['url'];
+        }
+      }
+      else {
+        $temp[$k] = $v;
+      }
+    }
+    $new_value = $temp;
+
+    // Recurse through the values array and set the entity elements
+    // and add the fields to the context.
+    tripal_ws_services_v0_1_rewrite_field_items_entity($new_value, $response, $api_url);
+
+  }
+  else {
+    $new_value = $value !== "" ? $value : NULL;
+  }
+
+  return $new_value;
+}
+/**
+ *
+ */
+function tripal_ws_services_v0_1_rewrite_field_items_entity(&$items, &$response, $api_url) {
 
   if (!$items) {
     return;
   }
   foreach ($items as $key => $value) {
     if (is_array($value)) {
-      tripal_ws_services_v0_1_get_content_add_field_context($items[$key], $response, $api_url);
+      tripal_ws_services_v0_1_rewrite_field_items_entity($items[$key], $response, $api_url);
       continue;
     }
 
