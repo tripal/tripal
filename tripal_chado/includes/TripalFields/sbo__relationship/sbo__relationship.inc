@@ -497,6 +497,8 @@ class sbo__relationship extends ChadoField {
       case 'has origin':
       case 'has part':
       case 'has quality':
+      case 'is a maternal parent of':
+      case 'is a paternal parent of':
       case 'is consecutive sequence of':
       case 'maximally overlaps':
       case 'overlaps':

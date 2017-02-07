@@ -194,6 +194,42 @@ function tripal_chado_migrate_form($form, &$form_state) {
           $no_data = FALSE;
         }
       }
+      else if ($table == 'project') {
+        $sql =
+        "SELECT count(*)
+              FROM {project} P
+              INNER JOIN public.chado_project CP ON P.project_id = CP.project_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = P.project_id
+                AND CE.data_table = 'project'
+              WHERE CE.record_id IS NULL";
+        $proj_count = chado_query($sql)->fetchField();
+        if ($proj_count > 0) {
+          $key = urlencode('tv3_content_type--local--project--project');
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Project (' . $proj_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
+      else if ($table == 'featuremap') {
+        $sql =
+        "SELECT count(*)
+              FROM {featuremap} M
+              INNER JOIN public.chado_featuremap CM ON M.featuremap_id = CM.featuremap_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = M.featuremap_id
+                AND CE.data_table = 'featuremap'
+              WHERE CE.record_id IS NULL";
+        $map_count = chado_query($sql)->fetchField();
+        if ($map_count > 0) {
+          $key = urlencode('tv3_content_type--data--1274--map');
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Map (' . $map_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
       if ($no_data) {
         unset($form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all']);
         drupal_set_message('No data for migration or all have been migrated.', 'warning');
@@ -612,6 +648,27 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
         )
       ));
     }
+    else if ($table == 'project') {
+      array_push($types, array(
+        'vocabulary' => 'local',
+        'accession' => 'project',
+        'term_name' => 'project',
+        'storage_args' => array (
+          'data_table' => $table
+        )
+      ));
+    }
+    else if ($table == 'featuremap') {
+      array_push($types, array(
+        'vocabulary' => 'data',
+        'accession' => '1274',
+        'term_name' => 'map',
+        'storage_args' => array (
+          'data_table' => $table
+        )
+    ));
+  }
+
   }
   return $types;
 }
