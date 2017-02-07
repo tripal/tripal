@@ -417,7 +417,7 @@ function tripal_chado_populate_vocab_OGI() {
     'cv_name' => 'ogi',
     'definition' => '',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
+  tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
 }
 /**
  * Adds the Information Artifact Ontology database and terms.
