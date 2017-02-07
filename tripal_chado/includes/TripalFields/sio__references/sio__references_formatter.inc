@@ -27,10 +27,10 @@ class sio__references_formatter extends ChadoFieldFormatter {
     // First, organize the values by their types.
     $ordered_items = array();
     foreach ($items as $delta => $item) {
-      $type = array_key_exists('rdfs:type', $item['value']) ? $item['value']['rdfs:type'] : '';
-      $entity = array_key_exists('entity', $item['value']) ? $item['value']['entity'] : '';
-      $name = array_key_exists('schema:name', $item['value']) ? $item['value']['schema:name'] : '';
-      $identifier = array_key_exists('data:0842', $item['value']) ? $item['value']['data:0842'] : '';
+      $type = isset($item['value']['rdfs:type']) ? $item['value']['rdfs:type'] : '';
+      $entity = isset($item['value']['entity']) ? $item['value']['entity'] : '';
+      $name = isset($item['value']['schema:name']) ? $item['value']['schema:name'] : '';
+      $identifier = isset($item['value']['data:0842']) ? $item['value']['data:0842'] : '';
       if ($entity) {
         list($entity_type, $entity_id) = explode(':', $entity);
         $name = l(strip_tags($name), 'bio_data/' . $entity_id);
