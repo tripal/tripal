@@ -188,11 +188,61 @@ class sbo__relationship extends ChadoField {
       foreach ($orelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $verb = self::get_rel_verb($rel_type);
-        $subject_name = $relationship->$subject_id_key->name;
-        $subject_type = $relationship->$subject_id_key->type_id->name;
-        $object_name = $relationship->$object_id_key->name;
-        $object_type = $relationship->$object_id_key->type_id->name;
+        $verb = $this->get_rel_verb($rel_type);
+
+        // The linked to table of a relationship linker table may not always
+        // have a type_id or name field.  So we have to be a bit more
+        // specific about how we set some variables.
+        switch ($relationship->tablename) {
+          case 'acquisition_relationship':
+            $subject_type = 'acquisition';
+            $object_type = 'acquisition';
+            break;
+          case 'analysis_relationship':
+            $subject_type = 'analysis';
+            $object_type = 'analysis';
+            break;
+          case 'biomaterial_relationship':
+            $subject_type = 'biomaterial';
+            $object_type = 'biomaterial';
+            break;
+          case 'cell_line_relationship':
+            $subject_type = 'cell_line';
+            $object_type = 'cell_line';
+            break;
+          case 'element_relationship':
+            $subject_name = $relationship->$subject_id_key->feature_id->name;
+            $object_name = $relationship->$object_id_key->feature_id->name;
+            break;
+          case 'organism_relationship':
+            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
+            $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
+            $subject_type = 'organism';
+            $object_type = 'organism';
+            break;
+          case 'project_relationship':
+            $subject_type = 'project';
+            $object_type = 'project';
+            break;
+          case 'phylonode_relationship':
+            $subject_name = $relationship->$subject_id_key->label;
+            $object_name = $relationship->$object_id_key->label;
+            break;
+          case 'pub_relationship':
+            $subject_name = $relationship->$subject_id_key->uniquename;
+            $object_name = $relationship->$object_id_key->uniquename;
+            break;
+          case 'quantification_relationship':
+            $subject_type = 'quantification';
+            $object_type = 'quantification';
+            break;
+          default:
+            $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
+            $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
+            $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
+            $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
+        }
+
         $entity->{$field_name}['und'][$i]['value'] = array(
           'local:relationship_subject' => array(
             'rdfs:type' => $subject_type,
@@ -215,12 +265,13 @@ class sbo__relationship extends ChadoField {
           $entity_id = $relationship->$subject_id_key->entity_id;
           $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $entity_id;
         }
+
+        // Add the clause to the values array.
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'The ' . $subject_type . ', ' .
-        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
-        $object_type . '.';
+          $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
+          $object_type . '.';
 
-        //dpm("OR:" . $entity->{$field_name}['und'][$i]['value']['SIO:000493']);
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
@@ -243,22 +294,61 @@ class sbo__relationship extends ChadoField {
       foreach ($srelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $verb = self::get_rel_verb($rel_type);
+        $verb = $this->get_rel_verb($rel_type);
 
-        $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
-        if (!$subject_name) {
-          if ($relationship->tablename == 'organism_relationship') {
+        // The linked to table of a relationship linker table may not always
+        // have a type_id or name field.  So we have to be a bit more
+        // specific about how we set some variables.
+        switch ($relationship->tablename) {
+          case 'acquisition_relationship':
+            $subject_type = 'acquisition';
+            $object_type = 'acquisition';
+            break;
+          case 'analysis_relationship':
+            $subject_type = 'analysis';
+            $object_type = 'analysis';
+            break;
+          case 'biomaterial_relationship':
+            $subject_type = 'biomaterial';
+            $object_type = 'biomaterial';
+            break;
+          case 'cell_line_relationship':
+            $subject_type = 'cell_line';
+            $object_type = 'cell_line';
+            break;
+          case 'element_relationship':
+            $subject_name = $relationship->$subject_id_key->feature_id->name;
+            $object_name = $relationship->$object_id_key->feature_id->name;
+            break;
+          case 'organism_relationship':
             $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
-          }
-        }
-        $subject_type =  isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : ' ';
-        $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
-        if (!$object_name) {
-          if ($relationship->tablename == 'organism_relationship') {
             $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
-          }
+            $subject_type = 'organism';
+            $object_type = 'organism';
+            break;
+          case 'project_relationship':
+            $subject_type = 'project';
+            $object_type = 'project';
+            break;
+          case 'phylonode_relationship':
+            $subject_name = $relationship->$subject_id_key->label;
+            $object_name = $relationship->$object_id_key->label;
+            break;
+          case 'pub_relationship':
+            $subject_name = $relationship->$subject_id_key->uniquename;
+            $object_name = $relationship->$object_id_key->uniquename;
+            break;
+          case 'quantification_relationship':
+            $subject_type = 'quantification';
+            $object_type = 'quantification';
+            break;
+          default:
+            $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
+            $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
+            $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
+            $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
         }
-        $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : ' ';
+
         $entity->{$field_name}['und'][$i]['value'] = array(
           'local:relationship_subject' => array(
             'rdfs:type' => $subject_type,
@@ -281,12 +371,13 @@ class sbo__relationship extends ChadoField {
           $entity_id = $relationship->$object_id_key->entity_id;
           $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $entity_id;
         }
+
+        // Add the clause to the value array.
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This ' .
-        $subject_name . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
-        $object_type . ', ' . $object_name . '.';
+          $subject_type . ', ' . $subject_name . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
+          $object_type . ', ' . $object_name . '.';
 
-        //dpm("SR:" . $entity->{$field_name}['und'][$i]['value']['SIO:000493']);
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
@@ -380,7 +471,7 @@ class sbo__relationship extends ChadoField {
    * @return
    *   The verb to use when creating a sentence of the relationship.
    */
-  public static function get_rel_verb($rel_type) {
+  private function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
     switch ($rel_type_clean) {

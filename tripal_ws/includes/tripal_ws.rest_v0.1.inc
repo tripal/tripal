@@ -930,8 +930,8 @@ function tripal_ws_services_v0_1_rewrite_field_items_entity(&$items, &$response,
       if ($item_eid) {
         $item_entity = tripal_load_entity($item_etype, array($item_eid));
         $item_entity = reset($item_entity);
-        $item_term = tripal_load_term_entity(array('term_id' => $item_entity->term_id));
-        $items['@id'] = url($api_url . '/content/' . $item_term->name . '/' . $item_eid, array('absolute' => TRUE));
+        $bundle = tripal_load_bundle_entity(array('name' => $item_entity->bundle));
+        $items['@id'] = url($api_url . '/content/' . $bundle->label . '/' . $item_eid, array('absolute' => TRUE));
       }
       unset($items['entity']);
     }

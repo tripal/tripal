@@ -213,6 +213,11 @@ function tripal_chado_populate_vocab_SCHEMA() {
   $tables = chado_get_table_names(TRUE);
   foreach ($tables as $table) {
     $schema = chado_get_schema($table);
+    // The type_id for the organism is infraspecific type, so don't make
+    // the association for that type.
+    if ($table == 'organism') {
+      continue;
+    }
     if (in_array("type_id", array_keys($schema['fields']))) {
       tripal_associate_chado_semweb_term($table, 'type_id', $term);
     }
