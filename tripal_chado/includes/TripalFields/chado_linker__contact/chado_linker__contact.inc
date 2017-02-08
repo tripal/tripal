@@ -73,6 +73,9 @@ class chado_linker__contact extends ChadoField {
     $schema = chado_get_schema($field_table);
     $base_table = $details['record']->tablename;
     $pkey = $schema['primary key'][0];
+    if (!isset($schema['foreign keys'][$base_table]['columns'])) {
+      return;
+    }
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
