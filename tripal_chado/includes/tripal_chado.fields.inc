@@ -320,6 +320,18 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       ),
     );
   }
+
+  // Add an image field to the Organism type.  This is a Drupal field and
+  // not stored in Chado, but is used for backwards compatibility.
+  if ($table_name == 'organism') {
+    $field_name = 'data__image';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => 'image',
+      'cardinality' => 1,
+      'locked' => FALSE,
+    );
+  }
 }
 
 /**
@@ -1107,6 +1119,19 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
           'settings' => array(),
         ),
       ),
+    );
+  }
+  // Add an image field to the Organism type.  This is a Drupal field and
+  // not stored in Chado, but is used for backwards compatibility.
+  if ($table_name == 'organism') {
+    $field_name = 'data__image';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Organism Image',
+      'description' => 'An image for the organism',
+      'required' => FALSE,
     );
   }
 }
