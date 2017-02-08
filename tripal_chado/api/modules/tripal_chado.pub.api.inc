@@ -1000,6 +1000,9 @@ function tripal_pub_create_citation($pub) {
 /**
  * Retrieves the minimal information to uniquely describe any publication.
  *
+ * The returned array is an associative array where the keys are
+ * the controlled vocabulary terms in the form [vocab]:[accession]
+ *
  * @param $pub
  *   A publication object as created by chado_generate_var()
  *
@@ -1054,7 +1057,7 @@ function tripal_get_minimal_pub_info($pub) {
     $abstract_text = htmlspecialchars($abstract->value);
   }
 
-  // get the author list
+  // Get the author list.
   $values = array(
     'pub_id' => $pub->pub_id,
     'type_id' => array(
@@ -1072,7 +1075,7 @@ function tripal_get_minimal_pub_info($pub) {
     $authors_list = $authors->value;
   }
 
-  // get the first database cross-reference with a url
+  // get the first database cross-reference with a url.
   $options = array('return_array' => 1);
   $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
   $dbxref = NULL;
@@ -1084,15 +1087,13 @@ function tripal_get_minimal_pub_info($pub) {
     }
   }
 
-  // get the URL
-  // get the author list
+  // get the URL.
   $values = array(
     'pub_id' => $pub->pub_id,
     'type_id' => array(
       'name' => 'URL',
     ),
   );
-
   $options = array(
     'return_array' => 1,
     'include_fk' => array(),
@@ -1105,11 +1106,26 @@ function tripal_get_minimal_pub_info($pub) {
       $url = $urls[0]->value;
     }
   }
+
+  // Get the list of database cross references.
+  $values = array(
+    'pub_id' => $pub->pub_id,
+  );
+  $options = array(
+    'return_array' => 1,
+  );
+  $pub_dbxrefs = chado_generate_var('pub_dbxref', $values, $options);
+  $dbxrefs = array();
+  foreach ($pub_dbxrefs as $pub_dbxref) {
+    $dbxrefs[] = $pub_dbxref->dbxref_id->db_id->name . ':' . $pub_dbxref->dbxref_id->accession;
+  }
+
   return array(
-    'Title' => $pub->title,
-    'Citation' => $citation,
-    'Abstract' => $abstract_text,
-    'Authors' => $authors_list,
-    'URL' => $url,
+    'TPUB:0000039' => $pub->title,
+    'TPUB:0000003' => $citation,
+    'TPUB:0000050' => $abstract_text,
+    'TPUB:0000047' => $authors_list,
+    'TPUB:0000052' => $url,
+    'SBO:0000554' => $dbxrefs,
   );
 }

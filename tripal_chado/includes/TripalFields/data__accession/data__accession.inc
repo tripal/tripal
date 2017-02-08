@@ -84,6 +84,23 @@ class data__accession extends ChadoField {
   }
 
   /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'dbx_linker';
+    $operator = $condition['operator'];
+
+    if ($condition['column'] == 'accession') {
+      $query->join('dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id");
+      $query->condition("DBX.accession", $condition['value'], $operator);
+    }
+  }
+
+  /**
    * @see TripalField::validate()
    */
   public function validate($entity_type, $entity, $field, $items, &$errors) {

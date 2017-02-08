@@ -80,7 +80,7 @@ class chado_linker__prop extends ChadoField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];    
+    $pkey = $schema['primary key'][0];
     if (!isset($schema['foreign keys'][$base_table]['columns'])) {
       return;
     }
@@ -122,5 +122,27 @@ class chado_linker__prop extends ChadoField {
         );
       }
     }
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $prop_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $vocab = $this->instance['settings']['term_vocabulary'];
+    $accession = $this->instance['settings']['term_accession'];
+
+    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+
+    $query->join($prop_linker, $alias, "base.$bpkey = $alias.$bpkey");
+    $query->condition("$alias.type_id", $cvterm->cvterm_id);
+    $query->condition("$alias.value", $condition['value'], $operator);
+
   }
 }

@@ -123,6 +123,38 @@ class sbo__database_cross_reference extends ChadoField {
       }
     }
   }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $dbxref_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'dbx_linker';
+    $operator = $condition['operator'];
+
+    if ($condition['column'] == 'database_cross_reference.database_name') {
+      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $query->join('db', 'DB', "DB.db_id = DBX.db_id");
+      $query->condition("DB.name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == 'database_cross_reference.accession') {
+      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $query->condition("DBX.accession", $condition['value'], $operator);
+    }
+  }
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+
+  }
+
   /**
    * @see TripalField::validate()
    */

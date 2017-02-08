@@ -130,7 +130,6 @@ class chado_linker__cvterm extends ChadoField {
       );
     }
   }
-
 }
 
 /**
@@ -147,23 +146,22 @@ function theme_chado_linker__cvterm_widget($variables) {
   $fkey = $element['#fkey_field'];
 
   $layout = "
-      <div class=\"annotation-cvterm-widget\">
-        <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element['cv__cv_id']) . "
-        </div>
-        <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element['cvterm__name']) . "
-        </div>
-        <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element['pub']) . "
-        </div>
-        <div class=\"annotation-cvterm-widget-item\">" .
-        drupal_render($element['chado-' . $table_name . '__is_not']) . "
-        </div>
+    <div class=\"annotation-cvterm-widget\">
+      <div class=\"annotation-cvterm-widget-item\">" .
+      drupal_render($element['cv__cv_id']) . "
       </div>
-    ";
-
-        return $layout;
+      <div class=\"annotation-cvterm-widget-item\">" .
+      drupal_render($element['cvterm__name']) . "
+      </div>
+      <div class=\"annotation-cvterm-widget-item\">" .
+      drupal_render($element['pub']) . "
+      </div>
+      <div class=\"annotation-cvterm-widget-item\">" .
+      drupal_render($element['chado-' . $table_name . '__is_not']) . "
+      </div>
+    </div>
+  ";
+  return $layout;
 }
 
 /**

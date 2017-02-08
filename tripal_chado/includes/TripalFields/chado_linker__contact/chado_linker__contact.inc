@@ -142,6 +142,27 @@ class chado_linker__contact extends ChadoField {
       }
     }
   }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $contact_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'contact_linker';
+    $operator = $condition['operator'];
+
+    if ($condition['column'] == 'contact.name') {
+      $query->join($contact_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('contact', 'C', "C.contact_id = $alias.contact_id");
+      $query->condition("C.name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == 'contact.type') {
+
+    }
+  }
 }
 
 /**

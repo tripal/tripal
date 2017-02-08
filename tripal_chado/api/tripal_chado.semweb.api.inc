@@ -214,13 +214,21 @@ function tripal_get_chado_semweb_column($chado_table, $term) {
     $cvterm_id = $column->cvterm_id;
     if ($cvterm_id) {
       $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      // Does the term match identically?
       if ($term == $cvterm->name) {
         return $column->chado_column;
       }
+      // Is the term a concatenation of the vocab and the accession?
+      else if ($term == $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession) {
+        return $column->chado_column;
+      }
+      // Does the term have spaces that are renamed to underscores?
       else if ($term == preg_replace('/ /', '_', $cvterm->name)) {
         return $column->chado_column;
       }
-      else if ($term == $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession) {
+      // Does the term have spaces that are renamed to underscores and
+      // all lowercase.
+      else if (strtolower($term) == strtolower(preg_replace('/ /', '_', $cvterm->name))) {
         return $column->chado_column;
       }
     }

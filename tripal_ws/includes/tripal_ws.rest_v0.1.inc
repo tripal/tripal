@@ -462,6 +462,9 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
       default:
         $op = '=';
     }
+
+    //print_r(array($field_name, $column_name, $value, $op));
+
     // We pass in the $column_name as an identifier for any sub fields
     // that are present for the fields.
     $query->fieldCondition($field_name, $column_name, $value, $op);

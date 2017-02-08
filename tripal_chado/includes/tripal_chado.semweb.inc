@@ -351,7 +351,7 @@ function tripal_chado_populate_vocab_EDAM() {
 
   $term = tripal_insert_cvterm(array(
     'id' => 'data:1056',
-    'name' => 'Databse name',
+    'name' => 'Database name',
     'cv_name' => 'EDAM',
     'definition' => 'The name of a biological or bioinformatics database.',
   ));

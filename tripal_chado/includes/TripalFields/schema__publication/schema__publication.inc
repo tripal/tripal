@@ -96,8 +96,6 @@ class schema__publication extends ChadoField {
       foreach ($record->$linker_table as $index => $linker) {
         $pub = $linker->pub_id;
         $pub_details = tripal_get_minimal_pub_info($pub);
-        $pub_details['@type'] = $pub->type_id->dbxref_id->db_id->name . ':' . $pub->type_id->dbxref_id->accession;
-        $pub_details['publication']['type'] = $pub->type_id->name;
 
         $entity->{$field_name}['und'][$i]['value'] = $pub_details;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
@@ -110,6 +108,46 @@ class schema__publication extends ChadoField {
         }
         $i++;
       }
+    }
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $pub_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'pub_linker';
+    $operator = $condition['operator'];
+
+    if ($condition['column'] == 'publication.database_cross_reference') {
+      list($db_name, $accession) = explode(':', $condition['value']);
+
+      $query->join($pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('pub_dbxref', 'PDBX', "PDBX.pub_id = $alias.pub_id");
+      $query->join('dbxref', 'DBX', "DBX.dbxref_id = PDBX.dbxref_id");
+      $query->join('db', 'DB', "DB.db_id = DBX.db_id");
+      $query->condition("DB.name", $db_name);
+      $query->condition("DBX.accession", $accession);
+    }
+
+    if ($condition['column'] == 'publication.title') {
+      $query->join($pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('pub', 'PUB', "PUB.pub_id = $alias.pub_id");
+      $query->condition('PUB.title', $condition['value'], $operator);
+    }
+
+    if ($condition['column'] == 'publication.citation') {
+
+    }
+
+    if ($condition['column'] == 'publication.authors') {
+
+    }
+    if ($condition['column'] == 'publication.abstract') {
+
     }
   }
 

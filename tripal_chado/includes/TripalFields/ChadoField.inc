@@ -71,7 +71,26 @@ class ChadoField extends TripalField {
    *   The field specific condition as set in the TripalFieldQuery object.
    */
   public function query($query, $condition) {
+    // If we are here it is because the child class did not implement the
+    // query function.  So, we will do our best to make the query work.
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'dbx_linker';
+    $operator = $condition['operator'];
 
+    // If the chado_table and the base_table are the same then this is easy.
+    if ($chado_table == $base_table) {
+      // Get the base table column that is associated with the term
+      // passed as $condition['column'].
+      $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
+      $query->condition('base.' . $base_field , $condition['value'], $operator);
+    }
+    else {
+      // If the two are not the same then we expect that the child class
+      // will implement a query() function.
+    }
   }
 
   /**

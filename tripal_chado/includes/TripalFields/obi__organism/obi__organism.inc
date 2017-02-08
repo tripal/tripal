@@ -193,13 +193,22 @@ class obi__organism extends ChadoField {
    */
   public function query($query, $condition) {
     $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
     $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
 
     if ($condition['column'] == 'organism.species') {
-      $query->condition("$alias.species", $condition['value']);
+      $query->condition("$alias.species", $condition['value'], $operator);
     }
     if ($condition['column'] == 'organism.genus') {
-      $query->condition("$alias.genus", $condition['value']);
+      $query->condition("$alias.genus", $condition['value'], $operator);
+    }
+    if ($condition['column'] == 'organism.infraspecies') {
+      $query->condition("$alias.infraspecific_name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == 'organism.infraspecific_taxon') {
+      $query->join('cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+      $query->condition("CVT.name", $condition['value'], $operator);
     }
   }
 
@@ -221,6 +230,15 @@ class obi__organism extends ChadoField {
     }
     if ($order['column'] == 'organism.genus') {
       $query->orderBy("$alias.species", $order['direction']);
+    }
+    if ($order['column'] == 'organism.infraspecies') {
+      $query->orderBy("$alias.infraspecific_name", $order['direction']);
+    }
+    if ($order['column'] == 'organism.infraspecies') {
+      if (!in_array('CVT', $joins)) {
+        $query->join('cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+      }
+      $query->orderBy("CVT.name", $order['direction']);
     }
   }
 }

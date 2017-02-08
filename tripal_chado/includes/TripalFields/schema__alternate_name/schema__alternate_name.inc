@@ -102,4 +102,22 @@ class schema__alternate_name extends ChadoField {
     }
   }
 
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $syn_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'syn_linker';
+    $operator = $condition['operator'];
+
+    if ($condition['column'] == 'alternatename') {
+      $query->join($syn_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $query->join('synonym', 'SYN', "SYN.synonym_id = $alias.synonym_id");
+      $query->condition("SYN.name", $condition['value']);
+    }
+  }
+
 }

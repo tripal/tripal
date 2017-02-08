@@ -343,7 +343,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
-      'cardinality' => 1,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',

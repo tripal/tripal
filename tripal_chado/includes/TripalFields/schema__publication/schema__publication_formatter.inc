@@ -23,13 +23,13 @@ class schema__publication_formatter extends ChadoFieldFormatter {
     $list_items = array();
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      
-      $title = isset($item['value']['Title']) ? $item['value']['Title'] : '';
-      $citation = isset($item['value']['Citation']) ? $item['value']['Citation'] : '';
+
+      $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
+      $citation = isset($item['value']['TPUB:0000003']) ? $item['value']['TPUB:0000003'] : '';
       $entity = array_key_exists('entity', $item['value']) ? $item['value']['entity'] : '';
       if ($entity) {
         list($entity_type, $entity_id) = explode(':', $entity);
-        $new_title = l($title, 'bio_data/' . $entity_id); 
+        $new_title = l($title, 'bio_data/' . $entity_id);
         $citation = preg_replace("/$title/", $new_title, $citation);
       }
       $list_items[] = $citation;
