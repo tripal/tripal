@@ -19,6 +19,7 @@
    </<?php print $left_wrapper ?>>
 
    <<?php print $right_wrapper ?> class="ds-right<?php print $right_classes; ?>">
+    <div class='group-tripal-pane-content-top'></div>
      <?php print $right; ?>
    </<?php print $right_wrapper ?>>
 

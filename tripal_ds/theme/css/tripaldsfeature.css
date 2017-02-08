@@ -11,6 +11,12 @@
 .ds-bottom {
   width: 100%;
 }
+
+.tripal-ds-button {
+  height: 15px;
+  vertical-align: text-top;
+}
+
 /*
 fieldset {
 	border: none!important;
