@@ -452,16 +452,18 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
     $props = chado_query($sql);
     while ($prop = $props->fetchObject()) {
+      $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+
       // The tripal_analysis_KEGG, tripal_analysis_blast, and
       // tripal_analysis_interpro modules store results in the analysisprop
       // table which is probably not the best place, but we don't want to
       // create a ton of fields for this.
       if ($prop_table == 'analysisprop' and
-          ($prop->type_id->dbxref_id->db_id->name == 'KEGG_BRITE' or
-           $prop->type_id->dbxref_id->db_id->name == 'tripal')) {
+          ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
+           $term->dbxref_id->db_id->name == 'tripal')) {
         continue;
       }
-      $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+
       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
       $field_name = substr($field_name, 0, 32);
       $field_type = 'chado_linker__prop';
@@ -1386,16 +1388,19 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
      }
      $props = chado_query($sql, $args);
      while ($prop = $props->fetchObject()) {
+
+       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+
        // The tripal_analysis_KEGG, tripal_analysis_blast, and
        // tripal_analysis_interpro modules store results in the analysisprop
        // table which is probably not the best place, but we don't want to
        // create a ton of fields for this.
        if ($prop_table == 'analysisprop' and
-           ($prop->type_id->dbxref_id->db_id->name == 'KEGG_BRITE' or
-            $prop->type_id->dbxref_id->db_id->name == 'tripal')) {
+           ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
+            $term->dbxref_id->db_id->name == 'tripal')) {
          continue;
        }
-       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+
        $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
        $field_name = substr($field_name, 0, 32);
        $info[$field_name] = array(
