@@ -438,6 +438,7 @@ function tripal_chado_field_storage_query($query) {
   $cquery = chado_db_select($data_table, 'base');
   $cquery->fields('base', array($pkey));
 
+
   // Iterate through all the conditions and add to the filters array
   // a chado_select_record compatible set of filters.
   foreach ($query->fieldConditions as $index => $condition) {
@@ -473,6 +474,26 @@ function tripal_chado_field_storage_query($query) {
         $field_obj = new $field_type($field, $instance);
         $field_obj->query($cquery, $condition);
       }
+      // If there is no ChadoField class for this field then add the
+      // condition as is.
+      else {
+        $alias = $field['field_name'];
+        $chado_table = $instance['settings']['chado_table'];
+        $base_table = $instance['settings']['base_table'];
+        $bschema = chado_get_schema($base_table);
+        $bpkey = $bschema['primary key'][0];
+
+        if ($chado_table == $base_table) {
+          // Get the base table column that is associated with the term
+          // passed as $condition['column'].
+          $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
+          $cquery->condition('base.' . $base_field , $condition['value'], $condition['operator']);
+        }
+        if ($chado_table != $base_table) {
+          // TODO: I don't think we'll get here but just in case here's a
+          // note to handle it.
+        }
+      }
     }
   } // end foreach ($query->fieldConditions as $index => $condition) {
 
@@ -485,6 +506,8 @@ function tripal_chado_field_storage_query($query) {
   if (array_key_exists('start', $query->range)) {
     $cquery->range($query->range['start'], $query->range['length']);
   }
+  // Make sure we only get records of the correct entity type
+  $cquery->condition('TE.bundle', $query->entityConditions['bundle']['value']);
 
   // Now set any ordering.
   foreach ($query->order as $index => $sort) {

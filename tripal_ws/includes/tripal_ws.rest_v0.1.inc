@@ -11,7 +11,6 @@ function tripal_ws_services_v0_1($api_url, $ws_path, $params) {
   $response = array();
   $version = 'v0.1';
 
-
   // Set some defaults for the response.
   $response['@context'] =  array();
 
@@ -140,6 +139,8 @@ function tripal_ws_services_v0_1_get_vocabs($api_url, &$response) {
   $response['@context']['member'] = 'hydra:member';
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['description'] = 'hydra:description';
+
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**
@@ -200,6 +201,8 @@ function tripal_ws_services_v0_1_get_vocab($api_url, &$response, $ws_path, $voca
   $response['@context']['comment'] = 'rdfs:comment';
   $response['@context']['itemPage'] = 'schema:itemPage';
 
+  tripal_ws_services_v0_1_write_context($response, $ctype);
+
 }
 
 /**
@@ -234,6 +237,8 @@ function tripal_ws_services_v0_1_get_term($api_url, &$response, $ws_path, $vocab
   // Lastly, add in the terms used into the @context section.
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['itemPage'] = 'schema:itemPage';
+
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 /**
  * Provides a collection (list) of all of the content types.
@@ -294,6 +299,8 @@ function tripal_ws_services_v0_1_get_content_types($api_url, &$response) {
   $response['@context']['member'] = 'hydra:member';
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['description'] = 'hydra:description';
+
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**
@@ -347,6 +354,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
       }
     }
   }
+
   // Convert the filters to their field names
   $new_params = array();
   $order = array();
@@ -412,6 +420,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
       }
       $new_params[$field_name]['value'] = $value;
       $new_params[$field_name]['op'] = $op;
+      $new_params[$field_name]['column'] = $column_name;
     }
     else {
       throw new Exception("The filter term, '$key', is not available for use.");
@@ -424,6 +433,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $query->entityCondition('bundle', $bundle->name);
   foreach($new_params as $field_name => $details) {
     $value = $details['value'];
+    $column_name = $details['column'];
     switch ($details['op']) {
       case 'eq':
         $op = '=';
@@ -553,6 +563,8 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
 //       )
 //     )
 //   );
+
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**
@@ -964,6 +976,8 @@ function tripal_ws_services_v0_1_handle_doc_service($api_url, &$response) {
     "@type" => "@id",
   );
   $response['@context']['description'] = 'hydra:description';
+
+  tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**

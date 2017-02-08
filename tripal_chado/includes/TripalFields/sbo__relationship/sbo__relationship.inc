@@ -375,8 +375,8 @@ class sbo__relationship extends ChadoField {
         // Add the clause to the value array.
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This ' .
-          $subject_type . ', ' . $subject_name . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
-          $object_type . ', ' . $object_name . '.';
+          $subject_type . ', ' . $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
+          $object_type . ' ' . $object_name . '.';
 
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;

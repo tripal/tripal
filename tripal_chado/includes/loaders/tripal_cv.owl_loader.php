@@ -453,14 +453,12 @@ function tripal_owl_handle_class(OWLStanza $stanza, $vocabs) {
     'db_id' => $db->db_id,
     'accession' => $accession
   );
-  print_r($values);
   $dbxref = tripal_insert_dbxref($values);
 
   $cvterm_name = $stanza->getChild('rdfs:label');
   if ($cvterm_name) {
   $cvterm_name = $stanza->getValue();
   }
-  print_r($cvterm_name);
 
   $definition = $stanza->getChild('obo:IAO_0000115');
   if ($definition) {
@@ -468,12 +466,11 @@ function tripal_owl_handle_class(OWLStanza $stanza, $vocabs) {
   }
 
   $term = array (
-  'id' => $db->name . ':' . $dbxref->accession,
-  'name' => $db->name,
-  'cv_name' => $stanza->getValue(),
-  'definition' =>  $stanza->getValue(),
+    'id' => $db->name . ':' . $dbxref->accession,
+    'name' => $db->name,
+    'cv_name' => $stanza->getValue(),
+    'definition' =>  $stanza->getValue(),
   );
-  print_r($term);
 
   $options = array ();
   if ($vocabs['this'] != $db->name) {
