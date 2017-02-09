@@ -172,7 +172,8 @@ function tripal_contact_schema() {
  *
  * @ingroup tripal_contact
  */
-function tripal_contact_add_custom_tables(){
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_contact_add_custom_tables(){
   $schema = array (
     'table' => 'contactprop',
     'fields' => array (
@@ -232,4 +233,4 @@ function tripal_contact_add_custom_tables(){
     ),
   );
   chado_create_custom_table('contactprop', $schema, TRUE);
-}
+} */

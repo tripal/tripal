@@ -82,8 +82,8 @@ function tripal_feature_install() {
 function tripal_feature_uninstall() {
 
 }
-
-function tripal_feature_add_tripal_gff_temp_table() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gff_temp_table() {
   $schema = array(
     'table' => 'tripal_gff_temp',
     'fields' => array(
@@ -116,12 +116,13 @@ function tripal_feature_add_tripal_gff_temp_table() {
     ),
   );
   chado_create_custom_table('tripal_gff_temp', $schema, TRUE);
-}
+} */
 
 /**
  *
  */
-function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
   $schema = array(
     'table' => 'tripal_gffcds_temp',
     'fields' => array(
@@ -156,12 +157,13 @@ function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
     ),
   );
   chado_create_custom_table('tripal_gffcds_temp', $schema, $skip_recreate);
-}
+} */
 
 /**
  *
  */
-function tripal_feature_add_tripal_gffprotein_temp_table() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gffprotein_temp_table() {
   $schema = array(
     'table' => 'tripal_gffprotein_temp',
     'fields' => array(
@@ -191,7 +193,7 @@ function tripal_feature_add_tripal_gffprotein_temp_table() {
     ),
   );
   chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE);
-}
+} */
 
 /**
  * Implementation of hook_schema().
@@ -243,7 +245,8 @@ function tripal_feature_schema() {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_add_organism_count_mview() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_feature_add_organism_count_mview() {
   $view_name = 'organism_feature_count';
   $comment = 'Stores the type and number of features per organism';
 
@@ -306,7 +309,7 @@ function tripal_feature_add_organism_count_mview() {
   ";
 
   tripal_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment);
-}
+} */
 /**
  * Add cvs related to publications
  *

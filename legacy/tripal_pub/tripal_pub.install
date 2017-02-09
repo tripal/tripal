@@ -171,7 +171,8 @@ function tripal_pub_schema() {
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_add_custom_tables() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_pub_add_custom_tables() {
   $schema = array (
     'table' => 'pubauthor_contact',
     'fields' => array (
@@ -213,7 +214,7 @@ function tripal_pub_add_custom_tables() {
     ),
   );
   chado_create_custom_table('pubauthor_contact', $schema, TRUE);
-}
+} */
 
 /**
  * This is the required update for tripal_pub when upgrading from Drupal core API 6.x.

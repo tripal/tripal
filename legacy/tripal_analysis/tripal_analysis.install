@@ -81,7 +81,8 @@ function tripal_analysis_uninstall() {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_create_analysisfeatureprop() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_analysis_create_analysisfeatureprop() {
 
   // Create analysisfeatureprop table in chado.  This is needed for Chado
   // version 1.11, the table exists in Chado 1.2.
@@ -100,7 +101,7 @@ function tripal_analysis_create_analysisfeatureprop() {
     ";
     chado_query($sql);
   }
-}
+} */
 
 /**
  * Add cvs related to analyses
@@ -236,7 +237,8 @@ function tripal_analysis_schema() {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_add_mview_analysis_organism() {
+// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+/* function tripal_analysis_add_mview_analysis_organism() {
   $view_name = 'analysis_organism';
   $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
 
@@ -289,4 +291,4 @@ function tripal_analysis_add_mview_analysis_organism() {
 
   // add the view
   tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment);
-}
+} */

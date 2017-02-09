@@ -129,36 +129,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         '#title' => 'Migrate All'
       );
       // Migrate selection only
-      if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
-        // Get all Tripal v2 node types from the chad_* linking table
-        $sql =
-          "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
-              FROM {" . $table . "} T
-              INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
-              INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
-              INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
-              INNER JOIN {db} ON db.db_id = X.db_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = T.$pkey
-              AND CE.data_table = '$table'
-              WHERE CE.record_id IS NULL
-              GROUP BY V.name, X.accession, db.name";
-        $tv3_content_types = chado_query($sql);
-        while($tv3_content_type = $tv3_content_types->fetchObject()) {
-          // We need to store vocabulary/accession/type for each checkbox in the key becuase
-          // the value only allows 1 or 0
-          $key = urlencode(
-            'tv3_content_type--' .
-            $tv3_content_type->vocabulary . '--' .
-            $tv3_content_type->accession . '--' .
-            $tv3_content_type->type);
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
-          );
-          $no_data = FALSE;
-        }
-      }
-      else if ($table == 'organism') {
+      if ($table == 'organism') {
         $sql =
           "SELECT count(*)
               FROM {organism} O
@@ -226,6 +197,53 @@ function tripal_chado_migrate_form($form, &$form_state) {
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Map (' . $map_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
+      else if ($table == 'pub') {
+        $sql =
+        "SELECT count(*)
+              FROM {pub} P
+              INNER JOIN public.chado_pub CP ON P.pub_id = CP.pub_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = P.pub_id
+                AND CE.data_table = 'pub'
+              WHERE CE.record_id IS NULL";
+        $proj_count = chado_query($sql)->fetchField();
+        if ($proj_count > 0) {
+          $key = urlencode('tv3_content_type--TPUB--0000002--Publication');
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Publication (' . $proj_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
+      else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
+        // Get all Tripal v2 node types from the chad_* linking table
+        $sql =
+          "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
+              FROM {" . $table . "} T
+              INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+              INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
+              INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
+              INNER JOIN {db} ON db.db_id = X.db_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = T.$pkey
+              AND CE.data_table = '$table'
+              WHERE CE.record_id IS NULL
+              GROUP BY V.name, X.accession, db.name";
+        $tv3_content_types = chado_query($sql);
+        while($tv3_content_type = $tv3_content_types->fetchObject()) {
+          // We need to store vocabulary/accession/type for each checkbox in the key becuase
+          // the value only allows 1 or 0
+          $key = urlencode(
+            'tv3_content_type--' .
+            $tv3_content_type->vocabulary . '--' .
+            $tv3_content_type->accession . '--' .
+            $tv3_content_type->type);
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
           );
           $no_data = FALSE;
         }
@@ -604,31 +622,7 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
 
-    if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
-      // Get all Tripal v2 node types from the chad_* linking table
-      $sql = "
-        SELECT V.name AS type, X.accession, db.name AS vocabulary
-        FROM {" . $table . "} T
-          INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
-          INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
-          INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
-          INNER JOIN {db} ON db.db_id = X.db_id
-          GROUP BY V.name, X.accession, db.name
-          ";
-      $tv3_content_types = chado_query($sql);
-      while($tv3_content_type = $tv3_content_types->fetchObject()) {
-        array_push($types, array(
-          'vocabulary' => $tv3_content_type->vocabulary,
-          'accession' => $tv3_content_type->accession,
-          'term_name' => $tv3_content_type->type,
-          'storage_args' => array (
-            'data_table' => $table,
-            'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
-          )
-        ));
-      }
-    }
-    else if ($table == 'organism') {
+    if ($table == 'organism') {
       array_push($types, array(
         'vocabulary' => 'OBI',
         'accession' => '0100026',
@@ -668,7 +662,40 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
         )
     ));
   }
-
+  else if ($table == 'pub') {
+    array_push($types, array(
+      'vocabulary' => 'TPUB',
+      'accession' => '0000002',
+      'term_name' => 'Publication',
+      'storage_args' => array (
+        'data_table' => $table
+      )
+    ));
+  }
+  else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
+      // Get all Tripal v2 node types from the chad_* linking table
+      $sql = "
+        SELECT V.name AS type, X.accession, db.name AS vocabulary
+        FROM {" . $table . "} T
+          INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+          INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
+          INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
+          INNER JOIN {db} ON db.db_id = X.db_id
+          GROUP BY V.name, X.accession, db.name
+          ";
+      $tv3_content_types = chado_query($sql);
+      while($tv3_content_type = $tv3_content_types->fetchObject()) {
+        array_push($types, array(
+          'vocabulary' => $tv3_content_type->vocabulary,
+          'accession' => $tv3_content_type->accession,
+          'term_name' => $tv3_content_type->type,
+          'storage_args' => array (
+            'data_table' => $table,
+            'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
+          )
+        ));
+      }
+    }
   }
   return $types;
 }
@@ -700,6 +727,11 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'bundle_name' => $bundle_name
     );
     tripal_chado_publish_records($value);
+    
+    // Migrate organism images
+    if ($term->name == 'organism') {
+      tripal_chado_migrate_organism_images($bundle_name);
+    }
   }
 }
 
@@ -777,4 +809,41 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
       db_query($usql);
     }
   }
+}
+
+/**
+ * Migrate images for Tripal v2 organism content
+ *
+ * Migrate images for all chado_organism
+ *
+ * @param unknown $tv2_content_types
+ */
+function tripal_chado_migrate_organism_images () {
+  // Get all organism entities
+  $results = 
+    db_select('chado_entity', 'ce')
+    ->fields('ce', array('entity_id', 'record_id', 'nid'))
+    ->condition('data_table', 'organism')
+    ->execute();
+  
+  // Iterate through each organism entity
+  while ($organism = $results->fetchObject()) {
+    $nid = $organism->nid;
+    $eid = $organism->entity_id;
+    
+    // check if there is a file record for the organism node
+    $fid = db_select('file_usage', 'fu')
+    ->field('fu', array('fid'))
+    ->condition('module', 'tripal_organism')
+    ->condition('type', 'organism_image')
+    ->condition('id', $nid)
+    ->execute()
+    ->fetchField();
+    
+    // If there is an image, add it to the organism entity
+    if ($fid) {
+      
+    }
+  }
+  
 }
