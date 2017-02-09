@@ -195,7 +195,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $base_table = $entity->chado_table;
       $type_field = $entity->chado_column;
       $record_id  = $entity->chado_record_id;
-   }
+    }
     else {
       $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
       $base_table = $bundle->data_table;
@@ -242,6 +242,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       // a bundle using the user UI form.
       // TODO: how to deal with deleted fields?
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
+
       if (!$instance) {
         continue;
       }

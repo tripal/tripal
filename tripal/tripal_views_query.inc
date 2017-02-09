@@ -26,7 +26,7 @@ class tripal_views_query extends views_plugin_query_default {
       return parent::add_field($table_alias, $field, $alias, $params);
     }
     else {
-      $this->attach_fields[] = $f['id'];
+      $this->attach_fields[] = $f;
     }
   }
 
@@ -45,9 +45,10 @@ class tripal_views_query extends views_plugin_query_default {
       $bundle_name = $view->result[$i]->tripal_bundle_name;
       $ids = array($entity_id, 0, $bundle_name);
       $entity = entity_create_stub_entity('TripalEntity', $ids);
-      foreach ($this->attach_fields as $fid) {
-        $options = array('field_id' => $fid);
-        field_attach_load('TripalEntity', array($entity_id => $entity), FIELD_LOAD_CURRENT, $options);
+      foreach ($this->attach_fields as $field) {
+        $entities = array($entity_id => $entity);
+        module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
+          $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
       }
       $view->result[$i]->entity = $entity;
     }
