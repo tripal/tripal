@@ -39,16 +39,26 @@ class tripal_views_query extends views_plugin_query_default {
     // First execute any SQL that needs to run.
     parent::execute($view);
 
-    // Add in the entity object to the results.
+    // Add in the entity object to the results and any additional fields
+    // that have been requested.
     for ($i = 0; $i < count($view->result); $i++) {
+
+      // Build a simple entity stub (it's faster than trying to load the
+      // whole things!).
       $entity_id = $view->result[$i]->tripal_entity_id;
       $bundle_name = $view->result[$i]->tripal_bundle_name;
       $ids = array($entity_id, 0, $bundle_name);
       $entity = entity_create_stub_entity('TripalEntity', $ids);
+
+      // Iterate through the field and attach only those that have been
+      // requested.
       foreach ($this->attach_fields as $field) {
-        $entities = array($entity_id => $entity);
-        module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
-          $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
+        // Don't load this field if it doesn't belong to the selected bundle
+        if (in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+          $entities = array($entity_id => $entity);
+          module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
+            $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
+        }
       }
       $view->result[$i]->entity = $entity;
     }
