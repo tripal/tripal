@@ -17,7 +17,7 @@ function _summary_field_group_info($bundle_name, $fields){
     $field_group_tripalpane->parent_name = '';
     $field_group_tripalpane->data = array(
         'label' => 'Tripal Pane Summary',
-        'weight' => '2',
+        'weight' => '1',
         'children' => array(
             0 => 'group_summary',
         ),

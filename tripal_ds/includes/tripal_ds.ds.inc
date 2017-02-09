@@ -1,23 +1,4 @@
 <?php
-/*
- * Implements hook_ds_fields_info().
-*/
-function tripal_ds_ds_fields_info($entity_type) {
-  $fields = array();
-
-  $fields['toc'] = array(
-    'title' => t('Table of Contents'),
-    'field_type' => DS_FIELD_TYPE_FUNCTION,
-    'function' => 'tripal_ds_toc_block',
-  );
-  return array('TripalEntity' => $fields);
-}
-
-function tripal_ds_toc_block($entity_type) {
-    $bundle_name = $entity_type['bundle'];
-    $toc = views_embed_view('tripal_content_type_toc', 'block', $bundle_name);
-    return $toc;
-}
 
 /**
  * Implements hook_ds_layout_settings_info().
@@ -102,7 +83,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         //add the fields to the regions
         array_unshift($summary_fields, 'group_summary_tripalpane', 'group_summary', 'group_summary_table');
         $fields_with_regions += [ 'group_summary_tripalpane' =>'right', 'group_summary' => 'right', 'group_summary_table' => 'right' ];
-        $region_right = $summary_fields + $region_right;
+        $region_right = array_merge($summary_fields, $region_right);
 
     }
     if (!empty($prop_fields)){
@@ -110,7 +91,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         array_unshift($prop_fields, 'group_prop_tripalpane', 'group_prop', 'group_prop_table');
 
         //add the fields to the regions
-        $region_right = $region_right + $prop_fields;
+        $region_right = array_merge($region_right, $prop_fields);
         $fields_with_regions += [ 'group_prop_tripalpane' => 'right', 'group_prop' => 'right', 'group_prop_table' => 'right' ];
     }
     if (!empty($data_sequence_fields)){
@@ -118,7 +99,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         array_unshift($data_sequence_fields, 'group_sequence_tripalpane', 'group_sequence', 'group_sequence_table');
 
         //add the fields to the regions
-        $region_right = $region_right + $data_sequence_fields;
+        $region_right = array_merge($region_right, $data_sequence_fields);
         $fields_with_regions += [ 'group_sequence_tripalpane' => 'right', 'group_sequence' => 'right', 'group_sequence_table' => 'right' ];
     }
     if (!empty($all_other_fields)){
@@ -140,15 +121,13 @@ function _ds_layout_settings_info($bundle_name, $instances) {
           _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
           //update arrays
           array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
-          $region_right = $region_right + $temporary_field;
+          $region_right = array_merge($region_right, $temporary_field);
           $fields_with_regions += [ $group_field_name => 'right', $fieldset_field_name => 'right' ];
-
-
         }
-
     }
     //add blocks to $region_left
-    array_push($region_left, 'toc');
+    $position = count($region_right);
+    $region_left[$position] = 'toc';
     $fields_with_regions += [ 'toc' => 'left'];
     //build the ds layout
     $record = new stdClass;
@@ -183,4 +162,23 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 }
 
 
+/*
+ * Implements hook_ds_fields_info().
+*/
+function tripal_ds_ds_fields_info($entity_type) {
+  $fields = array();
+
+  $fields['toc'] = array(
+    'title' => t('Table of Contents'),
+    'field_type' => DS_FIELD_TYPE_FUNCTION,
+    'function' => 'tripal_ds_toc_block',
+  );
+  return array('TripalEntity' => $fields);
+}
+
+function tripal_ds_toc_block($entity_type) {
+    $bundle_name = $entity_type['bundle'];
+    $toc = views_embed_view('tripal_content_type_toc', 'block', $bundle_name);
+    return $toc;
+}
 

@@ -40,9 +40,6 @@ function tripal_ds_schema() {
         ),
     ),
     'primary key' => array('id'),
-    'indexes' => array(
-      'field_name' => array('field_name'),
-    ),
   );
   return $schema;
 }
