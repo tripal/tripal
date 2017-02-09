@@ -39,7 +39,7 @@ function tripal_ds_views_data() {
     	),
   	);
 
-    $data['tripal_ds']['field_name'] = array(
+    $data['tripal_ds']['tripal_ds_field_name'] = array(
 	   'title' => t('Field Name'),
 	   'help' => t('This the field name, it is not necessarily unique, like "summary" which might feature across several bundles.'),
 	   'field' => array(
@@ -57,7 +57,7 @@ function tripal_ds_views_data() {
 	    ),
     );
 
-    $data['tripal_ds']['field_label'] = array(
+    $data['tripal_ds']['tripal_ds_field_label'] = array(
 	   'title' => t('Field Label'),
 	   'help' => t('The human readable name of the field, like "Data Sequences".'),
 	   'field' => array(

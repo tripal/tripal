@@ -35,8 +35,8 @@ function _summary_field_group_info($bundle_name, $fields){
 
     //write to the tripal_ds table to record the new tripal pane
     $field_for_table = new stdClass();
-    $field_for_table->field_name = 'group_summary_tripalpane';
-    $field_for_table->field_label = 'Summary';
+    $field_for_table->tripal_ds_field_name = 'group_summary_tripalpane';
+    $field_for_table->tripal_ds_field_label = 'Summary';
     $field_for_table->entity_type = 'TripalEntity';
     $field_for_table->bundle = $bundle_name;
 
@@ -141,8 +141,8 @@ function _prop_field_group_info($bundle_name, $fields){
     
     //write to the tripal_ds table to record the new tripal pane
     $field_for_table = new stdClass();
-    $field_for_table->field_name = 'group_prop_tripalpane';
-    $field_for_table->field_label = 'Properties';
+    $field_for_table->tripal_ds_field_name = 'group_prop_tripalpane';
+    $field_for_table->tripal_ds_field_label = 'Properties';
     $field_for_table->entity_type = 'TripalEntity';
     $field_for_table->bundle = $bundle_name;
 
@@ -246,8 +246,8 @@ function _data_sequence_field_group_info($bundle_name, $fields){
 
     //write to the tripal_ds table to record the new tripal pane
     $field_for_table = new stdClass();
-    $field_for_table->field_name = 'group_sequences_tripalpane';
-    $field_for_table->field_label = 'Data Sequences';
+    $field_for_table->tripal_ds_field_name = 'group_sequence_tripalpane';
+    $field_for_table->tripal_ds_field_label = 'Data Sequences';
     $field_for_table->entity_type = 'TripalEntity';
     $field_for_table->bundle = $bundle_name;
 
@@ -324,8 +324,8 @@ function _data_sequence_field_group_info($bundle_name, $fields){
 function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $fieldset_field_name, $field_name){
     //write to the tripal_ds table to record the new tripal pane
     $field_for_table = new stdClass();
-    $field_for_table->field_name = $group_field_name;
-    $field_for_table->field_label = $field_label;
+    $field_for_table->tripal_ds_field_name = $group_field_name;
+    $field_for_table->tripal_ds_field_label = $field_label;
     $field_for_table->entity_type = 'TripalEntity';
     $field_for_table->bundle = $bundle_name;
 

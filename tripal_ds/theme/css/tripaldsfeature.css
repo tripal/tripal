@@ -1,15 +1,12 @@
-.ds-top {
-  width: 100%;
-  padding: 25px 0;
-}
 
 .ds-right {
-  width: 100%;
+  width: 75%;
   float: right;
 }
 
-.ds-bottom {
-  width: 100%;
+.ds-left {
+  width: 23%;
+  float: left;
 }
 
 .tripal-ds-button {
@@ -17,6 +14,12 @@
   vertical-align: text-top;
 }
 
+.hideTripalPane {
+	display: none;
+}
+.showTripalPane {
+	display: inherit;
+}
 /*
 fieldset {
 	border: none!important;

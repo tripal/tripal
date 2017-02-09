@@ -160,6 +160,16 @@ function tripal_load_bundle_entity($values) {
   return NULL;
 }
 
+
+/**
+ * Allows a module to perform tasks before a TripalBundle object is deleted.
+ *
+ * @param $bundle
+ *   The newly created TripalBundle object.
+ */
+function hook_bundle_delete($bundle) {
+
+}
 /**
  * Allows a module to perform tasks after a TripalBundle object is created.
  *

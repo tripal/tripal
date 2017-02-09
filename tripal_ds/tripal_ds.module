@@ -24,30 +24,6 @@ function tripal_ds_views_api() {
     );
 }
 
-/*
- * Implements hook_ds_layout_info() to define layouts from code in a module for
- * display suite
-
-function tripal_ds_ds_layout_info() {
-  $path = drupal_get_path('module', 'tripal_ds');
-
-  $layouts = array(
-    'tripal_ds_feature' => array(
-      'label' => t('Tripal Feature Layout'),
-      'path' => $path . '/theme/templates',
-      'regions' => array(
-        'top' => t('Top'),
-        'left' => t('Left'),
-        'right' => t('Right'),
-        'bottom' => t('Bottom'),
-      ),
-      'css' => TRUE,
-    ),
-  );
-
-  return $layouts;
-}
- */
 /**
  * Implements hook_bundle_postcreate().
  *
@@ -60,8 +36,37 @@ function tripal_ds_bundle_postcreate($bundle) {
   _ds_layout_settings_info($bundle_name, $instances);
 }
 
+function tripal_ds_table_column_delete($bundle){
+    $bundle_name = $bundle->name;
+    db_delete('tripal_ds')
+      ->condition('bundle', $bundle_name, '=')
+      ->execute();
+}
 
+function tripal_ds_bundle_delete($bundle){
+  tripal_ds_table_column_delete($bundle);
+}
+/*
+ * Implements hook_ds_layout_info() to define layouts from code in a module for
+ * display suite
+ */
+function tripal_ds_ds_layout_info() {
+  $path = drupal_get_path('module', 'tripal_ds');
 
+  $layouts = array(
+    'tripal_ds_feature' => array(
+      'label' => t('Tripal Feature Layout'),
+      'path' => $path . '/theme/templates',
+      'regions' => array(
+        'left' => t('Left'),
+        'right' => t('Right'),
+      ),
+      'css' => TRUE,
+    ),
+  );
+
+  return $layouts;
+}
 
 /*
  * Code for the view of the menu items
@@ -78,3 +83,4 @@ function tripal_ds_bundle_postcreate($bundle) {
       ->execute()
       ->fetchField();
 */
+

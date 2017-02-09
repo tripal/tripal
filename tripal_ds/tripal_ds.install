@@ -18,14 +18,14 @@ function tripal_ds_schema() {
         'description' => 'The primary identifier for a group',
         'no export' => TRUE,
       ),
-      'field_label' => array(
+      'tripal_ds_field_label' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
         'description' => 'The label of this Tripal Pane.',
       ),
-      'field_name' => array(
+      'tripal_ds_field_name' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
