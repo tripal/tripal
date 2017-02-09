@@ -1,40 +1,68 @@
 <?php
-/**
- * @file
- * Views query plugin for Apache Solr Views.
- * Gets its data not from the database, but from a Solr server.
- */
 
-class tripal_views_query extends views_plugin_query {
+class tripal_views_query extends views_plugin_query_default {
 
-  public function add_field($table_alias, $field, $alias = '', $params = array()) {
-    // Make sure an alias is assigned.
-    $alias = $alias ? $alias : $field;
-    return $alias;
-  }
+  private $attach_fields = array();
 
   /**
-   * We don't support construction of SQL queries.
-   * @param $get_count
+   *
    */
-  function query($get_count = FALSE) {
+  public function init($base_table = 'tripal_entity', $base_field = 'id', $options) {
+    parent::init($base_table, $base_field, $options);
+
+    // Always add the TripaEntity id and the bundle name so we can keep
+    // track of which rows are in the SQL results
+    $this->add_field('tripal_entity', 'id', 'tripal_entity_id');
+    $this->add_field('tripal_bundle', 'name', 'tripal_bundle_name');
 
   }
+  /**
+   *
+   */
+  public function add_field($table_alias, $field, $alias = '', $params = array()) {
+    // If this is not a TripalField then allow the add_field to work as usual.
+    $f = field_info_field($field);
+    if (!$f) {
+      return parent::add_field($table_alias, $field, $alias, $params);
+    }
+    else {
+      $this->attach_fields[] = $f['id'];
+    }
+  }
+
   /**
    *
    * @param  $view
    */
   function execute(&$view) {
+
+    // First execute any SQL that needs to run.
+    parent::execute($view);
+
+    // Add in the entity object to the results.
+    for ($i = 0; $i < count($view->result); $i++) {
+      $entity_id = $view->result[$i]->tripal_entity_id;
+      $bundle_name = $view->result[$i]->tripal_bundle_name;
+      $ids = array($entity_id, 0, $bundle_name);
+      $entity = entity_create_stub_entity('TripalEntity', $ids);
+      foreach ($this->attach_fields as $fid) {
+        $options = array('field_id' => $fid);
+        field_attach_load('TripalEntity', array($entity_id => $entity), FIELD_LOAD_CURRENT, $options);
+      }
+      $view->result[$i]->entity = $entity;
+    }
+    return;
+
     // The base table indicates our content type.
     $base_table = $view->base_table;
 
     // Get the bundle that the view base table represents.
-    $bundle = tripal_load_bundle_entity(array('name' => $view->base_table));
+//    $bundle = tripal_load_bundle_entity(array('name' => $view->base_table));
 
     // The base table for the view is a bundle therefore the first condition
     // must be with the content_type field.
     $query = new TripalFieldQuery();
-    $query->entityCondition('entity_type', 'TripalEntity');
+//    $query->entityCondition('entity_type', 'TripalEntity');
     $query->entityCondition('bundle', $bundle->name);
 
     // Apply filters

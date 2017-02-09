@@ -24,6 +24,7 @@ require_once "includes/TripalEntityViewsController.inc";
 require_once "includes/TripalBundle.inc";
 require_once "includes/TripalBundleController.inc";
 require_once "includes/TripalBundleUIController.inc";
+require_once "includes/TripalBundleViewsController.inc";
 require_once "includes/TripalFields/TripalField.inc";
 require_once "includes/TripalFields/TripalFieldWidget.inc";
 require_once "includes/TripalFields/TripalFieldFormatter.inc";

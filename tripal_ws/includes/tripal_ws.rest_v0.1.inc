@@ -831,9 +831,8 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
     $values[$i] = tripal_ws_services_v0_1_rewrite_field_items_keys($items[$i]['value'], $response, $api_url);
   }
 
-  // Add the $values array to the WS response.
-  // If we only have one value then set the response with just the value.
-  if (count($values) == 1) {
+  // If the field cardinality is 1
+  if ($field[cardinality] == 1) {
     // If the value is an array and this is the field page then all of those
     // key/value pairs should be added directly to the response.
     if (is_array($values[0])) {
@@ -853,8 +852,8 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
     }
   }
 
-  // If we have more than one value then set the response to be a collection.
-  if (count($values) > 1) {
+  // If the field cardinality is > 1
+  if ($field[cardinality] != 1) {
 
     // If this is the field page then the Collection is added directly to the
     // response, otherwise, it's added under the field $key.

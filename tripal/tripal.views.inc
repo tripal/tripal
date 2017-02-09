@@ -23,7 +23,6 @@ function tripal_views_plugins() {
 
 /**
  * Describe various Tripal Core systems to Views
- *   for the creation of administrative views.
  *
  * @ingroup tripal
  */
@@ -53,12 +52,12 @@ function tripal_entity_views_data() {
   while ($bundle = $bundles->fetchObject()) {
 
     // Each bundle gets it's own "table".
-    $data[$bundle->name]['table']['group'] = t('Tripal ' . $bundle->label . ' page');
-    $data[$bundle->name]['table']['base'] = array(
-      'query class' => 'tripal_views_query',
-      'title' => t('Tripal ' . $bundle->label . ' page'),
-      'help' => t('Searches Tripal ' . $bundle->label . ' pages'),
-    );
+//     $data['tripal_entity']['table']['group'] = t($bundle->label);
+//     $data[$bundle->name]['table']['base'] = array(
+//       'query class' => 'tripal_views_query',
+//       'title' => t($bundle->label),
+//       'help' => t('Tripal ' . $bundle->label . ' pages'),
+//     );
 
     // Now add the fields to the bundle.
     $instances = field_info_instances('TripalEntity', $bundle->name);
@@ -79,9 +78,11 @@ function tripal_entity_views_data() {
         $field_handler = 'views_handler_field';
       }
 
-      $data[$bundle->name][$field_name] = array(
+      $data['tripal_entity'][$field_name] = array(
+        'group' => $bundle->label,
         'title' => $instance['label'],
-        'help' => $instance['description'],
+        'help' => t(' Appears in: @bundles.', array('@bundles' => $bundle->label)) . $instance['description'],
+        'handler' => '',
         'field' => array(
           'handler' => $field_handler,
           'click sortable' => $click_sortable,
@@ -95,6 +96,7 @@ function tripal_entity_views_data() {
       );
     }
   }
+
   return $data;
 }
 

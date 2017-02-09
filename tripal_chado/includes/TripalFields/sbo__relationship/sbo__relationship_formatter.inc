@@ -22,7 +22,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $element = array();
     $element['title'] = array(
       '#type' => 'textfield',
-      '#title' => 'Relationship Title',
+      '#title' => 'Table Header',
       '#default_value' => array_key_exists('title', $settings) ? $settings['title'] : 'Relationship',
     );
     $element['empty'] = array(
@@ -104,8 +104,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       'header' => $headers,
       'rows' => $rows,
       'attributes' => array(
-        'id' => 'chado-linker--relationship-table',
-        'class' => 'tripal-data-table'
+        'id' => 'sbo--relationship-table',
       ),
       'sticky' => FALSE,
       'caption' => '',

@@ -22,7 +22,7 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     $data['tripal_entity']['changed']['filter']['handler'] = 'views_handler_filter_date';
     $data['tripal_entity']['changed']['help'] = t('The date that the content was last updated.');
 
-    $data['tripal_entity']['id']['title'] = 'Tripal Content ID';
+    $data['tripal_entity']['id']['title'] = 'tid';
     $data['tripal_entity']['id']['help'] = 'The unique numeric ID for the content';
 
 
@@ -35,16 +35,17 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     $data['tripal_entity']['status']['field']['handler'] = 'tripal_views_handler_field_entity_status';
 
 
-    $data['tripal_entity']['uid']['relationship'] = array(
-      'base' => 'users',
-      'base field' => 'uid',
-      'handler' => 'views_handler_relationship',
-      'label' => t('Users'),
-      'title' => t('Users'),
-      'help' => t('Associates the user information with this record.')
+    // We want to use our own query plugin.
+    $data['tripal_entity']['table']['base']['query class'] = 'tripal_views_query';
+
+    // Join with the User's table.
+    $data['users']['table']['join']['tripal_entity'] = array(
+      'handler' => 'views_join',
+      'left_field' => 'uid',
+      'field' => 'uid',
     );
 
-    // It is not intended that the following fields will every be used by the
+    // It is not intended that the following fields will ever be used by the
     // end-user within Views.
     unset($data['tripal_entity']['bundle']);
     unset($data['tripal_entity']['term_id']);

@@ -17,9 +17,11 @@ class tripal_views_handler_field_entity_default_formatter extends  views_handler
     $field_name = $this->field;
     $row_index = $this->view->row_index;
     $result = $this->view->result[$row_index];
-    $entity = $result->entity;
-    $format = field_view_field('TripalEntity', $entity, $field_name);
-    $format['#label_display'] = 'hidden';
-    return $format;
+    if (property_exists($result, entity)) {
+      $entity = $result->entity;
+      $format = field_view_field('TripalEntity', $entity, $field_name);
+      $format['#label_display'] = 'hidden';
+      return $format;
+    }
   }
 }

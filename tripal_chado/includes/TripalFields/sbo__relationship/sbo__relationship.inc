@@ -278,8 +278,8 @@ class sbo__relationship extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
 
         $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->$subject_id_key->name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->$object_id_key->name  . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['object_name'] = $object_name  . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
         if (array_key_exists('value', $schema['fields'])) {
           $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
         }

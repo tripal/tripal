@@ -37,12 +37,15 @@ class schema__publication_formatter extends ChadoFieldFormatter {
 
     krsort($list_items, SORT_NUMERIC);
 
-    $list = array(
-      'title' => '',
-      'items' => $list_items,
-      'type' => 'ol',
-      'attributes' => array(),
-    );
+    $list = '';
+    if (count($list_items) > 1) {
+      $list = array(
+        'title' => '',
+        'items' => $list_items,
+        'type' => 'ol',
+        'attributes' => array(),
+      );
+    }
 
     if (count($items) > 0) {
       $element[0] = array(

@@ -324,90 +324,90 @@ function tripal_views_views_data() {
     // only add joins if this is a base table
     // this keeps the list of available fields manageable
     // all other tables should be added via relationships
-      $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
-      $joins = db_query($sql, array(':setup' => $setup_id));
-      if (!isset($joins)) {
-        $joins = array();
+    $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
+    $joins = db_query($sql, array(':setup' => $setup_id));
+    if (!isset($joins)) {
+      $joins = array();
+    }
+    foreach ($joins as $join) {
+      $left_table = $join->left_table;
+      $left_field = $join->left_field;
+      $base_table = $join->base_table;
+      $base_field = $join->base_field;
+      $handler = $join->handler;
+      $base_title = ucwords(str_replace('_', ' ', $base_table));
+      $left_title = ucwords(str_replace('_', ' ', $left_table));
+
+      // if the 'node' table is in our integrated list then
+      // we want to skip it. It shouldn't be there.
+      if ($left_table == 'node') {
+        continue;
       }
-      foreach ($joins as $join) {
-        $left_table = $join->left_table;
-        $left_field = $join->left_field;
-        $base_table = $join->base_table;
-        $base_field = $join->base_field;
-        $handler = $join->handler;
-        $base_title = ucwords(str_replace('_', ' ', $base_table));
-        $left_title = ucwords(str_replace('_', ' ', $left_table));
 
-        // if the 'node' table is in our integrated list then
-        // we want to skip it. It shouldn't be there.
-        if ($left_table == 'node') {
-          continue;
-        }
-
-        // add join entry
-        if (!$join->relationship_only) {
-          $data[$left_table]['table']['join'][$base_table] = array(
-            'left_field' => $base_field,
-            'field' => $left_field,
-          );
-          if ($handler) {
-            $data[$left_table]['table']['join'][$base_table]['handler'] = $handler;
-          }
-          if (!empty($join->arguments)) {
-            array_merge($data[$left_table]['table']['join'][$base_table], unserialize($join->arguments));
-          }
-        }
-
-        // warn if deprecated method of relationship addition was used (ie: through handlers)
-        if (isset($data[$base_table][$base_field]['relationship'])) {
-          tripal_report_error('tripal_views', TRIPAL_NOTICE,
-            'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
-            array('%base' => $base_table, '%left' => $left_table));
-        }
-
-        // Add relationship entry.
-        // NOTE: we use a fake field name to allow us to have multiple
-        // relationships for the same field (ie: feature.feature_id has many
-        // Many relationships but views only supports a single one).
-        $fake_field = $base_field . '_to_' . $left_table;
-
-        // Bug Fix: The old $fake_field used above doesn't take into account
-        // multiple relationships to the same left table. To keep backwards
-        // compatibility, this old fake_field needs to continue to be used for
-        // the LAST recorded relationship. However, for all previously set
-        // relationships we can use an improved fake name which takes into
-        // account the left field and ensures all relationships for a single
-        // left table are not condensed into a single relationship.
-        if (array_key_exists($fake_field, $data[$base_table])) {
-
-          // Again, note that we can't just change the fake_name after finding
-          // there is more than one relationship because then the FIRST
-          // relationship would keep the old fake_name rather than the LAST
-          // which keeps backwards compatiblity since the old naming caused all
-          // previous relationships be be overridden by the next one.
-          // Thus we first need to determine the left field of the previous
-          // join for this table combination and then use that to form our
-          // improved fake field.
-          $previous_left_field = $data[$base_table][$fake_field]['relationship']['base field'];
-          $improved_fake_field = $base_field . '_to_' . $left_table . "." . $previous_left_field;
-          $data[$base_table][$improved_fake_field] = $data[$base_table][$fake_field];
-        }
-        $data[$base_table][$fake_field] = array(
-          'title' => "$base_title.$base_field => $left_title.$left_field",
-          'help' => t("Joins @base to @left", array('@base' => "$base_title.$base_field", '@left' => "$left_title.$left_field")),
-          'relationship' => array(
-            'handler' => $join->relationship_handler,
-            'title' => t("$base_field => $left_title ($left_field)"),
-            'label' => t("$base_field => $left_title ($left_field)"),
-            'real field' => $base_field,
-            'base' => $left_table,
-            'base field' => $left_field
-          )
+      // add join entry
+      if (!$join->relationship_only) {
+        $data[$left_table]['table']['join'][$base_table] = array(
+          'left_field' => $base_field,
+          'field' => $left_field,
         );
+        if ($handler) {
+          $data[$left_table]['table']['join'][$base_table]['handler'] = $handler;
+        }
         if (!empty($join->arguments)) {
-          array_merge($data[$base_table][$fake_field]['relationship'], unserialize($join->arguments));
+          array_merge($data[$left_table]['table']['join'][$base_table], unserialize($join->arguments));
         }
       }
+
+      // warn if deprecated method of relationship addition was used (ie: through handlers)
+      if (isset($data[$base_table][$base_field]['relationship'])) {
+        tripal_report_error('tripal_views', TRIPAL_NOTICE,
+          'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
+          array('%base' => $base_table, '%left' => $left_table));
+      }
+
+      // Add relationship entry.
+      // NOTE: we use a fake field name to allow us to have multiple
+      // relationships for the same field (ie: feature.feature_id has many
+      // Many relationships but views only supports a single one).
+      $fake_field = $base_field . '_to_' . $left_table;
+
+      // Bug Fix: The old $fake_field used above doesn't take into account
+      // multiple relationships to the same left table. To keep backwards
+      // compatibility, this old fake_field needs to continue to be used for
+      // the LAST recorded relationship. However, for all previously set
+      // relationships we can use an improved fake name which takes into
+      // account the left field and ensures all relationships for a single
+      // left table are not condensed into a single relationship.
+      if (array_key_exists($fake_field, $data[$base_table])) {
+
+        // Again, note that we can't just change the fake_name after finding
+        // there is more than one relationship because then the FIRST
+        // relationship would keep the old fake_name rather than the LAST
+        // which keeps backwards compatiblity since the old naming caused all
+        // previous relationships be be overridden by the next one.
+        // Thus we first need to determine the left field of the previous
+        // join for this table combination and then use that to form our
+        // improved fake field.
+        $previous_left_field = $data[$base_table][$fake_field]['relationship']['base field'];
+        $improved_fake_field = $base_field . '_to_' . $left_table . "." . $previous_left_field;
+        $data[$base_table][$improved_fake_field] = $data[$base_table][$fake_field];
+      }
+      $data[$base_table][$fake_field] = array(
+        'title' => "$base_title.$base_field => $left_title.$left_field",
+        'help' => t("Joins @base to @left", array('@base' => "$base_title.$base_field", '@left' => "$left_title.$left_field")),
+        'relationship' => array(
+          'handler' => $join->relationship_handler,
+          'title' => t("$base_field => $left_title ($left_field)"),
+          'label' => t("$base_field => $left_title ($left_field)"),
+          'real field' => $base_field,
+          'base' => $left_table,
+          'base field' => $left_field
+        )
+      );
+      if (!empty($join->arguments)) {
+        array_merge($data[$base_table][$fake_field]['relationship'], unserialize($join->arguments));
+      }
+    }
   }
 
   return $data;

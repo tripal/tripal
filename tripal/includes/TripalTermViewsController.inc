@@ -10,13 +10,13 @@ class TripalTermViewsController extends EntityDefaultViewsController {
   public function views_data() {
     $data = parent::views_data();
 
-    $data['tripal_term']['table']['group'] = 'Tripal Content Type';
+    $data['tripal_term']['table']['group'] = 'Tripal Term';
 
-    $data['tripal_term']['accession']['title'] = 'Term ID';
+    $data['tripal_term']['accession']['title'] = 'Term Accession';
     $data['tripal_term']['accession']['help'] = t('The unique term ID (accession) of the vocabulary term to which a Tripal content type is asscoiated.');
 
-    $data['tripal_term']['name']['title'] = 'Content Type';
-    $data['tripal_term']['name']['help'] = t('The name of a Tripal content type.');
+    $data['tripal_term']['name']['title'] = 'Term Name';
+    $data['tripal_term']['name']['help'] = t('The term that a content type is associated with.');
     $data['tripal_term']['name']['filter']['handler'] = 'tripal_views_handler_filter_string_selectbox';
 
     $data['tripal_term']['vocab_id']['title'] = t('Vocabulary ID');

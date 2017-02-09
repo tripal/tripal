@@ -200,6 +200,7 @@ function tripal_entity_info() {
     'label' => 'Tripal Content Type',
     'entity class' => 'TripalBundle',
     'controller class' => 'TripalBundleController',
+    'views controller class' => 'TripalBundleViewsController',
     'base table' => 'tripal_bundle',
     'fieldable' => FALSE,
     'bundle of' => 'TripalEntity',
