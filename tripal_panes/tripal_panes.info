@@ -1,8 +1,0 @@
-name = Tripal Panes
-description = Provides display options for Tripal Entities.  It includes a template that includes a sidebar with links to removable panes.
-core = 7.x
-project = tripal
-package = Tripal
-version = 7.x-3.0-alpha1
-
-dependencies[] = tripal
