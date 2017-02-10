@@ -37,7 +37,7 @@ function tripal_ds_schema() {
         'length' => 128,
         'not null' => TRUE,
         'default' => ''
-        ),
+      ),
     ),
     'primary key' => array('id'),
   );
