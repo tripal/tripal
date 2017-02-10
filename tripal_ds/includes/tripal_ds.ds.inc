@@ -84,8 +84,8 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         // type so we want to make sure that image goes in the summary.
         // It is not a TripalField so it won't have a chado table.
         if ($instance_name == 'data__image' and $term->name == 'organism') {
-        array_push($summary_fields, $instance_name);
-        $fields_with_regions[$instance_name] = 'right';
+          array_push($summary_fields, $instance_name);
+          $fields_with_regions[$instance_name] = 'right';
         }
       }
     }
@@ -145,10 +145,10 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     }
   }
 
-  // Add blocks to $region_left.
-  $position = count($region_right);
-  $region_left[$position] = 'toc';
-  $fields_with_regions += [ 'toc' => 'left'];
+  // Add blocks to $region_left and build the toc field that is placed within.
+  _ds_fields_info_write($bundle_name);
+  $region_left += [ 'toc' ];
+  $fields_with_regions += [ 'toc' => 'left' ];
   // Build the ds layout.
   $record = new stdClass;
   $record->id ='TripalEntity|' . $bundle_name . '|default';
@@ -207,3 +207,18 @@ function tripal_ds_toc_block($entity_type) {
   return $toc;
 }
 
+function _ds_fields_info_write($bundle_name) {
+  $fields = new stdClass;
+  $fields->id ='TripalEntity|' . $bundle_name . '|default';
+  $fields->entity_type = 'TripalEntity';
+  $fields->bundle = $bundle_name;
+  $fields->view_mode = 'default';
+  $fields->settings = array(
+    'toc' => array(
+      'weight' => 0,
+      'label' => 'hidden',
+      'format' => 'default',
+    ),
+  );
+  drupal_write_record('ds_field_settings', $fields);
+}

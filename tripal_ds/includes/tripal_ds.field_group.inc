@@ -247,7 +247,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   //Write to the tripal_ds table to record the new tripal pane.
   $field_for_table = new stdClass();
   $field_for_table->tripal_ds_field_name = 'group_sequence_tripalpane';
-  $field_for_table->tripal_ds_field_label = 'Data Sequences';
+  $field_for_table->tripal_ds_field_label = 'Sequence';
   $field_for_table->entity_type = 'TripalEntity';
   $field_for_table->bundle = $bundle_name;
 
@@ -264,7 +264,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group_fieldset->mode = 'default';
   $field_group_fieldset->parent_name = 'group_sequence_tripalpane';
   $field_group_fieldset->data = array(
-    'label' => 'Data Sequences',
+    'label' => 'Sequence',
     'weight' => '3',
     'children' => array(
       0 => 'group_sequence_table',
