@@ -829,20 +829,32 @@ function tripal_chado_migrate_organism_images () {
   // Iterate through each organism entity
   while ($organism = $results->fetchObject()) {
     $nid = $organism->nid;
-    $eid = $organism->entity_id;
+    $entity_id = $organism->entity_id;
     
     // check if there is a file record for the organism node
     $fid = db_select('file_usage', 'fu')
-    ->field('fu', array('fid'))
+    ->fields('fu', array('fid'))
     ->condition('module', 'tripal_organism')
     ->condition('type', 'organism_image')
     ->condition('id', $nid)
     ->execute()
     ->fetchField();
-    
     // If there is an image, add it to the organism entity
     if ($fid) {
-      
+      $file = file_load($fid);
+      // Add a record to the file_usage table
+      file_usage_add($file, 'file', 'TripalEntity', $entity_id);
+      // Attached it to the entity
+      $entities = entity_load('TripalEntity', array($entity_id));
+      $entity = $entities[$entity_id];
+      $image_file = (array) $file;
+      $image = array(
+        'und' => array(
+          0 =>$image_file
+        )
+      );
+      $entity->data__image = $image;
+      field_attach_update('TripalEntity', $entity);
     }
   }
   

@@ -165,7 +165,7 @@ function tripal_chado_prepare_chado() {
     // add the featuremapprop table to Chado
     tripal_chado_add_featuremap_dbxref_table();
     tripal_chado_add_featuremapprop_table();
-    tripal_chado_add_featuremappos_table();
+    //tripal_chado_add_featuremappos_table();
 
     // Support for Libraries.
     // add the materialized view
