@@ -24,11 +24,14 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
     $field_name = $this->field['field_name'];
     $chado_table = $this->instance['settings']['chado_table'];
 
-    foreach ($items as $delta => $item) {
-      $element[$delta] = array(
-        '#type' => 'markup',
-        '#markup' => $item['value'],
-      );
+    $content = '';
+    if ($items[0]['value']) {
+      $content = $items[0]['value'];
     }
+    $element[0] = array(
+      // We create a render array to produce the desired markup,
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }

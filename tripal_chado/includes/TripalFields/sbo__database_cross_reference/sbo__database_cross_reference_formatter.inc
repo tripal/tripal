@@ -39,7 +39,7 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
     if (count($element) == 0) {
       $element[0] = array(
         '#type' => 'markup',
-        '#markup' => '',
+        '#markup' => 'There are no cross references.',
       );
     }
   }

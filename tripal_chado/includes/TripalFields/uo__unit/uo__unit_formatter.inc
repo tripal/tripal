@@ -12,11 +12,14 @@ class uo__unit_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
   */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    if (count($items) > 0) {
-      $element[0] = array(
-        '#type' => 'markup',
-        '#markup' => $items[0]['value'],
-      );
+    $content = '';
+    if ($items[0]['value']) {
+      $content = $items[0]['value'];
     }
+    $element[0] = array(
+      // We create a render array to produce the desired markup,
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }

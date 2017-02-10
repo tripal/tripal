@@ -55,7 +55,7 @@ class chado_linker__contact_formatter extends ChadoFieldFormatter {
       'sticky' => FALSE,
       'caption' => "",
       'colgroups' => array(),
-      'empty' => 'No contacts available',
+      'empty' => 'There are no contacts available.',
     );
     $content = theme_table($table);
 

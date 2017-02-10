@@ -55,7 +55,7 @@ class so__genotype_formatter extends ChadoFieldFormatter {
       'sticky' => FALSE,
       'caption' => "",
       'colgroups' => array(),
-      'empty' => 'No genotypes available.',
+      'empty' => 'There are no genotypes available.',
     );
     $content = theme_table($table);
     if (count($items) > 0) {

@@ -20,11 +20,23 @@ class schema__alternate_name_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    $list_items = array();
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
-        '#type' => 'markup',
-        '#markup' => $item['value'],
-      );
+      $list_items[] = $item['value'];
     }
+    $list = 'There are no synonyms.';
+    if (count($list_items) > 1) {
+      $list = array(
+        'title' => '',
+        'items' => $list_items,
+        'type' => 'ol',
+        'attributes' => array(),
+      );
+      $list = theme_item_list($list);
+    }
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $list,
+    );
   }
 }

@@ -17,23 +17,18 @@ class data__sequence_formatter extends ChadoFieldFormatter {
    * @param unknown $display
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+
+    $content = 'There is no sequence.';
+    if ($items[0]['value']) {
+      $num_bases = 50;
+      $content = '<pre class="residues-formatter">';
+      $content .= wordwrap($items[0]['value'], $num_bases, "<br>", TRUE);
+      $content .= '</pre>';
+    }
     $element[0] = array(
       // We create a render array to produce the desired markup,
       '#type' => 'markup',
-      '#markup' => '',
+      '#markup' => $content,
     );
-
-    $num_bases = 50;
-    foreach ($items as $delta => $item) {
-      $content = '<pre class="residues-formatter">';
-      $content .= wordwrap($item['value'], $num_bases, "<br>", TRUE);
-      $content .= '</pre>';
-
-      $element[$delta] = array(
-        // We create a render array to produce the desired markup,
-        '#type' => 'markup',
-        '#markup' => $content,
-      );
-    }
   }
 }

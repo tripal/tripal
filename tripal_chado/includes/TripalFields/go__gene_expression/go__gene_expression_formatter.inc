@@ -75,7 +75,7 @@ class go__gene_expression_formatter extends ChadoFieldFormatter {
       'sticky' => FALSE,
       'caption' => "",
       'colgroups' => array(),
-      'empty' => 'There is no curated expression data.',
+      'empty' => 'There is no expression data available.',
     );
     $content = theme_table($table);
     if (count($items) > 0) {
