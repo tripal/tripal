@@ -96,7 +96,7 @@ function tripal_ds_field_group_delete_field_group($group) {
  * checks for changes from tripalpane to another type
  */
 function tripal_ds_field_group_update_field_group($group) {
-  //change from tripal pane to another type
+  //Change from tripal pane to another type.
   if(!empty($group->bundle)){
     $result = db_select('tripal_ds', 't')
       ->fields('t')
@@ -105,7 +105,7 @@ function tripal_ds_field_group_update_field_group($group) {
       ->execute()
       ->fetchAssoc();
 
-    //change from tripal pane to another type
+    //Change from tripal pane to another type.
     if($group->format_type !== 'tripalpane' && !empty($result)){
        db_delete('tripal_ds')
       ->condition('bundle', $result['bundle'], '=')
@@ -113,7 +113,7 @@ function tripal_ds_field_group_update_field_group($group) {
       ->execute();
     }
 
-    //change from other type to tripalpane
+    //Change from other type to tripalpane.
     if($group->format_type == 'tripalpane' && empty($result)){
 
       if(strpos($group->group_name, 'Tripal Pane')){
