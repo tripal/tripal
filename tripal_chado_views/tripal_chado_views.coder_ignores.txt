@@ -3,7 +3,7 @@
 ; where warning-type is one of security, style, sql, i18n, comment, etc.
 
 ; All variables are filtered
-tripal_views_integration.inc:814:security
+tripal_chado_iews_integration.inc:814:security
 
 
 ; SQL queries the pg_tables table to check if a table exists in chado; drupal

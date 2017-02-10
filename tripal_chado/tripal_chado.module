@@ -585,8 +585,45 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  return $items;
 
+
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Databases
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/storage/chado/db'] = array(
+    'title' => 'Databases',
+    'description' => 'References to External Database sites such as NCBI',
+    'page callback' => 'tripal_chado_admin_db_listing',
+    'access arguments' => array('administer db cross-references'),
+    'file' => 'includes/tripal_chado.db.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/storage/chado/db/edit/%'] = array(
+    'title' => 'Edit a Database Reference',
+    'description' => 'Edit existing Database References.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_db_edit_form',6),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer db cross-references'),
+    'file' => 'includes/tripal_chado.db.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/db/add'] = array(
+    'title' => 'Create a Database Reference',
+    'description' => 'Create a new reference to an External Database.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_db_add_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer db cross-references'),
+    'file' => 'includes/tripal_chado.db.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
 }
 
 /**

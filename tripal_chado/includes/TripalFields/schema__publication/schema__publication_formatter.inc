@@ -45,13 +45,11 @@ class schema__publication_formatter extends ChadoFieldFormatter {
         'type' => 'ol',
         'attributes' => array(),
       );
+      $list = theme_item_list($list);
     }
-
-    if (count($items) > 0) {
-      $element[0] = array(
-        '#type' => 'markup',
-        '#markup' => theme_item_list($list),
-      );
-    }
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $list,
+    );
   }
 }

@@ -45,6 +45,6 @@ scripts[]          = theme/js/tripal_example.js
 ; These modules must be enabled before this module can be enabled
 ;
 dependencies[] = tripal_core
-dependencies[] = tripal_views
+dependencies[] = tripal_chado_views
 dependencies[] = tripal_db
 dependencies[] = tripal_cv

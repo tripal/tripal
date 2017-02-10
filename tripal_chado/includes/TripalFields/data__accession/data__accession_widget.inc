@@ -106,7 +106,7 @@ class data__accession_widget extends ChadoFieldWidget {
     );
     $widget['links'] = array(
       '#type' => 'item',
-      '#markup' => l('Add a new database', 'admin/tripal/legacy/tripal_db/add', array('attributes' => array('target' => '_blank')))
+      '#markup' => l('Add a new database', 'admin/tripal/storage/chado/db/add', array('attributes' => array('target' => '_blank')))
     );
   }
 
@@ -183,7 +183,7 @@ class data__accession_widget extends ChadoFieldWidget {
  * An Ajax callback for the tripal_chado_admin_publish_form..
  */
 function data__accession_widget_form_ajax_callback($form, $form_state) {
-  
+
   $instance = $form['#instance'];
   $field_name = $form_state['triggering_element']['#parents'][0];
   $field = field_info_field($field_name);

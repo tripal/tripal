@@ -7,6 +7,6 @@ version = 7.x-3.0-alpha1
 configure = admin/tripal/legacy/tripal_analysis/configuration
 
 dependencies[] = tripal_core
-dependencies[] = tripal_views
+dependencies[] = tripal_chado_views
 dependencies[] = tripal_db
 dependencies[] = tripal_cv

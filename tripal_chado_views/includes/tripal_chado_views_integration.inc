@@ -7,9 +7,9 @@
 /**
  * Purpose: Deletes ALL Tripal Views Integrations.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_delete_all_integrations() {
+function tripal_chado_views_delete_all_integrations() {
 
   db_query("DELETE FROM {tripal_views}");
   db_query("DELETE FROM {tripal_views_field}");
@@ -24,10 +24,10 @@ function tripal_views_delete_all_integrations() {
  * Integrate all chado tables in the schema api.  This integration only occurs
  * once and sets all Chado tables to a priority of 10
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integrate_all_chado_tables() {
-return;
+function tripal_chado_views_integrate_all_chado_tables() {
+
   // First integrate all of the Chado tables. Those that are base tables
   // get special treatment.
   $tables = chado_get_table_names(TRUE);
@@ -58,10 +58,10 @@ return;
       // Assuming that we have a default chado table, genereate an integration
       // array describing it's Tripal Views integration.
       if (in_array($tablename, $base_tables) OR (is_array($mview_tables) and in_array($tablename, $mview_tables))) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
+        $table_integration_array = tripal_chado_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       }
       else {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
+        $table_integration_array = tripal_chado_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
       }
 
       // Check to see if this table is a Materialized view and if it is,
@@ -88,9 +88,9 @@ return;
  *   The tripal views integration array which is the parameter for
  *   tripal_add_views_integration($defn_array)
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
+function tripal_chado_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
   // Get the schema for this table (via the chado schema api)
   $schema = chado_get_schema($table_name);
@@ -107,7 +107,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   );
   // Add fields
   if (!isset($schema['fields'])) {
-    tripal_report_error('tripal_views', TRIPAL_NOTICE,
+    tripal_report_error('tripal_chado_views', TRIPAL_NOTICE,
       'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
     return FALSE;
   }

@@ -489,7 +489,7 @@ function chado_get_table_names($include_custom = NULL) {
 function chado_get_schema($table) {
 
   // first get the chado version that is installed
-  $v = $GLOBALS["chado_version"];
+  $v = array_key_exists("chado_version", $GLOBALS) ? $GLOBALS["chado_version"] : '';
 
   // get the table array from the proper chado schema
   $v = preg_replace("/\./", "_", $v); // reformat version for hook name

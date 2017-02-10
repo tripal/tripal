@@ -5,20 +5,6 @@
  */
 function tripal_chado_populate_chado_semweb_table() {
 
-  // Insert commonly used ontologies into the tables.
-  $ontologies = array(
-    // array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
-    array('Relationship Ontology (legacy)', '{tripal_chado}/files/legacy_ro.obo'),
-    array('Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo'),
-    array('Gene Ontology', 'http://purl.obolibrary.org/obo/go.obo'),
-    //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
-    //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
-    //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
-  );
-  foreach ($ontologies as $o) {
-  db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
-  }
-
   // Add in all tables and fields into the chado_semweb table.
   $chado_tables = chado_get_table_names(TRUE);
   foreach ($chado_tables as $chado_table) {
@@ -48,52 +34,9 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SO();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
+  tripal_chado_populate_vocab_TCONTACT();
   tripal_chado_populate_vocab_TPUB();
   tripal_chado_populate_vocab_UO();
-
-  // Add TAXRANK vocabulary for full import.
-  $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
-  $cv = chado_select_record('cv', array('name'), array('name' => 'taxonomic_rank'));
-  if (count($cv) == 0 and $obo_id) {
-    tripal_chado_load_obo_v1_2_id($obo_id);
-  }
-  //tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  // Add Tripal Contact vocabulary for full import.
-  $obo_path = '{tripal_chado}/files/tcontact.obo';
-  $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_contact'));
-  if (count($cv) == 0 and $obo) {
-    tripal_chado_load_obo_v1_2_id($obo_id);
-  }
-  //tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  // Add Tripal Publication vocabulary for full import.
-  $obo_path = '{tripal_chado}/files/tpub.obo';
-  $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_pub'));
-  if (count($cv) == 0 and $obo) {
-    tripal_chado_load_obo_v1_2_id($obo_id);
-  }
-
-  // Load the sequence ontology if it isn't already loaded
-  $cv = chado_select_record('cv', array('name'), array('name' => 'sequence'));
-  $obo = tripal_get_obo(array('obo_name' => 'Sequence Ontology'));
-  if (count($cv) == 0 and $obo) {
-    print "Installing the Sequence Ontology... This may take a while...\n";
-    tripal_chado_load_obo_v1_2_id($obo->obo_id);
-  }
-
-  // Add the Chado ontology CV.
-  //$obo_path = '{tripal_chado}/files/cv_property.obo';
-  //$obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
-  //tripal_chado_load_obo_v1_2_id($obo_id);
-  //tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  // $obo_path = '{tripal_feature}/files/feature_property.obo';
-  // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
-  // tripal_chado_load_obo_v1_2_id($obo_id);
-  //// tripal_submit_obo_job(array('obo_id' => $obo_id));
 
 }
 
@@ -473,6 +416,10 @@ function tripal_chado_populate_vocab_IAO() {
  */
 function tripal_chado_populate_vocab_LOCAL() {
 
+  tripal_insert_db(array(
+    'name' => 'null',
+    'description' => 'No online database.'
+  ));
   tripal_insert_db(array(
     'name' => 'local',
     'description' => 'Terms created for this site.',
@@ -1235,9 +1182,42 @@ function tripal_chado_populate_vocab_SWO() {
 }
 
 /**
- * Adds the pub table mapping.
+ * Adds the contact table mapping.
+ */
+function tripal_chado_populate_vocab_TCONTACT() {
+  tripal_insert_db(array(
+    'name' => 'TContact',
+    'description' => 'The Tripal Contact controlled vocabulary.',
+  ));
+}
+
+/**
+ * Adds the pub table mappings.
  */
 function tripal_chado_populate_vocab_TPUB() {
+
+  tripal_insert_db(array(
+    'name' => 'TPUB',
+    'description' => 'The Tripal Publication controlled vocabulary.',
+  ));
+  // make sure we have our supported databases
+  tripal_insert_db(
+      array(
+        'name' => 'PMID',
+        'description' => 'PubMed',
+        'url' => 'http://www.ncbi.nlm.nih.gov/pubmed',
+        'urlprefix' => 'http://www.ncbi.nlm.nih.gov/pubmed/'
+      ),
+      array('update_existing' => TRUE)
+  );
+  tripal_insert_db(
+      array(
+        'name' => 'AGL',
+        'description' => 'USDA National Agricultural Library',
+        'url' => 'http://agricola.nal.usda.gov/'
+      ),
+      array('update_existing' => TRUE)
+  );
   $term = tripal_get_cvterm(array('id' => 'TPUB:0000039'));
   tripal_associate_chado_semweb_term('pub', 'title', $term);
 

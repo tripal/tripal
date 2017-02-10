@@ -11,7 +11,7 @@
  *
  * @see tripal_enable_view().
  */
-function tripal_views_admin_enable_view($view_name, $redirect_link) {
+function tripal_chado_views_admin_enable_view($view_name, $redirect_link) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -33,7 +33,7 @@ function tripal_views_admin_enable_view($view_name, $redirect_link) {
  *
  * @see tripal_disable_view().
  */
-function tripal_views_admin_disable_view($view_name, $redirect_link) {
+function tripal_chado_views_admin_disable_view($view_name, $redirect_link) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -55,7 +55,7 @@ function tripal_views_admin_disable_view($view_name, $redirect_link) {
  *
  * @see tripal_make_view_compatible_with_external().
  */
-function tripal_views_make_view_compatible_with_external($view) {
+function tripal_chado_views_make_view_compatible_with_external($view) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -77,7 +77,7 @@ function tripal_views_make_view_compatible_with_external($view) {
  *
  * @see tripal_get_lightest_views_integration_priority().
  */
-function tripal_views_get_table_lightest_priority($table_name) {
+function tripal_chado_views_get_table_lightest_priority($table_name) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -99,7 +99,7 @@ function tripal_views_get_table_lightest_priority($table_name) {
  *
  * @see tripal_get_lightest_views_integration_setup().
  */
-function tripal_views_get_lightest_priority_setup($table_name) {
+function tripal_chado_views_get_lightest_priority_setup($table_name) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -121,7 +121,7 @@ function tripal_views_get_lightest_priority_setup($table_name) {
  *
  * @see tripal_get_views_integration_setup_id().
  */
-function tripal_views_get_setup_id($table_name, $priority) {
+function tripal_chado_views_get_setup_id($table_name, $priority) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -143,7 +143,7 @@ function tripal_views_get_setup_id($table_name, $priority) {
  *
  * @see tripal_is_table_integrated().
  */
-function tripal_views_is_integrated($table_name, $priority = NULL) {
+function tripal_chado_views_is_integrated($table_name, $priority = NULL) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -165,7 +165,7 @@ function tripal_views_is_integrated($table_name, $priority = NULL) {
  *
  * @see tripal_is_lightest_priority_setup().
  */
-function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
+function tripal_chado_views_is_lightest_priority_setup($setup_id, $table_name) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -187,7 +187,7 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
  *
  * @see tripal_rebuild_views_integrations().
  */
-function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
+function tripal_chado_views_rebuild_views_integrations($delete_first = FALSE) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -209,7 +209,7 @@ function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
  *
  * @see tripal_add_views_integration().
  */
-function tripal_views_integration_add_entry($defn_array, $setup_id = FALSE) {
+function tripal_chado_views_integration_add_entry($defn_array, $setup_id = FALSE) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -231,7 +231,7 @@ function tripal_views_integration_add_entry($defn_array, $setup_id = FALSE) {
  *
  * @see tripal_export_views_integration().
  */
-function tripal_views_integration_export_entry($setup_id) {
+function tripal_chado_views_integration_export_entry($setup_id) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -253,7 +253,7 @@ function tripal_views_integration_export_entry($setup_id) {
  *
  * @see tripal_remove_views_integration().
  */
-function tripal_views_integration_remove_entry_by_table_name($table_name, $priority) {
+function tripal_chado_views_integration_remove_entry_by_table_name($table_name, $priority) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -275,7 +275,7 @@ function tripal_views_integration_remove_entry_by_table_name($table_name, $prior
  *
  * @see tripal_remove_views_integration().
  */
-function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
+function tripal_chado_views_integration_remove_entry_by_setup_id($setup_id) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -297,7 +297,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  *
  * @see tripal_update_views_integration().
  */
-function tripal_views_integration_update_entry($setup_id, $defn_array) {
+function tripal_chado_views_integration_update_entry($setup_id, $defn_array) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -319,7 +319,7 @@ function tripal_views_integration_update_entry($setup_id, $defn_array) {
  *
  * @see tripal_clone_views_integration().
  */
-function tripal_views_clone_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
+function tripal_chado_views_clone_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -341,7 +341,7 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
  *
  * @see tripal_add_field_to_views_integration().
  */
-function tripal_views_add_field_to_integration($table_name, $priority, $field) {
+function tripal_chado_views_add_field_to_integration($table_name, $priority, $field) {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -363,7 +363,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
  *
  * @see tripal_remove_join_from_views_integration().
  */
-function tripal_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
+function tripal_chado_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
 
   tripal_report_error(
     'tripal_deprecated',

@@ -7,15 +7,15 @@
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_requirements($phase) {
+function tripal_chado_views_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_views'] = array(
-        'title' => "tripal_views",
+      $requirements ['tripal_chado_views'] = array(
+        'title' => "tripal_chado_views",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       );
@@ -27,9 +27,9 @@ function tripal_views_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_install() {
+function tripal_chado_views_install() {
 
   // we want views to pick up our changes
   views_invalidate_cache();
@@ -39,10 +39,10 @@ function tripal_views_install() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_schema() {
-  $schema = tripal_views_get_schemas();
+function tripal_chado_views_schema() {
+  $schema = tripal_chado_views_get_schemas();
   return $schema;
 }
 
@@ -52,111 +52,17 @@ function tripal_views_schema() {
  * can easily provide the entire list for hook_install or individual
  * tables for an update.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_get_schemas() {
+function tripal_chado_views_get_schemas() {
   $schema = array();
 
-  $temp = tripal_views_views_schema();
+  $temp = tripal_chado_views_views_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
 
   return $schema;
-}
-
-/**
- * Tripal Views Update for 6.x-0.4
- *   - Add priority field to tripal_views
- *   - Add handler field to tripal_views_join
- *   - Add tripal_views_field table to keep track of fields for views integration
- *
- * @ingroup tripal_views
- */
-function tripal_views_update_6040() {
-
-  // Add Priority to tripal_views
-  db_add_field(
-    'tripal_views',
-    'priority',
-    array('type' => 'int')
-  );
-  db_add_unique_key('tripal_views', 'priority', array('table_name', 'priority'));
-  db_add_index('tripal_views', 'priority', array('table_name', 'priority'));
-
-  // Add handler to tripal_views_join
-  db_add_field(
-    'tripal_views_join',
-    'handler',
-    array(
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => TRUE,
-      'default' => ''
-    )
-  );
-
-  // Add tripal_views_field to keep track of fields for views integration
-  $schema = tripal_views_views_schema();
-  db_create_table('tripal_views_field', $schema['tripal_views_field']);
-
-  // Add base_table TRUE/FALSE to tripal_views
-  db_add_field(
-    'tripal_views',
-    'base_table',
-    array(
-      'type' => 'int',
-      'not null ' => TRUE,
-      'default' => 1
-    )
-  );
-
-  // Add arguments to joins
-  db_add_field(
-    'tripal_views_join',
-    'arguments',
-    array(
-      'description' => 'arguments that may get passed to the handler',
-      'type' => 'text',
-      'size' => 'normal'
-    )
-  );
-
-  return t('Updated Tripal Views to handle multiple Integrations and keep track of fields.');
-}
-
-/**
- * Tripal Views Update for 7.x-2.0
- *   - Add relationship_only field to tripal_views_join
- *   - Add relationship_handler field to tripal_views_join
- *
- */
-function tripal_views_update_7200() {
-
-  // Add relationship_handler to tripal_views_join
-  db_add_field(
-    'tripal_views_join',
-    'relationship_handler',
-    array(
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => TRUE,
-      'default' => 'views_handler_relationship'
-    )
-  );
-
-  // Add relationship_only to tripal_views_join
-  db_add_field(
-    'tripal_views_join',
-    'relationship_only',
-    array(
-      'type' => 'int',
-      'not null ' => TRUE,
-      'default' => 0
-    )
-  );
-
-  return t('Updated Tripal Views to better handle relationships. Relationships are now handled through joins rather than handlers (backwards compatible).');
 }
 
 /**
@@ -169,9 +75,9 @@ function tripal_views_update_7200() {
  *       and other tables.
  *   - tripal_views_handlers: keeps track of which handlers to use for a given field
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_schema() {
+function tripal_chado_views_views_schema() {
   $schema = array();
   $schema['tripal_views'] = array(
     'description' => 'contains the setups, their materialized view id and base table name that was used.',

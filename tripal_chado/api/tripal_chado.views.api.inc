@@ -150,7 +150,7 @@ function tripal_make_view_compatible_with_external($view) {
  * @param $redirect_link
  *   The path to redirect to. FALSE if no redirect needed
  *
- * @ingroup tripal_views_api
+ * @ingroup tripal_chado_views_api
  */
 function tripal_disable_view($view_name, $redirect_link = FALSE) {
 
@@ -205,7 +205,7 @@ function tripal_disable_view($view_name, $redirect_link = FALSE) {
  * @param $redirect_link
  *   The path to redirect to. FALSE if no redirect needed
  *
- * @ingroup tripal_views_api
+ * @ingroup tripal_chado_views_api
  */
 function tripal_enable_view($view_name, $redirect_link = FALSE) {
 

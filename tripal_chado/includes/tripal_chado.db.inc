@@ -1,15 +1,11 @@
 <?php
-/**
- * @file
- * Provide administration of dbs & dbxrefs
- */
 
 /**
  * Launchpad for database reference administration
  *
  * @ingroup tripal_db
  */
-function tripal_db_admin_db_listing() {
+function tripal_chado_admin_db_listing() {
   $output = '';
 
   // set the breadcrumb
@@ -17,8 +13,9 @@ function tripal_db_admin_db_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Modules', 'admin/tripal/legacy');
-  $breadcrumb[] = l('Databases', 'admin/tripal/legacy/tripal_db');
+  $breadcrumb[] = l('Data Storage', 'admin/tripal/storage');
+  $breadcrumb[] = l('Chado', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Databases', 'admin/tripal/storage/chado/db');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -29,15 +26,15 @@ function tripal_db_admin_db_listing() {
   }
   else {
     $output .= '<p>The Tripal DB Module uses primarily views to provide an '
-      . 'administrative interface. Currently one or more views needed for this '
-      . 'administrative interface are disabled. <strong>Click each of the following links to '
-      . 'enable the pertinent views</strong>:</p>';
+        . 'administrative interface. Currently one or more views needed for this '
+            . 'administrative interface are disabled. <strong>Click each of the following links to '
+                . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
     if (!isset($dbs_view)) {
-      $output .= '<li>'.l('DB Admin', 'admin/tripal/legacy/tripal_db/views/dbs/enable').'</li>';
+      $output .= '<li>'.l('DB Admin', 'admin/tripal/storage/chado/db/views/dbs/enable').'</li>';
     }
     if (!isset($dbxrefs_view)) {
-      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/legacy/tripal_db/views/dbxrefs/enable').'</li>';
+      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/storage/chado/db/views/dbxrefs/enable').'</li>';
     }
     $output .= '</ul>';
   }
@@ -51,7 +48,7 @@ function tripal_db_admin_db_listing() {
  *
  * @ingroup tripal_db
  */
-function tripal_db_db_edit_form($form, &$form_state) {
+function tripal_chado_db_edit_form($form, &$form_state) {
 
   // get the dbid if form was submitted via AJAX
   $dbid = 0;
@@ -77,7 +74,7 @@ function tripal_db_db_edit_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => $dbs,
     '#ajax' => array(
-      'callback' => 'tripal_db_edit_form_ajax',
+      'callback' => 'tripal_chado_edit_form_ajax',
       'wrapper'  => 'db-edit-div',
       'effect'   => 'fade',
       'event'    => 'change',
@@ -90,7 +87,7 @@ function tripal_db_db_edit_form($form, &$form_state) {
   // if we don't have a db_id then we can  return the form, otherwise
   // add in the other fields
   if ($dbid) {
-    tripal_db_add_db_form_fields($form, $form_state, $dbid);
+    tripal_chado_add_db_form_fields($form, $form_state, $dbid);
 
     $form['update'] = array(
       '#type'         => 'submit',
@@ -120,10 +117,10 @@ function tripal_db_db_edit_form($form, &$form_state) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_db_add_form($form, &$form_state) {
+function tripal_chado_db_add_form($form, &$form_state) {
 
   // add in the form fields to this form
-  tripal_db_add_db_form_fields($form, $form_state);
+  tripal_chado_add_db_form_fields($form, $form_state);
 
   $form['add'] = array(
     '#type'         => 'submit',
@@ -138,7 +135,7 @@ function tripal_db_db_add_form($form, &$form_state) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
+function tripal_chado_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
 
   $default_db        = '';
   $default_desc      = '';
@@ -201,8 +198,8 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_db_add_form_validate($form, &$form_state) {
-  tripal_db_form_fields_validate($form, $form_state);
+function tripal_chado_db_add_form_validate($form, &$form_state) {
+  tripal_chado_db_form_fields_validate($form, $form_state);
 }
 
 /**
@@ -210,8 +207,8 @@ function tripal_db_db_add_form_validate($form, &$form_state) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_db_edit_form_validate($form, &$form_state) {
-  tripal_db_form_fields_validate($form, $form_state);
+function tripal_chado_db_edit_form_validate($form, &$form_state) {
+  tripal_chado_db_form_fields_validate($form, $form_state);
 }
 
 /**
@@ -219,7 +216,7 @@ function tripal_db_db_edit_form_validate($form, &$form_state) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_form_fields_validate($form, &$form_state) {
+function tripal_chado_db_form_fields_validate($form, &$form_state) {
   $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
   $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
   $url  =  array_key_exists('url', $form_state['values'])         ? trim($form_state['values']['url']) : '';
@@ -237,9 +234,8 @@ function tripal_db_form_fields_validate($form, &$form_state) {
 /**
  * Submit for add db form
  *
- * @ingroup tripal_db
  */
-function tripal_db_db_add_form_submit($form, &$form_state) {
+function tripal_chado_db_add_form_submit($form, &$form_state) {
 
   $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
   $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
@@ -264,9 +260,8 @@ function tripal_db_db_add_form_submit($form, &$form_state) {
 /**
  * Submit for edit db form
  *
- * @ingroup tripal_db
  */
-function tripal_db_db_edit_form_submit($form, &$form_state) {
+function tripal_chado_db_edit_form_submit($form, &$form_state) {
 
   $name =  array_key_exists('name', $form_state['values'])        ? trim($form_state['values']['name']) : '';
   $desc =  array_key_exists('description', $form_state['values']) ? trim($form_state['values']['description']) : '';
@@ -287,6 +282,7 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
     $success = chado_update_record('db', $match, $values);
     if ($success) {
       drupal_set_message(t("External database updated"));
+      drupal_goto('admin/tripal/storage/chado/db');
     }
     else {
       drupal_set_message(t("Failed to update external database."));
@@ -297,6 +293,7 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
     $success = chado_delete_record('db', $match);
     if ($success) {
       drupal_set_message(t("External database deleted"));
+      drupal_goto('admin/tripal/storage/chado/db');
     }
     else {
       drupal_set_message(t("Failed to delete external database."));
@@ -305,11 +302,10 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
 }
 
 /**
- * Ajax callback for the tripal_db_form
+ * Ajax callback for the tripal_chado_db_form
  *
- * @ingroup tripal_db
  */
-function tripal_db_edit_form_ajax($form, $form_state) {
+function tripal_chado_db_edit_form_ajax($form, $form_state) {
 
   $elements = array();
 
@@ -320,7 +316,7 @@ function tripal_db_edit_form_ajax($form, $form_state) {
     $elements['delete'] = $form['delete'];
   }
 
-   // add back in the db-edit-div that is used for the next round of AJAX
+  // add back in the db-edit-div that is used for the next round of AJAX
   $elements['fields']['#prefix'] =  '<div id="db-edit-div">';
   $elements['fields']['#suffix'] =  '</div">';
 

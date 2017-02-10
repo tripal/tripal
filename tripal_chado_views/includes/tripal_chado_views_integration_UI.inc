@@ -12,15 +12,15 @@
  * @return
  *    a themed HTML table
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_setup_list() {
+function tripal_chado_views_integration_setup_list() {
   $output = '';
 
   // TODO: change the following to use theme_item_list()
   $output .= '<ul class="action-links">';
-  $output .=  '<li>' . l(t('Add a New Entry'), "admin/tripal/views-integration/new") . '</li>';
-  $output .=  '<li style="float: right;">' . l(t('Delete ALL Entries'), "admin/tripal/views-integration/delete-all/confirm") . '</li>';
+  $output .=  '<li>' . l(t('Add a New Entry'), "admin/tripal/storage/chado/views-integration/new") . '</li>';
+  $output .=  '<li style="float: right;">' . l(t('Delete ALL Entries'), "admin/tripal/storage/chado/views-integration/delete-all/confirm") . '</li>';
   $output .= '</ul>';
 
   $output .= '<p>' . t('The following tables are available for integration with Drupal Views. If '
@@ -43,9 +43,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY tv.table_name ASC, tv.priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/storage/chado/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/storage/chado/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/storage/chado/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       ($tview->table_id) ? 'No' : 'Yes',
@@ -75,9 +75,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/storage/chado/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/storage/chado/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/storage/chado/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
@@ -105,9 +105,9 @@ function tripal_views_integration_setup_list() {
                      .'ORDER BY table_name ASC, priority ASC');
   foreach ($tviews as $tview) {
     $rows[] = array(
-      l(t('Edit'), "admin/tripal/views-integration/edit/" . $tview->setup_id) . "<br />"
-        . l(t('Export'), "admin/tripal/views-integration/export/" . $tview->setup_id) . "<br />"
-        . l(t('Delete'), "admin/tripal/views-integration/delete/" . $tview->setup_id),
+      l(t('Edit'), "admin/tripal/storage/chado/views-integration/edit/" . $tview->setup_id) . "<br />"
+        . l(t('Export'), "admin/tripal/storage/chado/views-integration/export/" . $tview->setup_id) . "<br />"
+        . l(t('Delete'), "admin/tripal/storage/chado/views-integration/delete/" . $tview->setup_id),
       $tview->name,
       $tview->table_name,
       $tview->priority,
@@ -127,13 +127,13 @@ function tripal_views_integration_setup_list() {
  * @param $setup_id
  *    the unique setup id for the integrated table
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_delete($setup_id) {
+function tripal_chado_views_integration_delete($setup_id) {
 
   tripal_remove_views_integration(array('setup_id' => ($setup_id)));
   drupal_set_message(t("Record Deleted"));
-  drupal_goto('admin/tripal/views-integration');
+  drupal_goto('admin/tripal/storage/chado/views-integration');
 
 }
 
@@ -142,9 +142,9 @@ function tripal_views_integration_delete($setup_id) {
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_delete_all_form($form, &$form_state) {
+function tripal_chado_views_integration_delete_all_form($form, &$form_state) {
 
   $form['extra'] = array(
     '#type' => 'item',
@@ -168,7 +168,7 @@ function tripal_views_integration_delete_all_form($form, &$form_state) {
   $form['actions']['cancel'] = array(
     '#type' => 'link',
     '#title' => t('Cancel'),
-    '#href' => 'admin/tripal/views-integration/list',
+    '#href' => 'admin/tripal/storage/chado/views-integration/list',
   );
 
   // By default, render the form using theme_confirm_form().
@@ -184,13 +184,13 @@ function tripal_views_integration_delete_all_form($form, &$form_state) {
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_delete_all_form_submit($form, &$form_state) {
+function tripal_chado_views_integration_delete_all_form_submit($form, &$form_state) {
 
   tripal_rebuild_views_integrations(TRUE);
 
-  $form_state['redirect'] = 'admin/tripal/views-integration/list';
+  $form_state['redirect'] = 'admin/tripal/storage/chado/views-integration/list';
 
 }
 
@@ -211,9 +211,9 @@ function tripal_views_integration_delete_all_form_submit($form, &$form_state) {
  * D7 @todo: Add ability to manage custom fields
  * D7 @todo: Update relationship handler to work with the new tripal_views_join method
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_form($form, &$form_state) {
+function tripal_chado_views_integration_form($form, &$form_state) {
 
   $data = array();
   $form['#cache'] = TRUE;
@@ -316,7 +316,7 @@ function tripal_views_integration_form($form, &$form_state) {
     '#default_value' => $default,
     '#ajax' => array(
        //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
-       'callback' => 'tripal_views_integration_ajax_view_setup_table',
+       'callback' => 'tripal_chado_views_integration_ajax_view_setup_table',
        'wrapper' => 'tripal-views-integration-form',
        'effect' => 'fade',
        'event' => 'change',
@@ -348,7 +348,7 @@ function tripal_views_integration_form($form, &$form_state) {
       '#default_value' => $default,
       '#ajax' => array(
          //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
-         'callback' => 'tripal_views_integration_ajax_view_setup_table',
+         'callback' => 'tripal_chado_views_integration_ajax_view_setup_table',
          'wrapper' => 'tripal-views-integration-form',
          'effect' => 'fade',
          'event' => 'change',
@@ -541,7 +541,7 @@ function tripal_views_integration_form($form, &$form_state) {
     $chado_join_tables = array_merge(array('Select a Join Table'), $chado_join_tables);
 
     // get list of all handlers
-    $all_handlers = tripal_views_integration_discover_handlers();
+    $all_handlers = tripal_chado_views_integration_discover_handlers();
     $handlers_fields = array(0 => "Select a field handler");
     $handlers_filters = array(0 => "Select a filter handler");
     $handlers_sort = array(0 => "Select a sort handler");
@@ -1042,7 +1042,7 @@ function tripal_views_integration_form($form, &$form_state) {
       '#type' => 'select',
       '#options' => $chado_join_tables,
       '#ajax' => array(
-        'callback' => 'tripal_views_integration_ajax_new_join_left_field_callback',
+        'callback' => 'tripal_chado_views_integration_ajax_new_join_left_field_callback',
         'wrapper' => 'new-join',
       )
     );
@@ -1102,12 +1102,12 @@ function tripal_views_integration_form($form, &$form_state) {
   $form['#prefix'] = '<div id="tripal-views-integration-form">';
   $form['#suffix'] = '</div>';
 
-  $form['#redirect'] = 'admin/tripal/views-integration/list';
+  $form['#redirect'] = 'admin/tripal/storage/chado/views-integration/list';
   return $form;
 }
 
 /**
- * Purpose: validates the tripal_views_integration_form after submission
+ * Purpose: validates the tripal_chado_views_integration_form after submission
  *
  * @param $form
  *    The form object which is passed automatically by drupal
@@ -1115,9 +1115,9 @@ function tripal_views_integration_form($form, &$form_state) {
  * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_form_validate($form, &$form_state) {
+function tripal_chado_views_integration_form_validate($form, &$form_state) {
   $name_array = explode(" ", $form_state['values']['row_name']);
   $mview_id = $form_state['values']['mview_id'];
   $table_name = $form_state['values']['table_name'];
@@ -1161,9 +1161,9 @@ function tripal_views_integration_form_validate($form, &$form_state) {
  * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_form_submit($form, &$form_state) {
+function tripal_chado_views_integration_form_submit($form, &$form_state) {
   $name       = trim($form_state['values']['row_name']);
   $mview_id   = $form_state['values']['mview_id'];
   $table_name = $form_state['values']['table_name'];
@@ -1321,7 +1321,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     drupal_set_message(t('Record Added'));
   }
 
-  $form_state['redirect'] = 'admin/tripal/views-integration/integrations';
+  $form_state['redirect'] = 'admin/tripal/storage/chado/views-integration/integrations';
 
   // now clear all the caches so that Drupal views picks up our chages
   views_invalidate_cache();
@@ -1329,9 +1329,9 @@ function tripal_views_integration_form_submit($form, &$form_state) {
 
 /**
  * AJAX callback to replace the left field select list in the new join fieldset of the
- * tripal_views_integration_form form
+ * tripal_chado_views_integration_form form
  */
-function tripal_views_integration_ajax_new_join_left_field_callback($form, $form_state) {
+function tripal_chado_views_integration_ajax_new_join_left_field_callback($form, $form_state) {
   return $form['view_setup_join']['new_join'];
 }
 
@@ -1343,9 +1343,9 @@ function tripal_views_integration_ajax_new_join_left_field_callback($form, $form
  * @return
  *   Returns an array of handler names
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_discover_handlers() {
+function tripal_chado_views_integration_discover_handlers() {
 
   $handlers = array();
 
@@ -1420,9 +1420,9 @@ function tripal_views_integration_discover_handlers() {
  * Ajax Callback: Tripal Views Integration Form
  * Replaces the entire fields table when the table or materialized view is set/changed
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_ajax_view_setup_table($form, $form_state) {
+function tripal_chado_views_integration_ajax_view_setup_table($form, $form_state) {
   //return $form['view_setup_table'];
   return $form;
 }
@@ -1431,9 +1431,9 @@ function tripal_views_integration_ajax_view_setup_table($form, $form_state) {
  * Ajax Callback: Tripal Views Integration Form
  * Replaces the join db field dropdown when the join table dropdown is changed
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_ajax_join_field($form, $form_state) {
+function tripal_chado_views_integration_ajax_join_field($form, $form_state) {
 
   // Determine which row we are dealing with from the name of the triggering element
   if (preg_match('/fields_join_(\w+-\d+)/', $form_state['triggering_element']['#name'], $matches)) {

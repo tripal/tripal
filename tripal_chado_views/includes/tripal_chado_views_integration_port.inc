@@ -16,9 +16,9 @@
  * @param $setup_id
  *   The tripal views integration setup id
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_export_form($form, &$form_state, $setup_id) {
+function tripal_chado_views_integration_export_form($form, &$form_state, $setup_id) {
   $form = array();
 
   $defn_array = tripal_export_views_integration($setup_id);
@@ -44,9 +44,9 @@ function tripal_views_integration_export_form($form, &$form_state, $setup_id) {
 /**
  * Form: Imports a tripal views integration
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_import_form() {
+function tripal_chado_views_integration_import_form() {
   $form = array();
 
   $form['name'] = array(
@@ -92,9 +92,9 @@ function tripal_views_integration_import_form() {
  * @param $form
  * @param $form_state
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_integration_import_form_submit($form, &$form_state) {
+function tripal_chado_views_integration_import_form_submit($form, &$form_state) {
 
   //$defn_array = unserialize($form_state['values']['import']);
   // convert the array into a real PHP array

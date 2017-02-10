@@ -1,10 +1,10 @@
-name = Tripal Views
+name = Tripal Chado Views
 description = Integrates all Chado tables with Drupal Views and provides basic searching for administrators and site visitors and provides a range of flexibility for creating custom pages without the need for programming.
 core = 7.x
 project = tripal
-package = Tripal v2 Legacy
+package = Tripal
 version = 7.x-3.0-alpha1
-configure = admin/tripal/views-integration
+configure = admin/tripal/storage/chado/views-integration
 
 files[] = views/handlers/tripal_views_handler_filter_textarea.inc
 files[] = views/handlers/tripal_views_handler_filter_file_upload.inc

@@ -6,12 +6,12 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_default_views() {
+function tripal_chado_views_views_default_views() {
   $views = array();
 
-  $view = tripal_views_defaultview_admin_integrations();
+  $view = tripal_chado_views_defaultview_admin_integrations();
   $views[$view->name] = $view;
 
   return $views;
@@ -20,9 +20,9 @@ function tripal_views_views_default_views() {
 /**
  * Default integrations administration view
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_defaultview_admin_integrations() {
+function tripal_chado_views_defaultview_admin_integrations() {
 
   $view = new view();
   $view->name = 'tripal_views_admin_integrations';
@@ -116,11 +116,11 @@ function tripal_views_defaultview_admin_integrations() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add New Integration',
-    'path-1' => 'admin/tripal/views-integration/new',
+    'path-1' => 'admin/tripal/storage/chado/views-integration/new',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
     'label-2' => 'Import Integration',
-    'path-2' => 'admin/tripal/views-integration/import',
+    'path-2' => 'admin/tripal/storage/chado/views-integration/import',
   );
   $handler->display->display_options['header']['action_links_area']['link-3'] = array(
     'label-3' => '',
@@ -138,7 +138,7 @@ function tripal_views_defaultview_admin_integrations() {
   $handler->display->display_options['header']['action_links_area_1']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area_1']['link-1'] = array(
     'label-1' => 'Delete ALL Integrations',
-    'path-1' => 'admin/tripal/views-integration/delete-all/confirm',
+    'path-1' => 'admin/tripal/storage/chado/views-integration/delete-all/confirm',
   );
   $handler->display->display_options['header']['action_links_area_1']['link-2'] = array(
     'label-2' => '',
@@ -193,7 +193,7 @@ function tripal_views_defaultview_admin_integrations() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/views-integration/edit/[setup_id]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/storage/chado/views-integration/edit/[setup_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -202,7 +202,7 @@ function tripal_views_defaultview_admin_integrations() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'delete';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/views-integration/delete/[setup_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/storage/chado/views-integration/delete/[setup_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -211,7 +211,7 @@ function tripal_views_defaultview_admin_integrations() {
   $handler->display->display_options['fields']['nothing_2']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_2']['alter']['text'] = 'export';
   $handler->display->display_options['fields']['nothing_2']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/views-integration/export/[setup_id]';
+  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/storage/chado/views-integration/export/[setup_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_3']['id'] = 'nothing_3';
   $handler->display->display_options['fields']['nothing_3']['table'] = 'views';

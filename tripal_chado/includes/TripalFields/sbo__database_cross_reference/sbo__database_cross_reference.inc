@@ -103,6 +103,13 @@ class sbo__database_cross_reference extends ChadoField {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
         $dbxref = $linker->dbxref_id;
+
+        // Ignore the GFF_source database. This is a weird thing required by
+        // GBrowse and is added by the GFF loader. We don't want to show it.
+        if ($dbxref->db_id->name == 'GFF_source') {
+          continue;
+        }
+
         $URL = tripal_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(

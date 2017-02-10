@@ -16,13 +16,13 @@ include 'views/handlers/tripal_views_handler_area_action_links.inc';
  * @return
  *   An array of handler definitions
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_handlers() {
+function tripal_chado_views_views_handlers() {
 
   return array(
     'info' => array(
-      'path' => drupal_get_path('module', 'tripal_views') . '/views/handlers',
+      'path' => drupal_get_path('module', 'tripal_chado_views') . '/views/handlers',
     ),
     'handlers' => array(
 
@@ -77,9 +77,9 @@ function tripal_views_views_handlers() {
  *   Looking up the NID here ensures the query is only executed once
  *   for all stocks in the table.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_pre_render(&$view) {
+function tripal_chado_views_views_pre_render(&$view) {
 
   // We need to unset the exposed_input for the view so we can repopulate that
   // variable. This is necessary if we're using the file_upload_combo
@@ -89,7 +89,7 @@ function tripal_views_views_pre_render(&$view) {
 
   // Add css if tripal admin tagged view
   if ($view->tag == 'tripal admin') {
-    $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/css/tripal_views_admin_views.css';
+    $tripal_admin_view_css = drupal_get_path('module', 'tripal_chado_views') . '/theme/css/tripal_views_admin_views.css';
     drupal_add_css($tripal_admin_view_css);
   }
 
@@ -109,16 +109,16 @@ function tripal_views_views_pre_render(&$view) {
  *
  * D7 @todo: Add support for materialized views relationships using the new method
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_data() {
+function tripal_chado_views_views_data() {
   $data = array();
 
   // Manually integrate the drupal.tripal_views* tables
-  $data = tripal_views_views_data_tripal_views_tables($data);
+  $data = tripal_chado_views_views_data_tripal_views_tables($data);
 
   // MAKE SURE ALL CHADO TABLES ARE INTEGRATED
-  tripal_views_integrate_all_chado_tables();
+  tripal_chado_views_integrate_all_chado_tables();
 
   // DEFINE GLOBAL FIELDS
   // Filter handler that lets the admin say:
@@ -263,7 +263,7 @@ function tripal_views_views_data() {
         );
 
         tripal_report_error(
-          'tripal_views',
+          'tripal_chado_views',
           TRIPAL_WARNING,
           "The name and help were not set for %table.%column. As a consequence the column
             name has been used... You should ensure that the 'name' and 'help' keys for
@@ -304,7 +304,7 @@ function tripal_views_views_data() {
       // If there were no handlers applied to the current field then warn the administrator!
       if ($num_handlers == 0) {
         tripal_report_error(
-          'tripal_views',
+          'tripal_chado_views',
           TRIPAL_WARNING,
           "No handlers were registered for %table.%column. This means there is no views
             functionality for this column. To register handlers, make sure the 'handlers'
@@ -360,7 +360,7 @@ function tripal_views_views_data() {
 
       // warn if deprecated method of relationship addition was used (ie: through handlers)
       if (isset($data[$base_table][$base_field]['relationship'])) {
-        tripal_report_error('tripal_views', TRIPAL_NOTICE,
+        tripal_report_error('tripal_chado_views', TRIPAL_NOTICE,
           'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
           array('%base' => $base_table, '%left' => $left_table));
       }
@@ -416,9 +416,9 @@ function tripal_views_views_data() {
 /**
  * Describes the tripal views integration tables to views for the administration views
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_data_tripal_views_tables($data) {
+function tripal_chado_views_views_data_tripal_views_tables($data) {
 
   $data['tripal_views']['table']['group'] = t('Tripal Views Integration');
   $data['tripal_views']['table']['base'] = array(
@@ -568,9 +568,9 @@ function tripal_views_views_data_tripal_views_tables($data) {
  * Used to add Chado <-> Node Joins & Relationships
  *   since you need to add to the $data['node'] to do this
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_data_alter(&$data) {
+function tripal_chado_views_views_data_alter(&$data) {
 
     // ADD IN NODE JOINS & RELATIONSHIPS
     // D7 @todo: Create custom handler to allow join from Node => Base (ie: organism)
@@ -659,8 +659,8 @@ function tripal_views_views_data_alter(&$data) {
  * file uploads require $_POST. We need to make sure these two modules
  * have access to everything needed for this view to work properly.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_chado_views
  */
-function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
+function tripal_chado_views_views_pre_view(&$view, &$display_id, &$args) {
   $_GET = array_merge($_GET, $_POST);
 }
