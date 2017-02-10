@@ -1,0 +1,86 @@
+<?php
+
+require_once "includes/tripal_ds.inc";
+require_once "includes/tripal_ds.ds.inc";
+require_once "includes/tripal_ds.field_group.inc";
+require_once "includes/tripal_ds.field_formatter.inc";
+
+function tripal_ds_init() {
+  drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripaldsfeature.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_ds') . '/theme/js/tripal_ds.js');
+  
+  $theme_dir = url(drupal_get_path('module', 'tripal_ds') . '/theme');
+  drupal_add_js("var ds_theme_dir  = '$theme_dir';", 'inline', 'header');
+
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function tripal_ds_views_api() {
+    return array(
+        'api' => 3,
+        'path' => drupal_get_path('module', 'tripal_ds') . '/includes/views',
+    );
+}
+
+/**
+ * Implements hook_bundle_postcreate().
+ *
+ * This is a Triapl defined hook and is called in the TripalBundle::create()
+ * function to allow modules to perform tasks when a bundle is created.
+ */
+function tripal_ds_bundle_postcreate($bundle) {
+  $bundle_name = $bundle->name;
+  $instances = field_info_instances('TripalEntity', $bundle_name);
+  _ds_layout_settings_info($bundle_name, $instances);
+}
+
+function tripal_ds_table_column_delete($bundle){
+    $bundle_name = $bundle->name;
+    db_delete('tripal_ds')
+      ->condition('bundle', $bundle_name, '=')
+      ->execute();
+}
+
+function tripal_ds_bundle_delete($bundle){
+  tripal_ds_table_column_delete($bundle);
+}
+/*
+ * Implements hook_ds_layout_info() to define layouts from code in a module for
+ * display suite
+ */
+function tripal_ds_ds_layout_info() {
+  $path = drupal_get_path('module', 'tripal_ds');
+
+  $layouts = array(
+    'tripal_ds_feature' => array(
+      'label' => t('Tripal Feature Layout'),
+      'path' => $path . '/theme/templates',
+      'regions' => array(
+        'left' => t('Left'),
+        'right' => t('Right'),
+      ),
+      'css' => TRUE,
+    ),
+  );
+
+  return $layouts;
+}
+
+/*
+ * Code for the view of the menu items
+
+    //get tripal entity id from url then run it against tripal entity db
+    //and grab the bundle id, then pass bundle id to view
+    $url = current_path();
+    $url_exploded = explode("/", $url);
+    $tripal_entity_id = (int)$url_exploded[1];
+
+    $result = db_select('tripal_entity', 'te')
+      ->fields('te', array('bundle'))
+      ->condition('id', $tripal_entity_id, '=')
+      ->execute()
+      ->fetchField();
+*/
+

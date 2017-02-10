@@ -1,0 +1,45 @@
+<?php
+/**
+ * @file
+ * Fieldgroup module install file.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function tripal_ds_schema() {
+  $schema['tripal_ds'] = array(
+    'description' => t('Table that contains the Tripal Pane fieldsets.'),
+
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The primary identifier for a group',
+        'no export' => TRUE,
+      ),
+      'tripal_ds_field_label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The label of this Tripal Pane.',
+      ),
+      'tripal_ds_field_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of this Tripal Pane.',
+      ),
+      'bundle' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => ''
+        ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}

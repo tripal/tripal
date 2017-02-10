@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Publication feature.
+ */
+
+include_once 'publication.features.inc';
