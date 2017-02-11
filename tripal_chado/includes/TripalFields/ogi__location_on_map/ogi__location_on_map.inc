@@ -60,7 +60,51 @@ class ogi__location_on_map extends ChadoField {
    * @see TripalField::load()
    */
   public function load($entity, $details = array()) {
+    $record = $details['record'];
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
 
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
+
+    // Add the featurepos records to our $record.
+    $options = array(
+      'return_array' => TRUE,
+      'include_fk' => array(
+        'srcfeature_id' => array(
+          'type_id' => 1,
+        ),
+        'feature_id' => array(
+          'type_id' => 1
+        ),
+      )
+    );
+    $feature = chado_expand_var($record, 'table', 'featurepos', $options);
+
+    // Iterate through the positions and add them to our values.
+    $i = 0;
+    if (isset($feature->featurepos->feature_id)) {
+      foreach ($feature->featurepos->feature_id AS $featurepos) {
+        // Get details about the map
+        $featuremap = chado_generate_var('featuremap', array('featuremap_id' => $featurepos->featuremap_id));
+        $value = array (
+          // Map.
+          'data:1274' => array(
+            'schema:name' => $featurmap->name,
+            'schema:description' => $featuremap->description,
+          ),
+          tripal_get_chado_semweb_term('featurepos', 'mappos') => $featurepos->mappos
+        );
+        if (property_exists($featuremap, 'entity_id')) {
+          $value['data:1274']['entity'] = 'TripalEntity:' . $featuremap->entity_id;
+        }
+        $entity->{$field_name}['und'][$i]['value'][] = $value;
+        $i++;
+      }
+    }
   }
 
 }

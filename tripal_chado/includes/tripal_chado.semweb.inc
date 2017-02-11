@@ -192,6 +192,14 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'references is a relation between one entity and the entity that it makes reference to by name, but is not described by it.',
   ));
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:000056',
+    'name' => 'position',
+    'cv_name' => 'SIO',
+    'definition' => 'A measurement of a spatial location relative to a frame of reference or other objects.',
+  ));
+  tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
 }
 /**
  * Adds the EDAM database and terms.
@@ -360,7 +368,7 @@ function tripal_chado_populate_vocab_OGI() {
     'cv_name' => 'ogi',
     'definition' => '',
   ));
-  tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
+
 }
 /**
  * Adds the Information Artifact Ontology database and terms.

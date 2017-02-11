@@ -21,5 +21,45 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    $rows = array();
+    $headers = array('Map', 'Position', 'Map Description');
+    foreach ($items as $delta => $item) {
+      if (!$item['value']) {
+        continue;
+      }
+      $val = $item['value'];
+      $map_name = $item['value']['data:1274']['schema:name'];
+      $map_desc = $item['value']['data:1274']['schema:description'];
+      $position = $item['value'][tripal_get_chado_semweb_term('featurepos', 'mappos')];
+      $rows[] = array(
+        $map_name,
+        $map_desc,
+        $position
+      );
+    }
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_feature-table-map-positions',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => 'This are no positions on any maps.',
+    );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => theme_table($table),
+      );
+    }
   }
 }

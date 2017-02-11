@@ -27,6 +27,10 @@ function tripal_chado_views_delete_all_integrations() {
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_integrate_all_chado_tables() {
+  // The tripal_chado_views and tripal_chado module are so highly tied
+  // together it may make sense for them to be one module.  But in the
+  // event that one is enabled and the other not we will have problems
+  // with the load below.
   module_load_include('inc', 'tripal_chado', 'api/tripal_chado.mviews.api');
 
   // First integrate all of the Chado tables. Those that are base tables
