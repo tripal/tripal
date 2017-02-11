@@ -58,19 +58,14 @@ function tripal_chado_publish_form($form, &$form_state) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-        // Skip fields that aren't Chado fields.
-        if (!array_key_exists('base_table', $instance['settings'])) {
-          continue;
-        }
-
         // Get the Chado mapping information.
-        $base_table = $instance['settings']['base_table'];
-        $chado_table = $instance['settings']['chado_table'];
-        $chado_field = $instance['settings']['chado_field'];
+        $base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
+        $chado_table = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
+        $chado_field = array_key_exists('chado_field', $instance['settings']) ? $instance['settings']['chado_field'] : '';
 
         // For now, only handle filtering by fields that are mapped directly
         // to the base table.
-        if ($base_table != $chado_table) {
+        if (!$base_table or $base_table != $chado_table) {
           continue;
         }
 
@@ -78,7 +73,7 @@ function tripal_chado_publish_form($form, &$form_state) {
         // is adapted from the field_multiple-value_form() function.
         $title = check_plain($instance['label']);
         $description = field_filter_xss($instance['description']);
-        $parents = $form['#parents'];
+        $parents = array_key_exists('#parents', $form) ? $form['#parents'] : '';
         $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
         $element = array(
           '#entity_type' => $instance['entity_type'],

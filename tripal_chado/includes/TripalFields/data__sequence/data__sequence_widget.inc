@@ -25,7 +25,8 @@ class data__sequence_widget extends ChadoFieldWidget {
     if (count($items) > 0 and array_key_exists('value', $items[0])) {
       $residues = $items[0]['value'];
     }
-    if (array_key_exists('values', $form_state)) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
       $residues = $form_state['values'][$field_name][$langcode][$delta]['value'];
     }
 
