@@ -135,7 +135,7 @@ class TripalField {
    */
   public static function info() {
     $class = get_called_class();
-    return array(
+    $info = array(
       'label' => $class::$default_label,
       'description' => $class::$default_description,
       'settings' => $class::$default_settings,
@@ -144,6 +144,7 @@ class TripalField {
       'default_formatter' => $class::$default_formatter,
       'no_ui' => $class::$no_ui,
     );
+    return $info;
   }
 
 

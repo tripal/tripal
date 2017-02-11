@@ -34,16 +34,32 @@ function tripal_field_info() {
  * Implements hook_info_alter().
  */
 function tripal_field_info_alter(&$info) {
-  // Make sure all fields have a 'tripal_term' setting so we can map
+  // Make sure all fields have a term setting so we can map
   // all fields to a vocabulary term for the semantic web.
   foreach ($info as $field_name => $details) {
-    if(array_key_exists('settings', $details)) {
-      if (!array_key_exists('tripal_term', $details['settings'])) {
-        $info[$field_name]['settings']['tripal_term'] = '';
+    if(array_key_exists('instance_settings', $details)) {
+      if (!array_key_exists('term_vocabulary', $details['instance_settings'])) {
+        $info[$field_name]['instance_settings']['term_vocabulary'] = '';
+      }
+      if (!array_key_exists('term_name', $details['instance_settings'])) {
+        $info[$field_name]['instance_settings']['term_name'] = '';
+      }
+      if (!array_key_exists('term_accession', $details['instance_settings'])) {
+        $info[$field_name]['instance_settings']['term_accession'] = '';
+      }
+      if (!array_key_exists('term_fixed', $details['instance_settings'])) {
+        $info[$field_name]['instance_settings']['term_fixed'] = FALSE;
+      }
+      if (!array_key_exists('auto_attach', $details['instance_settings'])) {
+        $info[$field_name]['instance_settings']['auto_attach'] = TRUE;
       }
     }
     else {
-      $info[$field_name]['settings']['tripal_term'] = '';
+      $info[$field_name]['instance_settings']['term_vocabulary'] = '';
+      $info[$field_name]['instance_settings']['term_name'] = '';
+      $info[$field_name]['instance_settings']['term_accession'] = '';
+      $info[$field_name]['instance_settings']['term_fixed'] = FALSE;
+      $info[$field_name]['instance_settings']['auto_attach'] = TRUE;
     }
   }
 }
@@ -414,6 +430,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
     $term_name = $instance['settings']['term_name'];
     $term = tripal_get_term_details($vocabulary, $accession);
   }
+  dpm($instance);
 
   // Construct a table for the vocabulary information.
   $headers = array();
@@ -453,8 +470,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
   $table = array(
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
-    ),
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),

@@ -428,6 +428,9 @@ function tripal_chado_field_storage_query($query) {
     return $result;
   }
   $bundle = tripal_load_bundle_entity(array('name' => $query->entityConditions['bundle']));
+  if (!$bundle) {
+    return;
+  }
   $data_table = $bundle->data_table;
   $type_column = $bundle->type_column;
   $type_id = $bundle->type_id;

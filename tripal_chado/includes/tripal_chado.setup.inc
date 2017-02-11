@@ -207,8 +207,12 @@ function tripal_chado_prepare_chado() {
        'data_table' => 'organism',
      )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
@@ -221,8 +225,12 @@ function tripal_chado_prepare_chado() {
         'data_table' => 'analysis',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'analysis'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
@@ -235,8 +243,12 @@ function tripal_chado_prepare_chado() {
         'data_table' => 'project',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'Map' entity type. This uses the local:project term.
@@ -249,8 +261,12 @@ function tripal_chado_prepare_chado() {
         'data_table' => 'featuremap',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'Publication' entity type.
@@ -263,8 +279,12 @@ function tripal_chado_prepare_chado() {
         'data_table' => 'pub',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'Gene' entity type.
@@ -278,8 +298,12 @@ function tripal_chado_prepare_chado() {
         'type_column' => 'type_id',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Create the 'mRNA' entity type.
@@ -293,8 +317,12 @@ function tripal_chado_prepare_chado() {
         'type_column' => 'type_id',
       )
     );
-    if (!tripal_create_bundle($args, $error)) {
-      throw new Exception($error['!message']);
+    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
     }
 
     // Set a variable to indicate the site is prepared.

@@ -1135,6 +1135,11 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
       'label' => 'Organism Image',
       'description' => 'An image for the organism',
       'required' => FALSE,
+      'settings' => array(
+        'term_vocabulary' => 'data',
+        'term_name' => 'Image',
+        'term_accession' => '2968',
+      ),
       'display' => array(
         'default' => array(
           'label' => 'hidden',
