@@ -18,4 +18,3 @@ files[] = views/handlers/tripal_views_handler_field_aggregate.inc
 
 dependencies[] = views
 dependencies[] = tripal
-dependencies[] = tripal_chado

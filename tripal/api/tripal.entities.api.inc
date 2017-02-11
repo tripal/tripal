@@ -322,6 +322,17 @@ function tripal_create_bundle($args, &$error = '') {
       $function = $module . '_bundle_postcreate';
       $function($bundle);
     }
+
+    // Finally set admin perimssions for the content type:
+//     $roles = user_roles();
+//     $admin_rid = variable_get('user_admin_role');
+//     $perms = user_role_permissions(array($admin_rid));
+//     dpm($perms);
+//     foreach ($perms[$admin_rid] as $perm => $value) {
+//       $perms[$admin_rid][$perm] = TRUE;
+//     }
+//     user_role_change_permissions($admin_rid, $perms[$admin_rid]);
+
   }
   catch (Exception $e) {
     $transaction->rollback();

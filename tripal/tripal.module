@@ -286,15 +286,18 @@ function tripal_permission() {
   $permissions = array(
     'administer tripal' => array(
       'title' => t('Administer Tripal'),
-      'description' => t('Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.')
+      'description' => t('Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.'),
+      'restrict access' => TRUE,
     ),
     'access tripal content overview' => array(
       'title' => t('Access the Tripal content overview page'),
-      'description' => t('Get an overview of all Tripal content')
+      'description' => t('Get an overview of all Tripal content'),
+      'restrict access' => TRUE,
     ),
     'manage tripal content types' => array(
       'title' => t('Manage Tripal content types'),
       'description' => t('Allows the user to create, update and delete Tripal content types.'),
+      'restrict access' => TRUE,
     ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
@@ -304,7 +307,6 @@ function tripal_permission() {
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
     ),
-
   );
 
   // Add permissions for each content type.
@@ -317,14 +319,17 @@ function tripal_permission() {
     $permissions['create ' . $bundle->name] = array(
       'title' => t('%label: Create Content', array('%label' => $bundle->label)),
       'description' => t('Allow the user to create %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
     );
     $permissions['edit ' . $bundle->name] = array(
       'title' => t('%label: Edit Content', array('%label' => $bundle->label)),
       'description' => t('Allow the user to edit %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
     );
     $permissions['delete ' . $bundle->name] = array(
       'title' => t('%label: Delete Content', array('%label' => $bundle->label)),
       'description' => t('Allow the user to delete %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
     );
   }
   return $permissions;

@@ -74,38 +74,48 @@ function tripal_chado_load_ontologies() {
       'name' => 'Relationship Ontology (legacy)',
       'path' => '{tripal_chado}/files/legacy_ro.obo',
       'auto_load' => FALSE,
+      'cv_name' => 'ro'
     ),
     array(
       'name' => 'Gene Ontology',
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
+      'cv_name' => 'cellualar_component'
     ),
     array(
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
+      'cv_name' => 'taxrank'
     ),
     array(
       'name' => 'Tripal Contact',
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
+      'cv_name' => 'tripal_contact'
     ),
     array(
       'name' => 'Tripal Publication',
       'path' => '{tripal_chado}/files/tpub.obo',
       'auto_load' => TRUE,
+      'cv_name' => 'tripal_pub'
     ),
     array(
       'name' => 'Sequence Ontology',
       'path' => 'http://purl.obolibrary.org/obo/so.obo',
       'auto_load' => TRUE,
+      'cv_name' => 'sequence'
     ),
 
   );
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
-      tripal_chado_load_obo_v1_2_id($obo_id);
+      // Only load ontolgogies that are not already in the cv table.
+      $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
+      if (!$cv) {
+        tripal_chado_load_obo_v1_2_id($obo_id);
+      }
     }
   }
 }

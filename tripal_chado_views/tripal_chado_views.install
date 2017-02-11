@@ -5,26 +5,6 @@
  */
 
 /**
- * Implementation of hook_requirements().
- *
- * @ingroup tripal_chado_views
- */
-function tripal_chado_views_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_chado_views'] = array(
-        'title' => "tripal_chado_views",
-        'value' => "ERROR: Chado must be installed before this module can be enabled",
-        'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
-}
-
-/**
  * Implementation of hook_install().
  *
  * @ingroup tripal_chado_views
@@ -42,6 +22,21 @@ function tripal_chado_views_install() {
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_schema() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_core and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+  $migrated = variable_get('tripal_v2_upgrade_v3_check_chado_views', FALSE);
+  if (!$migrated) {
+    try {
+      tripal_chado_views_upgrade_v2_v3_pre_enable();
+      variable_set('tripal_v2_upgrade_v3_check_chado_views', TRUE);
+    }
+    catch(Exception $e) {
+      watchdog_exception('tripal_chado_views', $e);
+    }
+  }
   $schema = tripal_chado_views_get_schemas();
   return $schema;
 }
@@ -63,6 +58,18 @@ function tripal_chado_views_get_schemas() {
   }
 
   return $schema;
+}
+
+/**
+ *
+ */
+function tripal_chado_views_enable() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_view and the installation will fail.
+  // Therefore, the tables were temporarily moved out of the way to preserve
+  // the data. Now we'll move them back.
+  tripal_chado_views_upgrade_v2_v3_enable();
 }
 
 /**
@@ -296,4 +303,124 @@ function tripal_chado_views_views_schema() {
   );
 
   return $schema;
+}
+
+
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_views_upgrade_v2_v3_pre_enable() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_views and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+
+  if (db_table_exists('tripal_views')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views RENAME TO tripal_views2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_pkey RENAME TO tripal_views_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_pkey2 ON tripal_views2 USING btree (setup_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_priority_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_priority_idx RENAME TO tripal_views_priority_idx2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_priority_idx2 ON tripal_views2 USING btree (table_name, priority)";
+    }
+    db_query($sql);
+  }
+
+
+  if (db_table_exists('tripal_views_field')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_field RENAME TO tripal_views_field2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_field_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_field_pkey RENAME TO tripal_views_field_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_field_pkey2 ON tripal_views_field2 USING btree (setup_id, column_name)";
+    }
+    db_query($sql);
+  }
+
+
+  if (db_table_exists('tripal_views_handlers')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_handlers RENAME TO tripal_views_handlers2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_handlers_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_handlers_pkey RENAME TO tripal_views_handlers_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_handlers_pkey2 ON tripal_views_handlers2 USING btree (handler_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_views_join')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_join RENAME TO tripal_views_join2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_join_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_join_pkey RENAME TO tripal_views_join_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_join_pkey2 ON tripal_views_join2 USING btree (view_join_id)";
+    }
+    db_query($sql);
+  }
+}
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_views_upgrade_v2_v3_enable() {
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_views and the
+  // installation will fail.  Therefore, in the install we renamed it. Now
+  // we want to move it back.
+  if (db_table_exists('tripal_views2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views2 RENAME to tripal_views";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_pkey2 RENAME TO tripal_views_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_priority_idx2 RENAME TO tripal_views_priority_idx";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_field2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_field";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_field2 RENAME to tripal_views_field";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_field_pkey2 RENAME TO tripal_views_field_pkey";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_handlers2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_handlers";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_handlers2 RENAME to tripal_views_handlers";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_handlers_pkey2 RENAME TO tripal_views_handlers_pkey";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_join2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_join";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_join2 RENAME to tripal_views_join";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_join_pkey2 RENAME TO tripal_views_join_pkey";
+    db_query($sql);
+  }
 }
