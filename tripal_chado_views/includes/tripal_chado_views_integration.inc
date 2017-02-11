@@ -27,6 +27,7 @@ function tripal_chado_views_delete_all_integrations() {
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_integrate_all_chado_tables() {
+  module_load_include('inc', 'tripal_chado', 'api/tripal_chado.mviews.api');
 
   // First integrate all of the Chado tables. Those that are base tables
   // get special treatment.
