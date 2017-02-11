@@ -57,6 +57,13 @@ function tripal_chado_publish_form($form, &$form_state) {
           in_array($bundle_name, $details['bundles']['TripalEntity'])) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+
+        // Skip fields that aren't Chado fields.
+        if (!array_key_exists('base_table', $instance['settings'])) {
+          continue;
+        }
+
+        // Get the Chado mapping information.
         $base_table = $instance['settings']['base_table'];
         $chado_table = $instance['settings']['chado_table'];
         $chado_field = $instance['settings']['chado_field'];
