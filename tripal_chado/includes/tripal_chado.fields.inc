@@ -60,6 +60,14 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
   // Get the list of columns for this table and create a new field for each one.
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
+
+    // Skip the source columns  in the analysis table. We have a custom
+    // field for those columns
+    if ($table_name == 'analysis' and ($column_name == 'sourceuri' or
+        $column_name == 'sourceversion' or $column_name == 'sourcename')) {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_field) {
       continue;
@@ -154,13 +162,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       $base_info['settings']['text_processing'] = 0;
     }
 
-    //
-    // ANALYSIS TABLE
-    //
-    elseif ($table_name == 'analysis' and $column_name == 'sourceuri') {
-      $base_info['type'] = 'text';
-      $base_info['settings']['text_processing'] = 0;
-    }
+
 
     $info[$field_name] = $base_info;
   }
@@ -310,6 +312,21 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
   if ($table_name == 'featuremap') {
     $field_name = 'uo__unit';
     $field_type = 'uo__unit';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
+  // Analysis source
+  if ($table_name == 'analysis') {
+    $field_name = 'local__source_data';
+    $field_type = 'local__source_data';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -620,6 +637,14 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
 
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
+
+    // Skip the source columns  in the analysis table. We have a custom
+    // field for those columns
+    if ($table_name == 'analysis' and ($column_name == 'sourceuri' or
+        $column_name == 'sourceversion' or $column_name == 'sourcename')) {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_field) {
       continue;
@@ -764,19 +789,6 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
       $base_info['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
       $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
     }
-    elseif ($table_name == 'analysis' and $column_name == 'sourceuri') {
-      $base_info['widget_type'] = 'text_textfield';
-      $base_info['label'] = 'Source URL';
-      $base_info['description'] = 'The URL where the original source data was derived.  Ideally, this should link to the page where more information about the source data can be found.';
-    }
-    elseif ($table_name == 'analysis' and $column_name == 'sourcename') {
-      $base_info['label'] = 'Source Name';
-      $base_info['description'] = 'The name of the source data. This could be a file name, data set or a small description for how the data was collected. For long descriptions use the larger description field.';
-    }
-    elseif ($table_name == 'analysis' and $column_name == 'sourceversion') {
-      $base_info['label'] = 'Source Version';
-      $base_info['description'] = 'If the source data set has a version include it here.';
-    }
     elseif ($table_name == 'analysis' and $column_name == 'algorithm') {
       $base_info['label'] = 'Source Version';
       $base_info['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
@@ -784,6 +796,13 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
     elseif ($table_name == 'analysis' and $column_name == 'programversion') {
       $base_info['label'] = 'Program Version';
       $base_info['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
+    }
+
+    if ($table_name == 'analysis' and ($column_name == 'sourceuri' or
+        $column_name == 'sourceversion' or $column_name == 'sourcename')) {
+      // Skip the source columns  in the analysis table. We have a custom
+      // field for those columns
+      continue;
     }
     //
     // PROJECT TABLE
@@ -1123,6 +1142,39 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
         ),
       ),
     );
+  }
+
+  // the analysis source.
+  if ($table_name == 'analysis') {
+    $field_name = 'local__source_data';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Data Source',
+      'description' => 'The source where data was obtained for this analysis.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'analysis_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'local__source_data_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'local__source_data_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
   }
   // Add an image field to the Organism type.  This is a Drupal field and
   // not stored in Chado, but is used for backwards compatibility.

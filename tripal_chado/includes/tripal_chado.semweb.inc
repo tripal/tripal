@@ -307,6 +307,14 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'The name of a biological or bioinformatics database.',
   ));
   tripal_associate_chado_semweb_term('db', 'name', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1047',
+    'name' => 'URI',
+    'cv_name' => 'EDAM',
+    'definition' => 'The name of a biological or bioinformatics database.',
+  ));
+  tripal_associate_chado_semweb_term('analysis', 'sourceuri', $term);
 }
 
 /**
@@ -1069,6 +1077,13 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
 
+  tripal_insert_cvterm(array(
+    'id' => 'local:source_data',
+    'name' => 'source_data',
+    'definition' => 'The location where data that is being used come from.',
+    'cv_name' => 'local',
+  ));
+
   //--------------
   // Terms for Content Types
   //--------------
@@ -1184,6 +1199,19 @@ function tripal_chado_populate_vocab_SWO() {
       'referred to as a language) that is interpretable by a given ' .
       'processor and that directs a computer\'s processor to perform ' .
       'specific operations.',
+  ));
+  tripal_associate_chado_semweb_term('analysis', 'program', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SWO:0000001',
+    'name' => 'software',
+    'cv_name' => 'swo',
+    'definition' => 'Computer software, or generally just software, is any ' .
+    'set of machine-readable instructions (most often in the form of a ' .
+    'computer program) that conform to a given syntax (sometimes ' .
+    'referred to as a language) that is interpretable by a given ' .
+    'processor and that directs a computer\'s processor to perform ' .
+    'specific operations.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
 

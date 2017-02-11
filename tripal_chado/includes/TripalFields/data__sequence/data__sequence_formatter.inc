@@ -8,13 +8,7 @@ class data__sequence_formatter extends ChadoFieldFormatter {
   public static $field_types = array('data__sequence');
 
   /**
-   *
-   * @param unknown $element
-   * @param unknown $entity_type
-   * @param unknown $entity
-   * @param unknown $langcode
-   * @param unknown $items
-   * @param unknown $display
+   * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 

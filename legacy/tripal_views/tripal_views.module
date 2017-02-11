@@ -1,0 +1,6 @@
+<?php
+
+// For backwards compatibility during upgrade of T2 to T3 we need these
+// APIs to be available.
+module_load_include('inc', 'tripal_chado', 'api/tripal_chado.schema.api');
+module_load_include('inc', 'tripal_chado_views', 'api/tripal_chado_views.api');
