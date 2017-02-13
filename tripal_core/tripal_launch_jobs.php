@@ -29,6 +29,7 @@ drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 // check to make sure the username is valid
 $username = $argv[1];
 $do_parallel = $argv[2];
+$max_jobs = (isset($argv[3]) ? $argv[3] : -1;  // -1 = don't limit number of consecutive jobs
 $results = db_query("SELECT * FROM {users} WHERE name = :name", array(':name' => $username));
 $u = $results->fetchObject();
 if (!$u) {
@@ -39,12 +40,12 @@ if (!$u) {
 global $user;
 $user = user_load($u->uid);
 
-
+fwrite($stdout, date('Y-m-d' H:i:s) . "\n");
 fwrite($stdout, "Tripal Job Launcher\n");
 fwrite($stdout, "Running as user ' . $username . '\n");
 fwrite($stdout, "-------------------\n");
 
-tripal_launch_job($do_parallel);
+tripal_launch_job($do_parallel, null, $max_jobs);
 
 /**
  * Print out the usage instructions if they are not followed correctly
