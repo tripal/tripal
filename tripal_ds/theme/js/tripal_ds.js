@@ -40,6 +40,9 @@
               if ($(id).hasClass('hideTripalPane')) {
                 $(id).removeClass('hideTripalPane');
                 $(id).addClass('showTripalPane');
+                $(id + ' fieldset .fieldset-wrapper').hide();
+                var obj = $(id).detach();
+                $('.group-tripal-pane-content-top').after(obj);
               }
               else {
                 $(id + ' fieldset .fieldset-wrapper').hide();

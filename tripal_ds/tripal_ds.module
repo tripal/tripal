@@ -22,8 +22,24 @@ function tripal_ds_views_api() {
         'api' => 3,
         'path' => drupal_get_path('module', 'tripal_ds') . '/includes/views',
     );
+}/**
+ * Implements hook_menu().
+ * Defines all menu items needed by Tripal DS
+ *
+ */
+function tripal_ds_menu() {
+  $items = array();
+  // Adds a +Apply Tripal Display Suite option to 'Tripal Content Types' page.
+  $items['admin/structure/bio_data/manage/%/display/apply'] = array(
+    'title' => 'Apply Tripal Display Suite to this Content Type',
+    'description' => t('Apply the Tripal Display Suite settings to this content type.'),
+    'page callback' => 'tripal_ds_apply',
+    'access arguments' => array('administer tripal'),
+    'page arguments' => array(4),
+    'type' => MENU_LOCAL_ACTION,
+  );
+  return $items;
 }
-
 /**
  * Implements hook_bundle_postcreate().
  *
@@ -67,6 +83,67 @@ function tripal_ds_ds_layout_info() {
 
   return $layouts;
 }
+
+function tripal_ds_apply($bundle_name) {
+  //Build the identifier to check against ds_layout_settings.
+  $ds_identifier = 'TripalEntity|'.$bundle_name.'|default';
+
+  //Check to see if the layout already exists.
+  $result = db_select('ds_layout_settings', 'ds')
+    ->fields('ds')
+    ->condition('id', $ds_identifier, '=')
+    ->execute()
+    ->fetchField();
+  //Check to see if there are any field groups associated with the bundle.
+  $result_fg = db_select('field_group', 'fg')
+    ->fields('fg')
+    ->condition('bundle', $bundle_name, '=')
+    ->execute()
+    ->fetchField();
+  //Check to see if there are any tripal ds fields associated with the bundle.
+  $result_tds = db_select('tripal_ds', 'tds')
+    ->fields('tds')
+    ->condition('bundle', $bundle_name, '=')
+    ->execute();
+
+  //Check to see if there are any field settings associated with the bundle.
+  $result_fs = db_select('ds_field_settings', 'fs')
+    ->fields('fs')
+    ->condition('bundle', $bundle_name, '=')
+    ->execute();
+
+  //If the layout exists, delete it.
+  if(!empty($result)) {
+    db_delete('ds_layout_settings')
+      ->condition('id', $ds_identifier, '=')
+      ->execute();
+  }
+  //Then delete the field_group_fields associated with the identifier.
+  if(!empty($result_fg)) {
+    db_delete('field_group')
+      ->condition('bundle', $bundle_name, '=')
+      ->execute();
+  }
+  //Then delete the ds_field_settings associated with the identifier.
+  if(!empty($result_tds)) {
+    db_delete('ds_field_settings')
+      ->condition('bundle', $bundle_name, '=')
+      ->execute();
+  }
+  //Then delete the tripal_ds menu item.
+  if(!empty($result_fs)) {
+    db_delete('tripal_ds')
+      ->condition('bundle', $bundle_name, '=')
+      ->execute();
+  }
+
+  //Now you can build the layout fresh.
+  $instances = field_info_instances('TripalEntity', $bundle_name);
+  _ds_layout_settings_info($bundle_name, $instances);
+
+  drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
+}
+
 
 /*
  * Code for the view of the menu items
