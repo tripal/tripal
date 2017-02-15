@@ -186,7 +186,18 @@ function tripal_chado_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
   $form['fields']['urlprefix']= array(
     '#type'          => 'textfield',
     '#title'         => t('URL prefix'),
-    '#description'   => t('Tripal can provide links to external databases when accession numbers or unique identifiers are known.  Typically, a database will provide a unique web address for each accession and the accession usually is the last component of the page address.  Please enter the web address, minus the accession number for this database.  When an accession number is present, Tripal will combine this web address with the accession and provide a link to the external site.'),
+    '#description'   => t('Tripal can provide links to external databases
+        when accession numbers or unique identifiers are known.  Typically,
+        a database will provide a unique web address for each accession and
+        the accession usually is the last component of the page address.
+        Please enter the web address, minus the accession number for this
+        database.  By default, Tripal will
+        combine this "URL prefix" with the database short name and
+        accession to create a link to the external site. But, you can
+        also use the tokens {db} and {accession} within the URL prefix
+        to specify exactly where the database short name and the accession
+        should be added.  Tripal will substitute the actual values in
+        place of these tokens to create the link. (e.g. URL prefix: https://phytozome.jgi.doe.gov/phytomine/portal.do?externalid=PAC:{accession}).'),
     '#default_value' => $default_urlprefix,
     '#maxlength'     => 255,
   );
@@ -251,6 +262,7 @@ function tripal_chado_db_add_form_submit($form, &$form_state) {
   $success = chado_insert_record('db', $values);
   if ($success) {
     drupal_set_message(t("External database added"));
+    drupal_goto('admin/tripal/storage/chado/db');
   }
   else {
     drupal_set_message(t("Failed to add external database."));

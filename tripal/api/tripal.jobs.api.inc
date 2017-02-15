@@ -250,11 +250,12 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
   // separating them.  But as of Tripal v2.0 the arguments are stored as
   // a serialized array.  To be backwards compatible, we should check for serialization
   // and if not then we will use the old style
+  $includes = unserialize($job->includes);
   $args = unserialize($job->arguments);
   if (!$args) {
     $args = explode("::", $job->arguments);
   }
-  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user_id, $job->priority);
+  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user_id, $job->priority, $includes);
 
   if ($goto_jobs_page) {
     drupal_goto("admin/tripal/tripal_jobs");

@@ -302,7 +302,7 @@ function tripal_get_dbxref_url($dbxref) {
     // If no replacements were made above then tokens weren't used and we can
     // default to just appending the db name and accession to the end.
     if (!$db_count and !$acc_count) {
-      $final_url .= $dbxref->db_id->name . ':' . $dbxref->accession;
+      $final_url = $dbxref->db_id->urlprefix . $dbxref->db_id->name . ':' . $dbxref->accession;
     }
 
     // If the URL prefix is relative then convert it to a full URL.
