@@ -634,9 +634,11 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
     $term = unserialize(base64_decode($typedef->stanza));
 
     // update the job status every interval
-    if ($jobid and $i % $interval == 0) {
+    if ($i % $interval == 0) {
       $complete = ($i / $count) * 33.33333333;
-      tripal_set_job_progress($jobid, intval($complete + 33.33333333));
+      if ($jobid) {
+        tripal_set_job_progress($jobid, intval($complete + 33.33333333));
+      }
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
     }
 
@@ -644,17 +646,19 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
 
     $i++;
   }
-    // set the final status
-  if ($jobid) {
-    if ($count > 0) {
-      $complete = ($i / $count) * 33.33333333;
-    }
-    else {
-      $complete = 33.33333333;
-    }
-    tripal_set_job_progress($jobid, intval($complete + 33.33333333));
-    printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+
+  // Set the final status.
+  if ($count > 0) {
+    $complete = ($i / $count) * 33.33333333;
   }
+  else {
+    $complete = 33.33333333;
+  }
+  if ($jobid) {
+    tripal_set_job_progress($jobid, intval($complete + 33.33333333));
+  }
+  printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+
   return 1;
 }
 
@@ -703,9 +707,11 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
     $term = unserialize(base64_decode($t->stanza));
 
     // update the job status every interval
-    if ($jobid and $i % $interval == 0) {
+    if ($i % $interval == 0) {
       $complete = ($i / $count) * 33.33333333;
-      tripal_set_job_progress($jobid, intval($complete + 66.666666));
+      if ($jobid) {
+        tripal_set_job_progress($jobid, intval($complete + 66.666666));
+      }
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
     }
 
@@ -718,16 +724,17 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   }
 
   // set the final status
-  if ($jobid) {
-    if ($count > 0) {
-      $complete = ($i / $count) * 33.33333333;
-    }
-    else {
-      $complete = 33.33333333;
-    }
-    tripal_set_job_progress($jobid, intval($complete + 66.666666));
-    printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+  if ($count > 0) {
+    $complete = ($i / $count) * 33.33333333;
   }
+  else {
+    $complete = 33.33333333;
+  }
+  if ($jobid) {
+    tripal_set_job_progress($jobid, intval($complete + 66.666666));
+  }
+  printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+
 
   return 1;
 }
@@ -1164,10 +1171,12 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
     $line = trim($line);
 
     // update the job status every 1% features
-    if ($jobid and $intv_read >= $interval) {
+    if ($intv_read >= $interval) {
       $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
       print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-      tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+      if ($jobid) {
+        tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+      }
       $intv_read = 0;
     }
 
@@ -1252,7 +1261,9 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
     }
     $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
     print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-    tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+    if ($jobid) {
+      tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+    }
   }
   return $default_db;
 }

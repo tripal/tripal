@@ -71,7 +71,6 @@ function tripal_chado_set_globals() {
 
 /**
  * Implements hook_init().
- * Used to set the search_path, create default content and set default variables.
  *
  * @ingroup tripal_chado
  */
@@ -88,7 +87,7 @@ function tripal_chado_init() {
     }
     else {
       drupal_set_message('Tripal cannot find a Chado installation. Please ' .
-          l('install Chado', 'admin/tripal/storage/chado/chado_install') .
+          l('install Chado', 'admin/tripal/storage/chado/install') .
           ' before continuing.', 'warning');
     }
   }

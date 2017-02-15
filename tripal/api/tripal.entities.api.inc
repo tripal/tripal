@@ -284,6 +284,9 @@ function tripal_create_bundle($args, &$error = '') {
       foreach ($info as $field_name => $details) {
         $field_type = $details['type'];
 
+        // TODO: make sure the field term exits. If not then
+        // skip it.
+
         // If the field already exists then skip it.
         $field = field_info_field($details['field_name']);
         if ($field) {

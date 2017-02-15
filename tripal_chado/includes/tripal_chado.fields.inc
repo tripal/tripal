@@ -347,6 +347,9 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'type' => 'image',
       'cardinality' => 1,
       'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_sql_storage',
+      ),
     );
   }
 }
@@ -397,20 +400,21 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
   }
 
   // EXPRESSION
-  $expression_table = $table_name . '_expression';
-  if (chado_table_exists($expression_table)) {
-    $field_name = 'go__gene_expression';
-    $field_type = 'go__gene_expression';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-    );
-  }
+  // TODO: this should only show up on gene or mRNA bunldes, not every feature.
+//   $expression_table = $table_name . '_expression';
+//   if (chado_table_exists($expression_table)) {
+//     $field_name = 'go__gene_expression';
+//     $field_type = 'go__gene_expression';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//     );
+//   }
 
   // FEATURELOC
   if ($table_name == 'feature') {
@@ -1283,39 +1287,41 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
   }
 
   // EXPRESSION
-  $expression_table = $table_name . '_expression';
-  if (chado_table_exists($expression_table)) {
-    $field_name = 'go__gene_expression';
-    $schema = chado_get_schema($expression_table);
-    $pkey = $schema['primary key'][0];
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Gene expression',
-      'description' => 'Information about the expression of this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'chado_table' => $expression_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
-      'widget' => array(
-        'type' => 'go__gene_expression_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'go__gene_expression_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+  // TODO: this should only show up on gene or mRNA and the GO must be
+  // laoded or this field will crash things.
+//   $expression_table = $table_name . '_expression';
+//   if (chado_table_exists($expression_table)) {
+//     $field_name = 'go__gene_expression';
+//     $schema = chado_get_schema($expression_table);
+//     $pkey = $schema['primary key'][0];
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'entity_type' => $entity_type,
+//       'bundle' => $bundle->name,
+//       'label' => 'Gene expression',
+//       'description' => 'Information about the expression of this record.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => FALSE,
+//         'chado_table' => $expression_table,
+//         'chado_column' => $pkey,
+//         'base_table' => $table_name,
+//       ),
+//       'widget' => array(
+//         'type' => 'go__gene_expression_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'above',
+//           'type' => 'go__gene_expression_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
 
   // FEATURELOC
   if ($table_name == 'feature') {

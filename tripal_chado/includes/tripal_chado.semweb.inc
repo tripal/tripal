@@ -31,7 +31,6 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SBO();
   tripal_chado_populate_vocab_SCHEMA();
   tripal_chado_populate_vocab_SIO();
-  tripal_chado_populate_vocab_SO();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
   tripal_chado_populate_vocab_TCONTACT();
@@ -45,14 +44,16 @@ function tripal_chado_populate_chado_semweb_table() {
  */
 function tripal_chado_populate_vocab_FOAF() {
 
-  tripal_insert_cv('foaf','Friend of a Friend');
   tripal_insert_db(array(
     'name' => 'foaf',
     'description' => 'Friend of a Friend',
     'url' => 'http://www.foaf-project.org/',
     'urlprefix' => 'http://xmlns.com/foaf/spec/#',
   ));
-  tripal_insert_cv('foaf','Friend of a Friend. A dictionary of people-related terms that can be used in structured data).');
+  tripal_insert_cv(
+    'foaf',
+    'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).'
+  );
 }
 
 /**
@@ -65,7 +66,10 @@ function tripal_chado_populate_vocab_RDFS() {
     'url' => 'https://www.w3.org/TR/rdf-schema/',
     'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_',
   ));
-  tripal_insert_cv('rdfs','Resource Description Framework Schema');
+  tripal_insert_cv(
+    'rdfs',
+    'Resource Description Framework Schema'
+  );
 
   $name = tripal_insert_cvterm(array(
     'id' => 'rdfs:type',
@@ -90,7 +94,10 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'url' => 'https://schema.org/',
     'urlprefix' => 'https://schema.org/{accession}',
   ));
-  tripal_insert_cv('schema','Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.');
+  tripal_insert_cv(
+    'schema',
+    'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'
+  );
 
 
   $term = tripal_insert_cvterm(array(
@@ -218,7 +225,10 @@ function tripal_chado_populate_vocab_EDAM() {
     'url' => 'http://edamontology.org/page',
     'urlprefix' => 'http://edamontology.org/{db}_{accession}',
   ));
-  tripal_insert_cv('data','Bioinformatics operations, data types, formats, identifiers and topics.');
+  tripal_insert_cv(
+    'data',
+    'Bioinformatics operations, data types, formats, identifiers and topics.'
+  );
 
 
   $term = tripal_insert_cvterm(array(
@@ -327,7 +337,10 @@ function tripal_chado_populate_vocab_ERO() {
     'url' => 'http://purl.bioontology.org/ontology/ERO',
     'urlprefix' => 'http://purl.bioontology.org/ontology/ERO/{db}:{accession}',
   ));
-  tripal_insert_cv('ero','The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).');
+  tripal_insert_cv(
+      'ero',
+      'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
+  );
 
   $term = tripal_insert_cvterm(array(
     'id' => 'ERO:0001716',
@@ -347,7 +360,10 @@ function tripal_chado_populate_vocab_OBI() {
     'url' => 'http://obi-ontology.org/page/Main_Page',
     'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
   ));
-  tripal_insert_cv('obi','Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.');
+  tripal_insert_cv(
+    'obi',
+    'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.'
+  );
 
   $term = tripal_insert_cvterm(array(
     'id' => 'OBI:0100026',
@@ -368,7 +384,10 @@ function tripal_chado_populate_vocab_OGI() {
     'url' => 'http://purl.bioontology.org/ontology/OGI',
     'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
   ));
-  tripal_insert_cv('obi','Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.');
+  tripal_insert_cv(
+    'ogi',
+    'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.'
+  );
 
   $term = tripal_insert_cvterm(array(
     'id' => 'OGI:0000021',
@@ -389,14 +408,17 @@ function tripal_chado_populate_vocab_IAO() {
     'url' => 'https://github.com/information-artifact-ontology/IAO/',
     'urlprefix' => 'http://purl.obolibrary.org/obo/IAO_',
   ));
-  tripal_insert_cv('IAO','Information Artifact Ontology  is a new ' .
+  tripal_insert_cv(
+    'IAO',
+    'Information Artifact Ontology  is a new ' .
       'ontology of information entities, originally driven by work by the ' .
-      'OBI digital entity and realizable information entity branch.');
+      'OBI digital entity and realizable information entity branch.'
+  );
 
   $term = tripal_insert_cvterm(array(
     'id' => 'IAO:0000115',
     'name' => 'definition',
-    'cv_name' => 'iao',
+    'cv_name' => 'IAO',
     'definition' => 'The official OBI definition, explaining the meaning of ' .
       'a class or property. Shall be Aristotelian, formalized and normalized. ' .
       'Can be augmented with colloquial definitions.',
@@ -458,10 +480,6 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_insert_cv(
     'tripal_phylogeny',
     'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees.'
-  );
-  tripal_insert_cv(
-    'synonym_type',
-    'A local vocabulary that contains synonym types (e.g. exact, broad, narrow, related).'
   );
   // Add cv for relationship types
   tripal_insert_cv(
@@ -727,7 +745,6 @@ function tripal_chado_populate_vocab_LOCAL() {
       'name' => $term,
       'definition' => '',
       'cv_name' => 'organism_property',
-      'is_relationship' => 0,
       'db_name' => 'local'
     );
     tripal_insert_cvterm($value, $options);
@@ -738,16 +755,13 @@ function tripal_chado_populate_vocab_LOCAL() {
   //---------------------
 
   // Add the terms used to identify nodes in the tree.
-  tripal_insert_cvterm(
-      array(
-        'name' => 'phylo_leaf',
-        'definition' => 'A leaf node in a phylogenetic tree.',
-        'cv_name' => 'tripal_phylogeny',
-        'is_relationship' => 0,
-        'db_name' => 'local'
-      ),
-      array('update_existing' => TRUE)
-  );
+  tripal_insert_cvterm(array(
+    'name' => 'phylo_leaf',
+    'definition' => 'A leaf node in a phylogenetic tree.',
+    'cv_name' => 'tripal_phylogeny',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
   // Add the terms used to identify nodes in the tree.
   tripal_insert_cvterm(array(
     'name' => 'phylo_root',
@@ -775,36 +789,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'db_name' => 'local'
   ));
 
-  //---------------------
-  // Synonym Types Terms
-  //---------------------
-  tripal_insert_cvterm(array(
-    'name' => 'exact',
-    'definition' => 'An exact equivalent; interchangeable with the term name.',
-    'cv_name' => 'synonym_type',
-    'db_name' => 'local',
-  ), array('force_db_change' => TRUE));
-
-  tripal_insert_cvterm(array(
-    'name' => 'broad',
-    'definition' => 'The synonym is broader than the name.',
-    'cv_name' => 'synonym_type',
-    'db_name' => 'local',
-  ), array('force_db_change' => TRUE));
-  tripal_insert_cvterm(array(
-    'name' => 'narrow',
-    'definition' => 'The synonym is narrower or more precise than the name.',
-    'cv_name' => 'synonym_type',
-    'db_name' => 'local',
-  ), array('force_db_change' => TRUE));
-
-  tripal_insert_cvterm(array(
-    'name' => 'related',
-    'definition' => 'The synonym is related in some way.',
-    'cv_name' => 'synonym_type',
-    'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
-
 
   //--------------
   // Project Terms
@@ -817,7 +801,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition'  => 'Description of a project',
     'cv_name' => 'project_property',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
   //--------------
   // Natural Diversity Terms
@@ -828,21 +812,21 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'An experiment where genotypes of individuals are identified.',
     'cv_name' => 'nd_experiment_types',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
   tripal_insert_cvterm(array(
     'name' => 'Phenotyping',
     'definition' => 'An experiment where phenotypes of individuals are identified.',
     'cv_name' => 'nd_experiment_types',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
   tripal_insert_cvterm(array(
     'name' => 'Location',
     'definition' => 'The name of the location.',
     'cv_name' => 'nd_geolocation_property',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
 
   //--------------
@@ -857,7 +841,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'Description of a library',
     'cv_name' => 'library_property',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
   // add cvterms for the map unit types
   tripal_insert_cvterm(array(
@@ -866,42 +850,42 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'cDNA library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'id' => 'local:bac_library',
     'name' => 'bac_library',
     'definition' => 'Bacterial Artifical Chromsome (BAC) library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'id' => 'local:fosmid_library',
     'name' => 'fosmid_library',
     'definition' => 'Fosmid library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'id' => 'local:cosmid_library',
     'name' => 'cosmid_library',
     'definition' => 'Cosmid library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'id' => 'local:yac_library',
     'name' => 'yac_library',
     'definition' => 'Yeast Artificial Chromosome (YAC) library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'id' => 'local:genomic_library',
     'name' => 'genomic_library',
     'definition' => 'Genomic Library',
     'cv_name' => 'library_type',
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
   //--------------
   // Feature Map
@@ -913,35 +897,35 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'featuremap_units',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'bp',
     'definition' => 'Base pairs units',
     'cv_name' => 'featuremap_units',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'bin_unit',
     'definition' => 'The bin unit',
     'cv_name' => 'featuremap_units',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'marker_order',
     'definition' => 'Units simply to define marker order.',
     'cv_name' => 'featuremap_units',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'undefined',
     'definition' => 'A catch-all for an undefined unit type',
     'cv_name' => 'featuremap_units',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   // featurepos properties
   tripal_insert_cvterm(array(
     'name' => 'start',
@@ -949,14 +933,14 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'featurepos_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'stop',
     'definition' => 'The end coordinate for a map feature',
     'cv_name' => 'featurepos_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   // add cvterms for map properties
   tripal_insert_cvterm(array(
     'name' => 'Map Dbxref',
@@ -966,21 +950,21 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Map Type',
     'definition' => 'The type of Map (e.g. QTL, Physical, etc.)',
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Genome Group',
     'definition' => '',
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'URL',
     'definition' => 'A univeral resource locator (URL) reference where the '
@@ -989,7 +973,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Population Type',
     'definition' => 'A brief description of the population type used to generate '
@@ -997,28 +981,28 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Population Size',
     'definition' => 'The size of the population used to construct the map.',
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Methods',
     'definition' => 'A brief description of the methods used to construct the map.',
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
   tripal_insert_cvterm(array(
     'name' => 'Software',
     'definition' => 'The software used to construct the map.',
     'cv_name' => 'featuremap_property',
     'is_relationship' => 0,
     'db_name' => 'local'
-  ), array('force_db_change' => TRUE));
+  ));
 
 
   //--------------
@@ -1123,7 +1107,10 @@ function tripal_chado_populate_vocab_SBO() {
     'url' => 'http://www.ebi.ac.uk/sbo/main/',
     'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
   ));
-  tripal_insert_cv('sbo','Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.');
+  tripal_insert_cv(
+    'sbo',
+    'Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.'
+  );
 
   $dbxref = tripal_insert_cvterm(array(
     'id' => 'SBO:0000358',
@@ -1144,35 +1131,6 @@ function tripal_chado_populate_vocab_SBO() {
     'name' => 'relationship',
     'cv_name' => 'sbo',
     'definition' => 'Connectedness between entities and/or interactions representing their relatedness or influence.',
-  ));
-}
-
-/**
- * Adds the Sequence Ontology
- */
-function tripal_chado_populate_vocab_SO() {
-  tripal_insert_db(array(
-    'name' => 'SO',
-    'description' => 'Sequence Ontology',
-    'url' => 'http://www.sequenceontology.org',
-    'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
-  ));
-  tripal_insert_cv('sequence','The Sequence Ontology.');
-
-  // Add the terms we need for default content types.  This needs to be
-  // done because the sequence ontology may not already be loaded but we
-  // still want to provide these default content types.
-  $term = tripal_insert_cvterm(array(
-    'id' => 'SO:0000704',
-    'name' => 'gene',
-    'cv_name' => 'sequence',
-    'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions. [SO:immuno_workshop]',
-  ));
-  $term = tripal_insert_cvterm(array(
-    'id' => 'SO:0000234',
-    'name' => 'mRNA',
-    'cv_name' => 'sequence',
-    'definition' => 'Messenger RNA is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns. [SO:ma]',
   ));
 }
 
@@ -1221,10 +1179,6 @@ function tripal_chado_populate_vocab_SWO() {
  * Adds the contact table mapping.
  */
 function tripal_chado_populate_vocab_TCONTACT() {
-  tripal_insert_db(array(
-    'name' => 'TContact',
-    'description' => 'The Tripal Contact controlled vocabulary.',
-  ));
 }
 
 /**
@@ -1232,10 +1186,8 @@ function tripal_chado_populate_vocab_TCONTACT() {
  */
 function tripal_chado_populate_vocab_TPUB() {
 
-  tripal_insert_db(array(
-    'name' => 'TPUB',
-    'description' => 'The Tripal Publication controlled vocabulary.',
-  ));
+  // No need to insert the TPUB cv/db those should already be added.
+
   // make sure we have our supported databases
   tripal_insert_db(
       array(
@@ -1307,37 +1259,14 @@ function tripal_chado_populate_vocab_UO() {
  * Adds the Taxonomic Rank Ontology database and terms.
  */
 function tripal_chado_populate_vocab_TAXRANK() {
-  tripal_insert_db(array(
-    'name' => 'TAXRANK',
-    'description' => 'Taxonomic rank vocabulary.',
-    'url' => 'https://github.com/phenoscape/taxrank',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
-  ));
-  tripal_insert_cv('taxrank','Taxonomic rank vocabulary. A vocabulary of taxonomic ranks (species, family, phylum, etc).');
 
-
-  $term = tripal_insert_cvterm(array(
-    'id' => 'TAXRANK:0000005',
-    'name' => 'genus',
-    'cv_name' => 'taxonomic_rank',
-    'description' => 'Taxonomic rank of Genus'
-  ));
+  $term = tripal_get_cvterm(array('id' => 'TAXRANK:0000005'));
   tripal_associate_chado_semweb_term('organism', 'genus', $term);
 
-  $term = tripal_insert_cvterm(array(
-    'id' => 'TAXRANK:0000006',
-    'name' => 'species',
-    'cv_name' => 'taxonomic_rank',
-    'description' => 'Taxonomic rank of species.'
-  ));
+  $term = tripal_get_cvterm(array('id' => 'TAXRANK:0000006'));
   tripal_associate_chado_semweb_term('organism', 'species', $term);
 
-  $term = tripal_insert_cvterm(array(
-    'id' => 'TAXRANK:0000045',
-    'name' => 'infraspecies',
-    'cv_name' => 'taxonomic_rank',
-    'description' => 'Taxonomic infraspecies name.'
-  ));
+  $term = tripal_get_cvterm(array('id' => 'TAXRANK:0000045'));
   tripal_associate_chado_semweb_term('organism', 'infraspecific_name', $term);
 }
 
@@ -1351,8 +1280,10 @@ function tripal_chado_populate_vocab_NCBITAXON() {
     'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
     'urlprefix' => 'http://purl.obolibrary.org/obo/ncbitaxon#',
   ));
-  tripal_insert_cv('ncbitaxon','NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy.');
-
+  tripal_insert_cv(
+    'ncbitaxon',
+    'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy.'
+  );
 
   $term = tripal_insert_cvterm(array(
     'id' => 'NCBITaxon:common_name',

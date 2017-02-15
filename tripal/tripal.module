@@ -50,7 +50,6 @@ function tripal_views_api() {
 
 /**
  * Implements hook_init().
- * Used to set the search_path, create default content and set default variables.
  *
  * @ingroup tripal
  */

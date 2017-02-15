@@ -347,6 +347,8 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
 
   print "\nUpdating cvtermpath for $cv->name...\n";
 
+  // We need to set the chado schema as active because some of the
+  // functions call other functions which would not be in scope.
   $previous = chado_set_active('chado');
   try {
     $sql = "SELECT * FROM fill_cvtermpath(:name)";
@@ -359,7 +361,6 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath table: @error", array('@error' => $error));
     return FALSE;
   }
-
   return TRUE;
 }
 

@@ -86,7 +86,7 @@ function tripal_chado_load_ontologies() {
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
-      'cv_name' => 'taxrank'
+      'cv_name' => 'taxonomic_rank'
     ),
     array(
       'name' => 'Tripal Contact',
@@ -100,18 +100,18 @@ function tripal_chado_load_ontologies() {
       'auto_load' => TRUE,
       'cv_name' => 'tripal_pub'
     ),
-    array(
-      'name' => 'Sequence Ontology',
-      'path' => 'http://purl.obolibrary.org/obo/so.obo',
-      'auto_load' => TRUE,
-      'cv_name' => 'sequence'
-    ),
+     array(
+       'name' => 'Sequence Ontology',
+       'path' => 'http://purl.obolibrary.org/obo/so.obo',
+       'auto_load' => TRUE,
+       'cv_name' => 'sequence'
+     ),
 
   );
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
-      // Only load ontolgogies that are not already in the cv table.
+      // Only load ontologies that are not already in the cv table.
       $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
       if (!$cv) {
         tripal_chado_load_obo_v1_2_id($obo_id);
@@ -126,6 +126,13 @@ function tripal_chado_prepare_chado() {
 
   try {
 
+    // We want to provide a set of commonly used entity types by default. This
+    // way when a user first installs Tripal there are some commonly used
+    // formats.
+    module_load_include('inc', 'tripal', 'api/tripal.api');
+    module_load_include('inc', 'tripal', 'includes/tripal.admin');
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
+
     // Get the effective version.  Pass true as second argument
     // to warn the user if the current version is not compatible.
     $version = chado_get_version(FALSE, FALSE);
@@ -133,11 +140,13 @@ function tripal_chado_prepare_chado() {
     // We want to force the version of Chado to be set properly.
     $real_version = chado_get_version(TRUE);
 
+    // Create the temp table we will use for loading OBO files.
+    tripal_chado_add_tripal_obo_temp_table();
+
     // Import commonly used ontologies if needed.
     tripal_chado_load_ontologies();
 
     // Populate the semantic web associations for Chado tables/fields.
-    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
     tripal_chado_populate_chado_semweb_table();
 
     // Initialize the population of the chado_cvterm_mapping table.  This will
@@ -145,67 +154,15 @@ function tripal_chado_prepare_chado() {
     // add new content types it simplifies the form for them.
     tripal_chado_map_cvterms();
 
-    // Add the cv_root_mview.
-    tripal_chado_add_cv_root_mview_mview();
-
-    // Create the temp table we will use for loading OBO files.
-    tripal_chado_add_tripal_obo_temp_table();
-
-    // Support for Analyses
-    // we may need the analysisfeatureprop table if it doesn't already exist
-    tripal_chado_add_analysisfeatureprop_table();
-
-    // add materialized views
-    tripal_chado_add_analysis_organism_mview();
-
-    // Support for Contacts
-    // Add the contactprop table to Chado.
-    tripal_chado_add_contactprop_table();
-
-    // Support for Features
-    // Add the materialized view.
-    tripal_chado_add_organism_feature_count_mview();
-
-    // Add the custom tables for the GFF loader.
-    tripal_chado_add_tripal_gff_temp_table();
-    tripal_chado_add_tripal_gffcds_temp_table();
-    tripal_chado_add_tripal_gffprotein_temp_table();
-
-    // Support for FeatureMaps.
-    // add the featuremapprop table to Chado
-    tripal_chado_add_featuremap_dbxref_table();
-    tripal_chado_add_featuremapprop_table();
-    //tripal_chado_add_featuremappos_table();
-
-    // Support for Libraries.
-    // add the materialized view
-    tripal_chado_add_library_feature_count_mview();
-
-    // Support for Pubs.
-    // add the custom tables
-    tripal_chado_add_pubauthor_contact_table();
-    // Add the supported loaders
-    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
-
-    // Support for Stocks.
-    // add the materialized view
-    tripal_chado_add_organism_stock_count_mview();
-
-    // We want to provide a set of commonly used entity types by default. This
-    // way when a user first installs Tripal there are some commonly used
-    // formats.
-    module_load_include('inc', 'tripal', 'api/tripal.api');
-    module_load_include('inc', 'tripal', 'includes/tripal.admin');
-
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
     $args = array(
-     'vocabulary' => 'OBI',
-     'accession' => '0100026',
-     'term_name' => 'organism',
-     'storage_args' => array(
-       'data_table' => 'organism',
-     )
+      'vocabulary' => 'OBI',
+      'accession' => '0100026',
+      'term_name' => 'organism',
+      'storage_args' => array(
+        'data_table' => 'organism',
+      )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
     $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
@@ -324,6 +281,49 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+
+    // Add the cv_root_mview.
+    tripal_chado_add_cv_root_mview_mview();
+
+    // Support for Analyses
+    // we may need the analysisfeatureprop table if it doesn't already exist
+    tripal_chado_add_analysisfeatureprop_table();
+
+    // add materialized views
+    tripal_chado_add_analysis_organism_mview();
+
+    // Support for Contacts
+    // Add the contactprop table to Chado.
+    tripal_chado_add_contactprop_table();
+
+    // Support for Features
+    // Add the materialized view.
+    tripal_chado_add_organism_feature_count_mview();
+
+    // Add the custom tables for the GFF loader.
+    tripal_chado_add_tripal_gff_temp_table();
+    tripal_chado_add_tripal_gffcds_temp_table();
+    tripal_chado_add_tripal_gffprotein_temp_table();
+
+    // Support for FeatureMaps.
+    // add the featuremapprop table to Chado
+    tripal_chado_add_featuremap_dbxref_table();
+    tripal_chado_add_featuremapprop_table();
+    //tripal_chado_add_featuremappos_table();
+
+    // Support for Libraries.
+    // add the materialized view
+    tripal_chado_add_library_feature_count_mview();
+
+    // Support for Pubs.
+    // add the custom tables
+    tripal_chado_add_pubauthor_contact_table();
+    // Add the supported loaders
+    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
+
+    // Support for Stocks.
+    // add the materialized view
+    tripal_chado_add_organism_stock_count_mview();
 
     // Set a variable to indicate the site is prepared.
     variable_set('tripal_chado_is_prepared', TRUE);
@@ -1094,7 +1094,7 @@ function tripal_chado_add_tripal_obo_temp_table() {
   // do not want to use the Tripal Custom Table API because we don't want it to appear in the
   // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
   // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
-  if (!db_table_exists('chado.tripal_obo_temp')) {
+  if (!chado_table_exists('tripal_obo_temp')) {
     $sql = "
       CREATE TABLE {tripal_obo_temp} (
         id character varying(255) NOT NULL,

@@ -38,14 +38,10 @@
  */
 function chado_table_exists($table) {
   global $databases;
+
+  global $databases;
+
   $default_db = $databases['default']['default']['database'];
-  $cached_obj = cache_get('chado_tables', 'cache');
-  if ($cached_obj) {
-    $cached_tables = $cached_obj->data;
-    if (is_array($cached_tables) and array_key_exists($table, $cached_tables)) {
-      return $cached_tables[$table]['exists'];
-    }
-  }
 
   $sql = "
     SELECT 1
@@ -63,12 +59,8 @@ function chado_table_exists($table) {
   $results = db_query($sql, $args);
   $exists = $results->fetchObject();
   if (!$exists) {
-    $cached_tables[$table]['exists'] = FALSE;
-    cache_set('chado_tables', $cached_tables, 'cache', CACHE_TEMPORARY);
     return FALSE;
   }
-  $cached_tables[$table]['exists'] = TRUE;
-  cache_set('chado_tables', $cached_tables, 'cache', CACHE_TEMPORARY);
   return TRUE;
 }
 /**
@@ -438,7 +430,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 function chado_get_table_names($include_custom = NULL) {
 
   // first get the chado version that is installed
-  $v = $GLOBALS["chado_version"];
+  $v = array_key_exists('chado_version', $GLOBALS) ? $GLOBALS["chado_version"] : '';
 
   $tables = array();
   if ($v == '1.3') {
