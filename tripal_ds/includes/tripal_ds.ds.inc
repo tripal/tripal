@@ -13,172 +13,179 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $fields_with_regions = array();
   $i = 0;
 
-  // Get the bundle and term objects.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  try {
+    // Get the bundle and term objects.
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
 
-  // Iterate through the fields of this bundle.
-  foreach ($instances as $key => $instance){
-    $instance_name = $instance['field_name'];
-    if($instance_name=="rdfs__type"){
-      array_push($summary_fields, $instance_name);
-      $fields_with_regions[$instance_name]= 'right';
+    // Iterate through the fields of this bundle.
+    foreach ($instances as $key => $instance){
+      $instance_name = $instance['field_name'];
+      if($instance_name=="rdfs__type"){
+        array_push($summary_fields, $instance_name);
+        $fields_with_regions[$instance_name]= 'right';
 
-    }
-    else {
-      //TODO: How do we handle non-chado dbs, placement of fields within
-      // tripal panes might need to be done in a hook.
-      $instance_base_table = $instance['settings']['base_table'];
-      $instance_base_chado = $instance['settings']['chado_table'];
-      $prop_table = strpos($instance_base_chado, 'prop');
-      $data_sequence = strpos($instance_name, 'data__sequence');
+      }
+      else {
+        //TODO: How do we handle non-chado dbs, placement of fields within
+        // tripal panes might need to be done in a hook.
+        $instance_base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
+        $instance_base_chado = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
+        $prop_table = strpos($instance_base_chado, 'prop');
+        $data_sequence = strpos($instance_name, 'data__sequence');
 
-      if ($instance_base_chado && $instance_base_table){
+        if ($instance_base_chado && $instance_base_table){
 
-        if ($instance_base_chado == $instance_base_table){
-          if ($prop_table !== FALSE){
-            // Properties section instances.
-            array_push($prop_fields, $instance_name);
-            $fields_with_regions[$instance_name]= 'right';
+          if ($instance_base_chado == $instance_base_table){
+            if ($prop_table !== FALSE){
+              // Properties section instances.
+              array_push($prop_fields, $instance_name);
+              $fields_with_regions[$instance_name]= 'right';
+
+            }
+            elseif ($data_sequence !== FALSE) {
+              // Data sequence section instances.
+              array_push($data_sequence_fields, $instance_name);
+              $fields_with_regions[$instance_name] = 'right';
+
+            }
+            else {
+              // Overview section instances.
+              array_push($summary_fields, $instance_name);
+              $fields_with_regions[$instance_name] = 'right';
+            }
 
           }
-          elseif ($data_sequence !== FALSE) {
-            // Data sequence section instances.
-            array_push($data_sequence_fields, $instance_name);
-            $fields_with_regions[$instance_name] = 'right';
+          elseif ($instance_base_chado != $instance_base_table){
+            if ($prop_table !== FALSE){
+              // Properties section instances.
+              array_push($prop_fields, $instance_name);
+              $fields_with_regions[$instance_name]= 'right';
 
+            }
+            elseif ($data_sequence !== FALSE){
+              // Data sequence section instances.
+              array_push($data_sequence_fields, $instance_name);
+              $fields_with_regions[$instance_name]= 'right';
+
+            }
+            else {
+              // Linker section instances.
+              array_push($all_other_fields, $instance);
+              $fields_with_regions[$instance_name]= 'right';
+
+              // Update the display settings so that the title is hidden.
+              $instance['display']['default']['label'] = 'hidden';
+              field_update_instance($instance);
+            }
           }
-          else {
-            // Overview section instances.
+        }
+        else {
+          // The tripal_chado module adds an image to the organism content
+          // type so we want to make sure that image goes in the summary.
+          // It is not a TripalField so it won't have a chado table.
+          if ($instance_name == 'data__image' and $term->name == 'organism') {
             array_push($summary_fields, $instance_name);
             $fields_with_regions[$instance_name] = 'right';
           }
-
-        }
-        elseif ($instance_base_chado != $instance_base_table){
-          if ($prop_table !== FALSE){
-            // Properties section instances.
-            array_push($prop_fields, $instance_name);
-            $fields_with_regions[$instance_name]= 'right';
-
-          }
-          elseif ($data_sequence !== FALSE){
-            // Data sequence section instances.
-            array_push($data_sequence_fields, $instance_name);
-            $fields_with_regions[$instance_name]= 'right';
-
-          }
-          else {
-            // Linker section instances.
-            array_push($all_other_fields, $instance);
-            $fields_with_regions[$instance_name]= 'right';
-
-            // Update the display settings so that the title is hidden.
-            $instance['display']['default']['label'] = 'hidden';
-            field_update_instance($instance);
-          }
         }
       }
-      else {
-        // The tripal_chado module adds an image to the organism content
-        // type so we want to make sure that image goes in the summary.
-        // It is not a TripalField so it won't have a chado table.
-        if ($instance_name == 'data__image' and $term->name == 'organism') {
-          array_push($summary_fields, $instance_name);
-          $fields_with_regions[$instance_name] = 'right';
-        }
+      $i++;
+    }
+
+    // Consolidate the field sets.
+    if(!empty($summary_fields)){
+      _summary_field_group_info($bundle_name, $summary_fields);
+
+      // Add the fields to the regions.
+      array_unshift($summary_fields, 'group_summary_tripalpane', 'group_summary', 'group_summary_table');
+      $fields_with_regions += [ 'group_summary_tripalpane' =>'right', 'group_summary' => 'right', 'group_summary_table' => 'right' ];
+      $region_right = array_merge($summary_fields, $region_right);
+
+    }
+    if (!empty($prop_fields)){
+      _prop_field_group_info($bundle_name, $prop_fields);
+      array_unshift($prop_fields, 'group_prop_tripalpane', 'group_prop', 'group_prop_table');
+
+      // Add the fields to the regions.
+      $region_right = array_merge($region_right, $prop_fields);
+      $fields_with_regions += [ 'group_prop_tripalpane' => 'right', 'group_prop' => 'right', 'group_prop_table' => 'right' ];
+    }
+    if (!empty($data_sequence_fields)){
+      _data_sequence_field_group_info($bundle_name, $data_sequence_fields);
+      array_unshift($data_sequence_fields, 'group_sequence_tripalpane', 'group_sequence', 'group_sequence_table');
+
+      // Add the fields to the regions.
+      $region_right = array_merge($region_right, $data_sequence_fields);
+      $fields_with_regions += [ 'group_sequence_tripalpane' => 'right', 'group_sequence' => 'right', 'group_sequence_table' => 'right' ];
+    }
+    if (!empty($all_other_fields)){
+      foreach ($all_other_fields as $key => $other_field) {
+        // Temporary field names.
+        $temporary_field = array();
+        $group_field_name = 'gp_'.$other_field['field_name'];
+        $fieldset_field_name = 'ft_'.$other_field['field_name'];
+
+        // Need to truncate the names because of database field size restrictions,
+        // updating fields here to ensure name consistency.
+        $group_field_name = substr($group_field_name, 0, 27);
+        $fieldset_field_name = substr($fieldset_field_name, 0, 27);
+
+        // Add randomm numbers to ensure the field name is unique within the 32
+        // character limit of the field.
+        $group_field_name = $group_field_name.rand(0, 99999);
+        $fieldset_field_name = $fieldset_field_name.rand(0, 99999);
+
+        // Build the field group.
+        _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
+
+        // Update arrays.
+        array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
+        $region_right = array_merge($region_right, $temporary_field);
+        $fields_with_regions += [ $group_field_name => 'right', $fieldset_field_name => 'right' ];
       }
     }
-    $i++;
+
+    // Add blocks to $region_left and build the toc field that is placed within.
+    _ds_fields_info_write($bundle_name);
+    $region_left += [ 'toc' ];
+    $fields_with_regions += [ 'toc' => 'left' ];
+    // Build the ds layout.
+    $record = new stdClass;
+    $record->id ='TripalEntity|' . $bundle_name . '|default';
+    $record->entity_type = 'TripalEntity';
+    $record->bundle = $bundle_name;
+    $record->view_mode = 'default';
+    $record->layout = 'tripal_ds_feature';
+    $settings = array(
+      'regions' => array(
+        'left' =>
+          $region_left,
+        'right' =>
+          $region_right,
+      ),
+      'fields' =>
+        $fields_with_regions,
+      'classes' => array(),
+      'wrappers' => array(
+        'left' => 'div',
+        'right' => 'div',
+      ),
+      'layout_wrapper' => 'div',
+      'layout_attributes' => '',
+      'layout_attributes_merge' => 1,
+      'layout_link_attribute' => '',
+      'layout_link_custom' => '',
+      'layout_disable_css' => 0,
+    );
+    $record->settings = $settings;
+    drupal_write_record('ds_layout_settings', $record);
   }
-
-  // Consolidate the field sets.
-  if(!empty($summary_fields)){
-    _summary_field_group_info($bundle_name, $summary_fields);
-
-    // Add the fields to the regions.
-    array_unshift($summary_fields, 'group_summary_tripalpane', 'group_summary', 'group_summary_table');
-    $fields_with_regions += [ 'group_summary_tripalpane' =>'right', 'group_summary' => 'right', 'group_summary_table' => 'right' ];
-    $region_right = array_merge($summary_fields, $region_right);
-
+  catch (Exception $e) {
+    watchdog_exception('tripal_ds', $e);
+    return FALSE;
   }
-  if (!empty($prop_fields)){
-    _prop_field_group_info($bundle_name, $prop_fields);
-    array_unshift($prop_fields, 'group_prop_tripalpane', 'group_prop', 'group_prop_table');
-
-    // Add the fields to the regions.
-    $region_right = array_merge($region_right, $prop_fields);
-    $fields_with_regions += [ 'group_prop_tripalpane' => 'right', 'group_prop' => 'right', 'group_prop_table' => 'right' ];
-  }
-  if (!empty($data_sequence_fields)){
-    _data_sequence_field_group_info($bundle_name, $data_sequence_fields);
-    array_unshift($data_sequence_fields, 'group_sequence_tripalpane', 'group_sequence', 'group_sequence_table');
-
-    // Add the fields to the regions.
-    $region_right = array_merge($region_right, $data_sequence_fields);
-    $fields_with_regions += [ 'group_sequence_tripalpane' => 'right', 'group_sequence' => 'right', 'group_sequence_table' => 'right' ];
-  }
-  if (!empty($all_other_fields)){
-    foreach ($all_other_fields as $key => $other_field) {
-      // Temporary field names.
-      $temporary_field = array();
-      $group_field_name = 'gp_'.$other_field['field_name'];
-      $fieldset_field_name = 'ft_'.$other_field['field_name'];
-
-      // Need to truncate the names because of database field size restrictions,
-      // updating fields here to ensure name consistency.
-      $group_field_name = substr($group_field_name, 0, 27);
-      $fieldset_field_name = substr($fieldset_field_name, 0, 27);
-
-      // Add randomm numbers to ensure the field name is unique within the 32
-      // character limit of the field.
-      $group_field_name = $group_field_name.rand(0, 99999);
-      $fieldset_field_name = $fieldset_field_name.rand(0, 99999);
-
-      // Build the field group.
-      _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
-
-      // Update arrays.
-      array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
-      $region_right = array_merge($region_right, $temporary_field);
-      $fields_with_regions += [ $group_field_name => 'right', $fieldset_field_name => 'right' ];
-    }
-  }
-
-  // Add blocks to $region_left and build the toc field that is placed within.
-  _ds_fields_info_write($bundle_name);
-  $region_left += [ 'toc' ];
-  $fields_with_regions += [ 'toc' => 'left' ];
-  // Build the ds layout.
-  $record = new stdClass;
-  $record->id ='TripalEntity|' . $bundle_name . '|default';
-  $record->entity_type = 'TripalEntity';
-  $record->bundle = $bundle_name;
-  $record->view_mode = 'default';
-  $record->layout = 'tripal_ds_feature';
-  $settings = array(
-    'regions' => array(
-      'left' =>
-        $region_left,
-      'right' =>
-        $region_right,
-    ),
-    'fields' =>
-      $fields_with_regions,
-    'classes' => array(),
-    'wrappers' => array(
-      'left' => 'div',
-      'right' => 'div',
-    ),
-    'layout_wrapper' => 'div',
-    'layout_attributes' => '',
-    'layout_attributes_merge' => 1,
-    'layout_link_attribute' => '',
-    'layout_link_custom' => '',
-    'layout_disable_css' => 0,
-  );
-  $record->settings = $settings;
-  drupal_write_record('ds_layout_settings', $record);
+  return TRUE;
 }
 
 

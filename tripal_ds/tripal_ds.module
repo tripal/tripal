@@ -8,7 +8,7 @@ require_once "includes/tripal_ds.field_formatter.inc";
 function tripal_ds_init() {
   drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripaldsfeature.css');
   drupal_add_js(drupal_get_path('module', 'tripal_ds') . '/theme/js/tripal_ds.js');
-  
+
   $theme_dir = url(drupal_get_path('module', 'tripal_ds') . '/theme');
   drupal_add_js("var ds_theme_dir  = '$theme_dir';", 'inline', 'header');
 
@@ -18,11 +18,12 @@ function tripal_ds_init() {
  * Implements hook_views_api().
  */
 function tripal_ds_views_api() {
-    return array(
-        'api' => 3,
-        'path' => drupal_get_path('module', 'tripal_ds') . '/includes/views',
-    );
-}/**
+  return array(
+     'api' => 3,
+     'path' => drupal_get_path('module', 'tripal_ds') . '/includes/views',
+  );
+}
+/**
  * Implements hook_menu().
  * Defines all menu items needed by Tripal DS
  *
@@ -31,7 +32,7 @@ function tripal_ds_menu() {
   $items = array();
   // Adds a +Apply Tripal Display Suite option to 'Tripal Content Types' page.
   $items['admin/structure/bio_data/manage/%/display/apply'] = array(
-    'title' => 'Apply Tripal Display Suite to this Content Type',
+    'title' => 'Apply Default Tripal Layout (will reset current layout)',
     'description' => t('Apply the Tripal Display Suite settings to this content type.'),
     'page callback' => 'tripal_ds_apply',
     'access arguments' => array('administer tripal'),
@@ -84,6 +85,10 @@ function tripal_ds_ds_layout_info() {
   return $layouts;
 }
 
+/**
+ *
+ * @param $bundle_name
+ */
 function tripal_ds_apply($bundle_name) {
   //Build the identifier to check against ds_layout_settings.
   $ds_identifier = 'TripalEntity|'.$bundle_name.'|default';
@@ -139,7 +144,13 @@ function tripal_ds_apply($bundle_name) {
 
   //Now you can build the layout fresh.
   $instances = field_info_instances('TripalEntity', $bundle_name);
-  _ds_layout_settings_info($bundle_name, $instances);
+  $success = _ds_layout_settings_info($bundle_name, $instances);
+  if ($success) {
+    drupal_set_message("Layout applied successfully and saved.");
+  }
+  else {
+    drupal_set_message("Could not apply layout.", 'error');
+  }
 
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
