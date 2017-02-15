@@ -438,7 +438,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 function chado_get_table_names($include_custom = NULL) {
 
   // first get the chado version that is installed
-  $v = $GLOBALS["chado_version"];
+  $v = array_key_exists('chado_version', $GLOBALS) ? $GLOBALS["chado_version"] : '';
 
   $tables = array();
   if ($v == '1.3') {

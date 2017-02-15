@@ -87,7 +87,6 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
   // function which is not prefix with the schema, and an error occurs.
   // Therefore, we set the active database to chado to get around that
   // problem.
-//  $previous_db = chado_set_active('chado');
 
   // begin the transaction
   $transaction = db_transaction();
@@ -113,6 +112,5 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
     watchdog_exception('tripal_organism', $e);
     return 0;
   }
-//  chado_set_active($previous_db);
   print "\nDone\n";
 }

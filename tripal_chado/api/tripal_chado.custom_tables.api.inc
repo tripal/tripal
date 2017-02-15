@@ -122,7 +122,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_id = NULL) {
+function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mview_id = NULL) {
   global $databases;
   $created = 0;
   $recreated = 0;

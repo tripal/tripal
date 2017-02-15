@@ -347,6 +347,9 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
       'type' => 'image',
       'cardinality' => 1,
       'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_sql_storage',
+      ),
     );
   }
 }

@@ -71,7 +71,6 @@ function tripal_chado_set_globals() {
 
 /**
  * Implements hook_init().
- * Used to set the search_path, create default content and set default variables.
  *
  * @ingroup tripal_chado
  */

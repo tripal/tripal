@@ -113,13 +113,17 @@ function chado_set_active($dbname = 'default') {
     $GLOBALS['chado_active_db'] = 'default';
   }
 
-  $previous_db = $active_db = $GLOBALS['chado_active_db'];
-  $search_path = 'public';
+  $previous_db = $GLOBALS['chado_active_db'];
+
 
   // Change only if 'chado' has been specified.
   if ($dbname == 'chado') {
     $active_db = 'chado';
     $search_path = 'chado,public';
+  }
+  else {
+    $active_db = $dbname;
+    $search_path = 'public';
   }
 
   $settings = array(
@@ -132,10 +136,10 @@ function chado_set_active($dbname = 'default') {
   // note: hooks can alter $active_db and $search_path.
   drupal_alter('chado_connection', $settings);
 
-  // set chado_active_db to remember active db
+  // Set chado_active_db to remember active db.
   $GLOBALS['chado_active_db'] = $active_db;
 
-  // set PostgreSQL search_path
+  // Set PostgreSQL search_path.
   db_query('SET search_path TO ' . $search_path);
 
   return $previous_db;
@@ -1633,8 +1637,15 @@ function chado_query($sql, $args = array()) {
     // must automaticaly have the chado schema set as active to find
     if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
-      $results = db_query($sql, $args);
-      chado_set_active($previous_db);
+      try {
+        $results = db_query($sql, $args);
+        chado_set_active($previous_db);
+      }
+      catch (Exception $e) {
+        chado_set_active($previous_db);
+        throw $e;
+      }
+
     }
     // for all other tables we should have everything in scope so just run the query
     else {
