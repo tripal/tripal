@@ -87,7 +87,7 @@ function tripal_chado_init() {
     }
     else {
       drupal_set_message('Tripal cannot find a Chado installation. Please ' .
-          l('install Chado', 'admin/tripal/storage/chado/chado_install') .
+          l('install Chado', 'admin/tripal/storage/chado/install') .
           ' before continuing.', 'warning');
     }
   }

@@ -86,7 +86,7 @@ function tripal_chado_load_ontologies() {
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
-      'cv_name' => 'taxrank'
+      'cv_name' => 'taxonomic_rank'
     ),
     array(
       'name' => 'Tripal Contact',
@@ -100,18 +100,18 @@ function tripal_chado_load_ontologies() {
       'auto_load' => TRUE,
       'cv_name' => 'tripal_pub'
     ),
-    array(
-      'name' => 'Sequence Ontology',
-      'path' => 'http://purl.obolibrary.org/obo/so.obo',
-      'auto_load' => TRUE,
-      'cv_name' => 'sequence'
-    ),
+     array(
+       'name' => 'Sequence Ontology',
+       'path' => 'http://purl.obolibrary.org/obo/so.obo',
+       'auto_load' => TRUE,
+       'cv_name' => 'sequence'
+     ),
 
   );
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
-      // Only load ontolgogies that are not already in the cv table.
+      // Only load ontologies that are not already in the cv table.
       $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
       if (!$cv) {
         tripal_chado_load_obo_v1_2_id($obo_id);
@@ -131,6 +131,7 @@ function tripal_chado_prepare_chado() {
     // formats.
     module_load_include('inc', 'tripal', 'api/tripal.api');
     module_load_include('inc', 'tripal', 'includes/tripal.admin');
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
 
     // Get the effective version.  Pass true as second argument
     // to warn the user if the current version is not compatible.
@@ -146,7 +147,6 @@ function tripal_chado_prepare_chado() {
     tripal_chado_load_ontologies();
 
     // Populate the semantic web associations for Chado tables/fields.
-    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
     tripal_chado_populate_chado_semweb_table();
 
     // Initialize the population of the chado_cvterm_mapping table.  This will

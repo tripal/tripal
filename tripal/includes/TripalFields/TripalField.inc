@@ -111,6 +111,7 @@ class TripalField {
         $accession = $instance['settings']['term_accession'];
         $term = tripal_get_term_details($vocabulary, $accession);
         if (!$term) {
+          dpm(debug_backtrace());
           throw new Error(t('Cannot create TripalField of type "%term" as that
               term does not exist.', array('%term' => "$vocabulary:$accession")));
         }
