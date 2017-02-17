@@ -34,9 +34,9 @@ function tripal_ds_menu() {
   $items['admin/structure/bio_data/manage/%/display/apply'] = array(
     'title' => 'Apply Default Tripal Layout (will reset current layout)',
     'description' => t('Apply the Tripal Display Suite settings to this content type.'),
-    'page callback' => 'tripal_ds_apply',
+    'page callback' => 'drupal_get_form',
     'access arguments' => array('administer tripal'),
-    'page arguments' => array(4),
+    'page arguments' => array('tripal_ds_update_layout_form', 4),
     'type' => MENU_LOCAL_ACTION,
   );
   return $items;
@@ -49,8 +49,16 @@ function tripal_ds_menu() {
  */
 function tripal_ds_bundle_postcreate($bundle) {
   $bundle_name = $bundle->name;
-  $instances = field_info_instances('TripalEntity', $bundle_name);
-  _ds_layout_settings_info($bundle_name, $instances);
+  $bundle_data_table = $bundle->data_table;
+  if($bundle_data_table == 'pub'){
+    $instances = field_info_instances('TripalEntity', $bundle_name);
+    _ds_layout_pub_settings_info($bundle_name, $instances);
+  }
+  else {
+    $instances = field_info_instances('TripalEntity', $bundle_name);
+    _ds_layout_settings_info($bundle_name, $instances);
+  }
+
 }
 
 function tripal_ds_table_column_delete($bundle){
@@ -85,11 +93,28 @@ function tripal_ds_ds_layout_info() {
   return $layouts;
 }
 
+function tripal_ds_update_layout_form($form, &$form_state, $bundle) {
+  $form = array();
+  $form['bundle_name'] = array(
+    '#type' => 'value',
+    '#value' => $bundle,
+  );
+
+  return confirm_form($form,
+    t('Please confirm you would like to update this layout: '.$bundle),
+    'admin/structure/bio_data/manage/'.$bundle.'/display',
+    t('This action cannot be undone.'),
+    t('Yes, apply layout'),
+    t('No, cancel')
+  );
+}
+
 /**
  *
  * @param $bundle_name
  */
-function tripal_ds_apply($bundle_name) {
+function tripal_ds_update_layout_form_submit($form, &$form_state) {
+  $bundle_name = $form_state['build_info']['args'][0];
   //Build the identifier to check against ds_layout_settings.
   $ds_identifier = 'TripalEntity|'.$bundle_name.'|default';
 
