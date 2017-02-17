@@ -65,7 +65,39 @@
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $priority = 10) {
-  global $user;
+  if (!$job_name) {
+    watchdog('tripal', "Must provide a \$job_name argument to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  if (!$modulename) {
+    watchdog('tripal', "Must provide a \$modulename argument to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  if (!$callback) {
+    watchdog('tripal', "Must provide a \$callback argument to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  foreach ($includes as $include) {
+    require_once($include);
+  }
+  if (!function_exists($callback)) {
+    watchdog('tripal', "Must provide a valid callback function to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  if (!is_numeric($uid)) {
+    watchdog('tripal', "Must provide a numeric \$uid argument to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  if (!$priority or !is_numeric($priority) or $priority < 1 or $priority > 10) {
+    watchdog('tripal', "Must provide a numeric \$priority argument between 1 and 10 to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+  if (!is_array($arguments)) {
+    watchdog('tripal', "Must provide an array as the \$arguments argument to the tripal_add_job() function.", 'error');
+    return FALSE;
+  }
+
+  $user = user_load($uid);
 
   // convert the arguments into a string for storage in the database
   $args = array();
@@ -252,9 +284,19 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
  * @param $job_id
  *   The job_id of the job to be cancelled
  *
+ * @return
+ *   FALSE if the an error occured or the job could not be canceled, TRUE
+ *   otherwise.
+ *
  * @ingroup tripal_jobs_api
  */
 function tripal_cancel_job($job_id, $redirect = TRUE) {
+
+  if (!$job_id or !is_numeric($job_id)) {
+    watchdog('tripal', "Must provide a numeric \$job_id to the tripal_cancel_job() function.");
+    return FALSE;
+  }
+
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
@@ -423,21 +465,51 @@ function tripal_set_job_progress($job_id, $percentage) {
   return FALSE;
 }
 /**
- * Returns a list of jobs associated with the given module
+ * Returns a list of jobs that are active.
  *
  * @param $modulename
- *    The module to return a list of jobs for
+ *   Limit the list returned to those that were added by a specific module. If
+ *   no module name is provided then all active jobs are returned.
  *
  * @return
- *    An array of objects where each object describes a tripal job
+ *    An array of objects where each object describes a tripal job. If no
+ *    jobs were found then an empty array is returned.  Each object will have
+ *    the following members:
+ *    - job_id: The unique ID number for the job.
+ *    - uid: The ID of the user that submitted the job.
+ *    - job_name:  The human-readable name of the job.
+ *    - modulename: The name of the module that submitted the job.
+ *    - callback:  The callback function to be called when the job is run.
+ *    - arguments: An array of arguments to be passed to the callback function.
+ *    - progress: The percent progress of completion if the job is running.
+ *    - status: The status of the job: Waiting, Completed, Running or Cancelled.
+ *    - submit_date:  The UNIX timestamp when the job was submitted.
+ *    - start_time: The UNIX timestamp for when the job started running.
+ *    - end_time: The UNIX timestampe when the job completed running.
+ *    - error_msg: Any error message that occured during execution of the job.
+ *    - prirotiy: The execution priority of the job (value between 1 and 10)
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_get_active_jobs($modulename) {
-  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
-           "WHERE TJ.end_time IS NULL and TJ.modulename = :modulename ";
-  $results = db_query($sql, array(':modulename' => $modulename));
-  return $results->fetchObject();
+function tripal_get_active_jobs($modulename = NULL) {
+  $query = db_select('tripal_jobs', 'TJ')
+    ->fields('TJ', array('job_id', 'uid', 'job_name', 'modulename', 'callback',
+      'arguments', 'progress', 'status', 'submit_date', 'start_time',
+      'end_time', 'error_msg', 'priority'));
+  if ($modulename) {
+    $query->where(
+      "TJ.modulename = :modulename and NOT (TJ.status = 'Completed' or TJ.status = 'Cancelled')",
+      array(':modulename' => $modulename)
+    );
+  }
+  $results = $query->execute();
+
+  $jobs = array();
+  while($job = $results->fetchobject()) {
+    $jobs->arguments = unserialize($job->arguments);
+    $jobs[] = $job;
+  }
+  return $jobs;
 }
 
 /**

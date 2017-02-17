@@ -76,6 +76,9 @@ function chado_set_active($dbname = 'default') {
     $active_db = 'chado';
     $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
   }
+  else {
+    $active_db = $dbname;
+  }
 
   $settings = array(
     'dbname'          => $dbname,
