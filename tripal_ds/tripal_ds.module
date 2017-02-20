@@ -101,11 +101,11 @@ function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
   );
 
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $bundle_lable = $bundle->label;
+  $bundle_label = $bundle->label;
 
   return confirm_form($form,
-    t('Please confirm you would like to apply this layout: ' . $bundle_lable),
-    'admin/structure/bio_data/manage/' . $bundle_lable . '/display',
+    t('Please confirm you would like to apply this layout: ' . $bundle_label),
+    'admin/structure/bio_data/manage/' . $bundle_name . '/display',
     t('This action cannot be undone.'),
     t('Yes, apply layout'),
     t('No, cancel')
