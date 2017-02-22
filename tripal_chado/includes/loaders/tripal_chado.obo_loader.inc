@@ -510,7 +510,7 @@ function tripal_chado_load_update_cvtermpath($newcvs, $jobid) {
  */
 function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
-  $transaction = db_transaction();
+  //$transaction = db_transaction();
   print "\nNOTE: Loading of this OBO file is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "insertions/updates is rolled back and will not be found in the database\n\n";
@@ -570,7 +570,7 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     }
   }
   catch (Exception $e) {
-    $transaction->rollback();
+   //$transaction->rollback();
     print "\n"; // make sure we start errors on new line
     print "FAILED. Rolling back database changes...\n";
     watchdog_exception('T_obo_loader', $e);
