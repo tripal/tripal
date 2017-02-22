@@ -365,65 +365,82 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
   return TRUE;
 }
 
-
-
+/**
+ *
+ * @param unknown $cv_id
+ * @param string $job_id
+ */
 function tripal_update_cvtermpath_bak($cv_id, $job_id = NULL){
-  $depth= 0;
-  chado_set_active('chado');
-  $result = db_query('
-            SELECT DISTINCT t.* from cvterm t 
-            LEFT JOIN cvterm_relationship r 
-            ON (t.cvterm_id = r.subject_id) 
-            INNER JOIN cvterm_relationship r2 
-            ON (t.cvterm_id = r2.object_id) 
-            WHERE t.cv_id = :cvid 
-            AND r.subject_id is null',
-            array(':cvid' => $cv_id)
+  $depth = 0;
+  $result = chado_query('
+    SELECT DISTINCT t.*
+    FROM {cvterm} t
+      LEFT JOIN cvterm_relationship r ON (t.cvterm_id = r.subject_id)
+      INNER JOIN cvterm_relationship r2 ON (t.cvterm_id = r2.object_id)
+    WHERE t.cv_id = :cvid AND r.subject_id is null',
+    array(':cvid' => $cv_id)
   );
 
   $record = $result->fetchObject();
-  watchdog('debug', '<pre>tripal_update_cvtermpath_bak  $record: '. print_r($record, TRUE) .'</pre>');
+  watchdog('debug', '<pre>tripal_update_cvtermpath_bak  $record: ' . print_r($record, TRUE) .'</pre>');
 
   tripal_update_cvtermpath_root_loop($record->cvterm_id, $record->cv_id);
 }
 
+/**
+ *
+ * @param unknown $rootid
+ * @param unknown $cvid
+ */
 function tripal_update_cvtermpath_root_loop($rootid, $cvid){
-  chado_set_active('chado');
-  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $rootid: '. print_r($rootid, TRUE) .'</pre>');
-  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $cvid: '. print_r($cvid, TRUE) .'</pre>');
+  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $rootid: ' . print_r($rootid, TRUE) . '</pre>');
+  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $cvid: ' . print_r($cvid, TRUE) . '</pre>');
 
-  $ttype = db_select('cvterm', 'cv')
+  $ttype = chado_db_select('cvterm', 'cv')
           ->fields('cv', array('cvterm_id'));
   $db_or = db_or();
   $db_or->condition('cv.name', "isa", '=' );
   $db_or->condition('cv.name', "is_a", '=' );
   $ttype->condition($db_or);
-  $result = $ttype->execute()->fetchAll();
-  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $result: '. print_r($result, TRUE) .'</pre>');
+  $result = $ttype->execute()->fetchObject();
+  watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $result: ' . print_r($result, TRUE) . '</pre>');
 
-  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result['cvterm_id'], 0);
+  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, 0);
 
-  $cterm = db_query(
-           'SELECT * FROM cvterm_relationship 
-            WHERE object_id = :rootid',
-            array(':rootid' => $rootid)
-    );
+  $cterm = chado_query(
+    'SELECT *
+     FROM {cvterm_relationship}
+     WHERE object_id = :rootid
+    ',
+    array(':rootid' => $rootid)
+  );
 
   while($cterm_result = $cterm->fetchAssoc()) {
-    watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $cterm_result: '. print_r($cterm_result, TRUE) .'</pre>');
+    watchdog('debug', '<pre>tripal_update_cvtermpath_root_loop  $cterm_result: ' . print_r($cterm_result, TRUE) . '</pre>');
     tripal_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid);
   };
 
 }
 
+/**
+ *
+ * @param $origin
+ * @param $subject_id
+ * @param $cv_id
+ * @param $type_id
+ * @param $depth
+ * @return multitype:
+ */
 function tripal_update_cvtermpath_loop($origin, $subject_id, $cv_id, $type_id, $depth){
-  chado_set_active('chado');
-  watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $subject_id: '. print_r($subject_id, TRUE) .'</pre>');
+  watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $subject_id: ' . print_r($subject_id, TRUE) . '</pre>');
 
-  $count =  db_query('SELECT * FROM cvtermpath
-           WHERE cv_id = :cvid AND object_id = :origin
-           AND subject_id = :child_id
-           AND pathdistance = :depth',
+  $count =  chado_query(
+    'SELECT *
+     FROM {cvtermpath}
+     WHERE cv_id = :cvid AND object_id = :origin
+       AND subject_id = :child_id
+       AND pathdistance = :depth
+    ',
     array(':cvid' => $cv_id, ':origin' => $origin, ':child_id' => $subject_id, ':depth' => $depth)
   );
   $count_total = $count->rowCount();
@@ -441,16 +458,15 @@ function tripal_update_cvtermpath_loop($origin, $subject_id, $cv_id, $type_id, $
   } */
   $cterm = array();
 
-  $query = db_select('cvterm_relationship', 'cvtr')
+  $query = chado_db_select('cvterm_relationship', 'cvtr')
           ->fields('cvtr')
           ->condition('cvtr.object_id', $subject_id, '=' )
           ->execute();
 
   while($loop_item = $query->fetchAssoc()){
-    watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $loop_item: '. print_r($loop_item, TRUE) .'</pre>');
-    tripal_update_cvtermpath_loop($origin, $loop_item['subject_id'], $cv_id, $loop_item['type_id'], $depth + 1 );
+    watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $loop_item: ' . print_r($loop_item, TRUE) . '</pre>');
+    tripal_update_cvtermpath_loop($origin, $loop_item['subject_id'], $cv_id, $loop_item['type_id'], $depth + 1);
   };
-
 
   return $cterm;
 
