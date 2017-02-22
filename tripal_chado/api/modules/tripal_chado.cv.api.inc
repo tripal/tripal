@@ -375,8 +375,8 @@ function tripal_update_cvtermpath_bak($cv_id, $job_id = NULL){
   $result = chado_query('
     SELECT DISTINCT t.*
     FROM {cvterm} t
-      LEFT JOIN cvterm_relationship r ON (t.cvterm_id = r.subject_id)
-      INNER JOIN cvterm_relationship r2 ON (t.cvterm_id = r2.object_id)
+      LEFT JOIN {cvterm_relationship} r ON (t.cvterm_id = r.subject_id)
+      INNER JOIN {cvterm_relationship} r2 ON (t.cvterm_id = r2.object_id)
     WHERE t.cv_id = :cvid AND r.subject_id is null',
     array(':cvid' => $cv_id)
   );
