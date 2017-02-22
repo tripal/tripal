@@ -93,16 +93,19 @@ function tripal_ds_ds_layout_info() {
   return $layouts;
 }
 
-function tripal_ds_update_layout_form($form, &$form_state, $bundle) {
+function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
   $form = array();
   $form['bundle_name'] = array(
     '#type' => 'value',
-    '#value' => $bundle,
+    '#value' => $bundle_name,
   );
 
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $bundle_label = $bundle->label;
+
   return confirm_form($form,
-    t('Please confirm you would like to update this layout: '.$bundle),
-    'admin/structure/bio_data/manage/'.$bundle.'/display',
+    t('Please confirm you would like to apply this layout: ' . $bundle_label),
+    'admin/structure/bio_data/manage/' . $bundle_name . '/display',
     t('This action cannot be undone.'),
     t('Yes, apply layout'),
     t('No, cancel')
