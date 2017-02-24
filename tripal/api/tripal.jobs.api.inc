@@ -160,14 +160,22 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
  *   The unique identifier of the job
  *
  * @return
- *   An object describing the job
+ *   An object describing the job if a job is found or FALSE on failure.
  *
  * @ingroup tripal_jobs_api
  */
 function tripal_get_job($job_id) {
+  if (!$job_id or !is_numeric($job_id)) {
+    watchdog('tripal', "Must provide a numeric \$job_id to the tripal_cancel_job() function.");
+    return FALSE;
+  }
 
   $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
     ->fetchObject();
+
+  $job->submit_date_string = format_date($job->submit_date);
+  $job->start_time_string = format_date($job->start_time);
+  $job->end_time_string = format_date($job->end_time);
 
   return $job;
 }
@@ -180,7 +188,7 @@ function tripal_get_job($job_id) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_is_job_running() {
+function tripal_get_running_jobs() {
 
   // iterate through each job that has not ended
   // and see if it is still running. If it is not
@@ -211,55 +219,9 @@ function tripal_is_job_running() {
   return FALSE;
 }
 
-/**
- * Returns the start time for a given job
- *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The start time of the job if it was already run and either "Cancelled" or "Not Yet Started" otherwise
- *
- * @ingroup tripal_jobs_api
- */
-function tripal_get_job_start($job) {
 
-  if ($job->start_time > 0) {
-    $start = format_date($job->start_time);
-  }
-  else {
-    if (strcmp($job->job_status, 'Cancelled')==0) {
-      $start = 'Cancelled';
-    }
-    else {
-      $start = 'Not Yet Started';
-    }
-  }
-  return $start;
-}
 
-/**
- * Returns the end time for a given job
- *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The end time of the job if it was already run and empty otherwise
- *
- * @ingroup tripal_jobs_api
- */
-function tripal_get_job_end($job) {
 
-  if ($job->end_time > 0) {
-    $end = format_date($job->end_time);
-  }
-  else {
-    $end = '';
-  }
-
-  return $end;
-}
 /**
  * Set a job to be re-ran (ie: add it back into the job queue)
  *
@@ -510,17 +472,4 @@ function tripal_get_active_jobs($modulename = NULL) {
   return $jobs;
 }
 
-/**
- * Returns the date the job was added to the queue
- *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The date teh job was submitted
- *
- * @ingroup tripal_jobs_api
- */
-function tripal_get_job_submit_date($job) {
-  return format_date($job->submit_date);
-}
+
