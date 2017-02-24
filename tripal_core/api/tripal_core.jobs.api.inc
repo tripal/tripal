@@ -144,14 +144,22 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
  *   The unique identifier of the job
  *
  * @return
- *   An object describing the job
+ *   An object describing the job if a job is found or FALSE on failure.
  *
  * @ingroup tripal_jobs_api
  */
 function tripal_get_job($job_id) {
+  if (!$job_id or !is_numeric($job_id)) {
+    watchdog('tripal', "Must provide a numeric \$job_id to the tripal_cancel_job() function.");
+    return FALSE;
+  }
 
   $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
     ->fetchObject();
+
+  $job->submit_date_string = format_date($job->submit_date);
+  $job->start_time_string = format_date($job->start_time);
+  $job->end_time_string = format_date($job->end_time);
 
   return $job;
 }
