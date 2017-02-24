@@ -1,29 +1,36 @@
 <?php
 /**
  * @file
- * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for
- * completion.
+ * Tripal offers a job management subsystem for managing tasks that may require
+ * an extended period of time for completion.
  */
 
 /**
  * @defgroup tripal_jobs_api Tripal Jobs API
  * @ingroup tripal_core_api
  * @{
- * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for
- * completion.  Drupal uses a UNIX-based cron job to handle tasks such as  checking  the  availability of updates,
- * indexing new nodes for searching, etc.   Drupal's cron uses the web interface for launching these tasks, however,
- * Tripal provides several administrative tasks that may time out and not complete due to limitations of the web
- * server.  Examples including syncing of a large number of features between chado and Drupal.  To circumvent this,
- * as well as provide more fine-grained control and monitoring, Tripal uses a jobs management sub-system built into
- * the Tripal Core module.   It is anticipated that this functionality will be used for managing analysis jobs provided by
- * future tools, with eventual support for distributed computing.
+ * Tripal offers a job management subsystem for managing tasks that may require
+ * an extended period of time for completion.  Drupal uses a UNIX-based cron
+ * job to handle tasks such as  checking  the  availability of updates, indexing
+ * new nodes for searching, etc.   Drupal's cron uses the web interface for
+ * launching these tasks, however, Tripal provides several administrative tasks
+ * that may time out and not complete due to limitations of the web server.
+ * Examples including syncing of a large number of features between chado and
+ * Drupal.  To circumvent this, as well as provide more fine-grained control
+ * and monitoring, Tripal uses a jobs management sub-system built into the
+ * Tripal Core module.   It is anticipated that this functionality will be used
+ * for managing analysis jobs provided by future tools, with eventual support
+ * for distributed computing.
  *
- * The  Tripal jobs management system allows administrators to submit tasks to be performed which can then  be
- * launched through a UNIX command-line PHP script or cron job.  This command-line script can be added to a cron
- * entry along-side the Drupal cron entry for automatic, regular launching of Tripal jobs.  The order of execution of
- * waiting jobs is determined first by priority and second by the order the jobs were entered.
+ * The  Tripal jobs management system allows administrators to submit tasks to
+ * be performed which can then  be launched through a UNIX command-line PHP
+ * script or cron job.  This command-line script can be added to a cron entry
+ * along-side the Drupal cron entry for automatic, regular launching of Tripal
+ * jobs.  The order of execution of waiting jobs is determined first by
+ * priority and second by the order the jobs were entered.
  *
- * The API functions described below provide a programmatic interface for adding, checking and viewing jobs.
+ * The API functions described below provide a programmatic interface for
+ * adding, checking and viewing jobs.
  * @}
  */
 
@@ -165,10 +172,14 @@ function tripal_get_job($job_id) {
 }
 
 /**
- * Returns a list of running tripal jobs
+ * Indicates if any jobs are running.
+ *
+ * This function will check the system to see if a job has a process ID
+ * and if that process ID is still running. It will update the job status
+ * accordingly before returning.
  *
  * @return
- *    and array of objects where each object describes a running job or FALSE if no jobs are running
+ *   Returns TRUE if any job is running or FALSE otherwise.
  *
  * @ingroup tripal_jobs_api
  */
