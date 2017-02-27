@@ -1194,7 +1194,7 @@ function tripal_chado_populate_vocab_TPUB() {
         'name' => 'PMID',
         'description' => 'PubMed',
         'url' => 'http://www.ncbi.nlm.nih.gov/pubmed',
-        'urlprefix' => 'http://www.ncbi.nlm.nih.gov/pubmed/'
+        'urlprefix' => 'http://www.ncbi.nlm.nih.gov/pubmed/{accession}'
       ),
       array('update_existing' => TRUE)
   );
