@@ -89,25 +89,3 @@ function tripal_get_job_submit_date($job) {
   );
   return format_date($job->submit_date);
 }
-
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 3.0 and will be removed a later release.
- * This function has been replaced by tripal_get_running_jobs().
- *
- * @see chado_get_id_from_nid()
- */
-function tripal_is_job_running() {
-
-  tripal_report_error('tripal_deprecated',TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. The arguments have been changed slightly (ie: $nid instead of $node). Please update your code.",
-    array(
-      '%old_function'=>'tripal_is_job_running',
-      '%new_function' => 'tripal_get_running_jobs'
-    )
-  );
-
-  //New API Function
-  return tripal_get_running_jobs();
-}

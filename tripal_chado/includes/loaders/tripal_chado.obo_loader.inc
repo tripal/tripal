@@ -510,7 +510,7 @@ function tripal_chado_load_update_cvtermpath($newcvs, $jobid) {
  */
 function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
-  $transaction = db_transaction();
+  #$transaction = db_transaction();
   print "\nNOTE: Loading of this OBO file is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "insertions/updates is rolled back and will not be found in the database\n\n";
@@ -900,6 +900,18 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
     foreach ($term['relationship'] as $value) {
       $rel = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
       $object = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
+      // The Gene Ontology uses 'has_part' for transitive relationships, but
+      // it specifically indicates that 'has_part' should not be used for
+      // grouping annotations.  Unfortunately, this means that when we
+      // try to popoulate the cvtermpath table a 'has_part' relationships
+      // will be used for exactly that purpose: to group annotations.  This
+      // doesn't seem to the be the case for other vocabularies such as the
+      // sequence ontology that uses has_part as primary relationship between
+      // terms. So, when loading the GO, we'll not include has_part
+      // relationships.
+      if ($rel == 'has_part' and $cvterm->dbxref_id->db_id->name = 'GO') {
+        continue;
+      }
       if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
         tripal_cv_obo_quiterror("Cannot add relationship $rel: $object");
       }

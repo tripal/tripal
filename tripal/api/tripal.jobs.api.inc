@@ -181,14 +181,18 @@ function tripal_get_job($job_id) {
 }
 
 /**
- * Returns a list of running tripal jobs
+ * Indicates if any jobs are running.
+ *
+ * This function will check the system to see if a job has a process ID
+ * and if that process ID is still running. It will update the job status
+ * accordingly before returning.
  *
  * @return
- *    and array of objects where each object describes a running job or FALSE if no jobs are running
+ *   Returns TRUE if any job is running or FALSE otherwise.
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_get_running_jobs() {
+function tripal_is_job_running() {
 
   // iterate through each job that has not ended
   // and see if it is still running. If it is not
@@ -218,8 +222,6 @@ function tripal_get_running_jobs() {
   // return 1 to indicate that no jobs are currently running.
   return FALSE;
 }
-
-
 
 
 /**

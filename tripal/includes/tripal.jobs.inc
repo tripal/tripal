@@ -120,7 +120,7 @@ function tripal_jobs_report() {
 
   // run the following function which will
   // change the status of jobs that have errored out
-  tripal_is_job_running();
+  tripal_get_running_jobs();
 
   $job_status = '';
   $job_name = '';
