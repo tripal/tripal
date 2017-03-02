@@ -9,7 +9,6 @@
  * @param $form_state
  */
 function tripal_chado_migrate_form($form, &$form_state) {
-
   $form['overview_vert_tabs'] = array(
     '#type' => 'vertical_tabs'
   );
@@ -816,7 +815,6 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
  *
  * Migrate images for all chado_organism
  *
- * @param unknown $tv2_content_types
  */
 function tripal_chado_migrate_organism_images () {
   // Get all organism entities
@@ -839,23 +837,74 @@ function tripal_chado_migrate_organism_images () {
     ->condition('id', $nid)
     ->execute()
     ->fetchField();
-    // If there is an image, add it to the organism entity
-    if ($fid) {
-      $file = file_load($fid);
-      // Add a record to the file_usage table
-      file_usage_add($file, 'file', 'TripalEntity', $entity_id);
-      // Attached it to the entity
-      $entities = entity_load('TripalEntity', array($entity_id));
-      $entity = $entities[$entity_id];
-      $image_file = (array) $file;
-      $image = array(
-        'und' => array(
-          0 =>$image_file
-        )
-      );
-      $entity->data__image = $image;
-      field_attach_update('TripalEntity', $entity);
+    // check if the image was added using the old interface.
+    if (!$fid) {
+      $sql = 
+         "SELECT genus,species,nid 
+          FROM {organism} O 
+          INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id 
+          WHERE O.organism_id = :organism_id";
+      $chado_org = chado_query($sql, array(':organism_id' => $organism->record_id))->fetchObject();
+      
+      if ($chado_org) {
+        $base_path = realpath('.');
+        $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
+        $image_name =  $chado_org->genus . "_" . $chado_org->species . ".jpg";
+        $image_path = "$base_path/$image_dir/$image_name";
+        // image files are stored as 'genus_species.jpg'
+        $file =NULL;
+        if (file_exists($image_path)) {
+          $handle = fopen($image_path, 'r');
+          $file = file_save_data($handle, "public://$image_name");
+          fclose($handle);
+        }
+        // last possible case: image files are stored as 'organism_id.jpg'
+        else {
+          $image_name = $chado_org->nid . ".jpg";
+          $image_path = "$base_path/$image_dir/$image_name";
+          if (file_exists($image_path)) {
+            $handle = fopen($image_path, 'r');
+            $file = file_save_data($handle, "public://$image_name");
+            fclose($handle);
+          }
+        }
+        if($file){
+          tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id);
+        }        
+      }
     }
+    else {
+      // If there is an image, add it to the organism entity
+      tripal_chado_migrate_organism_image_add_file ($fid, $entity_id);
+    }
+    
   }
-  
+}
+
+/**
+ * 
+ * Add image file for the organism entity
+ *
+ * @param unknown $fid
+ */
+function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id) {
+  if ($fid && $entity_id) {
+    $file = file_load($fid);
+    // Add a record to the file_usage table
+    file_usage_add($file, 'file', 'TripalEntity', $entity_id);
+    // Attached it to the entity
+    $entities = entity_load('TripalEntity', array($entity_id));
+    $entity = $entities[$entity_id];
+    $image_file = (array) $file;
+    $image = array(
+      'und' => array(
+        0 =>$image_file
+      )
+    );
+    $entity->data__image = $image;
+    field_attach_update('TripalEntity', $entity);
+    entity_get_controller('TripalEntity')->resetCache(array($entity_id));
+    // Add a record to the field_data_data__image table
+    
+  }
 }
