@@ -909,7 +909,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
       // sequence ontology that uses has_part as primary relationship between
       // terms. So, when loading the GO, we'll not include has_part
       // relationships.
-      if ($rel == 'has_part' and $cvterm->dbxref_id->db_id->name = 'GO') {
+      if ($rel == 'has_part' and $cvterm->dbxref_id->db_id->name == 'GO') {
         continue;
       }
       if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
