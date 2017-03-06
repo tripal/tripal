@@ -94,7 +94,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $rows[][] = array('data' => $phrase, 'class' => array('tripal-entity-unattached field-items'));
     }
 
-    $pager = $this->generate_pager(count($rows), $per_page);
+    //$pager = $this->generate_pager(count($rows), $per_page);
 
     $per_page = 2;
     // Initialize the pager
@@ -104,7 +104,12 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     //format pager
     $pager = theme('pager', array('quantity', count($rows)));
 
-    $pager = preg_replace("/href=\".*page=(.+?).*\"/", 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'tripal-entity-' . $entity->id . '--' . $this->field['field_name'] . '\', $1)"', $pager);
+
+    global $base_path;
+    $tmp_base_path = preg_replace('/\//', '\/', $base_path);
+    $field_id = 'tripal-entity-' . $entity->id . '--' . $this->field['field_name'];
+    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', $1)"', $pager);
+    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
 
     //$pager = preg_replace("/href=\"" . $tmp_base_path . "gensas\/load_job_view_panel\/" . $job_id . "\/\d\"/", 'href="javascript:void(0)" onclick="gensas.show_job_view_panel(\'' . $job_id . '\', \'' . $job->getName() . '\')"', $pager);
     // the $table array contains the headers and rows array as well as other
