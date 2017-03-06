@@ -425,7 +425,108 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
  * @param $depth
  * @return multitype:
  */
-function tripal_update_cvtermpath_loop($origin, $subject_id, $cv_id, $type_id, $depth){
+function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $depth){
+  chado_set_active('chado');
+  $count =  db_query(
+    'SELECT *
+     FROM cvtermpath
+     WHERE cv_id = :cvid 
+      AND object_id = :origin
+      AND subject_id = :child_id
+      AND pathdistance = :depth
+    ',
+    array(':cvid' => $cv_id, ':origin' => $origin, ':child_id' => $child_id, ':depth' => $depth)
+  );
+  $count_total = $count->rowCount();
+
+  //Loop check
+  chado_set_active('chado');
+  $loop = db_query(
+    'SELECT *
+     FROM cvtermpath
+     WHERE cv_id = :cvid 
+      AND object_id = :origin
+      AND subject_id = :child_id 
+      AND type_id = :type_id
+    ',
+    array(':cvid' => $cv_id, ':origin' => $origin, ':child_id' => $child_id, ':type_id' => $type_id,)
+  );
+  $loop_check = $loop->rowCount();
+
+  //watchdog('debug', '<pre>tripal_ds_preprocess_TripalEntity $rows ' . print_r($rows, TRUE) . '</pre>');
+  /*if(!empty($rows)){
+    foreach($rows as $row){
+      tripal_update_cvtermpath_loop_check($origin, $child_id, $cv_id, $type_id, $depth, $row->cvtermpath_id, 0);
+    }
+  }
+  else {*/
+    //If no loop proceed.
+  try{
+    if($count_total == 0) {
+      chado_set_active('chado');
+
+      $query = db_insert('cvtermpath')
+        ->fields(array(
+          'object_id' => $origin,
+          'subject_id' => $child_id,
+          'cv_id' => $cv_id,
+          'type_id' => $type_id,
+          'pathdistance' => $depth,
+        ));
+      $rows = $query->execute();
+    }
+    if ($loop_check == 0) {
+      chado_set_active('chado');
+
+      $query = db_select('cvterm_relationship', 'cvtr')
+        ->fields('cvtr')
+        ->condition('cvtr.object_id', $child_id, '=')
+        ->execute();
+      $cterm = $query->fetchAll();
+
+      foreach ($cterm as $item) {
+        //watchdog('debug', '<pre>tripal_ds_preprocess_TripalEntity $item ' . print_r($item, TRUE) . '</pre>');
+        tripal_update_cvtermpath_loop($origin, $item->subject_id, $cv_id, $item->type_id, $depth + 1);
+      };
+      //}
+    }
+  }
+  catch(Exception $e){
+    watchdog_exception('tripal_ds', $e);
+    return FALSE;
+  }
+
+  return 1;
+
+}
+
+/**
+ *
+ * @param $origin
+ * @param $subject_id
+ * @param $cv_id
+ * @param $type_id
+ * @param $depth
+ * @return multitype:
+
+function tripal_update_cvtermpath_loop_check($origin, $child_id, $cv_id, $type_id, $depth, $cvtermpath_id, $loop_count, $loop_check, $object_id){
+  //Store the
+
+  //Check if the passed parameters match any of the items in the loop_check array.
+  if(!empty($loop_check)){
+    foreach($loop_check as $item){
+        if ($item['type_id'] = $type_id){
+          if($item['subject_id'] = $child_id){
+            if($item['object_id'] = $object_id){
+              //Loop found, roll back all rows until $cvtermpath_id-1 (last correct entry)
+              // and step into the next loop
+            }
+          }
+        }
+    }
+  }
+  $loop_count + 1;
+
   chado_set_active('chado');
   $count =  db_query(
     'SELECT *
@@ -434,43 +535,39 @@ function tripal_update_cvtermpath_loop($origin, $subject_id, $cv_id, $type_id, $
        AND subject_id = :child_id
        AND pathdistance = :depth
     ',
-    array(':cvid' => $cv_id, ':origin' => $origin, ':child_id' => $subject_id, ':depth' => $depth)
+    array(':cvid' => $cv_id, ':origin' => $origin, ':child_id' => $child_id, ':depth' => $depth)
   );
   $count_total = $count->rowCount();
-  chado_set_active('chado');
-  watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $count_total: ' . print_r($count_total, TRUE) . '</pre>');
 
   if ($count_total == 0) {
-    watchdog('debug', '<pre>tripal_update_cvtermpath_loop inside if count total $origin: ' . print_r($origin, TRUE) . '</pre>');
     chado_set_active('chado');
-
-    db_update("cvtermpath")
+    $query = db_insert('cvtermpath')
       ->fields(array(
-        "object_id" => $origin,
-        "subject_id" => $subject_id,
-        "cv_id" => $cv_id,
-        "type_id" => $type_id,
-        "pathdistance" => $depth
-      ))
+        'object_id' => $origin,
+        'subject_id' => $child_id,
+        'cv_id' => $cv_id,
+        'type_id' => $type_id,
+        'pathdistance' => $depth,
+      ));
+    $rows = $query->execute();
+    $cterm = array();
+    $query = db_select('cvterm_relationship', 'cvtr')
+      ->fields('cvtr')
+      ->condition('cvtr.object_id', $child_id, '=' )
       ->execute();
+    $cterm = $query->fetchAll();
+
+    foreach ($cterm as $item) {
+      $loop_check[$loop_count]= $item;
+      tripal_update_cvtermpath_loop_check($origin, $item->subject_id, $cv_id, $item->type_id, $depth + 1, $loop_count, $loop_check, $item->object_id);
+    };
   }
-  $cterm = array();
 
-  $query = db_select('cvterm_relationship', 'cvtr')
-          ->fields('cvtr')
-          ->condition('cvtr.object_id', $subject_id, '=' )
-          ->execute();
 
-  while($loop_item = $query->fetchAssoc()){
-    watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $loop_item: ' . print_r($loop_item, TRUE) . '</pre>');
-    tripal_update_cvtermpath_loop($origin, $loop_item['subject_id'], $cv_id, $loop_item['type_id'], $depth + 1);
-  };
-
-  return $cterm;
+  return 1;
 
 }
-
-
+ */
 
 /**
  * Adds a controlled vocabular to the CV table of Chado.

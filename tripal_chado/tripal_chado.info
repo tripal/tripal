@@ -11,6 +11,7 @@ files[] = views_handlers/chado_views_handler_sort.inc
 files[] = views_handlers/chado_views_handler_field_chado_base__organism_id.inc
 
 stylesheets[all][] = theme/css/tripal_chado.css
+scripts[]          = theme/js/tripal_chado_fields.js
 
 dependencies[] = tripal
 dependencies[] = date

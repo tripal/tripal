@@ -92,9 +92,19 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         }
       }
 
-      $rows[] = array($phrase);
+      $rows[][] = array('data' => $phrase, 'class' => array('tripal-entity-unattached field-items'));
     }
 
+    $per_page = 10;
+    // Initialize the pager
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    // Split your list into page sized chunks
+    $chunks = array_chunk($rows, '10', TRUE);
+    //format pager
+    $pager = theme('pager', array('quantity', count($rows)));
+
+    //$pager = preg_replace("/href=\"(.*)\"/", 'href="javascript:void(0)" onclick="tripal_navigate_field_pager()"', $pager);
+    //$pager = preg_replace("/href=\"" . $tmp_base_path . "gensas\/load_job_view_panel\/" . $job_id . "\/\d\"/", 'href="javascript:void(0)" onclick="gensas.show_job_view_panel(\'' . $job_id . '\', \'' . $job->getName() . '\')"', $pager);
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
@@ -102,7 +112,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     $table = array(
       'header' => $headers,
-      'rows' => $rows,
+      'rows' => $chunks[$current_page],
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),
@@ -118,6 +128,8 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => theme_table($table),
+        '#prefix' => '<div id="ajax-target">',
+        '#suffix' => $pager . '</div>',
       );
     }
   }

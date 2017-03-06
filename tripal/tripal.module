@@ -566,6 +566,7 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.jobs.api');
   module_load_include('inc', 'tripal', 'api/tripal.notice.api');
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
+  module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
 /**
