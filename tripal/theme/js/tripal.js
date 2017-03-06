@@ -1,7 +1,7 @@
 // Using the closure to map jQuery to $. 
 (function ($) {
   // Store our function as a property of Drupal.behaviors.
-  Drupal.behaviors.myModuleSecureLink = {
+  Drupal.behaviors.tripal = {
     attach: function (context, settings) {
 
       $(".tripal-entity-unattached .field-items").replaceWith('<div class="field-items">Loading... <img src="' + tripal_path + '/theme/images/ajax-loader.gif"></div>');
@@ -18,8 +18,18 @@
           }
         });
       });
-
     }
   }
 
 })(jQuery);
+
+function tripal_navigate_field_pager(id, page) {
+  jQuery.ajax({
+    type: "GET",
+    url: Drupal.settings["basePath"] + "bio_data/ajax/field_attach/" + id,
+    data: { 'page' : page },
+    success: function(response) {
+      jQuery("#" + id + ' .field-items').replaceWith(response['content']);
+    }
+  });
+}

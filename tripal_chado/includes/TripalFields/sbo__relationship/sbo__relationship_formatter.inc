@@ -53,7 +53,6 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-
     $rows = array();
     $headers = array($settings['title']);
 
@@ -95,15 +94,15 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $rows[][] = array('data' => $phrase, 'class' => array('tripal-entity-unattached field-items'));
     }
 
-    $per_page = 10;
+    $per_page = 2;
     // Initialize the pager
     $current_page = pager_default_initialize(count($rows), $per_page);
     // Split your list into page sized chunks
-    $chunks = array_chunk($rows, '10', TRUE);
+    $chunks = array_chunk($rows, $per_page, TRUE);
     //format pager
     $pager = theme('pager', array('quantity', count($rows)));
 
-    //$pager = preg_replace("/href=\"(.*)\"/", 'href="javascript:void(0)" onclick="tripal_navigate_field_pager()"', $pager);
+    $pager = preg_replace("/href=\".*page=(.+?).*\"/", 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'tripal-entity-' . $entity->id . '--' . $this->field['field_name'] . '\', $1)"', $pager);
     //$pager = preg_replace("/href=\"" . $tmp_base_path . "gensas\/load_job_view_panel\/" . $job_id . "\/\d\"/", 'href="javascript:void(0)" onclick="gensas.show_job_view_panel(\'' . $job_id . '\', \'' . $job->getName() . '\')"', $pager);
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
