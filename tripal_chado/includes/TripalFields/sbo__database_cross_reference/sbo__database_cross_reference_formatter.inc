@@ -2,7 +2,7 @@
 
 class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
-  public static $default_label = 'Database cross reference';
+  public static $default_label = 'Cross reference';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__database_cross_reference');
@@ -26,7 +26,7 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
       if (!$item['value']) {
         continue;
       }
-      $content = $item['value']['data:1056'] . ':' . $item['value']['data:2091'];
+      $content = $item['value']['data:1048'] . ':' . $item['value']['data:2091'];
       if ($item['value']['schema:url']) {
         $content = l($content, $item['value']['schema:url'], array('attributes' => array('target' => '_blank')));
       }

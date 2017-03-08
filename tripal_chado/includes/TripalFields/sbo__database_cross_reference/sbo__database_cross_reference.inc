@@ -12,7 +12,7 @@ class sbo__database_cross_reference extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default lable for this field.
-  public static $default_label = 'Database cross reference';
+  public static $default_label = 'Cross reference';
 
   // The default description for this field.
   public static $description = 'This record can be cross referenced with a record in
@@ -80,7 +80,7 @@ class sbo__database_cross_reference extends ChadoField {
       'value' => array(
         /* sub elements that may be present in the values array
         // Database name
-        'data:1056' => '',
+        'data:1048' => '',
         // Accession
         'data:2091' => '',
         'schema:url' => '',
@@ -113,7 +113,7 @@ class sbo__database_cross_reference extends ChadoField {
         $URL = tripal_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            'data:1056' => $dbxref->db_id->name,
+            'data:1048' => $dbxref->db_id->name,
             'data:2091' => $dbxref->accession,
             'schema:url' => $URL,
           ),

@@ -22,7 +22,7 @@ class local__source_data_formatter extends ChadoFieldFormatter {
            <dt>Source Version</dt>
            <dd>: " . $items[0]['value']['IAO:0000129'] . " </dd>
            <dt>Source URI</dt>
-           <dd>: " . $items[0]['value']['data:1047'] . " </dd>
+           <dd>: " . l($items[0]['value']['data:1047'], $items[0]['value']['data:1047'], array('attributes' => array('target' => '_blank'))) . " </dd>
         </dl>
       ";
     }

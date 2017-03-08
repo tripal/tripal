@@ -73,7 +73,7 @@ class sio__references extends ChadoField {
     );
 
     // Iterate through all of the _pub tables and look for any that have
-    // linked to this record. If os then add them.
+    // linked to this record. If so then add them.
     $chado_tables = chado_get_table_names(TRUE);
     $delta = 0;
     foreach ($chado_tables as $chado_table) {

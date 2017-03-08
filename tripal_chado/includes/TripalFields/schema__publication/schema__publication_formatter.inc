@@ -30,6 +30,10 @@ class schema__publication_formatter extends ChadoFieldFormatter {
       if ($entity) {
         list($entity_type, $entity_id) = explode(':', $entity);
         $new_title = l($title, 'bio_data/' . $entity_id);
+        // If a title has parens we need to escape them for the
+        // regular expression to work.
+        $title = preg_replace('/\(/', '\(', $title);
+        $title = preg_replace('/\)/', '\)', $title);
         $citation = preg_replace("/$title/", $new_title, $citation);
       }
       $list_items[] = $citation;
@@ -46,6 +50,9 @@ class schema__publication_formatter extends ChadoFieldFormatter {
         'attributes' => array(),
       );
       $list = theme_item_list($list);
+    }
+    else {
+      $list = $list_items[0];
     }
     $element[0] = array(
       '#type' => 'markup',

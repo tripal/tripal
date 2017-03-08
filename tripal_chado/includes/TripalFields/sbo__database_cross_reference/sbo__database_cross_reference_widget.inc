@@ -2,7 +2,7 @@
 
 class sbo__database_cross_reference_widget extends ChadoFieldWidget {
   // The default lable for this field.
-  public static $default_label = 'Database cross reference';
+  public static $default_label = 'Cross reference';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__database_cross_reference');
@@ -165,10 +165,24 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
     $description = isset($form_state['values'][$field_name][$langcode][$delta]['description']) ? $form_state['values'][$field_name][$langcode][$delta]['description'] : '';
 
+
     // If the dbxref_id does not match the db_id + accession then the user
     // has selected a new dbxref record and we need to update the hidden
     // value accordingly.
     if ($db_id and $accession) {
+      // If the dbxref doesn't exist then let's add it.
+      $values = array(
+        'db_id' => $db_id,
+        'accession' => $accession,
+      );
+      $options = array('is_duplicate' => TRUE);
+      $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
+      if (!$has_duplicate) {
+        tripal_insert_dbxref(array(
+          'db_id' => $db_id,
+          'accession' => $accession,
+        ));
+      }
       $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
       if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__dbxref_id'] = $dbxref->dbxref_id;
@@ -182,6 +196,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__dbxref_id'] = '';
     }
+
   }
 
   /**
@@ -222,11 +237,11 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
  */
 function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_state) {
 
-  $instance = $form['#instance'];
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
   $field = field_info_field($field_name);
   $field_type = $field['type'];
+  $instance = $form[$field_name]['und'][$delta]['#instance'];
   $field_table = $instance['settings']['chado_table'];
   $field_column = $instance['settings']['chado_column'];
   $field_prefix = 'chado-' . $field_table . '__dbxref_id';
@@ -234,7 +249,7 @@ function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_st
   // Check to see if this dbxref already exists. If not then
   // give a notice to the user that the dbxref will be added.
   $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
-  $db_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
+  $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
   if ($db_id and $accession) {
     $values = array(
       'db_id' => $db_id,
@@ -243,7 +258,7 @@ function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_st
     $options = array('is_duplicate' => TRUE);
     $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
     if (!$has_duplicate) {
-      drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
+      drupal_set_message('The selected cross reference is new and will be added.');
     }
   }
 
