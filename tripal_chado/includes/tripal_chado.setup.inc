@@ -226,6 +226,10 @@ function tripal_chado_prepare_chado() {
       }
     }
 
+    // Import a publication so we get all of the properties before
+    // creating the content type.
+    tripal_import_pub_by_dbxref('PMID:24163125');
+
     // Create the 'Publication' entity type.
     $error = '';
     $args = array(
@@ -243,6 +247,18 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+
+    // Now remove the publication that was added above.
+    $values = array(
+      'dbxref_id' => array(
+        'accession' => '24163125',
+        'db_id' => array(
+          'name' => 'PMID',
+        ),
+      ),
+    );
+    $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
+    chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
 
     // Create the 'Gene' entity type.
     $error = '';
