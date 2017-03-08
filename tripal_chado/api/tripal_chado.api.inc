@@ -179,7 +179,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   try {
     $i = 0;
     while($record = $records->fetchObject()) {
-      if($table == 'pub' && $record->record_id == 1){
+      if(($table == 'pub' && $record->record_id == 1) || ($table == 'contact' && $record->record_id == 1)){
         // Do not create the chado entity.
       }
       else {
