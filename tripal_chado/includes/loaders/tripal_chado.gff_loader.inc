@@ -92,13 +92,57 @@ function tripal_feature_gff3_load_form() {
       you may specify the name of the attribute to use for the name."),
   );
 
-  $form['import_options'] = array(
+  // Advanced Options
+  $form['advanced'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Import Options'),
-    '#collapsed' => TRUE
+    '#title' => t('Advanced Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
 
-  $form['import_options']['use_transaction']= array(
+  $form['advanced']['protein_names'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Protein Names'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+  );
+
+  $form['advanced']['protein_names']['re_help'] = array(
+    '#type' => 'item',
+    '#markup' => t('A regular expression is an advanced method for extracting information from a string of text.
+                   If your GFF3 file does not contain polypeptide (or protein) features, but contains CDS features, proteins will be automatically created.
+                   By default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
+                   If you want to customize the name of the created protein, you can use the following regex.')
+  );
+  $form['advanced']['protein_names']['re_mrna'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Regular expression for the mRNA name'),
+    '#required' => FALSE,
+    '#description' => t('Enter the regular expression that will extract portions of
+       the mRNA unique name. For example, for a
+       mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
+       the regular expression would be, "^(.*?)-R([A-Z]+)$".')
+  );
+  $form['advanced']['protein_names']['re_protein'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Replacement string for the protein name'),
+    '#required' => FALSE,
+    '#description' => t('Enter the replacement string that will be used to create
+       the protein name based on the mRNA regular expression. For example, for a
+       mRNA regular expression "^(.*?)-R()[A-Z]+)$", the corresponding protein regular
+       expression would be "$1-P$2".')
+  );
+
+  $form['advanced']['import_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Import Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 0,
+  );
+
+  $form['advanced']['import_options']['use_transaction']= array(
     '#type' => 'checkbox',
     '#title' => t('Use a transaction'),
     '#required' => FALSE,
@@ -108,14 +152,14 @@ function tripal_feature_gff3_load_form() {
       of failure will be present in the database.'),
     '#default_value' => 1,
   );
-  $form['import_options']['add_only']= array(
+  $form['advanced']['import_options']['add_only']= array(
     '#type' => 'checkbox',
     '#title' => t('Import only new features'),
     '#required' => FALSE,
     '#description' => t('The job will skip features in the GFF file that already
                          exist in the database and import only new features.'),
   );
-  $form['import_options']['update']= array(
+  $form['advanced']['import_options']['update']= array(
     '#type' => 'checkbox',
     '#title' => t('Import all and update'),
     '#required' => FALSE,
@@ -145,7 +189,7 @@ function tripal_feature_gff3_load_form() {
 //     '#description' => t('Features present in the GFF file that exist in the database
 //                          will be removed rather than imported'),
 //   );
-  $form['import_options']['create_organism']= array(
+  $form['advanced']['import_options']['create_organism']= array(
     '#type' => 'checkbox',
     '#title' => t('Create organism'),
     '#required' => FALSE,
@@ -156,12 +200,14 @@ function tripal_feature_gff3_load_form() {
        Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
   );
 
-  $form['targets'] = array(
+  $form['advanced']['targets'] = array(
     '#type' => 'fieldset',
     '#title' => t('Targets'),
-    '#collapsed' => TRUE
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 1,
   );
-  $form['targets']['adesc'] = array(
+  $form['advanced']['targets']['adesc'] = array(
     '#markup' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
        represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
@@ -172,7 +218,7 @@ function tripal_feature_gff3_load_form() {
        The options here will apply to all targets unless the organism and type are explicity
        set in the GFF file using the 'target_organism' and 'target_type' attributes."),
   );
-  $form['targets']['target_organism_id'] = array(
+  $form['advanced']['targets']['target_organism_id'] = array(
     '#title'       => t('Target Organism'),
     '#type'        => t('select'),
     '#description' => t("Optional. Choose the organism to which target sequences belong.
@@ -183,7 +229,7 @@ function tripal_feature_gff3_load_form() {
       attribute in the GFF file."),
     '#options'     => $organisms,
   );
-  $form['targets']['target_type'] = array(
+  $form['advanced']['targets']['target_type'] = array(
     '#title'       => t('Target Type'),
     '#type'        => t('textfield'),
     '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
@@ -191,7 +237,7 @@ function tripal_feature_gff3_load_form() {
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term."),
   );
-  $form['targets']['create_target']= array(
+  $form['advanced']['targets']['create_target']= array(
     '#type' => 'checkbox',
     '#title' => t('Create Target'),
     '#required' => FALSE,
@@ -230,6 +276,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $line_number   = trim($form_state['values']['line_number']);
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
+  $re_mrna = trim($form_state['values']['re_mrna']);
+  $re_protein = trim($form_state['values']['re_protein']);
 
 
 
@@ -256,6 +304,21 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   if ($line_number and !is_numeric($line_number) or $line_number < 0) {
     form_set_error('line_number', t("Please provide an integer line number greater than zero."));
   }
+
+  if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
+    form_set_error('re_uname', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+  }
+
+  // check the regular expression to make sure it is valid
+  set_error_handler(function() {}, E_WARNING);
+  $result_re = preg_match("/" . $re_mrna . "/", null);
+  $result = preg_replace("/" . $re_mrna . "/", $re_protein, null);
+  restore_error_handler();
+  if ($result_re === FALSE) {
+    form_set_error('re_mrna', 'Invalid regular expression.');
+  } else if ($result === FALSE) {
+    form_set_error('re_protein', 'Invalid replacement string.');
+  }
 }
 
 /**
@@ -281,12 +344,14 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
   $create_organism = $form_state['values']['create_organism'];
+  $re_mrna = trim($form_state['values']['re_mrna']);
+  $re_protein = trim($form_state['values']['re_protein']);
 
 
   $args = array($gff_file, $organism_id, $analysis_id, $add_only,
     $update, $refresh, $remove, $use_transaction, $target_organism_id,
     $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr,
-    $create_organism);
+    $create_organism, $re_mrna, $re_protein);
 
   $type = '';
   if ($add_only) {
@@ -378,6 +443,10 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  *   Check this box to automatically add the organism to the database if it does
  *   not already exists. Otherwise lines with an oraganism attribute where the
  *   organism is not present in the database will be skipped.
+ * @param $re_mrna A
+ *          regular expression to extract portions from mRNA id
+ * @param $re_protein A
+ *          replacement string to generate the protein id
  * @param $job
  *  The tripal job_id.  Only used by the Tripal Jobs subsystem.
  *
@@ -386,8 +455,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
-  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
-  $job = NULL) {
+  $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
+  $re_mrna = '', $re_protein = '', $job = NULL) {
 
   $ret = array();
   $date = getdate();
@@ -395,6 +464,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // An array that stores CVterms that have been looked up so we don't have
   // to do the database query every time.
   $cvterm_lookup = array();
+
+  // An array that stores Landmarks that have been looked up so we don't have
+  // to do the database query every time.
+  $landmark_lookup = array();
 
   // empty the temp tables
   $sql = "DELETE FROM {tripal_gff_temp}";
@@ -606,7 +679,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $attr_fmax_partial = 'f';
       $attr_is_obsolete = 'f';
       $attr_is_analysis = 'f';
-      $attr_others = '';
+      $attr_others = [];
       $residues = '';
 
       // the organism to which a feature belongs can be set in the GFF
@@ -737,9 +810,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // Make sure the landmark sequence exists in the database.  If the user
       // has not specified a landmark type (and it's not required in the GFF
       // format) then we don't know the type of the landmark so we'll hope
-      // that it's unique across all types for the orgnaism. Only do this
+      // that it's unique across all types for the organism. Only do this
       // test if the landmark and the feature are different.
-      if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
+      if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0) and !in_array($landmark, $landmark_lookup)) {
+
         $select = array(
           'organism_id' => $organism->organism_id,
           'uniquename'  => $landmark,
@@ -782,6 +856,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                 "The features cannot be associated", array('%landmark' => $landmark));
           return '';
         }
+
+        // The landmark was found, remember it
+        $landmark_lookup[] = $landmark;
       }
 /*
       // If the option is to remove or refresh then we want to remove
@@ -822,7 +899,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             'type_name' => $type,
             'uniquename' => $feature->uniquename
           );
-          // make sure this record doesn't already exist in oru temp table
+          // make sure this record doesn't already exist in our temp table
           $results = chado_select_record('tripal_gff_temp', array('*'), $values);
 
           if (count($results) == 0) {
@@ -908,13 +985,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             CVT.cvterm_id, CVT.name as feature_type,
             min(TGCT.fmin) as fmin, max(TGCT.fmax) as fmax,
             TGPT.feature_id as protein_id, TGPT.fmin as protein_fmin,
-            TGPT.fmax as protein_fmax
+            TGPT.fmax as protein_fmax, FLM.uniquename as landmark
           FROM {tripal_gffcds_temp} TGCT
             INNER JOIN {feature} F on F.feature_id = TGCT.parent_id
             INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+            INNER JOIN {featureloc} L on F.feature_id = L.feature_id
+            INNER JOIN {feature} FLM on L.srcfeature_id = FLM.feature_id
             LEFT JOIN {tripal_gffprotein_temp} TGPT on TGPT.parent_id = F.feature_id
           GROUP BY F.feature_id, F.name, F.uniquename, CVT.cvterm_id, CVT.name,
-            TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand
+            TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand, FLM.uniquename
         ";
         $results = chado_query($sql);
         $protein_cvterm = tripal_get_cvterm(array(
@@ -928,8 +1007,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           // protein.
           if (!$result->protein_id) {
             // Get details about this protein
-            $uname = $result->uniquename . '-protein';
-            $name =  $result->name;
+            if ($re_mrna and $re_protein) {
+              // We use a regex to generate protein name from mRNA name
+              $uname = preg_replace("/$re_mrna/", $re_protein, $result->uniquename);
+              $name =  $result->name;
+            }
+            else {
+              // No regex, use the default '-protein' suffix
+              $uname = $result->uniquename . '-protein';
+              $name =  $result->name;
+            }
             $values = array(
               'parent_id' => $result->feature_id,
               'fmin' => $result->fmin
@@ -959,8 +1046,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               $result->uniquename, $organism, $pfmin, $pfmax);
             // Add the featureloc record. Set the start of the protein to
             // be the start of the coding sequence minus the phase.
-            tripal_feature_load_gff3_featureloc($feature, $organism, $landmark,
-              $pfmin, $pfmax, $strand, '', 'f', 'f', '', 0);
+            tripal_feature_load_gff3_featureloc($feature, $organism, $result->landmark,
+              $pfmin, $pfmax, $result->strand, '', 'f', 'f', '', 0);
           }
         }
       }
@@ -1216,6 +1303,10 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
     // try to find the parent
     $parentcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
     $relcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
+    if (!$relcvterm) {
+      tripal_report_error("tripal_feature", TRIPAL_WARNING, "Cannot find the term, 'part_of', from the sequence ontology. This term is used for associating parent and children features. Please check that the ontology is fully imported.");
+      exit;
+    }
     $values = array(
         'organism_id' => $organism_id,
         'uniquename' => $parent,
@@ -1464,7 +1555,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     // insert the 'synonym_type' vocabulary
     $values = array(
       'name' => 'synonym_type',
-      'definition' => 'A local vocabulary added for synonym types.',
+      'definition' => 'vocabulary for synonym types',
     );
     $success = chado_insert_record('cv', $values);
     if (!$success) {
