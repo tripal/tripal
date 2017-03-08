@@ -727,3 +727,19 @@ function tripal_chado_chado_cvterm_mapping_schema() {
   );
   return $schema;
 }
+
+/**
+ * Fixes the phase on the tripal_gffcds_temp table used for importing GFF files.
+ *
+ */
+function tripal_chado_update_7200() {
+  try {
+    if (chado_table_exists('tripal_gffcds_temp')) {
+      chado_query("ALTER TABLE {tripal_gffcds_temp} ALTER COLUMN phase DROP NOT NULL;");
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not fix phase on tripal_gffcds_temp table: '. $error);
+  }
+}
