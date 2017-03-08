@@ -1351,8 +1351,10 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
           'fmin' => $fmin,
           'fmax' => $fmax,
           'strand' => $strand,
-          'phase' => $phase,
         );
+        if ($phase) {
+         $values['phase'] = $phase;
+        }
         $result = chado_insert_record('tripal_gffcds_temp', $values);
         if (!$result) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR, "Cound not save record in temporary CDS table, Cannot continue.", array());
