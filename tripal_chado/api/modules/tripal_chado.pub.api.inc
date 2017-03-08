@@ -326,11 +326,14 @@ function tripal_autocomplete_pub($string = '') {
  *
  * @ingroup tripal_pub
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
+function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
   $num_pubs = 0;
+  $pub_id = NULL;
+
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
 
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -359,7 +362,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
       $pubs          = $results['pubs'];
       $search_str    = $results['search_str'];
       $total_records = $results['total_records'];
-      $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
+      tripal_pub_add_publications($pubs, $do_contact, $do_update);
     }
 
     // For backwards compatibility check to see if the legacy pub module
@@ -384,8 +387,6 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     print "FAILED: Rolling back database changes...\n";
     return;
   }
-
-  print "Done.\n";
 }
 
 /**
