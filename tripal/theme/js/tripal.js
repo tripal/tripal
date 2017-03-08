@@ -24,7 +24,13 @@
 })(jQuery);
 
 function tripal_navigate_field_pager(id, page) {
-  jQuery.ajax({
+    jQuery(document).ajaxStart(function () {
+        jQuery('#spinner').show();
+    }).ajaxComplete(function () {
+        jQuery('#spinner').hide();
+    });
+
+    jQuery.ajax({
     type: "GET",
     url: Drupal.settings["basePath"] + "bio_data/ajax/field_attach/" + id,
     data: { 'page' : page },

@@ -325,17 +325,6 @@ function tripal_create_bundle($args, &$error = '') {
       $function = $module . '_bundle_postcreate';
       $function($bundle);
     }
-
-    // Finally set admin perimssions for the content type:
-//     $roles = user_roles();
-//     $admin_rid = variable_get('user_admin_role');
-//     $perms = user_role_permissions(array($admin_rid));
-//     dpm($perms);
-//     foreach ($perms[$admin_rid] as $perm => $value) {
-//       $perms[$admin_rid][$perm] = TRUE;
-//     }
-//     user_role_change_permissions($admin_rid, $perms[$admin_rid]);
-
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -348,6 +337,47 @@ function tripal_create_bundle($args, &$error = '') {
   return $bundle;
 }
 
+/*
+ * Checks access permissions for a given entity.
+ *
+ * This function is set for TripalEntity access checking in the
+ * tripal_entity_info() under the 'access callback' element.
+ *
+ *
+ * @param $entity
+ *   The entity to check access for.
+
+function tripal_entity_permissions($entity) {
+
+  if ($entity) {
+    $bundle_name = $entity->bundle;
+  }
+  else {
+    return FALSE;
+  }
+
+  // Get the bundle object.
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
+  // Identify the administrative user roles.
+  $admin_role = user_role_load_by_name('administrator');
+  $roles = array($admin_role->rid => $admin_role->name);
+  // Define the permissions.
+  $permission_for_role = array(
+    'create ' . $bundle->label => TRUE,
+    'view ' . $bundle->label => TRUE,
+    'edit ' . $bundle->label => TRUE,
+    'delete ' . $bundle->label => TRUE,
+  );
+  // Assign the permissions
+  foreach($roles as $role => $value){
+    user_role_grant_permissions($role, $permission_for_role);
+    watchdog('debug', '<pre>tripal_entity_permissions  $role: '. print_r($role, TRUE) .'</pre>');
+  }
+
+  return TRUE;
+}
+ */
 /**
  * Retrieves a list of the content types.
  *

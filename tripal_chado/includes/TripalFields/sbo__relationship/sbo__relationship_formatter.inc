@@ -96,7 +96,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     //$pager = $this->generate_pager(count($rows), $per_page);
 
-    $per_page = 2;
+    $per_page = 10;
     // Initialize the pager
     $current_page = pager_default_initialize(count($rows), $per_page);
     // Split your list into page sized chunks
@@ -135,8 +135,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => theme_table($table),
-        '#prefix' => '<div id="ajax-target">',
-        '#suffix' => $pager . '</div>',
+        '#suffix' => '<img src=\'/sites/all/modules/tripal-7.x-3.x/tripal/theme/images/ajax-loader.gif\' id=\'spinner\'/>' . $pager,
       );
     }
   }

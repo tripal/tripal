@@ -154,6 +154,11 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
 
+  //If this is the publication table remove one record, record_id = 1
+  // which is the null publication.
+  if($table == 'pub'){
+    $count = $count - 1;
+  }
 
   // calculate the interval for updates
   $interval = intval($count / 1000);
@@ -174,42 +179,46 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   try {
     $i = 0;
     while($record = $records->fetchObject()) {
-
-      // update the job status every interval
-      //if ($jobid and $i % $interval == 0) {
+      if($table == 'pub' && $record->record_id == 1){
+        // Do not create the chado entity.
+      }
+      else {
+        // update the job status every interval
+        //if ($jobid and $i % $interval == 0) {
         $complete = ($i / $count) * 33.33333333;
         //tripal_set_job_progress($jobid, intval($complete + 33.33333333));
         printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
-      //}
+        //}
 
-      // First save the tripal_entity record.
-      $record_id = $record->record_id;
-      $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
-        'bundle' => $bundle_name,
-        'term_id' => $bundle->term_id,
-        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
-        'chado_record_id' => $record_id,
-      ));
-      $entity = $entity->save();
-      if (!$entity) {
-        throw new Exception('Could not create entity.');
+        // First save the tripal_entity record.
+        $record_id = $record->record_id;
+        $ec = entity_get_controller('TripalEntity');
+        $entity = $ec->create(array(
+          'bundle' => $bundle_name,
+          'term_id' => $bundle->term_id,
+          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+          'chado_record_id' => $record_id,
+        ));
+
+        $entity = $entity->save();
+        if (!$entity) {
+          throw new Exception('Could not create entity.');
+        }
+
+        // Next save the chado_entity record.
+        $entity_record = array(
+          'entity_id' => $entity->id,
+          'record_id' => $record_id,
+          'data_table' => $table,
+        );
+
+        // For the Tv2 to Tv3 migration we want to add the nid to the
+        // entity so we can associate the node with the entity.
+        if (property_exists($record, 'nid')) {
+          $entity_record['nid'] = $record->nid;
+        }
+        $success = drupal_write_record('chado_entity', $entity_record);
       }
-
-      // Next save the chado_entity record.
-      $entity_record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-        'data_table' => $table,
-      );
-
-      // For the Tv2 to Tv3 migration we want to add the nid to the
-      // entity so we can associate the node with the entity.
-      if (property_exists($record, 'nid')) {
-        $entity_record['nid'] = $record->nid;
-      }
-      $success = drupal_write_record('chado_entity', $entity_record);
-
       $i++;
     }
   }
