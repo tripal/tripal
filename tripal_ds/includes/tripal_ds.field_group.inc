@@ -398,6 +398,7 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
  */
 
 function _publication_prop_field_group_info($bundle_name, $fields){
+
   //Tripal pane  to nest the fieldset within.
   $field_group_tripalpane = new stdClass();
   $field_group_tripalpane->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -479,7 +480,11 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group->data = array(
     'label' => 'Properties Table',
     'weight' => '30',
-    'children' => $fields,
+    'children' =>  array(
+      0 => 'tpub__doi',
+      1 => 'tpub__publication_date',
+      2 => 'tpub__publication_type',
+    ),
     'format_type' => 'table',
     'format_settings' => array(
       'label' => 'Properties Table',

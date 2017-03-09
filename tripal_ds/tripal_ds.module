@@ -50,12 +50,11 @@ function tripal_ds_menu() {
 function tripal_ds_bundle_postcreate($bundle) {
   $bundle_name = $bundle->name;
   $bundle_data_table = $bundle->data_table;
+  $instances = field_info_instances('TripalEntity', $bundle_name);
   if($bundle_data_table == 'pub'){
-    $instances = field_info_instances('TripalEntity', $bundle_name);
     _ds_layout_pub_settings_info($bundle_name, $instances);
   }
   else {
-    $instances = field_info_instances('TripalEntity', $bundle_name);
     _ds_layout_settings_info($bundle_name, $instances);
   }
 
@@ -118,6 +117,8 @@ function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
  */
 function tripal_ds_update_layout_form_submit($form, &$form_state) {
   $bundle_name = $form_state['build_info']['args'][0];
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
   //Build the identifier to check against ds_layout_settings.
   $ds_identifier = 'TripalEntity|'.$bundle_name.'|default';
 
@@ -172,7 +173,14 @@ function tripal_ds_update_layout_form_submit($form, &$form_state) {
 
   //Now you can build the layout fresh.
   $instances = field_info_instances('TripalEntity', $bundle_name);
-  $success = _ds_layout_settings_info($bundle_name, $instances);
+  $bundle_data_table = $bundle->data_table;
+  if($bundle_data_table == 'pub'){
+    $success = _ds_layout_pub_settings_info($bundle_name, $instances);
+  }
+  else {
+    $success = _ds_layout_settings_info($bundle_name, $instances);
+  }
+
   if ($success) {
     drupal_set_message("Layout applied successfully and saved.");
   }

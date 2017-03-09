@@ -131,7 +131,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         $group_field_name = substr($group_field_name, 0, 27);
         $fieldset_field_name = substr($fieldset_field_name, 0, 27);
 
-        // Add randomm numbers to ensure the field name is unique within the 32
+        // Add random numbers to ensure the field name is unique within the 32
         // character limit of the field.
         $group_field_name = $group_field_name.rand(0, 99999);
         $fieldset_field_name = $fieldset_field_name.rand(0, 99999);
@@ -205,21 +205,22 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     $all_fields['tpub__abstract']= 'right';
     $all_fields['tpub__citation']= 'right';
     $all_fields['sbo__database_cross_reference']= 'right';
-    $all_fields['publication_type']= 'right';
+    $all_fields['tpub__publication_type']= 'right';
     $all_fields['tpub__doi']= 'right';
-
+    $all_fields['tpub__publication_date']= 'right';
+    $all_fields['sio__references']= 'right';
 
     // Iterate through the fields of this bundle.
     foreach ($instances as $key => $instance) {
       $instance_name = $instance['field_name'];
 
-      if( $instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation' || $instance_name == 'sbo__database_cross_reference'){
+      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation' || $instance_name == 'sbo__database_cross_reference' || $instance_name == 'sio__references'){
         array_push($instances_for_field_groups, $instance);
         // Update the display settings so that the title is hidden.
         $instance['display']['default']['label'] = 'hidden';
         field_update_instance($instance);
       }
-      elseif($instance_name == 'publication_type' || $instance_name == 'tpub__doi') {
+      elseif($instance_name == 'tpub__publication_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
         array_push($properties, $instance);
       }
       else {
@@ -263,8 +264,8 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
 
     // Add blocks to $region_left and build the toc field that is placed within.
     _ds_fields_info_write($bundle_name);
-    //$region_left += [ 'toc' ];
-    //$fields_with_regions += [ 'toc' => 'left' ];
+    $region_left += [ 'toc' ];
+    $all_fields += [ 'toc' => 'left' ];
     // Build the ds layout.
     $record = new stdClass;
     $record->id ='TripalEntity|' . $bundle_name . '|default';
