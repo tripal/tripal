@@ -5,8 +5,8 @@
  */
 
 /**
- * Describe various Tripal Core systems to Views
- *   for the creation of administrative views.
+ * Describe various Tripal Core systems to Views for the creation of
+ * administrative views.
  *
  * @ingroup tripal
  */

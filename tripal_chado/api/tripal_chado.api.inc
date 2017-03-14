@@ -1,44 +1,5 @@
 <?php
 
-/**
- * Retrieves an entity that matches the given table and record id.
- *
- * @param $table
- *   The name of the Chado table.
- * @param $record_id
- *   The record's primary key in the table specified by $table.
- *
- * @return
- *   A chado_entity object.
- */
-function tripal_load_chado_entity($table, $record_id) {
-   $entity_id = db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('ce.record_id', $record_id)
-     ->condition('ce.data_table', $table)
-     ->execute()
-     ->fetchField();
-   if ($entity_id) {
-     $entity = entity_load('TripalEntity', array($entity_id));
-     return reset($entity);
-   }
-   return NULL;
-}
-
-/**
- * Retrieves the entity ID using a record ID.
- *
- * @param unknown $data_table
- * @param unknown $record_id
- */
-function tripal_get_chado_entity_id($data_table, $record_id) {
-   return db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('data_table', $data_table)
-     ->condition('record_id', $record_id)
-     ->execute()
-     ->fetchField();
-}
 
 /**
  * Publishes content in Chado as a new TripalEntity entity.
@@ -79,6 +40,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         array('@error' => 'The bundle name must be provided'));
     return FALSE;
   }
+  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
 
   $table = $bundle->data_table;
   $type_column = $bundle->type_column;
@@ -94,8 +56,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $select = "SELECT $pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
-      LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-         AND CE.data_table = :table
+      LEFT JOIN public.$chado_entity_table CE on CE.record_id = T.$pkey_field
   ";
 
   // For migration of Tripal v2 nodes to entities we want to include the
@@ -196,11 +157,10 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         throw new Exception('Could not create entity.');
       }
 
-      // Next save the chado_entity record.
+      // Next save the chado entity record.
       $entity_record = array(
         'entity_id' => $entity->id,
         'record_id' => $record_id,
-        'data_table' => $table,
       );
 
       // For the Tv2 to Tv3 migration we want to add the nid to the
@@ -208,7 +168,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       if (property_exists($record, 'nid')) {
         $entity_record['nid'] = $record->nid;
       }
-      $success = drupal_write_record('chado_entity', $entity_record);
+      $success = drupal_write_record($chado_entity_table, $entity_record);
 
       $i++;
     }

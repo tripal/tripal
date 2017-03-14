@@ -1261,7 +1261,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'field_name' =>  $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Database Cross Reference',
+      'label' => 'Cross Reference',
       'description' => 'The IDs where this record may be available in other external online databases.',
       'required' => FALSE,
       'settings' => array(

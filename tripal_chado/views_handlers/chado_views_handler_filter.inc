@@ -27,7 +27,7 @@ class chado_views_handler_filter_boolean extends views_handler_filter_boolean_op
    */
   function query() {
 
-    // Adds joins to chado_entity and the chado table this field is from.
+    // Adds joins to chado entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
     // Booleans in chado are stored t/f.
@@ -48,7 +48,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
    */
   function query() {
 
-    // Adds joins to chado_entity and the chado table this field is from.
+    // Adds joins to chado entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
     // Then allow the parent handler to add the where.
@@ -99,7 +99,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
    */
   function query() {
 
-    // Adds joins to chado_entity and the chado table this field is from.
+    // Adds joins to chado entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
     // We need to do a quick fix for multiple values selected.
@@ -391,7 +391,7 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
 
   function query() {
 
-    // Adds joins to chado_entity and the chado table this field is from.
+    // Adds joins to chado entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
     // Finally add the restriction on the chado table including the value entered by the filter.
@@ -414,16 +414,16 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
  */
 function _chado_views_add_table_joins(&$handler) {
 
-  // First we need to join to the chado_entity table where the link between an
+  // First we need to join to the chado entity table where the link between an
   // entity and it's chado record is stored.
   $join = new views_join();
   $join->construct('chado_entity', $handler->table, 'id', 'chado_entity_id');
   $alias = $handler->query->add_relationship('chado_entity', $join, $handler->table_alias, $handler->relationship);
 
-  // Restrict the chado_entity join to only return the table this field is from.
+  // Restrict the chado entity join to only return the table this field is from.
   $handler->query->add_where(0, $alias . '.data_table', $handler->definition['chado_table'], '=');
 
-  // Now, we need to join from chado_entity to the chado table needed by this field.
+  // Now, we need to join from chado entity to the chado table needed by this field.
   // This only works if the field is from the base table.
   // @todo: fix handler to work with non-base tables.
   $join = new views_join();

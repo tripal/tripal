@@ -309,7 +309,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
         }
       }
 
-      // Check to see if the current table maps to an entity
+      // Check to see if the current record maps to an entity
       $entity_id = db_select('chado_entity', 'ce')
         ->fields('ce', array('entity_id'))
         ->condition('data_table', $table)

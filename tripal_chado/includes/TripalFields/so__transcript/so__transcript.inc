@@ -112,7 +112,7 @@ class so__transcript extends ChadoField {
         'data:0842' => $transcript->uniquename,
         'SO:0000735' => $loc,
       );
-      $entity_id = tripal_get_chado_entity_id($field_table, $record->feature_id);
+      $entity_id = tripal_chado_get_record_entity($entity->bundle, $record_id);
       if ($entity_id) {
          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
        }

@@ -6,7 +6,7 @@ class obi__organism extends ChadoField {
   public static $default_label = 'Organism';
 
   // The default description for this field.
-  public static $description = 'The organism to which this resource is sssociated.';
+  public static $description = 'The organism to which this resource is associated.';
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
