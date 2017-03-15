@@ -34,13 +34,8 @@ function _summary_field_group_info($bundle_name, $fields){
   drupal_write_record('field_group', $field_group_tripalpane);
 
   //Write to the tripal_ds table to record the new tripal pane.
-  $field_for_table = new stdClass();
-  $field_for_table->tripal_ds_field_name = 'group_summary_tripalpane';
-  $field_for_table->tripal_ds_field_label = 'Summary';
-  $field_for_table->entity_type = 'TripalEntity';
-  $field_for_table->bundle = $bundle_name;
+  tripal_ds_bundle_menu_item($bundle_name, 'Summary', 'group_summary_tripalpane', 'TripalEntity');
 
-  drupal_write_record('tripal_ds', $field_for_table);
 
   //Fieldset field to nest the table within.
   $field_group_fieldset = new stdClass();
@@ -122,7 +117,7 @@ function _prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Tripal Pane Properties',
+    'label' => 'Properties Tripal Pane',
     'weight' => '2',
     'children' => array(
         0 => 'group_prop',
@@ -140,13 +135,7 @@ function _prop_field_group_info($bundle_name, $fields){
   drupal_write_record('field_group', $field_group_tripalpane);
 
   //write to the tripal_ds table to record the new tripal pane.
-  $field_for_table = new stdClass();
-  $field_for_table->tripal_ds_field_name = 'group_prop_tripalpane';
-  $field_for_table->tripal_ds_field_label = 'Properties';
-  $field_for_table->entity_type = 'TripalEntity';
-  $field_for_table->bundle = $bundle_name;
-
-  drupal_write_record('tripal_ds', $field_for_table);
+  tripal_ds_bundle_menu_item($bundle_name, 'Properties', 'group_prop_tripalpane', 'TripalEntity');
 
 
   //Fieldset field to nest the table within.
@@ -245,13 +234,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   drupal_write_record('field_group', $field_group_tripalpane);
 
   //Write to the tripal_ds table to record the new tripal pane.
-  $field_for_table = new stdClass();
-  $field_for_table->tripal_ds_field_name = 'group_sequence_tripalpane';
-  $field_for_table->tripal_ds_field_label = 'Sequence';
-  $field_for_table->entity_type = 'TripalEntity';
-  $field_for_table->bundle = $bundle_name;
-
-  drupal_write_record('tripal_ds', $field_for_table);
+  tripal_ds_bundle_menu_item($bundle_name, 'Sequence', 'group_sequence_tripalpane', 'TripalEntity');
 
   //Fieldset field to nest the table within.
   $field_group_fieldset = new stdClass();
@@ -323,13 +306,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
 
 function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $fieldset_field_name, $field_name){
   //Write to the tripal_ds table to record the new tripal pane.
-  $field_for_table = new stdClass();
-  $field_for_table->tripal_ds_field_name = $group_field_name;
-  $field_for_table->tripal_ds_field_label = $field_label;
-  $field_for_table->entity_type = 'TripalEntity';
-  $field_for_table->bundle = $bundle_name;
-
-  drupal_write_record('tripal_ds', $field_for_table);
+  tripal_ds_bundle_menu_item($bundle_name, $field_label, $group_field_name, 'TripalEntity');
 
   //Tripal pane to nest the fieldset within.
   $field_group_fieldset = new stdClass();
@@ -410,7 +387,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Tripal Pane Properties',
+    'label' => 'Properties Tripal Pane',
     'weight' => '2',
     'children' => array(
       0 => 'group_prop',
@@ -428,14 +405,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   drupal_write_record('field_group', $field_group_tripalpane);
 
   //write to the tripal_ds table to record the new tripal pane.
-  $field_for_table = new stdClass();
-  $field_for_table->tripal_ds_field_name = 'group_prop_tripalpane';
-  $field_for_table->tripal_ds_field_label = 'Properties';
-  $field_for_table->entity_type = 'TripalEntity';
-  $field_for_table->bundle = $bundle_name;
-
-  drupal_write_record('tripal_ds', $field_for_table);
-
+  tripal_ds_bundle_menu_item($bundle_name, 'Properties', 'group_prop_tripalpane', 'TripalEntity');
 
   //Fieldset field to nest the table within.
   $field_group_fieldset = new stdClass();

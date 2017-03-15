@@ -60,16 +60,95 @@ function tripal_ds_bundle_postcreate($bundle) {
 
 }
 
+/**
+ * Update the tripal_ds table when a tripal pane is deleted.
+ */
 function tripal_ds_table_column_delete($bundle){
     $bundle_name = $bundle->name;
     db_delete('tripal_ds')
       ->condition('bundle', $bundle_name, '=')
       ->execute();
 }
-
+/**
+ * Trigger the update to the tripal_ds table when a tripal pane is deleted.
+ */
 function tripal_ds_bundle_delete($bundle){
   tripal_ds_table_column_delete($bundle);
 }
+
+/*
+ * Implements hook_ds_field_settings_alter()
+ */
+function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state){
+  // Get the form info from the bundle about to be saved.
+  $tripal_entity_object = $form_state['build_info']['args']['1'];
+  // Grab the bundle.
+  $bundle_id = $tripal_entity_object->name;
+  // Grab the field groups from the bundle.
+  $updated_field_groups = $form_state['field_group'];
+  // Grab the fields from the bundle.
+  $fields = $form_state['values']['fields'];
+
+  // Delete the menu items associated with the bundle id.
+  db_delete('tripal_ds')
+    ->condition('bundle', $bundle_id, '=')
+    ->execute();
+
+  // Traverse the updated field_groups grabbing the tripal pane items.
+  $tripal_pane_field_groups = array();
+  $i = 0;
+  foreach($updated_field_groups as $updated_field_group){
+    if($updated_field_group->format_type == 'tripalpane'){
+      $tripal_pane_field_groups += [ $i => $updated_field_group->group_name];
+      $i++;
+    }
+  }
+
+  // Now grab the labels of the field_groups whose parent is a tripalpane.
+  foreach($updated_field_groups as $updated_field_group){
+    foreach($tripal_pane_field_groups as $tripal_pane_field_group){
+      if($updated_field_group->parent_name == $tripal_pane_field_group){
+        if($fields[$tripal_pane_field_group]['region'] !== 'hidden'){
+          tripal_ds_bundle_menu_item($bundle_id, $updated_field_group->label, $tripal_pane_field_group, 'tripalentity');
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Trigger the update to the tripal_ds table when a tripal pane is deleted.
+ */
+function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $entity_type){
+
+  //Check the record does not already exist
+  $tripal_ds_rows = db_select('tripal_ds', 'ds')
+    ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label'))
+    ->condition('bundle', $bundle_name, '=')
+    ->condition('tripal_ds_field_label', $field_label, '=')
+    ->condition('tripal_ds_field_name', $field_name, '=')
+    ->execute()->fetchAll();
+
+  if(!empty($tripal_ds_rows)){
+    foreach ($tripal_ds_rows as $tripal_ds_row){
+      if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_rows->bundle)) {
+        // Do not write the field to the table
+        drupal_set_message("Could not update the bundle menu because that field already exists.", 'error');
+      }
+    }
+  }
+  else {
+    //Write to the tripal_ds table to record the new tripal pane.
+    $field_for_table = new stdClass();
+    $field_for_table->tripal_ds_field_name = $field_name;
+    $field_for_table->tripal_ds_field_label = $field_label;
+    $field_for_table->entity_type = $entity_type;
+    $field_for_table->bundle = $bundle_name;
+    drupal_write_record('tripal_ds', $field_for_table);
+
+  }
+}
+
 /*
  * Implements hook_ds_layout_info() to define layouts from code in a module for
  * display suite
