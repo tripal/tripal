@@ -839,16 +839,3 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
 
   // TODO: don't the the maximum length be larger than the field size.
 }
-
-/**
- * Implements hook_form_alter().
- */
-function tripal_chado_form_alter(&$form, $form_state, $form_id) {
-  // If this is the field_ui_field_edit_form (i.e. the form that appears
-  // when editing a field that is attached to an entity). Then we want
-  // to add term settings for any field attached to a TripalEntity
-  // content type.
-  if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
-    tripal_chado_field_instance_settings_form_alter($form, $form_state);
-  }
-}

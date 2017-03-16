@@ -131,7 +131,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         $group_field_name = substr($group_field_name, 0, 27);
         $fieldset_field_name = substr($fieldset_field_name, 0, 27);
 
-        // Add randomm numbers to ensure the field name is unique within the 32
+        // Add random numbers to ensure the field name is unique within the 32
         // character limit of the field.
         $group_field_name = $group_field_name.rand(0, 99999);
         $fieldset_field_name = $fieldset_field_name.rand(0, 99999);
@@ -188,6 +188,121 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   return TRUE;
 }
 
+
+/**
+ *  Implements hook_ds_layout_settings_info().
+ */
+function _ds_layout_pub_settings_info($bundle_name, $instances) {
+  $region_right = array();
+  $region_left = array();
+  $properties= array();
+  $all_fields = array();
+  $instances_for_field_groups = array();
+  $disabled_instances = array();
+
+  try {
+    // Add Abstract, Citation, DB Cross Reference, Properties.
+    $all_fields['tpub__abstract']= 'right';
+    $all_fields['tpub__citation']= 'right';
+    $all_fields['sbo__database_cross_reference']= 'right';
+    $all_fields['tpub__publication_type']= 'right';
+    $all_fields['tpub__doi']= 'right';
+    $all_fields['tpub__publication_date']= 'right';
+    $all_fields['sio__references']= 'right';
+
+    // Iterate through the fields of this bundle.
+    foreach ($instances as $key => $instance) {
+      $instance_name = $instance['field_name'];
+
+      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation' || $instance_name == 'sbo__database_cross_reference' || $instance_name == 'sio__references'){
+        array_push($instances_for_field_groups, $instance);
+        // Update the display settings so that the title is hidden.
+        $instance['display']['default']['label'] = 'hidden';
+        field_update_instance($instance);
+      }
+      elseif($instance_name == 'tpub__publication_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
+        array_push($properties, $instance);
+      }
+      else {
+        array_push($disabled_instances, $instance);
+      }
+
+    }
+    //Publication fields that are not going in the properties table.
+    foreach ($instances_for_field_groups as $key => $other_field) {
+      // Temporary field names.
+      $temporary_field = array();
+      $group_field_name = 'gp_'.$other_field['field_name'];
+      $fieldset_field_name = 'ft_'.$other_field['field_name'];
+
+      // Need to truncate the names because of database field size restrictions,
+      // updating fields here to ensure name consistency.
+      $group_field_name = substr($group_field_name, 0, 27);
+      $fieldset_field_name = substr($fieldset_field_name, 0, 27);
+
+      // Add randomm numbers to ensure the field name is unique within the 32
+      // character limit of the field.
+      $group_field_name = $group_field_name.rand(0, 99999);
+      $fieldset_field_name = $fieldset_field_name.rand(0, 99999);
+
+      // Build the field group.
+      _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $fieldset_field_name, $other_field['field_name']);
+
+      // Update arrays.
+      array_push($temporary_field, $group_field_name, $fieldset_field_name, $other_field['field_name']);
+      $region_right = array_merge($region_right, $temporary_field);
+      $all_fields += [ $group_field_name => 'right', $fieldset_field_name => 'right' ];
+    }
+
+    //Properties table fields.
+    if(!empty($properties)){
+      _publication_prop_field_group_info($bundle_name, $properties);
+      array_unshift($properties, 'group_prop_tripalpane', 'group_prop', 'group_prop_table');
+      $region_right = array_merge($region_right, $properties);
+      $all_fields+= [ 'group_prop_tripalpane' => 'right', 'group_prop' => 'right', 'group_prop_table' => 'right' ];
+    }
+
+    // Add blocks to $region_left and build the toc field that is placed within.
+    _ds_fields_info_write($bundle_name);
+    $region_left += [ 'toc' ];
+    $all_fields += [ 'toc' => 'left' ];
+    // Build the ds layout.
+    $record = new stdClass;
+    $record->id ='TripalEntity|' . $bundle_name . '|default';
+    $record->entity_type = 'TripalEntity';
+    $record->bundle = $bundle_name;
+    $record->view_mode = 'default';
+    $record->layout = 'tripal_ds_feature';
+    $settings = array(
+      'regions' => array(
+        'left' =>
+          $region_left,
+        'right' =>
+          $region_right,
+      ),
+      'fields' =>
+        $all_fields,
+      'classes' => array(),
+      'wrappers' => array(
+        'left' => 'div',
+        'right' => 'div',
+      ),
+      'layout_wrapper' => 'div',
+      'layout_attributes' => '',
+      'layout_attributes_merge' => 1,
+      'layout_link_attribute' => '',
+      'layout_link_custom' => '',
+      'layout_disable_css' => 0,
+    );
+    $record->settings = $settings;
+    drupal_write_record('ds_layout_settings', $record);
+  }
+  catch (Exception $e) {
+    watchdog_exception('tripal_ds', $e);
+    return FALSE;
+  }
+  return TRUE;
+}
 
 /**
  * Implements hook_ds_fields_info().
