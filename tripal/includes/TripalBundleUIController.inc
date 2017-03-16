@@ -942,6 +942,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       }
       else {
         drupal_set_message('New data type created.');
+        tripal_admin_access($bundle);
         $form_state['redirect'] = "admin/structure/bio_data";
       }
 
@@ -953,4 +954,36 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       drupal_set_message("The term '$accession' already exists as a content type.", 'warning');
     }
   }
+}
+
+/**
+ * Checks access permissions for a given entity.
+ */
+function tripal_admin_access($entity) {
+  if ($entity) {
+    $bundle_name = $entity->name;
+  }
+  else {
+    return FALSE;
+  }
+
+  // Get the bundle object.
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
+  // Identify the administrative user roles.
+  $admin_role = user_role_load_by_name('administrator');
+  $roles = array($admin_role->rid => $admin_role->name);
+  // Define the permissions.
+  $permission_for_role = array(
+    'create ' . $bundle->name => TRUE,
+    'view ' . $bundle->name => TRUE,
+    'edit ' . $bundle->name => TRUE,
+    'delete ' . $bundle->name => TRUE,
+  );
+
+  // Assign the permissions
+  foreach($roles as $role => $value){
+    user_role_change_permissions($role, $permission_for_role);
+  }
+  return TRUE;
 }

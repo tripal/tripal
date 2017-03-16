@@ -53,7 +53,6 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-
     $rows = array();
     $headers = array($settings['title']);
 
@@ -92,9 +91,27 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         }
       }
 
-      $rows[] = array($phrase);
+      $rows[][] = array('data' => $phrase, 'class' => array('tripal-entity-unattached field-items'));
     }
 
+    //$pager = $this->generate_pager(count($rows), $per_page);
+
+    $per_page = 10;
+    // Initialize the pager
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    // Split your list into page sized chunks
+    $chunks = array_chunk($rows, $per_page, TRUE);
+    //format pager
+    $pager = theme('pager', array('quantity', count($rows)));
+
+
+    global $base_path;
+    $tmp_base_path = preg_replace('/\//', '\/', $base_path);
+    $field_id = 'tripal-entity-' . $entity->id . '--' . $this->field['field_name'];
+    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', $1)"', $pager);
+    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
+
+    //$pager = preg_replace("/href=\"" . $tmp_base_path . "gensas\/load_job_view_panel\/" . $job_id . "\/\d\"/", 'href="javascript:void(0)" onclick="gensas.show_job_view_panel(\'' . $job_id . '\', \'' . $job->getName() . '\')"', $pager);
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
@@ -102,7 +119,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     $table = array(
       'header' => $headers,
-      'rows' => $rows,
+      'rows' => $chunks[$current_page],
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),
@@ -118,6 +135,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => theme_table($table),
+        '#suffix' => '<img src=\'/sites/all/modules/tripal-7.x-3.x/tripal/theme/images/ajax-loader.gif\' id=\'spinner\'/>' . $pager,
       );
     }
   }
