@@ -67,3 +67,14 @@ div.messages.tripal-site-admin-only{
 }
 .tripal-dl dd {
 }
+
+
+ /******************************************************************************
+  * Spinner for paginated elements
+  *****************************************************************************/
+ #spinner {
+   position: absolute;
+   display: none;
+   left: 24%;
+   bottom: 7%;
+ }
