@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * Create the admin page for the dashboard.
+ *
+ */
 function tripal_admin_usage_page() {
   // set the breadcrumb
   $breadcrumb = array();
