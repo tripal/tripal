@@ -191,7 +191,8 @@ function tripal_schema() {
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
-
+  // Adds a table for administrative notifications on the dashboard.
+  $schema['tripal_admin_notfications'] = tripal_tripal_admin_notifications_schema();
   return $schema;
 }
 function tripal_tripal_jobs_schema() {
@@ -703,6 +704,62 @@ function tripal_tripal_bundle_variables_schema() {
 }
 
 /**
+ * Additional Tripal Admin Notification Information.
+ *
+ * This table is used for information describing administrative
+ * notifications. For example, when new fields are available.
+ */
+function tripal_tripal_admin_notifications_schema() {
+
+  $schema = array(
+    'description' => 'This table is used for information describing administrative
+     notifications. For example, when new fields are available.',
+    'fields' => array (
+      'note_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'info' => array (
+        'description' => 'Description and additional information relating to the notification.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'title' => array (
+        'description' => 'Title of the notification.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'bundle_id' => array (
+        'description' => 'Bundle ID of the entity associated with the field.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'module' => array (
+        'description' => 'Module that has added the field.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'enabled' => array (
+        'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'type' => array (
+        'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'note_id',
+    ),
+  );
+
+  return $schema;
+}
+
+/**
  * Change tripal_vocab.vocabulary to varchar(128)
  */
 function tripal_update_7300() {
@@ -717,5 +774,63 @@ function tripal_update_7300() {
   } catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Create new admin notifications table.
+ */
+function tripal_update_7301() {
+  try {
+    $schema['tripal_admin_notfications'] = array(
+        'description' => 'This table is used for information describing administrative
+         notifications. For example, when new fields are available.',
+        'fields' => array (
+          'note_id' => array (
+            'type' => 'serial',
+            'not null' => TRUE,
+          ),
+          'info' => array (
+            'description' => 'Description and additional information relating to the notification.',
+            'type' => 'text',
+            'not null' => FALSE,
+          ),
+          'title' => array (
+            'description' => 'Title of the notification.',
+            'type' => 'text',
+            'not null' => TRUE,
+          ),
+          'bundle_id' => array (
+            'description' => 'Bundle ID of the entity associated with the field.',
+            'type' => 'text',
+            'not null' => TRUE,
+          ),
+          'module' => array (
+            'description' => 'Module that has added the field.',
+            'type' => 'text',
+            'not null' => TRUE,
+          ),
+          'enabled' => array (
+            'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
+            'type' => 'int',
+            'not null' => TRUE,
+            'default' => 1,
+          ),
+          'type' => array (
+            'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
+            'type' => 'text',
+            'not null' => TRUE,
+          ),
+        ),
+        'primary key' => array (
+          0 => 'note_id',
+        ),
+    );
+    db_create_table('tripal_admin_notfications', $schema['tripal_admin_notfications']);
+  }
+  catch (\PDOException $e) {
+      $transaction->rollback();
+      $error = $e->getMessage();
+      throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

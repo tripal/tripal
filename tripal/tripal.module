@@ -118,6 +118,18 @@ function tripal_menu() {
     'weight' => 8,
     'access arguments' => array('administer tripal'),
   );
+
+  $items['admin/tripal/dashboard'] = array(
+    'title' => 'Dashboard',
+    'description' => t("A dashboard view of Tripal including new fields for entities."),
+    'weight' => 0,
+    'page callback' => 'tripal_admin_usage_page',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
   $items['admin/tripal/terms/import'] = array(
     'title' => 'Import Vocabulary',
     'description' => t("Import vocabularies and terms in OBO format."),
@@ -235,6 +247,27 @@ function tripal_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.entity.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  /*
+   * Dashboard Action Item callbacks.
+   */
+  $items['admin/disable/notification/%'] = array(
+    'page callback' => 'tripal_disable_admin_notification',
+    'page arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['admin/import/field/%/%'] = array(
+    'page callback' => 'tripal_admin_notification_import_field',
+    'page arguments' => array(3, 4),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_admin_usage_page.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
