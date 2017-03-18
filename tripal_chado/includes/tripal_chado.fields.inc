@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implements hook_field_create_info().
+ * Implements hook_bundle_create_fields().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.

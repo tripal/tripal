@@ -275,6 +275,14 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
     'type' => MENU_LOCAL_ACTION,
   );
+
+  $items['tripal/upload'] = array(
+    'page callback' => 'tripal_file_upload',
+    'access arguments' => array('upload files'),
+    'file' => '/includes/tripal.upload.inc',
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
