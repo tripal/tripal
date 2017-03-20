@@ -6,7 +6,6 @@
 
 // Generic Chado API functions
 require_once "api/tripal_chado.api.inc";
-require_once "api/tripal_chado.entity.api.inc";
 require_once 'api/tripal_chado.property.api.inc';
 require_once 'api/tripal_chado.query.api.inc';
 require_once 'api/tripal_chado.variables.api.inc';
@@ -362,7 +361,7 @@ function tripal_chado_menu() {
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_fasta_load_form'),
-    'access arguments' => array('administer tripal feature'),
+    'access arguments' => array('administer tripal'),
     'file' => 'includes/loaders/tripal_chado.fasta_loader.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
@@ -372,7 +371,7 @@ function tripal_chado_menu() {
     'description' => 'Import a GFF3 file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_gff3_load_form'),
-    'access arguments' => array('administer tripal feature'),
+    'access arguments' => array('administer tripal'),
     'file' => 'includes/loaders/tripal_chado.gff_loader.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
@@ -382,7 +381,7 @@ function tripal_chado_menu() {
     'description' => 'Loads taxonomic details about installed organisms.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_taxonomy_load_form'),
-    'access arguments' => array('administer tripal phylotree'),
+    'access arguments' => array('administer tripal'),
     'file' => 'includes/loaders/tripal_chado.taxonomy_importer.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
@@ -394,7 +393,7 @@ function tripal_chado_menu() {
     'description' => 'Loads phylogenetic trees in Newic format.',
     'page callback' => 'drupal_goto',
     'page arguments' => array('node/add/chado-phylotree'),
-    'access arguments' => array('administer tripal phylotree'),
+    'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -402,7 +401,7 @@ function tripal_chado_menu() {
     'title' => t('Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
@@ -413,7 +412,7 @@ function tripal_chado_menu() {
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
     'page callback' => 'tripal_pub_importer_setup_page',
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -421,7 +420,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
     'page arguments' => array(6, 7),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -430,7 +429,7 @@ function tripal_chado_menu() {
     'title' => t('Raw Data From Publication Import'),
     'page callback' => 'tripal_get_remote_pub_raw_page',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -440,7 +439,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/import'] = array(
     'title' => t('Publication Importers'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -449,7 +448,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/submit/%'] = array(
     'page callback' => 'tripal_pub_importer_submit_job',
     'page arguments' => array(7),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -458,7 +457,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
     'page arguments' => array(7),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -466,7 +465,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/changedb'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
     'page arguments' => array(),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -475,7 +474,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/loaders/pub/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
     'page arguments' => array(7, 8),
-    'access arguments' => array('administer tripal pub'),
+    'access arguments' => array('administer tripal'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
