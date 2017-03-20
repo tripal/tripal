@@ -1,6 +1,6 @@
 <?php
 
-function tripal_file_upload($type, $filename, $action = NULL, $module = NULL, $chunk = 0) {
+function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   global $user;
 
   $user_dir = 'public://tripal/users/' . $user->uid;
@@ -40,7 +40,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $module = NULL, $c
       tripal_file_upload_check($filename, $chunk, $user_dir);
       break;
     case 'merge':
-      tripal_file_upload_merge($filename, $type, $user_dir, $module);
+      tripal_file_upload_merge($filename, $type, $user_dir);
       break;
   }
 }
@@ -48,8 +48,10 @@ function tripal_file_upload($type, $filename, $action = NULL, $module = NULL, $c
  * Merges all chunks into a single file
  * @param unknown $filename
  */
-function tripal_file_upload_merge($filename, $type, $user_dir, $module) {
+function tripal_file_upload_merge($filename, $type, $user_dir) {
   global $user;
+
+  $module = $_GET['module'];
 
   $status = 'merging';
   $message = '';
@@ -123,7 +125,13 @@ function tripal_file_upload_merge($filename, $type, $user_dir, $module) {
     if(function_exists($function)) {
       $file_id = $function($filename, $merge_file, $type);
       if ($file_id) {
+        $file = file_load($file_id);
         $status = 'completed';
+        $full_path = drupal_realpath($file->uri);
+        $md5sum = md5_file($full_path);
+        $md5sum_file = fopen("$full_path.md5", "w");
+        fwrite($md5sum_file, $md5sum);
+        fclose($md5sum_file);
         unlink($temp_dir);
       }
       else {

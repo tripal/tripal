@@ -133,10 +133,13 @@
      * 
      */
     this._mergeChunks = function() {
-        var url = this.options.url + '/' + this.file.name + '/merge/' + this.options['module'];
+        var url = this.options.url + '/' + this.file.name + '/merge';
         var self = this;
         $.ajax({
           url : url,
+          data : {
+            'module' : this.options['module'],
+          },
           success : function(data, textStatus, jqXHR) {
             if (data['status'] == 'completed') {
               self.file_id = data['file_id'];
