@@ -678,7 +678,7 @@ function tripal_chado_chado_cvterm_mapping_schema() {
  * Fixes the phase on the tripal_gffcds_temp table used for importing GFF files, and fixes the db.name term mapping.
  *
  */
-function tripal_chado_update_7200() {
+function tripal_chado_update_7300() {
   try {
     if (chado_table_exists('tripal_gffcds_temp')) {
       chado_query("ALTER TABLE {tripal_gffcds_temp} ALTER COLUMN phase DROP NOT NULL;");
@@ -701,7 +701,7 @@ function tripal_chado_update_7200() {
 /**
  * Divides chado_entity table for better integration with views.
  */
-function tripal_chado_update_7201() {
+function tripal_chado_update_7301() {
 
   module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.bundle');
   try {
