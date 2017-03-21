@@ -723,7 +723,7 @@ function tripal_chado_update_7301() {
 
         // Now move the records over.
         $sql = "
-          INSERT INTO {$cbundle_table}
+          INSERT INTO {$cbundle_table} (entity_id, record_id, nid)
            SELECT CE.entity_id, CE.record_id, CE.nid
             FROM {chado_entity} CE
               INNER JOIN {tripal_entity} TE ON CE.entity_id = TE.id
