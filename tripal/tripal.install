@@ -706,11 +706,16 @@ function tripal_tripal_bundle_variables_schema() {
  * Change tripal_vocab.vocabulary to varchar(128)
  */
 function tripal_update_7300() {
-  $spec = array(
-    'description' => 'The short name for the vocabulary (e.g. SO, PATO, etc.).',
-    'type' => 'varchar',
-    'length' => 128,
-    'not null' => TRUE
-  );
-  db_change_field('tripal_vocab', 'vocabulary', 'vocabulary',$spec);
+  try {
+    $spec = array(
+      'description' => 'The short name for the vocabulary (e.g. SO, PATO, etc.).',
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE
+    );
+    db_change_field('tripal_vocab', 'vocabulary', 'vocabulary',$spec);
+  } catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
 }
