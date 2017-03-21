@@ -43,3 +43,4 @@ function tripal_chado_get_bundle_entity_table($bundle) {
   }
   return 'chado_' . $bundle->name;
 }
+

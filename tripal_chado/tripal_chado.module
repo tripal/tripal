@@ -8,6 +8,7 @@
 require_once "api/tripal_chado.api.inc";
 require_once 'api/tripal_chado.property.api.inc';
 require_once 'api/tripal_chado.query.api.inc';
+require_once 'api/tripal_chado.entity.api.inc';
 require_once 'api/tripal_chado.variables.api.inc';
 require_once 'api/tripal_chado.schema.api.inc';
 require_once 'api/tripal_chado.custom_tables.api.inc';

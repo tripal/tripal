@@ -173,9 +173,9 @@ function tripal_get_job($job_id) {
   $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
     ->fetchObject();
 
-  $job->submit_date_string = format_date($job->submit_date);
-  $job->start_time_string = format_date($job->start_time);
-  $job->end_time_string = format_date($job->end_time);
+  $job->submit_date_string = $job->submit_date ? format_date($job->submit_date) : '';
+  $job->start_time_string = $job->start_time ? format_date($job->start_time): '';
+  $job->end_time_string = $job->end_time ? format_date($job->end_time): '';
 
   return $job;
 }
@@ -425,6 +425,32 @@ function tripal_set_job_progress($job_id, $percentage) {
   }
 
   return FALSE;
+}
+
+/**
+ * Retrieves the current proress of a job.
+ *
+ * @param $job_id
+ *   The job_id to get the progress for
+ *
+ * @return
+ *   A value between 0 and 100 indicating the percentage complete of the job.
+ */
+function tripal_get_job_progress($job_id) {
+
+  if (!$job_id) {
+    watchdog('tripal', "Must provide a \$$job_id argument to the tripal_get_job_progress() function.");
+    return FALSE;
+  }
+
+  // Get the progress.
+  $progress = db_select('tripal_jobs', 'tj')
+    ->fields('tj', array('progress'))
+    ->condition('job_id', $job_id)
+    ->execute()
+    ->fetchField();
+
+  return $progress;
 }
 /**
  * Returns a list of jobs that are active.

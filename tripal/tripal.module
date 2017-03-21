@@ -197,6 +197,13 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'api/tripal.jobs.api.inc',
+  );
+  $items['admin/tripal/tripal_jobs/status/%'] = array(
+    'page callback' => 'tripal_jobs_status_view',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
@@ -225,6 +232,8 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.jobs.inc',
   );
+
+
 
   /*
    * AJAX Callbacks.

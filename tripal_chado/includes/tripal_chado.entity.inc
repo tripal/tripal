@@ -125,7 +125,9 @@ function tripal_chado_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
+  if ($type == 'TripalEntity') {
 
+  }
 }
 
 /**

@@ -51,9 +51,7 @@ class schema__publication_formatter extends ChadoFieldFormatter {
       );
       $list = theme_item_list($list);
     }
-    else {
-      $list = $list_items[0];
-    }
+
     $element[0] = array(
       '#type' => 'markup',
       '#markup' => $list,

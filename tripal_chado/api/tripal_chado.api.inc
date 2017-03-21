@@ -1,44 +1,5 @@
 <?php
 
-/**
- * Retrieves an entity that matches the given table and record id.
- *
- * @param $table
- *   The name of the Chado table.
- * @param $record_id
- *   The record's primary key in the table specified by $table.
- *
- * @return
- *   A chado_entity object.
- */
-function tripal_load_chado_entity($table, $record_id) {
-   $entity_id = db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('ce.record_id', $record_id)
-     ->condition('ce.data_table', $table)
-     ->execute()
-     ->fetchField();
-   if ($entity_id) {
-     $entity = entity_load('TripalEntity', array($entity_id));
-     return reset($entity);
-   }
-   return NULL;
-}
-
-/**
- * Retrieves the entity ID using a record ID.
- *
- * @param unknown $data_table
- * @param unknown $record_id
- */
-function tripal_get_chado_entity_id($data_table, $record_id) {
-   return db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('data_table', $data_table)
-     ->condition('record_id', $record_id)
-     ->execute()
-     ->fetchField();
-}
 
 /**
  * Publishes content in Chado as a new TripalEntity entity.
@@ -81,10 +42,23 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   }
   $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
 
-  $table = $bundle->data_table;
-  $type_column = $bundle->type_column;
-  $type_linker_table = $bundle->type_linker_table;
-  $cvterm_id  = $bundle->type_id;
+
+  // Get the mapping of the bio data type to the Chado table.
+  $chado_bundle = db_select('chado_bundle', 'cb')
+    ->fields('cb')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
+  if(!$chado_bundle) {
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+        "Cannot find mapping of bundle to Chado tables. Could not publish record.");
+    return FALSE;
+  }
+
+  $table = $chado_bundle->data_table;
+  $type_column = $chado_bundle->type_column;
+  $type_linker_table = $chado_bundle->type_linker_table;
+  $cvterm_id  = $chado_bundle->type_id;
 
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
@@ -105,7 +79,6 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $from .= " INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
   }
   $where = " WHERE CE.record_id IS NULL ";
-  $args[':table'] = $table;
 
   // Handle bundles that use a linker property table for identifying the type
   // of record to publish.
@@ -154,7 +127,6 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
 
-
   // calculate the interval for updates
   $interval = intval($count / 1000);
   if ($interval < 1) {
@@ -164,7 +136,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql, $args);
-  //$transaction = db_transaction();
+  $transaction = db_transaction();
 
   print "\nNOTE: publishing records is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -188,6 +160,9 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $entity = $ec->create(array(
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
+        // Add in the Chaod details for when the hook_entity_create()
+        // is called and our tripal_cahdo_entity_create() implementation
+        // can deal with it.
         'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
         'chado_record_id' => $record_id,
       ));
@@ -207,7 +182,12 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       if (property_exists($record, 'nid')) {
         $entity_record['nid'] = $record->nid;
       }
-      $success = drupal_write_record($chado_entity_table, $entity_record);
+      $result = db_insert($chado_entity_table)
+        ->fields($entity_record)
+        ->execute();
+      if(!$result){
+        throw new Exception('Could not create mapping of entity to Chado record.');
+      }
 
       $i++;
     }

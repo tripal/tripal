@@ -155,7 +155,6 @@ function tripal_chado_schema() {
   }
 
   // Links TripalEntity entities to the chado record.
-  $schema['chado_entity'] = tripal_chado_chado_entity_schema();
   $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
   $schema['chado_semweb'] = tripal_chado_chado_semweb_schema();
 
@@ -569,59 +568,6 @@ function tripal_chado_tripal_mviews_schema() {
  * This is where we would specify that a particular gene maps to the record in the
  * chado.feature table with a feature_id=2432;
  */
-function tripal_chado_chado_entity_schema() {
-
-  $schema = array(
-    'description' => 'The linker table that associates an enitity from the public.tripal_entity table with a "base" record in Chado',
-    'fields' => array(
-      'chado_entity_id' => array(
-        'description' => 'The primary identifier for this table.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'entity_id' => array(
-        'description' => 'The unique entity id.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'data_table' => array(
-        'description' => 'The table in that this record belongs to',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'record_id' => array(
-        'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'nid' => array(
-        'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
-        'type' => 'int',
-      )
-    ),
-    'indexes' => array(
-      'record_id' => array('record_id'),
-      'entity_id' => array('entity_id'),
-      'data_table' => array('data_table'),
-      'nid' => array('nid'),
-    ),
-    'unique keys' => array(
-      'table_record' => array('data_table', 'record_id'),
-      'entity_id' => array('entity_id'),
-    ),
-    'primary key' => array('chado_entity_id'),
-  );
-  return $schema;
-}
-
-/**
- * Links Biological Data Entities to the chado "base" table the data is stored in.
- * This is where we would specify that a particular gene maps to the record in the
- * chado.feature table with a feature_id=2432;
- */
 function tripal_chado_chado_bundle_schema() {
 
   $schema = array(
@@ -786,6 +732,9 @@ function tripal_chado_update_7201() {
         db_query($sql, array(':bundle' => $cbundle->name));
       }
     }
+
+    // Now remove the chado_entity table.
+    db_drop_table('chado_entity');
   }
   catch (\PDOException $e) {
     $transaction->rollback();

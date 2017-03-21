@@ -57,18 +57,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
-    // Add a record to the chado_entity table so that the data for the
-    // fields can be pulled from Chado when loaded the next time.
-    $record = array(
-      'entity_id' => $entity->id,
-      'record_id' => $base_record_id,
-      'data_table' => $base_table,
-    );
-    $success = drupal_write_record('chado_entity', $record);
-    if (!$success) {
-      drupal_set_message('Unable to insert new Chado entity.', 'error');
-    }
-    // Add the record to the proper chado entity table too
+    // Add the record to the proper chado entity table
     $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
     $record = array(
       'entity_id' => $entity->id,

@@ -328,3 +328,49 @@ function tripal_jobs_view($job_id) {
   $output .= theme_table($table);
   return $output;
 }
+
+/**
+ * Runs a Tripal job from within the request.
+ *
+ * @param $job_id
+ */
+function tripal_jobs_status_view($job_id) {
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Jobs', 'admin/tripal/tripal_jobs');
+  drupal_set_breadcrumb($breadcrumb);
+
+  $job = tripal_get_job($job_id);
+
+  drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal_jobs.css');
+  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_jobs.js');
+
+  $markup  = "<h2>Job Progress</h2>";
+  $markup .=  "<p>Job: " . $job->job_name . ' (' . $job->progress . '% Complete)';
+  $markup .= '<br>Status: ' . $job->status . '</p>';
+  $markup .= '<div id="tripal-jobs-progress-bar"><div></div></div>';
+  $markup .= '<p>' . l('Refresh Page', 'admin/tripal/tripal_jobs/status/' . $job_id) . '</p>';
+
+  drupal_add_js('var progress_percent = ' . $job->progress . ';', array('type' => 'inline'));
+
+  // Reload the page every 30 seconds.
+  $meta = array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'http-equiv' => 'refresh',
+      'content' =>  '30',
+    )
+  );
+  drupal_add_html_head($meta, 'tripal_job_status_page');
+
+  $page = array(
+    '#type' => 'markup',
+    '#markup' => $markup,
+  );
+
+  return $page;
+}
+

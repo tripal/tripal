@@ -75,6 +75,10 @@ function tripal_chado_create_bundle_table($bundle) {
   $schema = array(
     'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle->name . '.',
     'fields' => array(
+      'mapping_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE
+      ),
       'entity_id' => array(
         'description' => 'The unique entity id.',
         'type' => 'int',
@@ -89,6 +93,9 @@ function tripal_chado_create_bundle_table($bundle) {
         'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
         'type' => 'int',
       )
+    ),
+    'primary key' => array(
+      'mapping_id',
     ),
     'indexes' => array(
       'record_id' => array('record_id'),
