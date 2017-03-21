@@ -808,7 +808,7 @@ function tripal_chado_job_describe_args($callback, $args) {
 function tripal_chado_node_delete($node) {
   $nid = $node->nid;
   $sql = "UPDATE chado_entity SET nid = NULL WHERE nid = :nid";
-  db_query($sql, array('nid' => $nid));
+  //db_query($sql, array('nid' => $nid));
 }
 
 

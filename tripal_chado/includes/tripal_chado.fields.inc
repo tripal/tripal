@@ -103,6 +103,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
+        'sql' => array(),
       ),
     );
 
@@ -161,8 +162,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       $base_info['type'] = 'text';
       $base_info['settings']['text_processing'] = 0;
     }
-
-
 
     $info[$field_name] = $base_info;
   }

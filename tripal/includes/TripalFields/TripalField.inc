@@ -277,7 +277,23 @@ class TripalField {
   public function viewsData() {
     $data = array();
 
+    $bundle_name = $this->instance['bundle'];
+    $field_name = $this->field['field_name'];
 
+    $data[$bundle_name][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
 
     return $data;
   }

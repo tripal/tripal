@@ -50,44 +50,30 @@ function tripal_views_data_fields(&$data) {
       continue;
     }
 
-    // Call the hook_field_views_data() hooks.
-    // $module = $field['module'];
-    //$result = (array) module_invoke($module, 'field_views_data', $field);
+    // Call the hook_field_views_data() but only for the tripal module.
+    // Otherwise the other modules will expect that this is an SQL-based
+    // view.
+    $result = (array) module_invoke('tripal', 'field_views_data', $field);
 
-    // Iterate through the bundles to which this field is attached and
-    // add the fields that are attached to the bundle.
-    $bundles = $field['bundles']['TripalEntity'];
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
-    foreach ($bundles as $bundle_name) {
-      $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-      $data[$bundle_name][$field_name] = array(
-        'title' => $instance['label'],
-        'help' => $instance['description'],
-        'field' => array(
-          'handler' => 'views_handler_field',
-          'click sortable' => TRUE,
-        ),
-        'filter' => array(
-          'handler' => 'views_handler_filter_string',
-        ),
-        'sort' => array(
-          'handler' => 'views_handler_sort',
-        ),
-      );
+    // Set defaults for the field if no data array was returned.
+    if (empty($result)) {
+      // Iterate through the bundles to which this field is attached and
+      // if it is a TripalField field then we'll call the viewsDataAlater function.
+      $bundles = $field['bundles']['TripalEntity'];
+      $result = array();
+      foreach ($bundles as $bundle_name) {
+        $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+        $tfield = new TripalField($field, $instance);
+        $result += $tfield->viewsData();
+      }
     }
 
-    // Set defaults for the fielf if no data array was returned.
-    //if (empty($result)) {
-      //$result = tripal_views_default_views_data($field);
-    //}
-
     // Call the hook_field_views_data_alter() hook.
-    //drupal_alter('field_views_data', $result, $field, $module);
+    drupal_alter('field_views_data', $result, $field, $module);
 
-    //if (is_array($result)) {
-      //$data = drupal_array_merge_deep($result, $data);
-    //}
+    if (is_array($result)) {
+      $data = drupal_array_merge_deep($result, $data);
+    }
   }
 }
 /**
@@ -111,43 +97,6 @@ function tripal_entity_views_data(&$data) {
        'title' => t($bundle->label),
        'help' => t('Tripal ' . $bundle->label . ' pages'),
      );
-
-//     // Now add the fields to the bundle.
-//     $instances = field_info_instances('TripalEntity', $bundle->name);
-//     foreach ($instances as $instance) {
-
-//       // TODO: how to determine which handler to use for each field? Perhaps
-//       // fields should set their type and here we use that type to determine
-//       // which handler to use. If not handler is specified then we use
-//       // a default string handler.
-//       $field_handler = 'tripal_views_handler_field_entity_default_formatter';
-//       $filter_handler = 'tripal_views_handler_filter_entity_string';
-//       $sort_handler = 'tripal_views_handler_sort_entity_string';
-//       $click_sortable = TRUE;
-
-//       $field_name = $instance['field_name'];
-
-//       if ($field_name == 'content_type') {
-//         $field_handler = 'views_handler_field';
-//       }
-
-//       $data['tripal_entity'][$field_name] = array(
-//         'group' => $bundle->label,
-//         'title' => $instance['label'],
-//         'help' => t(' Appears in: @bundles.', array('@bundles' => $bundle->label)) . $instance['description'],
-//         'handler' => '',
-//         'field' => array(
-//           'handler' => $field_handler,
-//           'click sortable' => $click_sortable,
-//         ),
-//         'filter' => array(
-//           'handler' => $filter_handler,
-//         ),
-//         'sort' => array(
-//           'handler' => $sort_handler,
-//         ),
-//       );
-//     }
   }
 }
 

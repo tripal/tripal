@@ -88,28 +88,18 @@ function tripal_field_widget_info_alter(&$info) {
 function tripal_field_views_data($field) {
   $data = array();
 
-  $field_name = $field['field_name'];
   $field_type = $field['type'];
+  $field_types = tripal_get_field_types();
 
   // Iterate through the bundles to which this field is attached and
   // if it is a TripalField field then we'll call the viewsDataAlater function.
   $bundles = $field['bundles']['TripalEntity'];
   foreach ($bundles as $bundle_name) {
     $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-    $data[$bundle_name][$field_name] = array(
-      'title' => $instance['label'],
-      'help' => $instance['description'],
-      'field' => array(
-        'handler' => 'views_handler_field',
-        'click sortable' => TRUE,
-      ),
-      'filter' => array(
-        'handler' => 'views_handler_filter_string',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
-      ),
-    );
+    if (in_array($field_type, $field_types)) {
+      $tfield = new $field_type($field, $instance);
+      $data += $tfield->viewsData();
+    }
   }
   return $data;
 }
