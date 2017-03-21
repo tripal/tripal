@@ -127,4 +127,5 @@ class ChadoField extends TripalField {
     );
     return $element;
   }
+
 }

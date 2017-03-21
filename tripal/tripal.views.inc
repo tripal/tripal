@@ -29,18 +29,71 @@ function tripal_views_plugins() {
 function tripal_views_data() {
   $data = array();
   // Job Management System
-  $data = tripal_views_data_jobs($data);
-
-  $data += tripal_entity_views_data();
+  tripal_views_data_jobs($data);
+  tripal_entity_views_data($data);
+  tripal_views_data_fields($data);
 
   return $data;
 }
 
 /**
+ * Integreates the Tripal fields with Views.
+ */
+function tripal_views_data_fields(&$data) {
+
+  // Iterate through the fields.
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+
+    // Skip fields that aren't attached to TripalEntity fields.
+    if (!array_key_exists('TripalEntity', $field['bundles'])) {
+      continue;
+    }
+
+    // Call the hook_field_views_data() hooks.
+    // $module = $field['module'];
+    //$result = (array) module_invoke($module, 'field_views_data', $field);
+
+    // Iterate through the bundles to which this field is attached and
+    // add the fields that are attached to the bundle.
+    $bundles = $field['bundles']['TripalEntity'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    foreach ($bundles as $bundle_name) {
+      $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+      $data[$bundle_name][$field_name] = array(
+        'title' => $instance['label'],
+        'help' => $instance['description'],
+        'field' => array(
+          'handler' => 'views_handler_field',
+          'click sortable' => TRUE,
+        ),
+        'filter' => array(
+          'handler' => 'views_handler_filter_string',
+        ),
+        'sort' => array(
+          'handler' => 'views_handler_sort',
+        ),
+      );
+    }
+
+    // Set defaults for the fielf if no data array was returned.
+    //if (empty($result)) {
+      //$result = tripal_views_default_views_data($field);
+    //}
+
+    // Call the hook_field_views_data_alter() hook.
+    //drupal_alter('field_views_data', $result, $field, $module);
+
+    //if (is_array($result)) {
+      //$data = drupal_array_merge_deep($result, $data);
+    //}
+  }
+}
+/**
  * Integrates the TripalEntity entities with Drupal Views.
  */
-function tripal_entity_views_data() {
-  $data = array();
+function tripal_entity_views_data(&$data) {
 
   // Get the list of all of the bundles (entity types) and add them
   // as "base tables" for views.
@@ -52,52 +105,50 @@ function tripal_entity_views_data() {
   while ($bundle = $bundles->fetchObject()) {
 
     // Each bundle gets it's own "table".
-//     $data['tripal_entity']['table']['group'] = t($bundle->label);
-//     $data[$bundle->name]['table']['base'] = array(
-//       'query class' => 'tripal_views_query',
-//       'title' => t($bundle->label),
-//       'help' => t('Tripal ' . $bundle->label . ' pages'),
-//     );
+     $data[$bundle->name]['table']['group'] = t($bundle->label);
+     $data[$bundle->name]['table']['base'] = array(
+       'query class' => 'tripal_views_query',
+       'title' => t($bundle->label),
+       'help' => t('Tripal ' . $bundle->label . ' pages'),
+     );
 
-    // Now add the fields to the bundle.
-    $instances = field_info_instances('TripalEntity', $bundle->name);
-    foreach ($instances as $instance) {
+//     // Now add the fields to the bundle.
+//     $instances = field_info_instances('TripalEntity', $bundle->name);
+//     foreach ($instances as $instance) {
 
-      // TODO: how to determine which handler to use for each field? Perhaps
-      // fields should set their type and here we use that type to determine
-      // which handler to use. If not handler is specified then we use
-      // a default string handler.
-      $field_handler = 'tripal_views_handler_field_entity_default_formatter';
-      $filter_handler = 'tripal_views_handler_filter_entity_string';
-      $sort_handler = 'tripal_views_handler_sort_entity_string';
-      $click_sortable = TRUE;
+//       // TODO: how to determine which handler to use for each field? Perhaps
+//       // fields should set their type and here we use that type to determine
+//       // which handler to use. If not handler is specified then we use
+//       // a default string handler.
+//       $field_handler = 'tripal_views_handler_field_entity_default_formatter';
+//       $filter_handler = 'tripal_views_handler_filter_entity_string';
+//       $sort_handler = 'tripal_views_handler_sort_entity_string';
+//       $click_sortable = TRUE;
 
-      $field_name = $instance['field_name'];
+//       $field_name = $instance['field_name'];
 
-      if ($field_name == 'content_type') {
-        $field_handler = 'views_handler_field';
-      }
+//       if ($field_name == 'content_type') {
+//         $field_handler = 'views_handler_field';
+//       }
 
-      $data['tripal_entity'][$field_name] = array(
-        'group' => $bundle->label,
-        'title' => $instance['label'],
-        'help' => t(' Appears in: @bundles.', array('@bundles' => $bundle->label)) . $instance['description'],
-        'handler' => '',
-        'field' => array(
-          'handler' => $field_handler,
-          'click sortable' => $click_sortable,
-        ),
-        'filter' => array(
-          'handler' => $filter_handler,
-        ),
-        'sort' => array(
-          'handler' => $sort_handler,
-        ),
-      );
-    }
+//       $data['tripal_entity'][$field_name] = array(
+//         'group' => $bundle->label,
+//         'title' => $instance['label'],
+//         'help' => t(' Appears in: @bundles.', array('@bundles' => $bundle->label)) . $instance['description'],
+//         'handler' => '',
+//         'field' => array(
+//           'handler' => $field_handler,
+//           'click sortable' => $click_sortable,
+//         ),
+//         'filter' => array(
+//           'handler' => $filter_handler,
+//         ),
+//         'sort' => array(
+//           'handler' => $sort_handler,
+//         ),
+//       );
+//     }
   }
-
-  return $data;
 }
 
 /**

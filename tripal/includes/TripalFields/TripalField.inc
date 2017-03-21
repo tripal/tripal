@@ -268,17 +268,49 @@ class TripalField {
   }
 
   /**
-   * Describes this fields "data tables" to Views.
+   * Describes this field to Views.
    *
-   * This function is the equivalent of the hook_views_data() function of
-   * the Drupal Views API.  It provides the necessary details to allow
-   * Views to integrate the field.
+   * An array of views data, in the same format as the return value of
+   * hook_views_data().
    *
-   * @return
-   *   An associative array describing the data structure of the field.
    */
-  public function viewsDataAlter(&$data, $entity_info) {
+  public function viewsData() {
+    $data = array();
 
+
+
+    return $data;
+  }
+
+  /**
+   * Allows the view data for this field to be altered.
+   *
+   * This function is the equivalent of the hook_field_views_data_alter()
+   * function of the Drupal Field API.  It provides the necessary details to
+   * allow views to integrate the field.
+   *
+   * @param $data
+   *   An array of views table data provided for a single field. This has the
+   *   same format as the return value of hook_views_data().
+   */
+  public function viewsDataAlter(&$data) {
+
+    $bundle_name = $this->instance['bundle'];
+    $field_name = $this->field['field_name'];
+    $data[$bundle_name][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
   }
 
   /**
