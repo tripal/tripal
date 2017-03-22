@@ -83,6 +83,8 @@ class tripal_views_query extends views_plugin_query {
     foreach ($results['TripalEntity'] as $entity_id => $stub) {
       $entities = array($entity_id => $stub);
       $view->result[$i] = new stdClass();
+      $view->result[$i]->entity = $stub;
+      $view->result[$i]->entity_id = $entity_id;
       foreach ($this->fields as $details) {
         $field_name = $details['field_name'];
         $field = field_info_field($field_name);

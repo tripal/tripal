@@ -33,6 +33,7 @@ function tripal_views_data() {
   tripal_entity_views_data($data);
   tripal_views_data_fields($data);
 
+  dpm($data);
   return $data;
 }
 
@@ -68,7 +69,6 @@ function tripal_views_data_fields(&$data) {
       }
     }
 
-    // Call the hook_field_views_data_alter() hook.
     drupal_alter('field_views_data', $result, $field, $module);
 
     if (is_array($result)) {
@@ -91,12 +91,25 @@ function tripal_entity_views_data(&$data) {
   while ($bundle = $bundles->fetchObject()) {
 
     // Each bundle gets it's own "table".
-     $data[$bundle->name]['table']['group'] = t($bundle->label);
-     $data[$bundle->name]['table']['base'] = array(
-       'query class' => 'tripal_views_query',
-       'title' => t($bundle->label),
-       'help' => t('Tripal ' . $bundle->label . ' pages'),
-     );
+    $data[$bundle->name]['table']['group'] = t($bundle->label);
+    $data[$bundle->name]['table']['base'] = array(
+      'query class' => 'tripal_views_query',
+      'title' => t($bundle->label),
+      'help' => t('Tripal ' . $bundle->label . ' pages'),
+    );
+    $data[$bundle->name]['entity_id'] = array(
+      'title' => t('Entity ID'),
+      'help' => t('The unique entity ID for this content type.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity',
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_numeric',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
   }
 }
 
