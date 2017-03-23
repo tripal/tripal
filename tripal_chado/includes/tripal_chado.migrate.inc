@@ -67,9 +67,8 @@ function tripal_chado_migrate_form($form, &$form_state) {
         visitors can continue to visit the Tripal v2 pages. Tripal
         v3 content types may remain private while customization is underway.
         Once customization is completed a subsequent step will allow you to
-        swap out Tripal v2 pages for the newer Tripal v3 pages.') .
-      t('If you would like to use Trial v3 web services you must migrate
-         content types.'),
+        swap out Tripal v2 pages for the newer Tripal v3 pages. If you would like to 
+        use Trial v3 web services you must migrate content types.'),
   );
 
   $tv2_content_type = 'all';
@@ -130,12 +129,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       // Migrate selection only
       if ($table == 'organism') {
         $sql =
-          "SELECT count(*)
-              FROM {organism} O
-              INNER JOIN public.chado_organism CO ON O.organism_id = CO.organism_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = O.organism_id
-                AND CE.data_table = 'organism'
-              WHERE CE.record_id IS NULL";
+           "SELECT count(*)
+            FROM {organism} O
+            INNER JOIN public.chado_organism CO ON O.organism_id = CO.organism_id
+          ";
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
           $key = urldecode('tv3_content_type--OBI--0100026--organism');
@@ -149,11 +146,9 @@ function tripal_chado_migrate_form($form, &$form_state) {
       else if ($table == 'analysis') {
         $sql =
         "SELECT count(*)
-              FROM {analysis} A
-              INNER JOIN public.chado_analysis CA ON A.analysis_id = CA.analysis_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = A.analysis_id
-                AND CE.data_table = 'analysis'
-              WHERE CE.record_id IS NULL";
+          FROM {analysis} A
+          INNER JOIN public.chado_analysis CA ON A.analysis_id = CA.analysis_id
+         ";
         $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
           $key = urlencode('tv3_content_type--local--analysis--analysis');
@@ -166,12 +161,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       }
       else if ($table == 'project') {
         $sql =
-        "SELECT count(*)
-              FROM {project} P
-              INNER JOIN public.chado_project CP ON P.project_id = CP.project_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = P.project_id
-                AND CE.data_table = 'project'
-              WHERE CE.record_id IS NULL";
+          "SELECT count(*)
+           FROM {project} P
+           INNER JOIN public.chado_project CP ON P.project_id = CP.project_id
+          ";
         $proj_count = chado_query($sql)->fetchField();
         if ($proj_count > 0) {
           $key = urlencode('tv3_content_type--local--project--project');
@@ -184,12 +177,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       }
       else if ($table == 'featuremap') {
         $sql =
-        "SELECT count(*)
-              FROM {featuremap} M
-              INNER JOIN public.chado_featuremap CM ON M.featuremap_id = CM.featuremap_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = M.featuremap_id
-                AND CE.data_table = 'featuremap'
-              WHERE CE.record_id IS NULL";
+          "SELECT count(*)
+            FROM {featuremap} M
+            INNER JOIN public.chado_featuremap CM ON M.featuremap_id = CM.featuremap_id
+          ";
         $map_count = chado_query($sql)->fetchField();
         if ($map_count > 0) {
           $key = urlencode('tv3_content_type--data--1274--map');
@@ -202,12 +193,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       }
       else if ($table == 'pub') {
         $sql =
-        "SELECT count(*)
-              FROM {pub} P
-              INNER JOIN public.chado_pub CP ON P.pub_id = CP.pub_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = P.pub_id
-                AND CE.data_table = 'pub'
-              WHERE CE.record_id IS NULL";
+          "SELECT count(*)
+           FROM {pub} P
+           INNER JOIN public.chado_pub CP ON P.pub_id = CP.pub_id
+         ";
         $proj_count = chado_query($sql)->fetchField();
         if ($proj_count > 0) {
           $key = urlencode('tv3_content_type--TPUB--0000002--Publication');
@@ -221,15 +210,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
       else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
         // Get all Tripal v2 node types from the chad_* linking table
         $sql =
-          "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
+            "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
               FROM {" . $table . "} T
               INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
               INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
               INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
               INNER JOIN {db} ON db.db_id = X.db_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = T.$pkey
-              AND CE.data_table = '$table'
-              WHERE CE.record_id IS NULL
               GROUP BY V.name, X.accession, db.name";
         $tv3_content_types = chado_query($sql);
         while($tv3_content_type = $tv3_content_types->fetchObject()) {
@@ -260,6 +246,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       '#name' => 'migrate_btn',
       '#value' => "Migrate $tv2_options[$tv2_content_type]",
     );
+    // Disable the migration if all have been done
+    if (count($tv2_options) == 1 && key_exists('all', $tv2_options)) {
+      $form['step2']['step2_container']['migrate_btn']['#disabled'] = 1;
+    }
   }
 
   // Step 3
@@ -525,6 +515,10 @@ function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
  *
  * @param boolean $all_option
  *   Include an 'all' option in the returned array
+ * @param boolean $has_template
+ *   Return TV2 content types only if it has a base template. This will exclude TV2 content 
+ *   types such as Blast/Kegg/Interpro/Unigene which are all converted into the TV3 
+ *   'Analysis' entity type
  * @return string[]
  *  Return a string array keyed by the node type
  */
@@ -774,17 +768,21 @@ function tripal_chado_unpublish_selected_types($tv2_content_types = array()) {
  */
 function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()) {
   foreach ($tv2_content_types AS $type) {
-    $sql = "SELECT nid, entity_id FROM chado_entity WHERE nid IN (SELECT nid FROM $type)";
-    $result = db_query($sql);
-    while ($entity = $result->fetchObject()) {
-      $usql = "
-          UPDATE tripal_entity
-          SET title = (SELECT title FROM node WHERE nid = :nid)
-          WHERE id = :entity_id";
-      db_query($usql, array(
-        ':nid' => $entity->nid,
-        ':entity_id' => $entity->entity_id)
-      );
+    $chado_table = str_replace('chado_', '', $type);
+    $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
+    foreach($bio_data_tables AS $bio_data_table) {
+      $sql = "SELECT nid, entity_id FROM $bio_data_table WHERE nid IN (SELECT nid FROM $type)";
+      $result = db_query($sql);
+      while ($entity = $result->fetchObject()) {
+        $usql = "
+            UPDATE tripal_entity
+            SET title = (SELECT title FROM node WHERE nid = :nid)
+            WHERE id = :entity_id";
+        db_query($usql, array(
+          ':nid' => $entity->nid,
+          ':entity_id' => $entity->entity_id)
+        );
+      }
     }
   }
 }
@@ -798,14 +796,18 @@ function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()
  */
 function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = array()) {
   foreach ($tv2_content_types AS $type) {
-    $sql = "SELECT nid, entity_id FROM chado_entity WHERE nid IN (SELECT nid FROM $type)";
-    $result = db_query($sql);
-    while ($entity = $result->fetchObject()) {
-      $usql = "
-          UPDATE url_alias
-          SET source = 'bio_data/" . $entity->entity_id .
-          "' WHERE source = 'node/" . $entity->nid . "'";
-      db_query($usql);
+    $chado_table = str_replace('chado_', '', $type);
+    $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
+    foreach($bio_data_tables AS $bio_data_table) {
+      $sql = "SELECT nid, entity_id FROM $bio_data_table WHERE nid IN (SELECT nid FROM $type)";
+      $result = db_query($sql);
+      while ($entity = $result->fetchObject()) {
+        $usql = "
+            UPDATE url_alias
+            SET source = 'bio_data/" . $entity->entity_id .
+            "' WHERE source = 'node/" . $entity->nid . "'";
+        db_query($usql);
+      }
     }
   }
 }
@@ -818,10 +820,10 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
  */
 function tripal_chado_migrate_organism_images () {
   // Get all organism entities
+  $bio_data_table = array_pop(tripal_chado_migrate_get_biodata_tables('organism'));
   $results = 
-    db_select('chado_entity', 'ce')
+    db_select($bio_data_table, 'ce')
     ->fields('ce', array('entity_id', 'record_id', 'nid'))
-    ->condition('data_table', 'organism')
     ->execute();
   
   // Iterate through each organism entity
@@ -907,4 +909,28 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id) {
     // Add a record to the field_data_data__image table
     
   }
+}
+
+/**
+ * Retrieve chado_biodata_* table name
+ *
+ * @param string $chado_table
+ *   the chado_table where the record is stored
+ *
+ * @return
+ *   Return all chado_biodata_* table names mapping to a chado_table
+ */
+function tripal_chado_migrate_get_biodata_tables ($chado_table) {
+  // To find the bundle_table, check if type_column is used for the chado_table
+  $query = db_select('chado_bundle', 'cb');
+  $query->join('tripal_bundle', 'tb', 'tb.id = cb.bundle_id');
+  $query->fields('cb', array('data_table'));
+  $query->fields('tb', array('name'));
+  $query->condition('cb.data_table', $chado_table);
+  $bundles = $query->execute();
+  $tables = array();
+  while ($bundle = $bundles->fetchObject()) {
+    array_push($tables, 'chado_' . $bundle->name);
+  }
+  return $tables;
 }
