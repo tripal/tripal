@@ -49,6 +49,13 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     unset($data['tripal_entity']['term_id']);
     unset($data['tripal_entity']['type']);
 
+
+    // This should not be a base table. We're not going to allow
+    // for views based on TripalEntity content types or the list of
+    // fields would become outrageously overwhelming. Instead we will
+    // provide views by bundle.
+    unset($data['tripal_entity']['table']['base']);
+
     return $data;
   }
 

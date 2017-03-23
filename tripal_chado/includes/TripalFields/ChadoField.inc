@@ -48,27 +48,15 @@ class ChadoField extends TripalField {
   public static $module = 'tripal_chado';
 
   /**
-   * Used to filter records that match a given condition.
+   * @see TripalField::query()
    *
-   * Entities can be filtered using the fields.  This function should be
-   * implemented if the field  supports filtering.  To provide filtering,
-   * the $query object should be updated to including any joins and
-   * conditions necessary. The following rules should be followed when
-   * implementing this function:
-   * - Try to implement a filter for every element of the 'value' array
-   *   returned by the load() function.
-   * - However, avoid making filteres for non-indexed database columns.
+   * In addition to the rules to follow for the TripalField::query function
+   * these should also be followed for the ChadoField::query implementation.
+   *
    * - When giving alias to joined tables be sure to use aliases that are
    *   unique to avoid conflicts with other fields.
    * - When joining with the base table its alias is 'base'.
-   * - This function should never set the fields that should be returned
-   *   nor ordering or group by.
    * - You may join to materialized views if need be to help speed queries.
-   *
-   * @param $query
-   *   A SelectQuery object.
-   * @param $condition
-   *   The field specific condition as set in the TripalFieldQuery object.
    */
   public function query($query, $condition) {
     // If we are here it is because the child class did not implement the
@@ -94,13 +82,7 @@ class ChadoField extends TripalField {
   }
 
   /**
-   * Used to sort records that have been filtered.
-   *
-   * @param $query
-   *   A SelectQuery object.
-   * @param $order
-   *   The field ordering as set in the TripalFieldQuery object.  This function
-   *   should handle the ordering request as specified by this object.
+   * @see TripalField::queryOrder()
    */
   public function queryOrder($query, $order) {
 
