@@ -87,7 +87,8 @@ function tripal_chado_entity_load($entities, $type) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
 
-        $chado_entity = db_select('chado_entity' ,'ce')
+        $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+        $chado_entity = db_select($chado_entity_table, 'ce')
           ->fields('ce')
           ->condition('ce.entity_id', $entity->id)
           ->execute()
@@ -124,7 +125,9 @@ function tripal_chado_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
+  if ($type == 'TripalEntity') {
 
+  }
 }
 
 /**

@@ -179,10 +179,10 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
 
   // Mark-up the Message
   $full_message =
-     '<div class="tripal-site-admin-message">'
-       . '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>'
-       . $message
-   . '</div>';
+     '<div class="tripal-site-admin-message">' .
+       '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>' .
+       $message .
+   '</div>';
 
   // Handle whether to return the HTML & let the caller deal with it
   // or to use drupal_set_message to put it near the top of the page  & let the theme deal with it

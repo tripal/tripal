@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implements hook_field_create_info().
+ * Implements hook_bundle_create_fields().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
@@ -103,6 +103,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
+        'sql' => array(),
       ),
     );
 
@@ -161,8 +162,6 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
       $base_info['type'] = 'text';
       $base_info['settings']['text_processing'] = 0;
     }
-
-
 
     $info[$field_name] = $base_info;
   }
@@ -1261,7 +1260,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
       'field_name' =>  $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Database Cross Reference',
+      'label' => 'Cross Reference',
       'description' => 'The IDs where this record may be available in other external online databases.',
       'required' => FALSE,
       'settings' => array(
@@ -1681,7 +1680,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
  *
  * A priviledged user has the ability to add new fields to the bundle. The
  * chado_linker__prop and chado_linker__cvterm fields are allowed to be
- * added dynamically by the user.  But, Drupal doesn't know whot to deal with
+ * added dynamically by the user.  But, Drupal doesn't know how to deal with
  * it, so this function is called for any field attached to a TripalEntity
  * bundle type. Any fields whose TripalField::$module argument is set to
  * 'tripal_chado' and that can be added dynamically will result in a call

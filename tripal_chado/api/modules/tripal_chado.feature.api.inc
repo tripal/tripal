@@ -1091,6 +1091,9 @@ function chado_get_aggregate_feature_relationships($feature_id, $substitute=1,
  *
  */
 function chado_get_feature_relationships($feature_id, $side = 'as_subject') {
+
+  $feature = chado_generate_var('feature', array('feature_id' => $feature_id));
+
   // get the relationships for this feature.  The query below is used for both
   // querying the object and subject relationships
   $sql = "
@@ -1119,20 +1122,24 @@ function chado_get_feature_relationships($feature_id, $side = 'as_subject') {
   // get the relationships
   $results = chado_query($sql, array(':feature_id' => $feature_id));
 
+  // Get the bundle for this feature type, if one exists.
+  $term = tripal_load_term_entity(array(
+    'vocabulary' => $feature->type_id->dbxref_id->db_id->name,
+    'accession' => $feature->type_id->dbxref_id->accession,
+  ));
+  $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+
   // iterate through the relationships, put these in an array and add
   // in the Drupal node id if one exists
   $i=0;
-  $esql = "
-    SELECT entity_id
-    FROM {chado_entity}
-    WHERE record_id = :feature_id";
   $relationships = array();
   while ($rel = $results->fetchObject()) {
-    $entity = db_query($esql, array(':feature_id' => $rel->subject_id))->fetchObject();
+
+    $entity = tripal_chado_get_record_entity($bundle, $rel->subject_id);
     if ($entity) {
       $rel->subject_entity_id = $entity->entity_id;
     }
-    $entity = db_query($esql, array(':feature_id' => $rel->object_id))->fetchObject();
+    $entity = tripal_chado_get_record_entity($bundle, $rel->object_id);
     if ($entity) {
       $rel->object_entity_id = $entity->entity_id;
     }
@@ -1181,11 +1188,27 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
   $i=0;
   $featurelocs = array();
   while ($loc = $flresults->fetchObject()) {
-    // if a drupal node exists for this feature then add the nid to the
+    // if a drupal entity exists for this feature then add the nid to the
     // results object
 
-    $loc->feid = tripal_get_chado_entity_id('feature', $loc->feature_id);
-    $loc->seid = tripal_get_chado_entity_id('feature', $loc->src_feature_id);
+
+    // Get the bundle for this feature type, if one exists.
+    $ffeature = chado_generate_var('feature', array('feature_id' => $loc->feature_id));
+    $sfeature = chado_generate_var('feature', array('feature_id' => $loc->src_feature_id));
+    $fterm = tripal_load_term_entity(array(
+      'vocabulary' => $ffeature->type_id->dbxref_id->db_id->name,
+      'accession' => $ffeature->type_id->dbxref_id->accession,
+    ));
+    $sterm = tripal_load_term_entity(array(
+      'vocabulary' => $sfeature->type_id->dbxref_id->db_id->name,
+      'accession' => $sfeature->type_id->dbxref_id->accession,
+    ));
+    $fbundle = tripal_load_bundle_entity(array('term_id' => $fterm->id));
+    $sbundle = tripal_load_bundle_entity(array('term_id' => $sterm->id));
+
+    $loc->feid = tripal_chado_get_record_entity($fbundle, $loc->feature_id);
+    $loc->seid = tripal_chado_get_record_entity($sbundle, $loc->src_feature_id);
+
     // add the result to the array
     $featurelocs[$i++] = $loc;
   }

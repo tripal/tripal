@@ -1,44 +1,5 @@
 <?php
 
-/**
- * Retrieves an entity that matches the given table and record id.
- *
- * @param $table
- *   The name of the Chado table.
- * @param $record_id
- *   The record's primary key in the table specified by $table.
- *
- * @return
- *   A chado_entity object.
- */
-function tripal_load_chado_entity($table, $record_id) {
-   $entity_id = db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('ce.record_id', $record_id)
-     ->condition('ce.data_table', $table)
-     ->execute()
-     ->fetchField();
-   if ($entity_id) {
-     $entity = entity_load('TripalEntity', array($entity_id));
-     return reset($entity);
-   }
-   return NULL;
-}
-
-/**
- * Retrieves the entity ID using a record ID.
- *
- * @param unknown $data_table
- * @param unknown $record_id
- */
-function tripal_get_chado_entity_id($data_table, $record_id) {
-   return db_select('chado_entity', 'ce')
-     ->fields('ce', array('entity_id'))
-     ->condition('data_table', $data_table)
-     ->condition('record_id', $record_id)
-     ->execute()
-     ->fetchField();
-}
 
 /**
  * Publishes content in Chado as a new TripalEntity entity.
@@ -79,11 +40,25 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         array('@error' => 'The bundle name must be provided'));
     return FALSE;
   }
+  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
 
-  $table = $bundle->data_table;
-  $type_column = $bundle->type_column;
-  $type_linker_table = $bundle->type_linker_table;
-  $cvterm_id  = $bundle->type_id;
+
+  // Get the mapping of the bio data type to the Chado table.
+  $chado_bundle = db_select('chado_bundle', 'cb')
+    ->fields('cb')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
+  if(!$chado_bundle) {
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+        "Cannot find mapping of bundle to Chado tables. Could not publish record.");
+    return FALSE;
+  }
+
+  $table = $chado_bundle->data_table;
+  $type_column = $chado_bundle->type_column;
+  $type_linker_table = $chado_bundle->type_linker_table;
+  $cvterm_id  = $chado_bundle->type_id;
 
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
@@ -94,8 +69,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $select = "SELECT $pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
-      LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-         AND CE.data_table = :table
+      LEFT JOIN public.$chado_entity_table CE on CE.record_id = T.$pkey_field
   ";
 
   // For migration of Tripal v2 nodes to entities we want to include the
@@ -105,7 +79,6 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $from .= " INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
   }
   $where = " WHERE CE.record_id IS NULL ";
-  $args[':table'] = $table;
 
   // Handle bundles that use a linker property table for identifying the type
   // of record to publish.
@@ -154,12 +127,6 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
 
-  //If this is the publication table remove one record, record_id = 1
-  // which is the null publication.
-  if($table == 'pub'){
-    $count = $count - 1;
-  }
-
   // calculate the interval for updates
   $interval = intval($count / 1000);
   if ($interval < 1) {
@@ -169,7 +136,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql, $args);
-  //$transaction = db_transaction();
+  $transaction = db_transaction();
 
   print "\nNOTE: publishing records is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -179,46 +146,49 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   try {
     $i = 0;
     while($record = $records->fetchObject()) {
-      if(($table == 'pub' && $record->record_id == 1) || ($table == 'contact' && $record->record_id == 1)){
-        // Do not create the chado entity.
-      }
-      else {
-        // update the job status every interval
-        //if ($jobid and $i % $interval == 0) {
+
+      // update the job status every interval
+      //if ($jobid and $i % $interval == 0) {
         $complete = ($i / $count) * 33.33333333;
         //tripal_set_job_progress($jobid, intval($complete + 33.33333333));
         printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
-        //}
+      //}
 
-        // First save the tripal_entity record.
-        $record_id = $record->record_id;
-        $ec = entity_get_controller('TripalEntity');
-        $entity = $ec->create(array(
-          'bundle' => $bundle_name,
-          'term_id' => $bundle->term_id,
-          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
-          'chado_record_id' => $record_id,
-        ));
-
-        $entity = $entity->save();
-        if (!$entity) {
-          throw new Exception('Could not create entity.');
-        }
-
-        // Next save the chado_entity record.
-        $entity_record = array(
-          'entity_id' => $entity->id,
-          'record_id' => $record_id,
-          'data_table' => $table,
-        );
-
-        // For the Tv2 to Tv3 migration we want to add the nid to the
-        // entity so we can associate the node with the entity.
-        if (property_exists($record, 'nid')) {
-          $entity_record['nid'] = $record->nid;
-        }
-        $success = drupal_write_record('chado_entity', $entity_record);
+      // First save the tripal_entity record.
+      $record_id = $record->record_id;
+      $ec = entity_get_controller('TripalEntity');
+      $entity = $ec->create(array(
+        'bundle' => $bundle_name,
+        'term_id' => $bundle->term_id,
+        // Add in the Chaod details for when the hook_entity_create()
+        // is called and our tripal_cahdo_entity_create() implementation
+        // can deal with it.
+        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+        'chado_record_id' => $record_id,
+      ));
+      $entity = $entity->save();
+      if (!$entity) {
+        throw new Exception('Could not create entity.');
       }
+
+      // Next save the chado entity record.
+      $entity_record = array(
+        'entity_id' => $entity->id,
+        'record_id' => $record_id,
+      );
+
+      // For the Tv2 to Tv3 migration we want to add the nid to the
+      // entity so we can associate the node with the entity.
+      if (property_exists($record, 'nid')) {
+        $entity_record['nid'] = $record->nid;
+      }
+      $result = db_insert($chado_entity_table)
+        ->fields($entity_record)
+        ->execute();
+      if(!$result){
+        throw new Exception('Could not create mapping of entity to Chado record.');
+      }
+
       $i++;
     }
   }
@@ -346,4 +316,78 @@ function tripal_replace_chado_tokens($string, $record) {
   return $string;
 }
 
-
+/**
+ * Retrieve entity_id for a chado record
+ * 
+ * @param string $chado_table
+ *   the chado_table where the record is stored
+ * @param integer $record_id
+ *   the record_id which is the primary key of the chado_table
+ *   
+ * @return
+ *   Return an integer representing the entity_id or NULL if not found. The record is then 
+ *   accessible on the website through URL /bio_data/<entity_id>
+ */
+function tripal_get_chado_entity_id ($chado_table, $record_id) {
+  // To find the bundle_table, check if type_column is used for the chado_table
+  $type_column = 
+    db_select('chado_bundle', 'CB')
+    ->fields('CB', array('type_column'))
+    ->condition('data_table', $chado_table)
+    ->execute()
+    ->fetchField();
+  
+  // if there is a type_column, get bundle_id by specifying the data_table,  type_column, 
+  // and type_id
+  $bundle_id = NULL;
+  if ($type_column) {
+    $schema = chado_get_schema($chado_table);
+    $pkey = is_array($schema['primary key']) ? $schema['primary key'][0] : $schema['primary key'];
+    $type_id = NULL;
+    if (key_exists($type_column, $schema['fields'])) {
+      $type_id =
+        db_select('chado.' . $chado_table, 'C')
+        ->fields('C', array($type_column))
+        ->condition($pkey, $record_id)
+        ->execute()
+        ->fetchField();
+    }
+    if ($type_id) {
+      $bundle_id =
+        db_select('chado_bundle', 'CB')
+        ->fields('CB', array('bundle_id'))
+        ->condition('data_table', $chado_table)
+        ->condition('type_column', $type_column)
+        ->condition('type_id', $type_id)
+        ->execute()
+        ->fetchField();
+    }
+  }
+  // if type_column is not used, get bundle_id by specifying the data_table
+  else {
+    $bundle_id = 
+      db_select('chado_bundle', 'CB')
+      ->fields('CB', array('bundle_id'))
+      ->condition('data_table', $chado_table)
+      ->execute()
+      ->fetchField();
+  }
+  
+  // if bundle_id is found, find the bundle table name and return the entity_id
+  $entity_id = NULL;
+  if ($bundle_id) {
+    $table_name = 
+      db_select('tripal_bundle', 'TB')
+      ->fields('TB', array('name'))
+      ->condition('id', $bundle_id)
+      ->execute()
+      ->fetchField();
+    $entity_id = 
+      db_select('chado_' . $table_name, 'CBD')
+      ->fields('CBD', array('entity_id'))
+      ->condition('record_id', $record_id)
+      ->execute()
+      ->fetchField();
+  }  
+  return $entity_id;
+}

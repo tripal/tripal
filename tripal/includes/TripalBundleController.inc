@@ -79,30 +79,10 @@ class TripalBundleController extends EntityAPIControllerExportable {
           }
         }
 
-        // TODO: this Chado sepcific code needs to be moved out of here!
-
-        // Remove the entries in the chado_entity and tripal_entity
-        $query = db_select('chado_entity', 'ce');
-        $query->join('tripal_entity', 'te', 'te.id = ce.entity_id');
-        $records = $query->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-          ->condition('te.bundle', $bundle->name)
+        // Remove any entities from the tripal_entity table.
+        db_delete('tripal_entity')
+          ->condition('bundle', $bundle->name)
           ->execute();
-        $num_removed = 0;
-        while ($record = $records->fetchObject()) {
-          db_delete('chado_entity')
-            ->condition('chado_entity_id', $record->chado_entity_id)
-            ->execute();
-          db_delete('tripal_entity')
-            ->condition('id', $record->chado_entity_id)
-            ->execute();
-          $num_removed++;
-        }
-        db_delete('chado_bundle')
-          ->condition('bundle_id', $bundle->id)
-          ->execute();
-        if ($num_removed > 0) {
-          drupal_set_message(t('Removed %num records', array('%num' => $num_removed)));
-        }
 
         // Remove the terms for the bundles that are to be deleted.
         db_delete('tripal_term')

@@ -1,32 +1,99 @@
 <?php
 
-class tripal_views_query extends views_plugin_query_default {
+class tripal_views_query extends views_plugin_query {
 
-  private $attach_fields = array();
+  // The EntityFieldQuery object.
+  var $query;
 
+  var $fields;
+
+  var $filters;
+
+
+  /**
+   * Ensure a table exists in the queue.
+   *
+   * This function overrides the views_plugin_query version of the function
+   * but does nothing other than return the "table" (or bundle) name as
+   * we won't be using aliases for bundles.
+   *
+   * @param $table
+   *   The unaliased name of the table to ensure.
+   * @param $relationship
+   *   The relationship to ensure the table links to. Each relationship will
+   *   get a unique instance of the table being added. If not specified, will
+   *   be the primary table.
+   * @param $join
+   *   A views_join object (or derived object) to join the alias in.
+   *
+   * @return
+   *   The alias used to refer to this specific table, or NULL if the table
+   *   cannot be ensured.
+   */
+  public function ensure_table($table, $relationship = NULL, $join = NULL) {
+    // Because we are not querying a table, we're querying a TripalFieldQuery
+    // object we don't need to ensure the table.
+    return $table;
+  }
   /**
    *
    */
   public function init($base_table = 'tripal_entity', $base_field = 'id', $options) {
     parent::init($base_table, $base_field, $options);
 
-    // Always add the TripaEntity id and the bundle name so we can keep
-    // track of which rows are in the SQL results
-    $this->add_field('tripal_entity', 'id', 'tripal_entity_id');
-    $this->add_field('tripal_bundle', 'name', 'tripal_bundle_name');
+    $this->fields = array();
+    $this->where = array();
 
+    // Creqte the TripalFieldQuery object.
+    $this->query = new TripalFieldQuery();
+
+    // Make suer we only query on the entities for this bundle type.
+    $this->query->entityCondition('entity_type', 'TripalEntity');
+    $this->query->entityCondition('bundle', $base_table);
   }
   /**
    *
    */
-  public function add_field($table_alias, $field, $alias = '', $params = array()) {
-    // If this is not a TripalField then allow the add_field to work as usual.
-    $f = field_info_field($field);
-    if (!$f) {
-      return parent::add_field($table_alias, $field, $alias, $params);
-    }
-    else {
-      $this->attach_fields[] = $f;
+  public function add_field($table_alias, $field_name, $alias = '', $params = array()) {
+    $this->fields[] = array(
+      'table_alias' => $table_alias,
+      'field_name' => $field_name,
+      'alias' => $alias,
+      'params' => $params
+    );
+  }
+
+  /**
+   * Add a simple WHERE clause to the query.
+   *
+   * @param $group
+   *   The WHERE group to add these to; groups are used to create AND/OR
+   *   sections. Groups cannot be nested. Use 0 as the default group. If the
+   *   group does not yet exist it will be created as an AND group.
+   * @param $field
+   *   The name of the field to check.
+   * @param $value
+   *   The value to test the field against. In most cases, this is a scalar.
+   *   For more complex options, it is an array. The meaning of each element
+   *   in the array is dependent on the $operator.
+   * @param $operator
+   *   The comparison operator, such as =, <, or >=. It also accepts more
+   *   complex options such as IN, LIKE, or BETWEEN. Defaults to IN if $value
+   *   is an array = otherwise. If $field is a string you have to use 'formula'
+   *   here.
+   */
+  public function add_where($group, $field_name, $value = NULL, $operator = NULL) {
+    // Remove the preceeding period from the $field_name
+    $field_name = preg_replace('/^\./', '', $field_name);
+
+    $this->filters[] = array(
+      'group' => $group,
+      'field_name' => $field_name,
+      'value' => $value,
+      'op' => $operator
+    );
+    if ($value) {
+      $this->query->fieldCondition($field_name, $value, $value, $op);
     }
   }
 
@@ -35,91 +102,40 @@ class tripal_views_query extends views_plugin_query_default {
    * @param  $view
    */
   function execute(&$view) {
+    $query = $this->query;
 
-    // First execute any SQL that needs to run.
-    parent::execute($view);
+    $start = microtime(TRUE);
 
-    // Add in the entity object to the results and any additional fields
-    // that have been requested.
-    for ($i = 0; $i < count($view->result); $i++) {
-
-      // Build a simple entity stub (it's faster than trying to load the
-      // whole things!).
-      $entity_id = $view->result[$i]->tripal_entity_id;
-      $bundle_name = $view->result[$i]->tripal_bundle_name;
-      $ids = array($entity_id, 0, $bundle_name);
-      $entity = entity_create_stub_entity('TripalEntity', $ids);
-
-      // Iterate through the field and attach only those that have been
-      // requested.
-      foreach ($this->attach_fields as $field) {
-        // Don't load this field if it doesn't belong to the selected bundle
-        if (in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-          $entities = array($entity_id => $entity);
-          module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
-            $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
-        }
-      }
-      $view->result[$i]->entity = $entity;
-    }
-    return;
-
-    // The base table indicates our content type.
-    $base_table = $view->base_table;
-
-    // Get the bundle that the view base table represents.
-//    $bundle = tripal_load_bundle_entity(array('name' => $view->base_table));
-
-    // The base table for the view is a bundle therefore the first condition
-    // must be with the content_type field.
-    $query = new TripalFieldQuery();
-//    $query->entityCondition('entity_type', 'TripalEntity');
-    $query->entityCondition('bundle', $bundle->name);
-
-    // Apply filters
-    foreach ($view->filter as $field_name => $handler) {
-      if (trim($handler->value)) {
-        $query->fieldCondition($field_name, $field_name, $handler->value, $handler->operator);
-      }
-    }
-    // Apply sorting
-    foreach ($view->sort as $field_name => $sort) {
-      $options = $sort->options;
-      $query->fieldOrderBy($field_name, $options['order']);
-    }
+    // Execute the count query
+    $cquery = clone $query;
+    $cquery->count();
+    $num_records = $cquery->execute();
+    $views->total_rows = count($num_records['TripalEntity']);
 
     $results = $query->execute();
 
-    if (count($results) > 0) {
-      foreach ($results['TripalEntity'] as $entity_id => $stub) {
-        // Begin a new row for Views output.
-        $row = new stdClass;
-
-        // Get the entity object.
-        $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
-        $entity = reset($entity);
-
-        // Iterate through the fields that are added to the view and attach those
-        // to the entity.  After attaching we can get the value and include
-        // it in the output results.
-        foreach($view->field as $field_name => $handler) {
-          $field = field_info_field($field_name);
-          field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
-              array('field_id' => $field['id']));
-          $items = field_get_items('TripalEntity', $entity, $field_name);
-          $value = $items[0]['value'];
-
-          $row->entity = $entity;
-          $row->$field_name = $value;
-        }
-
-        // Add the row to the results list.
-        $view->result[] = $row;
-
+    // Iterate through the entities that were returned and get the field
+    // values that are requested.  Those go in the view->result array.
+    $i = 0;
+    $view->result = array();
+    foreach ($results['TripalEntity'] as $entity_id => $stub) {
+      $entities = array($entity_id => $stub);
+      $view->result[$i] = new stdClass();
+      $view->result[$i]->entity = $stub;
+      foreach ($this->fields as $details) {
+        $field_name = $details['field_name'];
+        $field = field_info_field($field_name);
+        module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
+            $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
+        $view->result[$i]->$field_name = $entities[$entity_id]->$field_name['und'][0]['value'];
       }
+      $view->result[$i]->entity_id = $stub->id;
+      $i++;
     }
-
-    $view->total_rows = count($view->result);
-    $view->pager['current_page'] = 0;
+    $view->execute_time = microtime(TRUE) - $start;
+    $view->current_page = 0;
+    //dpm($view->query);
+    //dpm($view->result);
   }
+
 }

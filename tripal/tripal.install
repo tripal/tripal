@@ -771,7 +771,8 @@ function tripal_update_7300() {
       'not null' => TRUE
     );
     db_change_field('tripal_vocab', 'vocabulary', 'vocabulary',$spec);
-  } catch (\PDOException $e) {
+  } 
+  catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }

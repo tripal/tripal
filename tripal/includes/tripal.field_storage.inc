@@ -49,7 +49,7 @@ function tripal_field_storage_load($entity_type, $entities, $age,
       $field_module = $field['module'];
 
       // Get the instnace for this field
-      $instance = field_info_instance($entity_type, $field_name, $entity->bundle); 
+      $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
       // Allow the creating module to alter the value if desired.  The
       // module should do this if the field has any other form elements

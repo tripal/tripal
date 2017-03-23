@@ -155,7 +155,6 @@ function tripal_chado_schema() {
   }
 
   // Links TripalEntity entities to the chado record.
-  $schema['chado_entity'] = tripal_chado_chado_entity_schema();
   $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
   $schema['chado_semweb'] = tripal_chado_chado_semweb_schema();
 
@@ -569,59 +568,6 @@ function tripal_chado_tripal_mviews_schema() {
  * This is where we would specify that a particular gene maps to the record in the
  * chado.feature table with a feature_id=2432;
  */
-function tripal_chado_chado_entity_schema() {
-
-  $schema = array(
-    'description' => 'The linker table that associates an enitity from the public.tripal_entity table with a "base" record in Chado',
-    'fields' => array(
-      'chado_entity_id' => array(
-        'description' => 'The primary identifier for this table.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'entity_id' => array(
-        'description' => 'The unique entity id.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'data_table' => array(
-        'description' => 'The table in that this record belongs to',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'record_id' => array(
-        'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'nid' => array(
-        'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
-        'type' => 'int',
-      )
-    ),
-    'indexes' => array(
-      'record_id' => array('record_id'),
-      'entity_id' => array('entity_id'),
-      'data_table' => array('data_table'),
-      'nid' => array('nid'),
-    ),
-    'unique keys' => array(
-      'table_record' => array('data_table', 'record_id'),
-      'entity_id' => array('entity_id'),
-    ),
-    'primary key' => array('chado_entity_id'),
-  );
-  return $schema;
-}
-
-/**
- * Links Biological Data Entities to the chado "base" table the data is stored in.
- * This is where we would specify that a particular gene maps to the record in the
- * chado.feature table with a feature_id=2432;
- */
 function tripal_chado_chado_bundle_schema() {
 
   $schema = array(
@@ -729,17 +675,70 @@ function tripal_chado_chado_cvterm_mapping_schema() {
 }
 
 /**
- * Fixes the phase on the tripal_gffcds_temp table used for importing GFF files.
+ * Fixes the phase on the tripal_gffcds_temp table used for importing GFF files, and fixes the db.name term mapping.
  *
  */
-function tripal_chado_update_7200() {
+function tripal_chado_update_7300() {
   try {
     if (chado_table_exists('tripal_gffcds_temp')) {
       chado_query("ALTER TABLE {tripal_gffcds_temp} ALTER COLUMN phase DROP NOT NULL;");
     }
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'data:1048',
+      'name' => 'Database ID',
+      'cv_name' => 'EDAM',
+      'definition' => 'An identifier of a biological or bioinformatics database.',
+    ));
+    tripal_associate_chado_semweb_term('db', 'name', $term);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not fix phase on tripal_gffcds_temp table: '. $error);
+  }
+}
+
+/**
+ * Divides chado_entity table for better integration with views.
+ */
+function tripal_chado_update_7301() {
+
+  module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.bundle');
+  try {
+    $transaction = db_transaction();
+    $query = db_select('chado_bundle', 'CB');
+    $query->join('tripal_bundle', 'TB', 'TB.id = CB.bundle_id');
+    $query->fields('CB', array('data_table'));
+    $query->fields('TB', array('name'));
+    $cbundles = $query->execute();
+
+    // If the table for the bundle doesn't exist then create one, and then
+    // move all of the records from the chado_entity table to it.
+    while($cbundle = $cbundles->fetchObject()) {
+      $cbundle_table = tripal_chado_get_bundle_entity_table($cbundle);
+
+      if (!db_table_exists($cbundle_table)) {
+        // Create the bundle table.
+        tripal_chado_create_bundle_table($cbundle);
+
+        // Now move the records over.
+        $sql = "
+          INSERT INTO {$cbundle_table} (entity_id, record_id, nid)
+           SELECT CE.entity_id, CE.record_id, CE.nid
+            FROM {chado_entity} CE
+              INNER JOIN {tripal_entity} TE ON CE.entity_id = TE.id
+            WHERE TE.bundle = :bundle
+        ";
+        db_query($sql, array(':bundle' => $cbundle->name));
+      }
+    }
+
+    // Now remove the chado_entity table.
+    db_drop_table('chado_entity');
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

@@ -57,14 +57,13 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
-    // Add a record to the chado_entity table so that the data for the
-    // fields can be pulled from Chado when loaded the next time.
+    // Add the record to the proper chado entity table
+    $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
     $record = array(
       'entity_id' => $entity->id,
       'record_id' => $base_record_id,
-      'data_table' => $base_table,
     );
-    $success = drupal_write_record('chado_entity', $record);
+    $success = drupal_write_record($chado_entity_table, $record);
     if (!$success) {
       drupal_set_message('Unable to insert new Chado entity.', 'error');
     }
@@ -201,8 +200,9 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       $base_table = $bundle->data_table;
       $type_field = $bundle->type_column;
 
-      // Get the base table and record id for the fields of this entity.
-      $details = db_select('chado_entity', 'ce')
+      // Get the record id for the fields of this entity.
+      $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+      $details = db_select($chado_entity_table, 'ce')
         ->fields('ce')
         ->condition('entity_id', $entity->id)
         ->execute()
@@ -415,7 +415,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
  * Implements hook_field_storage_query().
  */
 function tripal_chado_field_storage_query($query) {
-
+dpm($query);
   // Initialize the result array.
   $result = array(
     'TripalEntity' => array()
@@ -501,12 +501,12 @@ function tripal_chado_field_storage_query($query) {
     }
   } // end foreach ($query->fieldConditions as $index => $condition) {
 
-  // Now join with the chado_entity table to get published records only.
-  $cquery->join('chado_entity', 'CE', "CE.record_id = base.$pkey");
+  // Now join with the chado entity table to get published records only.
+  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $cquery->join($chado_entity_table, 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
   $cquery->fields('CE', array('entity_id'));
   $cquery->fields('TE', array('bundle'));
-  $cquery->condition('CE.data_table', $data_table);
   if (array_key_exists('start', $query->range)) {
     $cquery->range($query->range['start'], $query->range['length']);
   }

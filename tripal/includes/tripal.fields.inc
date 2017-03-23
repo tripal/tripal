@@ -83,6 +83,54 @@ function tripal_field_widget_info_alter(&$info) {
 }
 
 /**
+ * Implements hook_field_views_data();
+ */
+function tripal_field_views_data($field) {
+  $data = array();
+
+  $field_type = $field['type'];
+  $field_types = tripal_get_field_types();
+
+  // Iterate through the bundles to which this field is attached and
+  // if it is a TripalField field then we'll call the viewsDataAlater function.
+  $bundles = $field['bundles']['TripalEntity'];
+  foreach ($bundles as $bundle_name) {
+    $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+    if (in_array($field_type, $field_types)) {
+      $tfield = new $field_type($field, $instance);
+      $data += $tfield->viewsData();
+    }
+  }
+  return $data;
+}
+
+/**
+ * Implements hook_field_views_data_alter();
+ */
+function tripal_field_views_data_alter(&$result, $field, $module) {
+  // Skip fields that aren't TripalEntity fields.
+  if (!array_key_exists('TripalEntity', $field['bundles'])) {
+    return;
+  }
+
+  // Get the list of our Tripal field types for reference.
+  $tripal_field_types = tripal_get_field_types();
+
+  // Iterate through the bundles to which this field is attached and
+  // if it is a TripalField field then we'll call the viewsDataAlater function.
+  $bundles = $field['bundles']['TripalEntity'];
+  foreach ($bundles as $bundle_name) {
+
+    $field_type = $field['type'];
+    if (in_array($field_type, $tripal_field_types)) {
+      $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+      $tfield = new $field_type($field, $instance);
+      return $tfield->viewsDataAlter($result);
+    }
+  }
+}
+
+/**
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {
@@ -430,7 +478,6 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
     $term_name = $instance['settings']['term_name'];
     $term = tripal_get_term_details($vocabulary, $accession);
   }
-  dpm($instance);
 
   // Construct a table for the vocabulary information.
   $headers = array();

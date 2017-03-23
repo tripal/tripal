@@ -119,7 +119,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     $table = array(
       'header' => $headers,
-      'rows' => $chunks[$current_page],
+      'rows' => $current_page ? $chunks[$current_page] : array(),
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),

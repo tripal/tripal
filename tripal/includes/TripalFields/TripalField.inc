@@ -25,6 +25,13 @@ class TripalField {
   // changed.
   public static $default_settings = array(
     'storage' => 'tripal_no_storage',
+    // It is expected that all fields set a 'value' in the load() function.
+    // In many cases, the value may be an associative array of key/value pairs.
+    // In order for Tripal to provide context for all data, the keys should
+    // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
+    // function that are supported by the query() function should be
+    // listed here.
+    'searchable_keys' => array(),
   );
 
   // Provide a list of instance specific settings. These can be access within
@@ -66,6 +73,7 @@ class TripalField {
   // fields can only be created programmatically with field_create_field()
   // and field_create_instance().
   public static $no_ui = TRUE;
+
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -111,7 +119,6 @@ class TripalField {
         $accession = $instance['settings']['term_accession'];
         $term = tripal_get_term_details($vocabulary, $accession);
         if (!$term) {
-          dpm(debug_backtrace());
           throw new Error(t('Cannot create TripalField of type "%term" as that
               term does not exist.', array('%term' => "$vocabulary:$accession")));
         }
@@ -268,16 +275,48 @@ class TripalField {
   }
 
   /**
-   * Describes this fields "data tables" to Views.
+   * Describes this field to Views.
    *
-   * This function is the equivalent of the hook_views_data() function of
-   * the Drupal Views API.  It provides the necessary details to allow
-   * Views to integrate the field.
+   * An array of views data, in the same format as the return value of
+   * hook_views_data().
    *
-   * @return
-   *   An associative array describing the data structure of the field.
    */
-  public function viewsDataAlter(&$data, $entity_info) {
+  public function viewsData() {
+    $data = array();
+
+    $bundle_name = $this->instance['bundle'];
+    $field_name = $this->field['field_name'];
+
+    $data[$bundle_name][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
+
+    return $data;
+  }
+
+  /**
+   * Allows the view data for this field to be altered.
+   *
+   * This function is the equivalent of the hook_field_views_data_alter()
+   * function of the Drupal Field API.  It provides the necessary details to
+   * allow views to integrate the field.
+   *
+   * @param $data
+   *   An array of views table data provided for a single field. This has the
+   *   same format as the return value of hook_views_data().
+   */
+  public function viewsDataAlter(&$data) {
 
   }
 
@@ -338,4 +377,43 @@ class TripalField {
 
   }
 
+  /**
+   * Used to filter records that match a given condition.
+   *
+   * Entities can be filtered using the fields.  This function should be
+   * implemented if the field  supports filtering.  To provide filtering,
+   * the $query object should be updated to including any joins and
+   * conditions necessary. The following rules should be followed when
+   * implementing this function:
+   * - Any keys from the value array that support filtering should be set
+   *   in the $default_settings['searchable_keys'] array of this class file.
+   * - Implement support for every key in the
+   *   $default_settings['searchable_keys'] array.
+   * - However, avoid making filteres for non-indexed database columns.
+   * - This function should never set the fields that should be returned
+   *   nor ordering or group by.
+   *
+   * @param $query
+   *   A query object appropriate for the data storage backend. For example,
+   *   The Tripal Chado module will provide a SelectQuery object.
+   * @param $condition
+   *   The field specific condition as set in the TripalFieldQuery object.
+   */
+  public function query($query, $condition) {
+
+  }
+
+  /**
+   * Used to sort records that have been filtered.
+   *
+   * @param $query
+   *   A query object appropriate for the data storage backend. For example,
+   *   The Tripal Chado module will provide a SelectQuery object.
+   * @param $order
+   *   The field ordering as set in the TripalFieldQuery object.  This function
+   *   should handle the ordering request as specified by this object.
+   */
+  public function queryOrder($query, $order) {
+
+  }
 }

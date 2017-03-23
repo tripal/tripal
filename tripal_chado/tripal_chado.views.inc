@@ -5,8 +5,8 @@
  */
 
 /**
- * Describe various Tripal Core systems to Views
- *   for the creation of administrative views.
+ * Describe various Tripal Core systems to Views for the creation of
+ * administrative views.
  *
  * @ingroup tripal
  */
@@ -22,136 +22,136 @@ function tripal_chado_views_data() {
   return $data;
 }
 
-/**
- * Implements hook_views_data_alter().
- */
-function tripal_chado_views_data_alter(&$data) {
+// /**
+//  * Implements hook_views_data_alter().
+//  */
+// function tripal_chado_views_data_alter(&$data) {
 
-  // Adds integration for chado-based fields.
-  tripal_chado_add_field_views_data($data);
+//   // Adds integration for chado-based fields.
+//   tripal_chado_add_field_views_data($data);
 
-  return $data;
-}
+//   return $data;
+// }
 
-/**
- * Adds integration for chado-based fields.
- *
- * We can't use hook_field_view_data since this only works when the
- * storage engine is of type 'field_sql_storage' and of course,
- * ours is not. Thus we create our own implementation of field_views_data()
- * for our storage engine.
- */
-function tripal_chado_add_field_views_data(&$data) {
-  foreach (field_info_fields() as $field) {
-    if ($field['storage']['type'] != 'field_chado_storage') {
-      continue;
-    }
+// /**
+//  * Adds integration for chado-based fields.
+//  *
+//  * We can't use hook_field_view_data since this only works when the
+//  * storage engine is of type 'field_sql_storage' and of course,
+//  * ours is not. Thus we create our own implementation of field_views_data()
+//  * for our storage engine.
+//  */
+// function tripal_chado_add_field_views_data(&$data) {
+//   foreach (field_info_fields() as $field) {
+//     if ($field['storage']['type'] != 'field_chado_storage') {
+//       continue;
+//     }
 
-    $field_name = $field['field_name'];
-    $field_type = $field['type'];
+//     $field_name = $field['field_name'];
+//     $field_type = $field['type'];
 
 
-    // Currently, we only handle integration of chado fields with TripalEntity.
-    // @todo: extend this to work with other entities in the future.
-    if (isset($field['bundles']['TripalEntity']) AND isset($field['settings']['chado_column'])) {
+//     // Currently, we only handle integration of chado fields with TripalEntity.
+//     // @todo: extend this to work with other entities in the future.
+//     if (isset($field['bundles']['TripalEntity']) AND isset($field['settings']['chado_column'])) {
 
-      // We currently don't support prop tables for views integration due
-      // in part to the multiple values but also b/c we can't indicate which
-      // type of property to show. Thus, instead of warning the user,
-      // we just won't integrate it at this time.
-      // @todo: Handle property fields.
-      if (preg_match('/prop$/', $field['settings']['chado_table'])) {
-        continue;
-      }
+//       // We currently don't support prop tables for views integration due
+//       // in part to the multiple values but also b/c we can't indicate which
+//       // type of property to show. Thus, instead of warning the user,
+//       // we just won't integrate it at this time.
+//       // @todo: Handle property fields.
+//       if (preg_match('/prop$/', $field['settings']['chado_table'])) {
+//         continue;
+//       }
 
-      // Get some information about the chado table in order to make good
-      // default choices for handlers.
-      $table_desc = chado_get_schema($field['settings']['chado_table']);
-      $field_defn = $table_desc['fields'][ $field['settings']['chado_column'] ];
+//       // Get some information about the chado table in order to make good
+//       // default choices for handlers.
+//       $table_desc = chado_get_schema($field['settings']['chado_table']);
+//       $field_defn = $table_desc['fields'][ $field['settings']['chado_column'] ];
 
-      // We also need to know if this field is a foreign key.
-      $fk_defn = FALSE;
-      foreach ($table_desc['foreign keys'] as $details) {
-        foreach ($details['columns'] as $left_field => $right_field) {
-          if ($left_field == $field['settings']['chado_column']) {
-            $fk_defn = array(
-              'left_table' => $field['settings']['chado_table'],
-              'left_field' => $left_field,
-              'right_table' => $details['table'],
-              'right_field' => $right_field,
-            );
-          }
-        }
-      }
+//       // We also need to know if this field is a foreign key.
+//       $fk_defn = FALSE;
+//       foreach ($table_desc['foreign keys'] as $details) {
+//         foreach ($details['columns'] as $left_field => $right_field) {
+//           if ($left_field == $field['settings']['chado_column']) {
+//             $fk_defn = array(
+//               'left_table' => $field['settings']['chado_table'],
+//               'left_field' => $left_field,
+//               'right_table' => $details['table'],
+//               'right_field' => $right_field,
+//             );
+//           }
+//         }
+//       }
 
-      // Unfortunatly we can't use the field label since that is set at the
-      // instance level and fields are integrated at the field level (independant of bundle).
-      // Thus we will simply make the most readable and informative field name we can.
-      $data['tripal_entity'][$field_name]['title'] = ucfirst(str_replace('_',' ',$field['settings']['chado_table']))
-        . ': ' .ucfirst(str_replace('_',' ',$field['settings']['chado_column']));
+//       // Unfortunatly we can't use the field label since that is set at the
+//       // instance level and fields are integrated at the field level (independant of bundle).
+//       // Thus we will simply make the most readable and informative field name we can.
+//       $data['tripal_entity'][$field_name]['title'] = ucfirst(str_replace('_',' ',$field['settings']['chado_table']))
+//         . ': ' .ucfirst(str_replace('_',' ',$field['settings']['chado_column']));
 
-      // The help should be 'Appears in: TripalEntity: gene, organism'
-      // so that users know where they can use it. This requires a little extra work since all
-      // we have access to at this point is bio_data_2, bio_data_4 but since that's not very
-      // informative, extra work is worth it ;-).
-      $entity_info = entity_get_info('TripalEntity');
-      $bundle_labels = array();
-      foreach ($field['bundles']['TripalEntity'] as $bundle_id) {
-        $bundle_labels[] = $entity_info['bundles'][$bundle_id]['label'];
-      }
-      $data['tripal_entity'][$field_name]['help'] = 'Appears in: TripalEntity:' . implode(', ', $bundle_labels);
+//       // The help should be 'Appears in: TripalEntity: gene, organism'
+//       // so that users know where they can use it. This requires a little extra work since all
+//       // we have access to at this point is bio_data_2, bio_data_4 but since that's not very
+//       // informative, extra work is worth it ;-).
+//       $entity_info = entity_get_info('TripalEntity');
+//       $bundle_labels = array();
+//       foreach ($field['bundles']['TripalEntity'] as $bundle_id) {
+//         $bundle_labels[] = $entity_info['bundles'][$bundle_id]['label'];
+//       }
+//       $data['tripal_entity'][$field_name]['help'] = 'Appears in: TripalEntity:' . implode(', ', $bundle_labels);
 
-      // Define the field.
-      $data['tripal_entity'][$field_name]['field']['chado_field'] = $field['settings']['chado_column'];
-      $data['tripal_entity'][$field_name]['field']['chado_table'] = $field['settings']['chado_table'];
-      $data['tripal_entity'][$field_name]['field']['field_name'] = $field['field_name'];
-      $data['tripal_entity'][$field_name]['field']['entity_table'] = 'tripal_entity';
-      $data['tripal_entity'][$field_name]['field']['entity_type'] = 'TripalEntity';
-      $data['tripal_entity'][$field_name]['field']['bundles'] = $field['bundles']['TripalEntity'];
-      $data['tripal_entity'][$field_name]['field']['handler'] = 'chado_views_handler_field';
-      $data['tripal_entity'][$field_name]['field']['click sortable'] = FALSE;
+//       // Define the field.
+//       $data['tripal_entity'][$field_name]['field']['chado_field'] = $field['settings']['chado_column'];
+//       $data['tripal_entity'][$field_name]['field']['chado_table'] = $field['settings']['chado_table'];
+//       $data['tripal_entity'][$field_name]['field']['field_name'] = $field['field_name'];
+//       $data['tripal_entity'][$field_name]['field']['entity_table'] = 'tripal_entity';
+//       $data['tripal_entity'][$field_name]['field']['entity_type'] = 'TripalEntity';
+//       $data['tripal_entity'][$field_name]['field']['bundles'] = $field['bundles']['TripalEntity'];
+//       $data['tripal_entity'][$field_name]['field']['handler'] = 'chado_views_handler_field';
+//       $data['tripal_entity'][$field_name]['field']['click sortable'] = FALSE;
 
-      // Define the Filter.
-      $data['tripal_entity'][$field_name]['filter']['chado_field'] = $field['settings']['chado_column'];
-      $data['tripal_entity'][$field_name]['filter']['chado_table'] = $field['settings']['chado_table'];
-      $data['tripal_entity'][$field_name]['filter']['field_name'] = $field['field_name'];
-      $data['tripal_entity'][$field_name]['filter']['entity_table'] = 'tripal_entity';
-      $data['tripal_entity'][$field_name]['filter']['entity_type'] = 'TripalEntity';
-      $data['tripal_entity'][$field_name]['filter']['bundles'] = $field['bundles']['TripalEntity'];
-      $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_string';
+//       // Define the Filter.
+//       $data['tripal_entity'][$field_name]['filter']['chado_field'] = $field['settings']['chado_column'];
+//       $data['tripal_entity'][$field_name]['filter']['chado_table'] = $field['settings']['chado_table'];
+//       $data['tripal_entity'][$field_name]['filter']['field_name'] = $field['field_name'];
+//       $data['tripal_entity'][$field_name]['filter']['entity_table'] = 'tripal_entity';
+//       $data['tripal_entity'][$field_name]['filter']['entity_type'] = 'TripalEntity';
+//       $data['tripal_entity'][$field_name]['filter']['bundles'] = $field['bundles']['TripalEntity'];
+//       $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_string';
 
-      // Define sorting.
-      $data['tripal_entity'][$field_name]['sort']['chado_field'] = $field['settings']['chado_column'];
-      $data['tripal_entity'][$field_name]['sort']['chado_table'] = $field['settings']['chado_table'];
-      $data['tripal_entity'][$field_name]['sort']['field_name'] = $field['field_name'];
-      $data['tripal_entity'][$field_name]['sort']['entity_table'] = 'tripal_entity';
-      $data['tripal_entity'][$field_name]['sort']['entity_type'] = 'TripalEntity';
-      $data['tripal_entity'][$field_name]['sort']['bundles'] = $field['bundles']['TripalEntity'];
-      $data['tripal_entity'][$field_name]['sort']['handler'] = 'chado_views_handler_sort';
+//       // Define sorting.
+//       $data['tripal_entity'][$field_name]['sort']['chado_field'] = $field['settings']['chado_column'];
+//       $data['tripal_entity'][$field_name]['sort']['chado_table'] = $field['settings']['chado_table'];
+//       $data['tripal_entity'][$field_name]['sort']['field_name'] = $field['field_name'];
+//       $data['tripal_entity'][$field_name]['sort']['entity_table'] = 'tripal_entity';
+//       $data['tripal_entity'][$field_name]['sort']['entity_type'] = 'TripalEntity';
+//       $data['tripal_entity'][$field_name]['sort']['bundles'] = $field['bundles']['TripalEntity'];
+//       $data['tripal_entity'][$field_name]['sort']['handler'] = 'chado_views_handler_sort';
 
-      // Specify special handlers.
-      if ($fk_defn) {
-        $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_fk';
-        $data['tripal_entity'][$field_name]['filter']['foreign_key'] = $fk_defn;
-      }
-      if ($field_defn['type'] == 'boolean') {
-        $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_boolean';
-        $data['tripal_entity'][$field_name]['filter']['label'] = $field['settings']['chado_column'];
-        $data['tripal_entity'][$field_name]['filter']['type'] = 'yes-no';
-      }
-      elseif ($field_defn['type'] == 'datetime') {
-        $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_date';
-      }
+//       // Specify special handlers.
+//       if ($fk_defn) {
+//         $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_fk';
+//         $data['tripal_entity'][$field_name]['filter']['foreign_key'] = $fk_defn;
+//       }
+//       if ($field_defn['type'] == 'boolean') {
+//         $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_boolean';
+//         $data['tripal_entity'][$field_name]['filter']['label'] = $field['settings']['chado_column'];
+//         $data['tripal_entity'][$field_name]['filter']['type'] = 'yes-no';
+//       }
+//       elseif ($field_defn['type'] == 'datetime') {
+//         $data['tripal_entity'][$field_name]['filter']['handler'] = 'chado_views_handler_filter_date';
+//       }
 
-      // Allow the fields to alter the default selections from above.
-      tripal_load_include_field_type($field_type);
-      if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-        $field_obj = new $field_type($field);
-        $field_obj->views_data_alter($data['tripal_entity'][$field_name], $field, $entity_info);
-      }
-    }
-  }
-}
+//       // Allow the fields to alter the default selections from above.
+//       tripal_load_include_field_type($field_type);
+//       if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+//         $field_obj = new $field_type($field);
+//         $field_obj->views_data_alter($data['tripal_entity'][$field_name], $field, $entity_info);
+//       }
+//     }
+//   }
+// }
 
 /**
  * Provides the data array for the tripal custom tables management
