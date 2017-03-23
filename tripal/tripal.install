@@ -719,23 +719,23 @@ function tripal_tripal_admin_notifications_schema() {
         'type' => 'serial',
         'not null' => TRUE,
       ),
-      'info' => array (
+      'details' => array (
         'description' => 'Description and additional information relating to the notification.',
         'type' => 'text',
-        'not null' => FALSE,
+        'not null' => TRUE,
       ),
       'title' => array (
         'description' => 'Title of the notification.',
         'type' => 'text',
         'not null' => TRUE,
       ),
-      'bundle_id' => array (
-        'description' => 'Bundle ID of the entity associated with the field.',
+      'actions' => array (
+        'description' => 'Actions that can be performed on the notification, like disimissal or import.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
-      'module' => array (
-        'description' => 'Module that has added the field.',
+      'submitter_id' => array (
+        'description' => 'A unique id that should be specific to the notification to ensure notifications are not duplicated.',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -748,7 +748,7 @@ function tripal_tripal_admin_notifications_schema() {
       'type' => array (
         'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
     ),
     'primary key' => array (
@@ -781,47 +781,48 @@ function tripal_update_7300() {
  * Create new admin notifications table.
  */
 function tripal_update_7301() {
+  $transaction = db_transaction();
   try {
     $schema['tripal_admin_notfications'] = array(
-        'description' => 'This table is used for information describing administrative
-         notifications. For example, when new fields are available.',
-        'fields' => array (
-          'note_id' => array (
-            'type' => 'serial',
-            'not null' => TRUE,
-          ),
-          'info' => array (
-            'description' => 'Description and additional information relating to the notification.',
-            'type' => 'text',
-            'not null' => FALSE,
-          ),
-          'title' => array (
-            'description' => 'Title of the notification.',
-            'type' => 'text',
-            'not null' => TRUE,
-          ),
-          'bundle_id' => array (
-            'description' => 'Bundle ID of the entity associated with the field.',
-            'type' => 'text',
-            'not null' => TRUE,
-          ),
-          'module' => array (
-            'description' => 'Module that has added the field.',
-            'type' => 'text',
-            'not null' => TRUE,
-          ),
-          'enabled' => array (
-            'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
-            'type' => 'int',
-            'not null' => TRUE,
-            'default' => 1,
-          ),
-          'type' => array (
-            'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
-            'type' => 'text',
-            'not null' => TRUE,
-          ),
+      'description' => 'This table is used for information describing administrative
+       notifications. For example, when new fields are available.',
+      'fields' => array (
+        'note_id' => array (
+          'type' => 'serial',
+          'not null' => TRUE,
         ),
+        'details' => array (
+          'description' => 'Description and additional information relating to the notification.',
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'title' => array (
+          'description' => 'Title of the notification.',
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'actions' => array (
+          'description' => 'Actions that can be performed on the notification, like disimissal or import.',
+          'type' => 'text',
+          'not null' => FALSE,
+        ),
+        'submitter_id' => array (
+          'description' => 'A unique id that should be specific to the notification to ensure notifications are not duplicated.',
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'enabled' => array (
+          'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 1,
+        ),
+        'type' => array (
+          'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
+          'type' => 'text',
+          'not null' => FALSE,
+        ),
+      ),
         'primary key' => array (
           0 => 'note_id',
         ),

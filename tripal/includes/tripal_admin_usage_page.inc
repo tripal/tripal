@@ -14,42 +14,67 @@ function tripal_admin_usage_page() {
   tripal_add_d3js();
   //drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_galaxy.dashboard.js');
   drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
-  $results = db_select('tripal_admin_notfications', 'tan')
-    ->fields('tan')
+
+  // Prepare table header
+  $header = array(
+    'title' => array('data' => t('Title')),
+    'details' => array('data' => t('Details')),
+    'type' => array('data' => t('Type'), 'field' => 'tan.type'),
+    'operations' => array('date' => t('Operations'))
+  );
+
+  $query = db_select('tripal_admin_notfications', 'tan')
+    ->extend('TableSort');
+
+  $results = $query->fields('tan')
     ->condition('enabled', 1, '=')
+    ->orderByHeader($header)
     ->execute()->fetchAll();
   $rows = array();
 
   foreach($results as $result){
-    $data['operation'] = l(t('Import'), 'admin/import/field/' . $result->title . '/' .$result->bundle_id . '/' . $result->module);
-    $data['operation'] .= "|";
+    $data['operation'] = ' | ';
     $data['operation'] .= l(t('Dismiss Notification'), 'admin/disable/notification/' . $result->note_id);
+
+    $actions = unserialize($result->actions);
+    foreach($actions as $action){
+      $label = key($actions);
+      $link = $action;
+    }
+
     $rows[] = array(
       'Title' => $result->title,
-      'Details' => $result->info,
-      'Operations' => $data['operation'],
+      'Details' => $result->details,
+      'Type' => $result->type,
+      'Operations' => l(t($label), $link) . $data['operation'],
       );
   }
-  //Number of records shown in per page
-  $per_page = 20;
-  $current_page = pager_default_initialize(count($rows), $per_page);
-  $chunks = array_chunk($rows, $per_page, TRUE);
-  // Prepare table header
-  $header = array(t('Title'), t('Details'), t('Operations'));
-  // Output of table with the paging
-  $output = theme('table',
-    array(
-      "header" => $header,
-      "rows" => $chunks[$current_page],
-      "attributes" => array(),
-      "sticky" => TRUE,
-      "caption" => "",
-      "colgroups" => array(),
-      "empty" => t("No Fields for Import")
-    )
-  );
-  //return pager with limited number of records.
-  return $output .= theme('pager', array('quantity', count($rows)));
+  if(!empty($rows)) {
+    //Number of records shown in per page
+    $per_page = 20;
+    $current_page = pager_default_initialize(count($rows), $per_page);
+    $chunks = array_chunk($rows, $per_page, TRUE);
+
+    // Output of table with the paging
+    $output = '<h2>Notifications</h2>';
+    $output .= theme('table',
+      array(
+        "header" => $header,
+        "rows" => $chunks[ $current_page ],
+        "attributes" => array(),
+        "sticky" => TRUE,
+        "caption" => "",
+        "colgroups" => array(),
+        "empty" => t("No notifications.")
+      )
+    );
+    //return pager with limited number of records.
+    return $output .= theme('pager', array('quantity', count($rows)));
+  }
+  else {
+    $output = 'There are no notifications at this time.';
+    return $output;
+  }
 }
 
 /**
@@ -80,7 +105,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
       $field = field_create_field($details);
       if (!$field) {
         tripal_set_message(t("Could not create new field: %field.",
-          array('%field' =>  $details['field_name'])), TRIPAL_ERROR);
+          array('%field' =>  $field_name_note)), TRIPAL_ERROR);
       }
     }
   }
@@ -93,11 +118,11 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
       drupal_set_message(t("Created field: %field", array('%field' => $info[ $field_name ]['label'])));
     }
   }
+  $submitter_id = $field_name_note . '-' . $bundle_id . '-' . $module;
   if($instance){
     // Delete the notification table entry.
     db_delete('tripal_admin_notfications')
-      ->condition('bundle_id', $bundle_id)
-      ->condition('title', $field_name_note)
+      ->condition('submitter_id', $submitter_id, '=')
       ->execute();
   }
   else{
