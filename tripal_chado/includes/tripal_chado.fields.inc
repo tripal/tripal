@@ -1680,7 +1680,7 @@ function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bund
  *
  * A priviledged user has the ability to add new fields to the bundle. The
  * chado_linker__prop and chado_linker__cvterm fields are allowed to be
- * added dynamically by the user.  But, Drupal doesn't know whot to deal with
+ * added dynamically by the user.  But, Drupal doesn't know how to deal with
  * it, so this function is called for any field attached to a TripalEntity
  * bundle type. Any fields whose TripalField::$module argument is set to
  * 'tripal_chado' and that can be added dynamically will result in a call

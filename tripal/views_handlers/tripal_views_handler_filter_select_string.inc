@@ -323,7 +323,7 @@ class tripal_views_handler_filter_string_selectbox extends views_handler_filter_
     }
 
     $this->ensure_my_table();
-    $field = $this->table_alias . "." . $this->real_field;
+    $field = $this->real_field;
     $table = $this->query->get_table_info($this->table);
 
     $this->options['values_form_type'] = (isset($this->options['values_form_type'])) ? $this->options['values_form_type'] : 'textfield';

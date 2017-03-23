@@ -478,7 +478,6 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
     $term_name = $instance['settings']['term_name'];
     $term = tripal_get_term_details($vocabulary, $accession);
   }
-  dpm($instance);
 
   // Construct a table for the vocabulary information.
   $headers = array();

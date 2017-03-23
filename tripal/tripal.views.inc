@@ -33,7 +33,6 @@ function tripal_views_data() {
   tripal_entity_views_data($data);
   tripal_views_data_fields($data);
 
-  dpm($data);
   return $data;
 }
 
@@ -104,7 +103,7 @@ function tripal_entity_views_data(&$data) {
         'handler' => 'tripal_views_handler_field_entity',
       ),
       'filter' => array(
-        'handler' => 'views_handler_filter_numeric',
+        'handler' => 'tripal_views_handler_filter',
       ),
       'sort' => array(
         'handler' => 'views_handler_sort',
