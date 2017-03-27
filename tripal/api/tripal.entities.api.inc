@@ -236,7 +236,7 @@ function tripal_add_notifcation($title, $details, $type, $actions, $submitter_id
       $record->actions = serialize($actions);
       $record->enabled = 1;
       $record->type = $type;
-      drupal_write_record('tripal_admin_notfications', $record);
+      $success = drupal_write_record('tripal_admin_notfications', $record);
     }
     catch (Exception $e) {
       $transaction->rollback();
@@ -488,6 +488,7 @@ function tripal_tripal_cron_notification() {
       $function = $module . '_bundle_create_fields';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
+
         // If the field already exists then skip it.
         $field = field_info_field($details['field_name']);
         if ($field) {
@@ -495,9 +496,9 @@ function tripal_tripal_cron_notification() {
         }
 
         // Create notification that new fields exist.
-        $detail_info = ' Tripal has detected a field named ' . $details['field_name'] . ' is available for the ' . $bundle->label. ' content type.';
-        $title = 'New field available';
-        $actions['import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle_name->name . '/' . $module;
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] .' for ' . $bundle->label. ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle_name->name . '/' . $module . '/field';
         $type = 'Field';
         $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
 
@@ -512,6 +513,7 @@ function tripal_tripal_cron_notification() {
       $function = $module . '_bundle_create_instances';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
+
         // If the field is already attached to this bundle then skip it.
         $field = field_info_field($details['field_name']);
         if ($field and array_key_exists('bundles', $field) and
@@ -521,9 +523,9 @@ function tripal_tripal_cron_notification() {
         }
 
         // Create notification that new fields exist.
-        $detail_info = ' Tripal has detected a field named ' . $details['field_name'] . ' is available for the ' . $bundle->name. ' content type.';
-        $title = 'New field available';
-        $actions['import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->label . '/' . $module;
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] .' for ' . $bundle->label. ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->name . '/' . $module . '/instance';
         $type = 'Field';
         $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
 

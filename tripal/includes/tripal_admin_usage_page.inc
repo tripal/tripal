@@ -14,67 +14,9 @@ function tripal_admin_usage_page() {
   tripal_add_d3js();
   //drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_galaxy.dashboard.js');
   drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
-
-  // Prepare table header
-  $header = array(
-    'title' => array('data' => t('Title')),
-    'details' => array('data' => t('Details')),
-    'type' => array('data' => t('Type'), 'field' => 'tan.type'),
-    'operations' => array('date' => t('Operations'))
-  );
-
-  $query = db_select('tripal_admin_notfications', 'tan')
-    ->extend('TableSort');
-
-  $results = $query->fields('tan')
-    ->condition('enabled', 1, '=')
-    ->orderByHeader($header)
-    ->execute()->fetchAll();
-  $rows = array();
-
-  foreach($results as $result){
-    $data['operation'] = ' | ';
-    $data['operation'] .= l(t('Dismiss Notification'), 'admin/disable/notification/' . $result->note_id);
-
-    $actions = unserialize($result->actions);
-    foreach($actions as $action){
-      $label = key($actions);
-      $link = $action;
-    }
-
-    $rows[] = array(
-      'Title' => $result->title,
-      'Details' => $result->details,
-      'Type' => $result->type,
-      'Operations' => l(t($label), $link) . $data['operation'],
-      );
-  }
-  if(!empty($rows)) {
-    //Number of records shown in per page
-    $per_page = 20;
-    $current_page = pager_default_initialize(count($rows), $per_page);
-    $chunks = array_chunk($rows, $per_page, TRUE);
-
-    // Output of table with the paging
-    $output = '<h2>Notifications</h2>';
-    $output .= theme('table',
-      array(
-        "header" => $header,
-        "rows" => $chunks[ $current_page ],
-        "attributes" => array(),
-        "sticky" => TRUE,
-        "caption" => "",
-        "colgroups" => array(),
-        "empty" => t("No notifications.")
-      )
-    );
-    //return pager with limited number of records.
-    return $output .= theme('pager', array('quantity', count($rows)));
-  }
-  else {
-    $output = 'There are no notifications at this time.';
-    return $output;
-  }
+  drupal_add_library('system', 'drupal.collapse');
+  $output = '<h2>Tripal Administrative Notifications and Info</h2>';
+  return $output;
 }
 
 /**
@@ -88,36 +30,49 @@ function tripal_admin_usage_page() {
  *   The ID of the bundle associated with that field.
  *
  */
-function tripal_admin_notification_import_field($field_name_note, $bundle_id, $module) {
+function tripal_admin_notification_import_field($field_name_note, $bundle_id, $module, $field_or_instance) {
   // Get the bundle object.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_id));
   if (!$bundle) {
     tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
       array('%bundle' => $bundle_id));
+    drupal_goto("admin/tripal/dashboard");
     return FALSE;
   }
 
-  $function = $module . '_bundle_create_fields';
-  $info = $function('TripalEntity', $bundle);
-  foreach ($info as $field_name => $details) {
-    if($details['field_name'] == $field_name_note) {
-      // Create the field.
-      $field = field_create_field($details);
-      if (!$field) {
-        tripal_set_message(t("Could not create new field: %field.",
-          array('%field' =>  $field_name_note)), TRIPAL_ERROR);
+  if($field_or_instance == 'field'){
+    $function = $module . '_bundle_create_fields';
+    $info = $function('TripalEntity', $bundle);
+    foreach ($info as $field_name => $details) {
+      if($details['field_name'] == $field_name_note) {
+        // Create the field.
+        $instance = field_create_field($details);
+        drupal_set_message(t("Created field: %field", array('%field' => $info[ $field_name ]['label'])));
+
+        if (!$instance) {
+          tripal_set_message(t("Could not create new field: %field.",
+            array('%field' =>  $field_name_note)), TRIPAL_ERROR);
+        }
       }
     }
   }
-  $function = $module . '_bundle_create_instances';
-  $info = $function('TripalEntity', $bundle);
-  foreach ($info as $field_name => $details) {
-    if($details['field_name'] == $field_name_note) {
-      // Create the field instance.
-      $instance = field_create_instance($details);
-      drupal_set_message(t("Created field: %field", array('%field' => $info[ $field_name ]['label'])));
+  else if($field_or_instance == 'instance'){
+    $function = $module . '_bundle_create_instances';
+    $info = $function('TripalEntity', $bundle);
+    foreach ($info as $field_name => $details) {
+      if($details['field_name'] == $field_name_note) {
+        // Create the field instance.
+        $instance = field_create_instance($details);
+        drupal_set_message(t("Created field: %field", array('%field' => $info[ $field_name ]['label'])));
+
+        if (!$instance) {
+          tripal_set_message(t("Could not create new field: %field.",
+            array('%field' =>  $field_name_note)), TRIPAL_ERROR);
+        }
+      }
     }
   }
+
   $submitter_id = $field_name_note . '-' . $bundle_id . '-' . $module;
   if($instance){
     // Delete the notification table entry.
@@ -125,10 +80,10 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
       ->condition('submitter_id', $submitter_id, '=')
       ->execute();
   }
-  else{
+  else {
     drupal_set_message(t("There was a problem creating: %field", array('%field' => $info[ $field_name ]['label'])));
-
   }
+
   drupal_goto("admin/tripal/dashboard");
 }
 
