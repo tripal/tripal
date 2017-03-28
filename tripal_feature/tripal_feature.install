@@ -132,7 +132,7 @@ function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
       ),
       'phase' => array(
         'type' => 'int',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
       'strand' => array(
         'type' => 'int',
