@@ -721,6 +721,10 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     );
     tripal_chado_publish_records($value);
     
+    // Migrate Resource Titles/Blocks or Resource Links if available
+    tripal_chado_migrate_resource_blocks($bundle_name);
+    tripal_chado_migrate_resource_links($bundle_name);
+    
     // Migrate organism images
     if ($term->name == 'organism') {
       tripal_chado_migrate_organism_images($bundle_name);
@@ -933,4 +937,251 @@ function tripal_chado_migrate_get_biodata_tables ($chado_table) {
     array_push($tables, 'chado_' . $bundle->name);
   }
   return $tables;
+}
+
+function tripal_chado_migrate_resource_blocks($bundle_name) {
+  $entites = 
+    db_select('chado_' . $bundle_name, 'B')
+    ->fields('B', array('nid'))
+    ->execute();
+  while ($nid = $entites->fetchField()) {
+    // Only the latest revision is migrated
+    $sql = "
+      SELECT 
+        entity_id,
+        max(revision_id) AS vid,
+        delta,
+        (SELECT field_resource_titles_value 
+         FROM field_revision_field_resource_titles
+         WHERE entity_id = RT.entity_id
+         AND revision_id = max(RT.revision_id)
+         AND delta = RT.delta
+        ),
+        (SELECT field_resource_blocks_value 
+         FROM field_revision_field_resource_blocks
+         WHERE entity_id = RT.entity_id
+         AND revision_id = max(RT.revision_id)
+         AND delta = RT.delta
+        )
+      FROM field_revision_field_resource_titles RT
+      WHERE RT.entity_id = :nid
+      GROUP BY entity_id, delta
+      ORDER BY RT.delta
+    ";
+    $results = db_query($sql, array(':nid' => $nid));
+    while ($resource = $results->fetchObject()) {
+      $title = $resource->field_resource_titles_value;
+      $content = $resource->field_resource_blocks_value;
+      $delta = $resource->delta;
+      $nid = $resource->entity_id;
+      $entity_id = 
+        db_select('chado_' . $bundle_name, 'B')
+        ->fields('B', array('entity_id'))
+        ->condition('nid', $nid)
+        ->execute()
+        ->fetchField()
+       ;
+      // field name: (can not be longer than 32 chars)
+      // bio_data_<i>_resource_<title to lower case/space replaced with _/first 10 chars>
+      $field_name = $bundle_name . '_rsc_' . substr(preg_replace('/\s+/', '_', strtolower($title)), 0, 15);
+      // Create a field if it does not exist
+      if (!field_info_field($field_name)) {
+        field_create_field(array(
+          'field_name' => $field_name,
+          'type' => 'text',
+          'cardinality' => 1,
+          'locked' => FALSE,
+          'storage' => array(
+            'type' => 'field_sql_storage',
+          ),
+          'settings' => array(
+            'max_length' => 10485760,
+            'text_processing' => 1
+          )
+        ));
+      }
+      // Create field instance for the bundle if it does not exist
+      if (!field_info_instance('TripalEntity', $field_name, $bundle_name)) {
+        field_create_instance(array(
+          'field_name' => $field_name,
+          'entity_type' => 'TripalEntity',
+          'bundle' => $bundle_name,
+          'label' => $title,
+          'widget' => array(
+            'type' => 'text_textarea',
+          ),
+          'display' => array(
+            'default' => array(
+              'label' => 'above',
+            ),
+          ),
+          'settings' => array(
+            'text_processing' => 1,
+            'format' => 'full_html',
+            'term_vocabulary' => 'schema',
+            'term_name' => 'comment',
+            'term_accession' => 'comment',
+          ),
+        ));
+      }
+      // Migrate the field content
+      $ftable = 'field_data_' . $field_name;
+      $frtable = 'field_revision_' . $field_name;
+      $fvalue = $field_name . '_value';
+      $fformat = $field_name . '_format';
+      $sql = "
+        INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
+        VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
+      ";
+      db_query($sql,
+        array (
+          ':entity_type' => 'TripalEntity',
+          ':bundle' => $bundle_name,
+          ':entity_id' => $entity_id,
+          'revision_id' => $entity_id,
+          ':language' => 'und',
+          ':delta' => 0,
+          ':value' => $content,
+          ':format' => 'full_html'
+        )  
+      );
+      $rsql = "
+      INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
+      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
+      ";
+      db_query($rsql,
+        array (
+          ':entity_type' => 'TripalEntity',
+          ':bundle' => $bundle_name,
+          ':entity_id' => $entity_id,
+          'revision_id' => $entity_id,
+          ':language' => 'und',
+          ':delta' => 0,
+          ':value' => $content,
+          ':format' => 'full_html'
+        )
+      );
+    }
+  }
+}
+
+function tripal_chado_migrate_resource_links($bundle_name) {
+  $entites =
+  db_select('chado_' . $bundle_name, 'B')
+  ->fields('B', array('nid'))
+  ->execute();
+  while ($nid = $entites->fetchField()) {
+    // Only the latest revision is migrated
+    $sql = "
+      SELECT
+        entity_id,
+        max(revision_id) AS vid,
+        delta,
+        (SELECT field_resource_links_value
+         FROM field_revision_field_resource_links
+         WHERE entity_id = RT.entity_id
+         AND revision_id = max(RT.revision_id)
+         AND delta = RT.delta
+        )
+      FROM field_revision_field_resource_links RT
+      WHERE RT.entity_id = :nid
+      GROUP BY entity_id, delta
+      ORDER BY RT.delta
+    ";
+    $results = db_query($sql, array(':nid' => $nid));
+    while ($resource = $results->fetchObject()) {
+      $values = explode('|', $resource->field_resource_links_value);
+      $title = $values[0];
+      $link = $values[1];
+      $delta = $resource->delta;
+      $nid = $resource->entity_id;
+      $entity_id =
+      db_select('chado_' . $bundle_name, 'B')
+      ->fields('B', array('entity_id'))
+      ->condition('nid', $nid)
+      ->execute()
+      ->fetchField()
+      ;
+      // field name: (can not be longer than 32 chars)
+      // bio_data_<i>_resource_<title to lower case/space replaced with _/first 10 chars>
+      $field_name = $bundle_name . '_resource_links';
+      // Create a field if it does not exist
+      if (!field_info_field($field_name)) {
+        field_create_field(array(
+          'field_name' => $field_name,
+          'type' => 'link_field',
+          'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+          'locked' => FALSE,
+          'storage' => array(
+            'type' => 'field_sql_storage',
+          ),
+          'settings' => array(
+            'max_length' => 10485760,
+            'text_processing' => 1
+          )
+        ));
+      }
+      // Create field instance for the bundle if it does not exist
+      if (!field_info_instance('TripalEntity', $field_name, $bundle_name)) {
+        field_create_instance(array(
+          'field_name' => $field_name,
+          'entity_type' => 'TripalEntity',
+          'bundle' => $bundle_name,
+          'label' => 'Links',
+          'widget' => array(
+            'type' => 'text_textfield',
+          ),
+          'display' => array(
+            'default' => array(
+              'label' => 'above',
+            ),
+          ),
+          'settings' => array(
+            'text_processing' => 1,
+            'format' => 'full_html',
+            'term_vocabulary' => 'schema',
+            'term_name' => 'url',
+            'term_accession' => 'url',
+          ),
+        ));
+      }
+      // Migrate the field content
+      $ftable = 'field_data_' . $field_name;
+      $frtable = 'field_revision_' . $field_name;
+      $furl = $field_name . '_url';
+      $ftitle = $field_name . '_title';
+      $sql = "
+      INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
+      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
+      ";
+      db_query($sql,
+        array (
+          ':entity_type' => 'TripalEntity',
+          ':bundle' => $bundle_name,
+          ':entity_id' => $entity_id,
+          'revision_id' => $entity_id,
+          ':language' => 'und',
+          ':delta' => $delta,
+          ':url' => $link,
+          ':title' => $title
+        )
+      );
+      $rsql = "
+      INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
+      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
+      ";
+      db_query($rsql,
+        array (
+          ':entity_type' => 'TripalEntity',
+          ':bundle' => $bundle_name,
+          ':entity_id' => $entity_id,
+          'revision_id' => $entity_id,
+          ':language' => 'und',
+          ':delta' => $delta,
+          ':url' => $link,
+          ':title' => $title
+        )
+      );
+    }
+  }
 }
