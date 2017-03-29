@@ -67,7 +67,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         visitors can continue to visit the Tripal v2 pages. Tripal
         v3 content types may remain private while customization is underway.
         Once customization is completed a subsequent step will allow you to
-        swap out Tripal v2 pages for the newer Tripal v3 pages. If you would like to 
+        swap out Tripal v2 pages for the newer Tripal v3 pages. If you would like to
         use Trial v3 web services you must migrate content types.'),
   );
 
@@ -516,8 +516,8 @@ function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
  * @param boolean $all_option
  *   Include an 'all' option in the returned array
  * @param boolean $has_template
- *   Return TV2 content types only if it has a base template. This will exclude TV2 content 
- *   types such as Blast/Kegg/Interpro/Unigene which are all converted into the TV3 
+ *   Return TV2 content types only if it has a base template. This will exclude TV2 content
+ *   types such as Blast/Kegg/Interpro/Unigene which are all converted into the TV3
  *   'Analysis' entity type
  * @return string[]
  *  Return a string array keyed by the node type
@@ -720,11 +720,11 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'bundle_name' => $bundle_name
     );
     tripal_chado_publish_records($value);
-    
+
     // Migrate Resource Titles/Blocks or Resource Links if available
     tripal_chado_migrate_resource_blocks($bundle_name);
     tripal_chado_migrate_resource_links($bundle_name);
-    
+
     // Migrate organism images
     if ($term->name == 'organism') {
       tripal_chado_migrate_organism_images($bundle_name);
@@ -825,16 +825,16 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
 function tripal_chado_migrate_organism_images () {
   // Get all organism entities
   $bio_data_table = array_pop(tripal_chado_migrate_get_biodata_tables('organism'));
-  $results = 
+  $results =
     db_select($bio_data_table, 'ce')
     ->fields('ce', array('entity_id', 'record_id', 'nid'))
     ->execute();
-  
+
   // Iterate through each organism entity
   while ($organism = $results->fetchObject()) {
     $nid = $organism->nid;
     $entity_id = $organism->entity_id;
-    
+
     // check if there is a file record for the organism node
     $fid = db_select('file_usage', 'fu')
     ->fields('fu', array('fid'))
@@ -845,13 +845,13 @@ function tripal_chado_migrate_organism_images () {
     ->fetchField();
     // check if the image was added using the old interface.
     if (!$fid) {
-      $sql = 
-         "SELECT genus,species,nid 
-          FROM {organism} O 
-          INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id 
+      $sql =
+         "SELECT genus,species,nid
+          FROM {organism} O
+          INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id
           WHERE O.organism_id = :organism_id";
       $chado_org = chado_query($sql, array(':organism_id' => $organism->record_id))->fetchObject();
-      
+
       if ($chado_org) {
         $base_path = realpath('.');
         $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
@@ -876,19 +876,19 @@ function tripal_chado_migrate_organism_images () {
         }
         if($file){
           tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id);
-        }        
+        }
       }
     }
     else {
       // If there is an image, add it to the organism entity
       tripal_chado_migrate_organism_image_add_file ($fid, $entity_id);
     }
-    
+
   }
 }
 
 /**
- * 
+ *
  * Add image file for the organism entity
  *
  * @param unknown $fid
@@ -911,7 +911,7 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id) {
     field_attach_update('TripalEntity', $entity);
     entity_get_controller('TripalEntity')->resetCache(array($entity_id));
     // Add a record to the field_data_data__image table
-    
+
   }
 }
 
@@ -940,24 +940,24 @@ function tripal_chado_migrate_get_biodata_tables ($chado_table) {
 }
 
 function tripal_chado_migrate_resource_blocks($bundle_name) {
-  $entites = 
+  $entites =
     db_select('chado_' . $bundle_name, 'B')
     ->fields('B', array('nid'))
     ->execute();
   while ($nid = $entites->fetchField()) {
     // Only the latest revision is migrated
     $sql = "
-      SELECT 
+      SELECT
         entity_id,
         max(revision_id) AS vid,
         delta,
-        (SELECT field_resource_titles_value 
+        (SELECT field_resource_titles_value
          FROM field_revision_field_resource_titles
          WHERE entity_id = RT.entity_id
          AND revision_id = max(RT.revision_id)
          AND delta = RT.delta
         ),
-        (SELECT field_resource_blocks_value 
+        (SELECT field_resource_blocks_value
          FROM field_revision_field_resource_blocks
          WHERE entity_id = RT.entity_id
          AND revision_id = max(RT.revision_id)
@@ -974,7 +974,7 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
       $content = $resource->field_resource_blocks_value;
       $delta = $resource->delta;
       $nid = $resource->entity_id;
-      $entity_id = 
+      $entity_id =
         db_select('chado_' . $bundle_name, 'B')
         ->fields('B', array('entity_id'))
         ->condition('nid', $nid)
@@ -1043,7 +1043,7 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
           ':delta' => 0,
           ':value' => $content,
           ':format' => 'full_html'
-        )  
+        )
       );
       $rsql = "
       INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
@@ -1097,11 +1097,11 @@ function tripal_chado_migrate_resource_links($bundle_name) {
       $nid = $resource->entity_id;
       $entity_id =
       db_select('chado_' . $bundle_name, 'B')
-      ->fields('B', array('entity_id'))
-      ->condition('nid', $nid)
-      ->execute()
-      ->fetchField()
-      ;
+        ->fields('B', array('entity_id'))
+        ->condition('nid', $nid)
+        ->execute()
+        ->fetchField();
+
       // field name: (can not be longer than 32 chars)
       // bio_data_<i>_resource_<title to lower case/space replaced with _/first 10 chars>
       $field_name = $bundle_name . '_resource_links';
@@ -1116,12 +1116,10 @@ function tripal_chado_migrate_resource_links($bundle_name) {
             'type' => 'field_sql_storage',
           ),
           'settings' => array(
-            'max_length' => 10485760,
-            'text_processing' => 1
           )
         ));
       }
-      // Create field instance for the bundle if it does not exist
+      // Create field instance for the bundle if it does not exist.
       if (!field_info_instance('TripalEntity', $field_name, $bundle_name)) {
         field_create_instance(array(
           'field_name' => $field_name,
@@ -1129,7 +1127,7 @@ function tripal_chado_migrate_resource_links($bundle_name) {
           'bundle' => $bundle_name,
           'label' => 'Links',
           'widget' => array(
-            'type' => 'text_textfield',
+            'type' => 'link_field',
           ),
           'display' => array(
             'default' => array(
@@ -1137,11 +1135,10 @@ function tripal_chado_migrate_resource_links($bundle_name) {
             ),
           ),
           'settings' => array(
-            'text_processing' => 1,
-            'format' => 'full_html',
             'term_vocabulary' => 'schema',
             'term_name' => 'url',
             'term_accession' => 'url',
+            'absolute_url' => 0,
           ),
         ));
       }
