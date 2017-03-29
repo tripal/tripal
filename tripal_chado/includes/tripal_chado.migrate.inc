@@ -1139,6 +1139,7 @@ function tripal_chado_migrate_resource_links($bundle_name) {
             'term_name' => 'url',
             'term_accession' => 'url',
             'absolute_url' => 0,
+            'validate_url' => 0
           ),
         ));
       }
