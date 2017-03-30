@@ -1012,7 +1012,7 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
           ),
           'display' => array(
             'default' => array(
-              'label' => 'above',
+              'label' => 'hidden',
             ),
           ),
           'settings' => array(
@@ -1029,38 +1029,43 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
       $frtable = 'field_revision_' . $field_name;
       $fvalue = $field_name . '_value';
       $fformat = $field_name . '_format';
-      $sql = "
-        INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
+      try {
+        $sql = "
+          INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
+          VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
+        ";
+        db_query($sql,
+          array (
+            ':entity_type' => 'TripalEntity',
+            ':bundle' => $bundle_name,
+            ':entity_id' => $entity_id,
+            'revision_id' => $entity_id,
+            ':language' => 'und',
+            ':delta' => 0,
+            ':value' => $content,
+            ':format' => 'full_html'
+          )
+        );
+        $rsql = "
+        INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
         VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
-      ";
-      db_query($sql,
-        array (
-          ':entity_type' => 'TripalEntity',
-          ':bundle' => $bundle_name,
-          ':entity_id' => $entity_id,
-          'revision_id' => $entity_id,
-          ':language' => 'und',
-          ':delta' => 0,
-          ':value' => $content,
-          ':format' => 'full_html'
-        )
-      );
-      $rsql = "
-      INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
-      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
-      ";
-      db_query($rsql,
-        array (
-          ':entity_type' => 'TripalEntity',
-          ':bundle' => $bundle_name,
-          ':entity_id' => $entity_id,
-          'revision_id' => $entity_id,
-          ':language' => 'und',
-          ':delta' => 0,
-          ':value' => $content,
-          ':format' => 'full_html'
-        )
-      );
+        ";
+        db_query($rsql,
+          array (
+            ':entity_type' => 'TripalEntity',
+            ':bundle' => $bundle_name,
+            ':entity_id' => $entity_id,
+            'revision_id' => $entity_id,
+            ':language' => 'und',
+            ':delta' => 0,
+            ':value' => $content,
+            ':format' => 'full_html'
+          )
+        );
+      } catch (\PDOException $e) {
+        $error = $e->getMessage();
+        watchdog_exception('tripal_chado', $e);
+      }
     }
   }
 }
@@ -1131,7 +1136,7 @@ function tripal_chado_migrate_resource_links($bundle_name) {
           ),
           'display' => array(
             'default' => array(
-              'label' => 'above',
+              'label' => 'hidden',
             ),
           ),
           'settings' => array(
@@ -1148,38 +1153,43 @@ function tripal_chado_migrate_resource_links($bundle_name) {
       $frtable = 'field_revision_' . $field_name;
       $furl = $field_name . '_url';
       $ftitle = $field_name . '_title';
-      $sql = "
-      INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
-      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
-      ";
-      db_query($sql,
-        array (
-          ':entity_type' => 'TripalEntity',
-          ':bundle' => $bundle_name,
-          ':entity_id' => $entity_id,
-          'revision_id' => $entity_id,
-          ':language' => 'und',
-          ':delta' => $delta,
-          ':url' => $link,
-          ':title' => $title
-        )
-      );
-      $rsql = "
-      INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
-      VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
-      ";
-      db_query($rsql,
-        array (
-          ':entity_type' => 'TripalEntity',
-          ':bundle' => $bundle_name,
-          ':entity_id' => $entity_id,
-          'revision_id' => $entity_id,
-          ':language' => 'und',
-          ':delta' => $delta,
-          ':url' => $link,
-          ':title' => $title
-        )
-      );
+      try {
+        $sql = "
+        INSERT INTO $ftable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
+        VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
+        ";
+        db_query($sql,
+          array (
+            ':entity_type' => 'TripalEntity',
+            ':bundle' => $bundle_name,
+            ':entity_id' => $entity_id,
+            'revision_id' => $entity_id,
+            ':language' => 'und',
+            ':delta' => $delta,
+            ':url' => $link,
+            ':title' => $title
+          )
+        );
+        $rsql = "
+        INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
+        VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
+        ";
+        db_query($rsql,
+          array (
+            ':entity_type' => 'TripalEntity',
+            ':bundle' => $bundle_name,
+            ':entity_id' => $entity_id,
+            'revision_id' => $entity_id,
+            ':language' => 'und',
+            ':delta' => $delta,
+            ':url' => $link,
+            ':title' => $title
+          )
+        );
+      } catch (\PDOException $e) {
+        $error = $e->getMessage();
+        watchdog_exception('tripal_chado', $e);
+      }
     }
   }
 }
