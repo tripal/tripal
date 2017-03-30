@@ -84,9 +84,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     watchdog('tripal', "Must provide a \$callback argument to the tripal_add_job() function.", 'error');
     return FALSE;
   }
-  foreach ($includes as $include) {
-    require_once($include);
-  }
+
   if (!function_exists($callback)) {
     watchdog('tripal', "Must provide a valid callback function to the tripal_add_job() function.", 'error');
     return FALSE;

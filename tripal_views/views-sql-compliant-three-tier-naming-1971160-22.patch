@@ -1,0 +1,126 @@
+diff --git a/includes/handlers.inc b/includes/handlers.inc
+index 2a33d5d..f02bbb2 100644
+--- a/includes/handlers.inc
++++ b/includes/handlers.inc
+@@ -1530,6 +1530,16 @@ class views_join {
+       $right_table = $this->definition['table formula'];
+     }
+ 
++    $table_data = views_fetch_data($this->table);
++
++    if (!empty($table_data['table']['base']['search_path'])) {
++      $search_path = $table_data['table']['base']['search_path'] . '.' ;
++    } elseif (!empty($table_data['table']['search_path'])) {
++      $search_path = $table_data['table']['search_path'] . '.' ;
++    } else {
++      $search_path = '';
++    }
++
+     if ($this->left_table) {
+       $left = $view_query->get_table_info($this->left_table);
+       $left_field = "$left[alias].$this->left_field";
+@@ -1542,6 +1552,14 @@ class views_join {
+     $condition = "$left_field = $table[alias].$this->field";
+     $arguments = array();
+ 
++    if (!empty($table_data['table']['base']['search_path'])) {
++      $search_path = $table_data['table']['base']['search_path'] . '.' ;
++    } elseif (!empty($table_data['table']['search_path'])) {
++      $search_path = $table_data['table']['search_path'] . '.' ;
++    } else {
++      $search_path = '';
++    }
++
+     // Tack on the extra.
+     if (isset($this->extra)) {
+       if (is_array($this->extra)) {
+@@ -1612,7 +1630,7 @@ class views_join {
+       }
+     }
+ 
+-    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
++    $select_query->addJoin($this->type, $search_path . $right_table, $table['alias'], $condition, $arguments);
+   }
+ }
+ 
+@@ -1644,6 +1662,8 @@ class views_join_subquery extends views_join {
+    *
+    */
+   function build_join($select_query, $table, $view_query) {
++    $table_data = views_fetch_data($this->table);
++
+     if (empty($this->definition['table formula'])) {
+       $right_table = "{" . $this->table . "}";
+     }
+@@ -1651,6 +1671,14 @@ class views_join_subquery extends views_join {
+       $right_table = $this->definition['table formula'];
+     }
+ 
++    if (!empty($table_data['table']['base']['search_path'])) {
++      $search_path = $table_data['table']['base']['search_path'] . '.' ;
++    } elseif (!empty($table_data['table']['search_path'])) {
++      $search_path = $table_data['table']['search_path'] . '.' ;
++    } else {
++      $search_path = '';
++    }
++
+     // Add our join condition, using a subquery on the left instead of a field.
+     $condition = "($this->left_query) = $table[alias].$this->field";
+     $arguments = array();
+@@ -1704,7 +1732,7 @@ class views_join_subquery extends views_join {
+       }
+     }
+ 
+-    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
++    $select_query->addJoin($this->type, $search_path . $right_table, $table['alias'], $condition, $arguments);
+   }
+ }
+ 
+diff --git a/includes/view.inc b/includes/view.inc
+index d8c0c1f..629d770 100644
+--- a/includes/view.inc
++++ b/includes/view.inc
+@@ -202,6 +202,11 @@ class view extends views_db_object {
+   var $base_database = NULL;
+ 
+   /**
++   * Allow to set the search_path for databases which, unlike MySQL, are actually SQL-compliant
++   */
++  var $search_path = NULL;
++
++  /**
+    * Here comes a list of the possible handler which are active on this view.
+    */
+ 
+@@ -899,6 +904,12 @@ class view extends views_db_object {
+       $this->base_database = $views_data['table']['base']['database'];
+     }
+ 
++    if (!empty($views_data['table']['base']['search_path'])) {
++      $this->search_path = $views_data['table']['base']['search_path'];
++    } elseif (!empty($views_data['table']['search_path'])) {
++      $this->search_path = $views_data['table']['search_path'];
++    }
++
+     // Load the options.
+     $query_options = $this->display_handler->get_option('query');
+ 
+diff --git a/plugins/views_plugin_query_default.inc b/plugins/views_plugin_query_default.inc
+index 030c5ea..20889a7 100644
+--- a/plugins/views_plugin_query_default.inc
++++ b/plugins/views_plugin_query_default.inc
+@@ -1290,8 +1290,13 @@ class views_plugin_query_default extends views_plugin_query {
+ 
+     // Go ahead and build the query.
+     // db_select doesn't support to specify the key, so use getConnection directly.
++    $table_prefix = '';
++    if (isset($this->view->search_path)) {
++        $table_prefix = $this->view->search_path . '.';
++    }
++
+     $query = Database::getConnection($target, $key)
+-      ->select($this->base_table, $this->base_table, $options)
++      ->select($table_prefix . $this->base_table, $this->base_table, $options)
+       ->addTag('views')
+       ->addTag('views_' . $this->view->name);
+ 
