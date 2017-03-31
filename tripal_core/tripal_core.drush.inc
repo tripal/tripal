@@ -326,6 +326,7 @@ function drush_tripal_core_trp_run_jobs() {
   drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
+    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
     drush_print("Running as user '$username'");
     drush_print("-------------------");
     tripal_launch_job($parallel, $job_id, $max_jobs, $single);

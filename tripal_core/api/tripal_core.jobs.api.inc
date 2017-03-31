@@ -302,7 +302,7 @@ function tripal_max_jobs_exceeded($max_jobs) {
     }
   }
 
-  return ($num_jobs_running > $max_jobs);
+  return ($num_jobs_running >= $max_jobs);
 }
 
 
@@ -430,12 +430,12 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
   // if they are, don't continue, we don't want to have
   // more than one job script running at a time
   if (!$do_parallel and tripal_is_job_running()) {
-    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
+    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.\n";
     return;
   }
 
   if ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
-    print "More than $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.";
+    print "At least $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.\n";
     return;
   }
 
