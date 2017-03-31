@@ -483,7 +483,6 @@ function tripal_core_node_view_build_toc(&$build) {
       $toc_item_title = $overrides['title'] ? $overrides['title'] : $toc_item_title;
       $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
       $hide = $overrides['hide'] ? $overrides['hide'] : $hide;
-      dpm($toc_item_title);
       $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
 
 
