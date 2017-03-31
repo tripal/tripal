@@ -335,7 +335,7 @@ function drush_tripal_core_trp_run_jobs() {
     drush_print("Tripal Job Launcher");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_launch_job(0, $job_id);
+    tripal_launch_job(0, $job_id, $max_jobs, $single);
   }
 }
 /**

@@ -421,7 +421,10 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
  *   based on order and priority.  However there are times when a specific
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
- *
+ * @param $max_jobs
+ *   The maximum number of jobs that should be run concurrently. If -1 then unlimited.
+ * @param $single
+ *   Ensures only a single job is run rather then the entire queue.
  * @ingroup tripal_jobs_api
  */
 function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $single = 0) {
