@@ -49,7 +49,7 @@ if (!$u) {
 global $user;
 $user = user_load($u->uid);
 
-fwrite($stdout, date('Y-m-d' H:i:s) . "\n");
+fwrite($stdout, "\n" . date('Y-m-d' H:i:s) . "\n");
 fwrite($stdout, "Tripal Job Launcher\n");
 fwrite($stdout, "Running as user ' . $username . '\n");
 fwrite($stdout, "-------------------\n");

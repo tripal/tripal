@@ -276,11 +276,11 @@ function tripal_max_jobs_exceeded($max_jobs) {
     // No limit on concurrent jobs
     return FALSE;
   }
-  
+
   $num_jobs_running = 0;
-  
-  // Iterate through each job that has not ended and see if it is still running. 
-  // If it is not running but does not have an end_time then set the end time  
+
+  // Iterate through each job that has not ended and see if it is still running.
+  // If it is not running but does not have an end_time then set the end time
   // and set the status to 'Error'
   $sql =  "SELECT * FROM {tripal_jobs} TJ " .
           "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
@@ -430,12 +430,12 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
   // if they are, don't continue, we don't want to have
   // more than one job script running at a time
   if (!$do_parallel and tripal_is_job_running()) {
-    print date('Y-m-d H:i:s') .": Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
+    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
     return;
   }
 
   if ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
-    print date('Y-m-d H:i:s') .": More than $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.";
+    print "More than $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.";
     return;
   }
 
@@ -453,8 +453,8 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
             "ORDER BY priority ASC,job_id ASC";
     $job_res = db_query($sql);
   }
-  print date('Y-m-d H:i:s') .": There are " . $job_res->rowCount() . " jobs queued.\n";
-  
+  print "There are " . $job_res->rowCount() . " jobs queued.\n";
+
   foreach ($job_res as $job) {
     // set the start time for this job
     $record = new stdClass();
@@ -495,7 +495,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
       }
     }
 
-    print date('Y-m-d H:i:s') .": Calling: $callback(" . implode(", ", $string_args) . ")\n";
+    print "Calling: $callback(" . implode(", ", $string_args) . ")\n";
     call_user_func_array($callback, $args);
     // set the end time for this job
     $record->end_time = REQUEST_TIME;
@@ -510,7 +510,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     if (tripal_max_jobs_exceeded($max_jobs)) {
       break;
     }
-    
+
     // send an email to the user advising that the job has finished
   }
 }

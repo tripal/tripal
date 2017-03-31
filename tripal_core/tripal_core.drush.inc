@@ -278,7 +278,6 @@ function drush_tripal_core_set_user($username) {
     $results = db_query($sql, array(':name' => $username));
     $u = $results->fetchObject();
     if (!$u) {
-      drush_print(date('Y-m-d H:i:s'));
       drush_print('ERROR: Please provide a valid username (--username argument) for running this job.');
       exit;
     }
@@ -287,7 +286,6 @@ function drush_tripal_core_set_user($username) {
     return $u->uid;
   }
   else {
-    drush_print(date('Y-m-d H:i:s'));
     drush_print('ERROR: Please provide a username (--username argument) for running this job.');
     exit;
   }
@@ -325,7 +323,7 @@ function drush_tripal_core_trp_run_jobs() {
 
   drush_tripal_core_set_user($username);
 
-  drush_print("/n" . date('Y-m-d H:i:s'));
+  drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
@@ -384,7 +382,7 @@ function drush_tripal_core_trp_rerun_job() {
   // --username argument for the fture.
   $user = drush_get_option('user');
   $uname = drush_get_option('username');
-  print date('Y-m-d H:i:s') . ": USER: '$user', UNAME: '$uname'\n";
+  print "USER: '$user', USERNAME: '$uname'\n";
   if ($user and is_numeric($user)) {
   }
   elseif ($user) {
@@ -403,7 +401,7 @@ function drush_tripal_core_trp_rerun_job() {
   drush_tripal_core_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
 
-  drush_print("/n" . date('Y-m-d H:i:s'));
+  drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
@@ -459,12 +457,11 @@ function drush_tripal_core_trp_get_currjob() {
         "Module: " . $job->modulename . "\n" .
         "Callback: " . $job->callback . "\n" .
         "Process ID: " . $job->pid . "\n" .
-        "Progress: " . $job->progress . "%\n";
-    drush_print(date('Y-m-d H:i:s'));
+        "Progress: " . $job->progress . "%\n".
+        "Current Date: " . date('Y-m-d H:i:s') . "\n";
     drush_print($output);
   }
   if (!$job_pid) {
-    drush_print(date('Y-m-d H:i:s'));
     drush_print('There are currently no running jobs.');
   }
   //log to the command line with an OK status
