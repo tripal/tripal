@@ -736,6 +736,10 @@ function tripal_core_block_info() {
     'cache' => DRUPAL_NO_CACHE,
   );
 
+  $blocks['powered_by_tripal'] = array(
+    'info' => t('Powered by Tripal'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
   return $blocks;
 }
 
@@ -752,6 +756,26 @@ function tripal_core_block_view($delta = '') {
       $form_render_arr = drupal_get_form('tripal_core_search_block');
       $block['content'] = array(
         '#markup' => drupal_render($form_render_arr),
+      );
+      break;
+    case 'powered_by_tripal':
+      $size = variable_get('powered_by_tripal_size', 'small');
+      $type = variable_get('powered_by_tripal_type', 'bw');
+
+      $image = 'powered_by_tripal_bw_small.png';
+      if ($size == 'small' and $type == 'col') {
+        $image = 'powered_by_tripal_small.png';
+      }
+      if ($size == 'large' and $type == 'bw') {
+        $image = 'powered_by_tripal_bw.png';
+      }
+      if ($size == 'large' and $type == 'col') {
+        $image = 'powered_by_tripal.png';
+      }
+
+      $block['title'] = '';
+      $block['content'] = array(
+        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . drupal_get_path('module', 'tripal_core') . '/theme/images/' . $image . '"></a>',
       );
       break;
   }
@@ -814,22 +838,48 @@ function tripal_core_search_block_submit($form, &$form_state) {
 function tripal_core_block_configure ($delta = '') {
   $form = array();
 
-  $form['search_url'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Search Page URL',
-    '#description' => 'The URL for the page you would like to redirect to when the user
-        clicks "Search". It is expected that this page will be a view with an exposed
-        filter having a "Filter Identifier" (in "More" fieldset on the edit filter form)
-        of "keywords".',
-    '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
-  );
+  switch ($delta) {
+    case 'tripal_search':
+      $form['search_url'] = array(
+        '#type' => 'textfield',
+        '#title' => 'Search Page URL',
+        '#description' => 'The URL for the page you would like to redirect to when the user
+          clicks "Search". It is expected that this page will be a view with an exposed
+          filter having a "Filter Identifier" (in "More" fieldset on the edit filter form)
+          of "keywords".',
+        '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
+      );
 
-  $form['search_placeholder'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Placeholder Text',
-    '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
-    '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
-  );
+      $form['search_placeholder'] = array(
+        '#type' => 'textfield',
+        '#title' => 'Placeholder Text',
+        '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
+        '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
+      );
+      break;
+    case 'powered_by_tripal':
+      $form['logo_size'] = array(
+        '#type' => 'radios',
+        '#title' => t('Logo Size'),
+        '#default_value' => variable_get('powered_by_tripal_size', 'small'),
+        '#options' => array(
+          'large' => t('Large'),
+          'small' => t('Small')
+        ),
+        '#description' => t('Select if you would like a small or large "Powered by Tripal" logo.'),
+      );
+      $form['logo_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Logo Type'),
+        '#default_value' => variable_get('powered_by_tripal_type', 'bw'),
+        '#options' => array(
+          'bw' => t('Blank and White'),
+          'col' => t('Colored')
+        ),
+        '#description' => t('Select if you would like a black and white or colored "Powered by Tripal" logo.'),
+      );
+  }
+
 
   return $form;
 }
@@ -839,12 +889,25 @@ function tripal_core_block_configure ($delta = '') {
  */
 function tripal_core_block_save($delta = '', $edit = array()) {
 
-  // We simply want to save this information in a Drupal variable for use in the form submit.
-  if (!empty($edit['search_url'])) {
-    variable_set('tripal_search_block_url', $edit['search_url']);
-  }
+  switch ($delta) {
+    case 'tripal_search':
+      // We simply want to save this information in a Drupal variable for use in the form submit.
+      if (!empty($edit['search_url'])) {
+        variable_set('tripal_search_block_url', $edit['search_url']);
+      }
 
-  if (!empty($edit['search_placeholder'])) {
-    variable_set('tripal_search_placeholder', $edit['search_placeholder']);
+      if (!empty($edit['search_placeholder'])) {
+        variable_set('tripal_search_placeholder', $edit['search_placeholder']);
+      }
+      break;
+
+    case 'powered_by_tripal':
+      if (!empty($edit['logo_size'])) {
+        variable_set('powered_by_tripal_size', $edit['logo_size']);
+      }
+
+      if (!empty($edit['logo_type'])) {
+        variable_set('powered_by_tripal_type', $edit['logo_type']);
+      }
   }
 }
