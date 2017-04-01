@@ -654,6 +654,11 @@ function tripal_block_info() {
       'administrative' => TRUE,
     ),
   );
+
+  $blocks['powered_by_tripal'] = array(
+    'info' => t('Powered by Tripal'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
   return $blocks;
 }
 
@@ -663,6 +668,27 @@ function tripal_block_info() {
 function tripal_block_view($delta = ''){
   // The $delta parameter tells us which block is being requested.
   switch ($delta) {
+    case 'powered_by_tripal':
+      $size = variable_get('powered_by_tripal_size', 'small');
+      $type = variable_get('powered_by_tripal_type', 'bw');
+
+      $image = 'powered_by_tripal_bw_small.png';
+      if ($size == 'small' and $type == 'col') {
+        $image = 'powered_by_tripal_small.png';
+      }
+      if ($size == 'large' and $type == 'bw') {
+        $image = 'powered_by_tripal_bw.png';
+      }
+      if ($size == 'large' and $type == 'col') {
+        $image = 'powered_by_tripal.png';
+      }
+
+      $block['title'] = '';
+      $block['content'] = array(
+        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
+      );
+      break;
+
     case 'notifications_block':
       // Create your block content here
       $block['content'] = '';
@@ -738,4 +764,54 @@ function tripal_block_view($delta = ''){
       break;
   }
   return $block;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function tripal_block_save($delta = '', $edit = array()) {
+
+  switch ($delta) {
+    case 'powered_by_tripal':
+      if (!empty($edit['logo_size'])) {
+        variable_set('powered_by_tripal_size', $edit['logo_size']);
+      }
+
+      if (!empty($edit['logo_type'])) {
+        variable_set('powered_by_tripal_type', $edit['logo_type']);
+      }
+  }
+}
+/**
+ * Implements hook_block_configure().
+ */
+function tripal_block_configure ($delta = '') {
+  $form = array();
+
+  switch ($delta) {
+    case 'powered_by_tripal':
+      $form['logo_size'] = array(
+      '#type' => 'radios',
+      '#title' => t('Logo Size'),
+      '#default_value' => variable_get('powered_by_tripal_size', 'small'),
+      '#options' => array(
+      'large' => t('Large'),
+      'small' => t('Small')
+      ),
+      '#description' => t('Select if you would like a small or large "Powered by Tripal" logo.'),
+      );
+      $form['logo_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Logo Type'),
+        '#default_value' => variable_get('powered_by_tripal_type', 'bw'),
+        '#options' => array(
+          'bw' => t('Gray scale'),
+          'col' => t('Colored')
+        ),
+        '#description' => t('Select if you would like a black and white or colored "Powered by Tripal" logo.'),
+      );
+  }
+
+
+  return $form;
 }
