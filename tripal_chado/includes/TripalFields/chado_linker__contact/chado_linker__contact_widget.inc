@@ -14,7 +14,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
-    $entity = $form['#entity'];
+    $entity = array_key_exists('#entity', $form) ? $form['#entity'] : NULL;
     $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
@@ -27,7 +27,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
 
     // Get the field defaults.
     $record_id = '';
-    $fkey_value = $element['#entity']->chado_record_id;
+    $fkey_value = $entity ? $element['#entity']->chado_record_id : '';
     $contact_id = '';
     $name = '';
 
