@@ -102,7 +102,8 @@ function tripal_core_drush_command() {
     'description' => dt('Launches jobs waiting in the queue. Only one job can execute at a time unless the --parllel=1 option is provided.'),
     'examples' => array(
       'Single Job' => 'drush trp-run-jobs --username=administrator',
-      'Parallel Job' => 'drush trp-run-jobs --username=administrator --parallel=1'
+      'Parallel Job' => 'drush trp-run-jobs --username=administrator --parallel=1',
+      'Max-jobs Job' => 'drush trp-run-jobs --username=administrator --parallel=1 --max_jobs=10',
     ),
     'arguments' => array(),
     'options' => array(
@@ -114,6 +115,8 @@ function tripal_core_drush_command() {
       ),
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
+      'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is -1 (unlimited). Ignore if not running parallel jobs'),
+      'single' => dt('Execute only one queued job'),
     ),
   );
   $items['trp-rerun-job'] = array(
@@ -135,6 +138,8 @@ function tripal_core_drush_command() {
         'required' => TRUE,
       ),
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
+      'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is -1 (unlimited). Ignore if not running parallel jobs'),
+      'single' => dt('Execute only one queued job'),
     ),
   );
   $items['trp-get-cversion'] = array(
@@ -296,6 +301,8 @@ function drush_tripal_core_set_user($username) {
 function drush_tripal_core_trp_run_jobs() {
   $parallel = drush_get_option('parallel');
   $job_id   = drush_get_option('job_id');
+  $max_jobs = drush_get_option('max_jobs', -1);
+  $single   = drush_get_option('single', 0);
 
   // Unfortunately later versions of Drush use the '--user' argument which
   // makes it incompatible with how Tripal was using it.  For backwards
@@ -316,17 +323,19 @@ function drush_tripal_core_trp_run_jobs() {
 
   drush_tripal_core_set_user($username);
 
+  drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
+    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_launch_job($parallel, $job_id);
+    tripal_launch_job($parallel, $job_id, $max_jobs, $single);
   }
   else {
     drush_print("Tripal Job Launcher");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_launch_job(0, $job_id);
+    tripal_launch_job(0, $job_id, $max_jobs, $single);
   }
 }
 /**
@@ -374,7 +383,7 @@ function drush_tripal_core_trp_rerun_job() {
   // --username argument for the fture.
   $user = drush_get_option('user');
   $uname = drush_get_option('username');
-  print "USER: '$user', UNAME: '$uname'\n";
+  print "USER: '$user', USERNAME: '$uname'\n";
   if ($user and is_numeric($user)) {
   }
   elseif ($user) {
@@ -387,15 +396,18 @@ function drush_tripal_core_trp_rerun_job() {
 
   $parallel = drush_get_option('parallel');
   $job_id   = drush_get_option('job_id');
+  $max_jobs = drush_get_option('max_jobs', -1);
+  $single   = drush_get_option('single', 0);
 
   drush_tripal_core_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
 
+  drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_launch_job($parallel, $new_job_id);
+    tripal_launch_job($parallel, $new_job_id, $max_jobs, $single);
   }
   else {
     drush_print("Tripal Job Launcher");
@@ -403,7 +415,6 @@ function drush_tripal_core_trp_rerun_job() {
     drush_print("-------------------");
     tripal_launch_job(0, $new_job_id);
   }
-
 }
 
 /**
@@ -447,7 +458,8 @@ function drush_tripal_core_trp_get_currjob() {
         "Module: " . $job->modulename . "\n" .
         "Callback: " . $job->callback . "\n" .
         "Process ID: " . $job->pid . "\n" .
-        "Progress: " . $job->progress . "%\n";
+        "Progress: " . $job->progress . "%\n".
+        "Current Date: " . date('Y-m-d H:i:s') . "\n";
     drush_print($output);
   }
   if (!$job_pid) {

@@ -20,13 +20,12 @@ $job_id = $argv[1];
 $root = $argv[2];
 $username = $argv[3];
 $do_parallel = $argv[4];
+$max_jobs = (isset($argv[5]) ? $argv[5] : -1;  // -1 = don't limit number of consecutive jobs
 
 /**
  * Root directory of Drupal installation.
  */
 define('DRUPAL_ROOT', getcwd());
-
-
 
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
@@ -40,7 +39,6 @@ $_SERVER['REMOTE_ADDR'] = NULL;
 $_SERVER['REQUEST_METHOD'] = NULL;
 
 
-
 $results = db_query("SELECT * FROM {users} WHERE name = :name", array(':name' => $username));
 $u = $results->fetchObject();
 if (!$u) {
@@ -51,12 +49,12 @@ if (!$u) {
 global $user;
 $user = user_load($u->uid);
 
-
+fwrite($stdout, "\n" . date('Y-m-d' H:i:s) . "\n");
 fwrite($stdout, "Tripal Job Launcher\n");
 fwrite($stdout, "Running as user ' . $username . '\n");
 fwrite($stdout, "-------------------\n");
 
-tripal_launch_job($do_parallel);
+tripal_launch_job($do_parallel, null, $max_jobs);
 
 /**
  * Print out the usage instructions if they are not followed correctly
