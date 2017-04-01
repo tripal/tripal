@@ -68,7 +68,7 @@ function tripal_feature_install() {
   // Set the default vocabularies.
   tripal_set_default_cv('feature', 'type_id', 'sequence');
   tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
-  tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
+  tripal_set_default_cv('feature_relationship', 'type_id', 'sequence');
 }
 
 /**
@@ -405,7 +405,7 @@ function tripal_feature_update_7200() {
     );
     tripal_set_default_cv('feature', 'type_id', 'sequence');
     tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
-    tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
+    tripal_set_default_cv('feature_relationship', 'type_id', 'sequence');
   }
 
   catch (\PDOException $e) {
@@ -516,3 +516,22 @@ function tripal_feature_update_7203() {
     throw new DrupalUpdateException('Failed to complete update' . $error);
   }
 }
+
+/**
+ * Changes the default vocabulary for the feature_relationship table to 'sequence'.
+ */
+function tripal_feature_update_7204() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
+  try {
+    tripal_set_default_cv('feature_relationship', 'type_id', 'sequence');
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to complete update' . $error);
+  }
+}
+

@@ -10,6 +10,17 @@
  * @ingroup tripal_pub
  */
 function tripal_pub_importers_list() {
+
+  // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+  // warn the user that they should load it before continuing.
+  $pub_cv = chado_select_record('cv', array('cv_id'), array('name' => 'tripal_pub'));
+  if (count($pub_cv) == 0) {
+    drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
+        'This vocabulary is required to be loaded before importing of ' .
+        'publications.  <br>Please !import',
+        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+  }
+
   // clear out the session variable when we view the list.
   unset($_SESSION['tripal_pub_import']);
 
