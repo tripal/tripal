@@ -1,7 +1,5 @@
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-
-# About
 Tripal is a toolkit for construction of online biological (genetics, genomics,
 breeding, etc), community database, and is a member of the 
 [GMOD](http://www.gmod.org) family of tools. Tripal v3 provides by default
