@@ -1,53 +1,33 @@
-![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-2.x/trial_core/theme/images/tripal_logo.png)
+![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-2.x/tripal_core/theme/images/tripal_logo.png)
 
 Tripal
 ==========
 
-What is Tripal?
---------------
-Tripal is a collection of open-source freely available Drupal modules 
-and is a member of the GMOD family of tools. Tripal serves as a web 
-interface for the GMOD Chado database and is designed to reduce the
-time and cost required for construction of an online genomic, genetic
-and breeding database.
+Tripal is a toolkit for construction of online biological (genetics, genomics, breeding, etc), community database, and is a member of the GMOD family of tools. Tripal provides by default integration with the GMOD Chado database schema and Drupal, a popular Content Management Systems (CMS). Tripal is licensed under the GNU General Public License version 2.
+
+Objectives
+----------
+* Provide a framework for those with genomic, genetic and breeding data for creation of an online site for display, search and visualization.
+* To use community-derived standards and ontologies to facility continuity between sites which in turn fosters collaboration and sharing
+* Provide an out-of-the-box setup for a genomics site for those who simply want to put new genome assemblies and annotations online.
+* Provide Application Programming Interfaces (APIs) for complete customization such that more advanced displays, look-and-feel, and new functionality can be supported.
 
 
-Features
---------------
- - a Chado installer
- - Data loaders for ontologies (controlled vocabularies), GFF files, 
-   and FASTA files, publications (from PubMed and AGIRCOLA). 
- - Generic Bulk Data Loader Modules allows for creation of custom 
-   loading templates.
- - Drupal nodes (web pages) are automatically generated for organisms,
-   genomic features, biological libraries, and stocks
- - Supports creation of materialized views for faster data queries.
- - Display templates are provided for all content types for
-   easier customization.
- - Views Integration allows for custom listings of data
- - Content pieces exposed as blocks allowing the use of Panels for 
-   custom layouts of Tripal Nodes
+Major Features
+----------
+* Incorporates the GMOD Chado database schema which serves as the data warehouse.
+* Integrates with Drupal for user management, and non-biological content.
+* Data loaders for commonly used file formats (FASTA, GFF3, GAF, OBO, NCBI Taxonomy, PubMed, newick, tab-delimited, etc.).
+* Sites can be customized as desired.
+* Site developers can create new extension modules to share with other Tripal sites.
 
-
-Required Modules
---------------
- - Drupal 7.x 
- - Drupal Core Modules: Search, Path and PHP modules.
- - Drupal contributed modules: Views
- - Database containing GMOD Chado Schema (can be installed by the 
-   Tripal Core module)
-NOTE: A PostgreSQL database is required for installation of the 
-Chado Schema
 
 Installation
 --------------
 Please follow the instructions in the online Tripal User's Guide:
-http://tripal.info/tutorials/v2.0/installation
+http://tripal.info/tutorials/v2.x/installation
 
-Customization
+
+More Information
 --------------
-Tripal can be used “as is” but also allows for complete customization.
-PHP-based template files are provided for all data types to allow for 
-precise customizations as required by the community. A well-developed 
-Tripal API provides a uniform set of variables and functions for 
-accessing any and all data within the Chado database.
+Visit the http://tripal.info site for support documentation, access to mailing lists, monthly Tripal User's meeting notes, and more!
