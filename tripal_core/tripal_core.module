@@ -176,14 +176,6 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
-  $items['admin/tripal/setup/customize'] = array(
-    'title' => 'Customize Tripal',
-    'description' => t('Information on how to customize tripal'),
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_core_customize'),
-    'access arguments' => array('administer tripal'),
-    'weight' => 10
-  );
 
   // Jobs Management
   $items['admin/tripal/tripal_jobs'] = array(
@@ -193,15 +185,6 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
-  );
-  $items['admin/tripal/tripal_jobs/help'] = array(
-    'title' => 'Help',
-    'description' => t('Help for the tripal job management system'),
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_core_job_help'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10
   );
   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
     'title' => 'Jobs',
