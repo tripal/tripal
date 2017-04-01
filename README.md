@@ -1,3 +1,8 @@
+![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-2.x/trial_core/theme/images/tripal_logo.png)
+
+Tripal
+==========
+
 What is Tripal?
 --------------
 Tripal is a collection of open-source freely available Drupal modules 
