@@ -75,13 +75,13 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
     '#title'         => t('Filter by Job Status'),
     '#default_value' => $default_status,
     '#options' => array(
-    0           => 'All Jobs',
-    'Running'   => 'Running',
-    'Waiting'   => 'Waiting',
-    'Completed' => 'Completed',
-    'Cancelled' => 'Cancelled',
-    'Error'     => 'Error',
-  ),
+      0           => 'All Jobs',
+      'Running'   => 'Running',
+      'Waiting'   => 'Waiting',
+      'Completed' => 'Completed',
+      'Cancelled' => 'Cancelled',
+      'Error'     => 'Error',
+    ),
   );
   $form['job_name'] = array(
     '#type'          => 'textfield',
@@ -177,6 +177,8 @@ function tripal_jobs_report() {
     $end = tripal_get_job_end($job);
     $cancel_link = '';
     $execute_link = '';
+
+    // If the job hasn't started then provide a 'Cancel' and 'Execute' link.
     if ($job->start_time == 0 and $job->end_time == 0) {
       $cancel_link = "<a href=\"" . url("admin/tripal/tripal_jobs/cancel/" . $job->job_id) . "\">Cancel</a><br />";
       $execute_link = "<a href=\"" . url("admin/tripal/tripal_jobs/execute/" . $job->job_id) . "\">Execute</a><br />";

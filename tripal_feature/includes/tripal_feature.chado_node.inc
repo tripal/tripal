@@ -233,7 +233,7 @@ function chado_feature_form($node, &$form_state) {
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
-  $relationship_cv = tripal_get_default_cv('sequence', 'type_id');
+  $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
   $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'feature_relationship',
