@@ -14,7 +14,7 @@
         $(this).css('cursor', 'pointer');
         $(this).css('margin', '0px 5px');
         $(this).click(function () {
-          var fs = $(this).parent().parent().parent().parent().parent();
+          var fs = $(this).parents('.field-group-fieldset');
           if($(fs).hasClass('showTripalPane'))  {
             $(fs).removeClass('showTripalPane');
             $(fs).addClass('hideTripalPane');

@@ -118,6 +118,18 @@ function tripal_menu() {
     'weight' => 8,
     'access arguments' => array('administer tripal'),
   );
+
+  $items['admin/tripal/dashboard'] = array(
+    'title' => 'Dashboard',
+    'description' => t("A dashboard view of Tripal including new fields for entities."),
+    'weight' => 0,
+    'page callback' => 'tripal_admin_usage_page',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
   $items['admin/tripal/terms/import'] = array(
     'title' => 'Import Vocabulary',
     'description' => t("Import vocabularies and terms in OBO format."),
@@ -244,6 +256,27 @@ function tripal_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.entity.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  /*
+   * Dashboard Action Item callbacks.
+   */
+  $items['admin/disable/notification/%'] = array(
+    'page callback' => 'tripal_disable_admin_notification',
+    'page arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['admin/import/field/%/%/%/%'] = array(
+    'page callback' => 'tripal_admin_notification_import_field',
+    'page arguments' => array(3, 4, 5, 6),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_admin_usage_page.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
@@ -602,4 +635,107 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
 function tripal_check_new_fields($bundle_name) {
   tripal_refresh_bundle_fields($bundle_name);
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function tripal_block_info() {
+  $blocks = array();
+
+  $blocks['notifications_block'] = array(
+    'info' => t('Dashboard Notifications'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'admin/tripal/dashboard',
+    'status' => TRUE,
+    'region' => 'content',
+    'properties' => array(
+      'administrative' => TRUE,
+    ),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function tripal_block_view($delta = ''){
+  // The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+    case 'notifications_block':
+      // Create your block content here
+      $block['content'] = '';
+
+      // Prepare table header
+      $header = array(
+        'title' => array('data' => t('Title')),
+        'details' => array('data' => t('Details')),
+        'type' => array('data' => t('Type'), 'field' => 'tan.type'),
+        'actions' => array('data' => t('Actions'))
+      );
+
+      $query = db_select('tripal_admin_notfications', 'tan')
+        ->extend('TableSort');
+
+      $results = $query->fields('tan')
+        ->condition('enabled', 1, '=')
+        ->orderByHeader($header)
+        ->execute()->fetchAll();
+      $rows = array();
+
+      foreach($results as $result){
+        $data['operation'] = ' | ';
+        $data['operation'] .= l(t('Dismiss Notification'), 'admin/disable/notification/' . $result->note_id);
+
+        $actions = unserialize($result->actions);
+        foreach($actions as $action){
+          $label = key($actions);
+          $link = $action;
+        }
+
+        $rows[] = array(
+          'Title' => $result->title,
+          'Details' => $result->details,
+          'Type' => $result->type,
+          'Actions' => l(t($label), $link) . $data['operation'],
+        );
+      }
+      if(!empty($rows)) {
+        //Number of records shown in per page
+        $per_page = 10;
+        $current_page = pager_default_initialize(count($rows), $per_page);
+        $chunks = array_chunk($rows, $per_page, TRUE);
+
+        // Output of table with the paging
+        $table = theme('table',
+          array(
+            "header" => $header,
+            "rows" => $chunks[ $current_page ],
+            "attributes" => array(),
+            "sticky" => TRUE,
+            "caption" => "",
+            "colgroups" => array(),
+            "empty" => t("No notifications.")
+          )
+        );
+        $table .= theme('pager', array('quantity', count($rows)));
+
+        $fieldset_table = array(
+          '#title' => t('Notifications'),
+          '#collapsed' => FALSE,
+          '#collapsible' => TRUE,
+          '#attributes' => array('class' => array('collapsible')),
+          '#children' => $table,
+        );
+
+        //return pager with limited number of records.
+        $block['content'] = theme('fieldset', array('element' => $fieldset_table));
+      }
+      else {
+        $block['content'] = 'There are no notifications at this time.';
+      }
+      break;
+  }
+  return $block;
 }

@@ -194,6 +194,60 @@ function hook_bundle_postcreate(&$bundle) {
 
 }
 /**
+ * Allows a module to add admin notifications to the associated tripal table
+ * during the cron run.
+ *
+ */
+function hook_tripal_cron_notification() {
+
+}
+/**
+ * Allows a module to write to the admin notification table
+ * during the cron run.
+ *
+ * @param $title
+ *   A generic phrase indicating what the notification is for.
+ * @param $details
+ *   A human-readable sentence or two describing the issue.
+ * @param $type
+ *   A one word type indicating the type of notification. Tripal types include:  Jobs, Fields.
+ *   If not type is required please pass NULL.
+ * @param $actions
+ *   A serialized PHP associative array containing the link and URL for each action.
+ *   If not type is required please pass NULL.
+ * @param $submitter_id
+ *   A unique ID provided by the submitter for checking to make sure that the notification is not added more than once.
+ */
+function tripal_add_notifcation($title, $details, $type, $actions, $submitter_id) {
+  $transaction = db_transaction();
+
+  // Check the notification isn't already in the admin notification table.
+  $dedup = db_select('tripal_admin_notfications', 'tan')
+    ->fields('tan')
+    ->condition('submitter_id', $submitter_id, '=')
+    ->execute()->fetchAll();
+
+  if (empty($dedup)) {
+    try {
+      $record = new stdClass;
+      $record->details = $details;
+      $record->title = $title;
+      $record->submitter_id = $submitter_id;
+      $record->actions = serialize($actions);
+      $record->enabled = 1;
+      $record->type = $type;
+      $success = drupal_write_record('tripal_admin_notfications', $record);
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog('tripal_cron', 'Could not write notification to database.');
+    }
+    if ($success) {
+      watchdog('tripal_cron', 'New field notification created.');
+    }
+  }
+}
+/**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
  * @param $args
@@ -390,6 +444,99 @@ function tripal_get_content_types() {
     ->fields('tb')
     ->execute()
     ->fetchAll();
+}
+
+/**
+ * Implements hook_cron().
+ */
+function tripal_cron() {
+  if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
+    $modules = module_implements('tripal_cron_notification');
+    foreach ($modules as $module) {
+      $function = $module . '_tripal_cron_notification';
+      $function();
+    }
+    watchdog('tripal_cron', 'tripal_cron ran');
+  }
+}
+
+/**
+ * Refreshes the bundle such that new fields added by modules will be found during cron.
+ *
+ * @param $bundle_name
+ *   The name of the bundle to refresh (e.g. bio_data_4).
+ */
+function tripal_tripal_cron_notification() {
+  $num_created = 0;
+
+  // Get all bundle names to cycle through.
+  $all_bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb', array('name'))
+    ->execute()->fetchAll();
+
+  foreach ($all_bundles as $bundle_name){
+    // Get the bundle object.
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name->name));
+    if (!$bundle) {
+      tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
+        array('%bundle' => $bundle_name));
+      return FALSE;
+    }
+    // Allow modules to add fields to the new bundle.
+    $modules = module_implements('bundle_create_fields');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_create_fields';
+      $info = $function('TripalEntity', $bundle);
+      foreach ($info as $field_name => $details) {
+
+        // If the field already exists then skip it.
+        $field = field_info_field($details['field_name']);
+        if ($field) {
+          continue;
+        }
+
+        // Create notification that new fields exist.
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] .' for ' . $bundle->label. ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle_name->name . '/' . $module . '/field';
+        $type = 'Field';
+        $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
+
+        tripal_add_notifcation($title, $detail_info, $type, $actions, $submitter_id);
+        $num_created++;
+      }
+    }
+
+    // Allow modules to add instances to the new bundle.
+    $modules = module_implements('bundle_create_instances');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_create_instances';
+      $info = $function('TripalEntity', $bundle);
+      foreach ($info as $field_name => $details) {
+
+        // If the field is already attached to this bundle then skip it.
+        $field = field_info_field($details['field_name']);
+        if ($field and array_key_exists('bundles', $field) and
+          array_key_exists('TripalEntity', $field['bundles']) and
+          in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+          continue;
+        }
+
+        // Create notification that new fields exist.
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] .' for ' . $bundle->label. ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->name . '/' . $module . '/instance';
+        $type = 'Field';
+        $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
+
+        tripal_add_notifcation($title, $detail_info, $type, $actions, $submitter_id);
+        $num_created++;
+      }
+    }
+    if ($num_created == 0) {
+      watchdog('tripal_cron', '<pre>No new fields for '. print_r($bundle_name->name, TRUE) .'</pre>');
+    }
+  }
 }
 
 /**
