@@ -41,7 +41,12 @@ class schema__publication_formatter extends ChadoFieldFormatter {
 
     krsort($list_items, SORT_NUMERIC);
 
-    $list = 'There are no publications.';
+    if (count($list_items) == 0) {
+      $list = 'There are no publications.';
+    }
+    if (count($list_items) == 1) {
+      $list = $list_items[0];
+    }
     if (count($list_items) > 1) {
       $list = array(
         'title' => '',
