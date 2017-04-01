@@ -873,7 +873,7 @@ function tripal_core_block_configure ($delta = '') {
         '#title' => t('Logo Type'),
         '#default_value' => variable_get('powered_by_tripal_type', 'bw'),
         '#options' => array(
-          'bw' => t('Blank and White'),
+          'bw' => t('Gray scale'),
           'col' => t('Colored')
         ),
         '#description' => t('Select if you would like a black and white or colored "Powered by Tripal" logo.'),
