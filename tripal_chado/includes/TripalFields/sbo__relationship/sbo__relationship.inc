@@ -35,6 +35,12 @@ class sbo__relationship extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    'relationships' => array(
+      'option1_vocabs' => '',
+      'option2_vocab' => '',
+      'option2_parent' => '',
+      'relationship_types' => '',
+    ),
   );
 
   // The default widget for this field.
@@ -549,7 +555,6 @@ class sbo__relationship extends ChadoField {
       '#default_value' => $this->instance['settings']['relationships']['option1_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
     );
-
     $element['relationships']['option2'] = array(
       '#type' => 'item',
       '#title' => '<b>Option #2</b>',
