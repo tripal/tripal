@@ -364,7 +364,7 @@ function tripal_populate_mview($mview_id) {
         $count = $results->fetchObject();
         $record = new stdClass();
         $record->mview_id = $mview_id;
-        $record->last_update = REQUEST_TIME;
+        $record->last_update = time();
         $record->status = "Populated with " . number_format($count->cnt) . " rows";
         drupal_write_record('tripal_mviews', $record, 'mview_id');
       }

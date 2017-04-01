@@ -126,7 +126,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
     'modulename' => $modulename,
     'callback' => $callback,
     'status' => 'Waiting',
-    'submit_date' => REQUEST_TIME,
+    'submit_date' => time(),
     'uid' => $uid,
     # The lower the number the higher the priority.
     'priority' => $priority,
@@ -212,7 +212,7 @@ function tripal_is_job_running() {
       // the job is not running so terminate it
       $record = new stdClass();
       $record->job_id = $job->job_id;
-      $record->end_time = REQUEST_TIME;
+      $record->end_time = time();
       $record->status = 'Error';
       $record->error_msg = 'Job has terminated unexpectedly.';
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -286,7 +286,7 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
   if ($job->start_time == 0) {
     $record = new stdClass();
     $record->job_id = $job->job_id;
-    $record->end_time = REQUEST_TIME;
+    $record->end_time = time();
     $record->status = 'Cancelled';
     $record->progress = '0';
     drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -352,7 +352,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
     // set the start time for this job
     $record = new stdClass();
     $record->job_id = $job->job_id;
-    $record->start_time = REQUEST_TIME;
+    $record->start_time = time();
     $record->status = 'Running';
     $record->pid = getmypid();
     drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -391,7 +391,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
     print "Calling: $callback(" . implode(", ", $string_args) . ")\n";
     call_user_func_array($callback, $args);
     // set the end time for this job
-    $record->end_time = REQUEST_TIME;
+    $record->end_time = time();
     $record->status = 'Completed';
     $record->progress = '100';
     drupal_write_record('tripal_jobs', $record, 'job_id');
