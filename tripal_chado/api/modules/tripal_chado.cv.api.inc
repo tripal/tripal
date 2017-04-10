@@ -520,21 +520,30 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
  * @return bool
  */
 function tripal_update_cvtermpath_loop_checker($origin, $child_id, $cv_id, $type_id, $depth, $increment_of_depth, $distance_between_parent_child, $possible_start_of_loop, $array_of_possible_loop, $depth_at_start_of_loop){
-  watchdog('debug', '<pre>tripal_update_cvtermpath_loop_checker  $possible_start_of_loop: '. print_r($possible_start_of_loop, TRUE) .'</pre>');
   if ($distance_between_parent_child > 1) {
     // Search the $array_of_children for the new $child_id in the build_id column.
-    $possible_loop_starts = array_keys(array_column($array_of_possible_loop, 'build_id'), $possible_start_of_loop);
-    // If the search returns something check for a possible loop.
-    if (!empty($possible_loop_starts)) {
-      foreach ($possible_loop_starts as $possible_loop_start) {
-        // Check the depth measurements, if the depth of the passed relationships minus the depth of the
-        // possible_start of loop  is equal to the $distance_between_parent_child it's a loop.
-        if (($depth_at_start_of_loop - $possible_loop_start->depth) == $distance_between_parent_child) {
-          //This is a loop so it needs to be terminated.
-          return TRUE;
+    //$possible_loop_starts = array_keys(array_column($array_of_possible_loop, 'build_id'), $possible_start_of_loop);
+    foreach ($array_of_possible_loop as $key => $val) {
+      watchdog('debug', '<pre>tripal_update_cvtermpath_loop_checker  $possible_start_of_loop[\'build_id\']: '. print_r($possible_start_of_loop['build_id'], TRUE) .'</pre>');
+
+      if ($val['build_id'] === $possible_start_of_loop['build_id']) {
+        $possible_loop_starts = $val;
+        // If the search returns something check for a possible loop.
+        if (!empty($possible_loop_starts)) {
+          foreach ($possible_loop_starts as $possible_loop_start) {
+            watchdog('debug', '<pre>tripal_update_cvtermpath_loop_checker  $possible_loop_start[\'depth\']: '. print_r($possible_loop_start['depth'], TRUE) .'</pre>');
+
+            // Check the depth measurements, if the depth of the passed relationships minus the depth of the
+            // possible_start of loop  is equal to the $distance_between_parent_child it's a loop.
+            if (($depth_at_start_of_loop - $possible_loop_start['depth']) == $distance_between_parent_child) {
+              //This is a loop so it needs to be terminated.
+              return TRUE;
+            }
+          }
         }
       }
     }
+
     chado_set_active('chado');
     $query = db_select('cvterm_relationship', 'cvtr')
       ->fields('cvtr')
