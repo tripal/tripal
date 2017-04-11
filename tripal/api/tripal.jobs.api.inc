@@ -223,6 +223,47 @@ function tripal_is_job_running() {
   return FALSE;
 }
 
+/**
+ * Check for too many concurrent jobs.
+ *
+ * @param $max_jobs
+ *   The maximum number of concurrent jobs to allow; -1 = no limit
+ *
+ * @ingroup tripal_jobs_api
+ */
+function tripal_max_jobs_exceeded($max_jobs) {
+  if ($max_jobs < 0) {
+    // No limit on concurrent jobs
+    return FALSE;
+  }
+
+  $num_jobs_running = 0;
+
+  // Iterate through each job that has not ended and see if it is still running.
+  // If it is not running but does not have an end_time then set the end time
+  // and set the status to 'Error'
+  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
+          "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
+  $jobs = db_query($sql);
+  foreach ($jobs as $job) {
+    $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
+    if ($job->pid && $status) {
+      // the job is still running
+      $num_jobs_running++;
+    }
+    else {
+      // the job is not running so terminate it
+      $record = new stdClass();
+      $record->job_id = $job->job_id;
+      $record->end_time = REQUEST_TIME;
+      $record->status = 'Error';
+      $record->error_msg = 'Job has terminated unexpectedly.';
+      drupal_write_record('tripal_jobs', $record, 'job_id');
+    }
+  }
+
+  return ($num_jobs_running >= $max_jobs);
+}
 
 /**
  * Set a job to be re-ran (ie: add it back into the job queue)
@@ -314,16 +355,25 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
  *   based on order and priority.  However there are times when a specific
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
+ * @param $max_jobs
+ *   The maximum number of jobs that should be run concurrently. If -1 then unlimited.
+ * @param $single
+ *   Ensures only a single job is run rather then the entire queue.
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
+function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $single = 0) {
 
   // first check if any jobs are currently running
   // if they are, don't continue, we don't want to have
   // more than one job script running at a time
   if (!$do_parallel and tripal_is_job_running()) {
-    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
+    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.\n";
+    return;
+  }
+
+  if ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
+    print "At least $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.\n";
     return;
   }
 
@@ -341,6 +391,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
             "ORDER BY priority ASC,job_id ASC";
     $job_res = db_query($sql);
   }
+  print "There are " . $job_res->rowCount() . " jobs queued.\n";
   foreach ($job_res as $job) {
 
     // Include the necessary files
@@ -395,6 +446,14 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
     $record->status = 'Completed';
     $record->progress = '100';
     drupal_write_record('tripal_jobs', $record, 'job_id');
+
+    if ($single) {
+      // Don't start any more jobs
+      break;
+    }
+    if (tripal_max_jobs_exceeded($max_jobs)) {
+      break;
+    }
 
     // send an email to the user advising that the job has finished
   }
