@@ -177,10 +177,10 @@
  * chado_generate_var([table], [filter criteria], [optional options])
  * function. An example of how to use this function is:
  * @code
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
+$values = array(
+ * 'name' => 'Medtr4g030710'
+ * );
+ * $features = chado_generate_var('feature', $values);
  * @endcode
  * This will return an object if there is only one feature with the name Medtr4g030710 or it will
  * return an array of feature objects if more than one feature has that name.
@@ -190,17 +190,17 @@
  * chado_expand_var([chado variable], [type], [what to expand], [optional options])
  * function. An example of how to use this function is:
  * @code
-   // Get a chado object to be expanded
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
-   // Expand the organism node
-   $feature = chado_expand_var($feature, 'node', 'organism');
-   // Expand the feature.residues field
-   $feature = chado_expand_var($feature, 'field', 'feature.residues');
-   // Expand the feature properties (featureprop table)
-   $feature = chado_expand_var($feature, 'table', 'featureprop');
+// Get a chado object to be expanded
+ * $values = array(
+ * 'name' => 'Medtr4g030710'
+ * );
+ * $features = chado_generate_var('feature', $values);
+ * // Expand the organism node
+ * $feature = chado_expand_var($feature, 'node', 'organism');
+ * // Expand the feature.residues field
+ * $feature = chado_expand_var($feature, 'field', 'feature.residues');
+ * // Expand the feature properties (featureprop table)
+ * $feature = chado_expand_var($feature, 'table', 'featureprop');
  * @endcode
  */
 
@@ -267,10 +267,10 @@ function chado_insert_record($table, $values, $options = array()) {
     );
     return FALSE;
   }
-  if (count($values)==0) {
+  if (count($values) == 0) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for inserting.',
-      array(),array('print' => $print_errors)
+      array(), array('print' => $print_errors)
     );
     return FALSE;
   }
@@ -316,8 +316,12 @@ function chado_insert_record($table, $values, $options = array()) {
     if (!array_key_exists($field, $table_desc['fields'])) {
       tripal_report_error('tripal_core', TRIPAL_ERROR,
         "chado_insert_record; The field '%field' does not exist " .
-          "for the table '%table'.  Cannot perform insert. Values: %array",
-        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
+        "for the table '%table'.  Cannot perform insert. Values: %array",
+        array(
+          '%field' => $field,
+          '%table' => $table,
+          '%array' => print_r($values, 1)
+        ),
         array('print' => $print_errors)
       );
       return FALSE;
@@ -415,12 +419,17 @@ function chado_insert_record($table, $values, $options = array()) {
       // a field is considered missing if it cannot be NULL and there is no default
       // value for it or it is of type 'serial'
       if (array_key_exists('NOT NULL', $def) and
-          !array_key_exists($field, $insert_values) and
-          !array_key_exists('default', $def) and
-          strcmp($def['type'], serial) != 0) {
+        !array_key_exists($field, $insert_values) and
+        !array_key_exists('default', $def) and
+        strcmp($def['type'], serial) != 0
+      ) {
         tripal_report_error('tripal_core', TRIPAL_ERROR,
           "chado_insert_record; Field %table.%field cannot be NULL: %values",
-          array('%table' => $table, '%field' => $field, '%values' => print_r($values, 1)),
+          array(
+            '%table' => $table,
+            '%field' => $field,
+            '%values' => print_r($values, 1)
+          ),
           array('print' => $print_errors)
         );
         return FALSE;
@@ -430,14 +439,14 @@ function chado_insert_record($table, $values, $options = array()) {
 
   // Now build the insert SQL statement
   $ifields = array();       // contains the names of the fields
-  $itypes  = array();       // contains placeholders for the sql query
+  $itypes = array();       // contains placeholders for the sql query
   $ivalues = array();       // contains the values of the fields
   $i = 1;
   foreach ($insert_values as $field => $value) {
     $ifields[] = $field;
     $ivalues[":$field"] = $value;
     $i++;
-    if (strcmp($value, '__NULL__')==0) {
+    if (strcmp($value, '__NULL__') == 0) {
       $itypes[] = "NULL";
     }
     else {
@@ -511,30 +520,30 @@ function chado_insert_record($table, $values, $options = array()) {
  *
  * Example usage:
  * @code
- $umatch = array(
-   'organism_id' => array(
-     'genus' => 'Citrus',
-     'species' => 'sinensis',
-   ),
-   'uniquename' => 'orange1.1g000034m.g7',
-   'type_id' => array (
-     'cv_id' => array (
-       'name' => 'sequence',
-     ),
-     'name' => 'gene',
-     'is_obsolete' => 0
-   ),
- );
- $uvalues = array(
-   'name' => 'orange1.1g000034m.g',
-   'type_id' => array (
-     'cv_id' => array (
-       'name' => 'sequence',
-     ),
-     'name' => 'mRNA',
-     'is_obsolete' => 0
-   ),
- );
+$umatch = array(
+ * 'organism_id' => array(
+ * 'genus' => 'Citrus',
+ * 'species' => 'sinensis',
+ * ),
+ * 'uniquename' => 'orange1.1g000034m.g7',
+ * 'type_id' => array (
+ * 'cv_id' => array (
+ * 'name' => 'sequence',
+ * ),
+ * 'name' => 'gene',
+ * 'is_obsolete' => 0
+ * ),
+ * );
+ * $uvalues = array(
+ * 'name' => 'orange1.1g000034m.g',
+ * 'type_id' => array (
+ * 'cv_id' => array (
+ * 'name' => 'sequence',
+ * ),
+ * 'name' => 'mRNA',
+ * 'is_obsolete' => 0
+ * ),
+ * );
  *   $result = chado_update_record('feature',$umatch,$uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
@@ -560,7 +569,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
     );
     return FALSE;
   }
-  if (count($values)==0) {
+  if (count($values) == 0) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for updating.',
       array(), array('print' => $print_errors)
@@ -575,7 +584,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
     );
     return FALSE;
   }
-  if (count($match)==0) {
+  if (count($match) == 0) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.',
       array(), array('print' => $print_errors)
@@ -674,7 +683,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_core', TRIPAL_DEBUG,
           'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)),
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
         return FALSE;
@@ -689,7 +698,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   }
 
   // now build the SQL statement
-  $sql  = 'UPDATE {' . $table . '} SET ';
+  $sql = 'UPDATE {' . $table . '} SET ';
   $args = array();        // arguments passed to chado_query
   foreach ($update_values as $field => $value) {
     if (strcmp($value, '__NULL__') == 0) {
@@ -704,7 +713,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
 
   $sql .= " WHERE ";
   foreach ($update_matches as $field => $value) {
-    if (strcmp($value, '__NULL__')==0) {
+    if (strcmp($value, '__NULL__') == 0) {
       $sql .= " $field = NULL AND ";
     }
     else {
@@ -736,7 +745,11 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   else {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       "chado_update_record: Cannot update record in %table table.  \nMatch: %match \nValues: %values",
-      array('%table' => table, '%match' => print_r($match,TRUE), '%values' => print_r($values, 1)),
+      array(
+        '%table' => table,
+        '%match' => print_r($match, TRUE),
+        '%values' => print_r($values, 1)
+      ),
       array('print' => $print_errors)
     );
     return FALSE;
@@ -764,30 +777,30 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  *
  * Example usage:
  * @code
- $umatch = array(
-   'organism_id' => array(
-     'genus' => 'Citrus',
-     'species' => 'sinensis',
-   ),
-   'uniquename' => 'orange1.1g000034m.g7',
-   'type_id' => array (
-     'cv_id' => array (
-       'name' => 'sequence',
-     ),
-     'name' => 'gene',
-     'is_obsolete' => 0
-   ),
- );
- $uvalues = array(
-   'name' => 'orange1.1g000034m.g',
-   'type_id' => array (
-     'cv_id' => array (
-       'name' => 'sequence',
-     ),
-     'name' => 'mRNA',
-     'is_obsolete' => 0
-   ),
- );
+$umatch = array(
+ * 'organism_id' => array(
+ * 'genus' => 'Citrus',
+ * 'species' => 'sinensis',
+ * ),
+ * 'uniquename' => 'orange1.1g000034m.g7',
+ * 'type_id' => array (
+ * 'cv_id' => array (
+ * 'name' => 'sequence',
+ * ),
+ * 'name' => 'gene',
+ * 'is_obsolete' => 0
+ * ),
+ * );
+ * $uvalues = array(
+ * 'name' => 'orange1.1g000034m.g',
+ * 'type_id' => array (
+ * 'cv_id' => array (
+ * 'name' => 'sequence',
+ * ),
+ * 'name' => 'mRNA',
+ * 'is_obsolete' => 0
+ * ),
+ * );
  *   $result = chado_update_record('feature', $umatch, $uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
@@ -811,7 +824,7 @@ function chado_delete_record($table, $match, $options = NULL) {
       'Cannot pass non array as values for matching.', array());
     return FALSE;
   }
-  if (count($match)==0) {
+  if (count($match) == 0) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.', array());
     return FALSE;
@@ -848,7 +861,10 @@ function chado_delete_record($table, $match, $options = NULL) {
         if (sizeof($results) > 1) {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
             'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-            array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)));
+            array(
+              '!foreign_key' => $field,
+              '!criteria' => print_r($value, TRUE)
+            ));
           return FALSE;
         }
         elseif (sizeof($results) < 1) {
@@ -1000,28 +1016,28 @@ function chado_delete_record($table, $match, $options = NULL) {
  *   or 'is NULL'. If your criteria doesn't fall into one of these two categories
  *   then you need to provide an array with additional details such as the operator
  *   as well as the value. An example follows and will be discussed in detail.
- *   @code
-      $columns = array('feature_id', 'fmin', 'fmax');
-      // Regular criteria specifying the parent feature to retrieve locations from.
-      $values = array(
-        'srcfeature_id' => array(
-          'uniquename' => 'MtChr01'
-          'type_id' => array(
-            'name' => 'pseudomolecule'
-          ),
-        ),
-      );
-      // Complex filtering to specify the range to return locations from.
-      $values['fmin'][] = array(
-        'op' => '>',
-        'data' => 15
-      );
-      $values['fmin'][] = array(
-        'op' => '<',
-        'data' => 100
-      );
-      $results = chado_select_record('featureloc', $columns, $values);
- *   @endcode
+ * @code
+$columns = array('feature_id', 'fmin', 'fmax');
+ * // Regular criteria specifying the parent feature to retrieve locations from.
+ * $values = array(
+ * 'srcfeature_id' => array(
+ * 'uniquename' => 'MtChr01'
+ * 'type_id' => array(
+ * 'name' => 'pseudomolecule'
+ * ),
+ * ),
+ * );
+ * // Complex filtering to specify the range to return locations from.
+ * $values['fmin'][] = array(
+ * 'op' => '>',
+ * 'data' => 15
+ * );
+ * $values['fmin'][] = array(
+ * 'op' => '<',
+ * 'data' => 100
+ * );
+ * $results = chado_select_record('featureloc', $columns, $values);
+ * @endcode
  *   The above code example will return all of the name, start and end of all
  *   the features that start within MtChr1:15-100bp. Note that complex filtering
  *   can be used in conjunction with basic filtering and that multiple criteria,
@@ -1103,7 +1119,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     // arrays to only include these fields
     foreach ($ukeys as $cname => $fields) {
       if ($has_results) {
-         continue;
+        continue;
       }
       $new_values = array();
       $new_columns = array();
@@ -1156,7 +1172,11 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
             'chado_select_record: There is no value for %field thus we cannot ' .
             'check if this record for table, %table, is unique. %values',
-            array('%field' => $field, '%table' => $table, '%values' => print_r($values, TRUE)),
+            array(
+              '%field' => $field,
+              '%table' => $table,
+              '%values' => print_r($values, TRUE)
+            ),
             array('print' => $print_errors));
           return FALSE;
         }
@@ -1189,7 +1209,11 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     if (!array_key_exists($field, $table_desc['fields'])) {
       tripal_report_error('tripal_core', TRIPAL_ERROR,
         'chado_select_record: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
-        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
+        array(
+          '%field' => $field,
+          '%table' => $table,
+          '%array' => print_r($values, 1)
+        ),
         array('print' => $print_errors)
       );
       return array();
@@ -1262,9 +1286,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
             return array();
           }
           // Ensure that there were results returned.
-          elseif (count($results)==0) {
+          elseif (count($results) == 0) {
             tripal_report_error('tripal_core', TRIPAL_ERROR,
-              'chado_select_record: the foreign key definition for \'%field\' '.
+              'chado_select_record: the foreign key definition for \'%field\' ' .
               'returned no results where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
@@ -1319,11 +1343,11 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   // Now build the SQL.
   if (empty($where)) {
     // Sometimes want to select everything.
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
+    $sql = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
   }
   else {
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
+    $sql = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
 
     // If $values is empty then we want all results so no where clause.
@@ -1338,7 +1362,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           $sql .= $value_def['field'] . " IN (";
           $index = 0;
           foreach ($value_def['data'] as $v) {
-            $placeholder = ':' . $value_def['field'] . $clause_num .'_' . $index;
+            $placeholder = ':' . $value_def['field'] . $clause_num . '_' . $index;
             $sql .= $placeholder . ', ';
             $args[$placeholder] = $v;
             $index++;
@@ -1354,14 +1378,14 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
         // Default is [field] [op] [data].
         default:
-          $placeholder = ':'. $value_def['field'] . $clause_num;
+          $placeholder = ':' . $value_def['field'] . $clause_num;
 
           // Support case insensitive columns.
           if (in_array($value_def['field'], $options['case_insensitive_columns'])) {
-            $sql .= 'lower(' . $value_def['field'] .') '. $value_def['op'] .' lower('. $placeholder . ') AND ';
+            $sql .= 'lower(' . $value_def['field'] . ') ' . $value_def['op'] . ' lower(' . $placeholder . ') AND ';
           }
           else {
-            $sql .= $value_def['field'] .' '. $value_def['op'] .' '. $placeholder . ' AND ';
+            $sql .= $value_def['field'] . ' ' . $value_def['op'] . ' ' . $placeholder . ' AND ';
           }
           $args[$placeholder] = $value_def['data'];
       }
@@ -1418,14 +1442,14 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
  * on the table definition. Furthermore, it ensures that NULL's are caught
  * changing the operator to 'IS NULL'.
  * @code
-      $op = '=';
-      chado_select_record_check_value_type($op, $value, $table_desc['fields'][$field]['type']);
-
-      $where[] = array(
-        'field' => $field,
-        'op' => $op,
-        'data' => $value
-      );
+$op = '=';
+ * chado_select_record_check_value_type($op, $value, $table_desc['fields'][$field]['type']);
+ *
+ * $where[] = array(
+ * 'field' => $field,
+ * 'op' => $op,
+ * 'data' => $value
+ * );
  * @endcode
  *
  * @param $op
@@ -1510,8 +1534,8 @@ function chado_query($sql, $args = array()) {
     // and Drupal tables should be enclosed in square brackets (ie: [tripal_jobs] ).
     $chado_schema_name = tripal_get_schema_name('chado');
     $drupal_schema_name = tripal_get_schema_name('drupal');
-    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
-    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
+    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name . '.$1', $sql);
+    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name . '.$1', $sql);
 
     // Add an alter hook to allow module developers to change the query right before it's
     // executed. Since all queriying of chado by Tripal eventually goes through this
@@ -1528,7 +1552,7 @@ function chado_query($sql, $args = array()) {
     // functions and those calls do not reference a schema, therefore, any
     // tables with featureloc must automaticaly have the chado schema set as
     // active to find.
-    if (preg_match('/'.$chado_schema_name.'.featureloc/i', $sql) or preg_match('/'.$chado_schema_name.'.feature/i', $sql)) {
+    if (preg_match('/' . $chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
       $previous_db = chado_set_active('chado');
       $results = db_query($sql, $args);
       chado_set_active($previous_db);
@@ -1553,7 +1577,7 @@ function chado_query($sql, $args = array()) {
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
   else {
-    $previous_db = chado_set_active('chado') ;
+    $previous_db = chado_set_active('chado');
     $results = db_query($sql, $args);
     chado_set_active($previous_db);
   }
@@ -1589,11 +1613,11 @@ function hook_chado_query_alter(&$sql, &$args) {
   // queries referring to chado_feature to instead refer to your view.
   if (preg_match('/(\w+)\.chado_feature/', $sql, $matches)) {
 
-      $sql = str_replace(
-        $matches[1] . '.chado_feature',
-        'chado_feature_view',
-        $sql
-      );
+    $sql = str_replace(
+      $matches[1] . '.chado_feature',
+      'chado_feature_view',
+      $sql
+    );
   }
 }
 
@@ -1668,7 +1692,8 @@ function chado_pager_get_count($element) {
   $q = $_GET['q'];
 
   if (array_key_exists($q, $GLOBALS['chado_pager']) and
-      array_key_exists($element, $GLOBALS['chado_pager'][$q])) {
+    array_key_exists($element, $GLOBALS['chado_pager'][$q])
+  ) {
     return $GLOBALS['chado_pager'][$q][$element]['total_records'];
   }
   else {
@@ -1752,7 +1777,7 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
           . "to determine if hook_chado_schema_<version>_" . $table_desc['table'] . "() was "
           . "implemented and defined this foreign key when it wasn't supposed to. Modules "
           . "this hook was implemented in: " . implode(', ',
-        module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
+            module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
         tripal_report_error('tripal_core', $message);
         drupal_set_message(check_plain($message), 'error');
         continue;
