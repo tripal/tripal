@@ -333,7 +333,7 @@ function tripal_create_bundle($args, &$error = '') {
     // Allow modules to add fields to the new bundle.
     $modules = module_implements('bundle_create_fields');
     foreach ($modules as $module) {
-      $function = $module . '_bundle_create_fields';
+      $function = $module . '_bundle_fields_info';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
         $field_type = $details['type'];
@@ -359,7 +359,7 @@ function tripal_create_bundle($args, &$error = '') {
     // Allow modules to add instances to the new bundle.
     $modules = module_implements('bundle_create_instances');
     foreach ($modules as $module) {
-      $function = $module . '_bundle_create_instances';
+      $function = $module . '_bundle_instances_info';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
         // If the field is already attached to this bundle then skip it.
@@ -485,7 +485,7 @@ function tripal_tripal_cron_notification() {
     // Allow modules to add fields to the new bundle.
     $modules = module_implements('bundle_create_fields');
     foreach ($modules as $module) {
-      $function = $module . '_bundle_create_fields';
+      $function = $module . '_bundle_fields_info';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
 
@@ -510,7 +510,7 @@ function tripal_tripal_cron_notification() {
     // Allow modules to add instances to the new bundle.
     $modules = module_implements('bundle_create_instances');
     foreach ($modules as $module) {
-      $function = $module . '_bundle_create_instances';
+      $function = $module . '_bundle_instances_info';
       $info = $function('TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
 
@@ -576,7 +576,7 @@ function tripal_refresh_bundle_fields($bundle_name) {
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_create_fields');
   foreach ($modules as $module) {
-    $function = $module . '_bundle_create_fields';
+    $function = $module . '_bundle_fields_info';
     $info = $function('TripalEntity', $bundle);
     foreach ($info as $field_name => $details) {
       $field_type = $details['type'];
@@ -599,7 +599,7 @@ function tripal_refresh_bundle_fields($bundle_name) {
   // Allow modules to add instances to the new bundle.
   $modules = module_implements('bundle_create_instances');
   foreach ($modules as $module) {
-    $function = $module . '_bundle_create_instances';
+    $function = $module . '_bundle_instances_info';
     $info = $function('TripalEntity', $bundle);
     foreach ($info as $field_name => $details) {
       // If the field is already attached to this bundle then skip it.

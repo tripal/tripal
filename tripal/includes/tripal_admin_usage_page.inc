@@ -41,7 +41,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
   }
 
   if($field_or_instance == 'field'){
-    $function = $module . '_bundle_create_fields';
+    $function = $module . '_bundle_fields_info';
     $info = $function('TripalEntity', $bundle);
     foreach ($info as $field_name => $details) {
       if($details['field_name'] == $field_name_note) {
@@ -57,7 +57,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
     }
   }
   else if($field_or_instance == 'instance'){
-    $function = $module . '_bundle_create_instances';
+    $function = $module . '_bundle_instances_info';
     $info = $function('TripalEntity', $bundle);
     foreach ($info as $field_name => $details) {
       if($details['field_name'] == $field_name_note) {

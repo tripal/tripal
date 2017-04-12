@@ -220,16 +220,33 @@ function tripal_chado_populate_vocab_EDAM() {
     'urlprefix' => 'http://edamontology.org/{db}_{accession}',
   ));
   tripal_insert_db(array(
+    'name' => 'format',
+    'description' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. ',
+    'url' => 'http://edamontology.org/page',
+    'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+  ));
+  tripal_insert_db(array(
+    'name' => 'operation',
+    'description' => 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).',
+    'url' => 'http://edamontology.org/page',
+    'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+  ));
+  tripal_insert_db(array(
+    'name' => 'topic',
+    'description' => 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.',
+    'url' => 'http://edamontology.org/page',
+    'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+  ));
+  tripal_insert_db(array(
     'name' => 'EDAM',
     'description' => 'Bioinformatics operations, data types, formats, identifiers and topics.',
     'url' => 'http://edamontology.org/page',
     'urlprefix' => 'http://edamontology.org/{db}_{accession}',
   ));
   tripal_insert_cv(
-    'data',
-    'Bioinformatics operations, data types, formats, identifiers and topics.'
+    'EDAM',
+    'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
   );
-
 
   $term = tripal_insert_cvterm(array(
     'id' => 'data:1249',

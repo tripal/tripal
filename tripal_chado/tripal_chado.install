@@ -755,3 +755,39 @@ function tripal_chado_update_7301() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Corrections to the EDAM database.
+ */
+function tripal_chado_update_7302(){
+  try {
+    // Add the term for the field.
+    tripal_insert_db(array(
+      'name' => 'format',
+      'description' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. ',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'operation',
+      'description' => 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'topic',
+      'description' => 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_cv(
+      'EDAM',
+      'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
+    );
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
