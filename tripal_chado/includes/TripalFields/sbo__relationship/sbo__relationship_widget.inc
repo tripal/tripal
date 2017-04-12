@@ -15,7 +15,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     // Get the field settings.
-    $entity = $form['#entity'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];

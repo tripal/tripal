@@ -15,4 +15,5 @@ stylesheets[all][] = theme/css/tripal_chado.css
 dependencies[] = tripal
 dependencies[] = date
 dependencies[] = image
+dependencies[] = link
 dependencies[] = tripal_chado_views

@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Implements hook_bundle_create_fields().
+ * Implements hook_bundle_fields_info().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_fields($entity_type, $bundle) {
+function tripal_chado_bundle_fields_info($entity_type, $bundle) {
 
   $chado_bundle = db_select('chado_bundle', 'cb')
     ->fields('cb')
@@ -25,13 +25,13 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle) {
   $info = array();
 
   // Create the fields for each column in the table.
-  tripal_chado_bundle_create_fields_base($info, $details, $entity_type, $bundle);
+  tripal_chado_bundle_fields_info_base($info, $details, $entity_type, $bundle);
 
   // Create custom fields.
-  tripal_chado_bundle_create_fields_custom($info, $details, $entity_type, $bundle);
+  tripal_chado_bundle_fields_info_custom($info, $details, $entity_type, $bundle);
 
   // Create fields for linking tables.
-  tripal_chado_bundle_create_fields_linker($info, $details, $entity_type, $bundle);
+  tripal_chado_bundle_fields_info_linker($info, $details, $entity_type, $bundle);
 
   return $info;
 
@@ -40,7 +40,7 @@ function tripal_chado_bundle_create_fields($entity_type, $bundle) {
  *
  * @param unknown $details
  */
-function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, $bundle) {
+function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $bundle) {
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
@@ -171,7 +171,7 @@ function tripal_chado_bundle_create_fields_base(&$info, $details, $entity_type, 
  *
  * @param unknown $details
  */
-function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type, $bundle) {
+function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, $bundle) {
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
@@ -357,7 +357,7 @@ function tripal_chado_bundle_create_fields_custom(&$info, $details, $entity_type
  *
  * @param unknown $details
  */
-function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type, $bundle) {
+function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, $bundle) {
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
@@ -586,7 +586,7 @@ function tripal_chado_bundle_create_fields_linker(&$info, $details, $entity_type
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_bundle_create_instances($entity_type, $bundle) {
+function tripal_chado_bundle_instances_info($entity_type, $bundle) {
 
   $chado_bundle = db_select('chado_bundle', 'cb')
     ->fields('cb')
@@ -602,9 +602,9 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
   );
 
   $info = array();
-  tripal_chado_bundle_create_instances_base($info, $entity_type, $bundle, $details);
-  tripal_chado_bundle_create_instances_custom($info, $entity_type, $bundle, $details);
-  tripal_chado_bundle_create_instances_linker($info, $entity_type, $bundle, $details);
+  tripal_chado_bundle_instances_info_base($info, $entity_type, $bundle, $details);
+  tripal_chado_bundle_instances_info_custom($info, $entity_type, $bundle, $details);
+  tripal_chado_bundle_instances_info_linker($info, $entity_type, $bundle, $details);
 
   return $info;
 
@@ -620,7 +620,7 @@ function tripal_chado_bundle_create_instances($entity_type, $bundle) {
  * @param $bundle
  * @param $details
  */
-function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle, $details) {
+function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, $details) {
   $fields = array();
 
   // Get Chado information
@@ -827,7 +827,7 @@ function tripal_chado_bundle_create_instances_base(&$info, $entity_type, $bundle
  * @param $bundle
  * @param $details
  */
-function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bundle, $details) {
+function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle, $details) {
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
   $type_field = $details['chado_type_column'];
@@ -1210,7 +1210,7 @@ function tripal_chado_bundle_create_instances_custom(&$info, $entity_type, $bund
  * @param unknown $bundle
  * @param unknown $details
  */
-function tripal_chado_bundle_create_instances_linker(&$info, $entity_type, $bundle, $details) {
+function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle, $details) {
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];

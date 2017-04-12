@@ -1,9 +1,12 @@
-# About
+![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
+
 Tripal is a toolkit for construction of online biological (genetics, genomics,
 breeding, etc), community database, and is a member of the 
 [GMOD](http://www.gmod.org) family of tools. Tripal v3 provides by default
 integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started).
 Tripal's primary goals are: 
+
+Genomics, genetics, breeding and other biological data are increasingly complicated and time consuming to publish online for other researchers to search, browse and make discoveries.   Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards, and interact to address questions and learn best practices for sharing, storing and visualizing complex biological data.
 
 1. Provide a framework for those with genomic, genetic and breeding data that
 can facility creation of an online site for display, search and visualization.

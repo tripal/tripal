@@ -182,6 +182,55 @@ function tripal_chado_schema() {
   // Map cvterm usage to chado tables
   $schema['chado_cvterm_mapping'] = tripal_chado_chado_cvterm_mapping_schema();
 
+  // When a chado Tripal content type is created, a linking table is also created to
+  // link the entity to it's record in chado (@see tripal_chado_bundle_create() ).
+  // This table is created via db_create_table() but in order to expose it to
+  // the Drupal Schema API, we also need to define each one here.
+  if (db_table_exists('chado_bundle')) {
+    $resource = db_query('SELECT tb.name FROM chado_bundle cb LEFT JOIN tripal_bundle tb ON tb.id=cb.bundle_id');
+    foreach ($resource as $r) {
+      $bundle_name = $r->name;
+      // This makes an assumption about the name of the linking table.
+      // @todo: Switch to tripal_chado_get_bundle_entity_table($bundle).
+      $chado_entity_table = 'chado_' . $bundle_name;
+      $schema[$chado_entity_table] = array(
+        'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle_name . '.',
+        'fields' => array(
+          'mapping_id' => array(
+            'type' => 'serial',
+            'not null' => TRUE
+          ),
+          'entity_id' => array(
+            'description' => 'The unique entity id.',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+          'record_id' => array(
+            'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
+            'type' => 'int',
+            'not null' => TRUE,
+          ),
+          'nid' => array(
+            'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
+            'type' => 'int',
+          )
+        ),
+        'primary key' => array(
+          'mapping_id',
+        ),
+        'indexes' => array(
+          'record_id' => array('record_id'),
+          'entity_id' => array('entity_id'),
+          'nid' => array('nid'),
+        ),
+        'unique keys' => array(
+          'table_record' => array('record_id'),
+          'entity_id' => array('entity_id'),
+        ),
+      );
+    }
+  }
+
   return $schema;
 }
 
@@ -264,38 +313,14 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
     }
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx2";
+    }
     else {
       $sql = "CREATE UNIQUE INDEX tripal_cv_obo_pkey2 ON tripal_cv_obo2 USING btree (obo_id)";
     }
     db_query($sql);
   }
-
-/*   if (db_table_exists('tripal_cv_defaults')) {
-    // Move the tripal_cv_defaults table out of the way.
-    $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_pkey'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
-    }
-    else {
-      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_pkey2 ON tripal_cv_defaults2 USING btree (cv_default_id)";
-    }
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_idx1_idx'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
-    }
-    else {
-      $sql = "CREATE INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 ON tripal_cv_defaults2 USING btree (table_name, field_name)";
-    }
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_unq1_key'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
-    }
-    else {
-      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 ON tripal_cv_defaults2 USING btree (table_name, field_name, cv_id)";
-    }
-    db_query($sql);
-  } */
 
   if (db_table_exists('tripal_pub_import')) {
     // Move the tripal_pub_import table out of the way.
@@ -363,21 +388,9 @@ function tripal_chado_upgrade_v2_v3_enable() {
     db_query($sql);
     $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
     db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    db_query($sql);
   }
-
-  // tripal_cv_defaults
-/*   if (db_table_exists('tripal_cv_defaults2')) {
-    $sql = "DROP TABLE tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_cv_defaults2 RENAME to tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_pkey2 RENAME TO tripal_cv_defaults_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key";
-    db_query($sql);
-  } */
 
   // tripal_pub_import
   if (db_table_exists('tripal_pub_import2')) {
@@ -735,6 +748,42 @@ function tripal_chado_update_7301() {
 
     // Now remove the chado_entity table.
     db_drop_table('chado_entity');
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Corrections to the EDAM database.
+ */
+function tripal_chado_update_7302(){
+  try {
+    // Add the term for the field.
+    tripal_insert_db(array(
+      'name' => 'format',
+      'description' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. ',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'operation',
+      'description' => 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'topic',
+      'description' => 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.',
+      'url' => 'http://edamontology.org/page',
+      'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+    ));
+    tripal_insert_cv(
+      'EDAM',
+      'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
+    );
   }
   catch (\PDOException $e) {
     $transaction->rollback();

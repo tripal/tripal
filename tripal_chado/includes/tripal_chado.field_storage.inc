@@ -415,7 +415,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
  * Implements hook_field_storage_query().
  */
 function tripal_chado_field_storage_query($query) {
-dpm($query);
+
   // Initialize the result array.
   $result = array(
     'TripalEntity' => array()
