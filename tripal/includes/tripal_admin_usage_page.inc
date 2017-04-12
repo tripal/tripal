@@ -20,8 +20,7 @@ function tripal_admin_usage_page() {
 }
 
 /**
- * Import the field from the admin notification table on
- * the dashboard.
+ * Import the field from the admin notification table on the dashboard.
  *
  * @param $field_name
  *   The name of the field to be imported.
@@ -44,10 +43,11 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
     $function = $module . '_bundle_fields_info';
     $info = $function('TripalEntity', $bundle);
     foreach ($info as $field_name => $details) {
+      $field = field_info_field($field_name);
       if($details['field_name'] == $field_name_note) {
         // Create the field.
         $instance = field_create_field($details);
-        drupal_set_message(t("Created field: %field", array('%field' => $info[ $field_name ]['label'])));
+        drupal_set_message(t("Created field: %field", array('%field' => $field['label'])));
 
         if (!$instance) {
           tripal_set_message(t("Could not create new field: %field.",
