@@ -313,38 +313,14 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
     }
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx2";
+    }
     else {
       $sql = "CREATE UNIQUE INDEX tripal_cv_obo_pkey2 ON tripal_cv_obo2 USING btree (obo_id)";
     }
     db_query($sql);
   }
-
-/*   if (db_table_exists('tripal_cv_defaults')) {
-    // Move the tripal_cv_defaults table out of the way.
-    $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_pkey'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
-    }
-    else {
-      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_pkey2 ON tripal_cv_defaults2 USING btree (cv_default_id)";
-    }
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_idx1_idx'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
-    }
-    else {
-      $sql = "CREATE INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 ON tripal_cv_defaults2 USING btree (table_name, field_name)";
-    }
-    db_query($sql);
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_unq1_key'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
-    }
-    else {
-      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 ON tripal_cv_defaults2 USING btree (table_name, field_name, cv_id)";
-    }
-    db_query($sql);
-  } */
 
   if (db_table_exists('tripal_pub_import')) {
     // Move the tripal_pub_import table out of the way.
@@ -412,21 +388,9 @@ function tripal_chado_upgrade_v2_v3_enable() {
     db_query($sql);
     $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
     db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    db_query($sql);
   }
-
-  // tripal_cv_defaults
-/*   if (db_table_exists('tripal_cv_defaults2')) {
-    $sql = "DROP TABLE tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_cv_defaults2 RENAME to tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_pkey2 RENAME TO tripal_cv_defaults_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key";
-    db_query($sql);
-  } */
 
   // tripal_pub_import
   if (db_table_exists('tripal_pub_import2')) {
