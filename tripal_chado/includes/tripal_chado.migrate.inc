@@ -574,7 +574,7 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
  function tripal_chado_migrate_records($migration, $job_id = NULL) {
   $tv2_content_type = $migration['tv2_content_type'];
   $tv3_content_type = $migration['tv3_content_type'];
-  print_r($migration);
+
   // If tv2_content_type is 'all', migrate all existing Tripal v2 content
   if ($tv2_content_type == 'all') {
     print "Migrating all Tripal v2 content...\n";
@@ -940,6 +940,10 @@ function tripal_chado_migrate_get_biodata_tables ($chado_table) {
 }
 
 function tripal_chado_migrate_resource_blocks($bundle_name) {
+  // Do not try to migrate resouce blocks and titles if they weren't set up
+  if (!db_table_exists('field_revision_field_resource_titles') || !db_table_exists('field_revision_field_resource_blocks')) {
+    return;
+  }
   $entites =
     db_select('chado_' . $bundle_name, 'B')
     ->fields('B', array('nid'))
@@ -1071,6 +1075,10 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
 }
 
 function tripal_chado_migrate_resource_links($bundle_name) {
+  // Do not try to migrate resouce blocks and titles if they weren't set up
+  if (!db_table_exists('field_revision_field_resource_links')) {
+    return;
+  }
   $entites =
   db_select('chado_' . $bundle_name, 'B')
   ->fields('B', array('nid'))
