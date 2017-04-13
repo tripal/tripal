@@ -35,8 +35,8 @@ function tripal_pub_importers_list() {
 
     $rows[] = array(
       array(
-        'data' => l(t('Edit/Test'), "admin/tripal/storage/chado/loaders/pub/edit/$importer->pub_import_id") . '<br>' .
-                  l(t('Import Pubs'), "admin/tripal/storage/chado/loaders/pub/submit/$importer->pub_import_id"),
+        'data' => l(t('Edit/Test'), "admin/tripal/loaders/pub/edit/$importer->pub_import_id") . '<br>' .
+                  l(t('Import Pubs'), "admin/tripal/loaders/pub/submit/$importer->pub_import_id"),
         'nowrap' => 'nowrap'
       ),
       $importer->name,
@@ -44,13 +44,13 @@ function tripal_pub_importers_list() {
       $criteria_str,
       $importer->disabled ? 'Yes' : 'No',
       $importer->do_contact ? 'Yes' : 'No',
-      l(t('Delete'), "admin/tripal/storage/chado/loaders/pub/delete/$importer->pub_import_id"),
+      l(t('Delete'), "admin/tripal/loaders/pub/delete/$importer->pub_import_id"),
     );
   }
 
 
   $page  = "<ul class='action-links'>";
-  $page .= '  <li>' . l('New Importer', 'admin/tripal/storage/chado/loaders/pub/new') . '</li>';
+  $page .= '  <li>' . l('New Importer', 'admin/tripal/loaders/pub/new') . '</li>';
   $page .= '</ul>';
 
   $page .= '<p>' . t(
@@ -121,7 +121,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
 
-  $output = l("Return to publication importers list", "admin/tripal/storage/chado/loaders/pub");
+  $output = l("Return to publication importers list", "admin/tripal/loaders/pub");
   $output .= drupal_render($form);
 
   // retrieve any results
@@ -161,7 +161,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
           $citation = htmlspecialchars($pub['Citation']);
           $raw_link = '';
           if($pub['Publication Dbxref']) {
-            $raw_link = l('raw', 'admin/tripal/storage/chado/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
+            $raw_link = l('raw', 'admin/tripal/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
           }
           $rows[] = array(
             number_format($i),
@@ -707,7 +707,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       if(drupal_write_record('tripal_pub_import', $record, 'pub_import_id')){
         unset($_SESSION['tripal_pub_import']);
         drupal_set_message('Publication import settings updated.');
-        drupal_goto('admin/tripal/storage/chado/loaders/pub');
+        drupal_goto('admin/tripal/loaders/pub');
       }
       else {
         drupal_set_message('Could not update publication import settings.', 'error');
@@ -723,7 +723,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
         if ($form_state['values']['op'] == 'Save & Import Now') {
           tripal_execute_pub_importer($record['pub_import_id']);
         }
-        drupal_goto('admin/tripal/storage/chado/loaders/pub');
+        drupal_goto('admin/tripal/loaders/pub');
       }
       else {
         drupal_set_message('Could not save publication import settings.', 'error');
@@ -735,7 +735,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
     if ($success) {
       drupal_set_message('Publication importer deleted.');
-      drupal_goto('admin/tripal/storage/chado/loaders/pub');
+      drupal_goto('admin/tripal/loaders/pub');
     }
     else {
       drupal_set_message('Could not delete publication importer.', 'error');
@@ -832,7 +832,7 @@ function tripal_pub_importer_submit_job($import_id) {
   tripal_add_job("Import publications $import->name", 'tripal_chado',
     'tripal_execute_pub_importer', $args, $user->uid, 10, $includes);
 
-  drupal_goto('admin/tripal/storage/chado/loaders/pub');
+  drupal_goto('admin/tripal/loaders/pub');
 }
 /**
  * Deletes a publication importer.
@@ -846,7 +846,7 @@ function tripal_pub_importer_delete($import_id) {
 
   if ($success) {
     drupal_set_message('Publication importer deleted.');
-    drupal_goto('admin/tripal/storage/chado/loaders/pub');
+    drupal_goto('admin/tripal/loaders/pub');
   }
   else {
     drupal_set_message('Could not delete publication importer.', 'error');

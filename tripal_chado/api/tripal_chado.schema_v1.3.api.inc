@@ -552,7 +552,7 @@ function tripal_chado_chado_schema_v1_3_analysis_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -2453,7 +2453,7 @@ function tripal_chado_chado_schema_v1_3_cell_line_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -6305,7 +6305,7 @@ function tripal_chado_chado_schema_v1_3_feature_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -7016,7 +7016,7 @@ function tripal_chado_chado_schema_v1_3_featuremap_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'indexes' => array(
@@ -8856,7 +8856,7 @@ function tripal_chado_chado_schema_v1_3_library_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -9661,7 +9661,7 @@ function tripal_chado_chado_schema_v1_3_library_synonym() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
       'is_internal' => array(
         'size' => 'normal',
@@ -14034,7 +14034,7 @@ function tripal_chado_chado_schema_v1_3_project_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -15020,7 +15020,7 @@ function tripal_chado_chado_schema_v1_3_pub_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(
@@ -16193,7 +16193,7 @@ function tripal_chado_chado_schema_v1_3_stock_dbxref() {
         'size' => 'normal',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'unique keys' => array(

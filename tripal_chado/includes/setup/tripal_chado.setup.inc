@@ -1,0 +1,396 @@
+<?php
+/**
+ * @file
+ * Functions to install chado schema through Drupal
+ */
+
+/**
+ * Prepares Chado for Tripal use
+ */
+function tripal_chado_prepare_form($form, $form_state) {
+  $form = array();
+
+  if (variable_get('tripal_chado_is_prepared') == TRUE) {
+    drupal_set_message('Your site is prepared.');
+  }
+  $form['instructions'] = array(
+    '#type' => 'item',
+    '#title' => 'Prepare Drupal for Chado.',
+    '#description' => t("Before a Drupal site can use Chado (via Tripal), both
+        Chado and Drupal must be prepared a bit more.  Tripal will add some new
+        materialized views, custom tables and controlled vocabularies to Chado.
+        It will also add some management tables to Drupal. You only are
+        required to prepare your Drupal site if this is a brand-new Drupal
+        installation or if Chado was installed outside of Tripal.  If you
+        installed Chado using Tripal then you do not need to run this step.
+        If you are upgrading from a previous version of Tripal, you do not
+        need to prepare your site, and you can click the 'Skip' button."),
+  );
+
+  $form['prepare-button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Prepare this site'),
+    '#name' => 'prepare-chado',
+  );
+  $form['skip-button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Skip'),
+    '#name' => 'prepare-skip',
+  );
+  return $form;
+}
+
+/**
+ * Submit function for the tripal_chado_prepare_form().
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_chado_prepare_form_submit($form, $form_state) {
+   if ($form_state['clicked_button']['#name'] == "prepare-chado") {
+     global $user;
+     $args = array();
+     $includes = array(
+        module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
+        module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader'),
+     );
+     tripal_add_job('Prepare Chado', 'tripal_chado',
+       'tripal_chado_prepare_chado', $args,
+       $user->uid, 10, $includes);
+   }
+   if ($form_state['clicked_button']['#name'] == "prepare-skip") {
+     variable_set('tripal_chado_is_prepared', TRUE);
+   }
+}
+
+/**
+ *
+ */
+function tripal_chado_load_ontologies() {
+
+  // Insert commonly used ontologies into the tables.
+  $ontologies = array(
+    array(
+      'name' => 'Relationship Ontology (legacy)',
+      'path' => '{tripal_chado}/files/legacy_ro.obo',
+      'auto_load' => FALSE,
+      'cv_name' => 'ro'
+    ),
+    array(
+      'name' => 'Gene Ontology',
+      'path' => 'http://purl.obolibrary.org/obo/go.obo',
+      'auto_load' => FALSE,
+      'cv_name' => 'cellualar_component'
+    ),
+    array(
+      'name' => 'Taxonomic Rank',
+      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
+      'auto_load' => TRUE,
+      'cv_name' => 'taxonomic_rank'
+    ),
+    array(
+      'name' => 'Tripal Contact',
+      'path' => '{tripal_chado}/files/tcontact.obo',
+      'auto_load' => TRUE,
+      'cv_name' => 'tripal_contact'
+    ),
+    array(
+      'name' => 'Tripal Publication',
+      'path' => '{tripal_chado}/files/tpub.obo',
+      'auto_load' => TRUE,
+      'cv_name' => 'tripal_pub'
+    ),
+     array(
+       'name' => 'Sequence Ontology',
+       'path' => 'http://purl.obolibrary.org/obo/so.obo',
+       'auto_load' => TRUE,
+       'cv_name' => 'sequence'
+     ),
+
+  );
+  for ($i = 0; $i < count($ontologies); $i++) {
+    $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
+    if ($ontologies[$i]['auto_load'] == TRUE) {
+      // Only load ontologies that are not already in the cv table.
+      $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
+      if (!$cv) {
+        tripal_chado_load_obo_v1_2_id($obo_id);
+      }
+    }
+  }
+}
+/**
+ * Prepares Chado for use by Tripal.
+ */
+function tripal_chado_prepare_chado() {
+
+  try {
+
+    // We want to provide a set of commonly used entity types by default. This
+    // way when a user first installs Tripal there are some commonly used
+    // formats.
+    module_load_include('inc', 'tripal', 'api/tripal.api');
+    module_load_include('inc', 'tripal', 'includes/tripal.admin');
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
+
+    // Get the effective version.  Pass true as second argument
+    // to warn the user if the current version is not compatible.
+    $version = chado_get_version(FALSE, FALSE);
+
+    // We want to force the version of Chado to be set properly.
+    $real_version = chado_get_version(TRUE);
+
+    // Create the temp table we will use for loading OBO files.
+    tripal_chado_add_tripal_obo_temp_table();
+
+    // Import commonly used ontologies if needed.
+    tripal_chado_load_ontologies();
+
+    // Populate the semantic web associations for Chado tables/fields.
+    tripal_chado_populate_chado_semweb_table();
+
+    // Initialize the population of the chado_cvterm_mapping table.  This will
+    // map existing data types already in Chado so that when users want to
+    // add new content types it simplifies the form for them.
+    tripal_chado_map_cvterms();
+
+    // Create the 'Organism' entity type. This uses the obi:organism term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'OBI',
+      'accession' => '0100026',
+      'term_name' => 'organism',
+      'storage_args' => array(
+        'data_table' => 'organism',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Create the 'Analysis' entity type. This uses the local:analysis term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'local',
+      'accession' => 'analysis',
+      'term_name' => 'analysis',
+      'storage_args' => array(
+        'data_table' => 'analysis',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'analysis'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Create the 'Project' entity type. This uses the local:project term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'local',
+      'accession' => 'project',
+      'term_name' => 'project',
+      'storage_args' => array(
+        'data_table' => 'project',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Create the 'Map' entity type. This uses the local:project term.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'data',
+      'accession' => '1274',
+      'term_name' => 'Map',
+      'storage_args' => array(
+        'data_table' => 'featuremap',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Import a publication so we get all of the properties before
+    // creating the content type.
+    tripal_import_pub_by_dbxref('PMID:24163125');
+
+    // Create the 'Publication' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'TPUB',
+      'accession' => '0000002',
+      'term_name' => 'Publication',
+      'storage_args' => array(
+        'data_table' => 'pub',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Now remove the publication that was added above.
+    $values = array(
+      'dbxref_id' => array(
+        'accession' => '24163125',
+        'db_id' => array(
+          'name' => 'PMID',
+        ),
+      ),
+    );
+    $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
+    chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+
+    // Create the 'Gene' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'SO',
+      'accession' => '0000704',
+      'term_name' => 'gene',
+      'storage_args' => array(
+        'data_table' => 'feature',
+        'type_column' => 'type_id',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Create the 'mRNA' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'SO',
+      'accession' => '0000234',
+      'term_name' => 'mRNA',
+      'storage_args' => array(
+        'data_table' => 'feature',
+        'type_column' => 'type_id',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+
+    // Create custom tables depending on the Chado version installed.
+    $chado_version = chado_get_version();
+    if ($chado_version == '1.1') {
+      tripal_chado_add_v1_1_custom_tables();
+      tripal_chado_add_vx_x_custom_tables();
+    }
+    if ($chado_version == '1.2') {
+      tripal_chado_add_v1_2_custom_tables();
+      tripal_chado_add_vx_x_custom_tables();
+    }
+    if ($chado_version == '1.3') {
+      tripal_chado_add_vx_x_custom_tables();
+      tripal_chado_fix_v1_3_custom_tables();
+    }
+
+    // Add the supported loaders
+    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
+
+    // Set a variable to indicate the site is prepared.
+    variable_set('tripal_chado_is_prepared', TRUE);
+  }
+  catch (Exception $e) {
+    throw new Exception($e);
+  }
+}
+
+/**
+ * For Chado v1.1 Tripal provides some new custom tables.
+ *
+ * For Chado v1.2 or greater these tables are not needed as they are part of the
+ * schema update.
+ */
+function tripal_chado_add_v1_1_custom_tables(){
+  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1_1');
+  tripal_chado_add_analysisfeatureprop_table();
+}
+
+/**
+ * For Chado v1.2 Tripal provides some new custom tables.
+ *
+ * For Chado v1.3 these tables are not needed as they are part of the
+ * schema update.
+ */
+function tripal_chado_add_v1_2_custom_tables(){
+  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1_2');
+  tripal_chado_add_contactprop_table();
+  tripal_chado_add_featuremap_dbxref_table();
+  tripal_chado_add_featuremapprop_table();
+  tripal_chado_add_featureposprop_table();
+  tripal_chado_add_pubauthor_contact_table();
+}
+
+/**
+ * Add custom tables for any version of Chado.
+ *
+ * These are tables that Chado uses to manage the site (i.e. temporary
+ * loading tables) and not for primary data storage.
+ */
+function tripal_chado_add_vx_x_custom_tables(){
+  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+
+  // Add in custom tables.
+  tripal_chado_add_tripal_gff_temp_table();
+  tripal_chado_add_tripal_gffcds_temp_table();
+  tripal_chado_add_tripal_gffprotein_temp_table();
+  tripal_chado_add_tripal_obo_temp_table();
+
+  // Add in materialized views.
+  tripal_chado_add_organism_stock_count_mview();
+  tripal_chado_add_library_feature_count_mview();
+  tripal_chado_add_organism_feature_count_mview();
+  tripal_chado_add_analysis_organism_mview();
+  tripal_chado_add_cv_root_mview_mview();
+}
+
+/**
+ * Many of the custom tables created for Chado v1.2 are now in Chado v1.3.
+ *
+ * These tables need not be tracked by Tripal anymore as custom tables and
+ * in some cases the Chado version has different columns so we need to
+ * adjust them.
+ */
+function tripal_chado_fix_v1_3_custom_tables() {
+
+
+  // Update the featuremap_dbxref table by adding an is_current field.
+  if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
+    chado_query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL,;");
+  }
+
+  // Remove the previously managed custom tables from the
+  // tripal_custom_tables table.
+  db_delete('tripal_custom_tables')
+    ->condition('table_name', array('analysisfeatureprop', 'featuremap_dbxref', 'contactprop', 'featuremapprop', 'featureposprop', 'pubauthor_contact'))
+    ->execute();
+}

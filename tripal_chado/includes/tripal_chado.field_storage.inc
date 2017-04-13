@@ -175,20 +175,24 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
 }
 
 /**
- * Implements hook_field_storage_load().
+ * Implements hook_field_storage_pre_load().
  *
- * Responsible for loading the fields from the Chado database and adding
- * their values to the entity.
+ * Adds a 'chado_record' object containing the base record for the
+ * entity.
  */
-function tripal_chado_field_storage_load($entity_type, $entities, $age,
+function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
     $fields, $options) {
 
-  $load_current = $age == FIELD_LOAD_CURRENT;
-  global $language;
-  $langcode = $language->language;
 
+  // Itereate through the entities and add in the Chado record.
   foreach ($entities as $id => $entity) {
 
+    // Only deal with Tripal Entities.
+    if ($entity_type != 'TripalEntity') {
+      continue;
+    }
+
+    $record_id = NULL;
     if (property_exists($entity, 'chado_table')) {
       // Get the base table and record id for the fields of this entity.
       $base_table = $entity->chado_table;
@@ -207,21 +211,46 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         ->condition('entity_id', $entity->id)
         ->execute()
         ->fetchObject();
-      if (!$details) {
-        // TODO: what to do if record is missing!
+      if ($details) {
+        $record_id  = isset($details->record_id) ? $details->record_id : '';
       }
-      $record_id  = isset($details->record_id) ? $details->record_id : '';
+      $entity->chado_table = $base_table;
+      $entity->chado_record_id = $record_id;
+      $entity->chado_column = $type_field;
     }
+    if ($record_id) {
+      // Get this table's schema.
+      $schema = chado_get_schema($base_table);
+      $pkey_field = $schema['primary key'][0];
 
-    // Get this table's schema.
+      // Get the base record if one exists
+      $columns = array('*');
+      $match = array($pkey_field => $record_id);
+      $record = chado_generate_var($base_table, $match);
+      $entity->chado_record = $record;
+    }
+  }
+}
+
+/**
+ * Implements hook_field_storage_load().
+ *
+ * Responsible for loading the fields from the Chado database and adding
+ * their values to the entity.
+ */
+function tripal_chado_field_storage_load($entity_type, $entities, $age,
+    $fields, $options) {
+
+  $load_current = $age == FIELD_LOAD_CURRENT;
+  global $language;
+  $langcode = $language->language;
+
+  foreach ($entities as $id => $entity) {
+    $base_table = $entity->chado_table;
+    $type_field = $entity->chado_column;
+    $record_id  = $entity->chado_record_id;
+    $record = $entity->chado_record;
     $schema = chado_get_schema($base_table);
-    $pkey_field = $schema['primary key'][0];
-
-    // Get the base record if one exists
-    $columns = array('*');
-    $match = array($pkey_field => $record_id);
-    $record = chado_generate_var($base_table, $match);
-    $entity->chado_record = $record;
 
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.

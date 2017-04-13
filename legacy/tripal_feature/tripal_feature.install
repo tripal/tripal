@@ -82,7 +82,7 @@ function tripal_feature_install() {
 function tripal_feature_uninstall() {
 
 }
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_feature_add_tripal_gff_temp_table() {
   $schema = array(
     'table' => 'tripal_gff_temp',
@@ -121,7 +121,7 @@ function tripal_feature_uninstall() {
 /**
  *
  */
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
   $schema = array(
     'table' => 'tripal_gffcds_temp',
@@ -162,7 +162,7 @@ function tripal_feature_uninstall() {
 /**
  *
  */
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_feature_add_tripal_gffprotein_temp_table() {
   $schema = array(
     'table' => 'tripal_gffprotein_temp',
@@ -245,7 +245,7 @@ function tripal_feature_schema() {
  *
  * @ingroup tripal_feature
  */
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_feature_add_organism_count_mview() {
   $view_name = 'organism_feature_count';
   $comment = 'Stores the type and number of features per organism';
