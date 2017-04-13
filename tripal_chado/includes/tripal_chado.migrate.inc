@@ -574,7 +574,7 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
  function tripal_chado_migrate_records($migration, $job_id = NULL) {
   $tv2_content_type = $migration['tv2_content_type'];
   $tv3_content_type = $migration['tv3_content_type'];
-
+  print_r($migration);
   // If tv2_content_type is 'all', migrate all existing Tripal v2 content
   if ($tv2_content_type == 'all') {
     print "Migrating all Tripal v2 content...\n";

@@ -313,7 +313,7 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
     }
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
+    else if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx2";
     }
     else {
@@ -386,9 +386,12 @@ function tripal_chado_upgrade_v2_v3_enable() {
     db_query($sql);
     $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx2 RENAME TO tripal_cv_obo_obo_id_idx";
     db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey2'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
+    } 
+    else {
+      $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    }
     db_query($sql);
   }
 
