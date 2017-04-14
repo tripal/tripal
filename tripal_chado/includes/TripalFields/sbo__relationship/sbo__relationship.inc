@@ -65,10 +65,10 @@ class sbo__relationship extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
     $settings = $this->field['settings'];
 
-    $record = $details['record'];
+    $record = $entity->chado_record;
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];

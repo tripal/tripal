@@ -38,9 +38,9 @@ class uo__unit extends ChadoField {
   /**
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
 
-    $record = $details['record'];
+    $record = $entity->chado_record;
     $settings = $this->instance['settings'];
 
     $field_name = $this->field['field_name'];

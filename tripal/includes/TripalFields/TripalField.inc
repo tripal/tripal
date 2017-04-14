@@ -217,7 +217,6 @@ class TripalField {
    * Loads the field values from the underlying data store.
    *
    * @param $entity
-   * @param $details
    *
    * @return
    *   An array of the following format:
@@ -241,7 +240,7 @@ class TripalField {
    *
    *
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
 
   }
 
