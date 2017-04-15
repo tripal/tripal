@@ -29,6 +29,7 @@ require_once "includes/TripalFields/TripalField.inc";
 require_once "includes/TripalFields/TripalFieldWidget.inc";
 require_once "includes/TripalFields/TripalFieldFormatter.inc";
 require_once "includes/TripalFieldQuery.inc";
+require_once "includes/TripalLoader/TripalLoader.inc";
 
 /**
  * @defgroup tripal Tripal Core Module
@@ -610,6 +611,7 @@ function TripalEntity_load($id, $reset = FALSE) {
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
   module_load_include('inc', 'tripal', 'api/tripal.fields.api');
+  module_load_include('inc', 'tripal', 'api/tripal.loaders.api');
   module_load_include('inc', 'tripal', 'api/tripal.terms.api');
   module_load_include('inc', 'tripal', 'api/tripal.entities.api');
   module_load_include('inc', 'tripal', 'api/tripal.files.api');
