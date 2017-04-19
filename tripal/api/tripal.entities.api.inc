@@ -447,20 +447,6 @@ function tripal_get_content_types() {
 }
 
 /**
- * Implements hook_cron().
- */
-function tripal_cron() {
-  if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
-    $modules = module_implements('tripal_cron_notification');
-    foreach ($modules as $module) {
-      $function = $module . '_tripal_cron_notification';
-      $function();
-    }
-    watchdog('tripal_cron', 'tripal_cron ran');
-  }
-}
-
-/**
  * Refreshes the bundle such that new fields added by modules will be found during cron.
  *
  * @param $bundle_name
@@ -575,9 +561,12 @@ function tripal_refresh_bundle_fields($bundle_name) {
   }
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
+  dpm($modules);
   foreach ($modules as $module) {
     $function = $module . '_bundle_fields_info';
     $info = $function('TripalEntity', $bundle);
+    dpm($module);
+    dpm($info);
     foreach ($info as $field_name => $details) {
       $field_type = $details['type'];
 
