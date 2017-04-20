@@ -1,5 +1,5 @@
 <?php
-class TripalLoader {
+class TripalImporter {
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
   //
@@ -15,52 +15,51 @@ class TripalLoader {
   public static $name = 'Tripal Loader';
 
   /**
+   * The machine name for this loader. This name will be used to construct
+   * the URL for the loader.
+   */
+  public static $machine_name = 'tripal_loader';
+
+  /**
    * A brief description for this loader.  This description will be
    * presented to the site user.
    */
   public static $description = 'A base loader for all Tripal loaders';
 
-
-  // --------------------------------------------------------------------------
-  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
-  // --------------------------------------------------------------------------
   /**
-   * The loader can be executed as a Tripal job, in that case we want
-   * to keep track of the job record.
+   * An array containing the extensions of allowed file types.
    */
-  protected $job;
+  public static $file_types = array();
 
+
+  /**
+   * Provides information to the user about the file upload.  Typically this
+   * may include a description of the file types allowed.
+   */
+  public static $upload_description = '';
+
+  /**
+   * The title that should appear above the upload button.
+   */
+  public static $upload_title = 'File Upload';
 
 
   // --------------------------------------------------------------------------
   //                          CONSTRUCTORS
   // --------------------------------------------------------------------------
   /**
-   * Instantiates a new TripalLoader object.
+   * Instantiates a new TripalImporter object.
    *
    * @param $job_id
    */
-  public function __construct($job_id = NULL) {
-    $this->job = NULL;
-    if ($job_id) {
-      $this->job = tripal_get_job($job_id);
-    }
+  public function __construct() {
+
   }
 
   // --------------------------------------------------------------------------
   //                     PROTECTED FUNCTIONS
   // --------------------------------------------------------------------------
 
-  protected function setJobProgress($percentage) {
-     if (!is_numeric($percent_complete)) {
-       throw new Exception('TripalLoader: Percent complete must be numeric.');
-     }
-     if (!$this->job) {
-       throw new Exception('TripalLoader: This loader is not associated with a job. Cannot set the job progress.');
-     }
-
-     tripal_set_job_progress($this->job->job_id, $percentage);
-  }
 
   // --------------------------------------------------------------------------
   //                     OVERRIDEABLE FUNCTIONS
@@ -76,15 +75,13 @@ class TripalLoader {
   public function formValidate($form, &$form_state) {
 
   }
-  public function preRun() {
+  public function preRun($details) {
 
   }
-  public function run() {
-     if (!$this->job) {
-       throw new Exception('TripalLoader: This loader is not associated with a job. Cannot run the loader.');
-     }
+  public function run($details, $job_id = NULL) {
+
   }
-  public function postRun() {
+  public function postRun($details) {
 
   }
 

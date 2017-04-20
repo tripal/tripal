@@ -1,19 +1,46 @@
 <?php
 
-class GFF3Loader extends TripalLoader {
+class GFF3Importer extends TripalImporter {
+
+ /**
+   * The name of this loader.  This name will be presented to the site
+   * user.
+   */
+  public static $name = 'Chado GFF3 File Loader';
 
   /**
-   * @see TripalLoader::form()
+   * The machine name for this loader. This name will be used to construct
+   * the URL for the loader.
+   */
+  public static $machine_name = 'gff3_loader';
+
+  /**
+   * A brief description for this loader.  This description will be
+   * presented to the site user.
+   */
+  public static $description = 'Import a GFF3 file into Chado';
+
+  /**
+   * An array containing the extensions of allowed file types.
+   */
+  public static $file_types = array('gff3');
+
+
+  /**
+   * Provides information to the user about the file upload.  Typically this
+   * may include a description of the file types allowed.
+   */
+  public static $upload_description = 'Please provide the GFF3 file. The file must have a .gff3 extension.';
+
+  /**
+   * The title that should appear above the upload button.
+   */
+  public static $upload_title = 'GFF3 File';
+  /**
+   * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $form['gff_file']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('GFF3 File'),
-      '#description'   => t('Please enter the full system path for the GFF file, or a path within the Drupal
-                           installation (e.g. /sites/default/files/xyz.gff).  The path must be accessible to the
-                           server on which this Drupal instance is running.'),
-      '#required' => TRUE,
-    );
+
     // get the list of organisms
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
     $org_rset = chado_query($sql);
@@ -232,70 +259,23 @@ class GFF3Loader extends TripalLoader {
        GFF file take precedence over those specified above."),
     );
 
-    $form['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Import GFF3 file'),
-      '#weight' => 10,
-    );
-
+    return $form;
   }
   /**
-   * @see TripalLoader::formSubmit()
+   * @see TripalImporter::formSubmit()
    */
   public function formSubmit($form, &$form_state) {
     global $user;
 
-    $gff_file = trim($form_state['values']['gff_file']);
-    $organism_id = $form_state['values']['organism_id'];
-    $add_only = $form_state['values']['add_only'];
-    $update   = $form_state['values']['update'];
-    $refresh  = 0; //$form_state['values']['refresh'];
-    $remove   = 0; //$form_state['values']['remove'];
-    $analysis_id = $form_state['values']['analysis_id'];
-    $use_transaction   = $form_state['values']['use_transaction'];
-    $target_organism_id = $form_state['values']['target_organism_id'];
-    $target_type = trim($form_state['values']['target_type']);
-    $create_target = $form_state['values']['create_target'];
-    $line_number   = trim($form_state['values']['line_number']);
-    $landmark_type   = trim($form_state['values']['landmark_type']);
-    $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
-    $create_organism = $form_state['values']['create_organism'];
-    $re_mrna = trim($form_state['values']['re_mrna']);
-    $re_protein = trim($form_state['values']['re_protein']);
 
-
-    $args = array($gff_file, $organism_id, $analysis_id, $add_only,
-      $update, $refresh, $remove, $use_transaction, $target_organism_id,
-      $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr,
-      $create_organism, $re_mrna, $re_protein);
-
-    $type = '';
-    if ($add_only) {
-      $type = 'import only new features';
-    }
-    if ($update) {
-      $type = 'import all and update';
-    }
-    if ($refresh) {
-      $type = 'import all and replace';
-    }
-    if ($remove) {
-      $type = 'delete features';
-    }
-    $fname = preg_replace("/.*\/(.*)/", "$1", $gff_file);
-    $includes = array(
-      module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.gff_loader'),
-    );
-    tripal_add_job("$type GFF3 file: $fname", 'tripal_chado',
-        'tripal_feature_load_gff3', $args, $user->uid, 10, $includes);
 
     return '';
   }
   /**
-   * @see TripalLoader::formValidate()
+   * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $gff_file = trim($form_state['values']['gff_file']);
+
     $organism_id = $form_state['values']['organism_id'];
     $target_organism_id = $form_state['values']['target_organism_id'];
     $target_type = trim($form_state['values']['target_type']);
@@ -311,20 +291,6 @@ class GFF3Loader extends TripalLoader {
     $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
     $re_mrna = trim($form_state['values']['re_mrna']);
     $re_protein = trim($form_state['values']['re_protein']);
-
-
-
-    // check to see if the file is located local to Drupal
-    $gff_file = trim($gff_file);
-    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
-    if (!file_exists($dfile)) {
-      // if not local to Drupal, the file must be someplace else, just use
-      // the full path provided
-      $dfile = $gff_file;
-    }
-    if (!file_exists($dfile)) {
-      form_set_error('gff_file', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
-    }
 
     // @coder-ignore: there are no functions being called here
     if (($add_only AND ($update   OR $refresh  OR $remove)) OR
@@ -355,36 +321,34 @@ class GFF3Loader extends TripalLoader {
   }
 
   /**
-   * @see TripalLoader::run()
+   * @see TripalImporter::run()
    */
-  public function run() {
+  public function run($details, $job_id = NULL) {
+    $arguments = $details->arguments;
 
-    // Perform parent validation
-    parent::run();
+    $gff_file = $arguments['file_path'];
+    $organism_id = $arguments['organism_id'];
+    $analysis_id = $arguments['analysis_id'];
+    $add_only = $arguments['add_only'];
+    $update = $arguments['update'];
+    $refresh = FALSE;
+    $remove = FALSE;
+    $use_transaction = $arguments['use_transaction'];
+    $target_organism_id = $arguments['target_organism_id'];
+    $target_type = $arguments['target_type'];
+    $create_target  = $arguments['create_target'];
+    $start_line = $arguments['line_number'];
+    $landmark_type = $arguments['landmark_type'];
+    $alt_id_attr = $arguments['alt_id_attr'];
+    $create_organism = $arguments['create_organism'];
+    $re_mrna = $arguments['re_mrna'];
+    $re_protein = $arguments['re_protein'];
 
-    $gff_file = $this->job->arguments[0];
-    $organism_id = $this->job->arguments[1];
-    $analysis_id = $this->job->arguments[2];
-    $add_only = $this->job->arguments[3];
-    $update = $this->job->arguments[4];
-    $refresh = $this->job->arguments[5];
-    $remove = $this->job->arguments[6];
-    $use_transaction = $this->job->arguments[7];
-    $target_organism_id = $this->job->arguments[8];
-    $target_type = $this->job->arguments[9];
-    $create_target  = $this->job->arguments[10];
-    $start_line = $this->job->arguments[11];
-    $landmark_type = $this->job->arguments[12];
-    $alt_id_attr = $this->job->arguments[13];
-    $create_organism = $this->job->arguments[14];
-    $re_mrna = $this->job->arguments[15];
-    $re_protein = $this->job->arguments[16];
-
-    $this->tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
-        $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
-        $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
-        $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
-        $re_mrna = '', $re_protein = '', $job = NULL)
+    $this->load($gff_file, $organism_id, $analysis_id,
+        $add_only, $update, $refresh, $remove, $use_transaction,
+        $target_organism_id, $target_type,  $create_target,
+        $start_line, $landmark_type, $alt_id_attr,  $create_organism,
+        $re_mrna, $re_protein, $job_id);
   }
 
   /**
@@ -463,7 +427,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
+  private function load($gff_file, $organism_id, $analysis_id,
       $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
       $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
       $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
@@ -600,7 +564,7 @@ class GFF3Loader extends TripalLoader {
             // we're done because this is a delete operation so break out of the loop.
             break;
           }
-          tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
+          $this->loadFasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
           continue;
         }
         // if the ##sequence-region line is present then we want to add a new feature
@@ -609,7 +573,7 @@ class GFF3Loader extends TripalLoader {
           $rstart = $region_matches[2];
           $rend = $region_matches[3];
           if ($landmark_type) {
-            tripal_feature_load_gff3_feature($organism, $analysis_id, $landmark_cvterm, $rid,
+            $this->loadFeature($organism, $analysis_id, $landmark_cvterm, $rid,
                 $rid, '', 'f', 'f', 1, 0);
           }
           continue;
@@ -896,7 +860,7 @@ class GFF3Loader extends TripalLoader {
         if ($update or $refresh or $add_only) {
 
           // Add/update the feature.
-          $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
+          $feature = $this->loadFeature($feature_organism, $analysis_id, $cvterm,
               $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
               $attr_is_obsolete, $add_only, $score);
 
@@ -923,58 +887,58 @@ class GFF3Loader extends TripalLoader {
             // add/update the featureloc if the landmark and the ID are not the same
             // if they are the same then this entry in the GFF is probably a landmark identifier
             if (strcmp($landmark, $attr_uniquename) !=0 ) {
-              tripal_feature_load_gff3_featureloc($feature, $organism,
+              $this->loadFeatureLoc($feature, $organism,
                   $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
                   $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
             }
 
             // add any aliases for this feature
             if (array_key_exists('Alias', $tags)) {
-              tripal_feature_load_gff3_alias($feature, $tags['Alias']);
+              $this->loadAlias($feature, $tags['Alias']);
             }
             // add any dbxrefs for this feature
             if (array_key_exists('Dbxref', $tags)) {
-              tripal_feature_load_gff3_dbxref($feature, $tags['Dbxref']);
+              $this->loadDbxref($feature, $tags['Dbxref']);
             }
             // add any ontology terms for this feature
             if (array_key_exists('Ontology_term', $tags)) {
-              tripal_feature_load_gff3_ontology($feature, $tags['Ontology_term']);
+              $this->loadOntology($feature, $tags['Ontology_term']);
             }
             // add parent relationships
             if (array_key_exists('Parent', $tags)) {
-              tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'],
+              $this->loadParents($feature, $cvterm, $tags['Parent'],
                   $feature_organism->organism_id, $strand, $phase, $fmin, $fmax);
             }
 
             // add target relationships
             if (array_key_exists('Target', $tags)) {
-              tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
+              $this->loadTarget($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
             }
             // add gap information.  This goes in simply as a property
             if (array_key_exists('Gap', $tags)) {
               foreach ($tags['Gap'] as $value) {
-                tripal_feature_load_gff3_property($feature, 'Gap', $value);
+                $this->loadProperty($feature, 'Gap', $value);
               }
             }
             // add notes. This goes in simply as a property
             if (array_key_exists('Note', $tags)) {
               foreach ($tags['Note'] as $value) {
-                tripal_feature_load_gff3_property($feature, 'Note', $value);
+                $this->loadProperty($feature, 'Note', $value);
               }
             }
             // add the Derives_from relationship (e.g. polycistronic genes).
             if (array_key_exists('Derives_from', $tags)) {
-              tripal_feature_load_gff3_derives_from($feature, $cvterm, $tags['Derives_from'][0],
+              $this->loadDerivesFrom($feature, $cvterm, $tags['Derives_from'][0],
                   $feature_organism, $fmin, $fmax);
             }
             // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
             $source_ref = array('GFF_source:' . $source);
-            tripal_feature_load_gff3_dbxref($feature, $source_ref);
+            $this->loadDbxref($feature, $source_ref);
             // add any additional attributes
             if ($attr_others) {
               foreach ($attr_others as $tag_name => $values) {
                 foreach ($values as $value) {
-                  tripal_feature_load_gff3_property($feature, $tag_name, $value);
+                  $this->loadProperty($feature, $tag_name, $value);
                 }
               }
             }
@@ -1049,15 +1013,15 @@ class GFF3Loader extends TripalLoader {
               }
 
               // Add the new protein record.
-              $feature = tripal_feature_load_gff3_feature($organism, $analysis_id,
+              $feature = $this->loadFeature($organism, $analysis_id,
                   $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
               // Add the derives_from relationship.
               $cvterm = tripal_get_cvterm(array('cvterm_id' => $result->cvterm_id));
-              tripal_feature_load_gff3_derives_from($feature, $cvterm,
+              $this->loadDerivesFrom($feature, $cvterm,
                   $result->uniquename, $organism, $pfmin, $pfmax);
               // Add the featureloc record. Set the start of the protein to
               // be the start of the coding sequence minus the phase.
-              tripal_feature_load_gff3_featureloc($feature, $organism, $result->landmark,
+              $this->loadFeatureLoc($feature, $organism, $result->landmark,
                   $pfmin, $pfmax, $result->strand, '', 'f', 'f', '', 0);
             }
           }
@@ -1172,7 +1136,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_derives_from($feature, $cvterm, $object,
+  private function loadDerivesFrom($feature, $cvterm, $object,
       $organism, $fmin, $fmax) {
 
     $type = $cvterm->name;
@@ -1281,7 +1245,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
+  private function loadParents($feature, $cvterm, $parents,
       $organism_id, $strand, $phase, $fmin, $fmax) {
 
     $uname = $feature->uniquename;
@@ -1388,7 +1352,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
+  private function loadDbxref($feature, $dbxrefs) {
 
     // iterate through each of the dbxrefs
     foreach ($dbxrefs as $dbxref) {
@@ -1480,7 +1444,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
+  private function loadOntology($feature, $dbxrefs) {
 
     // iterate through each of the dbxrefs
     foreach ($dbxrefs as $dbxref) {
@@ -1558,7 +1522,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_alias($feature, $aliases) {
+  private function loadAlias($feature, $aliases) {
 
     // make sure we have a 'synonym_type' vocabulary
     $select = array('name' => 'synonym_type');
@@ -1715,7 +1679,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uniquename,
+  private function loadFeature($organism, $analysis_id, $cvterm, $uniquename,
       $name, $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
     // Check to see if the feature already exists.
@@ -1842,7 +1806,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fmin,
+  private function loadFeatureLoc($feature, $organism, $landmark, $fmin,
       $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup,
       $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0,
       $landmark_is_target = 0) {
@@ -2023,7 +1987,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_property($feature, $property, $value) {
+  private function loadProperty($feature, $property, $value) {
 
     // first make sure the cvterm exists.  if not, then add it
     $select = array(
@@ -2105,7 +2069,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
+  private function loadFasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
     print "\nLoading FASTA sequences\n";
     $residues = '';
     $id = NULL;
@@ -2196,7 +2160,7 @@ class GFF3Loader extends TripalLoader {
    *
    * @ingroup gff3_loader
    */
-  private function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
+  private function loadTarget($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
     // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
     $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
 
@@ -2318,7 +2282,7 @@ class GFF3Loader extends TripalLoader {
 
       // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
       // and the landmark as the feature.
-      tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin,
+      $this->loadFeatureLoc($feature, $organism, $target_feature, $target_fmin,
           $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info,
           $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE);
     }
