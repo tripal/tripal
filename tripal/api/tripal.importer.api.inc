@@ -113,6 +113,9 @@ function tripal_run_importer($import_id, $job_id = NULL) {
         $loader->preRun($details);
         $loader->run($details, $job_id);
         $loader->postRun($details);
+
+        // Check for new fields and notify the user.
+        tripal_tripal_cron_notification();
       }
       catch (Exception $e) {
         throw new Exception('Cannot run loader, ' . $loader_name . ': ' .  $e->getMessage());

@@ -77,7 +77,18 @@ class GFF3Importer extends TripalImporter {
       '#options'     => $analyses,
     );
 
-    $form['line_number']= array(
+
+
+    // Advanced Options
+    $form['advanced'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Additional Options'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+
+
+    $form['advanced']['line_number']= array(
       '#type'          => 'textfield',
       '#title'         => t('Start Line Number'),
       '#description'   => t('Enter the line number in the GFF file where you would like to begin processing.  The
@@ -85,7 +96,7 @@ class GFF3Importer extends TripalImporter {
       '#size' => 10,
     );
 
-    $form['landmark_type'] = array(
+    $form['advanced']['landmark_type'] = array(
       '#title'       => t('Landmark Type'),
       '#type'        => t('textfield'),
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
@@ -96,21 +107,13 @@ class GFF3Importer extends TripalImporter {
        field is not used."),
     );
 
-    $form['alt_id_attr'] = array(
+    $form['advanced']['alt_id_attr'] = array(
       '#title'       => t('ID Attribute'),
       '#type'        => t('textfield'),
       '#description' => t("Optional. Sometimes lines in the GFF file are missing the
       required ID attribute that specifies the unique name of the feature, but there
       may be another attribute that can uniquely identify the feature.  If so,
       you may specify the name of the attribute to use for the name."),
-    );
-
-    // Advanced Options
-    $form['advanced'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Advanced Options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
     );
 
     $form['advanced']['protein_names'] = array(
@@ -147,15 +150,8 @@ class GFF3Importer extends TripalImporter {
        expression would be "$1-P$2".')
     );
 
-    $form['advanced']['import_options'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Import Options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#weight' => 0,
-    );
 
-    $form['advanced']['import_options']['use_transaction']= array(
+    $form['advanced']['use_transaction']= array(
       '#type' => 'checkbox',
       '#title' => t('Use a transaction'),
       '#required' => FALSE,
@@ -165,14 +161,14 @@ class GFF3Importer extends TripalImporter {
       of failure will be present in the database.'),
       '#default_value' => 1,
     );
-    $form['advanced']['import_options']['add_only']= array(
+    $form['advanced']['add_only']= array(
       '#type' => 'checkbox',
       '#title' => t('Import only new features'),
       '#required' => FALSE,
       '#description' => t('The job will skip features in the GFF file that already
                          exist in the database and import only new features.'),
     );
-    $form['advanced']['import_options']['update']= array(
+    $form['advanced']['update']= array(
       '#type' => 'checkbox',
       '#title' => t('Import all and update'),
       '#required' => FALSE,
@@ -202,7 +198,7 @@ class GFF3Importer extends TripalImporter {
     //     '#description' => t('Features present in the GFF file that exist in the database
     //                          will be removed rather than imported'),
     //   );
-    $form['advanced']['import_options']['create_organism']= array(
+    $form['advanced']['create_organism']= array(
       '#type' => 'checkbox',
       '#title' => t('Create organism'),
       '#required' => FALSE,
