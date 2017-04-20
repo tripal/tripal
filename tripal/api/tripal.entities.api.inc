@@ -561,12 +561,9 @@ function tripal_refresh_bundle_fields($bundle_name) {
   }
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
-  dpm($modules);
   foreach ($modules as $module) {
     $function = $module . '_bundle_fields_info';
     $info = $function('TripalEntity', $bundle);
-    dpm($module);
-    dpm($info);
     foreach ($info as $field_name => $details) {
       $field_type = $details['type'];
 

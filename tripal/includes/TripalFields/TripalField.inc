@@ -74,6 +74,12 @@ class TripalField {
   // and field_create_instance().
   public static $no_ui = TRUE;
 
+  // A boolean specifying that the field will not contain any data. This
+  // should exclude the field from web serivces or downloads.  An example
+  // could be a quick search field that appears on the page that redirects
+  // the user but otherwise provides no data.
+  public static $no_data = FALSE;
+
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
