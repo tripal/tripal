@@ -104,10 +104,10 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
     }
   }
 
-  // Now grab the labels of the field_groups whose parent is a tripalpane.
+  // Now grab the labels of the tripalpane.
   foreach($updated_field_groups as $updated_field_group){
     foreach($tripal_pane_field_groups as $tripal_pane_field_group){
-      if($updated_field_group->parent_name == $tripal_pane_field_group){
+      if($updated_field_group->group_name == $tripal_pane_field_group){
         if($fields[$tripal_pane_field_group]['region'] !== 'hidden'){
           tripal_ds_bundle_menu_item($bundle_id, $updated_field_group->label, $tripal_pane_field_group, 'tripalentity');
         }
@@ -115,7 +115,33 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
     }
   }
 }
+/**
+ * Implements hook_field_group_pre_render().
+ *
+ * This function gives you the oppertunity to create the given
+ * wrapper element that can contain the fields.
+ * In the example beneath, some variables are prepared and used when building the
+ * actual wrapper element. All elements in drupal fapi can be used.
+ *
+ * Note that at this point, the field group has no notion of the fields in it.
+ *
+ * There is also an alternative way of handling this. The default implementation
+ * within field_group calls "field_group_pre_render_<format_type>".
+ * @see field_group_pre_render_fieldset.
+ *
+ * @param Array $elements by address.
+ * @param Object $group The Field group info.
 
+function tripal_ds_field_group_pre_render(& $element, $group, & $form) {
+  watchdog('debug', '<pre>tripal_ds_preprocess_TripalEntity  $group: '. print_r($group, TRUE) .'</pre>');
+  if ($group->format_settings['formatter'] != 'open') {
+    $add['#prefix'] = '<div class="field-group-format ' . $classes . '">
+      <span class="field-group-format-toggler">' . check_plain(t($group->label)) . '</span>
+      <div class="field-group-format-wrapper" style="display: none;">';
+    $add['#suffix'] = '</div></div>';
+  }
+}
+ */
 /**
  * Trigger the update to the tripal_ds table when a tripal pane is deleted.
  */

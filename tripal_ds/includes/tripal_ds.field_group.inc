@@ -16,14 +16,14 @@ function _summary_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Tripal Pane Summary',
+    'label' => 'Summary',
     'weight' => '1',
     'children' => array(
-      0 => 'group_summary',
+      0 => 'group_summary_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => 'Tripal Pane Summary',
+      'label' => 'Summary',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_summary_tripalpane',
         'classes' => 'group-summary-tripalpane field-group-tripalpane',
@@ -37,36 +37,6 @@ function _summary_field_group_info($bundle_name, $fields){
   tripal_ds_bundle_menu_item($bundle_name, 'Summary', 'group_summary_tripalpane', 'TripalEntity');
 
 
-  //Fieldset field to nest the table within.
-  $field_group_fieldset = new stdClass();
-  $field_group_fieldset->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
-  $field_group_fieldset->api_version = 1;
-  $field_group_fieldset->identifier = 'group_summary|TripalEntity|'.$bundle_name.'|default';
-  $field_group_fieldset->group_name = 'group_summary';
-  $field_group_fieldset->entity_type = 'TripalEntity';
-  $field_group_fieldset->bundle = $bundle_name;
-  $field_group_fieldset->mode = 'default';
-  $field_group_fieldset->parent_name = 'group_summary_tripalpane';
-  $field_group_fieldset->data = array(
-    'label' => 'Summary',
-    'weight' => '5',
-    'children' => array(
-      0 => 'group_summary_table',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Summary',
-      'instance_settings' => array(
-        'id' => '',
-        'classes' => 'group-summary field-group-fieldset',
-        'description' => '',
-      ),
-      'formatter' => 'collapsible',
-    ),
-  );
-
-  drupal_write_record('field_group', $field_group_fieldset);
-
   //Table of fields.
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -76,7 +46,7 @@ function _summary_field_group_info($bundle_name, $fields){
   $field_group->entity_type = 'TripalEntity';
   $field_group->bundle = $bundle_name;
   $field_group->mode = 'default';
-  $field_group->parent_name = 'group_summary';
+  $field_group->parent_name = 'group_summary_tripalpane';
   $field_group->data = array(
     'label' => 'Summary Table',
     'weight' => '30',
@@ -117,17 +87,17 @@ function _prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Properties Tripal Pane',
+    'label' => 'Properties',
     'weight' => '2',
     'children' => array(
-        0 => 'group_prop',
+        0 => 'group_prop_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => 'Tripal Pane Properties',
+      'label' => 'Properties',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_prop_tripalpane',
-        'classes' => 'group-prop-tripalpane field-group-tripalpane',
+        'classes' => 'group-prop-tripalpane field-group-tripalpane hideTripalPane',
         'description' => '',
       ),
     ),
@@ -138,36 +108,6 @@ function _prop_field_group_info($bundle_name, $fields){
   tripal_ds_bundle_menu_item($bundle_name, 'Properties', 'group_prop_tripalpane', 'TripalEntity');
 
 
-  //Fieldset field to nest the table within.
-  $field_group_fieldset = new stdClass();
-  $field_group_fieldset->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
-  $field_group_fieldset->api_version = 1;
-  $field_group_fieldset->identifier = 'group_prop|TripalEntity|'.$bundle_name.'|default';
-  $field_group_fieldset->group_name = 'group_prop';
-  $field_group_fieldset->entity_type = 'TripalEntity';
-  $field_group_fieldset->bundle = $bundle_name;
-  $field_group_fieldset->mode = 'default';
-  $field_group_fieldset->parent_name = 'group_prop_tripalpane';
-  $field_group_fieldset->data = array(
-    'label' => 'Properties',
-    'weight' => '3',
-    'children' => array(
-      0 => 'group_prop_table',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Properties',
-      'instance_settings' => array(
-        'id' => '',
-        'classes' => 'group-prop field-group-fieldset',
-        'description' => '',
-        ),
-      'formatter' => 'collapsible',
-    ),
-  );
-
-  drupal_write_record('field_group', $field_group_fieldset);
-
   //Table of fields.
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -177,7 +117,7 @@ function _prop_field_group_info($bundle_name, $fields){
   $field_group->entity_type = 'TripalEntity';
   $field_group->bundle = $bundle_name;
   $field_group->mode = 'default';
-  $field_group->parent_name = 'group_prop';
+  $field_group->parent_name = 'group_prop_tripalpane';
   $field_group->data = array(
     'label' => 'Properties Table',
     'weight' => '30',
@@ -216,17 +156,17 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Tripal Pane Data Sequences',
+    'label' => 'Data Sequences',
     'weight' => '2',
     'children' => array(
-        0 => 'group_sequence',
+        0 => 'group_sequence_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => 'Tripal Pane Data Sequences',
+      'label' => 'Data Sequences',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_sequence_tripalpane',
-        'classes' => 'group-sequence-tripalpane field-group-tripalpane',
+        'classes' => 'group-sequence-tripalpane field-group-tripalpane hideTripalPane',
         'description' => '',
       ),
     ),
@@ -235,36 +175,6 @@ function _data_sequence_field_group_info($bundle_name, $fields){
 
   //Write to the tripal_ds table to record the new tripal pane.
   tripal_ds_bundle_menu_item($bundle_name, 'Sequence', 'group_sequence_tripalpane', 'TripalEntity');
-
-  //Fieldset field to nest the table within.
-  $field_group_fieldset = new stdClass();
-  $field_group_fieldset->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
-  $field_group_fieldset->api_version = 1;
-  $field_group_fieldset->identifier = 'group_sequence|TripalEntity|'.$bundle_name.'|default';
-  $field_group_fieldset->group_name = 'group_sequence';
-  $field_group_fieldset->entity_type = 'TripalEntity';
-  $field_group_fieldset->bundle = $bundle_name;
-  $field_group_fieldset->mode = 'default';
-  $field_group_fieldset->parent_name = 'group_sequence_tripalpane';
-  $field_group_fieldset->data = array(
-    'label' => 'Sequence',
-    'weight' => '3',
-    'children' => array(
-      0 => 'group_sequence_table',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Data Sequences',
-      'instance_settings' => array(
-        'id' => '',
-        'classes' => 'group-sequence field-group-fieldset',
-        'description' => '',
-      ),
-      'formatter' => 'collapsible',
-    ),
-  );
-
-  drupal_write_record('field_group', $field_group_fieldset);
 
   //Table of fields.
   $field_group = new stdClass();
@@ -275,7 +185,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group->entity_type = 'TripalEntity';
   $field_group->bundle = $bundle_name;
   $field_group->mode = 'default';
-  $field_group->parent_name = 'group_sequence';
+  $field_group->parent_name = 'group_sequence_tripalpane';
   $field_group->data = array(
     'label' => 'Data Sequences Table',
     'weight' => '30',
@@ -304,7 +214,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
 * Processes all additional fields into Tripal Panes
 */
 
-function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $fieldset_field_name, $field_name){
+function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name){
   //Write to the tripal_ds table to record the new tripal pane.
   tripal_ds_bundle_menu_item($bundle_name, $field_label, $group_field_name, 'TripalEntity');
 
@@ -319,61 +229,28 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
   $field_group_fieldset->mode = 'default';
   $field_group_fieldset->parent_name = '';
   $field_group_fieldset->data = array(
-    'label' => $field_label.' TripalPane',
+    'label' => $field_label,
     'weight' => '5',
     'children' => array(
-      0 => $fieldset_field_name,
+      0 => $field_name,
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => $field_label.' TripalPane',
+      'label' => $field_label,
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-'.$group_field_name,
-        'classes' => $group_field_name.' field-group-tripalpane',
+        'classes' => $group_field_name.' field-group-tripalpane hideTripalPane',
         'description' => '',
       ),
-      'formatter' => 'collapsible',
     ),
   );
 
   drupal_write_record('field_group', $field_group_fieldset);
 
-  //Fieldset to nest the field within the tripal pane.
-  $field_group = new stdClass();
-  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
-  $field_group->api_version = 1;
-  $field_group->identifier =  $fieldset_field_name.'|TripalEntity|'.$bundle_name.'|default';
-  $field_group->group_name =  $fieldset_field_name;
-  $field_group->entity_type = 'TripalEntity';
-  $field_group->bundle = $bundle_name;
-  $field_group->mode = 'default';
-  $field_group->parent_name =  $group_field_name;
-  $field_group->data = array(
-    'label' => $field_label,
-    'weight' => '30',
-    'children' => array(
-      0 =>$field_name,
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => $field_label,
-      'instance_settings' => array(
-        'label_visibility' => '1',
-        'id' => '',
-        'classes' => $fieldset_field_name.' field-group-fieldset',
-        'description' => '',
-      ),
-      'formatter' => 'collapsible',
-    ),
-  );
-
-  drupal_write_record('field_group', $field_group);
-
 }
 /**
  * Implements hook_field_group_info().
  */
-
 function _publication_prop_field_group_info($bundle_name, $fields){
 
   //Tripal pane  to nest the fieldset within.
@@ -387,17 +264,17 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Properties Tripal Pane',
+    'label' => 'Properties',
     'weight' => '2',
     'children' => array(
       0 => 'group_prop',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => 'Tripal Pane Properties',
+      'label' => 'Properties',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_prop_tripalpane',
-        'classes' => 'group-prop-tripalpane field-group-tripalpane',
+        'classes' => 'group-prop-tripalpane field-group-tripalpane hideTripalPane',
         'description' => '',
       ),
     ),
@@ -407,35 +284,6 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   //write to the tripal_ds table to record the new tripal pane.
   tripal_ds_bundle_menu_item($bundle_name, 'Properties', 'group_prop_tripalpane', 'TripalEntity');
 
-  //Fieldset field to nest the table within.
-  $field_group_fieldset = new stdClass();
-  $field_group_fieldset->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
-  $field_group_fieldset->api_version = 1;
-  $field_group_fieldset->identifier = 'group_prop|TripalEntity|'.$bundle_name.'|default';
-  $field_group_fieldset->group_name = 'group_prop';
-  $field_group_fieldset->entity_type = 'TripalEntity';
-  $field_group_fieldset->bundle = $bundle_name;
-  $field_group_fieldset->mode = 'default';
-  $field_group_fieldset->parent_name = 'group_prop_tripalpane';
-  $field_group_fieldset->data = array(
-    'label' => 'Properties',
-    'weight' => '3',
-    'children' => array(
-      0 => 'group_prop_table',
-    ),
-    'format_type' => 'fieldset',
-    'format_settings' => array(
-      'label' => 'Properties',
-      'instance_settings' => array(
-        'id' => '',
-        'classes' => 'group-prop field-group-fieldset',
-        'description' => '',
-      ),
-      'formatter' => 'collapsible',
-    ),
-  );
-
-  drupal_write_record('field_group', $field_group_fieldset);
 
   //Table of fields.
   $field_group = new stdClass();
@@ -446,7 +294,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group->entity_type = 'TripalEntity';
   $field_group->bundle = $bundle_name;
   $field_group->mode = 'default';
-  $field_group->parent_name = 'group_prop';
+  $field_group->parent_name = 'group_prop_tripalpane';
   $field_group->data = array(
     'label' => 'Properties Table',
     'weight' => '30',

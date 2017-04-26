@@ -50,9 +50,14 @@ function tripal_ds_field_group_format_settings($group) {
  */
 function tripal_ds_field_group_pre_render(&$element, $group, &$form) {
   $group_name = $group->group_name;
+  //watchdog('debug', '<pre>$group->description: '. print_r($group->description, TRUE) .'</pre>');
+  watchdog('debug', '<pre>$$group->format_settings: '. print_r($group->format_settings['instance_settings'], TRUE) .'</pre>');
   switch ($group->format_type) {
     case 'tripalpane':
-      $element['#prefix'] = '<div class="tripal_pane-fieldset-'.$group_name.' '.$group_name.'">';
+      $element['#prefix'] = '<div class="tripal_pane-fieldset-'.$group_name.' '.$group_name.' tripal_pane"> <span class="field-group-format-title">' . check_plain(t($group->label)) . '</span>';
+      if (!empty($group->description)) {
+        $element['#prefix'] .= '<div class="description">' . $group->description . '</div>';
+      }
       $element['#suffix'] = '</div>';
       break;
   }

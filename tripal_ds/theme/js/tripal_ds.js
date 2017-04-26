@@ -4,8 +4,8 @@
     attach: function (context, settings){
 
       // Add a close button for each pane except for the te_base
-      $('.field-group-fieldset .fieldset-legend').each(function (i) {
-        $(this).append('<div class="tripal_pane-fieldset-close_button"><div id="tripal-pane-close-button" class="tripal-pane-button">[x]</div></div>');
+      $('div.tripal_pane').each(function (i) {
+        $(this).prepend('<div class="tripal_pane-fieldset-close_button"><div id="tripal-pane-close-button" class="tripal-pane-button">[x]</div></div>');
         var id = '.tripal_pane-fieldset-' + $(this).attr('id');
       });
       // Hide the pane when the close button is clicked
@@ -14,7 +14,7 @@
         $(this).css('cursor', 'pointer');
         $(this).css('margin', '0px 5px');
         $(this).click(function () {
-          var fs = $(this).parents('.field-group-fieldset');
+          var fs = $(this).parents('div.tripal_pane');
           if($(fs).hasClass('showTripalPane'))  {
             $(fs).removeClass('showTripalPane');
             $(fs).addClass('hideTripalPane');
