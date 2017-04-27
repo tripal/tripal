@@ -549,7 +549,8 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
     $options['all'] = 'All';
   }
   while ($obj = $result->fetchObject()) {
-    if ($has_template) {
+    // Ignore analysis sub modules
+    if ($has_template && !preg_match('/^chado_analysis_.+$/', $obj->type)) {
       $mod = str_replace('chado_', 'tripal_', $obj->type);
       $mod_dir = drupal_get_path('module', $mod);
       if (file_exists($mod_dir . '/theme/templates/' . $mod . '_base.tpl.php')) {
