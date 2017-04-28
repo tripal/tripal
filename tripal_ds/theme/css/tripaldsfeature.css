@@ -34,7 +34,7 @@
     border-radius: 4px;
 }
 
-.tripal_pane span {
+.tripal_pane > span {
     background: #dbdbdb;
     border: 1px solid #ccc;
     border-bottom: none;
@@ -55,3 +55,8 @@
     -webkit-border-top-right-radius: 4px;
     border-top-right-radius: 4px;
 }
+
+.tripal_pane > div {
+    padding: 0px 10px;
+}
+

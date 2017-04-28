@@ -21,25 +21,6 @@ function tripal_ds_field_group_formatter_info() {
   );
 }
 
-/**
- * Implements hook_field_group_format_settings().
- * If the group has no format settings, default ones will be added.
- * @params Object $group The group object.
- * @return Array $form The form element for the format settings.
- */
-function tripal_ds_field_group_format_settings($group) {
-  $form = array();
-
-  // Add instance_settings.
-  switch ($group->format_type) {
-    case 'tripalpane':
-      $form['label']['#description'] = t('Please enter a label for collapsible elements');
-      break;
-  }
-
-  return $form;
-}
-
 /*
  * Implements field_group_pre_render_<format-type>.
  * Format type: Tripalpane.
@@ -49,14 +30,14 @@ function tripal_ds_field_group_format_settings($group) {
  * @param $form The root element or form.
  */
 function tripal_ds_field_group_pre_render(&$element, $group, &$form) {
-  $group_name = $group->group_name;
-  //watchdog('debug', '<pre>$group->description: '. print_r($group->description, TRUE) .'</pre>');
-  watchdog('debug', '<pre>$$group->format_settings: '. print_r($group->format_settings['instance_settings'], TRUE) .'</pre>');
   switch ($group->format_type) {
     case 'tripalpane':
-      $element['#prefix'] = '<div class="tripal_pane-fieldset-'.$group_name.' '.$group_name.' tripal_pane"> <span class="field-group-format-title">' . check_plain(t($group->label)) . '</span>';
-      if (!empty($group->description)) {
-        $element['#prefix'] .= '<div class="description">' . $group->description . '</div>';
+      $group_name = $group->group_name;
+      $description = $group->format_settings['instance_settings']['description'];
+      $classes = $group->format_settings['instance_settings']['classes'];
+      $element['#prefix'] = '<div class="tripal_pane-fieldset-'.$group_name.' '.$group_name.' tripal_pane '.$classes.'"> <span class="field-group-format-title">' . check_plain(t($group->label)) . '</span>';
+      if (!empty($description)) {
+        $element['#prefix'] .= '<div class="description">' . $description . '</div>';
       }
       $element['#suffix'] = '</div>';
       break;
