@@ -407,7 +407,6 @@ function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name
         $layout_info['fields'][$tripal_pane_name] = 'right';
       }
     }
-    watchdog('debug', '<pre>$layout_info: '. print_r($layout_info, TRUE) .'</pre>');
     //Update the ds_layout_settings table with the new layout info.
     drupal_write_record('ds_layout_settings', $layout_info);
   }
