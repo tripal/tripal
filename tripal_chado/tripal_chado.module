@@ -545,7 +545,7 @@ function tripal_chado_menu() {
     'page callback' => 'tripal_autocomplete_cvterm',
     'page arguments' => array(6, 7),
     'access arguments' => array('access content'),
-    'file' => 'api/modules/tripal_chado.db.api.inc',
+    'file' => 'api/modules/tripal_chado.cv.api.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
@@ -583,12 +583,76 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  //                          Controlled Vocabularies
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/loaders/chado_cv'] = array(
+    'title' => 'Chado Controlled Vocabularies',
+    'description' => 'Controlled Vocabularies control the terms available for various chado fields.',
+    'page callback' => 'tripal_cv_admin_cv_listing',
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/loaders/chado_cv/edit/%'] = array(
+    'title' => 'Edit a Controlled Vocabulary',
+    'description' => 'Edit the details such as name and description for an existing controlled vocabulary.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cv_edit_form', 5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/chado_cv/add'] = array(
+    'title' => 'Add a Controlled Vocabulary',
+    'description' => 'Manually a new controlled vocabulary.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cv_add_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/chado_cv/%/cvterm/add'] = array(
+    'title' => 'Add a Controlled Vocabulary Term',
+    'description' => 'Add a new controlled vocabulary term.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvterm_add_form', 4),
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/chado_cv/cvterm/add'] = array(
+    'title' => 'Add a Controlled Vocabulary Term',
+    'description' => 'Add a new controlled vocabulary term.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvterm_add_form'),
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/chado_cv/%/cvterm/edit/%'] = array(
+    'title' => 'Edit a Controlled Vocabulary Term',
+    'description' => 'Edit an existing controlled vocabulary term.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvterm_edit_form', 4, 7),
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
 
   //////////////////////////////////////////////////////////////////////////////
   //                           Databases
   //////////////////////////////////////////////////////////////////////////////
-  $items['admin/tripal/storage/chado/db'] = array(
-    'title' => 'Databases',
+  $items['admin/tripal/loaders/chado_db'] = array(
+    'title' => 'Chado Databases',
     'description' => 'References to External Database sites such as NCBI',
     'page callback' => 'tripal_chado_admin_db_listing',
     'access arguments' => array('administer db cross-references'),
@@ -596,7 +660,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/storage/chado/db/edit/%'] = array(
+  $items['admin/tripal/loaders/chado_db/edit/%'] = array(
     'title' => 'Edit a Database Reference',
     'description' => 'Edit existing Database References.',
     'page callback' => 'drupal_get_form',
@@ -608,7 +672,7 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/storage/chado/db/add'] = array(
+  $items['admin/tripal/loaders/chado_db/add'] = array(
     'title' => 'Create a Database Reference',
     'description' => 'Create a new reference to an External Database.',
     'page callback' => 'drupal_get_form',

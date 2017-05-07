@@ -15,7 +15,7 @@ function tripal_chado_admin_db_listing() {
   $breadcrumb[] = l('Tripal', 'admin/tripal');
   $breadcrumb[] = l('Data Storage', 'admin/tripal/storage');
   $breadcrumb[] = l('Chado', 'admin/tripal/storage/chado');
-  $breadcrumb[] = l('Databases', 'admin/tripal/storage/chado/db');
+  $breadcrumb[] = l('Databases', 'admin/tripal/loaders/chado_db');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -31,10 +31,10 @@ function tripal_chado_admin_db_listing() {
                 . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
     if (!isset($dbs_view)) {
-      $output .= '<li>'.l('DB Admin', 'admin/tripal/storage/chado/db/views/dbs/enable').'</li>';
+      $output .= '<li>'.l('DB Admin', 'admin/tripal/loaders/chado_db/views/dbs/enable').'</li>';
     }
     if (!isset($dbxrefs_view)) {
-      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/storage/chado/db/views/dbxrefs/enable').'</li>';
+      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/loaders/chado_db/views/dbxrefs/enable').'</li>';
     }
     $output .= '</ul>';
   }
@@ -262,7 +262,7 @@ function tripal_chado_db_add_form_submit($form, &$form_state) {
   $success = chado_insert_record('db', $values);
   if ($success) {
     drupal_set_message(t("External database added"));
-    drupal_goto('admin/tripal/storage/chado/db');
+    drupal_goto('admin/tripal/loaders/chado_db');
   }
   else {
     drupal_set_message(t("Failed to add external database."));
@@ -294,7 +294,7 @@ function tripal_chado_db_edit_form_submit($form, &$form_state) {
     $success = chado_update_record('db', $match, $values);
     if ($success) {
       drupal_set_message(t("External database updated"));
-      drupal_goto('admin/tripal/storage/chado/db');
+      drupal_goto('admin/tripal/loaders/chado_db');
     }
     else {
       drupal_set_message(t("Failed to update external database."));
@@ -305,7 +305,7 @@ function tripal_chado_db_edit_form_submit($form, &$form_state) {
     $success = chado_delete_record('db', $match);
     if ($success) {
       drupal_set_message(t("External database deleted"));
-      drupal_goto('admin/tripal/storage/chado/db');
+      drupal_goto('admin/tripal/loaders/chado_db');
     }
     else {
       drupal_set_message(t("Failed to delete external database."));

@@ -5,7 +5,7 @@
  */
 
 /**
- * Purpose: Deletes ALL Tripal Views Integrations.
+ * Purpose: Deletes ALL Chado Views Integrations.
  *
  * @ingroup tripal_chado_views
  */

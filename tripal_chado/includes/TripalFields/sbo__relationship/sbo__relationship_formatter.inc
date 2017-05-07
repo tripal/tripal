@@ -1,6 +1,7 @@
 <?php
 
 class sbo__relationship_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Relationship';
 

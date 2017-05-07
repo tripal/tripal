@@ -1608,7 +1608,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *          WHERE
  *            F.uniquename = :feature_uniquename";
  * $args = array( ':feature_uniquename' => $form_state['values']['uniquename'] );
- * $result = chado_query( $sql, $args );
+ * $result = chado_query($sql, $args);
  * foreach ($result as $r) { [Do something with the records here] }
  * @endcode
  *
