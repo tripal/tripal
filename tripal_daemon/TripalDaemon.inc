@@ -80,7 +80,20 @@ class TripalDaemon extends DrushDaemon {
       // Launch all tripal jobs :) Yay for bootstrapping!!
       foreach ($job_ids as $id) {
         $this->log('Starting Job (ID=' . $id . ')', '', 1);
+
+        // We would like to log the output from the job.
+        // However, most tripal jobs simply print to the screen :-(
+        // Thus we have to use output buffering to capture the output.
+        // Start Buffering.
+        ob_start();
+
+        // Launch Tripal Job.
         tripal_launch_job(FALSE, $id);
+
+        // Save the buffer to the log and stop buffering.
+        $this->log(str_repeat('=', 80));
+        $this->log(ob_get_clean());
+        $this->log(str_repeat('=', 80));
 
         // Report job details.
         $job = db_query(
