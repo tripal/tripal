@@ -39,6 +39,15 @@ function tripal_ds_menu() {
     'page arguments' => array('tripal_ds_update_layout_form', 4),
     'type' => MENU_LOCAL_ACTION,
   );
+  // Adds a +Add Tripal Pane button to 'Tripal Content Types' page.
+  $items['admin/structure/bio_data/manage/%/display/create'] = array(
+    'title' => 'Create an empty Tripal Pane',
+    'description' => t('Create a new empty tripal pane.'),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer tripal'),
+    'page arguments' => array('tripal_ds_pane_addition_button_form', 4),
+    'type' => MENU_LOCAL_ACTION,
+  );
   return $items;
 }
 /**
@@ -104,10 +113,10 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
     }
   }
 
-  // Now grab the labels of the field_groups whose parent is a tripalpane.
+  // Now grab the labels of the tripalpane.
   foreach($updated_field_groups as $updated_field_group){
     foreach($tripal_pane_field_groups as $tripal_pane_field_group){
-      if($updated_field_group->parent_name == $tripal_pane_field_group){
+      if($updated_field_group->group_name == $tripal_pane_field_group){
         if($fields[$tripal_pane_field_group]['region'] !== 'hidden'){
           tripal_ds_bundle_menu_item($bundle_id, $updated_field_group->label, $tripal_pane_field_group, 'tripalentity');
         }
@@ -115,7 +124,33 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
     }
   }
 }
+/**
+ * Implements hook_field_group_pre_render().
+ *
+ * This function gives you the oppertunity to create the given
+ * wrapper element that can contain the fields.
+ * In the example beneath, some variables are prepared and used when building the
+ * actual wrapper element. All elements in drupal fapi can be used.
+ *
+ * Note that at this point, the field group has no notion of the fields in it.
+ *
+ * There is also an alternative way of handling this. The default implementation
+ * within field_group calls "field_group_pre_render_<format_type>".
+ * @see field_group_pre_render_fieldset.
+ *
+ * @param Array $elements by address.
+ * @param Object $group The Field group info.
 
+function tripal_ds_field_group_pre_render(& $element, $group, & $form) {
+  watchdog('debug', '<pre>tripal_ds_preprocess_TripalEntity  $group: '. print_r($group, TRUE) .'</pre>');
+  if ($group->format_settings['formatter'] != 'open') {
+    $add['#prefix'] = '<div class="field-group-format ' . $classes . '">
+      <span class="field-group-format-toggler">' . check_plain(t($group->label)) . '</span>
+      <div class="field-group-format-wrapper" style="display: none;">';
+    $add['#suffix'] = '</div></div>';
+  }
+}
+ */
 /**
  * Trigger the update to the tripal_ds table when a tripal pane is deleted.
  */
@@ -192,7 +227,8 @@ function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
 
 /**
  *
- * @param $bundle_name
+ * @param $form_state
+ * @param $form
  */
 function tripal_ds_update_layout_form_submit($form, &$form_state) {
   $bundle_name = $form_state['build_info']['args'][0];
@@ -270,7 +306,111 @@ function tripal_ds_update_layout_form_submit($form, &$form_state) {
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
 
+/**
+ * @param $field
+ * @param $bundle_name
 
+function tripal_ds_field_create_field($field, $bundle_name) {
+  //Build the rest of the passes parameters.
+  $field_name = str_replace('field_', '', $field['field_name']);
+  $group_field_name = 'gp_'.$field['field_name'];
+  //Create the field groups.
+  _additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, $field_name);
+  //Place the field groups in the layout.
+  tripal_ds_update_ds_layout($bundle_name, $field_name, $group_field_name);
+}
+ */
+/**
+ * @param $form
+ * @param $form_state
+ * @param $bundle_name
+ * @return mixed
+ */
+function tripal_ds_pane_addition_button_form($form, &$form_state, $bundle_name) {
+  $form = array();
+  $form['bundle_name'] = array(
+    '#type' => 'value',
+    '#value' => $bundle_name,
+  );
+  $form['field_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tripal Panel Label'),
+    '#required' => TRUE,
+    '#description' => "Please enter the label for the new Tripal Pane",
+    '#size' => 20,
+    '#maxlength' => 50,
+  );
+
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $bundle_label = $bundle->label;
+
+  return confirm_form($form,
+    t('Please confirm you would like to create a new field for: ' . $bundle_label),
+    'admin/structure/bio_data/manage/' . $bundle_name . '/display',
+    t('Create new Tripal Pane'),
+    t('Yes'),
+    t('No, cancel')
+  );
+}
+
+/**
+ *
+ * @param $form_state
+ * @param $form
+ */
+function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
+  $bundle_name = $form_state['build_info']['args'][0];
+  //Build the rest of the passed variables.
+  $field_name = $form_state['input']['field_name'];
+  $group_field_name = 'gp_'.$form_state['input']['field_name'];
+  //Create the field groups, last passed parameter is NULL because there are no
+  //children.
+  _additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, NULL);
+  //Place the field groups in the layout.
+  tripal_ds_update_ds_layout($bundle_name, NULL, $group_field_name);
+  drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
+}
+
+/**
+ * @param $bundle_name
+ */
+function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name) {
+  //Build the identifier to check against ds_layout_settings.
+  $ds_identifier = 'TripalEntity|'.$bundle_name.'|default';
+
+  //Check to see if the layout already exists.
+  $result = db_select('ds_layout_settings', 'ds')
+    ->fields('ds', array('settings'))
+    ->condition('ds.id', $ds_identifier, '=')
+    ->execute()
+    ->fetchObject();
+
+  //If the layout exists unserialize it.
+  if(!empty($result)) {
+    $layout_info = $result->settings;
+    $layout_info = unserialize($layout_info);
+    //Count the number of rows in the region and add the field to the region.
+    $index = count($layout_info['regions']['right']);
+    //Now add the tripal pane and field to the right region and field array.
+    if(!empty($field_name)){
+      $layout_info['regions']['right'][$index] = $field_name;
+      $incremented_index = $index++;
+      $layout_info['fields'][$field_name] = 'right';
+    }
+    if(!empty($tripal_pane_name)){
+      if(!empty($incremented_index)){
+        $layout_info['regions']['right'][$incremented_index] = $tripal_pane_name;
+        $layout_info['fields'][$tripal_pane_name] = 'right';
+      }
+      else {
+        $layout_info['regions']['right'][$index] = $tripal_pane_name;
+        $layout_info['fields'][$tripal_pane_name] = 'right';
+      }
+    }
+    //Update the ds_layout_settings table with the new layout info.
+    drupal_write_record('ds_layout_settings', $layout_info);
+  }
+}
 /*
  * Code for the view of the menu items
 
@@ -286,4 +426,3 @@ function tripal_ds_update_layout_form_submit($form, &$form_state) {
       ->execute()
       ->fetchField();
 */
-
