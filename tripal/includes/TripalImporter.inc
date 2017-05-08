@@ -84,5 +84,4 @@ class TripalImporter {
   public function postRun($details) {
 
   }
-
 }

@@ -110,14 +110,23 @@ function tripal_run_importer($import_id, $job_id = NULL) {
       $loader_name = $class::$name;
       $loader = new $class();
       try {
+
+        // begin the transaction
+        $transaction = db_transaction();
+        print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
+            "If the load fails or is terminated prematurely then the entire set of \n" .
+            "insertions/updates is rolled back and will not be found in the database\n\n";
         $loader->preRun($details);
         $loader->run($details, $job_id);
         $loader->postRun($details);
 
         // Check for new fields and notify the user.
         tripal_tripal_cron_notification();
+
+        print "\nDone\n";
       }
       catch (Exception $e) {
+        $transaction->rollback();
         throw new Exception('Cannot run loader, ' . $loader_name . ': ' .  $e->getMessage());
       }
     }

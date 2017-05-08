@@ -26,6 +26,8 @@ define('TRIPAL_NOTICE',5);
 define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
 
+
+
 /**
  * Provide better error notice for Tripal. If the environment variable
  * 'TRIPAL_DEBUG' is set to 1 then this function will add backtrace
@@ -83,7 +85,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       break;
   }
 
-  // get the backtrace and include in the error message, but only if the
+  // Get the backtrace and include in the error message, but only if the
   // TRIPAL_DEBUG environment variable is set.
   if (getenv('TRIPAL_DEBUG') == 1) {
     $backtrace = debug_backtrace();
@@ -123,8 +125,10 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
 }
 
 /**
- * Display messages to tripal administrators. This can be used instead of
- * drupal_set_message when you want to target tripal administrators.
+ * Display messages to tripal administrators.
+ *
+ * This can be used instead of drupal_set_message when you want to target
+ * tripal administrators.
  *
  * @param $message
  *   The message to be displayed to the tripal administrators

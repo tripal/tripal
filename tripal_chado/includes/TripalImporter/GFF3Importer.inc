@@ -258,16 +258,6 @@ class GFF3Importer extends TripalImporter {
     return $form;
   }
   /**
-   * @see TripalImporter::formSubmit()
-   */
-  public function formSubmit($form, &$form_state) {
-    global $user;
-
-
-
-    return '';
-  }
-  /**
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
