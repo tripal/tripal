@@ -88,7 +88,7 @@ function tripal_load_include_importer_class($class) {
  *   The ID of the import record.
  * @throws Exception
  */
-function tripal_run_importer($import_id, $job_id = NULL) {
+function tripal_run_importer($import_id, TripalJob $job = NULL) {
   $details = db_select('tripal_import', 'ti')
     ->fields('ti')
     ->condition('ti.import_id', $import_id)
@@ -107,18 +107,33 @@ function tripal_run_importer($import_id, $job_id = NULL) {
     $class = $details->class;
     tripal_load_include_importer_class($class);
     if (class_exists($class)) {
+
       $loader_name = $class::$name;
-      $loader = new $class();
+      $loader = new $class($job);
       try {
+
+        // begin the transaction
+        $transaction = db_transaction();
+        print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
+            "If the load fails or is terminated prematurely then the entire set of \n" .
+            "insertions/updates is rolled back and will not be found in the database\n\n";
         $loader->preRun($details);
-        $loader->run($details, $job_id);
+        $loader->run($details);
         $loader->postRun($details);
+        if ($job) {
+          $job->logMessage("Done");
+        }
+        print "\nDone\n";
 
         // Check for new fields and notify the user.
         tripal_tripal_cron_notification();
+
       }
       catch (Exception $e) {
-        throw new Exception('Cannot run loader, ' . $loader_name . ': ' .  $e->getMessage());
+        $transaction->rollback();
+        if ($job) {
+          $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+        }
       }
     }
   }

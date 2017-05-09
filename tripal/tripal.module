@@ -29,6 +29,7 @@ require_once "includes/TripalFields/TripalField.inc";
 require_once "includes/TripalFields/TripalFieldWidget.inc";
 require_once "includes/TripalFields/TripalFieldFormatter.inc";
 require_once "includes/TripalFieldQuery.inc";
+require_once "includes/TripalJob.inc";
 require_once "includes/TripalImporter.inc";
 
 /**

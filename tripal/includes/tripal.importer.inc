@@ -36,13 +36,36 @@ function tripal_get_importer_form($form, &$form_state, $class) {
     '#description'   => t('If the file is local to the Tripal server please provide the full path here.'),
   );
 
+  if ($class::$use_analysis) {
+    // get the list of analyses
+    $sql = "SELECT * FROM {analysis} ORDER BY name";
+    $org_rset = chado_query($sql);
+    $analyses = array();
+    $analyses[''] = '';
+    while ($analysis = $org_rset->fetchObject()) {
+      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
+    }
+    $form['analysis_id'] = array(
+      '#title'       => t('Analysis'),
+      '#type'        => t('select'),
+      '#description' => t('Choose the analysis to which the uploaded data will be associated. ' .
+        'Why specify an analysis for a data load?  All data comes from some place, even if ' .
+        'downloaded from a website. By specifying analysis details for all data imports it ' .
+        'provides provenance and helps end user to reproduce the data set if needed. At ' .
+        'a minimum it indicates the source of the data.'),
+      '#required'    => $class::$require_analysis,
+      '#options'     => $analyses,
+    );
+  }
+
+
   $importer = new $class();
   $element = array();
   $form['class_elements'] = $importer->form($element, $form_state);
 
   $form['button'] = array(
     '#type' => 'submit',
-    '#value' => t('Import ' . $class),
+    '#value' => t($class::$button_text),
     '#weight' => 10,
   );
   return $form;

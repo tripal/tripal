@@ -140,9 +140,6 @@ function tripal_chado_prepare_chado() {
     // We want to force the version of Chado to be set properly.
     $real_version = chado_get_version(TRUE);
 
-    // Create the temp table we will use for loading OBO files.
-    tripal_chado_add_tripal_obo_temp_table();
-
     // Import commonly used ontologies if needed.
     tripal_chado_load_ontologies();
 

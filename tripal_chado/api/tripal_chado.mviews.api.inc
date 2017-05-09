@@ -354,6 +354,7 @@ function tripal_populate_mview($mview_id) {
     // execute the query inside a transaction so that it doesn't destroy existing data
     // that may leave parts of the site unfunctional
     $transaction = db_transaction();
+    $previous_db = chado_set_active('chado');  // use chado database
     try {
       $success = chado_query("DELETE FROM {" . $mview->mv_table . "}");
       $success = chado_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");
@@ -372,8 +373,10 @@ function tripal_populate_mview($mview_id) {
       else {
         throw new Exception("ERROR populating the materialized view ". $mview->mv_table . ". See Drupal's recent log entries for details.");
       }
+      chado_set_active($previous_db);
     }
     catch (Exception $e) {
+      chado_set_active($previous_db);
       $transaction->rollback();
       // print and save the error message
       $record = new stdClass();
