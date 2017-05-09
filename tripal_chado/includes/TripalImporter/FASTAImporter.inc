@@ -35,7 +35,15 @@ class FASTAImporter extends TripalImporter {
    */
   public static $upload_title = 'FASTA Upload';
 
+  /**
+   * Text that should appear on the button at the bottom of the importer
+   * form.
+   */
+  public static $button_text = 'Import FASTA file';
 
+  /**
+   * @see TripalImporter::form()
+   */
   public function form($form, &$form_state) {
 
     // get the list of organisms
@@ -218,7 +226,6 @@ class FASTAImporter extends TripalImporter {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $fasta_file = trim($form_state['values']['fasta_file']);
     $organism_id = $form_state['values']['organism_id'];
     $type = trim($form_state['values']['seqtype']);
     $method = trim($form_state['values']['method']);
@@ -255,18 +262,6 @@ class FASTAImporter extends TripalImporter {
 
     if (!$re_name and $re_uname and strcmp($match_type, 'Name') == 0) {
       form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
-    }
-
-    // check to see if the file is located local to Drupal
-    $fasta_file = trim($fasta_file);
-    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $fasta_file;
-    if (!file_exists($dfile)) {
-      // if not local to Drupal, the file must be someplace else, just use
-      // the full path provided
-      $dfile = $fasta_file;
-    }
-    if (!file_exists($dfile)) {
-      form_set_error('fasta_file', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
     }
 
     // make sure if a relationship is specified that all fields are provided.
@@ -309,9 +304,6 @@ class FASTAImporter extends TripalImporter {
         form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
       }
     }
-
-    // check to make sure the 'relationship' and 'sequence' ontologies are loaded
-    $form_state['storage']['dfile'] = $dfile;
   }
   /**
    * @see TripalImporter::run()
@@ -331,10 +323,31 @@ class FASTAImporter extends TripalImporter {
     $rel_type = $arguments['rel_type'];
     $re_subject = $arguments['re_subject'];
     $parent_type = $arguments['parent_type'];
+    $method = $arguments['method'];
     $analysis_id = $arguments['analysis_id'];
+    $match_type = $arguments['match_type'];
 
-    $this->load($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
-      $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id,
+
+    if ($method == 0) {
+      $method = 'Insert only';
+    }
+    if ($method == 1) {
+      $method = 'Update only';
+    }
+    if ($method == 2) {
+      $method = 'Insert and update';
+    }
+
+    if ($match_type == 0) {
+      $match_type = 'Name';
+    }
+
+    if ($match_type == 1) {
+      $match_type = 'Unique name';
+    }
+
+    $this->loadFasta($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
+      $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id,
       $match_type);
   }
   /**
@@ -366,17 +379,15 @@ class FASTAImporter extends TripalImporter {
    * @param $method
    *   The method of feature adding. (ie: 'Insert only', 'Update only',
    *   'Insert and update').
-   * @param $uid
-   *   The user id of the user who submitted the job.
    * @param $analysis_id
    *   The analysis_id to associate the features in this fasta file with.
    * @param $match_type
    *  Whether to match existing features based on the 'Name' or 'Unique name'.
    */
   private function loadFasta($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
-      $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id, $match_type) {
+      $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id, $match_type) {
 
-    // First get the type for this sequence.
+      // First get the type for this sequence.
     $cvtermsql = "
       SELECT CVT.cvterm_id
       FROM {cvterm} CVT
@@ -417,15 +428,11 @@ class FASTAImporter extends TripalImporter {
     $feature_tbl = chado_get_schema('feature');
     $dbxref_tbl = chado_get_schema('dbxref');
 
-    $this->logMessage(t("Step 1: finding sequences\n"));
+    $this->logMessage(t("Step 1: Finding sequences..."));
     $filesize = filesize($dfile);
-    $this->setTotalItems($filesize);
     $fh = fopen($dfile, 'r');
     if (!$fh) {
-      $this->logMessage("Cannot open file: %dfile", array(
-        '%dfile' => $dfile
-      ), TRIPAL_ERROR);
-      return 0;
+      throw new Exception(t("Cannot open file: %dfile", array('%dfile' => $dfile)));
     }
     $num_read = 0;
 
@@ -459,6 +466,7 @@ class FASTAImporter extends TripalImporter {
             $name = trim($matches[1]);
           }
         }
+
         // If the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise we don't set the name.
         elseif (strcmp($match_type, 'Name') == 0) {
@@ -537,24 +545,20 @@ class FASTAImporter extends TripalImporter {
     $seqs[$num_seqs - 1]['seq_end'] = $num_read - strlen($line);
 
     // Now that we know where the sequences are in the file we need to add them.
-    $this->logMessage("\nStep 2: Importing sequences\n");
+    $this->logMessage("Step 2: Importing sequences...");
+    $this->setTotalItems($num_seqs);
     for ($i = 0; $i < $num_seqs; $i++) {
       $seq = $seqs[$i];
-      $this->logMessage("Importing " . ($i + 1) . " of $num_seqs. ");
-      if ($name) {
-        $this->logMessage("Current feature: " . $seq['name'] . ".\n");
-      }
-      else {
-        print "Current feature: " . $seq['uname'] . ".\n";
-      }
-
-      loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], $seq['seq_end']);
-    }
-    if ($this->job) {
-      tripal_set_job_progress($this->job->job_id, 100);
+      //$this->logMessage("  importing: @name", array('@name' => $seq['name']));
+      $this->loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id,
+          $seq['accession'], $seq['subject'], $rel_type, $parent_type,
+          $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
+          $match_type, $parentcvterm, $relcvterm, $seq['seq_start'],
+          $seq['seq_end']);
+      $this->setItemsHandled($i);
     }
     fclose($fh);
-
+    $this->setItemsHandled($i);
   }
 
   /**
@@ -651,20 +655,18 @@ class FASTAImporter extends TripalImporter {
       }
 
       // Add the residues for this feature
-      loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
+      $this->loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
     }
 
     // if we don't have a feature and the user wants to do an update then fail
-    if (!$feature and (strcmp($method, 'Update only') == 0 or
-        drupal_strcmp($method, 'Insert and update') == 0)) {
+    if (!$feature and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
       $this->logMessage("Failed to find feature '%name' ('%uname') while matching on " . drupal_strtolower($match_type) . ".",
           array('%name' => $name,'%uname' => $uname), TRIPAL_ERROR);
       return 0;
     }
 
     // if we do have a feature and this is an update then proceed with the update
-    if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or
-        strcmp($method, 'Insert and update') == 0)) {
+    if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
 
       // if the user wants to match on the Name field
       if (strcmp($match_type, 'Name') == 0) {
@@ -731,7 +733,7 @@ class FASTAImporter extends TripalImporter {
     }
 
     // Update the residues for this feature
-    loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
+    $this->loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
 
     // add in the analysis link
     if ($analysis_id) {

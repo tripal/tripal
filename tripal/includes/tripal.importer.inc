@@ -65,7 +65,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
 
   $form['button'] = array(
     '#type' => 'submit',
-    '#value' => t('Import ' . $class),
+    '#value' => t($class::$button_text),
     '#weight' => 10,
   );
   return $form;

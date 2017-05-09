@@ -120,7 +120,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
         $loader->preRun($details);
         $loader->run($details);
         $loader->postRun($details);
-        $job->logMessage("Done");
+        if ($job) {
+          $job->logMessage("Done");
+        }
         print "\nDone\n";
 
         // Check for new fields and notify the user.
@@ -129,7 +131,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
       }
       catch (Exception $e) {
         $transaction->rollback();
-        throw new Exception('Cannot run loader, ' . $loader_name . ': ' .  $e->getMessage());
+        if ($job) {
+          $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+        }
       }
     }
   }

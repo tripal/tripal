@@ -36,6 +36,13 @@ class GFF3Importer extends TripalImporter {
    * The title that should appear above the upload button.
    */
   public static $upload_title = 'GFF3 File';
+
+  /**
+   * Text that should appear on the button at the bottom of the importer
+   * form.
+   */
+  public static $button_text = 'Import GFF3 file';
+
   /**
    * @see TripalImporter::form()
    */

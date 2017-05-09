@@ -363,7 +363,8 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
       WHERE
         TJ.start_time IS NULL AND
         TJ.end_time IS NULL AND
-        TJ.job_id = :job_id
+        TJ.job_id = :job_id AND
+        TJ.status =! 'Cancelled'
       ORDER BY priority ASC, job_id ASC
     ";
     $jobs = db_query($sql, array(':job_id' => $job_id));
@@ -412,7 +413,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
       $job->run();
     }
     catch (Exception $e) {
-      tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
       drupal_set_message($e->getMessage(), 'error');
     }
 

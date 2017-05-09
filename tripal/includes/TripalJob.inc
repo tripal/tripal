@@ -464,11 +464,5 @@ class TripalJob {
     if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
       tripal_report_error('tripal_job', $severity, $message, $variables);
     }
-    if ($severity == TRIPAL_WARNING) {
-      drupal_set_message($tmessage, 'warning');
-    }
-    else {
-      drupal_set_message($tmessage, 'status');
-    }
   }
 }

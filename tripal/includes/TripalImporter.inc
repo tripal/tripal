@@ -62,6 +62,12 @@ class TripalImporter {
    */
   public static $require_analysis = TRUE;
 
+  /**
+   * Text that should appear on the button at the bottom of the importer
+   * form.
+   */
+  public static $button_text = 'Import File';
+
 
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT
