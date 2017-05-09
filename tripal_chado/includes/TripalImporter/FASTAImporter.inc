@@ -46,9 +46,12 @@ class FASTAImporter extends TripalImporter {
     while ($organism = $org_rset->fetchObject()) {
       $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
     }
-    $form['organism_id'] = array('#title' => t('Organism'),'#type' => t('select'),
+    $form['organism_id'] = array(
+      '#title' => t('Organism'),
+      '#type' => t('select'),
       '#description' => t("Choose the organism to which these sequences are associated"),
-      '#required' => TRUE,'#options' => $organisms
+      '#required' => TRUE,
+      '#options' => $organisms
     );
 
     // get the sequence ontology CV ID
@@ -56,102 +59,97 @@ class FASTAImporter extends TripalImporter {
     $cv = chado_select_record('cv', array('cv_id'), $values);
     $cv_id = $cv[0]->cv_id;
 
-    $form['seqtype'] = array('#type' => 'textfield','#title' => t('Sequence Type'),
+    $form['seqtype'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Sequence Type'),
       '#required' => TRUE,
       '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, polypeptide, etc...)'),
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
     );
 
-    $form['method'] = array('#type' => 'radios','#title' => 'Method','#required' => TRUE,
-      '#options' => array(t('Insert only'),t('Update only'),t('Insert and update')
+    $form['method'] = array(
+      '#type' => 'radios',
+      '#title' => 'Method',
+      '#required' => TRUE,
+      '#options' => array(
+        t('Insert only'),
+        t('Update only'),
+        t('Insert and update')
       ),
       '#description' => t('Select how features in the FASTA file are handled.
-       Select "Insert only" to insert the new features. If a feature already
-       exists with the same name or unique name and type then it is skipped.
-       Select "Update only" to only update featues that already exist in the
-       database.  Select "Insert and Update" to insert features that do
-       not exist and upate those that do.'),'#default_value' => 2
+         Select "Insert only" to insert the new features. If a feature already
+         exists with the same name or unique name and type then it is skipped.
+         Select "Update only" to only update featues that already exist in the
+         database.  Select "Insert and Update" to insert features that do
+         not exist and upate those that do.'),
+      '#default_value' => 2
     );
     $form['match_type'] = array('#type' => 'radios','#title' => 'Name Match Type','#required' => TRUE,
       '#options' => array(t('Name'),t('Unique name')
       ),
       '#description' => t('Used for "updates only" or "insert and update" methods. Not required if method type is "insert".
-      Feature data is stored in Chado with both a human-readable
-      name and a unique name. If the features in your FASTA file are uniquely identified using
-      a human-readable name then select the "Name" button. If your features are
-      uniquely identified using the unique name then select the "Unique name" button.  If you
-      loaded your features first using the GFF loader then the unique name of each
-      features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
-      By default, the FASTA loader will use the first word (character string
-      before the first space) as  the name for your feature. If
-      this does not uniquely identify your feature consider specifying a regular expression in the advanced section below.
-      Additionally, you may import both a name and a unique name for each sequence using the advanced options.'),
+        Feature data is stored in Chado with both a human-readable
+        name and a unique name. If the features in your FASTA file are uniquely identified using
+        a human-readable name then select the "Name" button. If your features are
+        uniquely identified using the unique name then select the "Unique name" button.  If you
+        loaded your features first using the GFF loader then the unique name of each
+        features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
+        By default, the FASTA loader will use the first word (character string
+        before the first space) as  the name for your feature. If
+        this does not uniquely identify your feature consider specifying a regular expression in the advanced section below.
+        Additionally, you may import both a name and a unique name for each sequence using the advanced options.'),
       '#default_value' => 1
     );
 
-    $form['analysis'] = array('#type' => 'fieldset','#title' => t('Analysis Used to Derive Features'),
+    // Additional Options
+    $form['additional'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Additional Options'),
+      '#collapsible' => TRUE,
       '#collapsed' => TRUE
     );
-    $form['analysis']['desc'] = array(
-      '#markup' => t("Why specify an analysis for a data load?  All data comes
-       from some place, even if downloaded from Genbank. By specifying
-       analysis details for all data uploads, it allows an end user to reproduce the
-       data set, but at least indicates the source of the data.")
-    );
 
-    // get the list of organisms
-    $sql = "SELECT * FROM {analysis} ORDER BY name";
-    $org_rset = chado_query($sql);
-    $analyses = array();
-    $analyses[''] = '';
-    while ($analysis = $org_rset->fetchObject()) {
-      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
-    }
-    $form['analysis']['analysis_id'] = array('#title' => t('Analysis'),'#type' => t('select'),
-      '#description' => t("Choose the analysis to which these features are associated"),
-      '#required' => TRUE,'#options' => $analyses
-    );
-
-    // Advanced Options
-    $form['advanced'] = array('#type' => 'fieldset','#title' => t('Advanced Options'),
-      '#collapsible' => TRUE,'#collapsed' => TRUE
-    );
-    $form['advanced']['re_help'] = array('#type' => 'item',
+    $form['additional']['re_help'] = array('#type' => 'item',
       '#value' => t('A regular expression is an advanced method for extracting information from a string of text.
-                   Your FASTA file may contain both a human-readable name and a unique name for each sequence.
-                   If you want to import
-                   both the name and unique name for all sequences, then you must provide regular expressions
-                   so that the loader knows how to separate them.
-                   Otherwise the name and uniquename will be the same.
-                   By default, this loader will use the first word in the definition
-                   lines of the FASTA file
-                   as the name or unique name of the feature.')
+         Your FASTA file may contain both a human-readable name and a unique name for each sequence.
+         If you want to import
+         both the name and unique name for all sequences, then you must provide regular expressions
+         so that the loader knows how to separate them.
+         Otherwise the name and uniquename will be the same.
+         By default, this loader will use the first word in the definition
+         lines of the FASTA file
+         as the name or unique name of the feature.')
     );
-    $form['advanced']['re_name'] = array('#type' => 'textfield',
+    $form['additional']['re_name'] = array('#type' => 'textfield',
       '#title' => t('Regular expression for the name'),'#required' => FALSE,
       '#description' => t('Enter the regular expression that will extract the
-       feature name from the FASTA definition line. For example, for a
-       defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the name would be, "^(.*?)\|.*$".  All FASTA
-       definition lines begin with the ">" symbol.  You do not need to incldue
-       this symbol in your regular expression.')
+         feature name from the FASTA definition line. For example, for a
+         defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
+         the regular expression for the name would be, "^(.*?)\|.*$".  All FASTA
+         definition lines begin with the ">" symbol.  You do not need to incldue
+         this symbol in your regular expression.')
     );
-    $form['advanced']['re_uname'] = array('#type' => 'textfield',
+    $form['additional']['re_uname'] = array('#type' => 'textfield',
       '#title' => t('Regular expression for the unique name'),'#required' => FALSE,
       '#description' => t('Enter the regular expression that will extract the
-       feature name from the FASTA definition line. For example, for a
-       defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the unique name would be "^.*?\|(.*)$").  All FASTA
-       definition lines begin with the ">" symbol.  You do not need to incldue
-       this symbol in your regular expression.')
+         feature name from the FASTA definition line. For example, for a
+         defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
+         the regular expression for the unique name would be "^.*?\|(.*)$").  All FASTA
+         definition lines begin with the ">" symbol.  You do not need to incldue
+         this symbol in your regular expression.')
     );
 
     // Advanced database cross reference options.
-    $form['advanced']['db'] = array('#type' => 'fieldset',
-      '#title' => t('External Database Reference'),'#weight' => 6,'#collapsed' => TRUE
+    $form['additional']['db'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('External Database Reference'),
+      '#weight' => 6,
+      '#collapsed' => TRUE
     );
-    $form['advanced']['db']['re_accession'] = array('#type' => 'textfield',
-      '#title' => t('Regular expression for the accession'),'#required' => FALSE,
+    $form['additional']['db']['re_accession'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Regular expression for the accession'),
+      '#required' => FALSE,
       '#description' => t('Enter the regular expression that will extract the accession for the external database for each feature from the FASTA definition line.'),
       '#weight' => 2
     );
@@ -164,13 +162,18 @@ class FASTAImporter extends TripalImporter {
     while ($db = $db_rset->fetchObject()) {
       $dbs[$db->db_id] = "$db->name";
     }
-    $form['advanced']['db']['db_id'] = array('#title' => t('External Database'),
+    $form['additional']['db']['db_id'] = array(
+      '#title' => t('External Database'),
       '#type' => t('select'),
       '#description' => t("Plese choose an external database for which these sequences have a cross reference."),
-      '#required' => FALSE,'#options' => $dbs,'#weight' => 1
+      '#required' => FALSE,
+      '#options' => $dbs,
+      '#weight' => 1
     );
 
-    $form['advanced']['relationship'] = array('#type' => 'fieldset','#title' => t('Relationships'),
+    $form['additional']['relationship'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Relationships'),
       '#weight' => 6,'#collapsed' => TRUE
     );
     $rels = array();
@@ -179,22 +182,30 @@ class FASTAImporter extends TripalImporter {
     $rels['derives_from'] = 'produced by (derives from)';
 
     // Advanced references options
-    $form['advanced']['relationship']['rel_type'] = array('#title' => t('Relationship Type'),
+    $form['additional']['relationship']['rel_type'] = array(
+      '#title' => t('Relationship Type'),
       '#type' => t('select'),
       '#description' => t("Use this option to create associations, or relationships between the
                         features of this FASTA file and existing features in the database. For
                         example, to associate a FASTA file of peptides to existing genes or transcript sequence,
                         select the type 'produced by'. For a CDS sequences select the type 'part of'"),
-      '#required' => FALSE,'#options' => $rels,'#weight' => 5
+      '#required' => FALSE,
+      '#options' => $rels,
+      '#weight' => 5
     );
-    $form['advanced']['relationship']['re_subject'] = array('#type' => 'textfield',
-      '#title' => t('Regular expression for the parent'),'#required' => FALSE,
+    $form['additional']['relationship']['re_subject'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Regular expression for the parent'),
+      '#required' => FALSE,
       '#description' => t('Enter the regular expression that will extract the unique
                          name needed to identify the existing sequence for which the
-                         relationship type selected above will apply.'),'#weight' => 6
+                         relationship type selected above will apply.'),
+      '#weight' => 6
     );
-    $form['advanced']['relationship']['parent_type'] = array('#type' => 'textfield',
-      '#title' => t('Parent Type'),'#required' => FALSE,
+    $form['additional']['relationship']['parent_type'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Parent Type'),
+      '#required' => FALSE,
       '#description' => t('Please enter the Sequence Ontology term for the parent.  For example
                          if the FASTA file being loaded is a set of proteins that are
                          products of genes, then use the SO term \'gene\' or \'transcript\' or equivalent. However,
@@ -305,7 +316,7 @@ class FASTAImporter extends TripalImporter {
   /**
    * @see TripalImporter::run()
    */
-  public function run($details, $job_id = NULL) {
+  public function run($details) {
     $arguments = $details->arguments;
 
     $dfile = $arguments['file_path'];
@@ -324,7 +335,7 @@ class FASTAImporter extends TripalImporter {
 
     $this->load($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
       $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id,
-      $match_type, $job_id);
+      $match_type);
   }
   /**
    * Load a fasta file.
@@ -361,25 +372,21 @@ class FASTAImporter extends TripalImporter {
    *   The analysis_id to associate the features in this fasta file with.
    * @param $match_type
    *  Whether to match existing features based on the 'Name' or 'Unique name'.
-   * @param $job
-   *  The tripal job
    */
   private function loadFasta($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
-      $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id, $match_type,
-      $job = NULL) {
+      $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id, $match_type) {
 
     // First get the type for this sequence.
     $cvtermsql = "
-    SELECT CVT.cvterm_id
-    FROM {cvterm} CVT
-      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-    WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
-  ";
+      SELECT CVT.cvterm_id
+      FROM {cvterm} CVT
+        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
+    ";
     $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $type,':synonym' => $type))->fetchObject();
     if (!$cvterm) {
-      tripal_report_error("T_fasta_loader", TRIPAL_ERROR,
-          "Cannot find the term type: '%type'", array('%type' => $type));
+      $this->logMessage("Cannot find the term type: '%type'", array('%type' => $type), TRIPAL_ERROR);
       return 0;
     }
 
@@ -387,9 +394,9 @@ class FASTAImporter extends TripalImporter {
     if ($parent_type) {
       $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type,':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
-        tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the paretne term type: '%type'", array(
+        $this->logMessage("Cannot find the paretne term type: '%type'", array(
           '%type' => $parentcvterm
-        ));
+        ), TRIPAL_ERROR);
         return 0;
       }
     }
@@ -398,9 +405,9 @@ class FASTAImporter extends TripalImporter {
     if ($rel_type) {
       $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
-        tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the relationship term type: '%type'", array(
+        $this->logMessage("Cannot find the relationship term type: '%type'", array(
           '%type' => $relcvterm
-        ));
+        ), TRIPAL_ERROR);
         return 0;
       }
     }
@@ -410,22 +417,16 @@ class FASTAImporter extends TripalImporter {
     $feature_tbl = chado_get_schema('feature');
     $dbxref_tbl = chado_get_schema('dbxref');
 
-    print "Step 1: finding sequences\n";
+    $this->logMessage(t("Step 1: finding sequences\n"));
     $filesize = filesize($dfile);
+    $this->setTotalItems($filesize);
     $fh = fopen($dfile, 'r');
     if (!$fh) {
-      tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "cannot open file: %dfile", array(
+      $this->logMessage("Cannot open file: %dfile", array(
         '%dfile' => $dfile
-      ));
+      ), TRIPAL_ERROR);
       return 0;
     }
-
-    // Calculate the interval at which we will print to the screen that status.
-    $interval = intval($filesize * 0.01);
-    if ($interval < 1) {
-      $interval = 1;
-    }
-    $inv_read = 0;
     $num_read = 0;
 
     // Iterate through the lines of the file. Keep a record for
@@ -436,7 +437,6 @@ class FASTAImporter extends TripalImporter {
     $set_start = FALSE;
     while ($line = fgets($fh)) {
       $num_read += strlen($line);
-      $intv_read += strlen($line);
 
       // If we encounter a definition line then get the name, uniquename,
       // accession and relationship subject from the definition line.
@@ -448,14 +448,12 @@ class FASTAImporter extends TripalImporter {
         // Get the feature name if a regular expression is provided.
         if ($re_name) {
           if (!preg_match("/$re_name/", $defline, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature name finds nothing. Line %line.", array(
-              '%line' => $i
-            ), 'error');
+            $this->logMessage("Regular expression for the feature name finds nothing. Line %line.",
+              array('%line' => $i), TRIPAL_ERROR);
           }
           elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-            tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array(
-              '%line' => $i
-            ), 'error');
+            $this->logMessage("Regular expression retrieves a value too long for the feature name. Line %line.",
+              array('%line' => $i), TRIPAL_WARNING);
           }
           else {
             $name = trim($matches[1]);
@@ -466,24 +464,23 @@ class FASTAImporter extends TripalImporter {
         elseif (strcmp($match_type, 'Name') == 0) {
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-              tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array(
-                '%line' => $i), 'error');
+              $this->logMessage("Regular expression retrieves a feature name too long for the feature name. Line %line.",
+                array('%line' => $i), TRIPAL_WARNING);
             }
             else {
               $name = trim($matches[1]);
             }
           }
           else {
-            tripal_report_error('trp-fasta', "ERROR: Cannot find a feature name. Line %line.", array(
-              '%line' => $i), 'error');
+            $this->logMessage("Cannot find a feature name. Line %line.", array('%line' => $i), TRIPAL_WARNING);
           }
         }
 
         // Get the feature uniquename if a regular expression is provided.
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
-              '%line' => $i), 'error');
+            $this->logMessage("Regular expression for the feature unique name finds nothing. Line %line.",
+              array('%line' => $i), TRIPAL_ERROR);
           }
           $uname = trim($matches[1]);
         }
@@ -495,17 +492,16 @@ class FASTAImporter extends TripalImporter {
             $uname = trim($matches[1]);
           }
           else {
-            tripal_report_error('trp-fasta', "ERROR: Cannot find a feature unique name. Line %line.", array(
-              '%line' => $i), 'error');
+            $this->logMessage("Cannot find a feature unique name. Line %line.",
+              array('%line' => $i), TRIPAL_ERROR);
           }
         }
 
         // Get the accession if a regular expression is provided.
         preg_match("/$re_accession/", $defline, $matches);
         if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves an accession too long for the feature name. " .
-              "Cannot add cross reference. Line %line.", array('%line' => $i
-              ), 'warning');
+          $this->logMessage("Regular expression retrieves an accession too long for the feature name. " .
+            "Cannot add cross reference. Line %line.", array('%line' => $i), TRIPAL_WARNING);
         }
         else {
           $accession = trim($matches[1]);
@@ -535,36 +531,18 @@ class FASTAImporter extends TripalImporter {
       // ending position
       $prev_pos = ftell($fh);
 
-      // update the job status every % bytes
-      if ($job and $intv_read >= $interval) {
-        $intv_read = 0;
-        $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-        if ($name) {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
-          " bytes.\r";
-        }
-        else {
-          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
-          " bytes.\r";
-        }
-        tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
-      }
     }
-    $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-    print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) .
-    " bytes.\r";
-    tripal_set_job_progress($job, 50);
 
     // Set the end position for the last sequence.
     $seqs[$num_seqs - 1]['seq_end'] = $num_read - strlen($line);
 
     // Now that we know where the sequences are in the file we need to add them.
-    print "\nStep 2: Importing sequences\n";
+    $this->logMessage("\nStep 2: Importing sequences\n");
     for ($i = 0; $i < $num_seqs; $i++) {
       $seq = $seqs[$i];
-      print "Importing " . ($i + 1) . " of $num_seqs. ";
+      $this->logMessage("Importing " . ($i + 1) . " of $num_seqs. ");
       if ($name) {
-        print "Current feature: " . $seq['name'] . ".\n";
+        $this->logMessage("Current feature: " . $seq['name'] . ".\n");
       }
       else {
         print "Current feature: " . $seq['uname'] . ".\n";
@@ -572,7 +550,9 @@ class FASTAImporter extends TripalImporter {
 
       loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], $seq['seq_end']);
     }
-    tripal_set_job_progress($job, 100);
+    if ($this->job) {
+      tripal_set_job_progress($this->job->job_id, 100);
+    }
     fclose($fh);
 
   }
@@ -593,8 +573,8 @@ class FASTAImporter extends TripalImporter {
       $results = chado_select_record('feature', array('feature_id'
       ), $values);
       if (count($results) > 1) {
-        tripal_report_error('T_fasta_loader', "Multiple features exist with the name '%name' of type
-               '%type' for the organism.  skipping", array('%name' => $name,'%type' => $type));
+        $this->logMessage("Multiple features exist with the name '%name' of type '%type' for the organism.  skipping",
+          array('%name' => $name,'%type' => $type), TRIPAL_ERROR);
         return 0;
       }
       if (count($results) == 1) {
@@ -612,8 +592,8 @@ class FASTAImporter extends TripalImporter {
 
       $results = chado_select_record('feature', array('feature_id'), $values);
       if (count($results) > 1) {
-        tripal_report_error('T_fasta_loader', TRIPAL_WARNING, "Multiple features exist with the name '%name' of type '%type' for the organism.  skipping", array(
-          '%name' => $name,'%type' => $type));
+        $this->logMessage("Multiple features exist with the name '%name' of type '%type' for the organism.  skipping",
+          array('%name' => $name,'%type' => $type), TRIPAL_WARNING);
         return 0;
       }
       if (count($results) == 1) {
@@ -622,9 +602,8 @@ class FASTAImporter extends TripalImporter {
 
       // If the feature exists but this is an "insert only" then skip.
       if ($feature and (strcmp($method, 'Insert only') == 0)) {
-        tripal_report_error('T_fasta_loader', TRIPAL_WARNING, "Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.", array(
-          '%name' => $name,'%uname' => $uname,'%type' => drupal_strtolower($match_type)
-        ));
+        $this->logMessage("Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.",
+          array('%name' => $name,'%uname' => $uname,'%type' => drupal_strtolower($match_type)), TRIPAL_WARNING);
         return 0;
       }
     }
@@ -649,8 +628,8 @@ class FASTAImporter extends TripalImporter {
       );
       $success = chado_insert_record('feature', $values);
       if (!$success) {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to insert feature '%name (%uname)'", array(
-          '%name' => $name,'%uname' => $numane));
+        $this->logMessage("Failed to insert feature '%name (%uname)'", array(
+          '%name' => $name,'%uname' => $numane), TRIPAL_ERROR);
         return 0;
       }
 
@@ -666,8 +645,8 @@ class FASTAImporter extends TripalImporter {
         $feature = $results[0];
       }
       else {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to retreive newly inserted feature '%name (%uname)'", array(
-          '%name' => $name,'%uname' => $numane));
+        $this->logMessage("Failed to retreive newly inserted feature '%name (%uname)'", array(
+          '%name' => $name,'%uname' => $numane), TRIPAL_ERRORR);
         return 0;
       }
 
@@ -678,186 +657,175 @@ class FASTAImporter extends TripalImporter {
     // if we don't have a feature and the user wants to do an update then fail
     if (!$feature and (strcmp($method, 'Update only') == 0 or
         drupal_strcmp($method, 'Insert and update') == 0)) {
-          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to find feature '%name' ('%uname') while matching on " .
-              drupal_strtolower($match_type), array('%name' => $name,'%uname' => $uname));
-          return 0;
-        }
-
-        // if we do have a feature and this is an update then proceed with the update
-        if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or
-            strcmp($method, 'Insert and update') == 0)) {
-
-              // if the user wants to match on the Name field
-              if (strcmp($match_type, 'Name') == 0) {
-
-                // if we're matching on the name but do not have a unique name then we
-                // don't want to update the uniquename.
-                $values = array();
-                if ($uname) {
-
-                  // First check to make sure that by changing the unique name of this
-                  // feature that we won't conflict with another existing feature of
-                  // the same name
-        $values = array(
-          'organism_id' => $organism_id,
-          'uniquename' => $uname,
-          'type_id' => $cvterm->cvterm_id
-                  );
-                      $results = chado_select_record('feature', array('feature_id'
-          ), $values);
-          if (count($results) > 0) {
-          tripal_report_error('T_fasta_loader', "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it
-            conflicts with an existing feature with the same uniquename and type.", array(
-                  '%name' => $name,'%uname' => $uname,'%type' => $type
-          ));
-          return 0;
-                }
-
-                // the changes to the uniquename don't conflict so proceed with the update
-                $values = array('uniquename' => $uname);
-                  $match = array(
-                  'name' => $name,
-                  'organism_id' => $organism_id,
-                  'type_id' => $cvterm->cvterm_id
-                );
-
-                // perform the update
-                  $success = chado_update_record('feature', $match, $values);
-        if (!$success) {
-          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to update feature '%name' ('%name')", array(
-                  '%name' => $name,'%uiname' => $uname
-                  ));
-                  return 0;
-            }
-  }
-  }
-
-  // If the user wants to match on the unique name field.
-  if (strcmp($match_type, 'Unique name') == 0) {
-  // If we're matching on the uniquename and have a new name then
-  // we want to update the name.
-  $values = array();
-  if ($name) {
-      $values = array('name' => $name);
-        $match = array(
-          'uniquename' => $uname,
-          'organism_id' => $organism_id,
-          'type_id' => $cvterm->cvterm_id
-  );
-  $success = chado_update_record('feature', $match, $values);
-        if (!$success) {
-          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to update feature '%name' ('%name')", array(
-          '%name' => $name,'%uiname' => $uname
-          ));
-          return 0;
-  }
-  }
-  }
-  }
-
-  // Update the residues for this feature
-  loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
-
-  // add in the analysis link
-  if ($analysis_id) {
-  // if the association doens't alredy exist then add one
-  $values = array(
-      'analysis_id' => $analysis_id,
-      'feature_id' => $feature->feature_id
-  );
-  $results = chado_select_record('analysisfeature', array('analysisfeature_id'), $values);
-                  if (count($results) == 0) {
-                  $success = chado_insert_record('analysisfeature', $values);
-                    if (!$success) {
-                        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to associate analysis and feature '%name' ('%name')", array(
-                        '%name' => $name,'%uname' => $uname
-                        ));
-                        return 0;
-                        }
-                        }
-                        }
-
-                        // now add the database cross reference
-                        if ($db_id) {
-                        // check to see if this accession reference exists, if not add it
-                        $values = array(
-                        'db_id' => $db_id,
-                            'accession' => $accession
-                        );
-    $results = chado_select_record('dbxref', array('dbxref_id'), $values);
-      // if the accession doesn't exist then add it
-                            if (count($results) == 0) {
-                            $results = chado_insert_record('dbxref', $values);
-                            if (!$results) {
-                            tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to add database accession '%accession'", array(
-                                '%accession' => $accession));
-                        return 0;
-                        }
-                        $results = chado_select_record('dbxref', array('dbxref_id'), $values);
-                        if (count($results) == 1) {
-                        $dbxref = $results[0];
-                        }
-                        else {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to retreive newly inserted dbxref '%name (%uname)'", array(
-          '%name' => $name,'%uname' => $numane));
-            return 0;
-                        }
-                        }
-                        else {
-      $dbxref = $results[0];
+      $this->logMessage("Failed to find feature '%name' ('%uname') while matching on " . drupal_strtolower($match_type) . ".",
+          array('%name' => $name,'%uname' => $uname), TRIPAL_ERROR);
+      return 0;
     }
 
-    // check to see if the feature dbxref record exists if not, then add it
-                        $values = array(
-                        'feature_id' => $feature->feature_id,
-                        'dbxref_id' => $dbxref->dbxref_id
-                        );
-                        $results = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values);
-                        if (count($results) == 0) {
-                        $success = chado_insert_record('feature_dbxref', $values);
-      if (!$success) {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to add associate database accession '%accession' with feature", array(
-          '%accession' => $accession
-          ));
+    // if we do have a feature and this is an update then proceed with the update
+    if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or
+        strcmp($method, 'Insert and update') == 0)) {
+
+      // if the user wants to match on the Name field
+      if (strcmp($match_type, 'Name') == 0) {
+
+        // if we're matching on the name but do not have a unique name then we
+        // don't want to update the uniquename.
+        $values = array();
+        if ($uname) {
+
+          // First check to make sure that by changing the unique name of this
+          // feature that we won't conflict with another existing feature of
+          // the same name
+          $values = array(
+            'organism_id' => $organism_id,
+            'uniquename' => $uname,
+            'type_id' => $cvterm->cvterm_id
+          );
+          $results = chado_select_record('feature', array('feature_id'), $values);
+          if (count($results) > 0) {
+            $this->logMessage("Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it " .
+              "conflicts with an existing feature with the same uniquename and type.",
+              array('%name' => $name,'%uname' => $uname,'%type' => $type), TRIPAL_ERROR);
+            return 0;
+          }
+
+          // the changes to the uniquename don't conflict so proceed with the update
+          $values = array('uniquename' => $uname);
+            $match = array(
+            'name' => $name,
+            'organism_id' => $organism_id,
+            'type_id' => $cvterm->cvterm_id
+          );
+
+          // perform the update
+          $success = chado_update_record('feature', $match, $values);
+          if (!$success) {
+            $this->logMessage("Failed to update feature '%name' ('%name')",
+              array('%name' => $name,'%uiname' => $uname), TRIPAL_ERROR);
+            return 0;
+          }
+        }
+      }
+
+      // If the user wants to match on the unique name field.
+      if (strcmp($match_type, 'Unique name') == 0) {
+        // If we're matching on the uniquename and have a new name then
+        // we want to update the name.
+        $values = array();
+        if ($name) {
+          $values = array('name' => $name);
+          $match = array(
+            'uniquename' => $uname,
+            'organism_id' => $organism_id,
+            'type_id' => $cvterm->cvterm_id
+          );
+          $success = chado_update_record('feature', $match, $values);
+          if (!$success) {
+           $this->logMessage("Failed to update feature '%name' ('%name')",
+             array('%name' => $name,'%uiname' => $uname), TRIPAL_ERROR);
+           return 0;
+          }
+        }
+      }
+    }
+
+    // Update the residues for this feature
+    loadFastaResidues($fh, $feature->feature_id, $seq_start, $seq_end);
+
+    // add in the analysis link
+    if ($analysis_id) {
+      // if the association doens't alredy exist then add one
+      $values = array(
+          'analysis_id' => $analysis_id,
+          'feature_id' => $feature->feature_id
+      );
+      $results = chado_select_record('analysisfeature', array('analysisfeature_id'), $values);
+      if (count($results) == 0) {
+        $success = chado_insert_record('analysisfeature', $values);
+        if (!$success) {
+          $this->logMessage("Failed to associate analysis and feature '%name' ('%name')",
+            array('%name' => $name,'%uname' => $uname), TRIPAL_ERROR);
           return 0;
-                        }
-                        }
-                        }
+        }
+      }
+    }
 
-                        // now add in the relationship if one exists. If not, then add it
-                        if ($rel_type) {
-                        $values = array('organism_id' => $organism_id,'uniquename' => $parent,
-      'type_id' => $parentcvterm->cvterm_id
-                        );
-                          $results = chado_select_record('feature', array('feature_id'
-                          ), $values);
-    if (count($results) != 1) {
-      tripal_report_error('T_fasta_loader', "Cannot find a unique fature for the parent '%parent' of type
-        '%type' for the feature.", array(
-                          '%parent' => $parent,'%type' => $parent_type
-                        ));
-                          return 0;
-                          }
-                          $parent_feature = $results[0];
+    // now add the database cross reference
+    if ($db_id) {
+      // check to see if this accession reference exists, if not add it
+      $values = array(
+      'db_id' => $db_id,
+          'accession' => $accession
+      );
+      $results = chado_select_record('dbxref', array('dbxref_id'), $values);
 
-                          // check to see if the relationship already exists if not then add it
-                          $values = array(
-                            'subject_id' => $feature->feature_id,
-                            'object_id' => $parent_feature->feature_id,
-                            'type_id' => $relcvterm->cvterm_id
-                          );
-                          $results = chado_select_record('feature_relationship', array('feature_relationship_id'), $values);
-                          if (count($results) == 0) {
-                          $success = chado_insert_record('feature_relationship', $values);
-                          if (!$success) {
-                          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to add associate database accession '%accession' with feature", array(
-                          '%accession' => $accession
-                          ));
-                          return 0;
+      // if the accession doesn't exist then add it
+      if (count($results) == 0) {
+        $results = chado_insert_record('dbxref', $values);
+        if (!$results) {
+          $this->logMessage("Failed to add database accession '%accession'",
+            array('%accession' => $accession), TRIPAL_ERROR);
+            return 0;
+          }
+          $results = chado_select_record('dbxref', array('dbxref_id'), $values);
+          if (count($results) == 1) {
+            $dbxref = $results[0];
+          }
+        else {
+          $this->logMessage("Failed to retreive newly inserted dbxref '%name (%uname)'",
+            array('%name' => $name,'%uname' => $numane), TRIPAL_ERROR);
+            return 0;
+        }
+      }
+      else {
+        $dbxref = $results[0];
+      }
+
+      // check to see if the feature dbxref record exists if not, then add it
+      $values = array(
+        'feature_id' => $feature->feature_id,
+        'dbxref_id' => $dbxref->dbxref_id
+      );
+      $results = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values);
+      if (count($results) == 0) {
+        $success = chado_insert_record('feature_dbxref', $values);
+        if (!$success) {
+          $this->logMessage("Failed to add associate database accession '%accession' with feature",
+            array('%accession' => $accession), TRIPAL_ERROR);
+          return 0;
+        }
+      }
+    }
+
+    // now add in the relationship if one exists. If not, then add it
+    if ($rel_type) {
+      $values = array('organism_id' => $organism_id,'uniquename' => $parent, 'type_id' => $parentcvterm->cvterm_id);
+      $results = chado_select_record('feature', array('feature_id'), $values);
+      if (count($results) != 1) {
+        $this->logMessage("Cannot find a unique fature for the parent '%parent' of type '%type' for the feature.",
+          array('%parent' => $parent,'%type' => $parent_type), TRIPAL_ERROR);
+          return 0;
+      }
+      $parent_feature = $results[0];
+
+      // check to see if the relationship already exists if not then add it
+      $values = array(
+        'subject_id' => $feature->feature_id,
+        'object_id' => $parent_feature->feature_id,
+        'type_id' => $relcvterm->cvterm_id
+      );
+      $results = chado_select_record('feature_relationship', array('feature_relationship_id'), $values);
+      if (count($results) == 0) {
+        $success = chado_insert_record('feature_relationship', $values);
+        if (!$success) {
+          $this->logMessage("Failed to add associate database accession '%accession' with feature",
+            array('%accession' => $accession), TRIPAL_ERROR);
+          return 0;
+        }
       }
     }
   }
-}
 
   /**
    * Adds the residues column to the feature.
@@ -871,65 +839,44 @@ class FASTAImporter extends TripalImporter {
    * @param $seq_start
    * @param $seq_end
    */
-   private function loadFastaResidues($fh, $feature_id, $seq_start, $seq_end) {
+  private function loadFastaResidues($fh, $feature_id, $seq_start, $seq_end) {
 
-     // First position the file at the beginning of the sequence
-     fseek($fh, $seq_start, SEEK_SET);
-     $chunk_size = 100000000;
-     $chunk = '';
-     $seqlen = ($seq_end - $seq_start) + 1;
+    // First position the file at the beginning of the sequence
+    fseek($fh, $seq_start, SEEK_SET);
+    $chunk_size = 100000000;
+    $chunk = '';
+    $seqlen = ($seq_end - $seq_start) + 1;
 
-  // Calculate the interval at which we updated the precent complete.
-  $interval = intval($seqlen * 0.01);
-    if ($interval < 1) {
-    $interval = 1;
-     }
-  // We don't to repeat the update too often or it slows things down, so
-    // if the interval is less than 1000 then bring it up to that.
-    if ($interval < 100000) {
-        $interval = 100000;
-     }
-     $chunk_intv_read = 0;
-     $intv_read = 0;
-       $num_read = 0;
-       $total_seq_size = 0;
+    $num_read = 0;
+    $total_seq_size = 0;
 
-       // First, make sure we don't have a null in the residues
-       $sql = "UPDATE {feature} SET residues = '' WHERE feature_id = :feature_id";
-       chado_query($sql, array(':feature_id' => $feature_id
-       ));
+    // First, make sure we don't have a null in the residues
+    $sql = "UPDATE {feature} SET residues = '' WHERE feature_id = :feature_id";
+    chado_query($sql, array(':feature_id' => $feature_id));
 
-       // Read in the lines until we reach the end of the sequence. Once we
-         // get a specific bytes read then append the sequence to the one in the
-         // database.
-           print "Sequence complete: 0%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
-  while ($line = fgets($fh)) {
-           $num_read += strlen($line) + 1;
-    $chunk_intv_read += strlen($line) + 1;
-           $intv_read += strlen($line) + 1;
-           $chunk .= trim($line);
+    // Read in the lines until we reach the end of the sequence. Once we
+    // get a specific bytes read then append the sequence to the one in the
+    // database.
+    while ($line = fgets($fh)) {
+      $num_read += strlen($line) + 1;
+      $chunk_intv_read += strlen($line) + 1;
+      $this->addItemsHandled($num_read);
+      $chunk .= trim($line);
 
-           // If we've read in enough of the sequence then append it to the database.
-           if ($chunk_intv_read >= $chunk_size) {
-      $sql = "
-        UPDATE {feature}
-        SET residues = residues || :chunk
-        WHERE feature_id = :feature_id
-          ";
-          $success = chado_query($sql, array(':feature_id' => $feature_id,':chunk' => $chunk
-           ));
-      if (!$success) {
-        return FALSE;
-                          }
-                          $total_seq_size += strlen($chunk);
+      // If we've read in enough of the sequence then append it to the database.
+      if ($chunk_intv_read >= $chunk_size) {
+        $sql = "
+          UPDATE {feature}
+          SET residues = residues || :chunk
+          WHERE feature_id = :feature_id
+        ";
+        $success = chado_query($sql, array(':feature_id' => $feature_id,':chunk' => $chunk));
+        if (!$success) {
+          return FALSE;
+        }
+        $total_seq_size += strlen($chunk);
         $chunk = '';
         $chunk_intv_read = 0;
-      }
-      if ($intv_read >= $interval) {
-        $percent = sprintf("%.2f", ($total_seq_size / $seqlen) * 100);
-        print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) .
-           " bytes. \r";
-        $intv_read = 0;
       }
 
       // If we've reached the ned of the sequence then break out of the loop
@@ -945,8 +892,7 @@ class FASTAImporter extends TripalImporter {
           SET residues = residues || :chunk
           WHERE feature_id = :feature_id
         ";
-      $success = chado_query($sql, array(':feature_id' => $feature_id,':chunk' => $chunk
-      ));
+      $success = chado_query($sql, array(':feature_id' => $feature_id,':chunk' => $chunk));
       if (!$success) {
         return FALSE;
       }
@@ -957,12 +903,7 @@ class FASTAImporter extends TripalImporter {
 
     // Now update the seqlen and md5checksum fields
     $sql = "UPDATE {feature} SET seqlen = char_length(residues),  md5checksum = md5(residues) WHERE feature_id = :feature_id";
-    chado_query($sql, array(':feature_id' => $feature_id
-    ));
+    chado_query($sql, array(':feature_id' => $feature_id));
 
-    $percent = sprintf("%.2f", ($num_read / $seqlen) * 100);
-    print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) .
-       " bytes. \r";
   }
-
 }

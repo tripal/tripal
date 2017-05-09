@@ -357,16 +357,16 @@ function tripal_chado_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
-  $items['admin/tripal/loaders/fasta_loader'] = array(
-    'title' => 'Chado FASTA File Loader',
-    'description' => 'Load sequences from a multi-FASTA file into Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_fasta_load_form'),
-    'access arguments' => array('administer tripal'),
-    'file' => 'includes/loaders/tripal_chado.fasta_loader.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_NORMAL_ITEM,
-  );
+//   $items['admin/tripal/loaders/fasta_loader'] = array(
+//     'title' => 'Chado FASTA File Loader',
+//     'description' => 'Load sequences from a multi-FASTA file into Chado',
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_feature_fasta_load_form'),
+//     'access arguments' => array('administer tripal'),
+//     'file' => 'includes/loaders/tripal_chado.fasta_loader.inc',
+//     'file path' => drupal_get_path('module', 'tripal_chado'),
+//     'type' => MENU_NORMAL_ITEM,
+//   );
 //   $items['admin/tripal/loaders/gff3_load'] = array(
 //     'title' => 'Chado GFF3 File Loader',
 //     'description' => 'Import a GFF3 file into Chado',

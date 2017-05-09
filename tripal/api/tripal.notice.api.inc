@@ -29,9 +29,10 @@ define('TRIPAL_DEBUG',7);
 
 
 /**
- * Provide better error notice for Tripal. If the environment variable
- * 'TRIPAL_DEBUG' is set to 1 then this function will add backtrace
- * information to the message.
+ * Provide better error notice for Tripal.
+ *
+ * If the environment variable 'TRIPAL_DEBUG' is set to 1 then this function
+ * will add backtrace information to the message.
  *
  * @param $type
  *   The catagory to which this message belongs. Can be any string, but the
