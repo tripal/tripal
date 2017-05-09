@@ -1034,6 +1034,25 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
   if (array_key_exists('prop_term_name', $form_state['values'])
       and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
+
+    // Make sure we have only one property cvterm selected
+    $num_selected = 0;
+    foreach ($form_state['values'] as $key => $value) {
+      $matches = array();
+      if (preg_match("/^prop_term-(\d+)$/", $key, $matches) and
+          $form_state['values']['prop_term-' . $matches[1]]) {
+        $cvterm_id = $matches[1];
+        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $num_selected++;
+      }
+    }
+    if ($num_selected == 0) {
+      form_set_error('', 'Please select at least one property term.');
+    }
+    else if ($num_selected > 1) {
+      form_set_error('prop_term-' . $cvterm_id, 'Please select only one property term from the list below.');
+    }
+    $form_state['prop_term'] = $term;
   }
   if (array_key_exists('prop_term_value', $form_state['values'])
       and $form_state['values']['prop_term_value']) {
@@ -1045,24 +1064,7 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     form_set_error('base_chado_table', 'Please select a default table.');
   }
 
-  // Make sure we have only one property cvterm selected
-  $num_selected = 0;
-  foreach ($form_state['values'] as $key => $value) {
-    $matches = array();
-    if (preg_match("/^prop_term-(\d+)$/", $key, $matches) and
-        $form_state['values']['prop_term-' . $matches[1]]) {
-      $cvterm_id = $matches[1];
-      $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-      $num_selected++;
-    }
-  }
-  if ($num_selected == 0) {
-    form_set_error('', 'Please select at least one property term.');
-  }
-  else if ($num_selected > 1) {
-    form_set_error('prop_term-' . $cvterm_id, 'Please select only one property term from the list below.');
-  }
-  $form_state['prop_term'] = $term;
+
 
 }
 /**

@@ -10,7 +10,7 @@ class FASTAImporter extends TripalImporter {
    * The machine name for this loader. This name will be used to construct
    * the URL for the loader.
    */
-  public static $machine_name = 'fasta_loader';
+  public static $machine_name = 'chado_fasta_loader';
 
   /**
    * A brief description for this loader.  This description will be

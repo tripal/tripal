@@ -12,7 +12,7 @@ class GFF3Importer extends TripalImporter {
    * The machine name for this loader. This name will be used to construct
    * the URL for the loader.
    */
-  public static $machine_name = 'gff3_loader';
+  public static $machine_name = 'chado_gff3_loader';
 
   /**
    * A brief description for this loader.  This description will be

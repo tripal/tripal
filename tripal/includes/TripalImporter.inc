@@ -68,9 +68,29 @@ class TripalImporter {
    */
   public static $button_text = 'Import File';
 
+  /**
+   * Indicates the methods that the file uploader will support.
+   */
+  public static $methods = array(
+    // Allow the user to upload a file to the server.
+    'file_upload' => TRUE,
+    // Allow the user to provide the path on the Tripal server for the file.
+    'file_local' => TRUE,
+    // Allow the user to provide a remote URL for the file.
+    'file_remote' => TRUE,
+  );
+
+  /**
+   * Indicates if the file must be provided.  An example when it may not be
+   * necessary to require that the user provide a file for uploading if the
+   * loader keeps track of previous files and makes those available for
+   * selection.
+   */
+  public static $file_required = TRUE;
+
 
   // --------------------------------------------------------------------------
-  //                  PRIVATE MEMBERS -- DO NOT EDIT
+  //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
   // --------------------------------------------------------------------------
   /**
    * The job that this importer is associated with.  This is needed for
@@ -120,28 +140,58 @@ class TripalImporter {
   }
 
   // --------------------------------------------------------------------------
-  //                     PROTECTED FUNCTIONS
-  // --------------------------------------------------------------------------
-
-
-  // --------------------------------------------------------------------------
   //                     OVERRIDEABLE FUNCTIONS
   // --------------------------------------------------------------------------
 
+  /**
+   * Provides form elements to be added to the loader form.
+   *
+   * These form elements are added after the file uploader section that
+   * is automaticaly provided by the TripalImporter.
+   *
+   * @return
+   *   A $form array.
+   */
   public function form($form, &$form_state) {
     return $form;
   }
+
+  /**
+   * Handles submission of the form elements.
+   *
+   * The form elements provided in the implementation of the form() function
+   * can be used for special submit if needed.
+   */
   public function formSubmit($form, &$form_state) {
 
   }
+
+  /**
+   * Handles validation of the form elements.
+   *
+   * The form elements provided in the implementation of the form() function
+   * should be validated using this function.
+   */
   public function formValidate($form, &$form_state) {
 
   }
+
+  /**
+   * Executes tasks that should be run prior to execution of the run() function.
+   */
   public function preRun($details) {
 
   }
+  /**
+   * Performs the import.
+   *
+   * This function must be overrriden by a child class to perform the import.
+   */
   public function run($details) {
   }
+  /**
+   * Executes tasks that should be run after execution of the run() function.
+   */
   public function postRun($details) {
 
   }
@@ -174,7 +224,7 @@ class TripalImporter {
    *     - TRIPAL_INFO: (default) Informational messages.
    *     - TRIPAL_DEBUG: Debug-level messages.
    */
-  protected function logMessage($message, $variables = array(), $severity = TRIPAL_INFO) {
+  public function logMessage($message, $variables = array(), $severity = TRIPAL_INFO) {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
@@ -215,7 +265,8 @@ class TripalImporter {
    * @param unknown $num_handled
    */
   protected function addItemsHandled($num_handled) {
-    $this->setItemsHandled($this->num_handled += $num_handled);
+    $items_handled = $this->num_handled = $this->num_handled + $num_handled;
+    $this->setItemsHandled($items_handled);
   }
   /**
    * Sets the number of items that have been processed.
@@ -233,12 +284,19 @@ class TripalImporter {
     // First set the number of items handled.
     $this->num_handled = $total_handled;
 
+    if ($total_handled == 0) {
+      $memory = number_format(memory_get_usage());
+      print "Percent complete: 0%. Memory: " . $memory . " bytes.\r";
+      return;
+    }
+
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
     $percent = sprintf("%.2f", ($this->num_handled / $this->total_items) * 100);
     $diff = $percent - $this->prev_update;
-    if ($diff >= $interval) {
-      $this->prev_update = $diff;
+
+    if ($diff >= $this->interval) {
+
       $memory = number_format(memory_get_usage());
       print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes.\r";
 
@@ -246,6 +304,8 @@ class TripalImporter {
       if ($this->job) {
         $this->job->setProgress($percent);
       }
+
+      $this->prev_update = $diff;
     }
   }
 

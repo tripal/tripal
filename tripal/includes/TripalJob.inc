@@ -463,6 +463,7 @@ class TripalJob {
     // Report this message to watchdog or set a message.
     if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
       tripal_report_error('tripal_job', $severity, $message, $variables);
+      $this->job->status = 'Error';
     }
   }
 }

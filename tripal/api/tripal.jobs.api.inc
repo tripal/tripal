@@ -363,8 +363,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
       WHERE
         TJ.start_time IS NULL AND
         TJ.end_time IS NULL AND
-        TJ.job_id = :job_id AND
-        TJ.status =! 'Cancelled'
+        TJ.job_id = :job_id
       ORDER BY priority ASC, job_id ASC
     ";
     $jobs = db_query($sql, array(':job_id' => $job_id));
@@ -375,7 +374,8 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
       FROM {tripal_jobs} TJ
       WHERE
         TJ.start_time IS NULL AND
-        TJ.end_time IS NULL
+        TJ.end_time IS NULL AND
+        NOT TJ.status = 'Cancelled'
       ORDER BY priority ASC,job_id ASC
     ";
     $jobs = db_query($sql);
