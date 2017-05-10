@@ -547,10 +547,12 @@ class FASTAImporter extends TripalImporter {
 
     // Now that we know where the sequences are in the file we need to add them.
     $this->logMessage("Step 2: Importing sequences...");
+    $this->logMessage("Found !num_seqs sequence(s).", array('!num_seqs' => $num_seqs));
     $this->setTotalItems($num_seqs);
+    $this->setItemsHandled(0);
     for ($i = 0; $i < $num_seqs; $i++) {
       $seq = $seqs[$i];
-      //$this->logMessage("  importing: @name", array('@name' => $seq['name']));
+      //$this->logMessage("Importing !seqname.", array('!seqname' => $seq['name']));
       $this->loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id,
           $seq['accession'], $seq['subject'], $rel_type, $parent_type,
           $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
@@ -863,7 +865,6 @@ class FASTAImporter extends TripalImporter {
     while ($line = fgets($fh)) {
       $num_read += strlen($line) + 1;
       $chunk_intv_read += strlen($line) + 1;
-      $this->addItemsHandled($num_read);
       $chunk .= trim($line);
 
       // If we've read in enough of the sequence then append it to the database.

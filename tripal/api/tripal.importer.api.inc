@@ -90,6 +90,7 @@ function tripal_load_include_importer_class($class) {
  */
 function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
+  $loader = NULL;
   try {
     // begin the transaction
     $transaction = db_transaction();
@@ -101,6 +102,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     $loader->setJob($job);
     $loader->prepareFile();
     $loader->run();
+    $loader->cleanFile();
 
     if ($job) {
       $job->logMessage("Done");
@@ -122,6 +124,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     $transaction->rollback();
     if ($job) {
       $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+    }
+    if ($loader) {
+      $loader->cleanFile();
     }
   }
 }

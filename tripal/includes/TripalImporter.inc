@@ -383,22 +383,47 @@ class TripalImporter {
 
     try {
       if (!empty($this->arguments['file']['file_remote'])) {
+        $file_remote = $this->arguments['file']['file_remote'];
+        $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
+
         // Create a temporary file.
         $temp = tempnam("temporary://", 'import_');
-        $url_fh = fopen($this->arguments['remote_file'], "r");
+        $url_fh = fopen($file_remote, "r");
         $tmp_fh = fopen($temp, "w");
         if (!$url_fh) {
-          throw new Exception(t("Unable to download the remote file at !url. Could a firewall be blocking outgoing connections?",
-              array('!url', $details->arguments['file_url'])));
+          throw new Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
+              array('%url', $file_remote)));
         }
+
         // Write the contents of the remote file to the temp file.
         while (!feof($url_fh)) {
           fwrite($tmp_fh, fread($url_fh, 255), 255);
         }
-        // Set the path to the file for the importer to use.
-        $details->arguments['file_path'] = $temp;
 
+        // Set the path to the file for the importer to use.
+        $this->arguments['file']['file_path'] = $temp;
         $this->is_prepared = TRUE;
+      }
+    }
+    catch (Exception $e){
+      throw new Exception('Cannot prepare the importer: ' .  $e->getMessage());
+    }
+  }
+
+  /**
+   * Cleans up any temporary files that were created by the prepareFile().
+   *
+   * This function should be called after a run() to remove any temporary
+   * files and keep them from building up on the server.
+   */
+  public function cleanFile() {
+    try {
+      // If a remote file was downloaded then remove it.
+      if (!empty($this->arguments['file']['file_remote']) and
+          file_exists($this->arguments['file']['file_path'])) {
+        $this->logMessage('Removing downloaded file...');
+        unlink($this->arguments['file']['file_path']);
+        $this->is_prepared = FALSE;
       }
     }
     catch (Exception $e){
