@@ -316,7 +316,7 @@ class GFF3Importer extends TripalImporter {
     $re_mrna = $arguments['re_mrna'];
     $re_protein = $arguments['re_protein'];
 
-    $this->load($file_path, $organism_id, $analysis_id,
+    $this->loadGFF3($file_path, $organism_id, $analysis_id,
         $add_only, $update, $refresh, $remove, $use_transaction,
         $target_organism_id, $target_type,  $create_target,
         $start_line, $landmark_type, $alt_id_attr,  $create_organism,
@@ -397,7 +397,7 @@ class GFF3Importer extends TripalImporter {
    *
    * @ingroup gff3_loader
    */
-  private function load($gff_file, $organism_id, $analysis_id,
+  private function loadGFF3($gff_file, $organism_id, $analysis_id,
       $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
       $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
       $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
