@@ -108,13 +108,20 @@ function tripal_chado_load_ontologies() {
      ),
 
   );
+
+  module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
       // Only load ontologies that are not already in the cv table.
       $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
       if (!$cv) {
-        tripal_chado_load_obo_v1_2_id($obo_id);
+        print "Loading ontology: " . $ontologies[$i]['name'] . "...\n";
+        $obo = new OBOImporter();
+        $obo->run(array('obo_id' => $obo_id));
+      }
+      else {
+        print "Ontology already loaded (skipping): " . $ontologies[$i]['name'] . "...\n";
       }
     }
   }

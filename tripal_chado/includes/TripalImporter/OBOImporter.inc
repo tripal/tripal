@@ -361,6 +361,10 @@ class OBOImporter extends TripalImporter {
   }
   /**
    * @see TripalImporter::run()
+   *
+   * @param $details
+   *   The following arguments are supported:
+   *     - obo_id:  (required) The ID of the ontology to be imported.
    */
   public function run($details) {
 

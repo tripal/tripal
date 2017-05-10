@@ -358,6 +358,10 @@ function tripal_permission() {
       'description' => t('Allows the user to create, update and delete Tripal content types.'),
       'restrict access' => TRUE,
     ),
+    'upload files' => array(
+      'title' => t('Upload Files'),
+      'description' => t('Allows the user to upload files using Tripal\'s HTML5 loader.'),
+    ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
       'description' => t('Tripal will provide blue shaded boxes that provide
