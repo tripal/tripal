@@ -237,10 +237,12 @@ class TripalImporter {
    *   -fid: provides the Drupal managed File ID for the file.
    *   -file_local: provides the full path to the file on the server.
    *   -file_remote: provides the remote URL for the file.
+   *   This argument is optional if the loader does not use the built-in
+   *   file loader.
    *
    * @throws Exception
    */
-  public function create($run_args, $file_details) {
+  public function create($run_args, $file_details = array()) {
     global $user;
     $class = get_called_class();
 

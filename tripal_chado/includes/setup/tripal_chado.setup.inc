@@ -126,7 +126,7 @@ function tripal_chado_load_ontologies() {
         print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
         $obo_importer = new OBOImporter();
         $obo_importer->create(array('obo_id' => $obo_id));
-        $obo->run();
+        $obo_importer->run();
       }
       else {
         print "Ontology already loaded (skipping): " . $ontologies[$i]['name'] . "...\n";

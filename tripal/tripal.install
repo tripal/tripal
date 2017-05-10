@@ -188,6 +188,7 @@ function tripal_schema() {
   $schema['tripal_term'] = tripal_tripal_term_schema();
   $schema['tripal_entity'] = tripal_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
+  $schema['tripal_import'] = tripal_tripal_import_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
