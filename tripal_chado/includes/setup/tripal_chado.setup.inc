@@ -140,6 +140,21 @@ function tripal_chado_prepare_chado() {
     // We want to force the version of Chado to be set properly.
     $real_version = chado_get_version(TRUE);
 
+    // Create custom tables depending on the Chado version installed.
+    $chado_version = chado_get_version();
+    if ($chado_version == '1.1') {
+      tripal_chado_add_v1_1_custom_tables();
+      tripal_chado_add_vx_x_custom_tables();
+    }
+    if ($chado_version == '1.2') {
+      tripal_chado_add_v1_2_custom_tables();
+      tripal_chado_add_vx_x_custom_tables();
+    }
+    if ($chado_version == '1.3') {
+      tripal_chado_add_vx_x_custom_tables();
+      tripal_chado_fix_v1_3_custom_tables();
+    }
+
     // Import commonly used ontologies if needed.
     tripal_chado_load_ontologies();
 
@@ -293,21 +308,6 @@ function tripal_chado_prepare_chado() {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
       }
-    }
-
-    // Create custom tables depending on the Chado version installed.
-    $chado_version = chado_get_version();
-    if ($chado_version == '1.1') {
-      tripal_chado_add_v1_1_custom_tables();
-      tripal_chado_add_vx_x_custom_tables();
-    }
-    if ($chado_version == '1.2') {
-      tripal_chado_add_v1_2_custom_tables();
-      tripal_chado_add_vx_x_custom_tables();
-    }
-    if ($chado_version == '1.3') {
-      tripal_chado_add_vx_x_custom_tables();
-      tripal_chado_fix_v1_3_custom_tables();
     }
 
     // Add the supported loaders

@@ -140,7 +140,7 @@ function tripal_chado_load_form_validate($form, &$form_state) {
       $form_state['values']['action_to_do'] == "Install Chado v1.11") {
 
     $modules = system_get_info('module');
-    // The tripal_chado_iews module should not be included as it's a required
+    // The tripal_chado_views module should not be included as it's a required
     // dependency of tripal_chado
     unset($modules['tripal_chado_views']);
     $list = array();
