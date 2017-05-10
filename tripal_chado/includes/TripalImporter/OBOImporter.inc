@@ -366,12 +366,23 @@ class OBOImporter extends TripalImporter {
    *   The following arguments are supported:
    *     - obo_id:  (required) The ID of the ontology to be imported.
    */
-  public function run($details) {
+  public function run() {
 
-    $arguments = $details->arguments;
+    $arguments = $this->arguments['run_args'];
+
     $obo_id = $arguments['obo_id'];
 
-    $this->loadOBO_v1_2_id($obo_id);
+    // Make sure the $obo_id is valid
+    $obo = db_select('tripal_cv_obo', 'tco')
+      ->fields('tco')
+      ->condition('obo_id', $obo_id)
+      ->execute()
+      ->fetchObject();
+    if (!$obo) {
+      throw new Exception("Invalid OBO ID provided: '$obo_id'.");
+    }
+
+    $this->loadOBO_v1_2_id($obo);
   }
 
   /**
@@ -384,11 +395,7 @@ class OBOImporter extends TripalImporter {
    *   An obo_id from the tripal_cv_obo file that specifies which OBO file to import
    * @ingroup tripal_obo_loader
    */
-  private function loadOBO_v1_2_id($obo_id) {
-
-    // Get the OBO reference.
-    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
-    $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
+  private function loadOBO_v1_2_id($obo) {
 
     // Convert the module name to the real path if present
     if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
@@ -480,7 +487,7 @@ class OBOImporter extends TripalImporter {
     $url_fh = fopen($url, "r");
     $obo_fh = fopen($temp, "w");
     if (!$url_fh) {
-      throw new Excpetion("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
+      throw new Exception("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
           " if you are unable to download the file you may manually downlod the OBO file and use the web interface to " .
           " specify the location of the file on your server.");
 
@@ -566,7 +573,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('default-namespace', $header)) {
       $defaultcv = tripal_insert_cv($header['default-namespace'][0], '');
       if (!$defaultcv) {
-        throw new Excpetion('Cannot add namespace ' . $header['default-namespace'][0]);
+        throw new Exception('Cannot add namespace ' . $header['default-namespace'][0]);
       }
       $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
     }
@@ -578,12 +585,12 @@ class OBOImporter extends TripalImporter {
       if (array_key_exists('ontology', $header)) {
         $defaultcv = tripal_insert_cv(strtoupper($header['ontology'][0]), '');
         if (!$defaultcv) {
-          throw new Excpetion('Cannot add namespace ' . strtoupper($header['ontology'][0]));
+          throw new Exception('Cannot add namespace ' . strtoupper($header['ontology'][0]));
         }
         $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
       }
       else {
-        throw new Excpetion("Could not find a namespace for this OBO file.");
+        throw new Exception("Could not find a namespace for this OBO file: $file");
       }
       $this->logMessage("This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.",
           array('%vocab' => $defaultcv->name), TRIPAL_WARNING);
@@ -685,7 +692,7 @@ class OBOImporter extends TripalImporter {
 
       // add/update this term
       if (!$this->processTerm($term, $defaultcv->name, 0, $newcvs, $default_db)) {
-        throw new Excpetion("Failed to process terms from the ontology");
+        throw new Exception("Failed to process terms from the ontology");
       }
 
       $i++;
@@ -713,7 +720,7 @@ class OBOImporter extends TripalImporter {
 
     // make sure we have a namespace for this term
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
-      throw new Excpetion("Cannot add the term: no namespace defined. " . $term['id'][0]);
+      throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
 
     // construct the term array for sending to the tripal_chado_add_cvterm function
@@ -741,7 +748,7 @@ class OBOImporter extends TripalImporter {
     // add the cvterm
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
-      throw new Excpetion("Cannot add the term " . $term['id'][0]);
+      throw new Exception("Cannot add the term " . $term['id'][0]);
     }
 
     if (array_key_exists('namespace', $term)) {
@@ -755,7 +762,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('alt_id', $term)) {
       foreach ($term['alt_id'] as $alt_id) {
         if (!$this->addCvtermDbxref($cvterm, $alt_id)) {
-          throw new Excpetion("Cannot add alternate id $alt_id");
+          throw new Exception("Cannot add alternate id $alt_id");
         }
       }
     }
@@ -766,7 +773,7 @@ class OBOImporter extends TripalImporter {
     // add synonyms for this cvterm
     if (array_key_exists('synonym', $term)) {
       if (!$this->addSynonym($term, $cvterm)) {
-        throw new Excpetion("Cannot add synonyms");
+        throw new Exception("Cannot add synonyms");
       }
     }
 
@@ -793,7 +800,7 @@ class OBOImporter extends TripalImporter {
       }
 
       if (!$this->addSynonym($term, $cvterm)) {
-        throw new Excpetion("Cannot add/update synonyms");
+        throw new Exception("Cannot add/update synonyms");
       }
     }
 
@@ -803,7 +810,7 @@ class OBOImporter extends TripalImporter {
       $j = 0;
       foreach ($comments as $comment) {
         if (!$this->addCvtermProp($cvterm, 'comment', $comment, $j)) {
-          throw new Excpetion("Cannot add/update cvterm property");
+          throw new Exception("Cannot add/update cvterm property");
         }
         $j++;
       }
@@ -813,7 +820,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('xref', $term)) {
       foreach ($term['xref'] as $xref) {
         if (!$this->addCvtermDbxref($cvterm, $xref)) {
-          throw new Excpetion("Cannot add/update cvterm database reference (dbxref).");
+          throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
@@ -821,14 +828,14 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('xref_analog', $term)) {
       foreach ($term['xref_analog'] as $xref) {
         if (!$this->addCvtermDbxref($cvterm, $xref)) {
-          throw new Excpetion("Cannot add/update cvterm database reference (dbxref).");
+          throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
     if (array_key_exists('xref_unk', $term)) {
       foreach ($term['xref_unk'] as $xref) {
         if (!$this->addCvtermDbxref($cvterm, $xref)) {
-          throw new Excpetion("Cannot add/update cvterm database reference (dbxref).");
+          throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
@@ -837,7 +844,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('is_a', $term)) {
       foreach ($term['is_a'] as $is_a) {
         if (!$this->addRelationship($cvterm, $defaultcv, 'is_a', $is_a, $is_relationship, $default_db)) {
-          throw new Excpetion("Cannot add relationship is_a: $is_a");
+          throw new Exception("Cannot add relationship is_a: $is_a");
         }
       }
     }
@@ -868,7 +875,7 @@ class OBOImporter extends TripalImporter {
         continue;
         }*/
         if (!$this->addRelationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
-          throw new Excpetion("Cannot add relationship $rel: $object");
+          throw new Exception("Cannot add relationship $rel: $object");
         }
       }
     }
@@ -935,14 +942,14 @@ class OBOImporter extends TripalImporter {
       );
       $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$relcvterm) {
-        throw new Excpetion("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
+        throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
       }
     }
 
     // get the object term
     $oterm = $this->getTerm($objname);
     if (!$oterm) {
-      throw new Excpetion("Could not find object term $objname\n");
+      throw new Exception("Could not find object term $objname\n");
     }
 
     $objterm = array();
@@ -967,7 +974,7 @@ class OBOImporter extends TripalImporter {
 
     $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
-      throw new Excpetion("Cannot add cvterm " . $oterm['name'][0]);
+      throw new Exception("Cannot add cvterm " . $oterm['name'][0]);
     }
 
     // check to see if the cvterm_relationship already exists, if not add it
@@ -981,7 +988,7 @@ class OBOImporter extends TripalImporter {
       $options = array('return_record' => FALSE);
       $success = chado_insert_record('cvterm_relationship', $values, $options);
       if (!$success) {
-        throw new Excpetion("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
+        throw new Exception("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
       }
     }
 
@@ -1057,7 +1064,7 @@ class OBOImporter extends TripalImporter {
           );
           $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
           if (!$syntype) {
-            throw new Excpetion("Cannot add synonym type: internal:$scope");
+            throw new Exception("Cannot add synonym type: internal:$scope");
           }
         }
 
@@ -1076,7 +1083,7 @@ class OBOImporter extends TripalImporter {
           $options = array('return_record' => FALSE);
           $success = chado_insert_record('cvtermsynonym', $values, $options);
           if (!$success) {
-            throw new Excpetion("Failed to insert the synonym for term: $name ($def)");
+            throw new Exception("Failed to insert the synonym for term: $name ($def)");
           }
         }
 
@@ -1207,7 +1214,7 @@ class OBOImporter extends TripalImporter {
       );
       chado_insert_record('tripal_obo_temp', $values);
       if (!$success) {
-        throw new Excpetion("Cannot insert stanza into temporary table.");
+        throw new Exception("Cannot insert stanza into temporary table.");
       }
       $this->setItemsHandled($num_read);
     }
@@ -1232,7 +1239,7 @@ class OBOImporter extends TripalImporter {
     $dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/', '$1', $xref);
 
     if (!$accession) {
-      throw new Excpetion("Cannot add a dbxref without an accession: '$xref'");
+      throw new Exception("Cannot add a dbxref without an accession: '$xref'");
     }
 
     // if the xref is a database link, handle that specially
@@ -1244,13 +1251,13 @@ class OBOImporter extends TripalImporter {
     // add the database
     $db = tripal_insert_db(array('name' => $dbname));
     if (!$db) {
-      throw new Excpetion("Cannot find database '$dbname' in Chado.");
+      throw new Exception("Cannot find database '$dbname' in Chado.");
     }
 
     // now add the dbxref
     $dbxref = $this->addDbxref($db->db_id, $accession, '', $description);
     if (!$dbxref) {
-      throw new Excpetion("Cannot find or add the database reference (dbxref)");
+      throw new Exception("Cannot find or add the database reference (dbxref)");
     }
 
     // finally add the cvterm_dbxref but first check to make sure it exists
@@ -1263,7 +1270,7 @@ class OBOImporter extends TripalImporter {
       $ins_options = array('return_record' => FALSE);
       $result = chado_insert_record('cvterm_dbxref', $values, $ins_options);
       if (!$result) {
-        throw new Excpetion("Cannot add cvterm_dbxref: $xref");
+        throw new Exception("Cannot add cvterm_dbxref: $xref");
       }
     }
 
@@ -1289,7 +1296,7 @@ class OBOImporter extends TripalImporter {
     // make sure the 'cvterm_property_type' CV exists
     $cv = tripal_insert_cv('cvterm_property_type', '');
     if (!$cv) {
-      throw new Excpetion("Cannot add/find cvterm_property_type cvterm");
+      throw new Exception("Cannot add/find cvterm_property_type cvterm");
     }
 
     // get the property type cvterm.  If it doesn't exist then we want to add it
@@ -1309,7 +1316,7 @@ class OBOImporter extends TripalImporter {
       );
       $cvproptype = tripal_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$cvproptype) {
-        throw new Excpetion("Cannot add cvterm property: internal:$property");
+        throw new Exception("Cannot add cvterm property: internal:$property");
       }
     }
     else {
@@ -1321,7 +1328,7 @@ class OBOImporter extends TripalImporter {
       $values = array('cvterm_id' => $cvterm->cvterm_id);
       $success = chado_delete_record('cvtermprop', $values);
       if (!$success) {
-        throw new Excpetion("Could not remove existing properties to update property $property for term\n");
+        throw new Exception("Could not remove existing properties to update property $property for term\n");
       }
     }
 
@@ -1335,7 +1342,7 @@ class OBOImporter extends TripalImporter {
     $options = array('return_record' => FALSE);
     $result = chado_insert_record('cvtermprop', $values, $options);
     if (!$result) {
-      throw new Excpetion("Could not add property $property for term\n");
+      throw new Exception("Could not add property $property for term\n");
     }
     return TRUE;
   }
@@ -1372,7 +1379,7 @@ class OBOImporter extends TripalImporter {
       $ins_options = array('return_record' => FALSE);
       $result = chado_insert_record('dbxref', $ins_values, $ins_options);
       if (!$result) {
-        throw new Excpetion("Failed to insert the dbxref record $accession");
+        throw new Exception("Failed to insert the dbxref record $accession");
       }
       $result = chado_select_record('dbxref', array('dbxref_id'), $values);
     }

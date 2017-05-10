@@ -144,19 +144,19 @@ function tripal_get_importer_form_validate($form, &$form_state) {
 function tripal_get_importer_form_submit($form, &$form_state) {
   global $user;
 
-  $arguments = $form_state['values'];
+  $run_args = $form_state['values'];
   $class = $form_state['values']['importer_class'];
   tripal_load_include_importer_class($class);
 
   // Remove the file_local and file_upload args. We'll add in a new
   // full file path and the fid instead.
-  unset($arguments['file_local']);
-  unset($arguments['file_upload']);
-  unset($arguments['form_build_id']);
-  unset($arguments['form_token']);
-  unset($arguments['form_id']);
-  unset($arguments['op']);
-  unset($arguments['button']);
+  unset($run_args['file_local']);
+  unset($run_args['file_upload']);
+  unset($run_args['form_build_id']);
+  unset($run_args['form_token']);
+  unset($run_args['form_id']);
+  unset($run_args['op']);
+  unset($run_args['button']);
 
 
   $file_local = NULL;
@@ -177,24 +177,16 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   // Sumbit a job for this loader.
   $fname = '';
   $fid = NULL;
+  $file_details = array();
   if ($file_local) {
     $fname = preg_replace("/.*\/(.*)/", "$1", $file_local);
-    $arguments['file_path'] = $file_local;
-    $arguments['file_url'] = '';
-    $arguments['fid'] = NULL;
+    $file_details['file_local'] = $file_local;
   }
   if ($file_upload) {
-    $fid = $file_upload;
-    $file = file_load($fid);
-    $fname = $file->filename;
-    $arguments['file_path'] =  base_path() . drupal_realpath($file->uri);
-    $arguments['file_url'] = '';
-    $arguments['fid'] = $file_upload;
+    $file_details['fid'] = $file_upload;
   }
   if ($file_remote) {
-    $arguments['file_path'] = '';
-    $arguments['file_url'] = $file_remote;
-    $arguments['fid'] = NULL;
+    $file_details['file_remote'] = $file_remote;
   }
   try {
 
@@ -208,35 +200,9 @@ function tripal_get_importer_form_submit($form, &$form_state) {
       return;
     }
 
-    $values = array(
-      'uid' => $user->uid,
-      'class' => $class,
-      'arguments' => serialize($arguments),
-      'submit_date' => time(),
-    );
-    if ($fid) {
-      $values['fid'] = $fid;
-    }
-    // Add the importer to the tripal_import table.
-    $import_id = db_insert('tripal_import')
-      ->fields($values)
-      ->execute();
+    $importer->create($run_args, $file_details);
+    $importer->submitJob();
 
-    // Add a job to run the importer.
-    $args = array($import_id);
-    $includes = array(
-      module_load_include('inc', 'tripal', 'api/tripal.importer.api'),
-    );
-    $job_id = tripal_add_job("Import " . $class::$upload_title . ": $fname", 'tripal',
-        'tripal_run_importer', $args, $user->uid, 10, $includes);
-
-    // Now associate the job_id with the import.
-    db_update('tripal_import')
-      ->fields(array(
-        'job_id' => $job_id,
-      ))
-      ->condition('import_id', $import_id)
-      ->execute();
   }
   catch (Exception $e) {
     drupal_set_message('Cannot submit import: ' . $e->getMessage(), 'error');

@@ -89,77 +89,39 @@ function tripal_load_include_importer_class($class) {
  * @throws Exception
  */
 function tripal_run_importer($import_id, TripalJob $job = NULL) {
-  $details = db_select('tripal_import', 'ti')
-    ->fields('ti')
-    ->condition('ti.import_id', $import_id)
-    ->execute()
-    ->fetchObject();
 
-  if ($details) {
-    $details->arguments = unserialize($details->arguments);
-    if ($details->fid) {
-      $details->file = file_load($details->fid);
+  try {
+    // begin the transaction
+    $transaction = db_transaction();
+    print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "insertions/updates is rolled back and will not be found in the database\n\n";
+
+    $loader = TripalImporter::byID($import_id);
+    $loader->setJob($job);
+    $loader->prepareFile();
+    $loader->run();
+
+    if ($job) {
+      $job->logMessage("Done");
     }
 
-    $class = $details->class;
-    tripal_load_include_importer_class($class);
-    if (class_exists($class)) {
+    // Remove the temp file
+    if (!empty($details->arguments['file_url'])) {
+      $loader->logMessage('Removing downloaded file...');
+      unlink($temp);
+    }
 
-      $loader_name = $class::$name;
-      $loader = new $class($job);
-      try {
+    print "\nDone\n";
 
-        // If the file is provided via a URL then download the file.
-        if (!empty($details->arguments['file_url'])) {
-          // begin the transaction
-          $transaction = db_transaction();
-          print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
-              "If the load fails or is terminated prematurely then the entire set of \n" .
-              "insertions/updates is rolled back and will not be found in the database\n\n";
+    // Check for new fields and notify the user.
+    tripal_tripal_cron_notification();
 
-          $loader->logMessage('Downloading file from remote location: !url', array('!url' => $details->arguments['file_url']));
-
-          // Create a temporary file.
-          $temp = tempnam("temporary://", 'import_');
-          $url_fh = fopen($details->arguments['file_url'], "r");
-          $tmp_fh = fopen($temp, "w");
-          if (!$url_fh) {
-            throw new Exception(t("Unable to download the remote file at !url. Could a firewall be blocking outgoing connections?",
-                array('!url', $details->arguments['file_url'])));
-          }
-          // Write the contents of the remote file to the temp file.
-          while (!feof($url_fh)) {
-            fwrite($tmp_fh, fread($url_fh, 255), 255);
-          }
-          // Set the path to the file for the importer to use.
-          $details->arguments['file_path'] = $temp;
-        }
-
-        $loader->preRun($details);
-        $loader->run($details);
-        $loader->postRun($details);
-        if ($job) {
-          $job->logMessage("Done");
-        }
-
-        // Remove the temp file
-        if (!empty($details->arguments['file_url'])) {
-          $loader->logMessage('Removing downloaded file...');
-          unlink($temp);
-        }
-
-        print "\nDone\n";
-
-        // Check for new fields and notify the user.
-        tripal_tripal_cron_notification();
-
-      }
-      catch (Exception $e) {
-        $transaction->rollback();
-        if ($job) {
-          $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
-        }
-      }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    if ($job) {
+      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
     }
   }
 }

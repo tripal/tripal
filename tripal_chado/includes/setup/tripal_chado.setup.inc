@@ -74,37 +74,43 @@ function tripal_chado_load_ontologies() {
       'name' => 'Relationship Ontology (legacy)',
       'path' => '{tripal_chado}/files/legacy_ro.obo',
       'auto_load' => FALSE,
-      'cv_name' => 'ro'
+      'cv_name' => 'ro',
+      'db_name' => 'RO',
     ),
     array(
       'name' => 'Gene Ontology',
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
-      'cv_name' => 'cellualar_component'
+      'cv_name' => 'cellualar_component',
+      'db_name' => 'GO',
     ),
     array(
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
-      'cv_name' => 'taxonomic_rank'
+      'cv_name' => 'taxonomic_rank',
+      'db_name' => 'TAXRANK'
     ),
     array(
       'name' => 'Tripal Contact',
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
-      'cv_name' => 'tripal_contact'
+      'cv_name' => 'tripal_contact',
+      'db_name' => 'TCONTACT'
     ),
     array(
       'name' => 'Tripal Publication',
       'path' => '{tripal_chado}/files/tpub.obo',
       'auto_load' => TRUE,
-      'cv_name' => 'tripal_pub'
+      'cv_name' => 'tripal_pub',
+      'db_name' => 'TPUB',
     ),
      array(
        'name' => 'Sequence Ontology',
        'path' => 'http://purl.obolibrary.org/obo/so.obo',
        'auto_load' => TRUE,
-       'cv_name' => 'sequence'
+       'cv_name' => 'sequence',
+       'db_name' => 'SO',
      ),
 
   );
@@ -115,10 +121,12 @@ function tripal_chado_load_ontologies() {
     if ($ontologies[$i]['auto_load'] == TRUE) {
       // Only load ontologies that are not already in the cv table.
       $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
-      if (!$cv) {
-        print "Loading ontology: " . $ontologies[$i]['name'] . "...\n";
-        $obo = new OBOImporter();
-        $obo->run(array('obo_id' => $obo_id));
+      $db = tripal_get_db(array('name' => $ontologies[$i]['db_name']));
+      if (!$cv or !$db) {
+        print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
+        $obo_importer = new OBOImporter();
+        $obo_importer->create(array('obo_id' => $obo_id));
+        $obo->run();
       }
       else {
         print "Ontology already loaded (skipping): " . $ontologies[$i]['name'] . "...\n";

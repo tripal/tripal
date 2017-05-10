@@ -294,10 +294,11 @@ class GFF3Importer extends TripalImporter {
   /**
    * @see TripalImporter::run()
    */
-  public function run($details) {
-    $arguments = $details->arguments;
+  public function run() {
 
-    $gff_file = $arguments['file_path'];
+    $arguments = $this->arguments['run_args'];
+    $file_path = $this->arguments['file']['file_path'];
+
     $organism_id = $arguments['organism_id'];
     $analysis_id = $arguments['analysis_id'];
     $add_only = $arguments['add_only'];
@@ -315,7 +316,7 @@ class GFF3Importer extends TripalImporter {
     $re_mrna = $arguments['re_mrna'];
     $re_protein = $arguments['re_protein'];
 
-    $this->load($gff_file, $organism_id, $analysis_id,
+    $this->load($file_path, $organism_id, $analysis_id,
         $add_only, $update, $refresh, $remove, $use_transaction,
         $target_organism_id, $target_type,  $create_target,
         $start_line, $landmark_type, $alt_id_attr,  $create_organism,
@@ -530,7 +531,7 @@ class GFF3Importer extends TripalImporter {
       // get the columns
       $cols = explode("\t", $line);
       if (sizeof($cols) != 9) {
-        throw new Excpetion(t('Improper number of columns on line %line_num', array('%line_num' => $line_num)));
+        throw new Exception(t('Improper number of columns on line %line_num', array('%line_num' => $line_num)));
       }
 
       // get the column values

@@ -89,27 +89,29 @@ class TripalImporter {
   public static $file_required = TRUE;
 
 
+  /**
+   * The array of arguments used for this loader.  Each argument should
+   * be a separate array containing a machine_name, name, and description
+   * keys.  This information is used to build the help text for the loader.
+   */
+  public static $argument_list = array();
+
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
   // --------------------------------------------------------------------------
-  /**
-   * The job that this importer is associated with.  This is needed for
-   * updating the status of the job.
-   */
-  private $job = NULL;
 
   /**
    * The number of items that this importer needs to process. A progress
    * can be calculated by dividing the number of items process by this
    * number.
    */
-  private $total_items = 0;
+  private $total_items;
 
   /**
    * The number of items that have been handled so far.  This must never
    * be below 0 and never exceed $total_items;
    */
-  private $num_handled = 0;
+  private $num_handled;
 
   /**
    * The interval when the job progress should be updated. Updating the job
@@ -118,13 +120,40 @@ class TripalImporter {
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
    */
-  private $interval = 1;
+  private $interval;
 
   /**
    * Each time the job progress is updated this variable gets set.  It is
    * used to calculate if the $interval has passed for the next update.
    */
-  private $prev_update = 0;
+  private $prev_update;
+
+  /**
+   * The job that this importer is associated with.  This is needed for
+   * updating the status of the job.
+   */
+  protected $job;
+
+  /**
+   * The arguments needed for the importer. This is a list of key/value
+   * pairs in an associative array.
+   */
+  protected $arguments;
+
+  /**
+   * The ID for this import record.
+   */
+  protected $import_id;
+
+  /**
+   * Prior to running an importer it must be prepared to make sure the file
+   * is available.  Preparing the importer will download all the necessary
+   * files.  This value is set to TRUE after the importer is prepared for
+   * funning.
+   */
+  protected $is_prepared;
+
+
 
   // --------------------------------------------------------------------------
   //                          CONSTRUCTORS
@@ -136,7 +165,245 @@ class TripalImporter {
    *   An optional TripalJob object that this loader is associated with.
    */
   public function __construct(TripalJob $job = NULL) {
+
+    // Intialize the private member variables.
+    $this->is_prepared = FALSE;
+    $this->import_id = NULL;
+    $this->arguments = array();
+    $this->job = NULL;
+    $this->total_items = 0;
+    $this->interval = 1;
+    $this->num_handled = 0;
+    $this->prev_update = 0;
+  }
+
+  /**
+   * Instantiates a new TripalImporter object using the import record ID.
+   *
+   * This function will automatically instantiate the correct TripalImporter
+   * child class that is appropriate for the provided ID.
+   *
+   * @param $import_id
+   *   The ID of the import recrod.
+   * @return
+   *   An TripalImporter object of the appropriate child class.
+   */
+  static public function byID($import_id) {
+    // Get the importer.
+    $import = db_select('tripal_import', 'ti')
+      ->fields('ti')
+      ->condition('ti.import_id', $import_id)
+      ->execute()
+      ->fetchObject();
+
+    if (!$import) {
+      throw new Exception('Cannot find an importer that matches the given import ID.');
+    }
+
+    $class = $import->class;
+    tripal_load_include_importer_class($class);
+    if (class_exists($class)) {
+      $loader = new $class();
+      $loader->load($import_id);
+      return $loader;
+    }
+    else {
+      throw new Exception('Cannot find the matching class for this import record.');
+    }
+  }
+
+  /**
+   * Associate this importer with the Tripal job that is running it.
+   *
+   * Associating an import with a job will allow the importer to log messages
+   * to the job log.
+   *
+   * @param TripalJob $job
+   *   An instnace of a TripalJob.
+   */
+  public function setJob(TripalJob $job) {
     $this->job = $job;
+  }
+
+  /**
+   * Creates a new importer record.
+   *
+   * @param $run_args
+   *   An associative array of the arguments needed to run the importer. Each
+   *   importer will have its own defined set of arguments.
+   *
+   * @param $file_details
+   *   An associative array with one of the following keys:
+   *   -fid: provides the Drupal managed File ID for the file.
+   *   -file_local: provides the full path to the file on the server.
+   *   -file_remote: provides the remote URL for the file.
+   *
+   * @throws Exception
+   */
+  public function create($run_args, $file_details) {
+    global $user;
+    $class = get_called_class();
+
+    try {
+      // Build the values for the tripal_importer table insert.
+      $values = array(
+        'uid' => $user->uid,
+        'class' => $class,
+        'submit_date' => time(),
+      );
+
+      // Build the arguments array, which consists of the run arguments
+      // and the file.
+      $arguments = array(
+        'run_args' => $run_args,
+        'file' => array(
+          'file_path' => '',
+          'file_local' => '',
+          'file_remote' => '',
+          'fid' => NULL,
+        ),
+      );
+
+      // Get the file argument.
+      $has_file = 0;
+      if (array_key_exists('file_local', $file_details)) {
+        $arguments['file']['file_local'] = $file_details['file_local'];
+        $arguments['file']['file_path'] = $file_details['file_local'];
+        $has_file++;
+      }
+      if (array_key_exists('file_remote', $file_details)) {
+        $arguments['file']['file_remote'] = $file_details['file_remote'];
+        $has_file++;
+      }
+      if (array_key_exists('fid', $file_details)) {
+        $fid = $file_details['fid'];
+        $file = file_load($fid);
+        $arguments['file']['file_path'] =  base_path() . drupal_realpath($file->uri);
+        $arguments['file']['fid'] = $fid;
+        $values['fid'] = $fid;
+        $has_file++;
+      }
+
+      // Validate the $file_details argument.
+      if ($has_file == 0 and $this->file_required == TRUE) {
+        throw new Exception("Must provide a proper file identifier for the \$file_details argument.");
+      }
+
+      // Store the arguments in the class and serialize for table insertion.
+      $this->arguments = $arguments;
+      $values['arguments'] = serialize($arguments);
+
+      // Insert the importer record.
+      $import_id = db_insert('tripal_import')
+        ->fields($values)
+        ->execute();
+
+      $this->import_id = $import_id;
+    }
+    catch (Exception $e){
+      throw new Exception('Cannot create importer: ' .  $e->getMessage());
+    }
+  }
+
+  /**
+   * Loads an existing import record into this object.
+   *
+   * @param $import_id
+   *   The ID of the import record.
+   */
+  public function load($import_id) {
+    $class = get_called_class();
+
+    // Get the importer.
+    $import = db_select('tripal_import', 'ti')
+      ->fields('ti')
+      ->condition('ti.import_id', $import_id)
+      ->execute()
+      ->fetchObject();
+
+    if (!$import) {
+      throw new Exception('Cannot find an importer that matches the given import ID.');
+    }
+
+    if ($import->class != $class) {
+      throw new Exception('The importer specified by the given ID does not match this importer class.');
+    }
+
+    $this->arguments = unserialize($import->arguments);
+    $this->import_id = $import_id;
+
+  }
+
+
+  /**
+   * Submits the importer for execution as a job.
+   *
+   * @return
+   *   The ID of the newly submitted job.
+   */
+  public function submitJob() {
+    global $user;
+
+    $class = get_called_class();
+
+    if (!$this->import_id) {
+      throw new Exception('Cannot submit an importer job without an import record. Please run create() first.');
+    }
+
+    // Add a job to run the importer.
+    try {
+      $args = array($this->import_id);
+      $includes = array(
+        module_load_include('inc', 'tripal', 'api/tripal.importer.api'),
+      );
+      $job_id = tripal_add_job($class::$button_text, 'tripal',
+          'tripal_run_importer', $args, $user->uid, 10, $includes);
+
+      return $job_id;
+    }
+    catch (Exception $e){
+      throw new Exception('Cannot create importer job: ' .  $e->getMessage());
+    }
+  }
+
+  /**
+   * Prepares the importer files for execution.
+   *
+   * This function must be run prior to the run() function to ensure that
+   * the import file is ready to go.
+   */
+  public function prepareFile() {
+    $class = get_called_class();
+
+    // If no file is required then just indicate that all is good to go.
+    if ($class::$file_required == FALSE) {
+      $this->is_prepared = TRUE;
+      return;
+    }
+
+    try {
+      if (!empty($this->arguments['file']['file_remote'])) {
+        // Create a temporary file.
+        $temp = tempnam("temporary://", 'import_');
+        $url_fh = fopen($this->arguments['remote_file'], "r");
+        $tmp_fh = fopen($temp, "w");
+        if (!$url_fh) {
+          throw new Exception(t("Unable to download the remote file at !url. Could a firewall be blocking outgoing connections?",
+              array('!url', $details->arguments['file_url'])));
+        }
+        // Write the contents of the remote file to the temp file.
+        while (!feof($url_fh)) {
+          fwrite($tmp_fh, fread($url_fh, 255), 255);
+        }
+        // Set the path to the file for the importer to use.
+        $details->arguments['file_path'] = $temp;
+
+        $this->is_prepared = TRUE;
+      }
+    }
+    catch (Exception $e){
+      throw new Exception('Cannot prepare the importer: ' .  $e->getMessage());
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -177,24 +444,11 @@ class TripalImporter {
   }
 
   /**
-   * Executes tasks that should be run prior to execution of the run() function.
-   */
-  public function preRun($details) {
-
-  }
-  /**
    * Performs the import.
-   *
-   * This function must be overrriden by a child class to perform the import.
    */
-  public function run($details) {
+  public function run() {
   }
-  /**
-   * Executes tasks that should be run after execution of the run() function.
-   */
-  public function postRun($details) {
 
-  }
   /**
    * Logs a message for the importer.
    *
