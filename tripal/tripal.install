@@ -325,12 +325,6 @@ function tripal_tripal_import_schema() {
         'length' => 256,
         'not null' => TRUE,
       ),
-      'job_id' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => FALSE,
-        'description' => 'The job ID if the loaded was was imported using a Tripal job.'
-      ),
       'fid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
@@ -877,6 +871,23 @@ function tripal_update_7302() {
   try {
     $schema['tripal_import'] = tripal_tripal_import_schema();
     db_create_table('tripal_import', $schema['tripal_import']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Remove the job_id from the tripal import table.
+ */
+function tripal_update_7303() {
+  $transaction = db_transaction();
+  try {
+    if (db_field_exists('tripal_import', 'job_id')) {
+      db_drop_field('tripal_import', 'job_id');
+    }
   }
   catch (\PDOException $e) {
     $transaction->rollback();
