@@ -1080,8 +1080,8 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   $default = array(
     'table' => '',
     'has_all' => 'No',
-    'use_linker' => 'Yes',
-    'use_prop' => 'Yes',
+    'use_linker' => 'No',
+    'use_prop' => 'No',
     'type_column' => '',
     'prop_term_name' => '',
     'prop_term_value' => '',
@@ -1115,6 +1115,9 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
   }
 
+
+  dpm($form_state['values']);
+  dpm($default);
   // If we have a type_column then we know this type uses a column in the
   // base table, so we can set the storage args and return.
   if ($default['type_column']) {
@@ -1123,25 +1126,31 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $storage_args['type_column'] = $default['type_column'];
     return;
   }
+  // If the user indicated that all the records in a table are of this type.
+  if ($default['has_all'] == 'Yes') {
+    $storage_args['data_table'] = $default['table'];
+    $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
+    $storage_args['type_linker_table'] = '';
+    $storage_args['type_column'] = '';
+    $storage_args['type_value'] = '';
+  }
 
   // If the user indicated they wanted to use the prop table then we'll
   // set the storage args and return.
-  if ($default['use_prop'] == 'Yes') {
+  else if ($default['use_prop'] == 'Yes') {
     $storage_args['data_table'] = $default['table'];
     $storage_args['type_linker_table'] = $default['table'] . 'prop';
     $storage_args['type_column'] = 'type_id';
     $storage_args['type_id'] = $form_state['prop_term']->cvterm_id;
     $storage_args['type_value'] = $default['prop_term_value'];
-    return;
   }
 
   // If the user indicated they wanted to use the linker tables then we'll
   // set the storage args and return.
-  if ($default['use_linker'] == 'Yes') {
+  else if ($default['use_linker'] == 'Yes') {
     $storage_args['data_table'] = $default['table'];
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_linker_table'] = $default['table'] . '_cvterm';
     $storage_args['type_column'] = 'cvterm_id';
-    return;
   }
 }
