@@ -20,7 +20,6 @@ class TripalJob {
    * create() function.
    */
   public function __construct() {
-    $this->log = '';
   }
 
   /**
@@ -457,13 +456,17 @@ class TripalJob {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
+    // For the sake of the command-line user, print the message to the
+    // terminal.
+    print $tmessage . "\n";
+
     // Add this message to the job's log.
     $this->job->error_msg .= "\n" . $tmessage;
 
     // Report this message to watchdog or set a message.
     if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
       tripal_report_error('tripal_job', $severity, $message, $variables);
-      $this->job->status = 'Error';
+        $this->job->status = 'Error';
     }
   }
 }

@@ -528,5 +528,3 @@ function tripal_get_active_jobs($modulename = NULL) {
   }
   return $jobs;
 }
-
-

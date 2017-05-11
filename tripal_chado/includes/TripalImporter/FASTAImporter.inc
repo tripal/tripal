@@ -41,6 +41,19 @@ class FASTAImporter extends TripalImporter {
    */
   public static $button_text = 'Import FASTA file';
 
+
+  /**
+   * Indicates the methods that the file uploader will support.
+   */
+  public static $methods = array(
+    // Allow the user to upload a file to the server.
+    'file_upload' => TRUE,
+    // Allow the user to provide the path on the Tripal server for the file.
+    'file_local' => TRUE,
+    // Allow the user to provide a remote URL for the file.
+    'file_remote' => TRUE,
+  );
+
   /**
    * @see TripalImporter::form()
    */
@@ -406,9 +419,8 @@ class FASTAImporter extends TripalImporter {
     if ($parent_type) {
       $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type,':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
-        $this->logMessage("Cannot find the paretne term type: '!type'", array(
-          '!type' => $parentcvterm
-        ), TRIPAL_ERROR);
+        $this->logMessage("Cannot find the paretne term type: '!type'",
+          array('!type' => $parentcvterm), TRIPAL_ERROR);
         return 0;
       }
     }
@@ -417,9 +429,8 @@ class FASTAImporter extends TripalImporter {
     if ($rel_type) {
       $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
-        $this->logMessage("Cannot find the relationship term type: '!type'", array(
-          '!type' => $relcvterm
-        ), TRIPAL_ERROR);
+        $this->logMessage("Cannot find the relationship term type: '!type'",
+          array('!type' => $relcvterm), TRIPAL_ERROR);
         return 0;
       }
     }

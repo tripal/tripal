@@ -231,3 +231,4 @@ function tripal_log($message, $type = 'error', $options = array()) {
   return error_log($message);
 
 }
+

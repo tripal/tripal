@@ -1,4 +1,5 @@
 <?php
+
 class TripalImporter {
 
   // --------------------------------------------------------------------------
@@ -287,7 +288,7 @@ class TripalImporter {
       }
 
       // Validate the $file_details argument.
-      if ($has_file == 0 and $this->file_required == TRUE) {
+      if ($has_file == 0 and $class::file_required == TRUE) {
         throw new Exception("Must provide a proper file identifier for the \$file_details argument.");
       }
 
@@ -509,9 +510,6 @@ class TripalImporter {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
-    // For the sake of the command-line user, print the message to the
-    // terminal.
-    print $tmessage . "\n";
 
     // If we have a job then pass along the messaging to the job.
     if ($this->job) {
