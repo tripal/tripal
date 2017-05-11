@@ -116,6 +116,10 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
     print "\nDone\n";
 
+
+    // Check for tables with new cvterms
+    tripal_chado_map_cvterms();
+
     // Check for new fields and notify the user.
     tripal_tripal_cron_notification();
 
