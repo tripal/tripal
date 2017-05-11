@@ -1115,9 +1115,6 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
   }
 
-
-  dpm($form_state['values']);
-  dpm($default);
   // If we have a type_column then we know this type uses a column in the
   // base table, so we can set the storage args and return.
   if ($default['type_column']) {
