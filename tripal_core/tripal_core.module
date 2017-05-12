@@ -82,9 +82,11 @@ function tripal_core_init() {
 
   // add some variables for all javasript to use for building URLs
   $clean_urls = variable_get('clean_url', 0);
+  $tripal_path = url(drupal_get_path('module', 'tripal_core'));
   drupal_add_js(
     " var baseurl  = '$base_url';
-      var isClean  =  $clean_urls;",
+      var isClean  =  $clean_urls;
+      var tripal_path = '$tripal_path';",
     'inline', 'header');
 
   // make sure the date time settings are the way Tripal will insert them
@@ -388,6 +390,13 @@ function tripal_core_menu() {
 //     'file' => '/includes/tripal_core.ws_hal.inc',
 //   );
 
+  $items['tripal/upload'] = array(
+    'page callback' => 'tripal_file_upload',
+    'access arguments' => array('upload files'),
+    'file' => '/includes/tripal_core.upload.inc',
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -435,6 +444,10 @@ function tripal_core_permission() {
           site.  This permission should be enabled for developers. But can
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
+    ),
+    'upload files' => array(
+      'title' => t('Upload Files'),
+      'description' => t('Allows the user to upload files using Tripal\'s HTML5 loader.'),
     ),
     'view ids' => array(
       'title' => t('View Internal IDs'),

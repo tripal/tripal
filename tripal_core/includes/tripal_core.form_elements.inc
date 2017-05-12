@@ -29,6 +29,23 @@ function tripal_core_element_info() {
     '#tree' => TRUE,
   );
 
+  // Element for uploading large files.  This form element
+  // accepts the following keys when using in a form:
+  //   - #title:  The title that will appear above the element.
+  //   - #description:  The description that will appear below the element.
+  //   - #usage_type:  Required.  The type of file.  This will be stored in
+  //     the 'type' column of the file_usage table.
+  //   - #usage_id: Required. A unique numeric ID representing an entity, node
+  //     or some other record identifier.  This can be any identifier that
+  //     makes sense to the module that implements a form that uses this
+  //     element.
+  $elements['html5_file'] = array(
+    '#input' => 'TRUE',
+    '#process' => array('tripal_html5_file_process'),
+    '#element_validate' => array('tripal_html5_file_validate'),
+    '#value_callback' => 'tripal_html5_file_value',
+  );
+
   return $elements;
 }
 
@@ -233,4 +250,134 @@ function theme_sequence_combo($variables) {
   $output .= drupal_render($element['downstream']);
 
   return $output;
+}
+
+/**
+ *  The process function for the html5_file form element.
+ */
+function tripal_html5_file_process($element, $form_state, $complete_form) {
+
+  $type = $element['#usage_id'] . '-' . $element['#usage_type'];
+  $name = $element['#name'];
+  $name = preg_replace('/[^\w]/', '_', $name);
+
+  $headers = array(
+    array('data' => 'File'),
+    array('data' => 'Size', 'width' => '10%'),
+    array('data' => 'Upload Progress', 'width' => '20%'),
+    array('data' => 'Action', 'width' => '10%')
+  );
+  $rows = array();
+  $table_vars = array(
+    'header'      => $headers,
+    'rows'        => $rows,
+    'attributes'  => array(
+      'class' => array('tripal-html5-file-upload-table'),
+      'id' => 'tripal-html5-file-upload-table-' . $type
+    ),
+    'sticky'      => TRUE,
+    'colgroups'   => array(),
+    'empty'       => t('There are currently no files.'),
+  );
+  $element['html5_file_table_key'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+    '#attributes' => array(
+      'class' => array('tripal-html5-file-upload-table-key')
+    )
+  );
+  $element['html5_file_table'] = array(
+    '#type' => 'item',
+    '#title' => $element['#title'],
+    '#description' => $element['#description'],
+    '#markup' => theme('table', $table_vars)
+  );
+
+  $element[$name] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'tripal-html5-upload-fid-' . $type),
+    '#default_value' => $element['#value'],
+  );
+  $element['html5_file_submit'] = array(
+    '#type'     => 'submit',
+    '#value'    => 'Upload File',
+    '#name' => 'tripal_html5_file_upload_submit-' . $type,
+    // We don't want this button to submit as the file upload
+    // is handled by the JavaScript code.
+    '#attributes' => array(
+      'id' => 'tripal-html5-file-upload-submit-' . $type,
+      'onclick' => 'return (false);'
+    )
+  );
+
+  drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/TripalUploader.js');
+  drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/TripalUploadFile.js');
+  drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/tripal.file.js');
+
+  return $element;
+}
+/**
+ *
+ */
+function tripal_html5_file_validate($element, &$form_state) {
+  $is_required = $element['#required'];
+  $fid = $element['#value'];
+
+  if ($is_required and !$fid) {
+    form_error($element, t('A file must be uploaded.'));
+  }
+}
+
+
+
+/**
+ * Implements hook_handle_uplaoded_file().
+ */
+function tripal_core_handle_uploaded_file($filename, $filepath, $type) {
+
+  global $user;
+
+  // Split the type into a node ID and form_key
+  list($nid, $form_key) = explode('-', $type);
+
+  // See if this file is already managed then add another entry fin the
+  // usage table.
+  $fid = db_select('file_managed', 'fm')
+  ->fields('fm', array('fid'))
+  ->condition('uri', $filepath)
+  ->execute()
+  ->fetchField();
+  if ($fid) {
+    $file = file_load($fid);
+    file_usage_add($file, 'tripal', $form_key, $nid);
+    return $fid;
+  }
+
+  // Create a file object.
+  $file = new stdClass();
+  $file->uri = $filepath;
+  $file->filename = $filename;
+  $file->filemime = file_get_mimetype($filepath);
+  $file->uid = $user->uid;
+  $file->status = FILE_STATUS_PERMANENT;
+  $file = file_save($file);
+
+  return $file->fid;
+}
+
+/**
+ * Implements hook_value() for the html5_file form element.
+ */
+function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
+
+  if ($input) {
+    if (is_array($input)) {
+      $name = $element['#name'];
+      $name = preg_replace('/[^\w]/', '_', $name);
+      return $input[$name];
+    }
+    else {
+      return $input;
+    }
+  }
 }
