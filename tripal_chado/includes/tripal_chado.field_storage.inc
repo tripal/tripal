@@ -728,7 +728,10 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
   if ($default['table'] == 'cvterm') {
     tripal_chado_field_storage_bundle_mapping_form_add_cvterm($form,
         $form_state, $term, $default);
-    if ($default['cv_id']) {
+    if ($default['use_cvterm'] == 'cv' and $default['cv_id']) {
+      $submit_disabled = FALSE;
+    }
+    if ($default['use_cvterm'] == 'parent') {
       $submit_disabled = FALSE;
     }
     return $form;
