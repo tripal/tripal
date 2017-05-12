@@ -174,7 +174,7 @@ function tripal_get_analysis_select_options($syncd_only = TRUE) {
   if ($syncd_only) {
     $sql = "
       SELECT *
-      FROM public.chado_analysis CA
+      FROM [chado_analysis] CA
         INNER JOIN {analysis} A ON A.analysis_id = CO.analysis_id
       ORDER BY A.name
     ";

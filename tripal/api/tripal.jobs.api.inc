@@ -217,7 +217,7 @@ function tripal_max_jobs_exceeded($max_jobs) {
       // the job is not running so terminate it
       $record = new stdClass();
       $record->job_id = $job->job_id;
-      $record->end_time = REQUEST_TIME;
+      $record->end_time = time();
       $record->status = 'Error';
       $record->error_msg = 'Job has terminated unexpectedly.';
       drupal_write_record('tripal_jobs', $record, 'job_id');

@@ -215,7 +215,7 @@ function chado_analysis_form($node, &$form_state) {
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
-    $default_time = time();
+    $default_time = REQUEST_TIME;
     $year  = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
     $day   = format_date($default_time, 'custom', 'j');
