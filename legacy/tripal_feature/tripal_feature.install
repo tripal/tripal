@@ -136,7 +136,7 @@ function tripal_feature_uninstall() {
       ),
       'phase' => array(
         'type' => 'int',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
       'strand' => array(
         'type' => 'int',
