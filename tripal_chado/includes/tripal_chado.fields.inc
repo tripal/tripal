@@ -68,6 +68,11 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
+    // Skip the cvterm.is_relationshptype.
+    if ($table_name == 'cvterm' and $column_name == 'is_relationshiptype') {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_field) {
       continue;
@@ -203,6 +208,21 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       array_key_exists('organism_id', $schema['fields'])) {
     $field_name = 'obi__organism';
     $field_type = 'obi__organism';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
+  // BASE ORGANISM_ID
+  if ($table_name == 'cvterm') {
+    $field_name = 'sio__vocabulary';
+    $field_type = 'sio__vocabulary';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -906,6 +926,39 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => array(
           'label' => 'inline',
           'type' => 'obi__organism_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+  // BASE ORGANISM_ID
+  if ($table_name == 'cvterm') {
+    $field_name = 'sio__vocabulary';
+    $is_required = TRUE;
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Vocabulary',
+      'description' => 'Select a vocabulary.',
+      'required' => $is_required,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'cv_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sio__vocabulary_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'sio__vocabulary_formatter',
           'settings' => array(),
         ),
       ),

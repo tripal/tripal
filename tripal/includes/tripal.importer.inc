@@ -94,6 +94,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
  * Validate function for the tripal_get_importer_form form().
  */
 function tripal_get_importer_form_validate($form, &$form_state) {
+
   $class = $form_state['values']['importer_class'];
   tripal_load_include_importer_class($class);
 

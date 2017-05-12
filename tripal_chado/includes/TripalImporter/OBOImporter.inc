@@ -271,10 +271,10 @@ class OBOImporter extends TripalImporter {
         ->condition('obo_id', $obo_id)
         ->execute();
       if ($success) {
-        drupal_set_message(t("The vocabulary %vocab has been updated.", array('%vocab' => $uobo_name)));
+        drupal_set_message(t("The vocabulary !vocab has been updated.", array('!vocab' => $uobo_name)));
       }
       else {
-        drupal_set_message(t("The vocabulary %vocab could not be updated.", array('%vocab' => $uobo_name)), 'error');
+        drupal_set_message(t("The vocabulary !vocab could not be updated.", array('!vocab' => $uobo_name)), 'error');
       }
 
     }
@@ -287,12 +287,12 @@ class OBOImporter extends TripalImporter {
         ->execute();
         // Add the obo_id to the form_state vaules.
         $form_state['values']['obo_id'] = $obo_id;
-      if ($success) {
-        drupal_set_message(t("The vocabulary %vocab has been added.", array('%vocab' => $obo_name)));
+      if ($obo_id) {
+        drupal_set_message(t("The vocabulary !vocab has been added.", array('!vocab' => $obo_name)));
       }
       else {
         $form_state['rebuild'] = TRUE;
-        drupal_set_message(t("The vocabulary %vocab could not be added.", array('%vocab' => $obo_name)), 'error');
+        drupal_set_message(t("The vocabulary !vocab could not be added.", array('!vocab' => $obo_name)), 'error');
       }
     }
   }
@@ -592,10 +592,11 @@ class OBOImporter extends TripalImporter {
       else {
         throw new Exception("Could not find a namespace for this OBO file: $file");
       }
-      $this->logMessage("This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.",
-          array('%vocab' => $defaultcv->name), TRIPAL_WARNING);
-    }
-
+      $this->logMessage("This OBO is missing the 'default-namespace' header. It " .
+          "is not possible to determine which vocabulary terms without a 'namespace' key " .
+          "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
+          array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
+    }!
     // add any typedefs to the vocabulary first
     $this->logMessage("Step 2: Loading type defs...");
     $this->loadTypeDefs($defaultcv, $newcvs, $default_db);

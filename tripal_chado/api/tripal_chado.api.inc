@@ -114,6 +114,24 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $args[':cvterm_id'] = $cvterm_id;
   }
 
+  // Handle the case where records are in the cvterm table and mapped via a single
+  // vocab.  Here we use the type_value for the cv_id.
+  if ($table == 'cvterm' and $type_value) {
+    $where .= "AND T.cv_id = :cv_id";
+    $args[':cv_id'] = $type_value;
+  }
+
+  // Handle the case where records are in the cvterm table but we want to
+  // use all of the child terms.
+  if ($table == 'cvterm' and !$type_value) {
+    $where .= "AND T.cvterm_id IN (
+       SELECT CVTS.cvterm_id
+       FROM {cvtermpath} CVTP
+       WHERE CVTP.object_id = :cvterm_id)
+     ";
+    $args[':cvterm_id'] = $cvterm_id;
+  }
+
   // Now add in any additional filters
   $fields = field_info_field_map();
   foreach ($fields as $field_name => $details) {

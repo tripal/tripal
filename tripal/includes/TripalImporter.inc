@@ -288,7 +288,7 @@ class TripalImporter {
       }
 
       // Validate the $file_details argument.
-      if ($has_file == 0 and $class::file_required == TRUE) {
+      if ($has_file == 0 and $class::$file_required == TRUE) {
         throw new Exception("Must provide a proper file identifier for the \$file_details argument.");
       }
 

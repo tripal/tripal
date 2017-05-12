@@ -856,7 +856,7 @@ function tripal_element_info() {
   // accepts the following keys when using in a form:
   //   - #title:  The title that will appear above the element.
   //   - #description:  The description that will appear below the element.
-  //   - #usage_type:  Required.  The type of file.  Thie will be stored in
+  //   - #usage_type:  Required.  The type of file.  This will be stored in
   //     the 'type' column of the file_usage table.
   //   - #usage_id: Required. A unique numeric ID representing an entity, node
   //     or some other record identifier.  This can be any identifier that
@@ -875,10 +875,10 @@ function tripal_element_info() {
  *  The process function for the html5_file form element.
  */
 function tripal_html5_file_process($element, $form_state, $complete_form) {
-//   $nid = $element['#webform_component']['nid'];
-//   $form_key = $element['#webform_component']['form_key'];
+
   $type = $element['#usage_id'] . '-' . $element['#usage_type'];
   $name = $element['#name'];
+  $name = preg_replace('/[^\w]/', '_', $name);
 
   $headers = array(
     array('data' => 'File'),
@@ -898,10 +898,6 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
     'colgroups'   => array(),
     'empty'       => t('There are currently no files.'),
   );
-  $element['value'] = array(
-    '#type' => 'value',
-    '#value' => '',
-  );
   $element['html5_file_table_key'] = array(
     '#type' => 'hidden',
     '#value' => $type,
@@ -915,6 +911,7 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
     '#description' => $element['#description'],
     '#markup' => theme('table', $table_vars)
   );
+
   $element[$name] = array(
     '#type' => 'hidden',
     '#attributes' => array('id' => 'tripal-html5-upload-fid-' . $type),
@@ -988,10 +985,18 @@ function tripal_handle_uploaded_file($filename, $filepath, $type) {
 }
 
 /**
- *
+ * Implements hook_value() for the html5_file form element.
  */
 function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
+
   if ($input) {
-    return $input;
+    if (is_array($input)) {
+      $name = $element['#name'];
+      $name = preg_replace('/[^\w]/', '_', $name);
+      return $input[$name];
+    }
+    else {
+      return $input;
+    }
   }
 }

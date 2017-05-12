@@ -207,6 +207,15 @@ function tripal_chado_populate_vocab_SIO() {
     'definition' => 'A measurement of a spatial location relative to a frame of reference or other objects.',
   ));
   tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:001080',
+    'name' => 'vocabulary',
+    'cv_name' => 'SIO',
+    'definition' => 'A vocabulary is a collection of terms.',
+  ));
+  tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
 }
 /**
  * Adds the EDAM database and terms.
@@ -737,6 +746,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   tripal_associate_chado_semweb_term('pub_relationship', 'type_id', $term);
   tripal_associate_chado_semweb_term('quantification_relationship', 'type_id', $term);
   tripal_associate_chado_semweb_term('stock_relationship', 'type_id', $term);
+  tripal_associate_chado_semweb_term('cvterm_relationship', 'type_id', $term);
 
   //-----------------------------
   // NCBI Organism Property Terms
