@@ -57,6 +57,9 @@ class TripalField {
     // should ahve auto_attach set to FALSE so tha their values can be
     // attached asyncronously.
     'auto_attach' => TRUE,
+    // Set to TRUE to turn on paging capabilities.  Implementations of
+    // a new field should honor this setting when loading results and
+    // when formatting for dipslay.
   );
 
   // The default widget for this field.
@@ -87,6 +90,7 @@ class TripalField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -166,6 +170,15 @@ class TripalField {
   public function getInstance() {
     return $this->instance;
   }
+
+  /**
+   * When constructing a pager for use by a field, all pagers must have
+   * a unique ID
+   */
+  protected function getPagerElementID() {
+    return $this->field['id'];
+  }
+
   // --------------------------------------------------------------------------
   //                            OVERRIDEABLE FUNCTIONS
   // --------------------------------------------------------------------------
@@ -233,7 +246,6 @@ class TripalField {
   public function load($entity) {
 
   }
-
 
   /**
    * Provides a form for the 'Field Settings' of the field management page.
