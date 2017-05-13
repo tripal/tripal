@@ -113,10 +113,10 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       'quantity' => $total_pages,
     ));
     $pager = $this->ajaxifyPager($pager, $entity);
+    $page_items = array_chunk($rows, $items_per_page);
 
-    $page_items = array_chunk ($rows, $items_per_page);
-
-    $table = theme_table(array(
+    $content = 'There are ' . count($items) . ' relationships';
+    $content .= theme_table(array(
       'header' => $headers,
       'rows' => $page_items[$current_page],
       'attributes' => array(
@@ -133,8 +133,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     if (count($items) > 0) {
       $element[0] = array(
         '#type' => 'markup',
-        '#markup' => $table,
-        '#suffix' => '<img src=\'/sites/all/modules/tripal-7.x-3.x/tripal/theme/images/ajax-loader.gif\' id=\'spinner\'/>' . $pager,
+        '#markup' => $content . $pager,
       );
     }
   }

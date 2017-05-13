@@ -179,6 +179,7 @@ class TripalFieldFormatter {
     $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', $1)"', $pager);
     $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
 
+    $pager = '<img src="/' . drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif" id="' . $field_id . '-spinner" class="tripal-field-ajax-spinner">' . $pager;
     return $pager;
   }
 

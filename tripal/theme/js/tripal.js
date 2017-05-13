@@ -25,9 +25,9 @@
 
 function tripal_navigate_field_pager(id, page) {
     jQuery(document).ajaxStart(function () {
-        jQuery('#spinner').show();
+      jQuery('#' + id + '-spinner').show();
     }).ajaxComplete(function () {
-        jQuery('#spinner').hide();
+      jQuery('#' + id + '-spinner').hide();
     });
 
     jQuery.ajax({
