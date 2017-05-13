@@ -35,12 +35,21 @@ class sbo__relationship extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // Inidates if this field should be automatically attached to display
+    // or web services or if this field should be loaded separately. This
+    // is convenient for speed.  Fields that are slow should for loading
+    // should ahve auto_attach set to FALSE so tha their values can be
+    // attached asyncronously.
+    'auto_attach' => FALSE,
+    // Settings to help the site admin control how relationship types and
+    // valid subject/objects can be selected by the user.
     'relationships' => array(
       'option1_vocabs' => '',
       'option2_vocab' => '',
       'option2_parent' => '',
       'relationship_types' => '',
     ),
+    // The number of items to show on a page.
     'items_per_page' => 10,
   );
 

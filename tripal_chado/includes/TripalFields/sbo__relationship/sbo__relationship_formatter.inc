@@ -115,7 +115,12 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $pager = $this->ajaxifyPager($pager, $entity);
     $page_items = array_chunk($rows, $items_per_page);
 
-    $content = 'There are ' . count($items) . ' relationships';
+    if (count($items) == 1) {
+      $content = 'There is ' . count($items) . ' relationship.';
+    }
+    else {
+      $content = 'There are ' . count($items) . ' relationships.';
+    }
     $content .= theme_table(array(
       'header' => $headers,
       'rows' => $page_items[$current_page],
@@ -128,14 +133,10 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       'empty' => $settings['empty'],
     ));
 
-    // Once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    if (count($items) > 0) {
-      $element[0] = array(
-        '#type' => 'markup',
-        '#markup' => $content . $pager,
-      );
-    }
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content . $pager,
+    );
   }
 }
 
