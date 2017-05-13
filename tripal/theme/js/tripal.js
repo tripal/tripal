@@ -23,14 +23,15 @@
 
 })(jQuery);
 
+// Used for ajax update of fields by links in a pager.
 function tripal_navigate_field_pager(id, page) {
-    jQuery(document).ajaxStart(function () {
-      jQuery('#' + id + '-spinner').show();
-    }).ajaxComplete(function () {
-      jQuery('#' + id + '-spinner').hide();
-    });
+  jQuery(document).ajaxStart(function () {
+    jQuery('#' + id + '-spinner').show();
+  }).ajaxComplete(function () {
+    jQuery('#' + id + '-spinner').hide();
+  });
 
-    jQuery.ajax({
+  jQuery.ajax({
     type: "GET",
     url: Drupal.settings["basePath"] + "bio_data/ajax/field_attach/" + id,
     data: { 'page' : page },
