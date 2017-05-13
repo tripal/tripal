@@ -105,7 +105,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $total_records = count($items);
     $total_pages = (int) ($total_records / $items_per_page) + 1;
     $pelement = 0; //$this->getPagerElementID();
-    $current_page = pager_default_initialize($total_records, 25, $pelement);
+    $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);
     $pager = theme('pager', array(
       'tags' => array(),
       'element' => $pelement,
