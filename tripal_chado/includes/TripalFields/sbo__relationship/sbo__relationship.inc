@@ -41,6 +41,7 @@ class sbo__relationship extends ChadoField {
       'option2_parent' => '',
       'relationship_types' => '',
     ),
+    'items_per_page' => 10,
   );
 
   // The default widget for this field.
@@ -518,6 +519,13 @@ class sbo__relationship extends ChadoField {
    */
   public function settingsForm($has_data) {
     $element = parent::instanceSettingsForm();
+
+    $element['items_per_page'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Items per Page',
+      '#description' => t('The number of items that should appear on each page.  A pager is provided if more than this number of items exist.'),
+      '#default_value' => $this->instance['settings']['items_per_page'],
+    );
 
     //$element = parent::instanceSettingsForm();
     $element['relationships'] = array(
