@@ -100,20 +100,25 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       );
     }
 
-    //$pager = $this->generate_pager(count($rows), $per_page);
-    // Get the total number of records from the pager query.
-    $total_records = chado_pager_get_count($this->getPagerElementID());
+    // Build the pager
+    $items_per_page = 25;
+    $total_records = count($items);
+    $total_pages = (int) ($total_records / $items_per_page) + 1;
+    $pelement = 0; //$this->getPagerElementID();
+    $current_page = pager_default_initialize($total_records, 25, $pelement);
     $pager = theme('pager', array(
       'tags' => array(),
-      'element' => $this->getPagerElementID(),
+      'element' => $pelement,
       'parameters' => array(),
-      'quantity' => ($total_records / 25) + 1,
+      'quantity' => $total_pages,
     ));
     $pager = $this->ajaxifyPager($pager, $entity);
 
+    $page_items = array_chunk ($rows, $items_per_page);
+
     $table = theme_table(array(
       'header' => $headers,
-      'rows' => $rows, //$current_page ? $chunks[$current_page] : array(),
+      'rows' => $page_items[$current_page],
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),
@@ -128,9 +133,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     if (count($items) > 0) {
       $element[0] = array(
         '#type' => 'markup',
-        '#markup' => $table . $pager,
+        '#markup' => $table,
         '#suffix' => '<img src=\'/sites/all/modules/tripal-7.x-3.x/tripal/theme/images/ajax-loader.gif\' id=\'spinner\'/>' . $pager,
       );
     }
   }
 }
+
+

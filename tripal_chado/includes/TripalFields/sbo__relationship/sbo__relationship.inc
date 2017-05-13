@@ -175,11 +175,6 @@ class sbo__relationship extends ChadoField {
     if (array_key_exists('rank', $schema['fields'])) {
       $options['order_by'] = array('rank' => 'ASC');
     }
-    // We want a pager for relationships.
-    $options['pager'] = array(
-      'limit' => 25,
-      'element' => $this->getPagerElementID(),
-    );
     $record = chado_expand_var($record, 'table', $rel_table, $options);
     if (!$record->$rel_table) {
       return;
