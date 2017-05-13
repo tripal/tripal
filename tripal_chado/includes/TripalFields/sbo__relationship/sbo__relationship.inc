@@ -517,7 +517,7 @@ class sbo__relationship extends ChadoField {
    *
    * @see TripalField::settingsForm()
    */
-  public function settingsForm($has_data) {
+  public function instanceSettingsForm() {
     $element = parent::instanceSettingsForm();
 
     $element['items_per_page'] = array(
@@ -612,7 +612,7 @@ class sbo__relationship extends ChadoField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public function settingsFormValidate($form, &$form_state) {
+  public function instanceSettingsFormValidate($form, &$form_state) {
     // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];
     $form_state['values']['instance']['settings']['relationships']['relationship_types']= trim($settings['relationship_types']);
