@@ -173,8 +173,6 @@ class TripalFieldFormatter {
   protected function ajaxifyPager($pager, $entity) {
 
     global $base_path;
-dpm($pager);
-dpm($base_path);
 
     $tmp_base_path = preg_replace('/\//', '\/', $base_path);
     $field_id = 'tripal-entity-' . $entity->id . '--' . $this->field['field_name'];
