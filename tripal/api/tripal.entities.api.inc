@@ -447,20 +447,6 @@ function tripal_get_content_types() {
 }
 
 /**
- * Implements hook_cron().
- */
-function tripal_cron() {
-  if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
-    $modules = module_implements('tripal_cron_notification');
-    foreach ($modules as $module) {
-      $function = $module . '_tripal_cron_notification';
-      $function();
-    }
-    watchdog('tripal_cron', 'tripal_cron ran');
-  }
-}
-
-/**
  * Refreshes the bundle such that new fields added by modules will be found during cron.
  *
  * @param $bundle_name

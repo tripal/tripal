@@ -10,9 +10,6 @@ function tripal_chado_map_cvterms() {
 
   // Perform this action in a transaction
   $transaction = db_transaction();
-  print "\nNOTE: Populating of chado_cvterm_mapping table is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
 
     // Iterate through the referring tables to see what records are there.

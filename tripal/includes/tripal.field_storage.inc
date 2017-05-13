@@ -22,8 +22,7 @@ function tripal_field_storage_info() {
 /**
  * Implements hook_field_storage_load().
  *
- * Responsible for loading the fields from the Chado database and adding
- * their values to the entity.
+ * Responsible for loading the fields and adding their values to the entity.
  */
 function tripal_field_storage_load($entity_type, $entities, $age,
     $fields, $options) {

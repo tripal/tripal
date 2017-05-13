@@ -59,7 +59,7 @@ class data__sequence_coordinates extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
 
   }
 }

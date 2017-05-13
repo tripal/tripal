@@ -35,12 +35,22 @@ class sbo__relationship extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // Inidates if this field should be automatically attached to display
+    // or web services or if this field should be loaded separately. This
+    // is convenient for speed.  Fields that are slow should for loading
+    // should ahve auto_attach set to FALSE so tha their values can be
+    // attached asyncronously.
+    'auto_attach' => FALSE,
+    // Settings to help the site admin control how relationship types and
+    // valid subject/objects can be selected by the user.
     'relationships' => array(
       'option1_vocabs' => '',
       'option2_vocab' => '',
       'option2_parent' => '',
       'relationship_types' => '',
     ),
+    // The number of items to show on a page.
+    'items_per_page' => 10,
   );
 
   // The default widget for this field.
@@ -65,10 +75,10 @@ class sbo__relationship extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
     $settings = $this->field['settings'];
 
-    $record = $details['record'];
+    $record = $entity->chado_record;
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -80,7 +90,7 @@ class sbo__relationship extends ChadoField {
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
 
-    // Get the Pkeys for the subject and object tables
+    // Get the foreign keys for the subject and object tables
     $subject_fkey_table = '';
     $object_fkey_table = '';
     $fkeys = $schema['foreign keys'];
@@ -516,8 +526,15 @@ class sbo__relationship extends ChadoField {
    *
    * @see TripalField::settingsForm()
    */
-  public function settingsForm($has_data) {
+  public function instanceSettingsForm() {
     $element = parent::instanceSettingsForm();
+
+    $element['items_per_page'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Items per Page',
+      '#description' => t('The number of items that should appear on each page.  A pager is provided if more than this number of items exist.'),
+      '#default_value' => $this->instance['settings']['items_per_page'],
+    );
 
     //$element = parent::instanceSettingsForm();
     $element['relationships'] = array(
@@ -604,7 +621,7 @@ class sbo__relationship extends ChadoField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public function settingsFormValidate($form, &$form_state) {
+  public function instanceSettingsFormValidate($form, &$form_state) {
     // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];
     $form_state['values']['instance']['settings']['relationships']['relationship_types']= trim($settings['relationship_types']);

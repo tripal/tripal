@@ -46,9 +46,9 @@ class data__sequence extends ChadoField {
   /**
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
     $field_name = $this->field['field_name'];
-    $feature = $details['record'];
+    $feature = $entity->chado_record;
 
     // We don't want to get the sequence for traditionally large types. They are
     // too big,  bog down the web browser, take longer to load and it's not

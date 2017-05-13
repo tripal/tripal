@@ -32,7 +32,7 @@ function tripal_feature_delete_form() {
    '#title'       => t('Feature Type'),
    '#type'        => 'textfield',
    '#description' => t("Choose the feature type."),
-   '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv->cv_id",
+   '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv->cv_id",
   );
 
   $organisms = tripal_get_organism_select_options(FALSE);

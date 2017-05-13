@@ -30,7 +30,7 @@ function tripal_views_data() {
   $data = array();
   // Job Management System
   tripal_views_data_jobs($data);
-  tripal_entity_views_data($data);
+  tripal_views_data_tripal_entity($data);
   tripal_views_data_fields($data);
 
   return $data;
@@ -78,7 +78,7 @@ function tripal_views_data_fields(&$data) {
 /**
  * Integrates the TripalEntity entities with Drupal Views.
  */
-function tripal_entity_views_data(&$data) {
+function tripal_views_data_tripal_entity(&$data) {
 
   // Get the list of all of the bundles (entity types) and add them
   // as "base tables" for views.
@@ -122,7 +122,7 @@ function tripal_entity_views_data(&$data) {
  *
  * @ingroup tripal
  */
-function tripal_views_data_jobs($data) {
+function tripal_views_data_jobs(&$data) {
 
   $data['tripal_jobs']['table']['group'] = t('Tripal Jobs');
   $data['tripal_jobs']['table']['base'] = array(
@@ -371,6 +371,4 @@ function tripal_views_data_jobs($data) {
       'handler' => 'views_handler_sort',
     ),
   );
-
-  return $data;
 }

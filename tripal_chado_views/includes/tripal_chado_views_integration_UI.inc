@@ -138,7 +138,7 @@ function tripal_chado_views_integration_delete($setup_id) {
 }
 
 /**
- * Purpose: Deletes ALL Tripal Views Integrations.  This
+ * Purpose: Deletes ALL Chado Views Integrations.  This
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
@@ -180,7 +180,7 @@ function tripal_chado_views_integration_delete_all_form($form, &$form_state) {
 }
 
 /**
- * Purpose: Deletes ALL Tripal Views Integrations.  This
+ * Purpose: Deletes ALL Chado Views Integrations.  This
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
@@ -414,7 +414,7 @@ function tripal_chado_views_integration_form($form, &$form_state) {
   }
   $form['views_type']['new_integration'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Create a New Tripal Views Integration Record'),
+    '#title' => t('Create a New Chado Views Integration Record'),
     '#description' => t('If this checkbox is checked then a new tripal views integration '
       .'will be created rather then overriding the current one with your changes. This '
       .'especially important if you are editing one of the default views integrations '
@@ -1417,7 +1417,7 @@ function tripal_chado_views_integration_discover_handlers() {
 }
 
 /*
- * Ajax Callback: Tripal Views Integration Form
+ * Ajax Callback: Chado Views Integration Form
  * Replaces the entire fields table when the table or materialized view is set/changed
  *
  * @ingroup tripal_chado_views
@@ -1428,7 +1428,7 @@ function tripal_chado_views_integration_ajax_view_setup_table($form, $form_state
 }
 
 /*
- * Ajax Callback: Tripal Views Integration Form
+ * Ajax Callback: Chado Views Integration Form
  * Replaces the join db field dropdown when the join table dropdown is changed
  *
  * @ingroup tripal_chado_views
@@ -1444,7 +1444,7 @@ function tripal_chado_views_integration_ajax_join_field($form, $form_state) {
   }
   else {
     tripal_report_error('tripal_views', TRIPAL_ERROR,
-      'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array());
+      'Chado Views Integration Ajax failed due to being unable to determine which row needs updating', array());
     return $form;
   }
 }

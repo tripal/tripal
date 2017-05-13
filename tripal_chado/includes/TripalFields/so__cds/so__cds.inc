@@ -46,9 +46,9 @@ class so__cds extends ChadoField {
   /**
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
     $field_name = $this->field['field_name'];
-    $feature = $details['record'];
+    $feature = $entity->chado_record;
     $num_seqs = 0;
 
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);

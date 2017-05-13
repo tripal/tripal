@@ -559,7 +559,7 @@
               // by their index. The file with an index of 0 is always ordered first.
               'i': index,
               // The URL at the remote server where the file will uploaded. 
-              'url' : '/tripal/upload/' + category,
+              'url' : baseurl + '/tripal/upload/' + category,
             };
             self.addFile(f, options);
 

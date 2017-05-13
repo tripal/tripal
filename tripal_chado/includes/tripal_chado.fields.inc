@@ -68,6 +68,11 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
+    // Skip the cvterm.is_relationshptype.
+    if ($table_name == 'cvterm' and $column_name == 'is_relationshiptype') {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_field) {
       continue;
@@ -203,6 +208,21 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       array_key_exists('organism_id', $schema['fields'])) {
     $field_name = 'obi__organism';
     $field_type = 'obi__organism';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
+  // BASE ORGANISM_ID
+  if ($table_name == 'cvterm') {
+    $field_name = 'sio__vocabulary';
+    $field_type = 'sio__vocabulary';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -912,6 +932,39 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   }
 
+  // BASE ORGANISM_ID
+  if ($table_name == 'cvterm') {
+    $field_name = 'sio__vocabulary';
+    $is_required = TRUE;
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Vocabulary',
+      'description' => 'Select a vocabulary.',
+      'required' => $is_required,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'cv_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sio__vocabulary_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'sio__vocabulary_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
   // BASE DBXREF
   if (array_key_exists('dbxref_id', $schema['fields'])) {
     $field_name = 'data__accession';
@@ -1474,7 +1527,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
        SELECT DISTINCT P.type_id
        FROM {" . $prop_table . "} P
      ";
-     if ($type_field) {
+     if (array_key_exists('type_id', $tschema['fields'])) {
        $sql .= "
            INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
          WHERE T.type_id = :cvterm_id
@@ -1695,10 +1748,11 @@ function tripal_chado_bundle_create_user_field($new_field, $bundle) {
     'vocabulary' => $vocab->vocabulary,
     'accession' => $term->accession,
   );
-  $mapped_table = chado_get_cvterm_mapping($params);
-  $chado_table = $mapped_table->chado_table;
-  $chado_type_table = $mapped_table->chado_table;
-  $chado_type_column = $mapped_table->chado_field;
+  $chado_table = $bundle->data_table;
+  $chado_type_table = $bundle->type_linker_table;
+  $chado_type_column = $bundle->type_column;
+  $chado_type_id = $bundle->type_id;
+  $chado_type_value = $bundle->type_value;
 
   // We allow site admins to add new chado_linker__prop fields to an entity.
   // This function will allow us to properly add them.  But at this point we
@@ -1737,9 +1791,9 @@ function tripal_chado_bundle_create_user_field($new_field, $bundle) {
           'base_table' => $chado_table,
           'chado_table' => $table_name,
           'chado_column' => $pkey,
-          'term_vocabulary' => $vocab->vocabulary,
-          'term_accession' => $term->accession,
-          'term_name' => $term->name
+          'term_vocabulary' => '',
+          'term_accession' => '',
+          'term_name' => ''
         ),
         'widget' => array(
           'type' => 'chado_linker__prop_widget',
@@ -1914,9 +1968,11 @@ function tripal_chado_form_tripalbundle_form_alter(&$form, $form_state) {
     'vocabulary' => $vocab->vocabulary,
     'accession' => $term->accession,
   );
-  $mapped_table = chado_get_cvterm_mapping($params);
-  $chado_table = $mapped_table->chado_table;
-  $chado_column = $mapped_table->chado_field;
+  $chado_table = $bundle->data_table;
+  $chado_column = $bundle->type_column;
+  $chado_type_table = $bundle->type_linker_table;
+  $chado_type_id = $bundle->type_id;
+  $chado_type_value = $bundle->type_value;
 
   // Construct a table for the vocabulary information.
   $headers = array();
@@ -1929,14 +1985,46 @@ function tripal_chado_form_tripalbundle_form_alter(&$form, $form_state) {
     ),
     $chado_table
   );
-  $rows[] = array(
-    array(
-      'data' => 'Type Column',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $chado_column
-  );
+  if ($chado_column) {
+    $rows[] = array(
+      array(
+        'data' => 'Type Column',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_column
+    );
+  }
+  if ($chado_type_table) {
+    $rows[] = array(
+      array(
+        'data' => 'Association Table',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_type_table
+    );
+  }
+  if ($chado_type_table and $chado_type_id) {
+    $rows[] = array(
+      array(
+        'data' => 'CVTerm Table ID',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_type_id
+    );
+  }
+  if ($chado_type_value) {
+    $rows[] = array(
+      array(
+        'data' => 'Property Value',
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $chado_type_value
+    );
+  }
   $table = array(
     'header' => $headers,
     'rows' => $rows,

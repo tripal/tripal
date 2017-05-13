@@ -594,6 +594,13 @@ function chado_get_base_tables() {
     }
   }
 
+  // Remove the phenotype table. It really shouldn't be a base table as
+  // it is meant to store individual phenotype measurements.
+  unset($final_list['phenotyp']);
+
+  // Now add in the cvterm table to the list.
+  $final_list[] = 'cvterm';
+
   // Sort the tables and return the list.
   sort($final_list);
   return $final_list;

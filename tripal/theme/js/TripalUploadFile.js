@@ -122,7 +122,8 @@
             self.updateProgressBar();
           }
         },
-        error : function() {
+        error : function(jqXHR, textStatus, errorThrown) {
+          alert(errorThrown);
           self.curr_chunk = 0;
           self._upload();
         }

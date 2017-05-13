@@ -81,7 +81,7 @@ function tripal_analysis_uninstall() {
  *
  * @ingroup tripal_analysis
  */
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_analysis_create_analysisfeatureprop() {
 
   // Create analysisfeatureprop table in chado.  This is needed for Chado
@@ -237,7 +237,7 @@ function tripal_analysis_schema() {
  *
  * @ingroup tripal_analysis
  */
-// This function was moved to tripal_chado/includes/tripal_chado.setup.inc
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_analysis_add_mview_analysis_organism() {
   $view_name = 'analysis_organism';
   $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');

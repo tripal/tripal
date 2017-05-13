@@ -188,6 +188,7 @@ function tripal_schema() {
   $schema['tripal_term'] = tripal_tripal_term_schema();
   $schema['tripal_entity'] = tripal_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
+  $schema['tripal_import'] = tripal_tripal_import_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
@@ -195,6 +196,9 @@ function tripal_schema() {
   $schema['tripal_admin_notfications'] = tripal_tripal_admin_notifications_schema();
   return $schema;
 }
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
 function tripal_tripal_jobs_schema() {
   return array(
     'fields' => array(
@@ -298,6 +302,72 @@ function tripal_tripal_jobs_schema() {
       'job_name' => array('job_name')
     ),
     'primary key' => array('job_id'),
+  );
+}
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
+function tripal_tripal_import_schema() {
+  return array(
+    'fields' => array(
+      'import_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The Drupal userid of the submitee.'
+      ),
+      'class' => array(
+        'type' => 'varchar',
+        'length' => 256,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'The file ID of the file to import. This only applies if the file was uploaded (i.e. not already on the server) and is mangaged by Drupal.'
+      ),
+      'arguments' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'Holds a serialized PHP array containing the key/value paris that are used for arguments of the job.'
+      ),
+      'submit_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'UNIX integer submit time'
+      ),
+    ),
+    'indexes' => array(
+      'class' => array('class'),
+    ),
+    'foreign keys' => array(
+      'tripal_jobs' => array(
+        'table' => 'tripal_jobs',
+        'columns' => array(
+          'job_id' => 'job_id',
+        ),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array(
+          'uid' => 'uid',
+        ),
+      ),
+      'file_managed' => array(
+        'table' => 'file_managed',
+        'columns' => array(
+          'fid' => 'fid',
+        ),
+      ),
+    ),
+    'primary key' => array('import_id'),
   );
 }
 /**
@@ -771,7 +841,7 @@ function tripal_update_7300() {
       'not null' => TRUE
     );
     db_change_field('tripal_vocab', 'vocabulary', 'vocabulary',$spec);
-  } 
+  }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
@@ -784,55 +854,45 @@ function tripal_update_7300() {
 function tripal_update_7301() {
   $transaction = db_transaction();
   try {
-    $schema['tripal_admin_notfications'] = array(
-      'description' => 'This table is used for information describing administrative
-       notifications. For example, when new fields are available.',
-      'fields' => array (
-        'note_id' => array (
-          'type' => 'serial',
-          'not null' => TRUE,
-        ),
-        'details' => array (
-          'description' => 'Description and additional information relating to the notification.',
-          'type' => 'text',
-          'not null' => TRUE,
-        ),
-        'title' => array (
-          'description' => 'Title of the notification.',
-          'type' => 'text',
-          'not null' => TRUE,
-        ),
-        'actions' => array (
-          'description' => 'Actions that can be performed on the notification, like disimissal or import.',
-          'type' => 'text',
-          'not null' => FALSE,
-        ),
-        'submitter_id' => array (
-          'description' => 'A unique id that should be specific to the notification to ensure notifications are not duplicated.',
-          'type' => 'text',
-          'not null' => TRUE,
-        ),
-        'enabled' => array (
-          'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
-          'type' => 'int',
-          'not null' => TRUE,
-          'default' => 1,
-        ),
-        'type' => array (
-          'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
-          'type' => 'text',
-          'not null' => FALSE,
-        ),
-      ),
-        'primary key' => array (
-          0 => 'note_id',
-        ),
-    );
+    $schema['tripal_admin_notfications'] = tripal_tripal_admin_notifications_schema();
     db_create_table('tripal_admin_notfications', $schema['tripal_admin_notfications']);
   }
   catch (\PDOException $e) {
-      $transaction->rollback();
-      $error = $e->getMessage();
-      throw new DrupalUpdateException('Could not perform update: '. $error);
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Create new tripal import table.
+ */
+function tripal_update_7302() {
+  $transaction = db_transaction();
+  try {
+    $schema['tripal_import'] = tripal_tripal_import_schema();
+    db_create_table('tripal_import', $schema['tripal_import']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Remove the job_id from the tripal import table.
+ */
+function tripal_update_7303() {
+  $transaction = db_transaction();
+  try {
+    if (db_field_exists('tripal_import', 'job_id')) {
+      db_drop_field('tripal_import', 'job_id');
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

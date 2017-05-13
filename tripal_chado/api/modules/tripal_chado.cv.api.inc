@@ -432,7 +432,7 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
   $count =  db_query(
     'SELECT *
      FROM cvtermpath
-     WHERE cv_id = :cvid 
+     WHERE cv_id = :cvid
       AND object_id = :origin
       AND subject_id = :child_id
       AND pathdistance = :depth
@@ -1182,6 +1182,8 @@ function tripal_insert_cvterm($term, $options = array()) {
 }
 
 /**
+ * TODO: deprecate this function
+ *
  * This function allows other modules to programatically
  * submit an ontology for loading into Chado.
  *
