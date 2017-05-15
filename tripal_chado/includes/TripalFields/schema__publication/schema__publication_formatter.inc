@@ -22,8 +22,12 @@ class schema__publication_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $list_items = array();
     $chado_table = $this->instance['settings']['chado_table'];
+
     foreach ($items as $delta => $item) {
 
+      if (empty($item['value'])) {
+        continue;
+      }
       $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
       $citation = isset($item['value']['TPUB:0000003']) ? $item['value']['TPUB:0000003'] : '';
       $entity = array_key_exists('entity', $item['value']) ? $item['value']['entity'] : '';
@@ -39,10 +43,10 @@ class schema__publication_formatter extends ChadoFieldFormatter {
       $list_items[] = $citation;
     }
 
+    $list = '';
     krsort($list_items, SORT_NUMERIC);
-
     if (count($list_items) == 0) {
-      $list = 'There are no publications.';
+      $list = 'There are no publications associated with this record.';
     }
     if (count($list_items) == 1) {
       $list = $list_items[0];

@@ -56,10 +56,6 @@ class TripalField {
     // is convenient for speed.  Fields that are slow should for loading
     // should ahve auto_attach set to FALSE so tha their values can be
     // attached asyncronously.
-    'auto_attach' => TRUE,
-    // Set to TRUE to turn on paging capabilities.  Implementations of
-    // a new field should honor this setting when loading results and
-    // when formatting for dipslay.
   );
 
   // The default widget for this field.

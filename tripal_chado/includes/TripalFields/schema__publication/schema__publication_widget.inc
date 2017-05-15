@@ -25,15 +25,13 @@ class schema__publication_widget extends ChadoFieldWidget {
     $fkey = $fkeys[0];
 
     // Get the field defaults.
-    $record_id = '';
-    $fkey_value = array_key_exists('#entity', $element) and $element['#entity'] ? $element['#entity']->chado_record_id : NULL;
+    $fkey_value = (array_key_exists('#entity', $element) and is_object($element['#entity'])) ? $element['#entity']->chado_record_id : NULL;
     $pub_id = '';
     $uname = '';
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
-      $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $record_id);
       $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
       $uname = tripal_get_field_item_keyval($items, $delta, 'uniquename', $uname);
     }
@@ -52,7 +50,7 @@ class schema__publication_widget extends ChadoFieldWidget {
 
     $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
-      '#default_value' => $record_id,
+      '#default_value' => '',
     );
     $widget['chado-' . $table_name . '__' . $fkey] = array(
       '#type' => 'value',
