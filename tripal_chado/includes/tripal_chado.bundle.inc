@@ -53,6 +53,9 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
     if (array_key_exists('type_column', $storage_args)) {
       $record['type_column'] = $storage_args['type_column'];
     }
+    if (array_key_exists('type_value', $storage_args)) {
+      $record['type_value'] = $storage_args['type_value'];
+    }
     $success = drupal_write_record('chado_bundle', $record);
     if (!$success) {
       throw new Exception('Cannot create content type. Problem associating type with Chado.');

@@ -62,6 +62,7 @@ function tripal_chado_entity_load($entities, $type) {
           $bundle->type_linker_table = $chado_bundle->type_linker_table;
           $bundle->type_column = $chado_bundle->type_column;
           $bundle->type_id = $chado_bundle->type_id;
+          $bundle->type_value = $chado_bundle->type_value;
         }
       }
     }
@@ -173,6 +174,12 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
   if ($table == 'pub') {
     $format[] = array(
       'format' => '[tpub__title]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'cvterm') {
+    $format[] = array(
+      'format' => '[schema__name]',
       'weight' => -5,
     );
   }

@@ -412,8 +412,7 @@ function tripal_bundle_access($op, $type = NULL, $account = NULL) {
  */
 function tripal_admin_add_type_form($form, &$form_state) {
 
-  // TODO: the Chado specific function calls should not be here.  They need
-  // to be genericized.
+
   $stores = module_invoke_all('vocab_storage_info');
   if (!is_array($stores) or count($stores) == 0) {
     tripal_set_message('A storage backend is not enabled for managing
@@ -456,6 +455,8 @@ function tripal_admin_add_type_form($form, &$form_state) {
     ),
   );
 
+  // If the term has been provided by the user then we want to search for
+  // matching terms in the database and let them select among any matches.
   if ($term_name) {
     $submit_disabled = TRUE;
     $form['terms_list'] = array(
@@ -471,7 +472,10 @@ function tripal_admin_add_type_form($form, &$form_state) {
     $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     $num_terms = 0;
-    $selected_term_id = '';
+    $selected_term = '';
+
+    // Let the user select from any matching terms. Sometimes there may be
+    // more than one that match.
     foreach ($terms as $term) {
       // Save the user a click by setting the default value as 1 if there's
       // only one matching term.
@@ -500,7 +504,7 @@ function tripal_admin_add_type_form($form, &$form_state) {
 
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
           $form_state['values'][$term_element_name] == 1) {
-        $selected_term_id = $term->cvterm_id;
+        $selected_term = $term;
       }
       $num_terms++;
     }
@@ -510,6 +514,8 @@ function tripal_admin_add_type_form($form, &$form_state) {
         '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
       );
     }
+
+    // Now let the user select where the data type will be stored.
     $form['storage'] = array(
       '#type' => 'fieldset',
       '#title' => t('Storage Settings'),
@@ -518,12 +524,9 @@ function tripal_admin_add_type_form($form, &$form_state) {
           storage method and settings for this content type.')
     );
 
-    // TODO: we should have a default store setting so that user's have
-    // fewer clicks.
-
     // TODO: there should be a way for each storage backend to determine if
     // it can handle the content type.  Maybe certain content types aren't
-    // yet supported by every sotrage backend.
+    // yet supported by every storage backend.
     $default_store = 'term_chado_storage';
     $store_options = array(0 => '-- Select --');
     foreach ($stores as $store_type => $store) {
@@ -548,273 +551,14 @@ function tripal_admin_add_type_form($form, &$form_state) {
     );
 
     if ($default_store) {
-      if ($store_type == 'term_chado_storage') {
-        // TODO: Move this Chado-specific code out of there.
-        $default_table = '';
-        if (array_key_exists('base_chado_table', $form_state['values'])
-            and $form_state['values']['base_chado_table']) {
-          $default_table = $form_state['values']['base_chado_table'];
-        }
-        else {
-          $mapped_table = chado_get_cvterm_mapping(array('cvterm_id' => $selected_term_id));
-          if ($mapped_table) {
-            $default_table = $mapped_table->chado_table;
-          }
-        }
+      $selected_store_module = $stores[$store_type]['module'];
 
-        $form['storage'][$store_type]['selected_cvterm_id'] = array(
-          '#type' => 'value',
-          '#value' => $selected_term_id,
-        );
+      $function = $selected_store_module . '_field_storage_bundle_mapping_form';
+      if (function_exists($function)) {
+        $store_form = $function($form, $form_state, $selected_term, $submit_disabled);
+        $form['storage'][$store_type] = $store_form;
+      }
 
-        $base_tables = chado_get_base_tables();
-        $options = array(0 => '-- Select table --');
-        foreach ($base_tables AS $tablename) {
-          $options[$tablename] = $tablename;
-        }
-        $form['storage'][$store_type]['base_chado_table'] = array(
-          '#type' => 'select',
-          '#title' => 'Chado table',
-          '#options' => $options,
-          '#description' => 'Select the Chado table into which the primary records for this content type will be stored.',
-          '#default_value' => $default_table,
-          '#ajax' => array(
-            'callback' => "tripal_admin_add_type_form_ajax_callback",
-            'wrapper' => "tripal-vocab-select-form",
-            'effect' => 'fade',
-            'method' => 'replace'
-          ),
-        );
-        $form_state['input']['base_chado_table'] = $default_table;
-
-        if ($default_table) {
-
-          // There are a few places in form below where the type columns
-          // can be used to identify a record. So, we'll create the
-          // select options here so it can be used multiple places.  We
-          // only want to include in our column options those fields that
-          // are foreign keys to the cvterm table
-          $schema = chado_get_schema($default_table);
-          $column_options = array('0' => '--Select column--');
-          $cvt_fkeys = array_keys($schema['foreign keys']['cvterm']['columns']);
-          foreach ($schema['fields'] as $column_name => $column_details) {
-            if (in_array($column_name, $cvt_fkeys)) {
-              $column_options[$column_name] = $column_name;
-            }
-          }
-
-          $default_has_all = 'No';
-          if (array_key_exists('chado_table_has_all', $form_state['values'])
-              and $form_state['values']['chado_table_has_all']) {
-            $default_has_all = $form_state['values']['chado_table_has_all'];
-          }
-          $form['storage'][$store_type]['chado_table_has_all'] = array(
-            '#type' => 'radios',
-            '#options' => array(
-              'Yes' => 'Yes',
-              'No' => 'No'
-            ),
-            '#title' => 'Are all records in the "' . $default_table .
-              '" table of type "'. $term_name . '"?',
-            '#description' => 'Select "Yes" if the "' .
-              $default_table . '" table houses more that just data of type "' .
-              $term_name . '".',
-            '#default_value' => $default_has_all,
-            '#ajax' => array(
-              'callback' => "tripal_admin_add_type_form_ajax_callback",
-              'wrapper' => "tripal-vocab-select-form",
-              'effect' => 'fade',
-              'method' => 'replace'
-            ),
-          );
-
-          // If the table does not contain just one single type of record.
-          if ($default_has_all == 'No') {
-
-            $default_type_column = '';
-            if (array_key_exists('type_id', $schema['fields'])) {
-              $default_type_column = 'type_id';
-            }
-
-            // If the table doesn't have an obvious type_id column then
-            // let the user specify how record types are identified.
-            if ($default_type_column) {
-
-              $default_has_type = 'Yes';
-              if (array_key_exists('chado_table_has_type', $form_state['values'])
-                  and $form_state['values']['chado_table_has_type']) {
-                $default_has_type = $form_state['values']['chado_table_has_type'];
-              }
-              $form['storage'][$store_type]['chado_table_has_type'] = array(
-                '#type' => 'radios',
-                '#title' => 'Do you want to use the "' . $default_table . '.' .
-                   $default_type_column . '" to distinguish between content types?',
-                '#options' => array(
-                  'Yes' => 'Yes',
-                  'No' => 'No'
-                ),
-                '#description' => t('Many tables in Chado use a "type_id" column
-                    to identify specific data types. For example, the "feature.type_id"
-                    column is used to distinguish between different types of
-                    genomic features that are all housed in the feature table.
-                    But there is sometimes a cvterm linker table where additional
-                    attributes for the record can be set.  Here you can specify if you
-                    want to use the type_id column or select another way
-                    to identify records in the "' . $default_table . '" table that
-                    are of this type'),
-                '#default_value' => $default_has_type,
-                '#ajax' => array(
-                  'callback' => "tripal_admin_add_type_form_ajax_callback",
-                  'wrapper' => "tripal-vocab-select-form",
-                  'effect' => 'fade',
-                  'method' => 'replace'
-                ),
-              );
-
-              // If the type_id column is not wanted to differentiate between
-              // different records of this type then find out if the user wants
-              // to use a linker cvterm table, but only if one exists
-              $linker_table = $default_table . '_cvterm';
-              if ($default_has_type == "Yes") {
-                $submit_disabled = FALSE;
-              }
-              else if ($default_has_type == 'No' and chado_table_exists($linker_table)) {
-                $default_use_linker = 'Yes';
-                if (array_key_exists('chado_type_use_linker', $form_state['values'])
-                    and $form_state['values']['chado_type_use_linker']) {
-                  $default_use_linker = $form_state['values']['chado_type_use_linker'];
-                }
-                $form['storage'][$store_type]['chado_type_use_linker'] = array(
-                  '#type' => 'radios',
-                  '#title' => 'Do you want to use the "' . $linker_table . '" table
-                     to distinguish between content types?',
-                  '#options' => array(
-                    'Yes' => 'Yes',
-                    'No' => 'No'
-                  ),
-                  '#description' => t('Sometimes records can be distringuish
-                      using a linker table, especially if there is no column
-                      in the specified Chado table to identify the
-                      record types. In these cases the linker table is
-                      sometimes used.'),
-                  '#default_value' => $default_use_linker,
-                  '#ajax' => array(
-                    'callback' => "tripal_admin_add_type_form_ajax_callback",
-                    'wrapper' => "tripal-vocab-select-form",
-                    'effect' => 'fade',
-                    'method' => 'replace'
-                  ),
-                );
-
-                if($default_use_linker == 'No') {
-                  if (count(array_keys($column_options)) == 1) {
-                    $form['storage'][$store_type]['type_column'] = array(
-                      '#type' => 'item',
-                      '#title' => 'Type Column',
-                      '#description' => 'The  "' . $default_table .
-                        '" table does not have a column
-                        that stores data types. You cannot map the "' .
-                        $term_name . '" type to this table.',
-                    );
-                  }
-                  else {
-                    $form['storage'][$store_type]['type_column'] = array(
-                      '#type' => 'select',
-                      '#title' => 'Type Column',
-                      '#options' => $column_options,
-                      '#description' => 'Please select the column in the "' .
-                        $default_table . '" table that will identify a record
-                        as being of type "' . $term_name . '".',
-                      '#default_value' => $default_type_column,
-                      '#ajax' => array(
-                        'callback' => "tripal_admin_add_type_form_ajax_callback",
-                        'wrapper' => "tripal-vocab-select-form",
-                        'effect' => 'fade',
-                        'method' => 'replace'
-                      ),
-                    );
-                    $submit_disabled = FALSE;
-                  }
-                } // end if(!$default_use_linker) {
-                else {
-                  $submit_disabled = FALSE;
-                }
-              } // end if ($default_has_type == 'No' and ...
-            } // end else if ($default_type_column) {
-            else {
-              // If the type_id column is not wanted to differentiate between
-              // different records of this type then find out if the user wants
-              // to use a linker table, but only if one exists
-              $linker_table = $default_table . '_cvterm';
-              if (chado_table_exists($linker_table)) {
-                $default_use_linker = 'Yes';
-                if (array_key_exists('chado_type_use_linker', $form_state['values'])
-                    and $form_state['values']['chado_type_use_linker']) {
-                  $default_use_linker = $form_state['values']['chado_type_use_linker'];
-                }
-                $form['storage'][$store_type]['chado_type_use_linker'] = array(
-                  '#type' => 'radios',
-                  '#title' => 'Do you want to use the "' . $linker_table . '" table
-                     to distinguish between content types?',
-                  '#options' => array(
-                    'Yes' => 'Yes',
-                    'No' => 'No'
-                  ),
-                  '#description' => t('Sometimes records can be distringuish
-                      using a linker, especially if there is no column
-                      in the specified Chado table to identify the
-                      record types. In these cases the linker table is
-                      sometimes used.'),
-                  '#default_value' => $default_use_linker,
-                  '#ajax' => array(
-                    'callback' => "tripal_admin_add_type_form_ajax_callback",
-                    'wrapper' => "tripal-vocab-select-form",
-                    'effect' => 'fade',
-                    'method' => 'replace'
-                  ),
-                );
-
-                if($default_use_linker == 'No') {
-                  if (count(array_keys($column_options)) == 1) {
-                    $form['storage'][$store_type]['type_column'] = array(
-                      '#type' => 'item',
-                      '#title' => 'Type Column',
-                      '#description' => 'The  "' . $default_table .
-                        '" table does not have a column
-                        that stores data types. You cannot map the "' .
-                        $term_name . '" type to this table.',
-                    );
-                  }
-                  else {
-                    $form['storage'][$store_type]['type_column'] = array(
-                      '#type' => 'select',
-                      '#title' => 'Type Column',
-                      '#options' => $column_options,
-                      '#description' => 'Please select the column in the "' .
-                        $default_table . '" table that will identify a record
-                        as being of type "' . $term_name . '".',
-                      '#default_value' => $default_type_column,
-                      '#ajax' => array(
-                        'callback' => "tripal_admin_add_type_form_ajax_callback",
-                        'wrapper' => "tripal-vocab-select-form",
-                        'effect' => 'fade',
-                        'method' => 'replace'
-                      ),
-                    );
-                    $submit_disabled = FALSE;
-                  }
-                } // end if(!$default_use_linker) {
-                else {
-                  $submit_disabled = FALSE;
-                }
-              } // end if ($default_has_type == 'No' and ...
-            } // end else
-          } //  end if ($default_has_all == 'No') {
-          else {
-            $submit_disabled = FALSE;
-          }
-        } // end if ($default_table) {
-      } // end if ($default_store) {
       // Add in the button for the cases of no terms or too many.
       $form['submit_button'] = array(
         '#type' => 'submit',
@@ -843,12 +587,7 @@ function tripal_admin_add_type_form_ajax_callback($form, $form_state) {
  */
 function tripal_admin_add_type_form_validate($form, &$form_state) {
   $stores = module_invoke_all('vocab_storage_info');
-  $keys = array_keys($stores);
-  $module = $stores[$keys[0]]['module'];
-  $function = $module . '_vocab_select_term_form_validate';
-  if (function_exists($function)) {
-    $function($form, $form_state);
-  }
+  $store_select = $form_state['values']['store_select'];
 
   if (array_key_exists('clicked_button', $form_state) and
       $form_state['clicked_button']['#name'] =='use_cvterm') {
@@ -866,6 +605,7 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
         $num_selected++;
       }
     }
+
     if ($num_selected == 0) {
       form_set_error('', 'Please select at least one term.');
     }
@@ -873,15 +613,20 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
       form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
     }
     else {
+      // Add the term to the form state so we can access it later.
       $form_state['term']['vocabulary'] = $term->dbxref_id->db_id->name;
       $form_state['term']['accession'] = $term->dbxref_id->accession;
       $form_state['term']['term_name'] = $term->name;
 
-      // Make sure a default table is selected
-      // TODO: move this Chado specific code out.
-      $default_table = $form_state['values']['base_chado_table'];
-      if (!$default_table) {
-        form_set_error('base_chado_table', 'Please select a default table.');
+      // Call the submit hook for this form for the storage method that
+      // will be responsible for this cotent type.
+      $stores = module_invoke_all('vocab_storage_info');
+      $selected_store_module = $stores[$store_select]['module'];
+      $selected_term = $form_state['term'];
+
+      $function = $selected_store_module . '_field_storage_bundle_mapping_form_validate';
+      if (function_exists($function)) {
+        $function($form, $form_state, $selected_term);
       }
     }
   }
@@ -899,6 +644,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
   $accession = '';
   if (array_key_exists('term', $form_state)) {
     $selected_term = $form_state['term'];
+    $store_select = $form_state['values']['store_select'];
     $vocabulary = array_key_exists('vocabulary', $selected_term) ? $selected_term['vocabulary'] : '';
     $accession = array_key_exists('accession', $selected_term) ? $selected_term['accession'] : '';
     $term_name = array_key_exists('term_name', $selected_term) ? $selected_term['term_name'] : '';
@@ -907,34 +653,25 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
     // as a bundle.
     $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
     if (!$term) {
-      $error = '';
-      // TODO: the storage args are Chado specific. This should be made
-      // more generic to support other back-ends.
+
+      // Call the submit hook for this form for the storage method that
+      // will be responsible for this cotent type.
+      $stores = module_invoke_all('vocab_storage_info');
+      $selected_store_module = $stores[$store_select]['module'];
+
       $storage_args = array();
-      if (array_key_exists('base_chado_table', $form_state['values'])) {
-        $storage_args['data_table'] = $form_state['values']['base_chado_table'];
-      }
-      if (array_key_exists('chado_type_use_linker', $form_state['values']) and
-          $form_state['values']['chado_type_use_linker'] == 'Yes') {
-        $storage_args['type_linker_table'] = $form_state['values']['base_chado_table'] . '_cvterm';
-        $storage_args['type_column'] = 'cvterm_id';
-      }
-      if (array_key_exists('chado_table_has_type', $form_state['values']) and
-          $form_state['values']['chado_table_has_type'] == 'Yes') {
-        $storage_args['type_column'] = 'type_id';
-      }
-      if (array_key_exists('type_column', $form_state['values']) and
-          $form_state['values']['type_column']) {
-        $storage_args['type_column'] = $form_state['values']['type_column'];
+      $function = $selected_store_module . '_field_storage_bundle_mapping_form_submit';
+      if (function_exists($function)) {
+        $function($form, $form_state, $term, $storage_args);
       }
 
-      $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
       $args = array(
         'vocabulary' => $vocabulary,
         'accession' => $accession,
         'term_name' => $term_name,
         'storage_args' => $storage_args,
       );
+
       $bundle = tripal_create_bundle($args, $error);
       if (!$bundle) {
         drupal_set_message($error, 'error');
@@ -945,10 +682,6 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
         tripal_admin_access($bundle);
         $form_state['redirect'] = "admin/structure/bio_data";
       }
-
-      // TODO: move these Chado specific settings out.
-
-
     }
     else {
       drupal_set_message("The term '$accession' already exists as a content type.", 'warning');

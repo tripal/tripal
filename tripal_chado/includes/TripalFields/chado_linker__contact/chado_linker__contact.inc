@@ -62,8 +62,9 @@ class chado_linker__contact extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
-    $record = $details['record'];
+  public function load($entity) {
+    $record = $entity->chado_record;
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
@@ -71,7 +72,7 @@ class chado_linker__contact extends ChadoField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
-    $base_table = $details['record']->tablename;
+    $base_table = $entity->chado_table;
     $pkey = $schema['primary key'][0];
     if (!isset($schema['foreign keys'][$base_table]['columns'])) {
       return;

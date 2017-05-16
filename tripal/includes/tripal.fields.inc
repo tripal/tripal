@@ -358,7 +358,7 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
         // Unset the the _add_new_field entry so Drupal doesn't try to
         // Create the field.
         unset($form_state['values']['fields']['_add_new_field']);
-        drupal_set_message('Please set the controlled vocabulary that best describes the data of this field. See the "Controlled Vocabulary Term" section below.', 'notice');
+        drupal_set_message('Please set the controlled vocabulary that best describes the data of this field. See the "Controlled Vocabulary Term" section below.', 'warning');
       }
     }
     catch (Exception $e) {

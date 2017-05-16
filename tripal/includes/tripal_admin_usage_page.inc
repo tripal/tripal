@@ -12,7 +12,6 @@ function tripal_admin_usage_page() {
   $breadcrumb[] = l('Tripal', 'admin/tripal');
   drupal_set_breadcrumb($breadcrumb);
   tripal_add_d3js();
-  //drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_galaxy.dashboard.js');
   drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
   drupal_add_library('system', 'drupal.collapse');
   $output = '<h2>Tripal Administrative Notifications and Info</h2>';

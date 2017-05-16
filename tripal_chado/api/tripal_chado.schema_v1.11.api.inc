@@ -1697,7 +1697,7 @@ function tripal_chado_chado_schema_v1_11_cell_line_dbxref() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'primary key' => array(
@@ -2024,12 +2024,12 @@ function tripal_chado_chado_schema_v1_11_cell_line_synonym() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'is_internal' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
     ),
     'primary key' => array(
@@ -4113,12 +4113,12 @@ function tripal_chado_chado_schema_v1_11_feature() {
       'is_analysis' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'is_obsolete' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'timeaccessioned' => array(
         'type' => 'datetime',
@@ -4236,7 +4236,7 @@ function tripal_chado_chado_schema_v1_11_feature_cvterm() {
       'is_not' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'rank' => array(
         'type' => 'int',
@@ -4523,7 +4523,7 @@ function tripal_chado_chado_schema_v1_11_feature_dbxref() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'primary key' => array(
@@ -5323,12 +5323,12 @@ function tripal_chado_chado_schema_v1_11_feature_synonym() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'is_internal' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
     ),
     'primary key' => array(
@@ -5411,7 +5411,7 @@ function tripal_chado_chado_schema_v1_11_featureloc() {
       'is_fmin_partial' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'fmax' => array(
         'type' => 'int',
@@ -5420,7 +5420,7 @@ function tripal_chado_chado_schema_v1_11_featureloc() {
       'is_fmax_partial' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'strand' => array(
         'type' => 'int',
@@ -6262,7 +6262,7 @@ function tripal_chado_chado_schema_v1_11_library_dbxref() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'primary key' => array(
@@ -6463,12 +6463,12 @@ function tripal_chado_chado_schema_v1_11_library_synonym() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
       'is_internal' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
     ),
     'primary key' => array(
@@ -8473,7 +8473,7 @@ function tripal_chado_chado_schema_v1_11_pub() {
       'is_obsolete' => array(
         'type' => 'boolean',
         'not NULL' => '',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'publisher' => array(
         'type' => 'varchar',
@@ -8542,7 +8542,7 @@ function tripal_chado_chado_schema_v1_11_pub_dbxref() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'primary key' => array(
@@ -8684,7 +8684,7 @@ function tripal_chado_chado_schema_v1_11_pubauthor() {
       'editor' => array(
         'type' => 'boolean',
         'not NULL' => '',
-        'default' => 'als',
+        'default' => 'false',
       ),
       'surname' => array(
         'type' => 'varchar',
@@ -9108,7 +9108,7 @@ function tripal_chado_chado_schema_v1_11_stock() {
       'is_obsolete' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'als',
+        'default' => 'false',
       ),
     ),
     'primary key' => array(
@@ -9271,7 +9271,7 @@ function tripal_chado_chado_schema_v1_11_stock_dbxref() {
       'is_current' => array(
         'type' => 'boolean',
         'not NULL' => '1',
-        'default' => 'ru',
+        'default' => 'true',
       ),
     ),
     'primary key' => array(

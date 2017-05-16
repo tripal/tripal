@@ -313,7 +313,7 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
     }
-    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
+    else if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx2";
     }
     else {
@@ -386,9 +386,12 @@ function tripal_chado_upgrade_v2_v3_enable() {
     db_query($sql);
     $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx2 RENAME TO tripal_cv_obo_obo_id_idx";
     db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey2'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
+    } 
+    else {
+      $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx2 RENAME TO tripal_cv_obo_tripal_cv_obo_idx1_idx";
+    }
     db_query($sql);
   }
 
@@ -784,6 +787,24 @@ function tripal_chado_update_7302(){
       'EDAM',
       'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
     );
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Fixes inconsistency with Chado v1.3 update if was applied.
+ */
+function tripal_chado_update_7303() {
+  try {
+    $chado_version = chado_get_version();
+    if ($chado_version == '1.3') {
+      module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup');
+      tripal_chado_fix_v1_3_custom_tables();
+    }
   }
   catch (\PDOException $e) {
     $transaction->rollback();

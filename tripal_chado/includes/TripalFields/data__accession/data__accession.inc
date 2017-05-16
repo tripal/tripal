@@ -47,9 +47,9 @@ class data__accession extends ChadoField {
   /**
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
 
-    $record = $details['record'];
+    $record = $entity->chado_record;
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];

@@ -36,7 +36,7 @@ $view->disabled = FALSE; /* Edit this to true to make a default view disabled in
 
 /* Display: Master */
 $handler = $view->new_display('default', 'Master', 'default');
-$handler->display->display_options['title'] = 'Tripal Views Integrations';
+$handler->display->display_options['title'] = 'Chado Views Integrations';
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
 $handler->display->display_options['access']['perm'] = 'manage tripal_views_integration';
@@ -152,17 +152,17 @@ $handler->display->display_options['header']['action_links_area_1']['link-4'] = 
   'label-4' => '',
   'path-4' => '',
 );
-/* Field: Tripal Views Integration: Setup ID */
+/* Field: Chado Views Integration: Setup ID */
 $handler->display->display_options['fields']['setup_id']['id'] = 'setup_id';
 $handler->display->display_options['fields']['setup_id']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['setup_id']['field'] = 'setup_id';
 $handler->display->display_options['fields']['setup_id']['exclude'] = TRUE;
 $handler->display->display_options['fields']['setup_id']['separator'] = '';
-/* Field: Tripal Views Integration: Name */
+/* Field: Chado Views Integration: Name */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['name']['field'] = 'name';
-/* Field: Tripal Views Integration: Chado Table Name */
+/* Field: Chado Views Integration: Chado Table Name */
 $handler->display->display_options['fields']['table_name']['id'] = 'table_name';
 $handler->display->display_options['fields']['table_name']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['table_name']['field'] = 'table_name';
@@ -171,16 +171,16 @@ $handler->display->display_options['fields']['mv_table']['id'] = 'mv_table';
 $handler->display->display_options['fields']['mv_table']['table'] = 'tripal_mviews';
 $handler->display->display_options['fields']['mv_table']['field'] = 'mv_table';
 $handler->display->display_options['fields']['mv_table']['label'] = 'Materialized View';
-/* Field: Tripal Views Integration: Description */
+/* Field: Chado Views Integration: Description */
 $handler->display->display_options['fields']['comment']['id'] = 'comment';
 $handler->display->display_options['fields']['comment']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['comment']['field'] = 'comment';
-/* Field: Tripal Views Integration: Base Table? */
+/* Field: Chado Views Integration: Base Table? */
 $handler->display->display_options['fields']['base_table']['id'] = 'base_table';
 $handler->display->display_options['fields']['base_table']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['base_table']['field'] = 'base_table';
 $handler->display->display_options['fields']['base_table']['not'] = 0;
-/* Field: Tripal Views Integration: Priority */
+/* Field: Chado Views Integration: Priority */
 $handler->display->display_options['fields']['priority']['id'] = 'priority';
 $handler->display->display_options['fields']['priority']['table'] = 'tripal_views';
 $handler->display->display_options['fields']['priority']['field'] = 'priority';
@@ -222,15 +222,15 @@ $handler->display->display_options['fields']['nothing_3']['alter']['text'] = '[n
 $handler->display->display_options['fields']['nothing_3']['element_class'] = 'short-column';
 $handler->display->display_options['fields']['nothing_3']['element_label_class'] = 'short-column';
 $handler->display->display_options['fields']['nothing_3']['element_label_colon'] = FALSE;
-/* Sort criterion: Tripal Views Integration: Chado Table Name */
+/* Sort criterion: Chado Views Integration: Chado Table Name */
 $handler->display->display_options['sorts']['table_name']['id'] = 'table_name';
 $handler->display->display_options['sorts']['table_name']['table'] = 'tripal_views';
 $handler->display->display_options['sorts']['table_name']['field'] = 'table_name';
-/* Sort criterion: Tripal Views Integration: Priority */
+/* Sort criterion: Chado Views Integration: Priority */
 $handler->display->display_options['sorts']['priority']['id'] = 'priority';
 $handler->display->display_options['sorts']['priority']['table'] = 'tripal_views';
 $handler->display->display_options['sorts']['priority']['field'] = 'priority';
-/* Filter criterion: Tripal Views Integration: Name */
+/* Filter criterion: Chado Views Integration: Name */
 $handler->display->display_options['filters']['name']['id'] = 'name';
 $handler->display->display_options['filters']['name']['table'] = 'tripal_views';
 $handler->display->display_options['filters']['name']['field'] = 'name';
@@ -246,7 +246,7 @@ $handler->display->display_options['filters']['name']['expose']['remember_roles'
   1 => 0,
   3 => 0,
 );
-/* Filter criterion: Tripal Views Integration: Chado Table Name */
+/* Filter criterion: Chado Views Integration: Chado Table Name */
 $handler->display->display_options['filters']['table_name']['id'] = 'table_name';
 $handler->display->display_options['filters']['table_name']['table'] = 'tripal_views';
 $handler->display->display_options['filters']['table_name']['field'] = 'table_name';
@@ -276,7 +276,7 @@ $handler->display->display_options['filters']['mv_table']['expose']['remember_ro
   1 => 0,
   3 => 0,
 );
-/* Filter criterion: Tripal Views Integration: Priority */
+/* Filter criterion: Chado Views Integration: Priority */
 $handler->display->display_options['filters']['priority']['id'] = 'priority';
 $handler->display->display_options['filters']['priority']['table'] = 'tripal_views';
 $handler->display->display_options['filters']['priority']['field'] = 'priority';
@@ -291,7 +291,7 @@ $handler->display->display_options['filters']['priority']['expose']['remember_ro
   1 => 0,
   3 => 0,
 );
-/* Filter criterion: Tripal Views Integration: Base Table? */
+/* Filter criterion: Chado Views Integration: Base Table? */
 $handler->display->display_options['filters']['base_table']['id'] = 'base_table';
 $handler->display->display_options['filters']['base_table']['table'] = 'tripal_views';
 $handler->display->display_options['filters']['base_table']['field'] = 'base_table';
@@ -312,7 +312,7 @@ $handler->display->display_options['filters']['base_table']['expose']['remember_
 $handler = $view->new_display('page', 'Page', 'page');
 $handler->display->display_options['path'] = 'admin/tripal/storage/chado/views-integration';
 $handler->display->display_options['menu']['type'] = 'normal';
-$handler->display->display_options['menu']['title'] = 'Integrations';
+$handler->display->display_options['menu']['title'] = 'Chado Views Integrations';
 $handler->display->display_options['menu']['description'] = 'Integrates Chado tables with Drupal Views for direct access.';
 $handler->display->display_options['menu']['weight'] = '-10';
 $handler->display->display_options['menu']['name'] = 'management';

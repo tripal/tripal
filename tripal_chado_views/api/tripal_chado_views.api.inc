@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * API functions for Tripal Views Integration
+ * API functions for Chado Views Integration
  */
 
  /**
@@ -81,7 +81,7 @@ function mymodule_admin_landing_page() {
 
  * @endcode
  *
- * Adding your own Tripal Views Integrations:
+ * Adding your own Chado Views Integrations:
  *
  * One of the main ways the Tripal View API is likely to be used is if your module needs
  * to create it's own tripal views integration. You might need to do this for any number of
@@ -565,7 +565,7 @@ function tripal_rebuild_views_integrations($delete_first = FALSE) {
 
   // TODO: the function above should have a return value from which we can
   // determine if the message below is approprite.
-  drupal_set_message('Successfully rebuilt default Tripal Views Integrations');
+  drupal_set_message('Successfully rebuilt default Chado Views Integrations');
 }
 
 /**

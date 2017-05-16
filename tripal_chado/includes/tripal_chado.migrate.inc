@@ -549,7 +549,8 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
     $options['all'] = 'All';
   }
   while ($obj = $result->fetchObject()) {
-    if ($has_template) {
+    // Ignore analysis sub modules
+    if ($has_template && !preg_match('/^chado_analysis_.+$/', $obj->type)) {
       $mod = str_replace('chado_', 'tripal_', $obj->type);
       $mod_dir = drupal_get_path('module', $mod);
       if (file_exists($mod_dir . '/theme/templates/' . $mod . '_base.tpl.php')) {
@@ -940,6 +941,10 @@ function tripal_chado_migrate_get_biodata_tables ($chado_table) {
 }
 
 function tripal_chado_migrate_resource_blocks($bundle_name) {
+  // Do not try to migrate resouce blocks and titles if they weren't set up
+  if (!db_table_exists('field_revision_field_resource_titles') || !db_table_exists('field_revision_field_resource_blocks')) {
+    return;
+  }
   $entites =
     db_select('chado_' . $bundle_name, 'B')
     ->fields('B', array('nid'))
@@ -1071,6 +1076,10 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
 }
 
 function tripal_chado_migrate_resource_links($bundle_name) {
+  // Do not try to migrate resouce blocks and titles if they weren't set up
+  if (!db_table_exists('field_revision_field_resource_links')) {
+    return;
+  }
   $entites =
   db_select('chado_' . $bundle_name, 'B')
   ->fields('B', array('nid'))

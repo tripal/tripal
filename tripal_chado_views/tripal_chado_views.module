@@ -97,7 +97,7 @@ function tripal_chado_views_menu() {
 
   $items['admin/tripal/storage/chado/views-integration/import'] = array(
     'title' => 'Import Views Integration',
-    'description' => 'Import a Tripal Views Integration from another site.',
+    'description' => 'Import a Chado Views Integration from another site.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_views_integration_import_form'),
     'access arguments' => array('manage tripal_views_integration'),
@@ -107,7 +107,7 @@ function tripal_chado_views_menu() {
 
   $items['admin/tripal/storage/chado/views-integration/export'] = array(
     'title' => 'Export Views Integration',
-    'description' => 'Export a Tripal Views Integration for use in another Tripal site',
+    'description' => 'Export a Chado Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_views_integration_export_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
@@ -117,7 +117,7 @@ function tripal_chado_views_menu() {
 
   $items['admin/tripal/storage/chado/views-integration/export/%'] = array(
     'title' => 'Export Views Integration',
-    'description' => 'Export a Tripal Views Integration for use in another Tripal site',
+    'description' => 'Export a Chado Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_views_integration_export_form', 4),
     'access arguments' => array('manage tripal_views_integration'),

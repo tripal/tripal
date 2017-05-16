@@ -46,6 +46,16 @@ function tripal_pub_node_info() {
 function chado_pub_form($node, $form_state) {
   $form = array();
 
+  // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+  // warn the user that they should load it before continuing.
+  $pub_cv = chado_select_record('cv', array('cv_id'), array('name' => 'tripal_pub'));
+  if (count($pub_cv) == 0) {
+    drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
+        'This vocabulary is required to be loaded before adding ' .
+        'publications.  <br>Please !import',
+        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+  }
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing pub
@@ -190,7 +200,7 @@ function chado_pub_form($node, $form_state) {
   );
 
   $type_cv = tripal_get_default_cv('pub', 'type_id');
-  if ($type_cv->name == 'tripal_pub') {
+  if ($type_cv and $type_cv->name == 'tripal_pub') {
 
     // get the list of publication types.  In the Tripal publication
     // ontologies these are all grouped under the term 'Publication Type'
@@ -262,7 +272,7 @@ function chado_pub_form($node, $form_state) {
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options
   // for only a subset of the vocabulary
-  if ($prop_cv->name == 'tripal_pub') {
+  if ($prop_cv and $prop_cv->name == 'tripal_pub') {
     $select_options[] = 'Select a Property';
     $sql = "
       SELECT
