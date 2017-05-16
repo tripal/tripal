@@ -627,3 +627,28 @@ function chado_get_record_with_property($record, $property, $options = array()) 
 
   return $records;
 }
+
+
+/**
+ * Retrieves all of the property types currently availalbe in a prop table.
+ *
+ * @param $prop_table
+ *   The name of the property table.
+ * @throws Exception
+ * @return
+ *   An array of cvterm objects as created by chado_generate_var().
+ */
+function chado_get_table_property_types($prop_table) {
+
+  // Make sure this is a prop table.
+  if (!preg_match('/prop$/', $prop_table)) {
+    throw new Exception('Please provide a valid Chado property table');
+  }
+  $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+  $results = chado_query($sql);
+  $types = array();
+  foreach ($results as $result) {
+    $types[] = chado_generate_var('cvterm', array('cvterm_id' => $result->type_id));
+  }
+  return $types;
+}

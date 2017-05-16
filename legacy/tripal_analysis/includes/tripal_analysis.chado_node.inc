@@ -215,7 +215,7 @@ function chado_analysis_form($node, &$form_state) {
   $day = preg_replace("/^\d+-\d+-0?(\d+) .*/", "$1", $default_time);
   // If the time is not set, use current time
   if (!$default_time) {
-    $default_time = time();
+    $default_time = REQUEST_TIME;
     $year  = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
     $day   = format_date($default_time, 'custom', 'j');
@@ -267,7 +267,7 @@ function chado_analysis_form($node, &$form_state) {
 
   // Properties Form
   // ----------------------------------
-  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/vocab/cvterm/add") . ".");
+  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/loaders/chado_cv/cvterm/add") . ".");
   $prop_cv = tripal_get_default_cv('analysisprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(

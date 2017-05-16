@@ -969,7 +969,7 @@ function chado_delete_record($table, $match, $options = NULL) {
   $fields = $table_desc['fields'];
   if (empty($table_desc)) {
     tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      'chado_insert_record; There is no table description for !table_name',
+      'chado_delete_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
   }
@@ -1229,8 +1229,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     return FALSE;
   }
 
-  $select = '';
-  $from = '';
   $where = array();
   $args = array();
 
@@ -1327,8 +1325,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       );
       return array();
     }
-
-    $select[] = $field;
 
     // CASE 1: We have an array for a value.
     if (is_array($value)) {
@@ -1608,7 +1604,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *          WHERE
  *            F.uniquename = :feature_uniquename";
  * $args = array( ':feature_uniquename' => $form_state['values']['uniquename'] );
- * $result = chado_query( $sql, $args );
+ * $result = chado_query($sql, $args);
  * foreach ($result as $r) { [Do something with the records here] }
  * @endcode
  *

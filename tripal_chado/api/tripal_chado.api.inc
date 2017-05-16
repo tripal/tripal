@@ -59,6 +59,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $type_column = $chado_bundle->type_column;
   $type_linker_table = $chado_bundle->type_linker_table;
   $cvterm_id  = $chado_bundle->type_id;
+  $type_value = $chado_bundle->type_value;
 
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
@@ -66,7 +67,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
 
   // Construct the SQL for identifying which records should be published.
   $args = array();
-  $select = "SELECT $pkey_field as record_id ";
+  $select = "SELECT T.$pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
       LEFT JOIN public.$chado_entity_table CE on CE.record_id = T.$pkey_field
@@ -80,11 +81,24 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   }
   $where = " WHERE CE.record_id IS NULL ";
 
-  // Handle bundles that use a linker property table for identifying the type
-  // of record to publish.
-  if ($type_linker_table and $type_column) {
+  // Handle records that are mapped to property tables.
+  if ($type_linker_table and $type_column and $type_value) {
     $propschema = chado_get_schema($type_linker_table);
     $fkeys = $propschema['foreign keys'][$table]['columns'];
+    foreach ($fkeys as $leftkey => $rightkey) {
+      if ($rightkey == $pkey_field) {
+        $from .= " INNER JOIN {" . $type_linker_table . "} LT ON T.$pkey_field = LT.$leftkey ";
+      }
+    }
+    $where .= "AND LT.$type_column = :cvterm_id and LT.value = :prop_value";
+    $args[':cvterm_id'] = $cvterm_id;
+    $args[':prop_value'] = $type_value;
+  }
+
+  // Handle records that are mapped to cvterm linking tables.
+  if ($type_linker_table and $type_column and !$type_value) {
+    $cvtschema = chado_get_schema($type_linker_table);
+    $fkeys = $cvtschema['foreign keys'][$table]['columns'];
     foreach ($fkeys as $leftkey => $rightkey) {
       if ($rightkey == $pkey_field) {
         $from .= " INNER JOIN {" . $type_linker_table . "} LT ON T.$pkey_field = LT.$leftkey ";
@@ -94,17 +108,28 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $args[':cvterm_id'] = $cvterm_id;
   }
 
-  // If the type column is in the base table then add in the SQL for that.
+  // Handle records that are mapped via a type_id column in the base table.
   if (!$type_linker_table and $type_column) {
     $where .= "AND T.$type_column = :cvterm_id";
     $args[':cvterm_id'] = $cvterm_id;
   }
-  // If no type column is specified then we have a problem.
-  if ($type_linker_table and !$type_column) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "Could not publish record: @error",
-        array('@error' => 'The bundle does not properly map to Chado.'));
-    return FALSE;
+
+  // Handle the case where records are in the cvterm table and mapped via a single
+  // vocab.  Here we use the type_value for the cv_id.
+  if ($table == 'cvterm' and $type_value) {
+    $where .= "AND T.cv_id = :cv_id";
+    $args[':cv_id'] = $type_value;
+  }
+
+  // Handle the case where records are in the cvterm table but we want to
+  // use all of the child terms.
+  if ($table == 'cvterm' and !$type_value) {
+    $where .= "AND T.cvterm_id IN (
+       SELECT CVTP.subject_id
+       FROM {cvtermpath} CVTP
+       WHERE CVTP.object_id = :cvterm_id)
+     ";
+    $args[':cvterm_id'] = $cvterm_id;
   }
 
   // Now add in any additional filters

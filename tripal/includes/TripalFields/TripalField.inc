@@ -56,7 +56,6 @@ class TripalField {
     // is convenient for speed.  Fields that are slow should for loading
     // should ahve auto_attach set to FALSE so tha their values can be
     // attached asyncronously.
-    'auto_attach' => TRUE,
   );
 
   // The default widget for this field.
@@ -74,6 +73,12 @@ class TripalField {
   // and field_create_instance().
   public static $no_ui = TRUE;
 
+  // A boolean specifying that the field will not contain any data. This
+  // should exclude the field from web serivces or downloads.  An example
+  // could be a quick search field that appears on the page that redirects
+  // the user but otherwise provides no data.
+  public static $no_data = FALSE;
+
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -81,6 +86,7 @@ class TripalField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -88,7 +94,7 @@ class TripalField {
 
 
   // --------------------------------------------------------------------------
-  //                     CONSTRUCTORS -- DO NOT OVERRIDE
+  //                     CONSTRUCTORS
   // --------------------------------------------------------------------------
 
   /**
@@ -105,24 +111,8 @@ class TripalField {
 
     $class = get_called_class();
 
-    // Make sure the term exist.
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
-    }
-    else {
-      // If the vocabulary and accession are set then make sure that the
-      // term is a real term. It is possible that the vocabulary and accession
-      // may not be set initially. This occurs when a field is created
-      // dynamically be a priviledge site admin.
-      if (array_key_exists('term_vocabulary', $instance['settings'])) {
-        $vocabulary = $instance['settings']['term_vocabulary'];
-        $accession = $instance['settings']['term_accession'];
-        $term = tripal_get_term_details($vocabulary, $accession);
-        if (!$term) {
-          throw new Error(t('Cannot create TripalField of type "%term" as that
-              term does not exist.', array('%term' => "$vocabulary:$accession")));
-        }
-      }
     }
   }
 
@@ -176,6 +166,15 @@ class TripalField {
   public function getInstance() {
     return $this->instance;
   }
+
+  /**
+   * When constructing a pager for use by a field, all pagers must have
+   * a unique ID
+   */
+  protected function getPagerElementID() {
+    return $this->field['id'];
+  }
+
   // --------------------------------------------------------------------------
   //                            OVERRIDEABLE FUNCTIONS
   // --------------------------------------------------------------------------
@@ -217,7 +216,6 @@ class TripalField {
    * Loads the field values from the underlying data store.
    *
    * @param $entity
-   * @param $details
    *
    * @return
    *   An array of the following format:
@@ -241,10 +239,9 @@ class TripalField {
    *
    *
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
 
   }
-
 
   /**
    * Provides a form for the 'Field Settings' of the field management page.

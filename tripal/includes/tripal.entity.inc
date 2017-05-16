@@ -328,11 +328,13 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       // the field.
       $instance = field_info_instance('TripalEntity', $child_name, $entity->bundle);
       if ($instance and array_key_exists('settings', $instance)) {
+        $class = '';
         if (array_key_exists('auto_attach', $instance['settings']) and
             $instance['settings']['auto_attach'] == FALSE) {
-          $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
-          $entity->content[$child_name]['#suffix'] .= '</div>';
+          $class = 'class="tripal-entity-unattached"';
         }
+        $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" ' . $class . '>';
+        $entity->content[$child_name]['#suffix'] .= '</div>';
       }
     }
   }

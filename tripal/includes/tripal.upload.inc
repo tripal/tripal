@@ -136,12 +136,12 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
       }
       else {
         $status = 'failed';
-        $message = 'Could not add file to GenSAS database.';
+        $message = 'Could not add file to the database.';
       }
     }
     else {
       $status = 'failed';
-      $message = 'Requesting module does not implement hook_handle_uploaded_file.';
+      $message = 'Cannot find the function: ' . $function . '().';
     }
   }
 

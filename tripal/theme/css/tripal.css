@@ -72,9 +72,7 @@ div.messages.tripal-site-admin-only{
 /******************************************************************************
  * Spinner for paginated elements
  *****************************************************************************/
- #spinner {
-   position: absolute;
+ .tripal-field-ajax-spinner {
    display: none;
-   left: 24%;
-   bottom: 7%;
+   float: left;
  }

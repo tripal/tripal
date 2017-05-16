@@ -46,7 +46,7 @@ class rdfs__type extends TripalField {
   /**
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
+  public function load($entity) {
     $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
     $entity->{$this->field['field_name']}['und'][0]['value'] = $bundle->label;
   }

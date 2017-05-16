@@ -1,6 +1,7 @@
 <?php
 
 class sbo__relationship_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Relationship';
 
@@ -51,13 +52,14 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+
     // Get the settings
     $settings = $display['settings'];
     $rows = array();
     $headers = array($settings['title']);
 
     foreach ($items as $delta => $item) {
-      if (!$item['value']) {
+      if (empty($item['value'])) {
         continue;
       }
       $subject_name = $item['value']['local:relationship_subject']['schema:name'];
@@ -69,7 +71,8 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
-      if ($object_type == 'mRNA' and (in_array($subject_type, array('CDS', 'exon', 'five_prime_UTR', 'three_prime_UTR')))) {
+      if ($object_type == 'mRNA' and
+          (in_array($subject_type, array('CDS', 'exon', 'five_prime_UTR', 'three_prime_UTR')))) {
         continue;
       }
 
@@ -91,35 +94,36 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         }
       }
 
-      $rows[][] = array('data' => $phrase, 'class' => array('tripal-entity-unattached field-items'));
+      $rows[][] = array(
+        'data' => $phrase,
+        'class' => array('tripal-entity-unattached field-items')
+      );
     }
 
-    //$pager = $this->generate_pager(count($rows), $per_page);
+    // Build the pager
+    $items_per_page = array_key_exists('items_per_page', $this->instance['settings']) ? $this->instance['settings']['items_per_page'] : 10;
+    $total_records = count($items);
+    $total_pages = (int) ($total_records / $items_per_page) + 1;
+    $pelement = 0; //$this->getPagerElementID();
+    $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);
+    $pager = theme('pager', array(
+      'tags' => array(),
+      'element' => $pelement,
+      'parameters' => array(),
+      'quantity' => $total_pages,
+    ));
+    $pager = $this->ajaxifyPager($pager, $entity);
+    $page_items = array_chunk($rows, $items_per_page);
 
-    $per_page = 10;
-    // Initialize the pager
-    $current_page = pager_default_initialize(count($rows), $per_page);
-    // Split your list into page sized chunks
-    $chunks = array_chunk($rows, $per_page, TRUE);
-    //format pager
-    $pager = theme('pager', array('quantity', count($rows)));
-
-
-    global $base_path;
-    $tmp_base_path = preg_replace('/\//', '\/', $base_path);
-    $field_id = 'tripal-entity-' . $entity->id . '--' . $this->field['field_name'];
-    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', $1)"', $pager);
-    $pager = preg_replace('/href="' . $tmp_base_path . 'bio_data\/ajax\/field_attach\/' . $field_id . '"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
-
-    //$pager = preg_replace("/href=\"" . $tmp_base_path . "gensas\/load_job_view_panel\/" . $job_id . "\/\d\"/", 'href="javascript:void(0)" onclick="gensas.show_job_view_panel(\'' . $job_id . '\', \'' . $job->getName() . '\')"', $pager);
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-
-    $table = array(
+    if (count($items) == 1) {
+      $content = 'There is ' . count($items) . ' relationship.';
+    }
+    else {
+      $content = 'There are ' . count($items) . ' relationships.';
+    }
+    $content .= theme_table(array(
       'header' => $headers,
-      'rows' => $current_page ? $chunks[$current_page] : array(),
+      'rows' => $page_items[$current_page],
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),
@@ -127,16 +131,13 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       'caption' => '',
       'colgroups' => array(),
       'empty' => $settings['empty'],
-    );
+    ));
 
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    if (count($items) > 0) {
-      $element[0] = array(
-        '#type' => 'markup',
-        '#markup' => theme_table($table),
-        '#suffix' => '<img src=\'/sites/all/modules/tripal-7.x-3.x/tripal/theme/images/ajax-loader.gif\' id=\'spinner\'/>' . $pager,
-      );
-    }
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content . $pager,
+    );
   }
 }
+
+

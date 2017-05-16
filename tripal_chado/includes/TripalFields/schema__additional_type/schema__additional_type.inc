@@ -49,8 +49,8 @@ class schema__additional_type extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
-    $record = $details['record'];
+  public function load($entity) {
+    $record = $entity->chado_record;
     $base_table = $this->instance['settings']['base_table'];
 
     $field_name = $this->field['field_name'];

@@ -106,7 +106,7 @@ class data__accession_widget extends ChadoFieldWidget {
     );
     $widget['links'] = array(
       '#type' => 'item',
-      '#markup' => l('Add a new database', 'admin/tripal/storage/chado/db/add', array('attributes' => array('target' => '_blank')))
+      '#markup' => l('Add a new database', 'admin/tripal/loaders/chado_db/add', array('attributes' => array('target' => '_blank')))
     );
   }
 

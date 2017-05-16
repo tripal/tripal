@@ -59,8 +59,8 @@ class local__source_data extends ChadoField {
    *
    * @see TripalField::load()
    */
-  public function load($entity, $details = array()) {
-    $analysis = $details['record'];
+  public function load($entity) {
+    $analysis = $entity->chado_record;
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];

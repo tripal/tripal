@@ -331,7 +331,7 @@ class TripalEntityController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('tripal_core', $e);
+      watchdog_exception('tripal', $e);
       drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
       return FALSE;
     }

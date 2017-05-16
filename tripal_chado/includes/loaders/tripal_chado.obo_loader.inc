@@ -1454,6 +1454,3 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
 }
 
 
-function tripal_cv_obo_form_ajax_callback($form, $form_state) {
-  return $form['obo_existing'];
-}

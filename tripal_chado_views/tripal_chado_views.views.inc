@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Tripal Views Integration
+ * Chado Views Integration
  */
 
 include 'views/handlers/tripal_views_handler_area_action_links.inc';
@@ -420,10 +420,10 @@ function tripal_chado_views_views_data() {
  */
 function tripal_chado_views_views_data_tripal_views_tables($data) {
 
-  $data['tripal_views']['table']['group'] = t('Tripal Views Integration');
+  $data['tripal_views']['table']['group'] = t('Chado Views Integration');
   $data['tripal_views']['table']['base'] = array(
     'field' => 'setup_id', // This is the identifier field for the view.
-    'title' => t('Tripal Views Integration'),
+    'title' => t('Chado Views Integration'),
     'help' => t('Specifications on how to integrate various tables with Drupal Views'),
     'weight' => -10,
   );
