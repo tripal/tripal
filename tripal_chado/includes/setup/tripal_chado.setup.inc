@@ -354,7 +354,7 @@ function tripal_chado_add_v1_1_custom_tables(){
  * schema update.
  */
 function tripal_chado_add_v1_2_custom_tables(){
-  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1_2');
+  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1.2');
   tripal_chado_add_contactprop_table();
   tripal_chado_add_featuremap_dbxref_table();
   tripal_chado_add_featuremapprop_table();
