@@ -458,7 +458,7 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
     }
 
     // Build the ID.
-    $children_id = $origin.$child_id.$cv_id.$type_id;
+    $children_id = $origin.'|'.$child_id.'|'.$cv_id.'|'.$type_id;
 
     // Now check if the most recent entry already exists in the array.
     if($increment_of_depth != 0){
@@ -467,7 +467,7 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
         if ($val['build_id'] === $children_id) {
           $possible_loop_start = $val;
           watchdog('debug', '<pre>tripal_update_cvtermpath_loop_checker  $val: '. print_r($val, TRUE) .'</pre>');
-
+          die();
           // If the search returns something check for a possible loop.
           //if(!empty($possible_loop_starts)){
             //foreach($possible_loop_starts as $possible_loop_start){

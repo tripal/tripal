@@ -769,6 +769,24 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       $chado_table = $mapped_table->chado_table;
       $legacy_template = 'legacy_template--chado_' . $chado_table;
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+        //Find the row in the ds_layout_settings table associated with the
+        // bundle_id and delete it.
+        db_delete('ds_layout_settings')
+          ->condition('entity_type', 'TripalEntity')
+          ->condition('bundle', $bundle->name)
+          ->execute();
+
+        // Delete all custom field_sets and field_groups.
+        db_delete('tripal_ds')
+          ->condition('entity_type', 'TripalEntity')
+          ->condition('bundle', $bundle->name)
+          ->execute();
+
+        // Delete the entries from the tripal_ds table.
+        db_delete('field_group')
+          ->condition('bundle', $bundle->name)
+          ->execute();
+
         $themes['TripalEntity__' . $bundle->name] = array(
           'template' => 'node--chado-generic',
           'render element' => 'entity',
