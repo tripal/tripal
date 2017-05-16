@@ -228,6 +228,11 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     return;
   }
 
+  // TODO: (Shawna) 1) Check the entity type (bundle) settings to see if empty fieleds
+  // should be ignored by default. 2)  Check the field itself to see if it
+  // overides the bundle default.  The idea being do not show fields when
+  // people don't want them shown.
+
   $element = array();
   $formatter_class = $display['type'];
   $is_loaded = tripal_load_include_field_class($formatter_class);
@@ -740,6 +745,12 @@ function tripal_field_settings_form_validate($element, &$form_state, $form) {
  * Implements hook_field_formatter_settings_summary().
  */
 function tripal_field_formatter_settings_summary($field, $instance, $view_mode) {
+
+  // TODO: (Shawna)  Add appropriate code here so that all TripalFields have
+  // the ability to change the bundle default about whether they are
+  // shown if they have no items.  We have to put this here rather than in the
+  // TripalFieldFormatter class because not all fields implement this class.
+
   $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
@@ -753,11 +764,21 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
 function tripal_field_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
 
+  // TODO: (Shawna)  Add form elements here so that all TripalFields have
+  // the ability to change the bundle default about whether they are
+  // shown if they have no items.  We have to put this here rather than in the
+  // TripalFieldFormatter class because not all fields implement this class.
+  dpm($field);
+
   $formatter_class = $field['type'] . '_formatter';
+  $elements = array();
   if (tripal_load_include_field_class($formatter_class)) {
+
     $formatter = new $formatter_class($field, $instance);
-    return $formatter->settingsForm($view_mode, $form, $form_state);
+    $elements = $formatter->settingsForm($view_mode, $form, $form_state);
   }
+
+  return $elements;
 }
 
 
