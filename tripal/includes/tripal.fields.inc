@@ -768,7 +768,6 @@ function tripal_field_formatter_settings_form($field, $instance,
   // the ability to change the bundle default about whether they are
   // shown if they have no items.  We have to put this here rather than in the
   // TripalFieldFormatter class because not all fields implement this class.
-  dpm($field);
 
   $formatter_class = $field['type'] . '_formatter';
   $elements = array();
