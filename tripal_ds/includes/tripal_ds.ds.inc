@@ -240,7 +240,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       $group_field_name = $group_field_name.rand(0, 99999);
 
       // Build the field group.
-      _additional_fields_field_group_info($bundle_name, $other_field['label'], $other_field['field_name']);
+      _additional_fields_field_group_info($bundle_name, $other_field['label'], $other_field['field_name'], $other_field['field_name']);
 
       // Update arrays.
       array_push($temporary_field, $group_field_name, $other_field['field_name']);

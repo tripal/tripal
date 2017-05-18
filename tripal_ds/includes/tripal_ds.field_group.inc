@@ -233,7 +233,7 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
       'label' => $field_label,
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-'.$group_field_name,
-        'classes' => $group_field_name.' field-group-tripalpane',
+        'classes' => ''.$group_field_name.' field-group-tripalpane',
         'description' => '',
         'hide' => 1,
       ),
