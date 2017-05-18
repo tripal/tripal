@@ -264,8 +264,8 @@ class TripalField {
   }
   /**
    *
-   * @param unknown $form
-   * @param unknown $form_state
+   * @param $form
+   * @param $form_state
    */
   public function settingsFormValidate($form, &$form_state) {
 
