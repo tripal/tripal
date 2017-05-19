@@ -180,7 +180,12 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   // TODO: (Shawna) Add in form elements to allow the site admin
   // to set if fields should be shown by defulat if empty.
   // Tripal default should always be to hide fields if there are no values.
-
+  $form['hide_empty'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide Empty Fields'),
+    '#description' => t('Check this box if you would like all empty fields hidden.'),
+    '#default_value' => 1,
+  );
   // Set Title Format.
   //-------------------------
   $title_format = tripal_get_title_format($bundle);

@@ -240,6 +240,7 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     $formatter = new $formatter_class($field, $instance);
     $formatter->view($element, $entity_type, $entity, $langcode, $items, $display);
   }
+
   return $element;
 }
 
@@ -750,12 +751,22 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
   // the ability to change the bundle default about whether they are
   // shown if they have no items.  We have to put this here rather than in the
   // TripalFieldFormatter class because not all fields implement this class.
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
 
+  $summary = '';
+
+  $summary = t('Hide this field if empty.');
+
+  watchdog('debug', '<pre>$summary: '. print_r($summary, TRUE) .'</pre>');
   $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
-    return $formatter->settingsSummary($view_mode);
+    $summary = $formatter->settingsSummary($view_mode);
+    watchdog('debug', '<pre>$summary insdie the if: '. print_r($summary, TRUE) .'</pre>');
+
   }
+  return $summary;
 }
 
 /**
@@ -768,9 +779,19 @@ function tripal_field_formatter_settings_form($field, $instance,
   // the ability to change the bundle default about whether they are
   // shown if they have no items.  We have to put this here rather than in the
   // TripalFieldFormatter class because not all fields implement this class.
-
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
   $formatter_class = $field['type'] . '_formatter';
   $elements = array();
+
+  $elements['hide'] = array(
+      '#title' => t('Hide this field if empty?'),
+      '#type' => 'checkbox',
+      '#default_value' => 1,
+      '#required' => TRUE,
+    );
+
+
   if (tripal_load_include_field_class($formatter_class)) {
 
     $formatter = new $formatter_class($field, $instance);
