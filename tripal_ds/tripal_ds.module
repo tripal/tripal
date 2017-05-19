@@ -426,3 +426,101 @@ function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name
       ->execute()
       ->fetchField();
 */
+
+/**
+ *  Implements hook_field_display_alter().
+ * @param $display
+ * @param $context
+ */
+function tripal_ds_field_display_alter(&$display, $context){
+  $field_name = $context['field']['field_name'];
+  $bundle = $context['entity']->bundle;
+  $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+  $entity_info = entity_get_info('TripalEntity');
+  //watchdog('debug', '<pre>$entity_info: '. print_r($entity_info, TRUE) .'</pre>');
+
+  if($field_name){
+    $field = field_get_items('TripalEntity', $context['entity'], $field_name);
+    if($field) {
+      if(tripal_ds_field_is_empty($field, $field)) {
+        $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle);
+        if(!empty($parent_field_info)){
+          $increment = 0;
+          foreach($parent_field_info as $parent_fields => $parent_field){
+            // Stop the right rail element from rendering.
+            drupal_add_css('.'.$parent_field_info[$increment]->group_name.' {display:none;}', 'inline');
+            drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
+            // Hide any associated menu links.
+            drupal_add_css('#'.$parent_field_info[$increment]->group_name.' {display:none;}', 'inline');
+          }
+        }
+      }
+    }
+  }
+}
+/*
+
+*/
+/**
+ * @param $field_name
+ * @param $entity_type
+ * @param $bundle
+ *
+ * @return array
+ */
+function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle){
+  $field_groups_to_hide = array();
+  $increment = 0;
+  // Get the field groups associated with this bundle.
+  $fg_for_bundle = db_select('field_group', 'fg')
+    ->fields('fg')
+    ->condition('bundle', $bundle, '=')
+    ->condition('entity_type', $entity_type, '=')
+    ->execute()->fetchAll();
+  // Run through the field groups looking for the provided $field_name
+  foreach ($fg_for_bundle as $field_groups => $field_group) {
+   $field_group_data = unserialize($field_group->data);
+    if(!empty($field_group_data['children'][0])){
+      $field_group_child = $field_group_data['children'][0];
+      if($field_group_child == $field_name){
+        //If a field group has the $field_name as a child add it to the list to
+        //return to be hidden.
+        $field_groups_to_hide[$increment] = $field_group;
+        $increment++;
+      }
+    }
+  }
+  // Remove duplicate values.
+  $field_groups_to_hide = array_unique($field_groups_to_hide);
+  return $field_groups_to_hide;
+
+}
+/**
+ *  Implements _field_group_table_rows_alter().
+ * @param $element
+ * @param $children
+ * NEEDS TO BE MOVED SO IT IS ONLY CALLED WHEN APPROPRIATE
+ */
+function tripal_ds_field_group_table_rows_alter(&$element, &$children) {
+  foreach ($children as $index => $child) {
+    if (is_array($element[$child])) {
+      if ($element[$child]['#formatter'] == 'text_default') {
+        if ($element[$child][0]['#markup'] == NULL) {
+          // This is an empty row, remove it
+          unset($children[$index]);
+          unset($element[$child]);
+        }
+      }
+    }
+  }
+}
+/**
+ * Implements hook_field_is_empty().
+ */
+function tripal_ds_field_is_empty($item, $field) {
+  if (empty($item[0]['value']) && $item[0]['value'] !== '0') {
+    return TRUE;
+  }
+  return FALSE;
+}
+
