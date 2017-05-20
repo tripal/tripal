@@ -1135,11 +1135,11 @@ function chado_get_feature_relationships($feature_id, $side = 'as_subject') {
   $relationships = array();
   while ($rel = $results->fetchObject()) {
 
-    $entity = tripal_chado_get_record_entity($bundle, $rel->subject_id);
+    $entity = chado_get_record_entity_by_bundle($bundle, $rel->subject_id);
     if ($entity) {
       $rel->subject_entity_id = $entity->entity_id;
     }
-    $entity = tripal_chado_get_record_entity($bundle, $rel->object_id);
+    $entity = chado_get_record_entity_by_bundle($bundle, $rel->object_id);
     if ($entity) {
       $rel->object_entity_id = $entity->entity_id;
     }
@@ -1206,8 +1206,8 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
     $fbundle = tripal_load_bundle_entity(array('term_id' => $fterm->id));
     $sbundle = tripal_load_bundle_entity(array('term_id' => $sterm->id));
 
-    $loc->feid = tripal_chado_get_record_entity($fbundle, $loc->feature_id);
-    $loc->seid = tripal_chado_get_record_entity($sbundle, $loc->src_feature_id);
+    $loc->feid = chado_get_record_entity_by_bundle($fbundle, $loc->feature_id);
+    $loc->seid = chado_get_record_entity_by_bundle($sbundle, $loc->src_feature_id);
 
     // add the result to the array
     $featurelocs[$i++] = $loc;

@@ -870,7 +870,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     $results = chado_select_record('feature', array('feature_id'
     ), $values);
     if (count($results) != 1) {
-      tripal_report_error('T_fasta_loader', "Cannot find a unique fature for the parent '%parent' of type
+      tripal_report_error('T_fasta_loader', "Cannot find a unique feature for the parent '%parent' of type
                '%type' for the feature.", array(
         '%parent' => $parent,'%type' => $parent_type
       ));

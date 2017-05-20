@@ -22,6 +22,16 @@
    clear: both;
 }
 
+.protein-residues-formatter {
+   border: 1px solid #dddddd;
+   color: #000000;
+   height: 100px;
+   max-width: 500px;
+   overflow: scroll;
+   white-space: normal;
+   background-color: white;
+}
+
 .residues-formatter {
    border: 1px solid #dddddd;
    color: #000000;

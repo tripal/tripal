@@ -84,7 +84,7 @@ function tripal_analysis_delete_analyses($analyses, $job = NULL) {
   global $user;
 
   // Deleting of analyses will cause a cascade delete on the
-  // fassociated tables which may include the fatureloc table. The create_point
+  // fassociated tables which may include the featureloc table. The create_point
   // function which is not prefix with the schema, and an error occurs.
   // Therefore, we set the active database to chado to get around that
   // problem.
