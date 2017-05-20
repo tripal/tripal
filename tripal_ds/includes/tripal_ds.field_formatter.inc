@@ -65,6 +65,7 @@ function tripal_ds_field_group_pre_render(&$element, $group, &$form) {
   switch ($group->format_type) {
     case 'tripalpane':
       $group_name = $group->group_name;
+      //Hide the tripal panes here if there are no children.
       $description = $group->format_settings['instance_settings']['description'];
       $hide = isset($group->format_settings['instance_settings']['hide']) ? $group->format_settings['instance_settings']['hide'] : 'none';
       $classes = $group->format_settings['instance_settings']['classes'];
