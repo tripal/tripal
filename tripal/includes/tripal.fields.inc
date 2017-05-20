@@ -757,14 +757,13 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
   $summary = '';
 
   $summary = t('Hide this field if empty.');
-
-  watchdog('debug', '<pre>$summary: '. print_r($summary, TRUE) .'</pre>');
   $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
     $summary = $formatter->settingsSummary($view_mode);
-    watchdog('debug', '<pre>$summary insdie the if: '. print_r($summary, TRUE) .'</pre>');
-
+  }
+  if(!$summary){
+    $summary = t('Hide this field if empty.');
   }
   return $summary;
 }
