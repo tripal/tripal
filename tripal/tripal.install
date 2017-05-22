@@ -900,3 +900,21 @@ function tripal_update_7303() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds a variable for the bundles to manage hiding of empty fields.
+ */
+function tripal_update_7304() {
+  $transaction = db_transaction();
+  try {
+    tripal_insert_variable(
+      'hide_empty_field',
+      'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
+    );
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
