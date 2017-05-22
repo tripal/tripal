@@ -39,6 +39,10 @@ function tripal_add_variables() {
       'description',
       'The description of a Tripal Entity type/bundle.'
   );
+  tripal_insert_variable(
+    'hide_empty_field',
+    'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
+  );
 }
 
 /**

@@ -1000,3 +1000,49 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
     }
   }
 }
+
+
+/**
+ *  Implements hook_field_display_alter().
+ * @param $display
+ * @param $context
+ */
+function tripal_field_display_alter(&$display, $context){
+  $field_name = $context['field']['field_name'];
+  $bundle = $context['entity']->bundle;
+  $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
+
+  if($hide_variable == 'hide'){
+    $field = field_get_items('TripalEntity', $context['entity'], $field_name);
+    if($field) {
+      if(tripal_field_is_empty($field, $field)) {
+            // Stop the right rail element from rendering.
+            drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
+      }
+    }
+  }
+}
+
+/**
+ *  Implements _field_group_table_rows_alter().
+ * @param $element
+ * @param $children
+ */
+function tripal_field_group_table_rows_alter(&$element, &$children) {
+  foreach ($children as $index => $child) {
+    if (is_array($element[$child])) {
+      $bundle = $element[$child]['#bundle'];
+      $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
+      if($hide_variable == 'hide'){
+        if ($element[$child][0]['#markup'] == NULL) {
+          // This is an empty row, remove it
+          unset($children[$index]);
+          unset($element[$child]);
+        }
+      }
+    }
+  }
+}
+
