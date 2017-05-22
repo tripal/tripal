@@ -559,6 +559,7 @@ function tripal_refresh_bundle_fields($bundle_name) {
         array('%bundle' => $bundle_name));
     return FALSE;
   }
+
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
   foreach ($modules as $module) {

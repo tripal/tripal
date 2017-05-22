@@ -749,9 +749,8 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
   $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
-    $formatter->settingsSummary($view_mode);
+    return $formatter->settingsSummary($view_mode);
   }
-  return $formatter;
 }
 
 /**

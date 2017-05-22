@@ -438,18 +438,17 @@ function tripal_ds_field_display_alter(&$display, $context){
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
   $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
 
-  if($field_name && ($hide_variable == 'hide')){
+  if ($field_name && ($hide_variable == 'hide')) {
     $field = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if($field) {
-      if(tripal_field_is_empty($field, $field)) {
+    if ($field) {
+      if (tripal_field_is_empty($field, $field)) {
         $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
-        if(!empty($parent_field_info)){
-          $increment = 0;
-          foreach($parent_field_info as $parent_fields => $parent_field){
+        if (!empty($parent_field_info)) {
+          foreach ($parent_field_info as $parent_key => $parent_field){
             // Stop the right rail element from rendering.
-            drupal_add_css('.'.$parent_field_info[$increment].' {display:none;}', 'inline');
+            drupal_add_css('.' . $parent_field_info[$parent_key] . ' {display:none;}', 'inline');
             // Hide any associated menu links.
-            drupal_add_css('#'.$parent_field_info[$increment].' {display:none;}', 'inline');
+            drupal_add_css('#' . $parent_field_info[$parent_key] . ' {display:none;}', 'inline');
           }
         }
       }
