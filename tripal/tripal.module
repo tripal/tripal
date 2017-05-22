@@ -1011,14 +1011,15 @@ function tripal_field_display_alter(&$display, $context){
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
 
   if($hide_variable == 'hide'){
-    $field = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if($field) {
-      if(tripal_field_is_empty($field, $field)) {
-            // Stop the right rail element from rendering.
-            drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
+    $item = field_get_items('TripalEntity', $context['entity'], $field_name);
+    if($item) {
+      $field = field_info_field($field_name);
+      if(tripal_field_is_empty($item[0], $field)) {
+        // Stop the right rail element from rendering.
+        drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
       }
     }
   }
@@ -1044,7 +1045,7 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
 
       // If the hide empty variable is turned on then remove fields from
       // the field group.
-      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
+      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
       if($hide_variable == 'hide'){
         $items = $element[$child]['#items'];
         // Case #1: there are no items.

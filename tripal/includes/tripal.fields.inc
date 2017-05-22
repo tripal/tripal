@@ -856,8 +856,6 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
   }
 }
 
-
-
 /**
  * Implements hook_field_is_empty().
  */
