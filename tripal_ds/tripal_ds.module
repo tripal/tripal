@@ -436,22 +436,20 @@ function tripal_ds_field_display_alter(&$display, $context){
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-  $entity_info = entity_get_info('TripalEntity');
-  //watchdog('debug', '<pre>$entity_info: '. print_r($entity_info, TRUE) .'</pre>');
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
 
-  if($field_name){
+  if($field_name && ($hide_variable == 'hide')){
     $field = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($field) {
-      if(tripal_ds_field_is_empty($field, $field)) {
-        $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle);
+      if(tripal_field_is_empty($field, $field)) {
+        $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
         if(!empty($parent_field_info)){
           $increment = 0;
           foreach($parent_field_info as $parent_fields => $parent_field){
             // Stop the right rail element from rendering.
-            drupal_add_css('.'.$parent_field_info[$increment]->group_name.' {display:none;}', 'inline');
-            drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
+            drupal_add_css('.'.$parent_field_info[$increment].' {display:none;}', 'inline');
             // Hide any associated menu links.
-            drupal_add_css('#'.$parent_field_info[$increment]->group_name.' {display:none;}', 'inline');
+            drupal_add_css('#'.$parent_field_info[$increment].' {display:none;}', 'inline');
           }
         }
       }
@@ -468,59 +466,49 @@ function tripal_ds_field_display_alter(&$display, $context){
  *
  * @return array
  */
-function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle){
+function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $context){
   $field_groups_to_hide = array();
   $increment = 0;
+
   // Get the field groups associated with this bundle.
   $fg_for_bundle = db_select('field_group', 'fg')
     ->fields('fg')
     ->condition('bundle', $bundle, '=')
     ->condition('entity_type', $entity_type, '=')
     ->execute()->fetchAll();
+
   // Run through the field groups looking for the provided $field_name
   foreach ($fg_for_bundle as $field_groups => $field_group) {
    $field_group_data = unserialize($field_group->data);
-    if(!empty($field_group_data['children'][0])){
-      $field_group_child = $field_group_data['children'][0];
-      if($field_group_child == $field_name){
-        //If a field group has the $field_name as a child add it to the list to
-        //return to be hidden.
-        $field_groups_to_hide[$increment] = $field_group;
-        $increment++;
+   // There is a separate function to deal with tables, so disregard.
+    if ($field_group_data['format_type'] == 'table'){
+      // Do nothing
+    }
+    elseif (!empty($field_group_data['children'][0])) {
+      $children = $field_group_data['children'];
+      //If there is more than one child all need to be checked.
+      if (count($children) > 1) {
+        foreach ($children as $kids => $child) {
+          // Now check if each child if empty.
+          $field = field_get_items('TripalEntity', $context['entity'], $child);
+          if(!tripal_field_is_empty($field, $field)){
+            //If any of the fields are not empty do not add the parent.
+            break 2;
+          }
+          else {
+            continue;
+          }
+        }
+      $field_groups_to_hide[$increment] = $field_group->group_name;
+      }
+      elseif($children[0] == $field_name) {
+        $field_groups_to_hide[$increment] = $field_group->group_name;
       }
     }
+    $increment++;
   }
   // Remove duplicate values.
   $field_groups_to_hide = array_unique($field_groups_to_hide);
   return $field_groups_to_hide;
 
 }
-/**
- *  Implements _field_group_table_rows_alter().
- * @param $element
- * @param $children
- * NEEDS TO BE MOVED SO IT IS ONLY CALLED WHEN APPROPRIATE
- */
-function tripal_ds_field_group_table_rows_alter(&$element, &$children) {
-  foreach ($children as $index => $child) {
-    if (is_array($element[$child])) {
-      if ($element[$child]['#formatter'] == 'text_default') {
-        if ($element[$child][0]['#markup'] == NULL) {
-          // This is an empty row, remove it
-          unset($children[$index]);
-          unset($element[$child]);
-        }
-      }
-    }
-  }
-}
-/**
- * Implements hook_field_is_empty().
- */
-function tripal_ds_field_is_empty($item, $field) {
-  if (empty($item[0]['value']) && $item[0]['value'] !== '0') {
-    return TRUE;
-  }
-  return FALSE;
-}
-
