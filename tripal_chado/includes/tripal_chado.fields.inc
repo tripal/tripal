@@ -1573,17 +1573,18 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
      $pkey = $schema['primary key'][0];
      // Get the list of existing property types for this table.
      $args = array();
-     $sql = "
-       SELECT DISTINCT P.type_id
-       FROM {" . $prop_table . "} P
-     ";
-     if (array_key_exists('type_id', $tschema['fields'])) {
-       $sql .= "
-           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-         WHERE T.type_id = :cvterm_id
-       ";
-       $args[':cvterm_id'] = $cvterm_id;
-     }
+      $sql = "
+        SELECT DISTINCT P.type_id
+        FROM {" . $prop_table . "} P
+      ";
+      if (array_key_exists('type_id', $tschema['fields'])) {
+        $sql .= "
+            INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+          WHERE T.type_id = :cvterm_id
+        ";
+        $args[':cvterm_id'] = $cvterm_id;
+      }
+
      $props = chado_query($sql, $args);
      while ($prop = $props->fetchObject()) {
 

@@ -1025,19 +1025,35 @@ function tripal_field_display_alter(&$display, $context){
 }
 
 /**
- *  Implements _field_group_table_rows_alter().
+ * Implements hook_field_group_table_rows_alter().
+ *
+ * This hook is used for hiding empty rows in a Field Group Table field group.
+ *
  * @param $element
+ *   The field group object.
  * @param $children
+ *   An array of field names that are cpntained in the field group
  */
 function tripal_field_group_table_rows_alter(&$element, &$children) {
+
+  // Iterate through the children of this table field group.
   foreach ($children as $index => $child) {
     if (is_array($element[$child])) {
       $bundle = $element[$child]['#bundle'];
       $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+
+      // If the hide empty variable is turned on then remove fields from
+      // the field group.
       $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
       if($hide_variable == 'hide'){
-        if ($element[$child][0]['#markup'] == NULL) {
-          // This is an empty row, remove it
+        $items = $element[$child]['#items'];
+        // Case #1: there are no items.
+        if (count($items) == 0) {
+          unset($children[$index]);
+          unset($element[$child]);
+        }
+        // Case #2: there is one item but the value is empty.
+        if (count($items) == 1 and array_key_exists('value', $items[0]) and empty($items[0]['value'])) {
           unset($children[$index]);
           unset($element[$child]);
         }
