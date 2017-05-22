@@ -318,7 +318,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       $bundles->condition('cb.data_table', $table);
       $bundles->execute();
       foreach ($bundles as $bundle) {
-        $cbundle_table = tripal_chado_get_bundle_entity_table($bundle);
+        $cbundle_table = chado_get_bundle_entity_table($bundle);
         $record = $db_select($cbundle_table, 'ce')
           ->fields('ce', 'entity_id')
           ->condition('record_id', $object->{$table_primary_key})

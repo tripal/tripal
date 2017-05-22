@@ -83,7 +83,7 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
   global $user;
 
   // Deleting of organisms will cause a cascade delete on the
-  // fassociated tables which may include the fatureloc table. The create_point
+  // fassociated tables which may include the featureloc table. The create_point
   // function which is not prefix with the schema, and an error occurs.
   // Therefore, we set the active database to chado to get around that
   // problem.

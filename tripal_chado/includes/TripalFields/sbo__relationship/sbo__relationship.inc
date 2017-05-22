@@ -79,6 +79,7 @@ class sbo__relationship extends ChadoField {
     $settings = $this->field['settings'];
 
     $record = $entity->chado_record;
+    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -205,6 +206,7 @@ class sbo__relationship extends ChadoField {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
         $verb = $this->get_rel_verb($rel_type);
+        $subject_id = $relationship->$subject_id_key->$subject_pkey;
 
         // The linked to table of a relationship linker table may not always
         // have a type_id or name field.  So we have to be a bit more
@@ -271,6 +273,14 @@ class sbo__relationship extends ChadoField {
             'entity' => 'TripalEntity:' . $entity->id,
           )
         );
+
+        // See if an entity exists for the subject.
+        $data_table = preg_replace('/_relationship/', '', $relationship->tablename);
+        $sentity_id = chado_get_record_entity_by_table($data_table, $subject_id);
+        if ($sentity_id) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $sentity_id;
+        }
+
         if (property_exists($relationship->$subject_id_key, 'uniquename')) {
           $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] =  $relationship->$subject_id_key->uniquename;;
         }
@@ -311,6 +321,7 @@ class sbo__relationship extends ChadoField {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
         $verb = $this->get_rel_verb($rel_type);
+        $object_id = $relationship->$object_id_key->$object_pkey;
 
         // The linked to table of a relationship linker table may not always
         // have a type_id or name field.  So we have to be a bit more
@@ -377,6 +388,14 @@ class sbo__relationship extends ChadoField {
             'schema:name' => $object_name,
           )
         );
+
+        // See if an entity exists for the object.
+        $data_table = preg_replace('/_relationship/', '', $relationship->tablename);
+        $oentity_id = chado_get_record_entity_by_table($data_table, $object_id);
+        if ($oentity_id) {
+          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $oentity_id;
+        }
+
         if (property_exists($relationship->$subject_id_key, 'uniquename')) {
           $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;
         }
@@ -391,7 +410,7 @@ class sbo__relationship extends ChadoField {
         // Add the clause to the value array.
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This ' .
-          $subject_type . ', ' . $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
+          $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
           $object_type . ' ' . $object_name . '.';
 
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;

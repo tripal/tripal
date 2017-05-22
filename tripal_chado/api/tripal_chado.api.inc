@@ -40,7 +40,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         array('@error' => 'The bundle name must be provided'));
     return FALSE;
   }
-  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $chado_entity_table = chado_get_bundle_entity_table($bundle);
 
 
   // Get the mapping of the bio data type to the Chado table.

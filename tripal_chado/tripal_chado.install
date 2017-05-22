@@ -191,7 +191,7 @@ function tripal_chado_schema() {
     foreach ($resource as $r) {
       $bundle_name = $r->name;
       // This makes an assumption about the name of the linking table.
-      // @todo: Switch to tripal_chado_get_bundle_entity_table($bundle).
+      // @todo: Switch to chado_get_bundle_entity_table($bundle).
       $chado_entity_table = 'chado_' . $bundle_name;
       $schema[$chado_entity_table] = array(
         'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle_name . '.',
@@ -731,7 +731,7 @@ function tripal_chado_update_7301() {
     // If the table for the bundle doesn't exist then create one, and then
     // move all of the records from the chado_entity table to it.
     while($cbundle = $cbundles->fetchObject()) {
-      $cbundle_table = tripal_chado_get_bundle_entity_table($cbundle);
+      $cbundle_table = chado_get_bundle_entity_table($cbundle);
 
       if (!db_table_exists($cbundle_table)) {
         // Create the bundle table.
