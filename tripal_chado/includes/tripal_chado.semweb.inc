@@ -298,6 +298,13 @@ function tripal_chado_populate_vocab_EDAM() {
   tripal_associate_chado_semweb_term(NULL, 'uniquename', $term);
 
   $term = tripal_insert_cvterm(array(
+    'id' => 'data:2976',
+    'name' => 'Protein sequence',
+    'cv_name' => 'EDAM',
+    'definition' => 'One or more protein sequences, possibly with associated annotation.',
+  ));
+
+  $term = tripal_insert_cvterm(array(
     'id' => 'data:2968',
     'name' => 'Image',
     'cv_name' => 'EDAM',

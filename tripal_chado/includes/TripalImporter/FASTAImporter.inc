@@ -131,12 +131,12 @@ class FASTAImporter extends TripalImporter {
     );
 
     $form['additional']['re_help'] = array('#type' => 'item',
-      '#value' => t('A regular expression is an advanced method for extracting information from a string of text.
-         Your FASTA file may contain both a human-readable name and a unique name for each sequence.
-         If you want to import
-         both the name and unique name for all sequences, then you must provide regular expressions
-         so that the loader knows how to separate them.
-         Otherwise the name and uniquename will be the same.
+      '#value' => t('A regular expression is an advanced method for extracting
+         information from a string of text. Your FASTA file may contain both a
+         human-readable name and a unique name for each sequence. If you want
+         to import both the name and unique name for all sequences, then you
+         must provide regular expressions so that the loader knows how to
+         separate them. Otherwise the name and uniquename will be the same.
          By default, this loader will use the first word in the definition
          lines of the FASTA file
          as the name or unique name of the feature.')
@@ -155,7 +155,7 @@ class FASTAImporter extends TripalImporter {
       '#description' => t('Enter the regular expression that will extract the
          feature name from the FASTA definition line. For example, for a
          defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-         the regular expression for the unique name would be "^.*?\|(.*)$").  All FASTA
+         the regular expression for the unique name would be "^.*?\|(.*)$".  All FASTA
          definition lines begin with the ">" symbol.  You do not need to incldue
          this symbol in your regular expression.')
     );
@@ -819,7 +819,7 @@ class FASTAImporter extends TripalImporter {
       $values = array('organism_id' => $organism_id,'uniquename' => $parent, 'type_id' => $parentcvterm->cvterm_id);
       $results = chado_select_record('feature', array('feature_id'), $values);
       if (count($results) != 1) {
-        $this->logMessage("Cannot find a unique fature for the parent '!parent' of type '!type' for the feature.",
+        $this->logMessage("Cannot find a unique feature for the parent '!parent' of type '!type' for the feature.",
           array('!parent' => $parent,'!type' => $parent_type), TRIPAL_ERROR);
           return 0;
       }

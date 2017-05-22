@@ -88,7 +88,7 @@ function tripal_chado_entity_load($entities, $type) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
 
-        $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+        $chado_entity_table = chado_get_bundle_entity_table($bundle);
         $chado_entity = db_select($chado_entity_table, 'ce')
           ->fields('ce')
           ->condition('ce.entity_id', $entity->id)

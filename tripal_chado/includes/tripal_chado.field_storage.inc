@@ -59,7 +59,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
     // Add the record to the proper chado entity table
-    $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+    $chado_entity_table = chado_get_bundle_entity_table($bundle);
     $record = array(
       'entity_id' => $entity->id,
       'record_id' => $base_record_id,
@@ -206,7 +206,7 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
       $type_field = $bundle->type_column;
 
       // Get the record id for the fields of this entity.
-      $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+      $chado_entity_table = chado_get_bundle_entity_table($bundle);
       $details = db_select($chado_entity_table, 'ce')
         ->fields('ce')
         ->condition('entity_id', $entity->id)
@@ -532,7 +532,7 @@ function tripal_chado_field_storage_query($query) {
   } // end foreach ($query->fieldConditions as $index => $condition) {
 
   // Now join with the chado entity table to get published records only.
-  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $chado_entity_table = chado_get_bundle_entity_table($bundle);
   $cquery->join($chado_entity_table, 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
   $cquery->fields('CE', array('entity_id'));

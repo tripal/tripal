@@ -294,6 +294,22 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
+  // PROTEIN SEQUENCE
+  if ($table_name == 'feature' and
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript' or $bundle->label == 'gene'))  {
+    $field_name = 'data__protein_sequence';
+    $field_type = 'data__protein_sequence';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
@@ -1101,6 +1117,40 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
+
+  // PROTEIN SEQUENCES.
+  if ($table_name == 'feature' and
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript' or $bundle->label == 'gene'))  {
+    $field_name = 'data__protein_sequence';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Protein Sequence',
+      'description' => 'Protein sequences.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'feature',
+        'chado_column' => 'residues',
+        'base_table' => 'feature',
+      ),
+      'widget' => array(
+        'type' => 'data__protein_sequence_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'data__protein_sequence_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
 
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';

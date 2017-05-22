@@ -52,7 +52,7 @@ class data__protein_sequence extends ChadoField {
     $feature = $entity->chado_record;
     $num_seqs = 0;
 
-    // Look for Protein sequences
+    // Look for protein sequences based on the relationship of this field.
     $sql = "
       SELECT F.*
       FROM {feature_relationship} FR
@@ -65,8 +65,8 @@ class data__protein_sequence extends ChadoField {
         RCVT.name = 'derives_from'
       ORDER BY FR.rank ASC
     ";
-    $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
-    while ($protein = $results->fetchObject()) {
+    $proteins = chado_query($sql, array(':feature_id' => $feature->feature_id));
+    while ($protein = $proteins->fetchObject()) {
       if ($protein->residues) {
         $entity->{$field_name}['und'][$num_seqs++]['value'] = $protein->residues;
       }
