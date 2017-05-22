@@ -50,16 +50,8 @@ class data__sequence extends ChadoField {
     $field_name = $this->field['field_name'];
     $feature = $entity->chado_record;
 
-    // We don't want to get the sequence for traditionally large types. They are
-    // too big,  bog down the web browser, take longer to load and it's not
-    // reasonable to print them on a page.
-    if(strcmp($feature->type_id->name, 'scaffold') != 0 and
-       strcmp($feature->type_id->name, 'chromosome') != 0 and
-       strcmp($feature->type_id->name, 'supercontig') != 0 and
-       strcmp($feature->type_id->name, 'pseudomolecule') != 0) {
-      $feature = chado_expand_var($feature, 'field', 'feature.residues');
-      $entity->{$field_name}['und'][0]['value'] = $feature->residues;
-    }
+    $feature = chado_expand_var($feature, 'field', 'feature.residues');
+    $entity->{$field_name}['und'][0]['value'] = $feature->residues;
 
  /* // Add in sequences from alignments.
     $options = array(
