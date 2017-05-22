@@ -436,12 +436,13 @@ function tripal_ds_field_display_alter(&$display, $context){
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, '');
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
 
   if ($field_name && ($hide_variable == 'hide')) {
-    $field = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if ($field) {
-      if (tripal_field_is_empty($field, $field)) {
+    $item = field_get_items('TripalEntity', $context['entity'], $field_name);
+    $field = field_info_field($field_name);
+    if ($item) {
+      if (tripal_field_is_empty($item[0], $field)) {
         $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
         if (!empty($parent_field_info)) {
           foreach ($parent_field_info as $parent_key => $parent_field){
@@ -489,8 +490,9 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
       if (count($children) > 1) {
         foreach ($children as $kids => $child) {
           // Now check if each child if empty.
-          $field = field_get_items('TripalEntity', $context['entity'], $child);
-          if(!tripal_field_is_empty($field, $field)){
+          $item = field_get_items('TripalEntity', $context['entity'], $child);
+          $field = field_info_fild($child);
+          if(!tripal_field_is_empty($item[0], $field)){
             //If any of the fields are not empty do not add the parent.
             break 2;
           }
@@ -498,7 +500,7 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
             continue;
           }
         }
-      $field_groups_to_hide[$increment] = $field_group->group_name;
+        $field_groups_to_hide[$increment] = $field_group->group_name;
       }
       elseif($children[0] == $field_name) {
         $field_groups_to_hide[$increment] = $field_group->group_name;
