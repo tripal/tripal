@@ -930,9 +930,9 @@ function chado_get_featureloc_sequences($feature_id, $featurelocs) {
     return array();
   }
 
-  // get the list of relationships (including any aggregators) and iterate
+  // Get the list of relationships (including any aggregators) and iterate
   // through each one to find information needed to color-code the reference sequence
-  $relationships = chado_get_feature_aggregate_relationships($feature_id);
+  $relationships = _tripal_feature_get_aggregate_relationships($feature_id);
   if (!$relationships) {
     return array();
   }
@@ -1203,12 +1203,15 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
       'vocabulary' => $sfeature->type_id->dbxref_id->db_id->name,
       'accession' => $sfeature->type_id->dbxref_id->accession,
     ));
-    $fbundle = tripal_load_bundle_entity(array('term_id' => $fterm->id));
-    $sbundle = tripal_load_bundle_entity(array('term_id' => $sterm->id));
 
-    $loc->feid = chado_get_record_entity_by_bundle($fbundle, $loc->feature_id);
-    $loc->seid = chado_get_record_entity_by_bundle($sbundle, $loc->src_feature_id);
-
+    if($fterm) {
+      $fbundle = tripal_load_bundle_entity(array('term_id' => $fterm->id));
+      $loc->feid = chado_get_record_entity_by_bundle($fbundle, $loc->feature_id);
+    }
+    if ($sterm) {
+      $sbundle = tripal_load_bundle_entity(array('term_id' => $sterm->id));
+      $loc->seid = chado_get_record_entity_by_bundle($sbundle, $loc->src_feature_id);
+    }
     // add the result to the array
     $featurelocs[$i++] = $loc;
   }
@@ -1217,7 +1220,7 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
   if ($aggregate and strcmp($side, 'as_parent')==0) {
   // get the relationships for this feature without substituting any children
   // for the parent. We want all relationships
-  $relationships = tripal_feature_get_aggregate_relationships($feature_id, 0);
+  $relationships = _tripal_feature_get_aggregate_relationships($feature_id, 0);
   foreach ($relationships as $rindex => $rel) {
     // get the featurelocs for each of the relationship features
     $rel_featurelocs = tripal_feature_load_featurelocs($rel->subject_id, 'as_child', 0);
@@ -1231,6 +1234,87 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
   return $featurelocs;
 }
 
+/**
+ * Get features related to the current feature to a given depth. Recursive function.
+ *
+ * @param $feature_id
+ * @param $substitute
+ * @param $levels
+ * @param $base_type_id
+ * @param $depth
+ *
+ */
+function _tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
+    $levels=0, $base_type_id=NULL, $depth=0) {
+
+  // we only want to recurse to as many levels deep as indicated by the
+  // $levels variable, but only if this variable is > 0. If 0 then we
+  // recurse until we reach the end of the relationships tree.
+  if ($levels > 0 and $levels == $depth) {
+    return NULL;
+  }
+
+  // first get the relationships for this feature
+  return _tripal_feature_load_relationships($feature_id, 'as_object');
+
+}
+
+/**
+ * Get the relationships for a feature.
+ *
+ * @param $feature_id
+ *   The feature to get relationships for
+ * @param $side
+ *   The side of the relationship this feature is (ie: 'as_subject' or 'as_object')
+ *
+ */
+function _tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
+  // Get the relationships for this feature.  The query below is used for both
+  // querying the object and subject relationships
+  $sql = "
+    SELECT
+      FS.name as subject_name, FS.uniquename as subject_uniquename,
+      CVTS.name as subject_type, CVTS.cvterm_id as subject_type_id,
+      FR.subject_id, FR.type_id as relationship_type_id, FR.object_id, FR.rank,
+      CVT.name as rel_type,
+      FO.name as object_name, FO.uniquename as object_uniquename,
+      CVTO.name as object_type, CVTO.cvterm_id as object_type_id
+    FROM {feature_relationship} FR
+     INNER JOIN {cvterm} CVT  ON FR.type_id    = CVT.cvterm_id
+     INNER JOIN {feature} FS  ON FS.feature_id = FR.subject_id
+     INNER JOIN {feature} FO  ON FO.feature_id = FR.object_id
+     INNER JOIN {cvterm} CVTO ON FO.type_id    = CVTO.cvterm_id
+     INNER JOIN {cvterm} CVTS ON FS.type_id    = CVTS.cvterm_id
+  ";
+  if (strcmp($side, 'as_object')==0) {
+    $sql .= " WHERE FR.object_id = :feature_id";
+  }
+  if (strcmp($side, 'as_subject')==0) {
+    $sql .= " WHERE FR.subject_id = :feature_id";
+  }
+  $sql .= " ORDER BY FR.rank";
+
+  // Get the relationships.
+  $results = chado_query($sql, array(':feature_id' => $feature_id));
+
+  // Iterate through the relationships, put these in an array and add
+  // in the Drupal node id if one exists.
+  $i=0;
+  $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
+  $relationships = array();
+  while ($rel = $results->fetchObject()) {
+    $node = db_query($nodesql, array(':feature_id' => $rel->subject_id))->fetchObject();
+    if ($node) {
+      $rel->subject_nid = $node->nid;
+    }
+    $node = db_query($nodesql, array(':feature_id' => $rel->object_id))->fetchObject();
+    if ($node) {
+      $rel->object_nid = $node->nid;
+    }
+    $relationships[$i++] = $rel;
+  }
+  return $relationships;
+}
 /**
   * Used to sort the list of relationship parts by start position
   *
