@@ -179,7 +179,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       'hide' => t('Hide empty fields'),
       'show' => t('Show empty fields'),
     ),
-    '#description' => t('Choose either to show or hide all empty fields.'),
+    '#description' => t('Choose either to show or hide all empty fields.  If "Show empty fields" is selected then fields will be loaded via AJAX to help speed page loads.'),
     '#default_value' => !empty($empty_fields) ? array($empty_fields,) : array('hide',),
   );
 
