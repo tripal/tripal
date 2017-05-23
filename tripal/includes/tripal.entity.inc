@@ -314,6 +314,7 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
 function tripal_entity_view($entity, $type, $view_mode, $langcode) {
 
   if ($type == 'TripalEntity') {
+
     foreach (element_children($entity->content) as $child_name) {
 
       // Initailize the prefix and suffix for this field.
