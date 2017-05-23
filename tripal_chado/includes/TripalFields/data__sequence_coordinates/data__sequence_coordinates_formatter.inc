@@ -23,7 +23,7 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
 
     $content = '';
     foreach ($items as $item) {
-      if (!empty($item)) {
+      if (!empty($item['value'])) {
         $srcfeature = $item['value']['data:3002'];
         $fmin = $item['value']['local:fmin'];
         $fmax = $item['value']['local:fmax'];

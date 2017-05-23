@@ -511,24 +511,27 @@ class TripalEntityController extends EntityAPIController {
           // because the field_attach_load won't do it for us.
           $cfid = "field:TripalEntity:$id:$field_name";
 
+          // Check if the field is cached. if so, then don't reload.
+          if ($field_cache) {
+            $cache_data = cache_get($cfid, 'cache_field');
+            if (!empty($cache_data)) {
+              $queried_entities[$id]->$field_name = $cache_data->data;
+              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              continue;
+            }
+          }
+
           // If a list of field_ids is provided then we specifically want
           // to only load the  fields specified.
           if (count($field_ids) > 0) {
             if (in_array($field_id, $field_ids)) {
-              // Check if the field is cached. if so, then don't reload.
-              if ($field_cache) {
-                $cache_data = cache_get($cfid, 'cache_field');
-                if (!empty($cache_data)) {
-                  $queried_entities[$id]->$field_name = $cache_data->data;
-                  continue;
-                }
-              }
               $function($this->entityType, array($entity->id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
+              $queried_entities[$id]->$field_name['#processed'] = TRUE;
             }
           }
           // If we don't have a list of fields then load them all, but only
@@ -539,23 +542,20 @@ class TripalEntityController extends EntityAPIController {
             if (array_key_exists('settings', $instance) and
                 array_key_exists('auto_attach', $instance['settings']) and
                 $instance['settings']['auto_attach'] == FALSE) {
-               continue;
+               // Add an empty value. This will allow the tripal_entity_view()
+               // hook to add the necessary prefixes to the field for ajax
+               // loading.
+               $queried_entities[$id]->$field_name['und'][0]['value'] = '';
+               $queried_entities[$id]->$field_name['#processed'] = FALSE;
             }
             else {
-              // Check if the field is cached. if so, then don't reload.
-              if ($field_cache) {
-                $cache_data = cache_get($cfid, 'cache_field');
-                if (!empty($cache_data)) {
-                  $queried_entities[$id]->$field_name = $cache_data->data;
-                  continue;
-                }
-              }
               $function($this->entityType, array($entity->id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
+              $queried_entities[$id]->$field_name['#processed'] = TRUE;
             }
           }
         }
