@@ -294,11 +294,23 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
-  // PROTEIN SEQUENCE
+  // PROTEIN & CDS SEQUENCE
   if ($table_name == 'feature' and
-      ($bundle->label == 'mRNA' or $bundle->label == 'transcript' or $bundle->label == 'gene'))  {
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $field_type = 'data__protein_sequence';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+
+    $field_name = 'so__cds';
+    $field_type = 'so__cds';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -1118,9 +1130,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   }
 
-  // PROTEIN SEQUENCES.
+  // PROTEIN & CDS SEQUENCES.
   if ($table_name == 'feature' and
-      ($bundle->label == 'mRNA' or $bundle->label == 'transcript' or $bundle->label == 'gene'))  {
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -1145,6 +1157,35 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => array(
           'label' => 'above',
           'type' => 'data__protein_sequence_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+    $field_name = 'so__cds';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Coding Sequence',
+      'description' => 'Coding sequences.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'featureloc',
+        'chado_column' => '',
+        'base_table' => 'featureloc',
+      ),
+      'widget' => array(
+        'type' => 'so__cds_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'so__cds_formatter',
           'settings' => array(),
         ),
       ),

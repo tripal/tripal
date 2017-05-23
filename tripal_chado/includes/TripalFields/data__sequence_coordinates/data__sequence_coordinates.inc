@@ -60,6 +60,50 @@ class data__sequence_coordinates extends ChadoField {
    * @see TripalField::load()
    */
   public function load($entity) {
+    $field_name = $this->field['field_name'];
+    $feature = $entity->chado_record;
+    $num_seqs = 0;
 
+    $options = array(
+      'return_array' => TRUE,
+      'order_by' => array('rank' => 'ASC'),
+    );
+    $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
+
+    // Set some defauls for the empty record
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(
+        /*
+        // Types of elements that will appear in the value array.
+        // Annotation track
+        'data:3002' => '',
+        'local:fmin' => '',
+        'local:fmax' => '',
+        // phase
+        'data:2336' => '',
+        // strand
+        'data:0853' => '',
+        */
+      ),
+    );
+
+    // Get the featureloc records that this feature is aligned to.
+    $aligned = $feature->featureloc->feature_id;
+    foreach ($aligned as $index => $featureloc) {
+      $srcfeature = $featureloc->srcfeature_id->name;
+      $entity->{$field_name}['und'][0] = array(
+        'value' => array(
+          'data:3002' => $srcfeature,
+          'local:fmin' => $featureloc->fmin + 1,
+          'local:fmax' => $featureloc->fmax,
+          'data:2336' => $featureloc->phase,
+          'data:0853' => $featureloc->strand,
+        ),
+      );
+      $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
+      if ($sentity_id) {
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
+      }
+    }
   }
 }
