@@ -1386,7 +1386,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'local__contact_formatter',
           'settings' => array(),
         ),
@@ -1421,7 +1421,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'inline',
+          'label' => 'hidden',
           'type' => 'sbo__database_cross_reference_formatter',
           'settings' => array(),
         ),
@@ -1493,7 +1493,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'data__sequence_coordinates_formatter',
           'settings' => array(),
         ),
@@ -1527,7 +1527,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'ogi__location_on_map_formatter',
           'settings' => array(),
         ),
@@ -1562,7 +1562,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'so__genotype_formatter',
           'settings' => array(),
         ),
@@ -1597,7 +1597,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sbo__phenotype_formatter',
           'settings' => array(),
         ),
@@ -1667,7 +1667,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
          ),
          'display' => array(
            'default' => array(
-             'label' => 'inline',
+             'label' => 'hidden',
              'type' => 'chado_linker__prop_formatter',
              'settings' => array(),
            ),
@@ -1704,7 +1704,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'schema__publication_formatter',
           'settings' => array(),
         ),
@@ -1740,7 +1740,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sio__references_formatter',
           'settings' => array(),
         ),
@@ -1776,7 +1776,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sbo__relationship_formatter',
           'settings' => array(),
         ),
@@ -1811,7 +1811,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'inline',
+          'label' => 'hidden',
           'type' => 'schema__alternate_name_formatter',
           'settings' => array(),
         ),
