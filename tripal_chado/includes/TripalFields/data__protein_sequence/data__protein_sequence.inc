@@ -52,6 +52,11 @@ class data__protein_sequence extends ChadoField {
     $feature = $entity->chado_record;
     $num_seqs = 0;
 
+    // Set some defauls for the empty record
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+    );
+
     // Look for protein sequences based on the relationship of this field.
     $sql = "
       SELECT F.*

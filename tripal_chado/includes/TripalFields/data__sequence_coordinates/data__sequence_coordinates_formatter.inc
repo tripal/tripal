@@ -21,5 +21,29 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    $content = '';
+    foreach ($items as $item) {
+      if (!empty($item)) {
+        $srcfeature = $item['value']['data:3002'];
+        $fmin = $item['value']['local:fmin'];
+        $fmax = $item['value']['local:fmax'];
+        $phase = $item['value']['data:2336'];
+        $strand = $item['value']['data:0853'];
+        if ($strand == 1) {
+          $strand = '+';
+        }
+        else {
+          $strand = '-';
+        }
+        $content .= $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
+      }
+    }
+    if (!$content) {
+      $content = 'This feature is not located on any sequence.';
+    }
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }
