@@ -62,7 +62,7 @@ class so__cds extends ChadoField {
     );
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
     $featurelocs = $feature->featureloc->feature_id;
-    return;
+
     foreach($featurelocs as $featureloc){
       // Generate a CDS sequence if one exsits for this feature alignment.
       $cds_sequence = tripal_get_feature_sequences(

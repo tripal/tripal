@@ -503,6 +503,11 @@ class TripalEntityController extends EntityAPIController {
           $field = field_info_field($field_name);
           $field_id = $field['id'];
 
+          // Add this field to the entity with default value.
+          if (!isset($queried_entities[$id]->$field_name)) {
+            $queried_entities[$id]->$field_name = array();
+          }
+
           // Options used for the field_attach_load function.
           $options = array();
           $options['field_id'] = $field['id'];
@@ -516,7 +521,7 @@ class TripalEntityController extends EntityAPIController {
             $cache_data = cache_get($cfid, 'cache_field');
             if (!empty($cache_data)) {
               $queried_entities[$id]->$field_name = $cache_data->data;
-              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
               continue;
             }
           }
@@ -531,7 +536,7 @@ class TripalEntityController extends EntityAPIController {
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
-              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
           }
           // If we don't have a list of fields then load them all, but only
@@ -551,7 +556,7 @@ class TripalEntityController extends EntityAPIController {
                // hook to add the necessary prefixes to the field for ajax
                // loading.
                $queried_entities[$id]->$field_name['und'][0]['value'] = '';
-               $queried_entities[$id]->$field_name['#processed'] = FALSE;
+               $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
             }
             else {
               $function($this->entityType, array($entity->id => $queried_entities[$id]),
@@ -560,7 +565,7 @@ class TripalEntityController extends EntityAPIController {
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
-              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
           }
         }
