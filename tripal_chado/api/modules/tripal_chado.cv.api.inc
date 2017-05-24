@@ -400,7 +400,7 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
   $ttype->condition($db_or);
   $result = $ttype->execute()->fetchObject();
 
-  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, 0, 0, array());
+  $result = tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, 0, 0, array());
 
   $cterm = db_query(
     'SELECT *
@@ -411,9 +411,15 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
   );
 
   while($cterm_result = $cterm->fetchAssoc()) {
-    tripal_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid);
-  };
+    if ($result === 'LOOP'){
+      watchdog('debug', '<pre>$result: ' . print_r($result, TRUE) . '</pre>');
 
+      continue;
+    }
+    else {
+      tripal_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid);
+    }
+  }
 }
 
 /**
@@ -455,7 +461,9 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
           'pathdistance' => $depth,
         ));
       $rows = $query->execute();
-      if($rows) {
+      //watchdog('debug', '<pre>$rows: ' . print_r($rows, TRUE) . '</pre>');
+
+     // if($rows) {
         // Build the ID.
         $children_id = $origin . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
         // Now check if the most recent entry already exists in the array.
@@ -468,7 +476,7 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
               watchdog('debug', '<pre>tripal_update_cvtermpath_loop  $result_of_loop_checker: ' . print_r($result_of_loop_checker, TRUE) . '</pre>');
               if ($result_of_loop_checker) {
                 watchdog('debug', 'Loop found exit the loop function');
-                break;
+                return 'LOOP';
               }
             }
           }
@@ -486,11 +494,10 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
         $cterm = $query->fetchAll();
 
         foreach ($cterm as $item) {
-          watchdog('message', '<pre>$loop_status: ' . print_r($loop_status, TRUE) . '</pre>');
           $increment_of_depth++;
           tripal_update_cvtermpath_loop($origin, $item->subject_id, $cv_id, $item->type_id, $depth + 1, $increment_of_depth, $array_of_children);
         }
-      }
+     // }
     }
   }
   catch(Exception $e){

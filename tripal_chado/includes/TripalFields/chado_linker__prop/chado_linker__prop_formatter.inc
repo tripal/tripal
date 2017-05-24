@@ -24,14 +24,41 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
     $field_name = $this->field['field_name'];
     $chado_table = $this->instance['settings']['chado_table'];
 
-    $content = '';
-    if ($items[0]['value']) {
-      $content = $items[0]['value'];
+    $content = array();
+    // If $items is not empty and it has more than one value all values need to
+    // be added to an array for display.
+    if ($items) {
+      if (count($items) > 1) {
+        foreach ($items as $index => $item) {
+          $content[$index] = $item['value'];
+        }
+      }
+      else {
+        $content = $items[0]['value'];
+      }
     }
-    $element[0] = array(
-      // We create a render array to produce the desired markup,
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+    // If more than one value has been found display all values in an unordered
+    // list.
+    if (count($content) > 1) {
+      $bullets = '<ul>';
+      $bullets .= '<li>';
+      $bullets .= implode("</li><li>", $content);
+      $bullets .= '</li>';
+      $bullets .= '</ul>';
+      $element[0] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $bullets,
+      );
+    }
+    // If it's a single value field display without bullets.
+    else {
+      $element[0] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
+
   }
 }
