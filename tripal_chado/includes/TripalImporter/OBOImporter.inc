@@ -183,7 +183,7 @@ class OBOImporter extends TripalImporter {
         '#type'          => 'textfield',
         '#title'         => t('Remote URL'),
         '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
-                             (e.g. http://www.obofoundry.org/ro/ro.obo'),
+                             (e.g. http://www.obofoundry.org/ro/ro.obo)'),
         '#default_value' => $uobo_url,
       );
 
@@ -230,7 +230,7 @@ class OBOImporter extends TripalImporter {
       '#type'          => 'textfield',
       '#title'         => t('Remote URL'),
       '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
-                             (e.g. http://www.obofoundry.org/ro/ro.obo'),
+                             (e.g. http://www.obofoundry.org/ro/ro.obo)'),
     );
 
     $form['obo_new']['obo_file']= array(
