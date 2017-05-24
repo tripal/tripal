@@ -1171,7 +1171,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   $default = array(
     'table' => '',
     'has_all' => 'No',
-    'use_cvterm' => 'cv',
+    'use_cvterm' => '',
     'cv_id' => '',
     'use_linker' => 'No',
     'use_prop' => 'No',
@@ -1218,7 +1218,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   // If the user selected to use the cvterm table then we have to
   // handle it specially.
-  if ($default['use_cvterm']) {
+  if ($default['use_cvterm'] == 'cv' and !empty($default['cv_id'])) {
     $storage_args['data_table'] = $default['table'];
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_value'] = '';
@@ -1226,7 +1226,6 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
       $storage_args['type_value'] = $default['cv_id'];
     }
     $storage_args['type_column'] = '';
-
     return;
   }
 
