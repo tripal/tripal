@@ -333,7 +333,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
         $class = '';
         if (array_key_exists('auto_attach', $instance['settings']) and
             $instance['settings']['auto_attach'] == FALSE and
-            $entity->$child_name['#processed'] == FALSE) {
+            $entity->{$child_name}['#processed'] == FALSE) {
           // If the field is empty then try to use ajax to load it.
           $items = field_get_items('TripalEntity', $entity, $child_name);
           if (count($items) == 0 or empty($items[0]['value'])) {
