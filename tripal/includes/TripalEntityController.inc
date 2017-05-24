@@ -536,7 +536,7 @@ class TripalEntityController extends EntityAPIController {
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
-              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
           }
           // If we don't have a list of fields then load them all, but only
@@ -556,7 +556,7 @@ class TripalEntityController extends EntityAPIController {
                // hook to add the necessary prefixes to the field for ajax
                // loading.
                $queried_entities[$id]->$field_name['und'][0]['value'] = '';
-               $queried_entities[$id]->$field_name['#processed'] = FALSE;
+               $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
             }
             else {
               $function($this->entityType, array($entity->id => $queried_entities[$id]),
@@ -565,7 +565,7 @@ class TripalEntityController extends EntityAPIController {
               if ($field_cache) {
                 cache_set($cfid, $entity->$field_name, 'cache_field');
               }
-              $queried_entities[$id]->$field_name['#processed'] = TRUE;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
           }
         }
