@@ -126,33 +126,6 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
   // Update the menu items weight.
   tripal_ds_toc_order($bundle_id, $form_state['values']['fields']);
 }
-/**
- * Implements hook_field_group_pre_render().
- *
- * This function gives you the oppertunity to create the given
- * wrapper element that can contain the fields.
- * In the example beneath, some variables are prepared and used when building the
- * actual wrapper element. All elements in drupal fapi can be used.
- *
- * Note that at this point, the field group has no notion of the fields in it.
- *
- * There is also an alternative way of handling this. The default implementation
- * within field_group calls "field_group_pre_render_<format_type>".
- * @see field_group_pre_render_fieldset.
- *
- * @param Array $elements by address.
- * @param Object $group The Field group info.
-
-function tripal_ds_field_group_pre_render(& $element, $group, & $form) {
-  watchdog('debug', '<pre>tripal_ds_preprocess_TripalEntity  $group: '. print_r($group, TRUE) .'</pre>');
-  if ($group->format_settings['formatter'] != 'open') {
-    $add['#prefix'] = '<div class="field-group-format ' . $classes . '">
-      <span class="field-group-format-toggler">' . check_plain(t($group->label)) . '</span>
-      <div class="field-group-format-wrapper" style="display: none;">';
-    $add['#suffix'] = '</div></div>';
-  }
-}
- */
 
 /**
  *
@@ -326,20 +299,6 @@ function tripal_ds_update_layout_form_submit($form, &$form_state) {
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
 
-/**
- * @param $field
- * @param $bundle_name
-
-function tripal_ds_field_create_field($field, $bundle_name) {
-  //Build the rest of the passes parameters.
-  $field_name = str_replace('field_', '', $field['field_name']);
-  $group_field_name = 'gp_'.$field['field_name'];
-  //Create the field groups.
-  _additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, $field_name);
-  //Place the field groups in the layout.
-  tripal_ds_update_ds_layout($bundle_name, $field_name, $group_field_name);
-}
- */
 /**
  * Implements hook_form()
  *
@@ -543,15 +502,14 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
 }
 
 /**
+ * Updates the tripal_ds table with weight information of field_groups on
+ * save of "manage display' of content type. Weight is what is used to order
+ * the menu items.
+ *
  * @param $bundle
  * @param array $fields
  */
 function tripal_ds_toc_order($bundle, $fields = array()){
-  // On bundle save grab the #ds_layout->settings ->regions->right array
-  // then use the index of each 'group' && 'tripalpane, and 'gp_*' to update
-  // the weight of the item in the tripal_ds table.
-  // Don't forget to update the view.
-
   // Find all menu items associated with the bundle id.
   $menu_items = db_select('tripal_ds', 'ds')
     ->fields('ds')
@@ -566,7 +524,6 @@ function tripal_ds_toc_order($bundle, $fields = array()){
       $weight = $fields[$toc_field_name]['weight'];
       //If a weight is returned update the tripal_ds table.
       if(!empty($weight)){
-        watchdog('debug', '<pre>$weight: '. print_r($weight, TRUE) .'</pre>');
         db_update('tripal_ds')
           ->fields(array(
             'weight' => $weight,
