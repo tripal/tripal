@@ -3,6 +3,7 @@
  * The Controller for Tripal data type entities
  */
 class TripalBundleController extends EntityAPIControllerExportable {
+
   public function __construct($entityType) {
     parent::__construct($entityType);
 
@@ -19,20 +20,20 @@ class TripalBundleController extends EntityAPIControllerExportable {
    * @return
    *   A type object with all default fields initialized.
    */
-  public function create(array $values = array()) {
+  public function create(array $values = []) {
     // Add values that are specific to our entity
-    $values += array(
+    $values += [
       'id' => '',
       'is_new' => TRUE,
       'data' => '',
-    );
+    ];
     $bundle = parent::create($values);
 
     // Allow modules to make additions to the entity when it's created.
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle, array());
+      $function($bundle, []);
     }
 
     return $bundle;
@@ -73,8 +74,9 @@ class TripalBundleController extends EntityAPIControllerExportable {
 
           // If the field has no more instances then purge it too.
           if (count($field['bundles']) == 1 and
-              count($field['bundles']['TripalEntity']) == 1 and
-              in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+            count($field['bundles']['TripalEntity']) == 1 and
+            in_array($bundle->name, $field['bundles']['TripalEntity'])
+          ) {
             field_purge_field($field);
           }
         }
@@ -98,7 +100,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
       // overrides.
       foreach ($bundles as $id => $bundle) {
         if (entity_has_status($this->entityType, $bundle, ENTITY_IN_CODE)) {
-          entity_defaults_rebuild(array($this->entityType));
+          entity_defaults_rebuild([$this->entityType]);
           break;
         }
       }
