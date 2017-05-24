@@ -5,7 +5,7 @@
 
       // Add a close button for each pane except for the te_base
       $('div.tripal_pane').each(function (i) {
-        $(this).prepend('<div class="tripal_pane-fieldset-close_button"><div id="tripal-pane-close-button" class="tripal-pane-button">[x]</div></div>');
+        $(this).prepend('<div class="tripal_pane-fieldset-close_button"><div id="tripal-pane-close-button" class="tripal-pane-button"><i class="fa fa-eye-slash fa-lg"></i></div></div><span class="download-icon"><i class="fa fa-download fa-lg" aria-hidden="true"></i></span>');
         var id = '.tripal_pane-fieldset-' + $(this).attr('id');
       });
       // Hide the pane when the close button is clicked
@@ -32,7 +32,9 @@
             // If the user clicks on other TOC item, move its fieldset to the top 
             $(id + ' fieldset').removeClass('collapsed');
             $(id + ' fieldset .fieldset-wrapper').show();
-            // Hightlight the fieldset instead of moving if it's already at the top
+            console.log(prevObj);
+            console.log(id);
+            // Highlight the fieldset instead of moving if it's already at the top
             if (prevObj.indexOf('group-tripal-pane-content-top') == 0) {
               $(id + ' fieldset').fadeTo(10, 0.3, function() {});
               $(id + ' fieldset').fadeTo(200, 1, function() {});
