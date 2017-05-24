@@ -29,8 +29,19 @@ class TripalJob {
    *   The ID of the job.
    */
   public function load($job_id) {
+
+    // Make sure we have a numeric job_id.
     if (!$job_id or !is_numeric($job_id)) {
-      throw new Exception("Must provide a numeric \$job_id to the tripal_cancel_job() function.");
+      // If we don't then do a quick double check in case this is a
+      // TripalJob object in which case, I still have the job_id.
+      if (is_object($job_id) AND is_a($job_id, 'TripalJob')) {
+        $job_id = $job_id->job->job_id;
+      }
+      // Finally just throw an exception.
+      // I can't load a job if I don't know which one.
+      else {
+        throw new Exception("You must provide the job_id to load the job.");
+      }
     }
 
     $sql = 'SELECT j.* FROM {tripal_jobs} j WHERE j.job_id = :job_id';

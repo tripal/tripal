@@ -48,6 +48,11 @@ function tripal_get_field_types() {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
+
+    // Only run this for modules that are enabled.
+    if (!module_exists($module)) {
+      continue;
+    }
     // Find all of the files in the tripal_chado/includes/TripalFields/ directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
     $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
@@ -82,6 +87,12 @@ function tripal_get_field_widgets() {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
+
+    // Only run this for modules that are enabled.
+    if (!module_exists($module)) {
+      continue;
+    }
+
     // Find all of the files in the tripal_chado/includes/fields directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
     $field_files = file_scan_directory($fields_path, '/.*_widget\.inc$/');
@@ -113,6 +124,12 @@ function tripal_get_field_formatters() {
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
+
+    // Only run this for modules that are enabled.
+    if (!module_exists($module)) {
+      continue;
+    }
+
     // Find all of the files in the tripal_chado/includes/fields directory.
     $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
     $field_files = file_scan_directory($fields_path, '/.*_formatter\.inc$/');

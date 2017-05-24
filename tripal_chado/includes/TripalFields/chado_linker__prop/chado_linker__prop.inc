@@ -103,7 +103,7 @@ class chado_linker__prop extends ChadoField {
     $match = array(
       $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
       'type_id' => $cvterm_id,
-      );
+    );
     $options = array(
       'return_array' => TRUE,
       'order_by' => array('rank' => 'ASC')

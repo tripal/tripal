@@ -11,31 +11,17 @@ class so__cds_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    $content = 'There is no coding sequence.';
+    if (count($items) > 0 and $items[0]['value']) {
+      $num_bases = 50;
+      $content = '<pre class="residues-formatter">';
+      $content .= wordwrap($items[0]['value'], $num_bases, "<br>", TRUE);
+      $content .= '</pre>';
+    }
     $element[0] = array(
       // We create a render array to produce the desired markup,
       '#type' => 'markup',
-      '#markup' => '',
+      '#markup' => $content,
     );
-
-    $num_bases = 50;
-    foreach ($items as $delta => $item) {
-      // If there are no residues then skip this one.
-      if (!is_array($item['value']) or !array_key_exists('residues', $item['value'])) {
-        continue;
-      }
-
-      $residues = $item['value']['residues'];
-
-      $content .= '<pre class="residues-formatter">';
-      $content .= '>' . $defline . "<br>";
-      $content .= wordwrap($residues, $num_bases, "<br>", TRUE);
-      $content .= '</pre>';
-
-      $element[$delta] = array(
-        // We create a render array to produce the desired markup,
-        '#type' => 'markup',
-        '#markup' => $content,
-      );
-    }
   }
 }

@@ -18,8 +18,8 @@ class data__protein_sequence_formatter extends ChadoFieldFormatter {
    * @param unknown $display
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $content = 'There is no sequence.';
-    if ($items[0]['value']) {
+    $content = 'There is no protein sequence.';
+    if (count($items) > 0 and $items[0]['value']) {
       $num_bases = 50;
       $content = '<pre class="protein-residues-formatter">';
       $content .= wordwrap($items[0]['value'], $num_bases, "<br>", TRUE);
