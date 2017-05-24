@@ -85,7 +85,7 @@ function tripal_ds_bundle_delete($bundle){
   tripal_ds_table_column_delete($bundle);
 }
 
-/*
+/**
  * Implements hook_ds_field_settings_alter()
  */
 function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state){
@@ -123,6 +123,8 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
       }
     }
   }
+  // Update the menu items weight.
+  tripal_ds_toc_order($bundle_id, $form_state['values']['fields']);
 }
 /**
  * Implements hook_field_group_pre_render().
@@ -151,11 +153,17 @@ function tripal_ds_field_group_pre_render(& $element, $group, & $form) {
   }
 }
  */
+
 /**
+ *
  * Trigger the update to the tripal_ds table when a tripal pane is deleted.
+ *
+ * @param $bundle_name
+ * @param $field_label
+ * @param $field_name
+ * @param $entity_type
  */
 function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $entity_type){
-
   //Check the record does not already exist
   $tripal_ds_rows = db_select('tripal_ds', 'ds')
     ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label'))
@@ -163,7 +171,6 @@ function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $en
     ->condition('tripal_ds_field_label', $field_label, '=')
     ->condition('tripal_ds_field_name', $field_name, '=')
     ->execute()->fetchAll();
-
   if(!empty($tripal_ds_rows)){
     foreach ($tripal_ds_rows as $tripal_ds_row){
       if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_rows->bundle)) {
@@ -184,7 +191,7 @@ function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $en
   }
 }
 
-/*
+/**
  * Implements hook_ds_layout_info() to define layouts from code in a module for
  * display suite
  */
@@ -206,6 +213,18 @@ function tripal_ds_ds_layout_info() {
   return $layouts;
 }
 
+/**
+ * Implements hook_form()
+ *
+ * Adds a confirmation message to applying default layout option in 'Manage
+ * Display'
+ *
+ * @param $form
+ * @param $form_state
+ * @param $bundle_name
+ *
+ * @return mixed
+ */
 function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
   $form = array();
   $form['bundle_name'] = array(
@@ -226,6 +245,7 @@ function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
 }
 
 /**
+ * Implements hook_form_submit()
  *
  * @param $form_state
  * @param $form
@@ -321,6 +341,10 @@ function tripal_ds_field_create_field($field, $bundle_name) {
 }
  */
 /**
+ * Implements hook_form()
+ *
+ * Creates the button that creates an empty tripal pane.
+ *
  * @param $form
  * @param $form_state
  * @param $bundle_name
@@ -354,6 +378,7 @@ function tripal_ds_pane_addition_button_form($form, &$form_state, $bundle_name) 
 }
 
 /**
+ * Implements hook_form_submit()
  *
  * @param $form_state
  * @param $form
@@ -460,6 +485,9 @@ function tripal_ds_field_display_alter(&$display, $context){
 
 */
 /**
+ * Identifies field_group parents to find tripal_panes and return that
+ * information to the function that calls it.
+ *
  * @param $field_name
  * @param $entity_type
  * @param $bundle
@@ -513,3 +541,41 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
   return $field_groups_to_hide;
 
 }
+
+/**
+ * @param $bundle
+ * @param array $fields
+ */
+function tripal_ds_toc_order($bundle, $fields = array()){
+  // On bundle save grab the #ds_layout->settings ->regions->right array
+  // then use the index of each 'group' && 'tripalpane, and 'gp_*' to update
+  // the weight of the item in the tripal_ds table.
+  // Don't forget to update the view.
+
+  // Find all menu items associated with the bundle id.
+  $menu_items = db_select('tripal_ds', 'ds')
+    ->fields('ds')
+    ->condition('bundle', $bundle, '=')
+    ->execute()->fetchAll();
+
+  // Now find all menu items in the $fields array
+  foreach ($menu_items as $menu_items => $menu_item) {
+    $toc_field_name = $menu_item->tripal_ds_field_name;
+    // Compare the field name from the table with the fields in the array.
+    if (array_key_exists($toc_field_name, $fields)) {
+      $weight = $fields[$toc_field_name]['weight'];
+      //If a weight is returned update the tripal_ds table.
+      if(!empty($weight)){
+        watchdog('debug', '<pre>$weight: '. print_r($weight, TRUE) .'</pre>');
+        db_update('tripal_ds')
+          ->fields(array(
+            'weight' => $weight,
+          ))
+          ->condition('bundle', $bundle, '=')
+          ->condition('tripal_ds_field_name', $toc_field_name, '=')
+          ->execute();
+      }
+    }
+  }
+}
+
