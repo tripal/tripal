@@ -15,8 +15,7 @@ class data__accession extends ChadoField {
   public static $default_label = 'Site Accession';
 
   // The default description for this field.
-  public static $description = 'The unique stable accession (ID) for
-        this record on this site.';
+  public static $description = 'The unique stable accession (ID) for this record on this site.';
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
