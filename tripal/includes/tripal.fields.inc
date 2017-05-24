@@ -152,7 +152,8 @@ function tripal_field_formatter_info_alter(&$info) {
 /**
  * Implements hook_bundle_create().
  *
- * This is a Triapl defined hook and is called in the TripalBundle::create()
+ * This is a Tripal defined hook and is called in the
+ * TripalBundleController::create()
  * function to allow modules to perform tasks when a bundle is created.
  */
 function tripal_bundle_create($bundle, $args) {
@@ -228,6 +229,11 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     return;
   }
 
+  // TODO: (Shawna) 1) Check the entity type (bundle) settings to see if empty fieleds
+  // should be ignored by default. 2)  Check the field itself to see if it
+  // overides the bundle default.  The idea being do not show fields when
+  // people don't want them shown.
+
   $element = array();
   $formatter_class = $display['type'];
   $is_loaded = tripal_load_include_field_class($formatter_class);
@@ -235,6 +241,7 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     $formatter = new $formatter_class($field, $instance);
     $formatter->view($element, $entity_type, $entity, $langcode, $items, $display);
   }
+
   return $element;
 }
 
@@ -752,12 +759,13 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
  */
 function tripal_field_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
-
-  $formatter_class = $field['type'] . '_formatter';
   if (tripal_load_include_field_class($formatter_class)) {
+
     $formatter = new $formatter_class($field, $instance);
-    return $formatter->settingsForm($view_mode, $form, $form_state);
+    $elements = $formatter->settingsForm($view_mode, $form, $form_state);
   }
+
+  return $elements;
 }
 
 
@@ -848,8 +856,6 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
     }
   }
 }
-
-
 
 /**
  * Implements hook_field_is_empty().

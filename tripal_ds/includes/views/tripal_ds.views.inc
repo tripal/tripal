@@ -73,7 +73,23 @@ function tripal_ds_views_data() {
       'handler' => 'views_handler_argument_string',
     ),
   );
-
+  $data['tripal_ds']['weight'] = array(
+    'title' => t('Weight'),
+    'help' => t('The weight as determined by the order in the Manage Display tab of the content type.'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
   return $data;
 }
 

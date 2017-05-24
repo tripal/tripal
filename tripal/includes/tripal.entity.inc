@@ -312,7 +312,9 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
  * retrieve the field.
  */
 function tripal_entity_view($entity, $type, $view_mode, $langcode) {
+
   if ($type == 'TripalEntity') {
+
     foreach (element_children($entity->content) as $child_name) {
 
       // Initailize the prefix and suffix for this field.
@@ -330,8 +332,13 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       if ($instance and array_key_exists('settings', $instance)) {
         $class = '';
         if (array_key_exists('auto_attach', $instance['settings']) and
-            $instance['settings']['auto_attach'] == FALSE) {
-          $class = 'class="tripal-entity-unattached"';
+            $instance['settings']['auto_attach'] == FALSE and
+            $entity->{$child_name}['#processed'] == FALSE) {
+          // If the field is empty then try to use ajax to load it.
+          $items = field_get_items('TripalEntity', $entity, $child_name);
+          if (count($items) == 0 or empty($items[0]['value'])) {
+            $class = 'class="tripal-entity-unattached"';
+          }
         }
         $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" ' . $class . '>';
         $entity->content[$child_name]['#suffix'] .= '</div>';

@@ -90,7 +90,6 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $form['#attached']['css'] = array(
     array(
       'data' => '
-        .form-item select, .form-item input { width:40%; }
         th.side-header { width: 220px; }',
       'type' => 'inline',
     ),
@@ -171,6 +170,18 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   else {
     $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, '');
   }
+
+  $empty_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, '');
+  $form['hide_empty_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Field Display'),
+    '#options' => array(
+      'hide' => t('Hide empty fields'),
+      'show' => t('Show empty fields'),
+    ),
+    '#description' => t('Choose either to show or hide all empty fields.  If "Show empty fields" is selected then fields will be loaded via AJAX to help speed page loads.'),
+    '#default_value' => !empty($empty_fields) ? array($empty_fields,) : array('hide',),
+  );
 
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
@@ -307,7 +318,11 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
  * Validate: Tripal content type edit form.
  */
 function tripal_tripal_bundle_form_validate($form, $form_state) {
-
+  // VALIDATE: That there is a value passed for the hide_empty_field option. If
+  // no value passed default to hide field.
+  if(empty($form_state['values']['hide_empty_field'])){
+    $form_state['values']['hide_empty_field'] = 'hide';
+  }
   // VALIDATE: The only tokens used should be those we mentioned under "Available Tokens".
   // PART 1: Set Titles.
   $tokens_available = unserialize($form_state['values']['set_titles']['tokens']);
@@ -371,6 +386,9 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
 
     // Save the description.
     tripal_set_bundle_variable('description', $bundle_entity->id, $form_state['values']['description']);
+
+    // Save the hide_empty_field setting.
+    tripal_set_bundle_variable('hide_empty_field', $bundle_entity->id, $form_state['values']['hide_empty_field']);
 
     // Save the page title format.
     tripal_save_title_format(

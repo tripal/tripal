@@ -110,7 +110,7 @@ function tripal_chado_create_bundle_table($bundle) {
       'entity_id' => array('entity_id'),
     ),
   );
-  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $chado_entity_table = chado_get_bundle_entity_table($bundle);
   db_create_table($chado_entity_table, $schema);
 }
 
@@ -122,7 +122,7 @@ function tripal_chado_bundle_delete($bundle) {
 
   // Remove the entries in the appropriate chado entity table
   // and tripal_entity
-  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $chado_entity_table = chado_get_bundle_entity_table($bundle);
   $sql = "DROP TABLE {$chado_entity_table}";
   db_query($sql);
 

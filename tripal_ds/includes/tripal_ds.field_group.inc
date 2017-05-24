@@ -27,6 +27,7 @@ function _summary_field_group_info($bundle_name, $fields){
         'id' => 'tripal_ds-fieldset-group_summary_tripalpane',
         'classes' => 'group-summary-tripalpane field-group-tripalpane',
         'description' => '',
+        'hide' => 0,
       ),
     ),
   );
@@ -93,8 +94,9 @@ function _prop_field_group_info($bundle_name, $fields){
       'label' => 'Properties',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_prop_tripalpane',
-        'classes' => 'hideTripalPane group-prop-tripalpane field-group-tripalpane',
+        'classes' => 'group-prop-tripalpane field-group-tripalpane',
         'description' => '',
+        'hide' => 1,
       ),
     ),
   );
@@ -160,8 +162,9 @@ function _data_sequence_field_group_info($bundle_name, $fields){
       'label' => 'Data Sequences',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_sequence_tripalpane',
-        'classes' => 'hideTripalPane group-sequence-tripalpane field-group-tripalpane ',
+        'classes' => 'group-sequence-tripalpane field-group-tripalpane ',
         'description' => '',
+        'hide' => 1,
       ),
     ),
   );
@@ -230,8 +233,9 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
       'label' => $field_label,
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-'.$group_field_name,
-        'classes' =>'hideTripalPane '.$group_field_name.' field-group-tripalpane',
+        'classes' => ''.$group_field_name.' field-group-tripalpane',
         'description' => '',
+        'hide' => 1,
       ),
     ),
   );
@@ -263,8 +267,9 @@ function _publication_prop_field_group_info($bundle_name, $fields){
       'label' => 'Properties',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_prop_tripalpane',
-        'classes' => 'hideTripalPane group-prop-tripalpane field-group-tripalpane',
+        'classes' => 'group-prop-tripalpane field-group-tripalpane',
         'description' => '',
+        'hide' => 1,
       ),
     ),
   );

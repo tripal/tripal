@@ -76,9 +76,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         continue;
       }
 
+      // Add bold font to the object and subject names.
       $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
       $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
 
+      // Convert the object/subject to a link if an entity exists for it.
       if (array_key_exists('entity', $item['value']['local:relationship_object'])) {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
         if ($object_entity_id != $entity->id) {
@@ -115,15 +117,18 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $pager = $this->ajaxifyPager($pager, $entity);
     $page_items = array_chunk($rows, $items_per_page);
 
-    if (count($items) == 1) {
-      $content = 'There is ' . count($items) . ' relationship.';
-    }
-    else {
-      $content = 'There are ' . count($items) . ' relationships.';
+    $content = '';
+    if ($total_pages > 1) {
+      if (count($rows) == 1) {
+        $content = 'There is ' . count($rows) . ' relationship.';
+      }
+      if (count($rows) > 1) {
+        $content = 'There are ' . count($rows) . ' relationships.';
+      }
     }
     $content .= theme_table(array(
       'header' => $headers,
-      'rows' => $page_items[$current_page],
+      'rows' => count($rows) > 0 ? $page_items[$current_page] : array(),
       'attributes' => array(
         'id' => 'sbo--relationship-table',
       ),

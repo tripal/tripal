@@ -349,7 +349,7 @@ class TripalEntityController extends EntityAPIController {
    * @param $conditions
    *  The list of key/value filters for querying the entity.
    * @param $field_ids
-   *  The list of numeric field IDs for fields that should be included.
+   *  The list of numeric field IDs for fields that should be attached.
    */
   public function load($ids = array(), $conditions = array(), $field_ids = array()) {
 
@@ -474,24 +474,12 @@ class TripalEntityController extends EntityAPIController {
    * @param $queried_entities
    *   The list of queried
    * @param $revision_id
+   *   ID of the revision that was loaded, or FALSE if the most current
+   *   revision was loaded.
    * @param $field_ids
    */
   protected function attachLoad(&$queried_entities, $revision_id = FALSE,
       $field_ids = array()) {
-
-    // Get the list of fields for later user.
-    $fields = field_info_fields();
-    // A temporary holding place for field instances (so we don't have
-    // to keep looking them up in our loop below).
-    $instances = array();
-
-    // Add in the content_type field by default. It should always be attached.
-    $ids = array();
-    $ct = field_info_field('content_type');
-    $ids[] = $ct['id'];
-    $field_ids += $ids;
-    $unattached = array();
-
 
     // Attach fields.
     if ($this->entityInfo['fieldable']) {
@@ -501,40 +489,86 @@ class TripalEntityController extends EntityAPIController {
       else {
         $function = 'field_attach_load';
       }
-      foreach ($queried_entities as $entity) {
-        // Iterate through the fields and find those that are set to
-        // 'auto_attach' and which are attached to this bundle.
-        foreach ($fields as $field) {
-          $field_name =  $field['field_name'];
-          if (array_key_exists('TripalEntity', $field['bundles'])) {
-            foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
-              if ($bundle_name == $entity->bundle) {
-                // Get the instance of this field for this bundle.
-                if (!array_key_exists($field_name . '-' . $bundle_name, $instances)) {
-                  $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-                  $instances[$field_name . '-' . $bundle_name] = $instance;
-                }
-                else {
-                  $instance = $instances[$field_name . '-' . $bundle_name];
-                }
-                // If the 'auto_attach' is set to FALSE then we don't want
-                // to add this field to our list of IDs to auto attach.
-                if (array_key_exists('settings', $instance) and
-                    array_key_exists('auto_attach', $instance['settings']) and
-                    $instance['settings']['auto_attach'] == FALSE) {
-                  // Skip this field.
-                }
-                else {
-                  $field_ids[] = $field['id'];
-                }
+      foreach ($queried_entities as $id => $entity) {
+        $info = entity_get_info($entity->type);
+        $field_cache = array_key_exists('field cache', $info) ? $info['field cache'] : FALSE;
+        $bundle_name = $entity->bundle;
+
+        // Iterate through the field instances and find those that are set to
+        // 'auto_attach' and which are attached to this bundle. Add all
+        // fields that don't need auto attach to the field_ids array.
+        $instances = field_info_instances('TripalEntity', $bundle_name);
+        foreach ($instances as $instance) {
+          $field_name =  $instance['field_name'];
+          $field = field_info_field($field_name);
+          $field_id = $field['id'];
+
+          // Add this field to the entity with default value.
+          if (!isset($queried_entities[$id]->$field_name)) {
+            $queried_entities[$id]->$field_name = array();
+          }
+
+          // Options used for the field_attach_load function.
+          $options = array();
+          $options['field_id'] = $field['id'];
+
+          // The cache ID for the entity.  We must manually set the cache
+          // because the field_attach_load won't do it for us.
+          $cfid = "field:TripalEntity:$id:$field_name";
+
+          // Check if the field is cached. if so, then don't reload.
+          if ($field_cache) {
+            $cache_data = cache_get($cfid, 'cache_field');
+            if (!empty($cache_data)) {
+              $queried_entities[$id]->$field_name = $cache_data->data;
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
+              continue;
+            }
+          }
+
+          // If a list of field_ids is provided then we specifically want
+          // to only load the  fields specified.
+          if (count($field_ids) > 0) {
+            if (in_array($field_id, $field_ids)) {
+              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+                  FIELD_LOAD_CURRENT, $options);
+              // Cache the field.
+              if ($field_cache) {
+                cache_set($cfid, $entity->$field_name, 'cache_field');
               }
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
+            }
+          }
+          // If we don't have a list of fields then load them all, but only
+          // if the instance is a TripalField and it is set to not auto
+          // attach then we will ignore it. It can only be set by providing
+          // the id in the $field_id array handled previously.
+          else {
+            // We only load via AJAX if empty fields are not hidden.
+            $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+            $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+            if (array_key_exists('settings', $instance) and
+                array_key_exists('auto_attach', $instance['settings']) and
+                $instance['settings']['auto_attach'] == FALSE and
+                $hide_variable == 'show') {
+
+               // Add an empty value. This will allow the tripal_entity_view()
+               // hook to add the necessary prefixes to the field for ajax
+               // loading.
+               $queried_entities[$id]->$field_name['und'][0]['value'] = '';
+               $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
+            }
+            else {
+              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+                  FIELD_LOAD_CURRENT, $options);
+              // Cache the field.
+              if ($field_cache) {
+                cache_set($cfid, $entity->$field_name, 'cache_field');
+              }
+              $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
           }
         }
-
-        $options = array();
-        $options['field_id'] = $field_ids;
-        $function($this->entityType, array($entity->id => $entity), FIELD_LOAD_CURRENT, $options);
       }
     }
 

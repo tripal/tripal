@@ -294,6 +294,34 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
+  // PROTEIN & CDS SEQUENCE
+  if ($table_name == 'feature' and
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
+    $field_name = 'data__protein_sequence';
+    $field_type = 'data__protein_sequence';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+
+    $field_name = 'so__cds';
+    $field_type = 'so__cds';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
@@ -1102,6 +1130,69 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   }
 
+  // PROTEIN & CDS SEQUENCES.
+  if ($table_name == 'feature' and
+      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
+    $field_name = 'data__protein_sequence';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Protein Sequence',
+      'description' => 'Protein sequences.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'feature',
+        'chado_column' => 'residues',
+        'base_table' => 'feature',
+      ),
+      'widget' => array(
+        'type' => 'data__protein_sequence_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'data__protein_sequence_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+    $field_name = 'so__cds';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Coding Sequence',
+      'description' => 'Coding sequences.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'featureloc',
+        'chado_column' => '',
+        'base_table' => 'featureloc',
+      ),
+      'widget' => array(
+        'type' => 'so__cds_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'so__cds_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
@@ -1295,7 +1386,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'local__contact_formatter',
           'settings' => array(),
         ),
@@ -1330,7 +1421,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'inline',
+          'label' => 'hidden',
           'type' => 'sbo__database_cross_reference_formatter',
           'settings' => array(),
         ),
@@ -1402,7 +1493,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'data__sequence_coordinates_formatter',
           'settings' => array(),
         ),
@@ -1436,7 +1527,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'ogi__location_on_map_formatter',
           'settings' => array(),
         ),
@@ -1471,7 +1562,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'so__genotype_formatter',
           'settings' => array(),
         ),
@@ -1506,7 +1597,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sbo__phenotype_formatter',
           'settings' => array(),
         ),
@@ -1523,17 +1614,18 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
      $pkey = $schema['primary key'][0];
      // Get the list of existing property types for this table.
      $args = array();
-     $sql = "
-       SELECT DISTINCT P.type_id
-       FROM {" . $prop_table . "} P
-     ";
-     if (array_key_exists('type_id', $tschema['fields'])) {
-       $sql .= "
-           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-         WHERE T.type_id = :cvterm_id
-       ";
-       $args[':cvterm_id'] = $cvterm_id;
-     }
+      $sql = "
+        SELECT DISTINCT P.type_id
+        FROM {" . $prop_table . "} P
+      ";
+      if (array_key_exists('type_id', $tschema['fields'])) {
+        $sql .= "
+            INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+          WHERE T.type_id = :cvterm_id
+        ";
+        $args[':cvterm_id'] = $cvterm_id;
+      }
+
      $props = chado_query($sql, $args);
      while ($prop = $props->fetchObject()) {
 
@@ -1575,7 +1667,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
          ),
          'display' => array(
            'default' => array(
-             'label' => 'inline',
+             'label' => 'hidden',
              'type' => 'chado_linker__prop_formatter',
              'settings' => array(),
            ),
@@ -1612,7 +1704,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'schema__publication_formatter',
           'settings' => array(),
         ),
@@ -1648,7 +1740,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sio__references_formatter',
           'settings' => array(),
         ),
@@ -1684,7 +1776,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'hidden',
           'type' => 'sbo__relationship_formatter',
           'settings' => array(),
         ),
@@ -1719,7 +1811,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
       'display' => array(
         'default' => array(
-          'label' => 'inline',
+          'label' => 'hidden',
           'type' => 'schema__alternate_name_formatter',
           'settings' => array(),
         ),

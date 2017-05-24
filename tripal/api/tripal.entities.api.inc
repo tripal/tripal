@@ -559,6 +559,7 @@ function tripal_refresh_bundle_fields($bundle_name) {
         array('%bundle' => $bundle_name));
     return FALSE;
   }
+
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
   foreach ($modules as $module) {
@@ -769,11 +770,22 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
  *   The value of the variable for the given bundle.
  */
 function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
-
   $variable = tripal_get_variable($variable_name);
 
   if (!$variable) {
-    return FALSE;
+    if($variable_name === 'hide_empty_field'){
+      tripal_insert_variable(
+        'hide_empty_field',
+        'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
+      );
+      $variable = tripal_get_variable($variable_name);
+      if (!$variable) {
+        return FALSE;
+      }
+    }
+    else {
+      return FALSE;
+    }
   }
 
   // And then we need to write the new format to the tripal_bundle_variables table.

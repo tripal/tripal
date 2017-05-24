@@ -22,14 +22,26 @@
    clear: both;
 }
 
+.protein-residues-formatter {
+  color: black;
+  height: 100px;
+  max-width: 500px;
+  overflow: scroll;
+  white-space: normal;
+  background-color: transparent;
+  margin: 0px;
+  padding: 0px;
+}
+
 .residues-formatter {
-   border: 1px solid #dddddd;
-   color: #000000;
-   height: 300px;
-   max-width: 500px;
-   overflow: scroll;
-   white-space: normal;
-   background-color: white;
+  color: black;
+  height: 300px;
+  max-width: 500px;
+  overflow: scroll;
+  white-space: normal;
+  background-color: transparent;
+  margin: 0px;
+  padding: 0px;
 }
 
 .form-field-ui-field-overview-storage-logo {

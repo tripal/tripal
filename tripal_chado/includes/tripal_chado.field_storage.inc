@@ -42,7 +42,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-dpm($field_vals);
+
 
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
@@ -59,7 +59,7 @@ dpm($field_vals);
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
     // Add the record to the proper chado entity table
-    $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+    $chado_entity_table = chado_get_bundle_entity_table($bundle);
     $record = array(
       'entity_id' => $entity->id,
       'record_id' => $base_record_id,
@@ -206,7 +206,7 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
       $type_field = $bundle->type_column;
 
       // Get the record id for the fields of this entity.
-      $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+      $chado_entity_table = chado_get_bundle_entity_table($bundle);
       $details = db_select($chado_entity_table, 'ce')
         ->fields('ce')
         ->condition('entity_id', $entity->id)
@@ -532,7 +532,7 @@ function tripal_chado_field_storage_query($query) {
   } // end foreach ($query->fieldConditions as $index => $condition) {
 
   // Now join with the chado entity table to get published records only.
-  $chado_entity_table = tripal_chado_get_bundle_entity_table($bundle);
+  $chado_entity_table = chado_get_bundle_entity_table($bundle);
   $cquery->join($chado_entity_table, 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
   $cquery->fields('CE', array('entity_id'));
@@ -1171,7 +1171,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   $default = array(
     'table' => '',
     'has_all' => 'No',
-    'use_cvterm' => 'cv',
+    'use_cvterm' => '',
     'cv_id' => '',
     'use_linker' => 'No',
     'use_prop' => 'No',
@@ -1218,7 +1218,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   // If the user selected to use the cvterm table then we have to
   // handle it specially.
-  if ($default['use_cvterm']) {
+  if ($default['use_cvterm'] == 'cv' and !empty($default['cv_id'])) {
     $storage_args['data_table'] = $default['table'];
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_value'] = '';
@@ -1226,7 +1226,6 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
       $storage_args['type_value'] = $default['cv_id'];
     }
     $storage_args['type_column'] = '';
-
     return;
   }
 

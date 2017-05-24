@@ -298,6 +298,13 @@ function tripal_chado_populate_vocab_EDAM() {
   tripal_associate_chado_semweb_term(NULL, 'uniquename', $term);
 
   $term = tripal_insert_cvterm(array(
+    'id' => 'data:2976',
+    'name' => 'Protein sequence',
+    'cv_name' => 'EDAM',
+    'definition' => 'One or more protein sequences, possibly with associated annotation.',
+  ));
+
+  $term = tripal_insert_cvterm(array(
     'id' => 'data:2968',
     'name' => 'Image',
     'cv_name' => 'EDAM',
@@ -358,6 +365,31 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'The name of a biological or bioinformatics database.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'sourceuri', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2336',
+    'name' => 'Translation phase specification',
+    'cv_name' => 'EDAM',
+    'definition' => 'Phase for translation of DNA (0, 1 or 2) relative to a fragment of the coding sequence.',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'phase', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:0853',
+    'name' => 'DNA sense specification',
+    'cv_name' => 'EDAM',
+    'definition' => 'The strand of a DNA sequence (forward or reverse).',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'strand', $term);
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:3002',
+    'name' => 'Annotation track',
+    'cv_name' => 'EDAM',
+    'definition' => 'Annotation of one particular positional feature on a ' .
+    'biomolecular (typically genome) sequence, suitable for import and ' .
+    'display in a genome browser. Synonym: Sequence annotation track.',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'srcfeature_id', $term);
 }
 
 /**
@@ -1037,6 +1069,41 @@ function tripal_chado_populate_vocab_LOCAL() {
     'is_relationship' => 0,
     'db_name' => 'local'
   ));
+
+  //--------------
+  // Featureloc Terms
+  //--------------
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:fmin',
+    'name' => 'minimal boundary',
+    'definition' => 'The leftmost, minimal boundary in the linear range ' .
+      'represented by the feature location. Sometimes this is called ' .
+      'start although this is confusing because it does not necessarily ' .
+      'represent the 5-prime coordinate.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:fmax',
+    'name' => 'maximal boundary',
+    'definition' => 'The rightmost, maximal boundary in the linear range ' .
+      'represented by the featureloc. Sometimes this is called end although ' .
+      'this is confusing because it does not necessarily represent the ' .
+      '3-prime coordinate',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:unknown_fmin',
+    'name' => ' minimal boundary',
+    'definition' => 'The leftmost, minimal boundary in the linear range ' .
+    'represented by the feature location. Sometimes this is called ' .
+    'start although this is confusing because it does not necessarily ' .
+    'represent the 5-prime coordinate.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
 
 
   //--------------
