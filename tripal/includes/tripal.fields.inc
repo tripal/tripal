@@ -152,7 +152,8 @@ function tripal_field_formatter_info_alter(&$info) {
 /**
  * Implements hook_bundle_create().
  *
- * This is a Triapl defined hook and is called in the TripalBundle::create()
+ * This is a Tripal defined hook and is called in the
+ * TripalBundleController::create()
  * function to allow modules to perform tasks when a bundle is created.
  */
 function tripal_bundle_create($bundle, $args) {

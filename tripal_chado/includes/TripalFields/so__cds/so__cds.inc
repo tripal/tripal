@@ -51,16 +51,26 @@ class so__cds extends ChadoField {
     $feature = $entity->chado_record;
     $num_seqs = 0;
 
+    // Set some defauls for the empty record
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+    );
+
+    $options = array(
+      'return_array' => TRUE,
+      'order_by' => array('rank' => 'ASC'),
+    );
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
-    $featureloc_sequences = chado_get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
-    foreach($featureloc_sequences as $src => $attrs){
+    $featurelocs = $feature->featureloc->feature_id;
+    return;
+    foreach($featurelocs as $featureloc){
       // Generate a CDS sequence if one exsits for this feature alignment.
       $cds_sequence = tripal_get_feature_sequences(
         array(
           'feature_id' => $feature->feature_id,
-          'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
+          'parent_id' => $featureloc->srcfeature_id->feature_id,
           'name' => $feature->name,
-          'featureloc_id' => $attrs['featureloc']->featureloc_id,
+          'featureloc_id' => $featureloc->featureloc_id,
         ),
         array(
           // CDS are in parent-child relationships so we want to use the
@@ -75,14 +85,12 @@ class so__cds extends ChadoField {
       );
 
       if (count($cds_sequence) > 0) {
-        $defline = tripal_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', strlen($attrs['residues']));
-
         // the tripal_get_feature_sequences() function can return multiple sequences
         // if a feature is aligned to multiple places. In the case of CDSs we expect
         // that one mRNA is only aligned to a single location on the assembly so we
         // can access the CDS sequence with index 0.
         if ($cds_sequence[0]['residues']) {
-          $entity->{$field_name}['und'][$num_seqs++]['value'] = $defline . "\n" .  $cds_sequence[0]['residues'];
+          $entity->{$field_name}['und'][$num_seqs++]['value'] = $cds_sequence[0]['residues'];
         }
       }
     }
