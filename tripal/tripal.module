@@ -681,6 +681,8 @@ function tripal_block_info() {
  * Implements hook_block_view().
  */
 function tripal_block_view($delta = ''){
+  global $base_path;
+
   // The $delta parameter tells us which block is being requested.
   switch ($delta) {
     case 'powered_by_tripal':
@@ -700,7 +702,7 @@ function tripal_block_view($delta = ''){
 
       $block['title'] = '';
       $block['content'] = array(
-        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
+        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $base_path . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
       );
       break;
 
