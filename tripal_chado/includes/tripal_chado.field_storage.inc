@@ -163,7 +163,6 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
         }
       }
     }
-    dpm($values);
 
     // Insert the values array as a new record in the table but remove the
     // pkey as it should be set.
