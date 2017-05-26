@@ -1,5 +1,31 @@
 <?php
 
+
+/**
+ * Sorts a multidimensional array into alphabetical order.
+ *
+ * @param $key.
+ *
+ * @return \Closure
+ */
+function sort_array($key) {
+  return function ($a, $b) use ($key) {
+    return strnatcmp($a[$key], $b[$key]);
+  };
+}
+
+/**
+ * Sorts a multidimensional array of objects into alphabetical order.
+ *
+ * @param $key.
+ *
+ * @return \Closure
+ */
+function sort_object($key) {
+  return function ($a, $b) use ($key) {
+    return strnatcmp($a->$key, $b->$key);
+  };
+}
 /**
  * Implements hook_ds_layout_settings_info().
  */
@@ -12,19 +38,26 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $all_other_fields = array();
   $fields_with_regions = array();
   $i = 0;
+  $all_fields = array();
 
   try {
     // Get the bundle and term objects.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
     $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
 
+    // Build one large multidimensional array of all instances to sort in alpha
+    // order to display fields in label alpha order.
+    foreach ($instances as $key => $instance) {
+      $all_fields[$i] = $instance;
+      $i++;
+    }
+    usort($all_fields, sort_array('label'));
+
     // Iterate through the fields of this bundle.
-    foreach ($instances as $key => $instance){
+    foreach ($all_fields as $key => $instance){
       $instance_name = $instance['field_name'];
       if($instance_name=="rdfs__type"){
         array_push($summary_fields, $instance_name);
-        $fields_with_regions[$instance_name]= 'right';
-
       }
       else {
         //TODO: How do we handle non-chado dbs, placement of fields within
@@ -33,46 +66,28 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         $instance_base_chado = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
         $prop_table = strpos($instance_base_chado, 'prop');
         $data_sequence = strpos($instance_name, 'data__sequence');
-
         if ($instance_base_chado && $instance_base_table){
 
           if ($instance_base_chado == $instance_base_table){
             if ($prop_table !== FALSE){
-              // Properties section instances.
               array_push($prop_fields, $instance_name);
-              $fields_with_regions[$instance_name]= 'right';
-
             }
             elseif ($data_sequence !== FALSE) {
-              // Data sequence section instances.
               array_push($data_sequence_fields, $instance_name);
-              $fields_with_regions[$instance_name] = 'right';
-
             }
             else {
-              // Overview section instances.
-              array_push($summary_fields, $instance_name);
-              $fields_with_regions[$instance_name] = 'right';
-            }
+              array_push($summary_fields, $instance_name);}
 
           }
           elseif ($instance_base_chado != $instance_base_table){
             if ($prop_table !== FALSE){
-              // Properties section instances.
               array_push($prop_fields, $instance_name);
-              $fields_with_regions[$instance_name]= 'right';
-
             }
             elseif ($data_sequence !== FALSE){
-              // Data sequence section instances.
               array_push($data_sequence_fields, $instance_name);
-              $fields_with_regions[$instance_name]= 'right';
-
             }
             else {
-              // Linker section instances.
               array_push($all_other_fields, $instance);
-              $fields_with_regions[$instance_name]= 'right';
 
               // Update the display settings so that the title is hidden.
               $instance['display']['default']['label'] = 'hidden';
@@ -86,43 +101,23 @@ function _ds_layout_settings_info($bundle_name, $instances) {
           // It is not a TripalField so it won't have a chado table.
           if ($instance_name == 'data__image' and $term->name == 'organism') {
             array_push($summary_fields, $instance_name);
-            $fields_with_regions[$instance_name] = 'right';
           }
         }
       }
-      $i++;
     }
 
     // Consolidate the field sets.
     if(!empty($summary_fields)){
       _summary_field_group_info($bundle_name, $summary_fields);
-
-      // Add the fields to the regions.
-      array_unshift($summary_fields, 'group_summary_tripalpane',  'group_summary_table');
-      $fields_with_regions += [ 'group_summary_tripalpane' =>'right', 'group_summary_table' => 'right' ];
-      $region_right = array_merge($summary_fields, $region_right);
-
     }
     if (!empty($prop_fields)){
       _prop_field_group_info($bundle_name, $prop_fields);
-      array_unshift($prop_fields, 'group_prop_tripalpane', 'group_prop_table');
-
-      // Add the fields to the regions.
-      $region_right = array_merge($region_right, $prop_fields);
-      $fields_with_regions += [ 'group_prop_tripalpane' => 'right', 'group_prop_table' => 'right' ];
     }
     if (!empty($data_sequence_fields)){
       _data_sequence_field_group_info($bundle_name, $data_sequence_fields);
-      array_unshift($data_sequence_fields, 'group_sequence_tripalpane', 'group_sequence_table');
-
-      // Add the fields to the regions.
-      $region_right = array_merge($region_right, $data_sequence_fields);
-      $fields_with_regions += [ 'group_sequence_tripalpane' => 'right', 'group_sequence_table' => 'right' ];
     }
     if (!empty($all_other_fields)){
       foreach ($all_other_fields as $key => $other_field) {
-        // Temporary field names.
-        $temporary_field = array();
         $group_field_name = 'gp_'.$other_field['field_name'];
 
         // Need to truncate the names because of database field size restrictions,
@@ -132,17 +127,48 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         // Add random numbers to ensure the field name is unique within the 32
         // character limit of the field.
         $group_field_name = $group_field_name.rand(0, 99999);
-
-        // Build the field group.
         _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
-
-        // Update arrays.
-        array_push($temporary_field, $group_field_name, $other_field['field_name']);
-        $region_right = array_merge($region_right, $temporary_field);
-        $fields_with_regions += [ $group_field_name => 'right',];
       }
     }
 
+    // Build one large multidimensional array of all instances to sort in alpha
+    // order to display fields in label alpha order.
+    $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
+    foreach ($all_field_groups['default'] as $key => $field_name) {
+      $right_fields[$key] = $field_name;
+    }
+    usort($right_fields, sort_object('label'));
+
+    // Now build the $region_right array and the fields array.
+    $i = 0;
+    foreach ($right_fields as $index => $field) {
+      // Check if the child is already present which is a problem when groups
+      // are nested within groups.
+      if (in_array($field->group_name, $region_right)) {
+        // Still need to check for children and add them.
+        if (!empty($field->children)) {
+          foreach($field->children as $index => $child){
+            $region_right[$i] = $child;
+            $i++;
+          }
+        }
+      }
+      else {
+        $region_right[$i] = $field->group_name;
+        if (!empty($field->children)) {
+          foreach ($field->children as $index => $child) {
+            $i++;
+            $region_right[$i] = $child;
+          }
+        }
+        $i++;
+      }
+      // Now update the weights of the field_groups.
+      tripal_ds_field_group_update_weight($field->group_name, $bundle_name, $i);
+    }
+    foreach($region_right as $index => $field){
+      $fields_with_regions[$field] = 'right';
+    }
     // Add blocks to $region_left and build the toc field that is placed within.
     _ds_fields_info_write($bundle_name);
     $region_left += [ 'toc' ];
