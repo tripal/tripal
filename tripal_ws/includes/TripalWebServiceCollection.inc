@@ -56,7 +56,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    * @param $itemsPerPage
    *   The maximum number of items per page.
    */
-  public function initPager($totalItems, $itemsPerPage) {
+  public function initPager($totalItems, $itemsPerPage, $path) {
     $this->doPaging = TRUE;
     $this->totalItems = $totalItems;
     $this->itemsPerPage = $itemsPerPage;
@@ -115,10 +115,10 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
         $prev = $page - 1;
         $next = $page + 1;
         if ($prev > 0) {
-          $data['view']['previous'] = $URL . '?' . implode('&', array_merge($URL_add, array("page=$prev", "limit=$limit")));
+          $data['view']['previous'] = '?' . implode('&', array_merge($URL_add, array("page=$prev", "limit=$limit")));
         }
         if ($next < $total_pages) {
-          $data['view']['next'] = $URL . '?' . implode('&', array_merge($URL_add, array("page=$next", "limit=$limit")));
+          $data['view']['next'] = '?' . implode('&', array_merge($URL_add, array("page=$next", "limit=$limit")));
         }
       }
 

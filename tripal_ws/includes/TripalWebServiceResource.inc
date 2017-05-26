@@ -217,4 +217,5 @@ class TripalWebServiceResource {
   public function getContext() {
       return $this->context;
   }
+
 }

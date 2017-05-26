@@ -76,19 +76,6 @@ class TripalWebService {
     // continuing.
   }
 
-  /**
-   * Retrieves the path for the current resource.
-   *
-   * This web service class always provides a resource that fits within the
-   * type of class.  The URL for each resource is needed for building the
-   * full IRI. This path can be concatenated to the Tripal webservices path to
-   * form the complete IRI for the current resource.
-   */
-  public function getResourcePath() {
-    $class = get_class($this);
-    return $class::$type;
-  }
-
   // --------------------------------------------------------------------------
   //                     CLASS FUNCTIONS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
@@ -192,7 +179,7 @@ class TripalWebService {
 
     // Get the data array and set the IRIs fore each ID.
     $data = $this->getData();
-    $this->setIRI($data);
+    $this->setIDs($data);
 
     return array_merge($json_ld, $data);
   }
@@ -203,7 +190,7 @@ class TripalWebService {
    * @param $data
    *   An array of data as returned by the $this->getData() function
    */
-  protected function setIRI(&$data) {
+  protected function setIDs(&$data) {
     global $base_url;
 
     if(array_key_exists('@id', $data)) {
@@ -214,7 +201,7 @@ class TripalWebService {
     }
     foreach ($data as $key => $val) {
       if (is_array($val)) {
-        $this->setIRI($data[$key]);
+        $this->setIDs($data[$key]);
       }
     }
   }

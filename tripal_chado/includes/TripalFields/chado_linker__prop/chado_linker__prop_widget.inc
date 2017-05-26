@@ -40,7 +40,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     if (count($items) > 0) {
       // Check for element values that correspond to fields in the Chado table.
       $fk_value = tripal_get_field_item_keyval($items, 0, 'chado-' . $chado_table . '__' . $lfkey_field, $fk_value);
-      $type_id = tripal_get_field_item_keyval($items, 0, 'chado-' . $chado_table . '__type_id', $type_id);      
+      $type_id = tripal_get_field_item_keyval($items, 0, 'chado-' . $chado_table . '__type_id', $type_id);
       if (array_key_exists($delta, $items)) {
         $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $chado_table . '__' . $pkey, $record_id);
         $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $chado_table . '__value', $value);
@@ -59,9 +59,22 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
 
     // Use default value for the field if it's not already set
     if (!$value && isset($instance['default_value'][$delta])) {
-      $value = $instance['default_value'][$delta]['chado-' . $chado_table . '__value'];
+      $value = $instance['default_value'][$delta]['value'];
     }
-    
+    if (!$type_id) {
+      $vocabulary = $this->instance['settings']['term_vocabulary'];
+      $accession = $this->instance['settings']['term_accession'];
+      $cvterm = tripal_get_cvterm(array(
+        'dbxref_id' => array(
+          'db_id' => array(
+            'name' => $vocabulary,
+          ),
+          'accession' => $accession,
+        ),
+      ));
+      $type_id = $cvterm->cvterm_id;
+    }
+
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -78,7 +91,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     $widget['chado-' . $chado_table . '__value'] = array(
       '#type' => 'textarea',
       '#default_value' => $value,
-      '#title' => $instance['label'] . ' value',
+      '#title' => $instance['label'],
       '#description' => $instance['description'],
     );
     $widget['chado-' . $chado_table . '__type_id'] = array(
@@ -106,7 +119,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
 
     $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $chado_table . '__value'];
     $form_state['values'][$field_name]['und'][$delta]['value'] = $value;
-    
+
     // If the user removed the property then we want to clear out the other
     // fields so there is no insert.
     if (!$value) {

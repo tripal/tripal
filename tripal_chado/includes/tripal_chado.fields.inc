@@ -836,6 +836,9 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     //
     // ANALYSIS TABLE
     //
+    elseif ($table_name == 'analysis' and $column_name == 'name') {
+      $base_info['required'] = TRUE;
+    }
     elseif ($table_name == 'analysis' and $column_name == 'program') {
       $base_info['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
       $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
@@ -847,6 +850,10 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     elseif ($table_name == 'analysis' and $column_name == 'programversion') {
       $base_info['label'] = 'Program Version';
       $base_info['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
+    }
+    elseif ($table_name == 'analysis' and $column_name == 'timeexecuted') {
+      $base_info['label'] = 'Date Performed';
+      $base_info['description'] = 'The date and time when the analysis was performed.';
     }
 
     if ($table_name == 'analysis' and ($column_name == 'sourceuri' or

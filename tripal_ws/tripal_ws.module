@@ -170,7 +170,7 @@ function tripal_ws_get_services() {
 
     // Now call the service to handle the request.
     $service->setPath($adj_path);
-    $service->setParams($params);
+    $service->setParams($args);
     $service->handleRequest();
     $response = $service->getResponse();
     print drupal_json_encode($response);

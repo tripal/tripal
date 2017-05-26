@@ -648,7 +648,17 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
 }
 
 function tripal_check_new_fields($bundle_name) {
-  tripal_refresh_bundle_fields($bundle_name);
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+
+  $added = tripal_create_bundle_fields($bundle, $term);
+  if (count($added) == 0) {
+    drupal_set_message('No new fields were added');
+  }
+  foreach ($added as $field_name) {
+    drupal_set_message('Added field: ' . $field_name);
+  }
+
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
 }
 

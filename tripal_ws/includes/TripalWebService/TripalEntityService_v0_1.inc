@@ -32,7 +32,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * @see TripalWebService::handleRequest()
    */
-  public function handleRequest($path) {
+  public function handleRequest() {
 
     // Get the content type.
     $ctype     = (count($this->path) > 0) ? $this->path[0] : '';
@@ -40,7 +40,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // If we have no content type then list all of the available content types.
     if ($ctype and !$entity_id) {
-      $this->doContentType($ctype);
+      $this->doContentTypeList($ctype);
     }
     // If we don't have an entity ID then show a paged list of entities with
     // the given type.
@@ -55,7 +55,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * Creates a collection of resources for a given type.
    */
-  private function doContentType($ctype) {
+  private function doContentTypeList($ctype) {
     $this->resource = new TripalWebServiceCollection();
     $this->resource->addContextItem('label', 'rdfs:label');
 
@@ -65,7 +65,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $term = reset($term);
 
     // Set the label for this collection.
-    $this->resource->addContextItem($term->name, $term->url);
     $this->resource->addProperty('label', $bundle->label . " collection");
 
     // Iterate through the fields and create a $field_mapping array that makes
@@ -82,8 +81,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
             if (array_key_exists('term_accession', $instance['settings'])){
               $vocabulary = $instance['settings']['term_vocabulary'];
               $accession = $instance['settings']['term_accession'];
-              $term = tripal_get_term_details($vocabulary, $accession);
-              $key = $term['name'];
+              $fterm = tripal_get_term_details($vocabulary, $accession);
+              $key = $fterm['name'];
               $key = strtolower(preg_replace('/ /', '_', $key));
               $field_mapping[$key] = $field['field_name'];
               $field_mapping[$field['field_name']] = $field['field_name'];
@@ -98,7 +97,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $order = array();
     $order_dir = array();
     $URL_add = array();
-    foreach ($params as $param => $value) {
+    foreach ($this->params as $param => $value) {
       $URL_add[] = "$param=$value";
 
       // Ignore non filter parameters
@@ -209,7 +208,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $cquery = clone $query;
     $cquery->count();
     $num_records = $cquery->execute();
-    $num_records = count($num_records['TripalEntity']);
 
     if (!$num_records) {
       $num_records = 0;
@@ -217,10 +215,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // Add in the pager to the response.
     $response['totalItems'] = $num_records;
-    $limit = array_key_exists('limit', $params) ? $params['limit'] : 25;
+    $limit = array_key_exists('limit', $this->params) ? $this->params['limit'] : 25;
 
     $total_pages = ceil($num_records / $limit);
-    $page = array_key_exists('page', $params) ? $params['page'] : 1;
+    $page = array_key_exists('page', $this->params) ? $this->params['page'] : 1;
 
     // Set the query order
     $order_keys = array_keys($order);
@@ -239,11 +237,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $this->resource->initPager($num_records, 25);
 
     // Iterate through the entities and add them to the list.
-    $i = 0;
     foreach ($results['TripalEntity'] as $entity_id => $stub) {
-      $vocabulary = '';
-      $term_name = '';
-
       // We don't need all of the attached fields for an entity so, we'll
       // not use the entity_load() function.  Instead just pull it from the
       // database table.
@@ -254,16 +248,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $query->condition('TE.id', $entity_id);
       $entity = $query->execute()->fetchObject();
 
-      //$entity = tripal_load_entity('TripalEntity', array($entity->id));
       $member = new TripalWebServiceResource();
       $member->addContextItem('label', 'rdfs:label');
       $member->addContextItem('itemPage', 'schema:itemPage');
-      $member->setID($entity->id);
+      $member->addContextItem($term->name, $term->url);
+      $member->setID(urldecode($bundle->label) . '/' . $entity->id);
+      $member->setType($term->name);
       $member->addProperty('label', $entity->title);
       $member->addProperty('itemPage', url('/bio_data/' . $entity->id, array('absolute' => TRUE)));
-
       $this->resource->addMember($member);
-      $i++;
     }
   }
 
@@ -306,12 +299,5 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $this->resource->addMember($member);
 
     }
-  }
-  /**
-   * @see TripalWebService::getResourcePath()
-   */
-  public function getResourcePath() {
-    $base_path = parent::getResourcePath();
-    return $base_path . '/' . $this->resource['@type'];
   }
 }

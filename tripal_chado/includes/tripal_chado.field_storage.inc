@@ -37,12 +37,12 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $type_field = $entity->chado_column;
   $record     = $entity->chado_record;
   $record_id  = $entity->chado_record_id;
+  $linker     = $entity->chado_linker;
   $base_schema = chado_get_schema($base_table);
   $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-
 
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
@@ -51,10 +51,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   if ($record_id) {
     $values[$base_pkey] = $record_id;
   }
-  elseif ($type_field) {
+  elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
-  $base_record_id = tripal_chado_field_storage_write_table($base_table, $values);
+  $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
@@ -77,7 +77,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
       continue;
     }
     foreach ($details as $delta => $values) {
-      $record_id = tripal_chado_field_storage_write_table($table_name, $values);
+      $record_id = tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey, $base_record_id);
     }
   }
 }
@@ -106,11 +106,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  * @return
  *   The unique record ID.
  */
-function tripal_chado_field_storage_write_table($table_name, $values) {
+function tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey = NULL, $base_record_id= NULL) {
   $schema = chado_get_schema($table_name);
   $fkeys = $schema['foreign keys'];
   $pkey = $schema['primary key'][0];
-
 
   // Fields with a cardinality greater than 1 will often submit an
   // empty form.  We want to remove these empty submissions.  We can detect
@@ -154,13 +153,25 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
       return $record[0]->$pkey;
     }
 
+    // If this table_name is a linker table then we want to be sure to add in
+    // the value for the $base_record_id it it isn't set.  This would only
+    // occur on an insert.
+    if (array_key_exists($base_table, $fkeys) and $base_table != $table_name) {
+      foreach ($fkeys[$base_table]['columns'] as $lkey => $rkey) {
+        if ($rkey == $base_pkey and !array_key_exists($lkey, $values) or empty($values[$lkey])) {
+          $values[$lkey] = $base_record_id;
+        }
+      }
+    }
+    dpm($values);
+
     // Insert the values array as a new record in the table but remove the
     // pkey as it should be set.
     $new_vals = $values;
     unset($new_vals[$pkey]);
     $record = chado_insert_record($table_name, $new_vals);
     if ($record === FALSE) {
-      throw new Exception('Could not insert Chado record into table: "' . $table_name . '".');
+      throw new Exception('Could not insert Chado record into table: "' . $table_name . '": ' . print_r($new_vals, TRUE));
     }
     return $record[$pkey];
   }
