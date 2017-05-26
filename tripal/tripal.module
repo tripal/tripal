@@ -681,6 +681,8 @@ function tripal_block_info() {
  * Implements hook_block_view().
  */
 function tripal_block_view($delta = ''){
+  global $base_path;
+
   // The $delta parameter tells us which block is being requested.
   switch ($delta) {
     case 'powered_by_tripal':
@@ -700,7 +702,7 @@ function tripal_block_view($delta = ''){
 
       $block['title'] = '';
       $block['content'] = array(
-        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
+        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $base_path . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
       );
       break;
 
@@ -1003,23 +1005,26 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
 
 
 /**
- *  Implements hook_field_display_alter().
+ * Implements hook_field_display_alter().
+ *
  * @param $display
  * @param $context
  */
-function tripal_field_display_alter(&$display, $context){
+function tripal_field_display_TripalEntity_alter(&$display, $context){
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
 
+  // Hide fields that are empty, but only if the hide_empty_field variable
+  // is set to 'hide' for this bundel.
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
   if($hide_variable == 'hide'){
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
       if(tripal_field_is_empty($item[0], $field)) {
         // Stop the right rail element from rendering.
-        drupal_add_css('.'.$field_name.' {display:none;}', 'inline');
+        drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
       }
     }
   }

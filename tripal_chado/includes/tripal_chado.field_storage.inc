@@ -879,7 +879,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_allrecs(&$form,
     '#title' => 'Are all records in the "' . $default['table'] .
       '" table of type "'. $term_name . '"?',
     '#description' => 'Select "No" if the "' .
-      $default['table'] . '" table houses more that just data of type "' .
+      $default['table'] . '" table houses more than just data of type "' .
       $term_name . '".',
     '#default_value' => $default['has_all'],
     '#ajax' => array(
