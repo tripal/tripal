@@ -1,9 +1,10 @@
 <?php
-
 /**
  * @file
  * Non-Drush Tripal Daemon functionality.
  */
+
+require_once('includes/tripal_daemon.blocks.inc');
 
 /**
  * Implements hook_daemon_api_info().
