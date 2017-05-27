@@ -108,6 +108,9 @@ function tripal_ws_menu() {
  *
  */
 function tripal_ws_get_services() {
+  global $base_url;
+  $service_path = $base_url . '/web-services';
+
   drupal_add_http_header('Content-Type', 'application/json');
 
   try {
@@ -151,7 +154,7 @@ function tripal_ws_get_services() {
     foreach ($services as $service_class) {
       tripal_load_include_web_service_class($service_class);
       if ($service_class::$type == $service_type) {
-        $service = new $service_class();
+        $service = new $service_class($service_path);
         if ($service->getVersion() == $service_version) {
           break;
         }
@@ -177,7 +180,7 @@ function tripal_ws_get_services() {
 
   }
   catch (Exception $e) {
-    $service = new TripalWebService();
+    $service = new TripalWebService($service_path);
     $service->setError($e->getMessage());
     $response = $service->getResponse();
     print drupal_json_encode($response);
@@ -189,37 +192,32 @@ function tripal_ws_get_services() {
  */
 function tripal_ws_list_services() {
   global $base_url;
+  $base_path = $base_url . '/web-services';
 
   // Create an instance of the TriaplWebService class and use it to build
   // the entry point for the web serivces.
-  $service = new TripalWebService();
+  $service = new TripalWebService($base_path);
 
+  // Get the list of web service classes.
   $services = tripal_get_web_services();
 
   // Create the parent resource which is a collection.
-  $resource = new TripalWebServiceResource();
+  $resource = new TripalWebServiceResource($base_path);
   $resource->addContextItem('entrypoint', 'hydra:entrypoint');
   $resource->setType('entrypoint');
 
   // Now add the member to the collection
   foreach ($services as $service_class) {
     tripal_load_include_web_service_class($service_class);
-    $service = new $service_class();
+    $service = new $service_class($base_path);
     $version = $service->getVersion();
-    $iri = $base_url . '/web-services/' . $service_class::$type . '/' . $version;
     $resource->addContextItem($service_class::$type, '');
-    $resource->addProperty($service_class::$type, $iri);
+    $resource->addProperty($service_class::$type, $service->getServicePath());
   }
 
   // For discoverability add the document webservice.
-
   $service->setResource($resource);
   $response = $service->getResponse();
-
-  // Using the TripalWebService class to build this entry point was
-  // conveneint but it wasn't quite meant for this way of working with it.
-  // So make some last minute fixes before returning.
-  $response['@id'] = $iri = $base_url . '/web-services';
   print drupal_json_encode($response);
 
 

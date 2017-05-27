@@ -35,9 +35,9 @@ class TripalWebService {
   protected $resource;
 
   /**
-   *   An array containing the elements of the URL path. Each level of the
-   *   URL appears in a separate element of the array. The service type and
-   *   version are automatically removed from the array.
+   * An array containing the elements of the URL path. Each level of the
+   * URL appears in a separate element of the array. The service type and
+   * version are automatically removed from the array.
    */
   protected $path;
 
@@ -48,16 +48,30 @@ class TripalWebService {
    */
   protected $params;
 
+  /**
+   * The URL at which Tripal web services are found.  This is used
+   * for creating the IRI for resources.
+   */
+  protected $base_path;
+
   // --------------------------------------------------------------------------
   //                             CONSTRUCTORS
   // --------------------------------------------------------------------------
   /**
    * Implements the constructor.
    */
-  public function __construct() {
-    $this->resource = new TripalWebServiceResource();
+  public function __construct($base_path) {
+    if (!$base_path) {
+      throw new Exception('Pleaes provide a $base_path argument when creating a new TripalWebService.');
+    }
+
+    // Create a default resource so that the service always some something.
+    $this->resource = new TripalWebServiceResource($base_path);
+
+    // Intialize the private members variables.
     $this->path = array();
     $this->params = array();
+    $this->base_path = $base_path;
   }
 
   // --------------------------------------------------------------------------
@@ -179,32 +193,21 @@ class TripalWebService {
 
     // Get the data array and set the IRIs fore each ID.
     $data = $this->getData();
-    $this->setIDs($data);
+    //$this->setIDs($data);
 
     return array_merge($json_ld, $data);
   }
 
   /**
-   * A recursive function for setting the IRI (i.e. JSON-LD @id property).
-   *
-   * @param $data
-   *   An array of data as returned by the $this->getData() function
+   * Retreives the service URL for this service.
    */
-  protected function setIDs(&$data) {
-    global $base_url;
-
-    if(array_key_exists('@id', $data)) {
-      $class = get_class($this);
-      $version = $this->getVersion();
-      $type = $class::$type;
-      $data['@id'] = $base_url . '/web-services/' . $type . '/' . $version . '/' . $data['@id'];
-    }
-    foreach ($data as $key => $val) {
-      if (is_array($val)) {
-        $this->setIDs($data[$key]);
-      }
-    }
+  public function getServicePath() {
+    $class = get_class($this);
+    $version = $this->getVersion();
+    $type = $class::$type;
+    return $this->base_path . '/' . $type . '/' . $version;
   }
+
   /**
    * Retrieves the data section of the response.
    *

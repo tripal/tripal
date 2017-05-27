@@ -24,9 +24,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * Implements the constructor
    */
-  public function __construct() {
-    parent::__construct();
-
+  public function __construct($base_path) {
+    parent::__construct($base_path);
   }
 
   /**
@@ -37,18 +36,352 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // Get the content type.
     $ctype     = (count($this->path) > 0) ? $this->path[0] : '';
     $entity_id = (count($this->path) > 1) ? $this->path[1] : '';
+    $expfield  = (count($this->path) > 2) ? $this->path[2] : '';
 
-    // If we have no content type then list all of the available content types.
-    if ($ctype and !$entity_id) {
+    // If we have a content type then list all of the entities that belong
+    // to it.
+    if ($ctype and !$entity_id and !$expfield) {
       $this->doContentTypeList($ctype);
     }
-    // If we don't have an entity ID then show a paged list of entities with
-    // the given type.
-    else if ($ctype and !$entity_id) {
+    // If we have an entity ID then build the resource for a single entity.
+    else if ($ctype and $entity_id and !$expfield) {
+      $this->doEntity($ctype, $entity_id);
     }
-    // If we have a content type and an entity ID then show the entity
+    else if ($ctype and $entity_id and $expfield) {
+      $this->doExpandedField($ctype, $entity_id, $expfield);
+    }
+    // Otherwise just list all of the available content types.
     else {
       $this->doAllTypesList();
+    }
+  }
+
+  /**
+   * Creates a resource for an expanded field of an entity.
+   */
+  private function doExpandedField($ctype, $entity_id, $expfield) {
+    $service_path = $this->getServicePath() . '/' . urlencode($ctype) . '/' . $entity_id;
+    $this->resource = new TripalWebServiceResource($service_path);
+
+    // Get the TripalBundle, TripalTerm and TripalVocab for this type.
+    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+    $term = reset($term);
+    $vocab = $term->vocab;
+
+    // Get the TripalEntity
+    $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+    $entity = reset($entity);
+
+    // If we couldn't match this field argument to a field and entity then return
+    if (!$entity) {
+      throw new Exception("Canno find this entity.");
+    }
+
+    list($field, $instance, $term) = $this->findField($bundle, $expfield);
+
+    // Next add in the ID and Type for this resources.
+    $key = $term['name'];
+    $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+    $this->resource->addContextItem($key_adj, $term['url']);
+    $this->resource->setID(urlencode($key));
+    $this->resource->setType($key_adj);
+
+    // Attach the field and then add it's values to the response.
+    field_attach_load($entity->type, array($entity->id => $entity),
+        FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
+
+    $this->addEntityField($key_adj, $entity, $field, $instance, $service_path, $expfield);
+  }
+
+  /**
+   * Find the field whose term matches the one provied.
+   */
+  private function findField($bundle, $expfield) {
+
+    $value = array();
+    $instances = field_info_instances('TripalEntity', $bundle->name);
+    foreach ($instances as $instance) {
+      $field_name = $instance['field_name'];
+      $field = field_info_field($field_name);
+      $vocabulary = $instance['settings']['term_vocabulary'];
+      $accession = $instance['settings']['term_accession'];
+      $temp_term = tripal_get_term_details($vocabulary, $accession);
+      if ($temp_term['name'] == $expfield) {
+        return array($field, $instance, $temp_term);
+      }
+    }
+  }
+
+  /**
+   * Creates a resource for a single entity.
+   */
+  private function doEntity($ctype, $entity_id) {
+    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $this->resource = new TripalWebServiceResource($service_path);
+
+    // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
+    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+    $term = reset($term);
+    $vocab = $term->vocab;
+
+    // Add the vocabulary to the context.
+    $this->resource->addContextItem($vocab->vocabulary, $term->urlprefix);
+    $this->resource->addContextItem($term->name, $term->url);
+
+    // Get the TripalEntity
+    $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+    $entity = reset($entity);
+
+    $this->resource->setID($entity_id);
+    $this->resource->setType($term->name);
+    $this->resource->addContextItem('label', 'rdfs:label');
+    $this->resource->addContextItem('itemPage', 'schema:itemPage');
+    $this->resource->addProperty('label', $entity->title);
+    $this->resource->addProperty('itemPage', url('/bio_data/' . $entity->id, array('absolute' => TRUE)));
+
+    $this->addEntityFields($entity, $bundle, $term, $service_path);
+
+//    tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
+//    tripal_ws_services_v0_1_write_context($response, $ctype);
+  }
+
+  /**
+   * Adds the fields as properties of an entity resource.
+   */
+  private function addEntityFields($entity, $bundle, $term, $service_path) {
+
+    // Get information about the fields attached to this bundle and sort them
+    // in the order they were set for the display.
+    $instances = field_info_instances('TripalEntity', $bundle->name);
+
+    uasort($instances, function($a, $b) {
+      $a_weight = (is_array($a) && isset($a['widget']['weight'])) ? $a['widget']['weight'] : 0;
+      $b_weight = (is_array($b) && isset($b['widget']['weight'])) ? $b['widget']['weight'] : 0;
+
+      if ($a_weight == $b_weight) {
+        return 0;
+      }
+      return ($a_weight < $b_weight) ? -1 : 1;
+    });
+
+    // Iterate through the fields and add each value to the response.
+    //$response['fields'] = $fields;
+    foreach ($instances as $field_name => $instance) {
+
+      // Skip hidden fields.
+      if ($instance['display']['default']['type'] == 'hidden') {
+        continue;
+      }
+
+      // Get the information about this field.
+      $field = field_info_field($field_name);
+
+      // By default, the label for the key in the output should be the
+      // term from the vocabulary that the field is assigned. But in the
+      // case that the field is not assigned a term, we must use the field name.
+      $field_name = $instance['field_name'];
+      $vocabulary = $instance['settings']['term_vocabulary'];
+      $accession = $instance['settings']['term_accession'];
+      $term = tripal_get_term_details($vocabulary, $accession);
+      if ($term) {
+        $key = $term['name'];
+        $key_adj = strtolower(preg_replace('/ /', '_', $key));
+        // The term schema:url also points to a recource so we need
+        // to make sure we set the type to be '@id'.
+        if ($vocabulary == 'schema' and $accession == 'url') {
+          $this->resource->addContextItem($key_adj, array(
+            '@id' => $term['url'],
+            '@type' => '@id',
+          ));
+        }
+        else {
+          $this->resource->addContextItem($key_adj, $term['url']);
+        }
+      }
+      else {
+        continue;
+      }
+
+      // If this field should not be attached by default then just add a link
+      // so that the caller can get the information separately.
+      $instance_settings = $instance['settings'];
+      if (array_key_exists('auto_attach', $instance['settings']) and
+          $instance_settings['auto_attach'] == FALSE) {
+        $this->resource->addContextItem($key_adj, array(
+          '@id' => '', //$response['@context'][$key_adj],
+          '@type' => '@id'
+        ));
+        // Add a URL only if there are values. If there are no values then
+        // don't add a URL which would make the end-user think they can get
+        // that information.
+        $items = field_get_items('TripalEntity', $entity, $field_name);
+        if ($items and count($items) > 0 and $items[0]['value']) {
+          $this->resource->addProperty($key_adj, $service_path . '/' . $entity->id . '/' . urlencode($key));
+        }
+        else {
+          $this->resource->addProperty($key_adj, NULL);
+        }
+        continue;
+      }
+
+      // Get the details for this field for the JSON-LD response.
+      $this->addEntityField($key_adj, $entity, $field, $instance, $service_path);
+    }
+  }
+
+  /**
+   * Adds the field as a property of the entity resource.
+   */
+  private function addEntityField($key, $entity, $field, $instance, $service_path, $expfield = NULL) {
+    // Get the field  settings.
+    $field_name = $field['field_name'];
+    $field_settings = $field['settings'];
+
+    $items = field_get_items('TripalEntity', $entity, $field_name);
+    if (!$items) {
+      return;
+    }
+
+    // Give modules the opportunity to edit values for web services. This hook
+    // really should be used sparingly. Where it helps is with non Tripal fields
+    // that are added to a TripalEntity content type and it doesn't follow
+    // the rules (e.g. Image field).
+    drupal_alter('tripal_ws_value', $items, $field, $instance);
+
+    $values = array();
+    for ($i = 0; $i < count($items); $i++) {
+      $values[$i] = $this->sanitizeFieldKeys($items[$i]['value'], $service_path);
+    }
+
+    // If the field cardinality is 1
+    if ($field[cardinality] == 1) {
+      // If the value is an array and this is the field page then all of those
+      // key/value pairs should be added directly to the response.
+      if (is_array($values[0])) {
+        if ($expfield) {
+          foreach ($values[0] as $k => $v) {
+            $this->resource->addProperty($k, $v);
+          }
+        }
+        else {
+          $this->resource->addProperty($key, $values[0]);
+        }
+      }
+      // If the value is not an array it's a scalar so add it as is to the
+      // response.
+      else {
+        $this->resource->addProperty($key, $values[0]);
+      }
+    }
+
+    // If the field cardinality is > 1
+    if ($field[cardinality] != 1) {
+
+      // If this is the expanded field page then we need to swap out
+      // the resource for a collection.
+      if ($expfield) {
+        $this->resource = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield));
+        $this->resource->addContextItem('label', 'rdfs:label');
+        $this->resource->addProperty('label', $instance['label']);
+        foreach ($values as $delta => $element) {
+          $member = new TripalWebServiceResource($service_path);
+          foreach ($element as $key => $value) {
+            $member->addContextItem($key, '');
+            $member->addProperty($key, $value);
+          }
+          $this->resource->addMember($member);
+        }
+      }
+      else {
+        $response[$key] = array(
+          '@type' => 'Collection',
+          'totalItems' => count($values),
+          'label' => $instance['label'],
+          'member' => $values,
+        );
+      }
+    }
+  }
+
+  /**
+   * Rewrites the keys of a field's items array for use with web services.
+   */
+  private function sanitizeFieldKeys($value, $service_path) {
+
+    $new_value = '';
+    // If the value is an array rather than a scalar then map the sub elements
+    // to controlled vocabulary terms.
+    if (is_array($value)) {
+      $temp = array();
+      foreach ($value as $k => $v) {
+        $matches = array();
+        if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
+          $vocabulary = $matches[1];
+          $accession = $matches[2];
+          $term = tripal_get_term_details($vocabulary, $accession);
+          $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+          if (is_array($v)) {
+            $temp[$key_adj] = $this->sanitizeFieldKeys($v, $service_path);
+          }
+          else {
+            $temp[$key_adj] = $v !== "" ? $v : NULL;
+          }
+          // The term schema:url also points to a recource so we need
+          // to make sure we set the type to be '@id'.
+          if ($vocabulary == 'schema' and $accession == 'url') {
+            $this->resource->addContextItem($key_adj, array(
+              '@id' => $term['url'],
+              '@type' => '@id',
+            ));
+          }
+          else {
+            $this->resource->addContextItem($key_adj, $term['url']);
+          }
+        }
+        else {
+          $temp[$k] = $v;
+        }
+      }
+      $new_value = $temp;
+
+      // Recurse through the values array and set the entity elements
+      // and add the fields to the context.
+      $this->sanitizeFieldEntity($new_value, $service_path);
+
+    }
+    else {
+      $new_value = $value !== "" ? $value : NULL;
+    }
+
+    return $new_value;
+  }
+
+  /**
+   * Rewrites any TripalEntity elements in the values array for use with WS.
+   */
+  private function sanitizeFieldEntity(&$items, $service_path) {
+
+    if (!$items) {
+      return;
+    }
+    foreach ($items as $key => $value) {
+      if (is_array($value)) {
+        $this->sanitizeFieldEntity($items[$key], $response, $api_url);
+        continue;
+      }
+
+      if ($key == 'entity') {
+        list($item_etype, $item_eid) = explode(':', $items['entity']);
+        if ($item_eid) {
+          $item_entity = tripal_load_entity($item_etype, array($item_eid));
+          $item_entity = reset($item_entity);
+          $bundle = tripal_load_bundle_entity(array('name' => $item_entity->bundle));
+          $items['@id'] = url($api_url . '/content/' . $bundle->label . '/' . $item_eid, array('absolute' => TRUE));
+        }
+        unset($items['entity']);
+      }
     }
   }
 
@@ -56,7 +389,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
    * Creates a collection of resources for a given type.
    */
   private function doContentTypeList($ctype) {
-    $this->resource = new TripalWebServiceCollection();
+    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $this->resource = new TripalWebServiceCollection($service_path);
     $this->resource->addContextItem('label', 'rdfs:label');
 
     // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
@@ -234,7 +568,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $results = $query->execute();
 
     //$this->resource->initPager($num_records, $params['limit']);
-    $this->resource->initPager($num_records, 25);
+    $this->resource->initPager($num_records, $limit);
 
     // Iterate through the entities and add them to the list.
     foreach ($results['TripalEntity'] as $entity_id => $stub) {
@@ -248,11 +582,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $query->condition('TE.id', $entity_id);
       $entity = $query->execute()->fetchObject();
 
-      $member = new TripalWebServiceResource();
+      $member = new TripalWebServiceResource($service_path);
       $member->addContextItem('label', 'rdfs:label');
       $member->addContextItem('itemPage', 'schema:itemPage');
       $member->addContextItem($term->name, $term->url);
-      $member->setID(urldecode($bundle->label) . '/' . $entity->id);
+      $member->setID($entity->id);
       $member->setType($term->name);
       $member->addProperty('label', $entity->title);
       $member->addProperty('itemPage', url('/bio_data/' . $entity->id, array('absolute' => TRUE)));
@@ -264,7 +598,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
    * Creates a resources that contains the list of content types.
    */
   private function doAllTypesList() {
-    $this->resource = new TripalWebServiceCollection();
+    $service_path = $this->getServicePath();
+    $this->resource = new TripalWebServiceCollection($service_path);
     $this->resource->addContextItem('label', 'rdfs:label');
     $this->resource->addProperty('label', 'Content Types');
 
@@ -287,8 +622,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if (!$description) {
         $description = $term->definition;
       }
-
-      $member = new TripalWebServiceResource();
+      $member = new TripalWebServiceResource($service_path);
       $member->addContextItem($term->name, $term->url);
       $member->addContextItem('label', 'rdfs:label');
       $member->addContextItem('description', 'hydra:description');

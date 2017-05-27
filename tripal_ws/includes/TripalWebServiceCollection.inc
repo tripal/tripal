@@ -33,8 +33,8 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    * @param TripalWebService $service
    *   An instance of a TripalWebService or class that extends it.
    */
-  public function __construct() {
-    parent::__construct();
+  public function __construct($service_path) {
+    parent::__construct($service_path);
     $this->members = array();
     $this->addContextItem('Collection', "hydra:Collection");
     $this->addContextItem('totalItems', "hydra:totalItems");
@@ -55,6 +55,8 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    *   The total number of items available.
    * @param $itemsPerPage
    *   The maximum number of items per page.
+   * @param $path
+   *   The path
    */
   public function initPager($totalItems, $itemsPerPage, $path) {
     $this->doPaging = TRUE;
@@ -107,18 +109,18 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
 
       if ($this->totalItems > 0) {
         $data['view'] = array(
-          '@id' => '?' . implode('&', array_merge(array("page=$page", "limit=$limit"))),
+          '@id' => $this->service_path . '?' . implode('&', array_merge(array("page=$page", "limit=$limit"))),
           '@type' => 'PartialCollectionView',
-          'first' => '?' . implode('&', array_merge(array("page=1", "limit=$limit"))),
-          'last' => '?' . implode('&', array_merge(array("page=$total_pages", "limit=$limit"))),
+          'first' => $this->service_path . '?' . implode('&', array_merge(array("page=1", "limit=$limit"))),
+          'last' => $this->service_path . '?' . implode('&', array_merge(array("page=$total_pages", "limit=$limit"))),
         );
         $prev = $page - 1;
         $next = $page + 1;
         if ($prev > 0) {
-          $data['view']['previous'] = '?' . implode('&', array_merge($URL_add, array("page=$prev", "limit=$limit")));
+          $data['view']['previous'] = $this->service_path .'?' . implode('&', array("page=$prev", "limit=$limit"));
         }
         if ($next < $total_pages) {
-          $data['view']['next'] = '?' . implode('&', array_merge($URL_add, array("page=$next", "limit=$limit")));
+          $data['view']['next'] = $this->service_path . '?' . implode('&', array("page=$next", "limit=$limit"));
         }
       }
 

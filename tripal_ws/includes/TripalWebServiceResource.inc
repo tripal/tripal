@@ -23,21 +23,31 @@ class TripalWebServiceResource {
 
 
   /**
+   * The URL path that the service is providing to access this resource.
+   * This path plus the $id are concatenated to form the IRI for this resource.
+   */
+  protected $service_path;
+
+
+  /**
    * Implements the constructor.
    *
    * @param TripalWebService $service
    *   An instance of a TripalWebService or class that extends it.
    */
-  public function __construct() {
+  public function __construct($service_path) {
     $this->context = array();
     $this->data = array();
+    $this->service_path = $service_path;
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
     // web services should use these.
     $this->addContextItem('rdfs', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
     $this->addContextItem('hydra', 'http://www.w3.org/ns/hydra/core#');
+    $this->addContextItem('dc', 'http://purl.org/dc/dcmitype/');
+    $this->addContextItem('schema', 'https://schema.org/');
 
-    $this->data['@id'] = '';
+    $this->data['@id'] = $service_path;
     $this->data['@type'] = '';
   }
 
@@ -99,7 +109,7 @@ class TripalWebServiceResource {
    */
   public function setID($id) {
     $this->id = $id;
-    $this->data['@id'] = $id;
+    $this->data['@id'] = $this->service_path . '/' . $id;
   }
 
 
