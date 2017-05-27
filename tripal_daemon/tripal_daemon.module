@@ -1,0 +1,25 @@
+<?php
+/**
+ * @file
+ * Non-Drush Tripal Daemon functionality.
+ */
+
+require_once('includes/tripal_daemon.blocks.inc');
+
+/**
+ * Implements hook_daemon_api_info().
+ *
+ * Registers our Daemon with the Daemon API
+ */
+function tripal_daemon_daemon_api_info() {
+  $daemon = array();
+
+  $daemon['tripal_daemon'] = array(
+    'machine_name' => 'tripal_daemon',
+    'name' => 'Tripal Job Daemon',
+    'module' => 'tripal_daemon',
+    'class' => 'TripalDaemon',
+  );
+
+  return $daemon;
+}
