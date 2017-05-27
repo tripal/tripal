@@ -15,16 +15,17 @@ class local__source_data_formatter extends ChadoFieldFormatter {
 
     $content = 'The data source is not provided.';
     if ($items[0]['value']) {
-      $content = "
-        <dl class=\"tripal-dl\">
-           <dt>Source Name</dt>
-           <dd>: " . $items[0]['value']['schema:name'] . " </dd>
-           <dt>Source Version</dt>
-           <dd>: " . $items[0]['value']['IAO:0000129'] . " </dd>
-           <dt>Source URI</dt>
-           <dd>: " . l($items[0]['value']['data:1047'], $items[0]['value']['data:1047'], array('attributes' => array('target' => '_blank'))) . " </dd>
-        </dl>
-      ";
+      $content = "<dl class=\"tripal-dl\">";
+      if (!empty($items[0]['value']['schema:name'])) {
+        $content .= "<dt>Source Name</dt><dd>: " . $items[0]['value']['schema:name'] . " </dd>";
+      }
+      if (!empty($items[0]['value']['IAO:0000129'])) {
+        $content .= "<dt>Source Version</dt><dd>: " . $items[0]['value']['IAO:0000129'] . " </dd>";
+      }
+      if (!empty($items[0]['value']['data:1047'])) {
+        $content .= "<dt>Source URI</dt><dd>: " . l($items[0]['value']['data:1047'], $items[0]['value']['data:1047'], array('attributes' => array('target' => '_blank'))) . " </dd>";
+      }
+      $content .= "</dl>";
     }
     $element[0] = array(
       // We create a render array to produce the desired markup,

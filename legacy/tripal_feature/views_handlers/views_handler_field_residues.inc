@@ -17,7 +17,7 @@ class views_handler_field_residues extends views_handler_field {
    */
   function construct() {
     parent::construct();
-      $this->additional_fields['residues'] = array('table' => 'feature', 'field' => 'residues');
+    $this->additional_fields['residues'] = array('table' => 'feature', 'field' => 'residues');
   }
 
   /**

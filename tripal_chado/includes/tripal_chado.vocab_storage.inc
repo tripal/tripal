@@ -15,6 +15,33 @@ function tripal_chado_vocab_storage_info() {
     ),
   );
 }
+/**
+ * Implements hook_vocab_get_vocabulary().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_get_vocabulary($vocabulary) {
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cv')) {
+    return FALSE;
+  }
+  $sql = "
+     SELECT DB.name as name, CV.name as short_name, DB.description, DB.url
+     FROM {db} DB
+      INNER JOIN {dbxref} DBX on DBX.db_id = DB.db_id
+      INNER JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
+      INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+     WHERE
+      DB.name = :name
+     LIMIT 1 OFFSET 0
+  ";
+  $result = chado_query($sql, array(':name' => $vocabulary));
+  $result = $result->fetchAssoc();
+  return $result;
+}
 
 /**
  * Implements hook_vocab_get_term().

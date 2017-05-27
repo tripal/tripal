@@ -116,7 +116,26 @@ function hook_vocab_get_term($vocabulary, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
 
 }
-
+/**
+ * Hook used by the default term storage backend to provide details for a vocab.
+ *
+ * This hook is called by the tripal_entity module to retrieve information
+ * about the vocabulary from the storage backend.  It must return an array with
+ * a set of keys.
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ *
+ * @return
+ *   An array with at least the following keys:
+ *     - name : The full name of the vocabulary.
+ *     - short_name : The short name abbreviation for the vocabulary.
+ *     - description : A brief description of the vocabulary.
+ *     - url : (optional) A URL for the online resources for the vocabulary.
+ */
+function hook_vocab_get_vocabulary($vocabulary) {
+  // See the tripal_chado_vocab_get_vocabulary() function for an example.
+}
 /**
  * Hook used by the default term storage backend to add new terms.
  *
@@ -175,14 +194,9 @@ function tripal_add_term($details) {
   }
 }
 
+
 /**
  * Retrieves full information about a vocabulary term.
- *
- * Vocabularies are stored in a database backend.  Tripal has no requirements
- * for how terms are stored.  By default, the tripal_chado modules provides
- * storage for vocabularies and terms. This function will call the
- * hook_vocab_get_term() function for the database backend that is housing the
- * vocabularies and allow it to return the details about the term.
  *
  * @param $vocabulary
  *   The vocabulary of the vocabulary in which the term is found.
@@ -214,6 +228,39 @@ function tripal_get_term_details($vocabulary, $accession) {
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
       return $function($vocabulary, $accession);
+    }
+  }
+}
+/**
+ * Retrieves full information about a vocabulary.
+ *
+ * Vocabularies are stored in a database backend.  Tripal has no requirements
+ * for how terms are stored.  By default, the tripal_chado modules provides
+ * storage for vocabularies and terms. This function will call the
+ * hook_vocab_get_term() function for the database backend that is housing the
+ * vocabularies and allow it to return the details about the term.
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ *
+ * @return
+ *   An array with at least the following keys:
+ *     - name : The full name of the vocabulary.
+ *     - short_name : The short name abbreviation for the vocabulary.
+ *     - description : A brief description of the vocabulary.
+ *     - url : (optional) A URL for the online resources for the vocabulary.
+ */
+function tripal_get_vocabulary_details($vocabulary) {
+  // TODO: we need some sort of administrative interface that lets the user
+  // switch to the desired vocabulary type. For now, we'll just use the
+  // first one in the list.
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_vocabulary';
+    if (function_exists($function)) {
+      return $function($vocabulary);
     }
   }
 }

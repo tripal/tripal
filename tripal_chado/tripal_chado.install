@@ -874,3 +874,125 @@ function tripal_chado_update_7304() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+/**
+ * Adding missing cv/db details and cvterms.
+ */
+function tripal_chado_update_7305() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_{accession}',
+    ));
+    tripal_insert_cv('rdfs', 'Resource Description Framework Schema');
+    tripal_insert_db(array(
+      'name' => 'SO',
+      'description' => 'The sequence ontology.',
+      'url' => 'http://www.sequenceontology.org/',
+      'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
+    ));
+    tripal_insert_cv('sequence', 'The sequence ontology.');
+    tripal_insert_db(array(
+      'name' => 'TAXRANK',
+      'description' => 'A vocabulary of taxonomic ranks (species, family, phylum, etc)',
+      'url' => 'http://www.obofoundry.org/ontology/taxrank.html',
+      'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+    ));
+    tripal_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
+    tripal_insert_db(array(
+      'name' => 'hydra',
+      'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
+      'url' => 'https://www.hydra-cg.com/spec/latest/core/',
+      'urlprefix' => 'https://www.hydra-cg.com/spec/latest/core/#{db}:{accession}',
+    ));
+    tripal_insert_cv(
+      'hydra',
+      'A Vocabulary for Hypermedia-Driven Web APIs.'
+    );
+    tripal_insert_db(array(
+      'name' => 'dc',
+      'description' => 'DCMI Metadata Terms.',
+      'url' => 'http://purl.org/dc/dcmitype/',
+      'urlprefix' => 'http://purl.org/dc/terms/{accession}',
+    ));
+    tripal_insert_cv(
+      'dc',
+      'DCMI Metadata Terms.'
+    );
+    $term = tripal_insert_cvterm(array(
+      'id' => 'dc:Service',
+      'name' => 'Service',
+      'cv_name' => 'dc',
+      'definition' => 'A system that provides one or more functions.',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:Collection',
+      'name' => 'Collection',
+      'cv_name' => 'hydra',
+      'definition' => 'A collection holding references to a number of related resources.',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:member',
+      'name' => 'member',
+      'cv_name' => 'hydra',
+      'definition' => 'A member of the collection',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:description',
+      'name' => 'description',
+      'cv_name' => 'hydra',
+      'definition' => 'A description.',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:totalItems',
+      'name' => 'totalItems',
+      'cv_name' => 'hydra',
+      'definition' => 'The total number of items referenced by a collection.',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:title',
+      'name' => 'title',
+      'cv_name' => 'hydra',
+      'definition' => 'A title, often used along with a description.',
+    ));
+    $name = tripal_insert_cvterm(array(
+      'id' => 'hydra:PartialCollectionView',
+      'name' => 'PartialCollectionView',
+      'cv_name' => 'hydra',
+      'definition' => 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.',
+    ));
+    $term = tripal_insert_cvterm(array(
+      'id' => 'schema:ItemPage',
+      'name' => 'ItemPage',
+      'cv_name' => 'schema',
+      'definition' => 'A page devoted to a single item, such as a particular product or hotel.',
+    ));
+    global $base_path;
+
+    tripal_insert_db(array(
+      'name' => 'null',
+      'description' => 'No online database.',
+      'url' => $base_path . 'cv/lookup/null',
+      'urlprefix' => $base_path. 'cv/lookup/{db}/{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'local',
+      'description' => 'Terms created for this site.',
+      'url' => $base_path . 'cv/lookup/local',
+      'urlprefix' => $base_path . 'cv/lookup/{db}/{accession}',
+    ));
+    $term = tripal_insert_cvterm(array(
+      'id' => 'local:rank',
+      'name' => 'rank',
+      'definition' => 'A taxonmic rank',
+      'cv_name' => 'local',
+    ));
+
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
