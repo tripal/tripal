@@ -13,14 +13,20 @@ function tripal_daemon_block_info() {
   // Status Blocks.
   $blocks['trpdaemon_status'] = array(
     'info' => t('Tripal Daemon Status'),
+    'cache' => DRUPAL_NO_CACHE,
   );
   $blocks['trpdaemon_status_admin'] = array(
     'info' => t('Tripal Daemon Status: ADMIN'),
+    'cache' => DRUPAL_NO_CACHE,
+    'status' => TRUE,
+    'region' => 'dashboard_sidebar',
   );
 
   // Display Log Block.
   $blocks['trpdaemon_log'] = array(
     'info' => t('Tripal Daemon Log'),
+    'status' => TRUE,
+    'region' => 'dashboard_main',
   );
   
   return $blocks;
