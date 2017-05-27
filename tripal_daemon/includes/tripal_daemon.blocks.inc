@@ -10,12 +10,17 @@
 function tripal_daemon_block_info() {
   $blocks = array();
 
+  // Status Blocks.
   $blocks['trpdaemon_status'] = array(
     'info' => t('Tripal Daemon Status'),
   );
-
   $blocks['trpdaemon_status_admin'] = array(
     'info' => t('Tripal Daemon Status: ADMIN'),
+  );
+
+  // Display Log Block.
+  $blocks['trpdaemon_log'] = array(
+    'info' => t('Tripal Daemon Log'),
   );
   
   return $blocks;
@@ -35,6 +40,10 @@ function tripal_daemon_block_view($delta='') {
     case 'trpdaemon_status':
       $block['subject'] = t('Job Daemon Status');
       $block['content'] = theme_tripal_daemon_status_block_content();
+      break;
+    case 'trpdaemon_log':
+      $block['subject'] = t('Job Daemon Log');
+      $block['content'] = drupal_get_form('trpdaemon_display_log_form');
       break;
   }
   
@@ -128,4 +137,62 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
   }
 
   return '<div class="inner '.$status_class.'">' . $output . '</div>';
+}
+
+/**
+ * Form to display a user selected number of lines from the Tripal Job Daemon log file.
+ */
+function trpdaemon_display_log_form($form, $form_state) {
+
+  $form['#attached']['css'][] = drupal_get_path('module','tripal_daemon') . '/theme/tripal_daemon.log_block.css';
+
+  $status_file = drushd_get_daemon_status_file('tripal_daemon');
+  $status = unserialize(file_get_contents($status_file));
+  $file = $status['Current Log File'];
+
+  $form['num_lines'] = array(
+    '#type' => 'radios',
+    '#title' => 'Lines',
+    '#description' => 'The number of lines to display from the end of the Tripal Job Daemon Log file.',
+    '#options' => array(
+      '10' => '10',
+      '25' => '25',
+      '50' => '50',
+      '100' => '100',
+      '200' => '200',
+      '500' => '500',
+    ),
+    '#default_value' => '25',
+    '#attributes'     => array(
+      'onChange' => 'this.form.submit();',
+      'class' => array('container-inline'),
+    ),
+  );
+  $num_lines = (isset($form_state['values'])) ? $form_state['values']['num_lines'] : $form['num_lines']['#default_value'];
+
+  $text = `tail -n $num_lines $file`;
+  $text = str_replace("\n", '<br />', $text);
+  $form['log'] = array(
+    '#type' => 'markup',
+    '#markup' => $text,
+    '#prefix' => '<pre id="daemon-log">',
+    '#suffix' => '</pre>',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Apply'),
+    '#attributes' => array(
+      'style' => array('display: none;'),
+     ),
+  );
+
+  return $form;
+}
+
+/**
+ * Display Log Form: Submit.
+ */
+function trpdaemon_display_log_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
 }
