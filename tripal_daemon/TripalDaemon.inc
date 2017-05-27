@@ -23,6 +23,11 @@ class TripalDaemon extends DrushDaemon {
   // inherits from a library class.
   protected $loop_interval = 20;
 
+  // Keep track of whether we are running a Tripal job or not
+  // and if so, which Tripal jobs are we running.
+  // If this array is empty then we are waiting for jobs ;-).
+  protected $tripal_jobs = array();
+
   /**
    * Implements DaemonAPIDaemon::executeTask() function.
    *
@@ -87,8 +92,16 @@ class TripalDaemon extends DrushDaemon {
         // Start Buffering.
         ob_start();
 
+        // Tell admins we are running a job.
+        $this->tripal_jobs[$id] = $id;
+        $this->setStatus();
+
         // Launch Tripal Job.
         tripal_launch_job(FALSE, $id);
+
+        // Tell admins that we're done :-).
+        unset($this->tripal_jobs[$id]);
+        $this->setStatus();
 
         // Save the buffer to the log and stop buffering.
         $this->log(str_repeat('=', 80));
@@ -111,5 +124,21 @@ class TripalDaemon extends DrushDaemon {
       $this->log('There are no Tripal Jobs to run');
     }
 
+  }
+
+  /**
+   * Override to include additional daemon-specific settings for use in reports.
+   *
+   * @return array
+   *   An array of status details where the key should be a human-readable
+   *   name for your detail and the value should be the current state.
+   */
+  protected function getStatusDetails() {
+    $status_details = parent::getStatusDetails();
+
+    $status_details['Running Job'] = (empty($this->tripal_jobs)) ? FALSE : TRUE;
+    $status_details['Current Jobs'] = $this->tripal_jobs;
+
+    return $status_details;
   }
 }

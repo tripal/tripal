@@ -13,9 +13,13 @@ div.block-tripal-daemon .active {
   background-color: #f8fff0; 
   color: #234600;
 }
-div.block-tripal-daemon .inactive {
+div.block-tripal-daemon .dead {
   background-color: #fef5f1;
   color: #8c2e0b;
+}
+div.block-tripal-daemon .inactive {
+  background-color: #fef5f1;
+  color: #b3b3b3;
 }
 
 div.block-tripal-daemon .daemon-status {

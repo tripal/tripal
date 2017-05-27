@@ -56,27 +56,41 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
   $is_running = drushd_is_daemon_running('tripal_daemon');
   $status_file = drushd_get_daemon_status_file('tripal_daemon');
   $status = unserialize(file_get_contents($status_file));
+  $PID = $status['PID'];
+  $is_alive = `ps h --pid $PID | wc -l`;
+  $is_alive = trim($is_alive);
 
   $status_class = ($is_running) ? 'active' : 'inactive';
+  $status_class = ($is_running AND !$is_alive) ? 'dead' : $status_class;
 
   // Theme content.
   drupal_add_css(drupal_get_path('module','tripal_daemon') . '/theme/status_block.css');
 
   // Display the status.
   $output .= '<div class="daemon-status">';
-  if ($is_running) {
+  if ($is_running and $is_alive) {
     $output .= theme_image(array(
       'path' => 'misc/message-24-ok.png',
       'alt' => 'status-ok',
     ));
-    $output .= 'Running';
+    if ($status['Running Job']) {
+      $output .= 'Running Job(s)';
+    }
+    else {
+      $output .= 'Waiting for Job';
+    }
   }
   else {
     $output .= theme_image(array(
       'path' => 'misc/message-24-error.png',
       'alt' => 'status-error',
     ));
-    $output .= 'Stopped';
+    if ($is_running AND !$is_alive) {
+      $output .= 'Dead';
+    }
+    else {
+      $output .= 'Stopped';
+    }
   }
   $output .= '</div>';
 
@@ -84,8 +98,28 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
   if ($show_all) {
     $output .= '<ul>';
     foreach ($status as $k => $v) {
+
+      // If it's a boolean, then make it readable.
       if (is_bool($v)) {
         $v = ($v) ? 'True' : 'False';
+      }
+
+      // If these are current jobs then we want to link to details.
+      if ($k == 'Current Jobs' AND !empty($v)) {
+        foreach ($v as $job_id) {
+          $url = 'admin/tripal/tripal_jobs/view/' . $job_id;
+          $v[$job_id] = l($job_id, $url);
+        }
+      }
+
+      // If it's an array then make it a list.
+      if (is_array($v)) {
+        if (empty($v)) {
+          $v = 'None';
+        }
+        else {
+          $v = implode(', ', $v);
+        }
       }
 
       $output .= '<li><strong>' . $k . '</strong>: ' . $v . '</li>';
