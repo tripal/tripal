@@ -43,87 +43,83 @@ class TripalDaemon extends DrushDaemon {
    *   This is an integer stating the current iteration of the loop you are on.
    */
   protected function executeTask($iteration_number) {
+ 
+    $do_parallel = FALSE;
+    $max_jobs = 1;
 
-    // When sorting the job list we want to use version specific SQL and thus
-    // need to know the postgreSQL version to determine what SQL to execute.
-    $version_string = db_query('SELECT version()')->fetchField();
-    if (preg_match('/PostgreSQL (\d+)\.(\d+)/', $version_string, $matches)) {
-      $version = array('major' => $matches[1], 'minor' => $matches[2]);
+    // First check if any jobs are currently running if they are, don't continue,
+    // we don't want to have more than one job script running at a time.
+    if (!$do_parallel and tripal_is_job_running()) {
+      $this->log("Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.\n");
     }
-    // If we can't determine the version then use the deprecated method.
-    else {
-      $version = array('major' => 8, 'minor' => 4);
-    }
-
-    // First check to see if there are any tripal jobs to be run.
-    if ($version['major'] >= 9 ) {
-      $waiting_jobs = db_query(
-        "SELECT
-          count(*) as count,
-          array_to_string(array_agg(j.job_id ORDER BY j.priority ASC, j.job_id ASC),'|') as jobs
-        FROM {tripal_jobs} j
-        WHERE j.status = 'Waiting'"
-      )->fetchObject();
+    elseif ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
+      $this->log("At least $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.\n");
     }
     else {
-     $waiting_jobs = db_query(
-        "SELECT
-          count(*) as count,
-          array_to_string(array_agg(j.job_id),'|') as jobs
-        FROM (SELECT * FROM {tripal_jobs} WHERE j.status = 'Waiting' ORDER BY priority ASC, job_id ASC) as j"
-      )->fetchObject();
-    }
 
-    $num_waiting_jobs = $waiting_jobs->count;
-    $job_ids = explode('|', $waiting_jobs->jobs);
+      // First check to see if there are any tripal jobs to be run.
+      $sql =  "
+        SELECT TJ.job_id
+        FROM {tripal_jobs} TJ
+        WHERE
+          TJ.start_time IS NULL AND
+          TJ.end_time IS NULL AND
+          NOT TJ.status = 'Cancelled'
+        ORDER BY priority ASC,job_id ASC";
+      $job_ids = db_query($sql)->fetchCol();
+      $num_waiting_jobs = sizeof($job_ids);
 
-    // If there are then run them and log the output.
-    if ($num_waiting_jobs > 0) {
-      $this->log($num_waiting_jobs . ' Waiting Tripal Jobs... '
-        . 'Running waiting job(s) now.');
+      // If there are then run them and log the output.
+      if ($num_waiting_jobs > 0) {
+        $this->log($num_waiting_jobs . ' Waiting Tripal Jobs... '
+          . 'Running waiting job(s) now.');
 
-      // Launch all tripal jobs :) Yay for bootstrapping!!
-      foreach ($job_ids as $id) {
-        $this->log('Starting Job (ID=' . $id . ')', '', 1);
+        // Launch all tripal jobs :) Yay for bootstrapping!!
+        foreach ($job_ids as $id) {
+          $this->log('Starting Job (ID=' . $id . ')', '', 1);
 
-        // We would like to log the output from the job.
-        // However, most tripal jobs simply print to the screen :-(
-        // Thus we have to use output buffering to capture the output.
-        // Start Buffering.
-        ob_start();
+          // We would like to log the output from the job.
+          // However, most tripal jobs simply print to the screen :-(
+          // Thus we have to use output buffering to capture the output.
+          // Start Buffering.
+          ob_start();
 
-        // Tell admins we are running a job.
-        $this->tripal_jobs[$id] = $id;
-        $this->setStatus();
+          // Tell admins we are running a job.
+          $this->tripal_jobs[$id] = $id;
+          $this->setStatus();
 
-        // Launch Tripal Job.
-        tripal_launch_job(FALSE, $id);
+          // Launch Tripal Job.
+          $job = new TripalJob();
+          $job->load($id);
+          try {
+            $job->run();
+          }
+          catch (Exception $e) {
+            $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+          } 
 
-        // Tell admins that we're done :-).
-        unset($this->tripal_jobs[$id]);
-        $this->setStatus();
+          // Tell admins that we're done :-).
+          unset($this->tripal_jobs[$id]);
+          $this->setStatus();
 
-        // Save the buffer to the log and stop buffering.
-        $this->log(str_repeat('=', 80));
-        $this->log(ob_get_clean());
-        $this->log(str_repeat('=', 80));
+          // Save the buffer to the log and stop buffering.
+          $this->log(str_repeat('=', 80));
+          $this->log(ob_get_clean());
+          $this->log(str_repeat('=', 80));
 
-        // Report job details.
-        $job = db_query(
-          "SELECT j.*
-          FROM {tripal_jobs} j
-          WHERE j.job_id = :jid",
-          array(':jid' => $id)
-        )->fetchObject();
-        $this->log("Job completed at "
-        . date('d M Y H:i:s', $job->end_time) . " with a status of '"
-        . $job->status . "'", "", 1);
+          // Report job details.
+          $job = db_query(
+            "SELECT j.*
+            FROM {tripal_jobs} j
+            WHERE j.job_id = :jid",
+            array(':jid' => $id)
+          )->fetchObject();
+          $this->log("Job completed at "
+          . date('d M Y H:i:s', $job->end_time) . " with a status of '"
+          . $job->status . "'", "", 1);
+        }
       }
     }
-    else {
-      $this->log('There are no Tripal Jobs to run');
-    }
-
   }
 
   /**
