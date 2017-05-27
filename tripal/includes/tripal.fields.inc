@@ -862,6 +862,11 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
  */
 function tripal_field_is_empty($item, $field) {
 
+  // If the $item argument is empty then return TRUE.
+  if (!$item) {
+    return TRUE;
+  }
+
   // If there is no value field then the field is empty.
   if (!array_key_exists('value', $item)) {
     return TRUE;
