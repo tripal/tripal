@@ -57,7 +57,7 @@ class TripalDaemon extends DrushDaemon {
           count(*) as count,
           array_to_string(array_agg(j.job_id ORDER BY j.priority ASC, j.job_id ASC),'|') as jobs
         FROM {tripal_jobs} j
-        WHERE j.pid IS NULL AND j.end_time IS NULL"
+        WHERE j.status = 'Waiting'"
       )->fetchObject();
     }
     else {
@@ -65,7 +65,7 @@ class TripalDaemon extends DrushDaemon {
         "SELECT
           count(*) as count,
           array_to_string(array_agg(j.job_id),'|') as jobs
-        FROM (SELECT * FROM {tripal_jobs} WHERE pid IS NULL AND end_time IS NULL ORDER BY priority ASC, job_id ASC) as j"
+        FROM (SELECT * FROM {tripal_jobs} WHERE j.status = 'Waiting' ORDER BY priority ASC, job_id ASC) as j"
       )->fetchObject();
     }
 
