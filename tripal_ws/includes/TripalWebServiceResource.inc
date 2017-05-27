@@ -42,10 +42,17 @@ class TripalWebServiceResource {
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
     // web services should use these.
-    $this->addContextItem('rdfs', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-    $this->addContextItem('hydra', 'http://www.w3.org/ns/hydra/core#');
-    $this->addContextItem('dc', 'http://purl.org/dc/dcmitype/');
-    $this->addContextItem('schema', 'https://schema.org/');
+    $vocab = tripal_get_vocabulary_details('rdfs');
+    $this->addContextItem('rdfs', $vocab['url']);
+
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $this->addContextItem('hydra', $vocab['url']);
+
+    $vocab = tripal_get_vocabulary_details('dc');
+    $this->addContextItem('dc', $vocab['url']);
+
+    $vocab = tripal_get_vocabulary_details('schema');
+    $this->addContextItem('schema', $vocab['url']);
 
     $this->data['@id'] = $service_path;
     $this->data['@type'] = '';
@@ -226,6 +233,19 @@ class TripalWebServiceResource {
    */
   public function getContext() {
       return $this->context;
+  }
+
+  /**
+   * Copies the context from a given TripalWebService resource to this
+   * resource.
+   *
+   * @param $resource
+   */
+  public function setContext($resource) {
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception("The \$resource argument must be an instance of a TripalWebServiceResource.");
+    }
+    $this->context = $resource->getContext();
   }
 
 }

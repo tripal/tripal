@@ -121,17 +121,6 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
-//   $items['admin/tripal/loaders/obo_loader'] = array(
-//     'title' => 'OBO Controlled Vocabulary Loader',
-//     'description' => t("Import vocabularies and terms in OBO format."),
-//     'access arguments' => array('administer tripal'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_vocabulary_import_form'),
-//     'file' => 'includes/tripal.admin.inc',
-//     'file path' => drupal_get_path('module', 'tripal'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
-
   $items['admin/tripal/extension'] = array(
     'title' => 'Extensions',
     'description' => t("Configuration and management pages for Tripal extension modules."),
@@ -286,9 +275,20 @@ function tripal_menu() {
 //     'type' => MENU_NORMAL_ITEM,
 //   );
 
-  $items['cv/lookup/%/%'] = array(
+  $items['cv/lookup/%'] = array(
     'title' => 'Vocabulary Lookup',
-    'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
+    'description' => t("Provides a tool to discover controlled vocabularies"),
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_page',
+    'page arguments' => array(2),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['cv/lookup/%/%'] = array(
+    'title' => 'Vocabulary Term Lookup',
+    'description' => t("Provides a tool to discover controlled vocabularies terms used by this site."),
     'access arguments' => array('access content'),
     'page callback' => 'tripal_vocabulary_lookup_term_page',
     'page arguments' => array(2, 3),

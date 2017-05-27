@@ -250,7 +250,8 @@ class TripalWebService {
    *   The error message to report.
    */
   public function setError($message) {
-    $this->resource = new TripalWebServiceResource();
+    $this->resource = new TripalWebServiceResource($this->base_path);
+    $this->resource->setID('error');
     $this->resource->addContextItem('error', 'rdfs:error');
     $this->resource->addProperty('error', $message);
   }

@@ -43,7 +43,6 @@ function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
 
 }
-
 /**
  * Retrieves a list of TripalField types.
  *

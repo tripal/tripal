@@ -26,6 +26,11 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    */
   protected $itemsPerPage;
 
+  /**
+   * The current page of the pager.
+   */
+  protected $page;
+
 
   /**
    * Implements the constructor.
@@ -36,9 +41,12 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
   public function __construct($service_path) {
     parent::__construct($service_path);
     $this->members = array();
-    $this->addContextItem('Collection', "hydra:Collection");
-    $this->addContextItem('totalItems', "hydra:totalItems");
-    $this->addContextItem('member', "member");
+    $term = tripal_get_term_details('hydra', 'Collection');
+    $this->addContextItem('Collection', $term['url']);
+    $term = tripal_get_term_details('hydra', 'totalItems');
+    $this->addContextItem('totalItems', $term['url']);
+    $term = tripal_get_term_details('hydra', 'member');
+    $this->addContextItem('member', $term['url']);
     parent::setType('Collection');
 
     // If the totalItems is set to -1 then this means paging is turned off and
@@ -58,10 +66,11 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    * @param $path
    *   The path
    */
-  public function initPager($totalItems, $itemsPerPage, $path) {
+  public function initPager($totalItems, $itemsPerPage, $page) {
     $this->doPaging = TRUE;
     $this->totalItems = $totalItems;
     $this->itemsPerPage = $itemsPerPage;
+    $this->page = $page;
   }
 
   /**
@@ -104,7 +113,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
 
       $data['totalItems'] = $this->totalItems;
       $total_pages = ceil($this->totalItems / $this->itemsPerPage);
-      $page = array_key_exists('page', $this->params) ? $this->params['page'] : 1;
+      $page = $this->page;
       $limit = $this->itemsPerPage;
 
       if ($this->totalItems > 0) {
@@ -123,10 +132,9 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
           $data['view']['next'] = $this->service_path . '?' . implode('&', array("page=$next", "limit=$limit"));
         }
       }
-
     }
     else {
-      $data['totalItems'] = count($member_data);
+      $data['totalItems'] = count($this->members);
     }
 
     $member_data = array();
