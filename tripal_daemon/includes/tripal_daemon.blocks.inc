@@ -10,8 +10,12 @@
 function tripal_daemon_block_info() {
   $blocks = array();
 
-  $blocks['tripal_daemon_status'] = array(
+  $blocks['trpdaemon_status'] = array(
     'info' => t('Tripal Daemon Status'),
+  );
+
+  $blocks['trpdaemon_status_admin'] = array(
+    'info' => t('Tripal Daemon Status: ADMIN'),
   );
   
   return $blocks;
@@ -24,9 +28,11 @@ function tripal_daemon_block_view($delta='') {
   $block = array();
 
   switch($delta) {
-    case 'tripal_daemon_status':
-      $is_running = drushd_is_daemon_running('tripal_daemon');
-      $status_class = ($is_running) ? 'active' : 'inactive';
+    case 'trpdaemon_status_admin':
+      $block['subject'] = t('Job Daemon Status');
+      $block['content'] = theme_tripal_daemon_status_block_content(TRUE);
+      break;
+    case 'trpdaemon_status':
       $block['subject'] = t('Job Daemon Status');
       $block['content'] = theme_tripal_daemon_status_block_content();
       break;
@@ -36,9 +42,14 @@ function tripal_daemon_block_view($delta='') {
 }
 
 /** 
+ * Provide markup for the Tripal Job Daemon Status block.
  *
+ * @param $show_all
+ *   A boolean indicating whether to show administrative detail (TRUE) or not (FALSE).
+ * @return
+ *   HTML to be rendered for the block.
  */
-function theme_tripal_daemon_status_block_content() {
+function theme_tripal_daemon_status_block_content($show_all = FALSE) {
   $output = '';
 
   // Get information.
@@ -51,6 +62,7 @@ function theme_tripal_daemon_status_block_content() {
   // Theme content.
   drupal_add_css(drupal_get_path('module','tripal_daemon') . '/theme/status_block.css');
 
+  // Display the status.
   $output .= '<div class="daemon-status">';
   if ($is_running) {
     $output .= theme_image(array(
@@ -68,15 +80,18 @@ function theme_tripal_daemon_status_block_content() {
   }
   $output .= '</div>';
 
-  $output .= '<ul>';
-  foreach ($status as $k => $v) {
-    if (is_bool($v)) {
-      $v = ($v) ? 'True' : 'False';
-    }
+  // If asked, show all the details.
+  if ($show_all) {
+    $output .= '<ul>';
+    foreach ($status as $k => $v) {
+      if (is_bool($v)) {
+        $v = ($v) ? 'True' : 'False';
+      }
 
-    $output .= '<li><strong>' . $k . '</strong>: ' . $v . '</li>';
+      $output .= '<li><strong>' . $k . '</strong>: ' . $v . '</li>';
+    }
+    $output .= '</ul>';
   }
-  $output .= '</ul>';
 
   return '<div class="inner '.$status_class.'">' . $output . '</div>';
 }
