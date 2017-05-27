@@ -54,6 +54,9 @@ class TripalWebServiceResource {
     $vocab = tripal_get_vocabulary_details('schema');
     $this->addContextItem('schema', $vocab['url']);
 
+    $vocab = tripal_get_vocabulary_details('local');
+    $this->addContextItem('local', $vocab['url']);
+
     $this->data['@id'] = $service_path;
     $this->data['@type'] = '';
   }
