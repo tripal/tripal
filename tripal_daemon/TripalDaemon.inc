@@ -78,12 +78,6 @@ class TripalDaemon extends DrushDaemon {
         foreach ($job_ids as $id) {
           $this->log('Starting Job (ID=' . $id . ')', '', 1);
 
-          // We would like to log the output from the job.
-          // However, most tripal jobs simply print to the screen :-(
-          // Thus we have to use output buffering to capture the output.
-          // Start Buffering.
-          ob_start();
-
           // Tell admins we are running a job.
           $this->tripal_jobs[$id] = $id;
           $this->setStatus();
@@ -102,11 +96,6 @@ class TripalDaemon extends DrushDaemon {
           unset($this->tripal_jobs[$id]);
           $this->setStatus();
 
-          // Save the buffer to the log and stop buffering.
-          $this->log(str_repeat('=', 80));
-          $this->log(ob_get_clean());
-          $this->log(str_repeat('=', 80));
-
           // Report job details.
           $job = db_query(
             "SELECT j.*
@@ -114,7 +103,7 @@ class TripalDaemon extends DrushDaemon {
             WHERE j.job_id = :jid",
             array(':jid' => $id)
           )->fetchObject();
-          $this->log("Job completed at "
+          $this->log("Job (ID=" . $id . ") completed at "
           . date('d M Y H:i:s', $job->end_time) . " with a status of '"
           . $job->status . "'", "", 1);
         }
