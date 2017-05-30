@@ -47,9 +47,8 @@ class local__source_data_widget extends ChadoFieldWidget {
     );
     $widget['source_data'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Source Data',
-      '#description' => t('The following fields help viewers identify the source
-          where data was obtained for this analysis.'),
+      '#title' => $this->instance['label'],
+      '#description' => $this->instance['description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
     );
@@ -58,6 +57,7 @@ class local__source_data_widget extends ChadoFieldWidget {
       '#title' => 'Data Source Name',
       '#description' => 'The name of the source where data was obtained for this analysis.',
       '#default_value' => $sourcename,
+      '#required' => TRUE,
     );
     $widget['source_data']['chado-analysis__sourceversion'] = array(
       '#type' => 'textfield',

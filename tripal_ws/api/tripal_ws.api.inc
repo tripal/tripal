@@ -47,3 +47,59 @@ function hook_tripal_ws_value(&$items, $field, $instance) {
     }
   }
 }
+
+/**
+ * Retrieves a list of TripalWebService implementations.
+ *
+ * The TripalWebService classes can be added by a site developer that wishes
+ * to create a new Tripal compatible web serivce.  The class file should
+ * be placed in the [module]/includes/TripalWebService directory.  Tripal will
+ * support any service as long as it is in this directory and extends the
+ * TripalWebService class.
+ *
+ * @return
+ *   A list of TripalWebService names.
+ */
+function tripal_get_web_services() {
+  $services = array();
+
+  $modules = module_list(TRUE);
+  foreach ($modules as $module) {
+    // Find all of the files in the tripal_chado/includes/fields directory.
+    $service_path = drupal_get_path('module', $module) . '/includes/TripalWebService';
+    $service_files = file_scan_directory($service_path, '/.inc$/');
+    // Iterate through the fields, include the file and run the info function.
+    foreach ($service_files as $file) {
+      $class = $file->name;
+      module_load_include('inc', $module, 'includes/TripalWebService/' . $class);
+      if (class_exists($class) and is_subclass_of($class, 'TripalWebService')) {
+        $services[] = $class;
+      }
+    }
+  }
+  return $services;
+}
+
+/**
+ * Loads the TripalWebService class file into scope.
+ *
+ * @param $class
+ *   The TripalWebService class to include.
+ *
+ * @return
+ *   TRUE if the field type class file was found, FALSE otherwise.
+ */
+function tripal_load_include_web_service_class($class) {
+
+  $modules = module_list(TRUE);
+  foreach ($modules as $module) {
+    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalWebService/' . $class . '.inc';
+    if (file_exists($file_path)) {
+      module_load_include('inc', $module, 'includes/TripalWebService/' . $class);
+      if (class_exists($class)) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
