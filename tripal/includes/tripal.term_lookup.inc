@@ -25,6 +25,61 @@ function tripal_vocabulary_lookup_form_submit($form, $form_state) {
 
 }
 
+function tripal_vocabulary_lookup_page($vocabulary) {
+
+  $vocab = tripal_get_vocabulary_details($vocabulary);
+
+  // If we can't find the term then just return a message.
+  if (!$vocab) {
+    drupal_set_message('The vocabulary cannot be found on this site', 'error');
+    return '';
+  }
+
+  $headers = array();
+  $rows = array();
+  $vocab_name = $vocab['name'];
+  if ($vocab['url']) {
+    $vocab_name = l($vocab['name'], $vocab['url'], array('attributes' => array('target' => '_blank')));
+  }
+  $short_name = $vocab['short_name'];
+  $vocab_desc = $vocab['description'];
+  $rows[] = array(
+    array(
+      'data' => 'Name',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $vocab_name,
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Short Name',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $short_name,
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Description',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $vocab_desc,
+  );
+
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'sticky' => FALSE,
+    'caption' => 'Vocabulary details',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  $content =  theme_table($table);
+  return $content;
+}
 /**
  *
  * @param $vocabulary

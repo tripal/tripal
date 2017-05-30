@@ -312,7 +312,6 @@ function tripal_create_bundle($args, &$error = '') {
         ->execute();
     }
 
-    // Allow modules to make additions to the entity when it's created.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
@@ -330,49 +329,7 @@ function tripal_create_bundle($args, &$error = '') {
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-    // Allow modules to add fields to the new bundle.
-    $modules = module_implements('bundle_fields_info');
-    foreach ($modules as $module) {
-      $function = $module . '_bundle_fields_info';
-      $info = $function('TripalEntity', $bundle);
-      foreach ($info as $field_name => $details) {
-        $field_type = $details['type'];
-
-        // TODO: make sure the field term exits. If not then
-        // skip it.
-
-        // If the field already exists then skip it.
-        $field = field_info_field($details['field_name']);
-        if ($field) {
-          continue;
-        }
-
-        // Create the field.
-        $field = field_create_field($details);
-        if (!$field) {
-          tripal_set_message(t("Could not create new field: %field.",
-              array('%field' =>  $details['field_name'])), TRIPAL_ERROR);
-        }
-      }
-    }
-
-    // Allow modules to add instances to the new bundle.
-    $modules = module_implements('bundle_instances_info');
-    foreach ($modules as $module) {
-      $function = $module . '_bundle_instances_info';
-      $info = $function('TripalEntity', $bundle);
-      foreach ($info as $field_name => $details) {
-        // If the field is already attached to this bundle then skip it.
-        $field = field_info_field($details['field_name']);
-        if ($field and array_key_exists('bundles', $field) and
-            array_key_exists('TripalEntity', $field['bundles']) and
-            in_array($bundle->name, $field['bundles']['TripalEntity'])) {
-          continue;
-        }
-        // Create the field instance.
-        $instance = field_create_instance($details);
-      }
-    }
+    tripal_create_bundle_fields($bundle, $term);
 
     $modules = module_implements('bundle_postcreate');
     foreach ($modules as $module) {
@@ -547,64 +504,75 @@ function tripal_get_content_type($bundle_name) {
  *
  * @param $bundle_name
  *   The name of the bundle to refresh (e.g. bio_data_4).
+ *
+ * @return
+ *   The array of field instance names that were added.
  */
-function tripal_refresh_bundle_fields($bundle_name) {
+function tripal_create_bundle_fields($bundle, $term) {
 
-  $num_created = 0;
-
-  // Get the bundle object.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  if (!$bundle) {
-    tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
-        array('%bundle' => $bundle_name));
-    return FALSE;
-  }
+  $added = array();
 
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
+  $info = array();
   foreach ($modules as $module) {
     $function = $module . '_bundle_fields_info';
-    $info = $function('TripalEntity', $bundle);
-    foreach ($info as $field_name => $details) {
-      $field_type = $details['type'];
+    $temp = $function('TripalEntity', $bundle);
+    $info = array_merge($info, $temp);
+  }
 
-      // If the field already exists then skip it.
-      $field = field_info_field($details['field_name']);
-      if ($field) {
-        continue;
-      }
+  // Allow modules to alter which fields should be attached to content
+  // types they create.
+  drupal_alter('bundle_fields_info', $info, $bundle, $term);
 
-      // Create the field.
-      $field = field_create_field($details);
-      if (!$field) {
-        tripal_set_message(t("Could not create new field: %field.",
-            array('%field' =>  $details['field_name'])), TRIPAL_ERROR);
-      }
+  // Iterate through all of the fields and create them.
+  foreach ($info as $field_name => $details) {
+    $field_type = $details['type'];
+
+    // TODO: make sure the field term exits. If not then
+    // skip it.
+
+    // If the field already exists then skip it.
+    $field = field_info_field($details['field_name']);
+    if ($field) {
+      continue;
+    }
+
+    // Create the field.
+    $field = field_create_field($details);
+    if (!$field) {
+      tripal_set_message(t("Could not create new field: %field.",
+          array('%field' =>  $details['field_name'])), TRIPAL_ERROR);
     }
   }
 
   // Allow modules to add instances to the new bundle.
   $modules = module_implements('bundle_instances_info');
+  $info = array();
   foreach ($modules as $module) {
     $function = $module . '_bundle_instances_info';
-    $info = $function('TripalEntity', $bundle);
-    foreach ($info as $field_name => $details) {
-      // If the field is already attached to this bundle then skip it.
-      $field = field_info_field($details['field_name']);
-      if ($field and array_key_exists('bundles', $field) and
-          array_key_exists('TripalEntity', $field['bundles']) and
-          in_array($bundle->name, $field['bundles']['TripalEntity'])) {
-        continue;
-      }
-      // Create the field instance.
-      $instance = field_create_instance($details);
-      $num_created++;
-      drupal_set_message(t("Created field: %field", array('%field' => $info[$field_name]['label'])));
+    $temp = $function('TripalEntity', $bundle);
+    $info = array_merge($info, $temp);
+  }
+
+  // Allow modules to alter which fields should be attached to content
+  // types they create.
+  drupal_alter('bundle_instances_info', $info, $bundle, $term);
+
+  // Iterate through all of the field instances and create them.
+  foreach ($info as $field_name => $details) {
+    // If the field is already attached to this bundle then skip it.
+    $field = field_info_field($details['field_name']);
+    if ($field and array_key_exists('bundles', $field) and
+        array_key_exists('TripalEntity', $field['bundles']) and
+        in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+      continue;
     }
+    // Create the field instance.
+    $instance = field_create_instance($details);
+    $added[] = $field_name;
   }
-  if ($num_created == 0) {
-    drupal_set_message(t("No new fields were added."));
-  }
+  return $added;
 }
 
 /**

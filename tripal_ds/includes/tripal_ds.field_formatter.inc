@@ -53,7 +53,7 @@ function tripal_ds_field_group_format_settings($group) {
 
   return $form;
 }
-/*
+/**
  * Implements field_group_pre_render_<format-type>.
  * Format type: Tripalpane.
  *
@@ -82,4 +82,35 @@ function tripal_ds_field_group_pre_render(&$element, $group, &$form) {
       $element['#suffix'] = '</div>';
       break;
   }
+}
+
+/**
+ * Updated the weight of field groups to reflect their order in the layout array.
+ *
+ * @param $field_name
+ * @param $bundle
+ * @param $weight
+ */
+function tripal_ds_field_group_update_weight($field_name, $bundle, $weight) {
+  // Pull the group data from field_group table.
+  $result = db_select('field_group', 'fg')
+    ->fields('fg')
+    ->condition('bundle', $bundle,'=')
+    ->condition('group_name', $field_name,'=')
+    ->execute()
+    ->fetchAssoc();
+  // If result found update the weight.
+  if(!empty($result)){
+    $data = unserialize($result['data']);
+    $data['weight'] = $weight;
+    $data = serialize($data);
+  }
+  // Write the new weight to the field_group entry.
+  db_update('field_group')
+    ->fields(array(
+      'data' => $data
+    ))
+    ->condition('bundle', $bundle,'=')
+    ->condition('group_name', $field_name,'=')
+    ->execute();
 }

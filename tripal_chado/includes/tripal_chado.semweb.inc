@@ -19,9 +19,11 @@ function tripal_chado_populate_chado_semweb_table() {
   // inserted.
 
   // Now set defaults!
+  tripal_chado_populate_vocab_DC();
   tripal_chado_populate_vocab_EDAM();
   tripal_chado_populate_vocab_ERO();
   tripal_chado_populate_vocab_FOAF();
+  tripal_chado_populate_vocab_HYDRA();
   tripal_chado_populate_vocab_IAO();
   tripal_chado_populate_vocab_LOCAL();
   tripal_chado_populate_vocab_NCBITAXON();
@@ -31,6 +33,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_SBO();
   tripal_chado_populate_vocab_SCHEMA();
   tripal_chado_populate_vocab_SIO();
+  tripal_chado_populate_vocab_SO();
   tripal_chado_populate_vocab_SWO();
   tripal_chado_populate_vocab_TAXRANK();
   tripal_chado_populate_vocab_TCONTACT();
@@ -55,7 +58,59 @@ function tripal_chado_populate_vocab_FOAF() {
     'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).'
   );
 }
+/**
+ * Adds the Hydra vocabulary
+ */
+function tripal_chado_populate_vocab_HYDRA() {
 
+  tripal_insert_db(array(
+    'name' => 'hydra',
+    'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
+    'url' => 'https://www.hydra-cg.com/spec/latest/core/',
+    'urlprefix' => 'https://www.hydra-cg.com/spec/latest/core/#{db}:{accession}',
+  ));
+  tripal_insert_cv(
+    'hydra',
+    'A Vocabulary for Hypermedia-Driven Web APIs.'
+  );
+
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:Collection',
+    'name' => 'Collection',
+    'cv_name' => 'hydra',
+    'definition' => 'A collection holding references to a number of related resources.',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:member',
+    'name' => 'member',
+    'cv_name' => 'hydra',
+    'definition' => 'A member of the collection',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:description',
+    'name' => 'description',
+    'cv_name' => 'hydra',
+    'definition' => 'A description.',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:totalItems',
+    'name' => 'totalItems',
+    'cv_name' => 'hydra',
+    'definition' => 'The total number of items referenced by a collection.',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:title',
+    'name' => 'title',
+    'cv_name' => 'hydra',
+    'definition' => 'A title, often used along with a description.',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'hydra:PartialCollectionView',
+    'name' => 'PartialCollectionView',
+    'cv_name' => 'hydra',
+    'definition' => 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.',
+  ));
+}
 /**
  * Adds the RDFS database and terms.
  */
@@ -64,7 +119,7 @@ function tripal_chado_populate_vocab_RDFS() {
     'name' => 'rdfs',
     'description' => 'Resource Description Framework Schema',
     'url' => 'https://www.w3.org/TR/rdf-schema/',
-    'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_',
+    'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_{accession}',
   ));
   tripal_insert_cv(
     'rdfs',
@@ -98,7 +153,6 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'schema',
     'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'
   );
-
 
   $term = tripal_insert_cvterm(array(
     'id' => 'schema:name',
@@ -172,6 +226,13 @@ function tripal_chado_populate_vocab_SCHEMA() {
       tripal_associate_chado_semweb_term($table, 'type_id', $term);
     }
   }
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:ItemPage',
+    'name' => 'ItemPage',
+    'cv_name' => 'schema',
+    'definition' => 'A page devoted to a single item, such as a particular product or hotel.',
+  ));
 }
 
 /**
@@ -216,6 +277,41 @@ function tripal_chado_populate_vocab_SIO() {
     'definition' => 'A vocabulary is a collection of terms.',
   ));
   tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
+}
+
+/**
+ * Adds the details for the SO vocab and db.
+ */
+function tripal_chado_populate_vocab_SO() {
+  tripal_insert_db(array(
+    'name' => 'SO',
+    'description' => 'The sequence ontology.',
+    'url' => 'http://www.sequenceontology.org/',
+    'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
+  ));
+  tripal_insert_cv('sequence', 'The sequence ontology.');
+}
+
+/**
+ * Adds the DC database.
+ */
+function tripal_chado_populate_vocab_DC() {
+  tripal_insert_db(array(
+    'name' => 'dc',
+    'description' => 'DCMI Metadata Terms.',
+    'url' => 'http://purl.org/dc/dcmitype/',
+    'urlprefix' => 'http://purl.org/dc/terms/{accession}',
+  ));
+  tripal_insert_cv(
+    'dc',
+    'DCMI Metadata Terms.'
+  );
+  $term = tripal_insert_cvterm(array(
+    'id' => 'dc:Service',
+    'name' => 'Service',
+    'cv_name' => 'dc',
+    'definition' => 'A system that provides one or more functions.',
+  ));
 }
 /**
  * Adds the EDAM database and terms.
@@ -518,16 +614,19 @@ function tripal_chado_populate_vocab_IAO() {
  * ontology.
  */
 function tripal_chado_populate_vocab_LOCAL() {
+  global $base_path;
 
   tripal_insert_db(array(
     'name' => 'null',
-    'description' => 'No online database.'
+    'description' => 'No online database.',
+    'url' => $base_path . 'cv/lookup/null',
+    'urlprefix' => $base_path. 'cv/lookup/{db}/{accession}',
   ));
   tripal_insert_db(array(
     'name' => 'local',
     'description' => 'Terms created for this site.',
-    'url' => '/cv/lookup',
-    'urlprefix' => '/cv/lookup/{db}/{accession}',
+    'url' => $base_path . 'cv/lookup/local',
+    'urlprefix' => $base_path . 'cv/lookup/{db}/{accession}',
   ));
 
 
@@ -786,7 +885,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   // TODO: these probably have real terms we can use.
 
   $term = tripal_insert_cvterm(array(
-    'id' => 'locak:rank',
+    'id' => 'local:rank',
     'name' => 'rank',
     'definition' => 'A taxonmic rank',
     'cv_name' => 'local',
@@ -1345,7 +1444,7 @@ function tripal_chado_populate_vocab_UO() {
     'url' => 'http://purl.obolibrary.org/obo/uo',
     'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
   ));
-  tripal_insert_cv('uo','Units of Measurement Ontology');
+  tripal_insert_cv('uo', 'Units of Measurement Ontology');
 
   $term = tripal_insert_cvterm(array(
     'id' => 'UO:0000000',
@@ -1360,6 +1459,14 @@ function tripal_chado_populate_vocab_UO() {
  * Adds the Taxonomic Rank Ontology database and terms.
  */
 function tripal_chado_populate_vocab_TAXRANK() {
+
+  tripal_insert_db(array(
+    'name' => 'TAXRANK',
+    'description' => 'A vocabulary of taxonomic ranks (species, family, phylum, etc)',
+    'url' => 'http://www.obofoundry.org/ontology/taxrank.html',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
 
   $term = tripal_get_cvterm(array('id' => 'TAXRANK:0000005'));
   tripal_associate_chado_semweb_term('organism', 'genus', $term);

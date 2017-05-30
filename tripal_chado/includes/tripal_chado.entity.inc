@@ -15,12 +15,14 @@ function tripal_chado_entity_create(&$entity, $type) {
     if (!property_exists($entity, 'chado_table')) {
       $entity->chado_table =  NULL;
       $entity->chado_column = NULL;
+      $entity->chado_linker = NULL;
 
       // Add in the Chado table information for this entity type.
       $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
       if ($bundle->data_table) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
+        $entity->chado_linker = $bundle->type_linker_table;
       }
     }
     if (!property_exists($entity, 'chado_record')) {

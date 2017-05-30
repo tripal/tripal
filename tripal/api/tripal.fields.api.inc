@@ -30,6 +30,19 @@
 function hook_field_storage_tquery($conditions, $orderBy) {
   // See the tripal_chado_field_storage_tquery() function for an example.
 }
+
+function hook_bundle_fields_info($entity_type, $bundle) {
+
+}
+function hook_bundle_instances_info($entity_type, $bundle) {
+
+}
+function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
+
+}
+function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
+
+}
 /**
  * Retrieves a list of TripalField types.
  *

@@ -61,6 +61,7 @@ div.messages.tripal-site-admin-only{
 .tripal-dl {
   width: 100%;
   overflow: hidden;
+  margin: 0px;
 }
 .tripal-dl dt {
   float: left;

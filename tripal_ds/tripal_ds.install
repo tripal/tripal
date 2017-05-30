@@ -38,8 +38,31 @@ function tripal_ds_schema() {
         'not null' => TRUE,
         'default' => ''
       ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
     ),
     'primary key' => array('id'),
   );
   return $schema;
+}
+
+/**
+ * Add a weight column to the tripal_ds table.
+ */
+function tripal_ds_update_7300() {
+  try {
+    db_add_field('tripal_ds', 'weight', array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 1,
+    ));
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
 }

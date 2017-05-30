@@ -1,5 +1,10 @@
 <?php
 
+require_once  "api/tripal_ws.api.inc";
+require_once  "includes/TripalWebService.inc";
+require_once  "includes/TripalWebServiceResource.inc";
+require_once  "includes/TripalWebServiceCollection.inc";
+
 
 /**
  * Implements hook_init()
@@ -32,6 +37,13 @@ function tripal_ws_menu() {
   $items['ws'] = array(
     'title' => 'Tripal Web Services API',
     'page callback' => 'tripal_ws_services',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  // Web Services API callbacks.
+  $items['web-services'] = array(
+    'title' => 'Tripal Web Services API',
+    'page callback' => 'tripal_ws_get_services',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
@@ -91,6 +103,126 @@ function tripal_ws_menu() {
   return $items;
 }
 
+/**
+ * The callback function for all RESTful web services.
+ *
+ */
+function tripal_ws_get_services() {
+  global $base_url;
+  $service_path = $base_url . '/web-services';
+
+  drupal_add_http_header('Content-Type', 'application/json');
+
+  try {
+    $ws_path = func_get_args();
+    $args = $_GET;
+    unset($args['q']);
+
+    // The web services should never be cached.
+    drupal_page_is_cacheable(FALSE);
+
+    // The Tripal web services bath will be:
+    // [base_path]/web-services/[service name]/v[major_version].[minor_version]
+    $matches = array();
+    $service = '';
+    $major_version = '';
+    $minor_version = '';
+    $list_services = FALSE;
+
+    // If there is no path then we should list all of the services available.
+    if (empty($ws_path)) {
+      tripal_ws_list_services();
+      return;
+    }
+    // A service path will have the service name in $ws_path[0] and the
+    // version in $ws_path[1].  If we check that the version is correctly
+    // formatted then we can look for the service class and invoke it.
+    else if (preg_match("/^v(\d+)\.(\d+)$/", $ws_path[1], $matches)) {
+      $service_type = $ws_path[0];
+      $major_version = $matches[1];
+      $minor_version = $matches[2];
+      $service_version = 'v' . $major_version . '.' . $minor_version;
+    }
+    // If the URL doesn't match then return not found.
+    else {
+      throw new Exception("Unsupported service URL.  Web service URLs must be of the following format:  ");
+    }
+
+    // Get the service that matches the service_name
+    $service = NULL;
+    $services = tripal_get_web_services();
+    foreach ($services as $service_class) {
+      tripal_load_include_web_service_class($service_class);
+      if ($service_class::$type == $service_type) {
+        $service = new $service_class($service_path);
+        if ($service->getVersion() == $service_version) {
+          break;
+        }
+        $service = NULL;
+      }
+    }
+    // If a service was not provided then return an error.
+    if (!$service) {
+      throw new Exception('The service type, "' . $service_type . '", is not available');
+    }
+
+    // Adjust the path to remove the service type and the version.
+    $adj_path = $ws_path;
+    array_shift($adj_path);
+    array_shift($adj_path);
+
+    // Now call the service to handle the request.
+    $service->setPath($adj_path);
+    $service->setParams($args);
+    $service->handleRequest();
+    $response = $service->getResponse();
+    print drupal_json_encode($response);
+
+  }
+  catch (Exception $e) {
+    $service = new TripalWebService($service_path);
+    $service->setError($e->getMessage());
+    $response = $service->getResponse();
+    print drupal_json_encode($response);
+  }
+}
+
+/**
+ * Generates the list of services as the "home page" for Tripal web services.
+ */
+function tripal_ws_list_services() {
+  global $base_url;
+  $base_path = $base_url . '/web-services';
+
+  // Create an instance of the TriaplWebService class and use it to build
+  // the entry point for the web serivces.
+  $service = new TripalWebService($base_path);
+
+  // Get the list of web service classes.
+  $services = tripal_get_web_services();
+
+  // Create the parent resource which is a collection.
+  $resource = new TripalWebServiceResource($base_path);
+  $resource->addContextItem('entrypoint', 'hydra:entrypoint');
+  $resource->setType('entrypoint');
+
+  // Now add the member to the collection
+  foreach ($services as $service_class) {
+    tripal_load_include_web_service_class($service_class);
+    $service = new $service_class($base_path);
+    $version = $service->getVersion();
+    $resource->addContextItem($service_class::$type, '');
+    $resource->addProperty($service_class::$type, $service->getServicePath());
+  }
+
+  // For discoverability add the document webservice.
+  $service->setResource($resource);
+  $response = $service->getResponse();
+  print drupal_json_encode($response);
+
+
+
+}
 /**
  * The callback function for all RESTful web services.
  *
@@ -173,7 +305,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
   drupal_set_title($response['label']);
 
   // Attribute this data to the proper source.
-  $source_url = l($response['label'], $response['itemPage'], array('attributes' => array('target' => '_blank')));
+  $source_url = l($response['label'], $response['ItemPage'], array('attributes' => array('target' => '_blank')));
   $content = '<div><strong>Source:</strong> ' . $site->name . ': ' . $source_url . '</div>';
 
   // Fake an entity so we can display this content using the same

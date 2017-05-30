@@ -47,7 +47,7 @@ function _summary_field_group_info($bundle_name, $fields){
   $field_group->parent_name = 'group_summary_tripalpane';
   $field_group->data = array(
     'label' => 'Summary Table',
-    'weight' => '30',
+    'weight' => '1',
     'children' => $fields,
     'format_type' => 'table',
     'format_settings' => array(
@@ -85,7 +85,7 @@ function _prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
     'label' => 'Properties',
-    'weight' => '2',
+    'weight' => '1',
     'children' => array(
         0 => 'group_prop_table',
     ),
@@ -116,7 +116,7 @@ function _prop_field_group_info($bundle_name, $fields){
   $field_group->parent_name = 'group_prop_tripalpane';
   $field_group->data = array(
     'label' => 'Properties Table',
-    'weight' => '30',
+    'weight' => '1',
     'children' => $fields,
     'format_type' => 'table',
     'format_settings' => array(
@@ -153,7 +153,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
     'label' => 'Data Sequences',
-    'weight' => '2',
+    'weight' => '1',
     'children' => array(
         0 => 'group_sequence_table',
     ),
@@ -184,7 +184,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group->parent_name = 'group_sequence_tripalpane';
   $field_group->data = array(
     'label' => 'Data Sequences Table',
-    'weight' => '30',
+    'weight' => '1',
     'children' => $fields,
     'format_type' => 'table',
     'format_settings' => array(
@@ -224,7 +224,7 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
   $field_group_fieldset->parent_name = '';
   $field_group_fieldset->data = array(
     'label' => $field_label,
-    'weight' => '5',
+    'weight' => '1',
     'children' => array(
       0 => $field_name,
     ),
@@ -258,7 +258,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
     'label' => 'Properties',
-    'weight' => '2',
+    'weight' => '1',
     'children' => array(
       0 => 'group_prop',
     ),
@@ -289,7 +289,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group->parent_name = 'group_prop_tripalpane';
   $field_group->data = array(
     'label' => 'Properties Table',
-    'weight' => '30',
+    'weight' => '1',
     'children' =>  array(
       0 => 'tpub__doi',
       1 => 'tpub__publication_date',
