@@ -692,6 +692,7 @@ function tripal_block_info() {
  */
 function tripal_block_view($delta = ''){
   global $base_path;
+  $block = array();
 
   // The $delta parameter tells us which block is being requested.
   switch ($delta) {

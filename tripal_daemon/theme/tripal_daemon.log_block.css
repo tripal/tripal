@@ -1,0 +1,12 @@
+/**
+ * Themeing for the Tripal Daemon Log Block.
+ */
+
+#trpdaemon-display-log-form {
+  padding: 15px;
+}
+
+#trpdaemon-display-log-form .form-radios .form-item {
+  padding-right: 5px;
+}
+
