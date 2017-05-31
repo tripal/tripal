@@ -11,6 +11,8 @@ class TripalBundleUIController extends EntityDefaultUIController {
 
   public function __construct($entity_type, $entity_info) {
      parent::__construct($entity_type, $entity_info);
+     // Set the pager limit to something a bit larger
+     $this->overviewPagerLimit = 100;
   }
 
   /**
@@ -57,6 +59,43 @@ class TripalBundleUIController extends EntityDefaultUIController {
     return $forms;
   }
 
+  /**
+   * Override the EntityDefaultUIController::overviewTable because 
+   * it doesn't sort the content types by name
+   */
+  public function overviewTable($conditions = array()) {
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', $this->entityType);
+  
+    // Add all conditions to query.
+    foreach ($conditions as $key => $value) {
+      $query->propertyCondition($key, $value);
+    }
+
+    if ($this->overviewPagerLimit) {
+      $query->pager($this->overviewPagerLimit);
+    }
+
+
+    $query->propertyOrderBy('label', 'ASC');
+    $results = $query->execute();
+
+    $ids = isset($results[$this->entityType]) ? array_keys($results[$this->entityType]) : array();
+    $entities = $ids ? entity_load($this->entityType, $ids) : array();
+
+    $rows = array();
+    foreach ($entities as $entity) {
+      $rows[] = $this->overviewTableRow($conditions, entity_id($this->entityType, $entity), $entity);
+    }
+
+    $render = array(
+      '#theme' => 'table', 
+      '#header' => $this->overviewTableHeaders($conditions, $rows), 
+      '#rows' => $rows, 
+      '#empty' => t('None.'),
+    );
+    return $render;
+  }
 }
 
 /**
