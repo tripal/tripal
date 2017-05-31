@@ -11,6 +11,9 @@ function tripal_ds_init() {
 
   $theme_dir = url(drupal_get_path('module', 'tripal_ds') . '/theme');
   drupal_add_js("var ds_theme_dir  = '$theme_dir';", 'inline', 'header');
+  // Icon fonts.
+  drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/fonts/font-awesome-4.7.0/css/font-awesome.min.css');
+
 
 }
 
