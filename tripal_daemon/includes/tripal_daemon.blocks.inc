@@ -121,10 +121,12 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
 
       // If these are current jobs then we want to link to details.
       if ($k == 'Current Jobs' AND !empty($v)) {
+        $list = array();
         foreach ($v as $job_id) {
           $url = 'admin/tripal/tripal_jobs/view/' . $job_id;
-          $v[$job_id] = l($job_id, $url);
+          $list[$job_id] = l($job_id, $url);
         }
+        $v = $list;
       }
 
       // If it's an array then make it a list.
