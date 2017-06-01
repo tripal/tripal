@@ -996,3 +996,39 @@ function tripal_chado_update_7305() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Add cvterm mapping for the Map entity type
+ */
+function tripal_chado_update_7306() {
+  try {
+    $identifier = array(
+      'cv_id' => array('name' => 'EDAM'),
+      'name' => 'Map'
+    );
+    $cvterm = tripal_get_cvterm($identifier);
+    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Add cvterm mapping for the Publication entity type
+ */
+function tripal_chado_update_7307() {
+  try {
+    $identifier = array(
+      'cv_id' => array('name' => 'tripal_pub'),
+      'name' => 'Publication'
+    );
+    $cvterm = tripal_get_cvterm($identifier);
+    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

@@ -252,6 +252,13 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    // Add cvterm mapping for the Map entity type
+    $identifier = array(
+      'cv_id' => array('name' => 'EDAM'),
+      'name' => 'Map'
+    );
+    $cvterm = tripal_get_cvterm($identifier);
+    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
 
     // Import a publication so we get all of the properties before
     // creating the content type.
@@ -274,6 +281,13 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    // Add cvterm mapping for the Publication entity type
+    $identifier = array(
+      'cv_id' => array('name' => 'tripal_pub'),
+      'name' => 'Publication'
+    );
+    $cvterm = tripal_get_cvterm($identifier);
+    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
 
     // Now remove the publication that was added above.
     $values = array(
