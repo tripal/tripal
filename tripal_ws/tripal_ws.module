@@ -34,13 +34,6 @@ function tripal_ws_init() {
 function tripal_ws_menu() {
 
   // Web Services API callbacks.
-  $items['ws'] = array(
-    'title' => 'Tripal Web Services API',
-    'page callback' => 'tripal_ws_services',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
-  // Web Services API callbacks.
   $items['web-services'] = array(
     'title' => 'Tripal Web Services API',
     'page callback' => 'tripal_ws_get_services',

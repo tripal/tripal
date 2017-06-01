@@ -1318,7 +1318,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
     // Require the field be in the table description.
     if (!array_key_exists($field, $table_desc['fields'])) {
-      dpm(debug_backtrace());
       tripal_report_error('tripal_chado', TRIPAL_ERROR,
         'chado_select_record: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
