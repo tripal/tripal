@@ -257,7 +257,8 @@ function theme_sequence_combo($variables) {
  */
 function tripal_html5_file_process($element, $form_state, $complete_form) {
 
-  $type = $element['#usage_id'] . '-' . $element['#usage_type'];
+  $module = array_key_exists('#usage_module', $element) ? $element['#usage_module'] : 'tripal_core';
+  $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
   $name = $element['#name'];
   $name = preg_replace('/[^\w]/', '_', $name);
 
@@ -337,22 +338,6 @@ function tripal_core_handle_uploaded_file($filename, $filepath, $type) {
 
   global $user;
 
-  // Split the type into a node ID and form_key
-  list($nid, $form_key) = explode('-', $type);
-
-  // See if this file is already managed then add another entry fin the
-  // usage table.
-  $fid = db_select('file_managed', 'fm')
-  ->fields('fm', array('fid'))
-  ->condition('uri', $filepath)
-  ->execute()
-  ->fetchField();
-  if ($fid) {
-    $file = file_load($fid);
-    file_usage_add($file, 'tripal', $form_key, $nid);
-    return $fid;
-  }
-
   // Create a file object.
   $file = new stdClass();
   $file->uri = $filepath;
@@ -361,6 +346,24 @@ function tripal_core_handle_uploaded_file($filename, $filepath, $type) {
   $file->uid = $user->uid;
   $file->status = FILE_STATUS_PERMANENT;
   $file = file_save($file);
+
+  // Split the type into a node ID and form_key
+  list($id, $form_key) = explode('-', $type);
+
+  // See if this file is already managed then add another entry fin the
+  // usage table.
+  $fid = db_select('file_managed', 'fm')
+    ->fields('fm', array('fid'))
+    ->condition('uri', $filepath)
+    ->execute()
+    ->fetchField();
+  if ($fid) {
+    $file = file_load($fid);
+    file_usage_add($file, 'tripal', $form_key, $id);
+    return $fid;
+  }
+
+
 
   return $file->fid;
 }

@@ -297,66 +297,10 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
   }
 
   // first get the relationships for this feature
-  return tripal_feature_load_relationships($feature_id, 'as_object');
+  return _tripal_feature_load_relationships($feature_id, 'as_object');
 
 }
-/**
- * Get the relationships for a feature.
- *
- * @param $feature_id
- *   The feature to get relationships for
- * @param $side
- *   The side of the relationship this feature is (ie: 'as_subject' or 'as_object')
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
-  // Get the relationships for this feature.  The query below is used for both
-  // querying the object and subject relationships
-  $sql = "
-    SELECT
-      FS.name as subject_name, FS.uniquename as subject_uniquename,
-      CVTS.name as subject_type, CVTS.cvterm_id as subject_type_id,
-      FR.subject_id, FR.type_id as relationship_type_id, FR.object_id, FR.rank,
-      CVT.name as rel_type,
-      FO.name as object_name, FO.uniquename as object_uniquename,
-      CVTO.name as object_type, CVTO.cvterm_id as object_type_id
-    FROM {feature_relationship} FR
-     INNER JOIN {cvterm} CVT  ON FR.type_id    = CVT.cvterm_id
-     INNER JOIN {feature} FS  ON FS.feature_id = FR.subject_id
-     INNER JOIN {feature} FO  ON FO.feature_id = FR.object_id
-     INNER JOIN {cvterm} CVTO ON FO.type_id    = CVTO.cvterm_id
-     INNER JOIN {cvterm} CVTS ON FS.type_id    = CVTS.cvterm_id
-  ";
-  if (strcmp($side, 'as_object')==0) {
-    $sql .= " WHERE FR.object_id = :feature_id";
-  }
-  if (strcmp($side, 'as_subject')==0) {
-    $sql .= " WHERE FR.subject_id = :feature_id";
-  }
-  $sql .= " ORDER BY FR.rank";
 
-  // Get the relationships.
-  $results = chado_query($sql, array(':feature_id' => $feature_id));
-
-  // Iterate through the relationships, put these in an array and add
-  // in the Drupal node id if one exists.
-  $i=0;
-  $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
-  $relationships = array();
-  while ($rel = $results->fetchObject()) {
-    $node = db_query($nodesql, array(':feature_id' => $rel->subject_id))->fetchObject();
-    if ($node) {
-      $rel->subject_nid = $node->nid;
-    }
-    $node = db_query($nodesql, array(':feature_id' => $rel->object_id))->fetchObject();
-    if ($node) {
-      $rel->object_nid = $node->nid;
-    }
-    $relationships[$i++] = $rel;
-  }
-  return $relationships;
-}
 
 /**
  * Returns the marked up fasta sequence for the described feature
