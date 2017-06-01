@@ -1,32 +1,18 @@
 <?php
 
 /**
- * Create the admin page for the dashboard.
  *
- */
-function tripal_admin_usage_page() {
-  // set the breadcrumb
-  $breadcrumb = array();
-  $breadcrumb[] = l('Home', '<front>');
-  $breadcrumb[] = l('Administration', 'admin');
-  $breadcrumb[] = l('Tripal', 'admin/tripal');
-  drupal_set_breadcrumb($breadcrumb);
-  tripal_add_d3js();
-  drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
-  drupal_add_library('system', 'drupal.collapse');
-  $output = '<h2>Tripal Administrative Notifications and Info</h2>';
-  return $output;
-}
-
-/**
  * Import the field from the admin notification table on the dashboard.
  *
- * @param $field_name
+ * @param $field_or_instance
  *   The name of the field to be imported.
- *
  *  * @param $bundle_id
  *   The ID of the bundle associated with that field.
+ * @param $field_name_note
+ * @param $module
  *
+ *
+ * @return bool
  */
 function tripal_admin_notification_import_field($field_name_note, $bundle_id, $module, $field_or_instance) {
   // Get the bundle object.
@@ -34,7 +20,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
   if (!$bundle) {
     tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
       array('%bundle' => $bundle_id));
-    drupal_goto("admin/tripal/dashboard");
+    drupal_goto("admin/dashboard");
     return FALSE;
   }
 
@@ -83,7 +69,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
     drupal_set_message(t("There was a problem creating: %field", array('%field' => $info[ $field_name ]['label'])));
   }
 
-  drupal_goto("admin/tripal/dashboard");
+  drupal_goto("admin/dashboard");
 }
 
 /**
@@ -106,5 +92,5 @@ function tripal_disable_admin_notification($note_id) {
   else {
     drupal_set_message("Could not dismiss notification.", 'error');
   }
-  drupal_goto("admin/tripal/dashboard");
+  drupal_goto("admin/dashboard");
 }
