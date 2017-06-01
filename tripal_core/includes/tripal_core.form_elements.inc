@@ -338,17 +338,9 @@ function tripal_core_handle_uploaded_file($filename, $filepath, $type) {
 
   global $user;
 
-  // Create a file object.
-  $file = new stdClass();
-  $file->uri = $filepath;
-  $file->filename = $filename;
-  $file->filemime = file_get_mimetype($filepath);
-  $file->uid = $user->uid;
-  $file->status = FILE_STATUS_PERMANENT;
-  $file = file_save($file);
-
   // Split the type into a node ID and form_key
   list($id, $form_key) = explode('-', $type);
+
 
   // See if this file is already managed then add another entry fin the
   // usage table.
@@ -357,15 +349,22 @@ function tripal_core_handle_uploaded_file($filename, $filepath, $type) {
     ->condition('uri', $filepath)
     ->execute()
     ->fetchField();
-  if ($fid) {
-    $file = file_load($fid);
-    file_usage_add($file, 'tripal', $form_key, $id);
-    return $fid;
+
+  // Create a file object.
+  if (!$fid) {
+    $file = new stdClass();
+    $file->uri = $filepath;
+    $file->filename = $filename;
+    $file->filemime = file_get_mimetype($filepath);
+    $file->uid = $user->uid;
+    $file->status = FILE_STATUS_PERMANENT;
+    $file = file_save($file);
+    $fid = $file->fid;
   }
 
-
-
-  return $file->fid;
+  $file = file_load($fid);
+  file_usage_add($file, 'tripal', $form_key, $id);
+  return $fid;
 }
 
 /**
