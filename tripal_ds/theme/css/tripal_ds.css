@@ -69,4 +69,9 @@ span.download-icon {
     border: none;
 }
 
-
+.tripal_pane-fieldset-buttons {
+  float: right;
+  cursor: pointer;
+  margin-top: 4px;
+  color: #777777;
+}

@@ -6,7 +6,7 @@ require_once "includes/tripal_ds.field_group.inc";
 require_once "includes/tripal_ds.field_formatter.inc";
 
 function tripal_ds_init() {
-  drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripaldsfeature.css');
+  drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripal_ds.css');
   drupal_add_js(drupal_get_path('module', 'tripal_ds') . '/theme/js/tripal_ds.js');
 
   $theme_dir = url(drupal_get_path('module', 'tripal_ds') . '/theme');
@@ -425,7 +425,7 @@ function tripal_ds_field_display_alter(&$display, $context){
     $bundle = $context['entity']->bundle;
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
     $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
-  
+
     if ($field_name && ($hide_variable == 'hide')) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
