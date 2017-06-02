@@ -693,6 +693,7 @@ function tripal_block_info() {
  */
 function tripal_block_view($delta = ''){
   global $base_path;
+  $block = array();
 
   // The $delta parameter tells us which block is being requested.
   switch ($delta) {
@@ -926,7 +927,8 @@ function tripal_element_info() {
  */
 function tripal_html5_file_process($element, $form_state, $complete_form) {
 
-  $type = $element['#usage_id'] . '-' . $element['#usage_type'];
+  $module = array_key_exists('#usage_module', $element) ? $element['#usage_module'] : 'tripal';
+  $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
   $name = $element['#name'];
   $name = preg_replace('/[^\w]/', '_', $name);
 
@@ -1000,38 +1002,40 @@ function tripal_html5_file_validate($element, &$form_state) {
 
 
 /**
- * Implements hook_handle_uplaoded_file().
+ * Implements hook_handle_uploaded_file().
  */
 function tripal_handle_uploaded_file($filename, $filepath, $type) {
 
   global $user;
 
   // Split the type into a node ID and form_key
-  list($nid, $form_key) = explode('-', $type);
+  list($id, $form_key) = explode('-', $type);
+
 
   // See if this file is already managed then add another entry fin the
   // usage table.
   $fid = db_select('file_managed', 'fm')
-  ->fields('fm', array('fid'))
-  ->condition('uri', $filepath)
-  ->execute()
-  ->fetchField();
-  if ($fid) {
-    $file = file_load($fid);
-    file_usage_add($file, 'tripal', $form_key, $nid);
-    return $fid;
-  }
+    ->fields('fm', array('fid'))
+    ->condition('uri', $filepath)
+    ->execute()
+    ->fetchField();
 
   // Create a file object.
-  $file = new stdClass();
-  $file->uri = $filepath;
-  $file->filename = $filename;
-  $file->filemime = file_get_mimetype($filepath);
-  $file->uid = $user->uid;
-  $file->status = FILE_STATUS_PERMANENT;
-  $file = file_save($file);
+  if (!$fid) {
+    $file = new stdClass();
+    $file->uri = $filepath;
+    $file->filename = $filename;
+    $file->filemime = file_get_mimetype($filepath);
+    $file->uid = $user->uid;
+    $file->status = FILE_STATUS_PERMANENT;
+    $file = file_save($file);
+    $fid = $file->fid;
+  }
 
-  return $file->fid;
+  $file = file_load($fid);
+  file_usage_add($file, 'tripal', $form_key, $id);
+  return $fid;
+
 }
 
 /**

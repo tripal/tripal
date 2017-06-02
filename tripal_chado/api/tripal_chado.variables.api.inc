@@ -312,6 +312,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       // Check to see if the current record maps to an entity.  Because
       // multiple bundles can map to the same table we have to check
       // all bundles for this table.
+ /*
       $bundles = db_select('chado_bundle', 'cb');
       $bundles->fields('tb', array('name'));
       $bundles->join('tripal_bundle', 'tb', 'tb.id = cb.bundle_id');
@@ -328,6 +329,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
           $object->entity_id = $record->entity_id;
         }
       }
+*/
 
       // remove any fields where criteria needs to be evalulated---------------------------------------
       // The fields to be removed can be populated by implementing either

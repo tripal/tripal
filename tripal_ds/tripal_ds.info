@@ -5,7 +5,7 @@ project = tripal
 package = Tripal
 version = 7.x-3.0-beta3
 
-stylesheets[all][] = theme/css/tripaldsfeature.css
+stylesheets[all][] = theme/css/tripal_ds.css
 
 dependencies[] = ds
 dependencies[] = field_group
