@@ -49,7 +49,7 @@ if($analysis->sourceuri){
   $source = "<a href=\"$analysis->sourceuri\">$analysis->sourcename</a>";
 } 
 else {
-  $source = $analysis->sourcename;
+  $source .= $analysis->sourcename;
 }
 if($analysis->sourceversion){
   $source = " (" . $analysis->sourceversion . ")";
