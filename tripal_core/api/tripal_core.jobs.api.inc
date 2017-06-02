@@ -162,9 +162,9 @@ function tripal_get_job($job_id) {
   $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
     ->fetchObject();
 
-  $job->submit_date_string = format_date($job->submit_date);
-  $job->start_time_string = format_date($job->start_time);
-  $job->end_time_string = format_date($job->end_time);
+  $job->submit_date_string = $job->submit_date? format_date($job->submit_date) : NULL;
+  $job->start_time_string = $job->start_time? format_date($job->start_time) : NULL;
+  $job->end_time_string = $job->end_time ? format_date($job->end_time) : NULL;
 
   return $job;
 }
