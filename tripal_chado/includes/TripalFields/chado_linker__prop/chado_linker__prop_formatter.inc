@@ -59,6 +59,5 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
         '#markup' => $content,
       );
     }
-
   }
 }
