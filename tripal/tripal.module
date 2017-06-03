@@ -110,17 +110,6 @@ function tripal_menu() {
     'access arguments' => array('administer tripal'),
   );
 
-  $items['admin/tripal/dashboard'] = array(
-    'title' => 'Dashboard',
-    'description' => t("A dashboard view of Tripal including new fields for entities."),
-    'weight' => 0,
-    'page callback' => 'tripal_admin_usage_page',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/tripal_admin_usage_page.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-  );
-
   $items['admin/tripal/extension'] = array(
     'title' => 'Extensions',
     'description' => t("Configuration and management pages for Tripal extension modules."),
@@ -247,7 +236,7 @@ function tripal_menu() {
     'page arguments' => array(3),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file' => 'includes/tripal.admin_blocks.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
@@ -256,7 +245,7 @@ function tripal_menu() {
     'page arguments' => array(3, 4, 5, 6),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/tripal_admin_usage_page.inc',
+    'file' => 'includes/tripal.admin_blocks.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
@@ -668,18 +657,30 @@ function tripal_check_new_fields($bundle_name) {
  */
 function tripal_block_info() {
   $blocks = array();
+  $admin_theme = 'seven';
 
   $blocks['notifications_block'] = array(
     'info' => t('Dashboard Notifications'),
     'visibility' => BLOCK_VISIBILITY_LISTED,
-    'pages' => 'admin/tripal/dashboard',
+    'pages' => 'admin/dashboard',
     'status' => TRUE,
-    'region' => 'content',
+    'theme' => $admin_theme,
+    'region' => 'dashboard_main',
     'properties' => array(
       'administrative' => TRUE,
     ),
   );
-
+  $blocks['content_type_barchart'] = array(
+    'info' => t('Tripal Content Type Count'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'admin/dashboard',
+    'status' => TRUE,
+    'theme' => $admin_theme,
+    'region' => 'dashboard_main',
+    'properties' => array(
+      'administrative' => TRUE,
+    ),
+  );
   $blocks['powered_by_tripal'] = array(
     'info' => t('Powered by Tripal'),
     'cache' => DRUPAL_NO_CACHE,
@@ -714,6 +715,42 @@ function tripal_block_view($delta = ''){
       $block['title'] = '';
       $block['content'] = array(
         '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $base_path . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
+      );
+      break;
+    case 'content_type_barchart':
+      // The number of content types
+      $entity_types = db_select('tripal_bundle', 'tb')
+        ->fields('tb')
+        ->execute()
+        ->fetchAll();
+
+      $entity_count_listing = array();
+      // The number of entities per content type.
+      foreach($entity_types as $entity_types => $entity_type){
+        $result = db_select('chado_'.$entity_type->name, 'et')
+          ->fields('et')
+          ->execute();
+        $number_of_entities = $result->rowCount();
+        $entity_count_listing[$entity_types] = array(
+          'name' => $entity_type->label,
+          'count' => $number_of_entities,
+        );
+
+      }
+      tripal_add_d3js();
+      drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal.dashboard.js');
+      drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
+      drupal_add_library('system', 'drupal.collapse');
+      drupal_add_js("var entityCountListing = " . json_encode($entity_count_listing) . ";", array('type' => 'inline'));
+
+      $output = "<div id=\"tripal-entity-types\" class=\"tripal-entity-types-pane\">
+            <p>A list of the Tripal Content Types and the number of each.</p>
+            <div id=\"tripal-entity-type-chart\"></div>
+          </div>";
+
+      $block['title'] = '';
+      $block['content'] = array(
+        '#markup' => $output,
       );
       break;
 
@@ -789,6 +826,7 @@ function tripal_block_view($delta = ''){
       else {
         $block['content'] = 'There are no notifications at this time.';
       }
+      $block['title'] = 'Tripal Administrative Notifications';
       break;
   }
   return $block;

@@ -77,3 +77,28 @@ div.messages.tripal-site-admin-only{
    display: none;
    float: left;
  }
+
+
+ /******************************************************************************
+  * Format for tripal dashbaord chart
+  *****************************************************************************/
+ .bar text.value {
+   fill: white;
+ }
+
+ .axis {
+   shape-rendering: crispEdges;
+ }
+
+ .axis path {
+   fill: none;
+ }
+
+ .x.axis line {
+   stroke: #fff;
+   stroke-opacity: .8;
+ }
+
+ .y.axis path {
+   stroke: black;
+ }
