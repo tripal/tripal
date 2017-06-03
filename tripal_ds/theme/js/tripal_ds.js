@@ -16,7 +16,7 @@
       });
 
       // Hide the pane when the close button is clicked
-      $('#tripal-pane-close-button').each(function (i) {
+      $('#tripal-pane-close-button .fa-lg').each(function (i) {
         $(this).click(function () {
           var fs = $(this).parents('div.tripal_pane');
           if($(fs).hasClass('showTripalPane'))  {
@@ -33,23 +33,20 @@
         $(this).click(function() {
           var id = '.tripal_pane-fieldset-' + $(this).attr('id');
           var prevObj = $(id).prev().attr('class');
-            // If the user clicks on other TOC item, move its fieldset to the top 
-            $(id + ' fieldset').removeClass('collapsed');
-            $(id + ' fieldset .fieldset-wrapper').show();
 
             // Highlight the fieldset instead of moving if it's already at the top
             if (prevObj.indexOf('group-tripal-pane-content-top') == 0) {
-              $(id + ' fieldset').fadeTo(10, 0.3, function() {});
-              $(id + ' fieldset').fadeTo(200, 1, function() {});
+              $(id).fadeTo(10, 0.3, function() {});
+              $(id).fadeTo(200, 1, function() {});
             }
             if ($(id).hasClass('hideTripalPane')) {
               $(id).removeClass('hideTripalPane');
               $(id).addClass('showTripalPane');
             }
-            $(id + ' fieldset .fieldset-wrapper').hide();
+            $(id).hide();
             var obj = $(id).detach();
             $('.group-tripal-pane-content-top').after(obj);
-            $(id + ' fieldset .fieldset-wrapper').show(300);
+            $(id).show(300);
           return false;
         });
       });
