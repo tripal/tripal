@@ -68,13 +68,13 @@ class sbo__phenotype_formatter extends ChadoFieldFormatter {
       $rows[] = $row;
     }
     if ($has_type) {
-      $header[] = 'Phenotype';
+      $headers[] = 'Phenotype';
     }
     if ($has_name) {
-      $header[] = 'Property';
+      $headers[] = 'Property';
     }
     if ($has_value) {
-      $header[] = 'Value';
+      $headers[] = 'Value';
     }
     $table = array(
       'header' => $headers,
