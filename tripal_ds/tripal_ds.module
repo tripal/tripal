@@ -434,10 +434,10 @@ function tripal_ds_field_display_alter(&$display, $context){
           $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
           if (!empty($parent_field_info)) {
             foreach ($parent_field_info as $parent_key => $parent_field){
-              // Stop the right rail element from rendering.
-              drupal_add_css('.' . $parent_field_info[$parent_key] . ' {display:none;}', 'inline');
-              // Hide any associated menu links.
-              drupal_add_css('#' . $parent_field_info[$parent_key] . ' {display:none;}', 'inline');
+               // We want to use JavaScript to remove the fields rather than
+               // CSS to hide them so that when users theme the table of
+               // contents using CSS they aren't theming empty rows.
+               drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
             }
           }
         }
@@ -445,9 +445,9 @@ function tripal_ds_field_display_alter(&$display, $context){
     }
   }
 }
-/*
 
-*/
+
+
 /**
  * Identifies field_group parents to find tripal_panes and return that
  * information to the function that calls it.
