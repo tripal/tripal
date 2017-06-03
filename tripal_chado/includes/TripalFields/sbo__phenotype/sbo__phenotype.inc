@@ -104,17 +104,21 @@ class sbo__phenotype extends ChadoField {
     if ($phenotype_linkers) {
       foreach ($phenotype_linkers as $i => $phenotype_linker) {
         $phenotype = $phenotype_linker->phenotype_id;
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
-            '@type' => $phenotype->attr_id->dbxref_id->db_id->name . ':' . $phenotype->attr_id->dbxref_id->accession,
-            'type' => $phenotype->attr_id->name,
-            'name' => $phenotype->name,
-            'value' => $phenotype->value,
-          ),
-          $field_table . '__' . $pkey => $phenotype_linker->$pkey,
-          $field_table . '__' . $fkey_lcolumn => $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'phenotype_id' => $phenotype->phenotype_id
-        );
+        $entity->{$field_name}['und'][$i]['value']['type'] =  $phenotype->attr_id->name;
+        $entity->{$field_name}['und'][$i]['value']['name'] =  $phenotype->name;
+        if ($phenotype->cvalue_id) {
+          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->cvalue_id->name;
+        }
+        elseif ($phenotype->value) {
+          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->value;
+        }
+        else {
+          $entity->{$field_name}['und'][$i]['value']['value'] =  'N/A';
+        }
+        
+        $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $phenotype_linker->$pkey;
+        $entity->{$field_name}['und'][$i][$field_table . '__' . $fkey_lcolumn] = $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn;
+        $entity->{$field_name}['und'][$i][$field_table . '__' . 'phenotype_id'] = $phenotype->phenotype_id;
 
         if ($phenotype && property_exists($phenotype, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $phenotype->entity_id;

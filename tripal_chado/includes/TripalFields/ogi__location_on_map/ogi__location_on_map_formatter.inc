@@ -33,8 +33,8 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
       $position = $item['value']['SIO:000056'];
       $rows[] = array(
         $map_name,
-        $map_desc,
-        $position
+        $position,
+        $map_desc
       );
     }
     // the $table array contains the headers and rows array as well as other
