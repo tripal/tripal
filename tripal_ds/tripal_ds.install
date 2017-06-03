@@ -49,6 +49,40 @@ function tripal_ds_schema() {
   return $schema;
 }
 
+
+/**
+ * Implements hook_disable().
+ */
+function tripal_ds_disable(){
+  //Check if any tripal panes currently exist.
+  //Grab all the bundles to cycle through them.
+  $entities_with_tripal_panes = array();
+  $bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute()
+    ->fetchAll();
+  foreach($bundles as $bundles => $bundle){
+    $field_groups = field_group_info_groups('TripalEntity', $bundle->name);
+    foreach($field_groups['default'] as $field_names => $field_name){
+      if($field_name->format_type == 'tripalpane'){
+        array_push($entities_with_tripal_panes, $bundle->label);
+        continue 2;
+      }
+    }
+  }
+
+  $output = 'You have disabled the Tripal DS module but Tripal Panes were found in the following Content Types: ';
+  $output .= '<ul>';
+  foreach ($entities_with_tripal_panes as $item) {
+    $output .= '<li> ' . $item . '</li>';
+  }
+  $output .= '</ul>';
+  if(!empty($entities_with_tripal_panes)){
+    drupal_set_message($output, 'warning');
+
+  }
+}
+
 /**
  * Add a weight column to the tripal_ds table.
  */
