@@ -109,11 +109,8 @@ class sbo__phenotype extends ChadoField {
         if ($phenotype->cvalue_id) {
           $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->cvalue_id->name;
         }
-        elseif ($phenotype->value) {
-          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->value;
-        }
         else {
-          $entity->{$field_name}['und'][$i]['value']['value'] =  'N/A';
+          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->value;
         }
         
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $phenotype_linker->$pkey;
