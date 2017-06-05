@@ -133,11 +133,15 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
     // Build one large multidimensional array of all instances to sort in alpha
     // order to display fields in label alpha order.
+    $right_fields = array();
     $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
-    foreach ($all_field_groups['default'] as $key => $field_name) {
-      $right_fields[$key] = $field_name;
+    if (is_array($all_field_groups)) {
+      if (!isset($all_field_groups['default'])) { $all_field_groups['default'] = array(); }
+      foreach ($all_field_groups['default'] as $key => $field_name) {
+        $right_fields[$key] = $field_name;
+      }
+      usort($right_fields, sort_object('label'));
     }
-    usort($right_fields, sort_object('label'));
 
     // Now build the $region_right array and the fields array.
     $i = 0;
