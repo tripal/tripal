@@ -113,6 +113,15 @@ class TripalEntityController extends EntityAPIController {
       $title = tripal_get_title_format($bundle_entity);
       $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
     }
+    // Check if the passed alias has tokens.
+    if($title && (preg_match_all("/\[[^\]]*\]/", $title, $bundle_tokens))) {
+
+      // Load the TripalBundle entity for this TripalEntity.
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+
+      // And then replace all the tokens with values from the entity fields.
+      $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
+    }
     // As long as we were able to determine a title, we should update it ;-).
     if ($title) {
       db_update('tripal_entity')
@@ -158,6 +167,15 @@ class TripalEntityController extends EntityAPIController {
       // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
+    // Check if the passed alias has tokens.
+    if($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
+
+      // Load the TripalBundle entity for this TripalEntity.
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+
+      // And then replace all the tokens with values from the entity fields.
+      $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
+    }
 
     // Make sure the alias doesn't contain spaces.
     $alias = preg_replace('/\s+/','-',$alias);
@@ -166,7 +184,6 @@ class TripalEntityController extends EntityAPIController {
     $alias = preg_replace('/_/','-',$alias);
 
     if ($alias) {
-
       // Determine if this alias has already been used.
       $sql ='
         SELECT count(*) as num_alias
@@ -191,10 +208,49 @@ class TripalEntityController extends EntityAPIController {
           'alias' => $alias,
           'language' => 'und',
         );
-        drupal_write_record('url_alias', $values);
+
 //        path_delete(array('source' => $source_url));
 //        $path = array('source' => $source_url, 'alias' => $alias);
 //        path_save($path);
+        //Now check if an entry with the source url for this entity already
+        // exists. This is an issue when updating existing url aliases. To avoid
+        // creating 404s existing aliases need to be updated and a redirect
+        // created to handle the old alias.
+        $existing_aliases = db_select('url_alias', 'ua')
+          ->fields('ua')
+          ->condition('source', $source_url, '=')
+          ->execute()->fetchAll();
+        $num_aliases = count($existing_aliases);
+        if($num_aliases) {
+          // For each existing entry create a redirect.
+          foreach ($existing_aliases as $ea) {
+            $path = [
+              'source' => $ea->source,
+              'alias' => $alias,
+              'pid' => $ea->pid,
+              'original' => [
+                'alias' => $ea->alias,
+                'pid' => $ea->pid,
+                'language' => $ea->language,
+              ]
+            ];
+            module_load_include('module', 'redirect', 'redirect');
+            redirect_path_update($path);
+
+            //After redirects created now update the url_aliases table.
+            db_update('url_alias')
+              ->fields([
+                'alias' => $alias,
+              ])
+              ->condition('source', $source_url, '=')
+              ->condition('pid', $ea->pid, '=')
+              ->execute();
+
+          }
+        }
+        else {
+          drupal_write_record('url_alias', $values);
+        }
       }
       // If there is only one alias matching then it might just be that we already
       // assigned this alias to this entity in a previous save.

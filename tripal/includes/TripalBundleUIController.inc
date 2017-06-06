@@ -11,8 +11,6 @@ class TripalBundleUIController extends EntityDefaultUIController {
 
   public function __construct($entity_type, $entity_info) {
      parent::__construct($entity_type, $entity_info);
-     // Set the pager limit to something a bit larger
-     $this->overviewPagerLimit = 100;
   }
 
   /**
@@ -59,43 +57,6 @@ class TripalBundleUIController extends EntityDefaultUIController {
     return $forms;
   }
 
-  /**
-   * Override the EntityDefaultUIController::overviewTable because 
-   * it doesn't sort the content types by name
-   */
-  public function overviewTable($conditions = array()) {
-    $query = new EntityFieldQuery();
-    $query->entityCondition('entity_type', $this->entityType);
-  
-    // Add all conditions to query.
-    foreach ($conditions as $key => $value) {
-      $query->propertyCondition($key, $value);
-    }
-
-    if ($this->overviewPagerLimit) {
-      $query->pager($this->overviewPagerLimit);
-    }
-
-
-    $query->propertyOrderBy('label', 'ASC');
-    $results = $query->execute();
-
-    $ids = isset($results[$this->entityType]) ? array_keys($results[$this->entityType]) : array();
-    $entities = $ids ? entity_load($this->entityType, $ids) : array();
-
-    $rows = array();
-    foreach ($entities as $entity) {
-      $rows[] = $this->overviewTableRow($conditions, entity_id($this->entityType, $entity), $entity);
-    }
-
-    $render = array(
-      '#theme' => 'table', 
-      '#header' => $this->overviewTableHeaders($conditions, $rows), 
-      '#rows' => $rows, 
-      '#empty' => t('None.'),
-    );
-    return $render;
-  }
 }
 
 /**
@@ -281,6 +242,17 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#type' => 'item',
     '#markup' => theme_token_list($tokens),
   );
+  $form['set_titles']['bp_explanation'] = array(
+    '#type' => 'item',
+    '#markup' => t('Retroactively apply the new title pattern to
+        existing content.',
+      array('%type' => $bundle->label)),
+  );
+  $form['set_titles']['bulk_update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Bulk update all titles'),
+    '#submit' => array('tripal_bulk_update_submit'),
+  );
 
   // Set URL Alias Pattern.
   //-------------------------
@@ -316,6 +288,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#rows' => 1
   );
 
+
   $tokens = tripal_get_entity_tokens($bundle, array('required only' => TRUE));
   $form['url']['tokens'] = array(
     '#type' => 'hidden',
@@ -334,7 +307,17 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#type' => 'item',
     '#markup' => theme_token_list($tokens),
   );
-
+  $form['url']['bp_explanation'] = array(
+    '#type' => 'item',
+    '#markup' => t('Retroactively apply the new url alias pattern to
+        existing content.',
+      array('%type' => $bundle->label)),
+  );
+  $form['url']['bulk_update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Bulk update all aliases'),
+    '#submit' => array('tripal_bulk_update_submit'),
+  );
   // Submit Buttons
   //-------------------------
 
@@ -776,4 +759,42 @@ function tripal_admin_access($entity) {
     user_role_change_permissions($role, $permission_for_role);
   }
   return TRUE;
+}
+
+/**
+ * Process function for the bulk_update field of the bundle form.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ */
+function tripal_bulk_update_submit($form, &$form_state) {
+  $trigger = $form_state['triggering_element']['#value'];
+  $bundle_entity = $form_state['build_info']['args'][0];
+  $bundle_id = $bundle_entity->name;
+
+  //There are two submit buttons for this function, so to keep it DRY we'll
+  // use the triggering_element into to determine $update value.
+  if($trigger == 'Bulk update all titles'){
+    $update = $form_state['input']['set_titles']['title_format'];
+    $type = 'title';
+  }
+  elseif ($trigger == 'Bulk update all aliases'){
+    $update = $form_state['input']['url']['url_pattern'];
+    $type = 'alias';
+  }
+  global $user;
+  $args = array(
+    'bundle_id' => $bundle_id,
+    'update' => $update,
+    'type' => $type
+  );
+  $includes = array(
+    module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
+  );
+  tripal_add_job('Update all aliases', 'tripal',
+     'tripal_update_all', $args,
+     $user->uid, 10, $includes);
+  return $form;
 }
