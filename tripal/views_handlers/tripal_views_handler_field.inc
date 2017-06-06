@@ -62,7 +62,7 @@ class tripal_views_handler_field extends views_handler_field {
     $value = $this->get_value($values);
     // Handle single value fields:
     if (count($value == 1)) {
-      $value = $this->sanitize_value($value[0]['value']);
+      $value = $this->sanitize_value($value[0]['value'], 'xss');
       return $value;
     }
     return '';
