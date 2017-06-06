@@ -205,7 +205,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
   // those requested in the range.
-  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
+  $query_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
     "db=Pubmed" .
     "&retmax=$retmax" .
     "&usehistory=y".
@@ -291,7 +291,7 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
-  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?".
+  $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?".
     "rettype=$rettype" .
     "&retmode=$retmod" .
     "&retstart=$start" .
