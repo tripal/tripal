@@ -89,14 +89,20 @@ function tripal_views_data_tripal_entity(&$data) {
   // Iterate through the bundles.
   while ($bundle = $bundles->fetchObject()) {
 
+    // This isn't really the table name, but because our bundle table
+    // names are unique on every Tripal site we must ust a more generic
+    // name.  Because we're using our own query class this should be fine.
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $table = $term->vocab->vocabulary . '__' . $term->accession;
+
     // Each bundle gets it's own "table".
-    $data[$bundle->name]['table']['group'] = t($bundle->label);
-    $data[$bundle->name]['table']['base'] = array(
+    $data[$table]['table']['group'] = t($bundle->label);
+    $data[$table]['table']['base'] = array(
       'query class' => 'tripal_views_query',
       'title' => t($bundle->label),
       'help' => t('Tripal ' . $bundle->label . ' pages'),
     );
-    $data[$bundle->name]['entity_id'] = array(
+    $data[$table]['entity_id'] = array(
       'title' => t('Entity ID'),
       'help' => t('The unique entity ID for this content type.'),
       'field' => array(
@@ -109,7 +115,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'handler' => 'views_handler_sort',
       ),
     );
-    $data[$bundle->name]['link'] = array(
+    $data[$table]['link'] = array(
       'title' => t('Link'),
       'help' => t('Provide a simple link to the content.'),
       'field' => array(
@@ -122,7 +128,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'handler' => 'views_handler_sort',
       ),
     );
-    $data[$bundle->name]['edit_link'] = array(
+    $data[$table]['edit_link'] = array(
       'title' => t('Edit Link'),
       'help' => t('Provide a simple link to edit the content.'),
       'field' => array(
@@ -135,7 +141,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'handler' => 'views_handler_sort',
       ),
     );
-    $data[$bundle->name]['delete_link'] = array(
+    $data[$table]['delete_link'] = array(
       'title' => t('Delete Link'),
       'help' => t('Provide a simple link to delete the content.'),
       'field' => array(
@@ -148,7 +154,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'handler' => 'views_handler_sort',
       ),
     );
-    $data[$bundle->name]['status'] = array(
+    $data[$table]['status'] = array(
       'title' => t('Published'),
       'help' => t('Whether or not the content is published.'),
       'field' => array(

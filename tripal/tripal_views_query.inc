@@ -39,6 +39,7 @@ class tripal_views_query extends views_plugin_query {
    *
    */
   public function init($base_table = 'tripal_entity', $base_field = 'id', $options) {
+
     parent::init($base_table, $base_field, $options);
 
     $this->fields = array();
@@ -47,9 +48,16 @@ class tripal_views_query extends views_plugin_query {
     // Creqte the TripalFieldQuery object.
     $this->query = new TripalFieldQuery();
 
-    // Make suer we only query on the entities for this bundle type.
+    // Convert the $base_table into the bundle table.  Because every
+    // tripal site will have different bundle tables we have to do the
+    // conversion for cross-site compatibility.
+    list($vocabulary, $accession) = explode('__', $base_table);
+    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+
+    // Make sure we only query on the entities for this bundle type.
     $this->query->entityCondition('entity_type', 'TripalEntity');
-    $this->query->entityCondition('bundle', $base_table);
+    $this->query->entityCondition('bundle', $bundle->name);
   }
   /**
    *
