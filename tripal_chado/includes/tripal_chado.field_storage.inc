@@ -37,7 +37,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $type_field = $entity->chado_column;
   $record     = $entity->chado_record;
   $record_id  = $entity->chado_record_id;
-  $linker     = $entity->chado_linker;
+  $linker     = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
   $base_schema = chado_get_schema($base_table);
   $base_pkey = $base_schema['primary key'][0];
 

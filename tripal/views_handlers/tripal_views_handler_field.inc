@@ -34,6 +34,7 @@ class tripal_views_handler_field extends views_handler_field {
    *   Optional name of the field where the value is stored.
    */
   function get_value($values, $field = NULL) {
+
     $alias = isset($field) ? $this->aliases[$field] : $this->field_alias;
 
     // For some reason the alias isn't being added to the $this->aliases
@@ -57,7 +58,13 @@ class tripal_views_handler_field extends views_handler_field {
    *   The values retrieved from the database.
    */
   function render($values) {
+
     $value = $this->get_value($values);
-    return $this->sanitize_value($value);
+    // Handle single value fields:
+    if (count($value == 1)) {
+      $value = $this->sanitize_value($value[0]['value']);
+      return $value;
+    }
+    return '';
   }
 }

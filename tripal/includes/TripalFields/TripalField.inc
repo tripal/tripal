@@ -303,21 +303,6 @@ class TripalField {
   }
 
   /**
-   * Allows the view data for this field to be altered.
-   *
-   * This function is the equivalent of the hook_field_views_data_alter()
-   * function of the Drupal Field API.  It provides the necessary details to
-   * allow views to integrate the field.
-   *
-   * @param $data
-   *   An array of views table data provided for a single field. This has the
-   *   same format as the return value of hook_views_data().
-   */
-  public function viewsDataAlter(&$data) {
-
-  }
-
-  /**
    * Provides a form for the 'Field Settings' of an instance of this field.
    *
    * This function corresponds to the hook_field_instance_settings_form()

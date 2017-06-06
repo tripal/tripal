@@ -36,6 +36,7 @@ class TripalEntityController extends EntityAPIController {
     $values['title'] = '';
     $values['type'] = 'TripalEntity';
     $values['nid'] = '';
+    $values['status'] = 1;
 
     // Call the parent constructor.
     $entity = parent::create($values);
@@ -144,8 +145,8 @@ class TripalEntityController extends EntityAPIController {
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
-    // If there was no defaults supplied by the admins
-    // then we should gneerate our own using the term name and entity id.
+    // If there is still no alias supplied then we should generate one using
+    // the term name and entity id.
     if (!$alias) {
 
       // Load the term for this TripalEntity.
@@ -269,6 +270,26 @@ class TripalEntityController extends EntityAPIController {
     global $user;
     $pkeys = array();
 
+    // Get the author information.
+    $author = $user;
+    if (property_exists($entity, 'uid')) {
+      $author = user_load($entity->uid);
+    }
+
+    $changed_date = time();
+    $create_date = $changed_date;
+    if (property_exists($entity, 'created')) {
+      $temp = new DateTime($entity->created);
+      $create_date = $temp->getTimestamp();
+    }
+
+    $status = 1;
+    if (property_exists($entity, 'status')) {
+      if ($entity->status === 0 or $entity->status === 1) {
+        $status = $entity->status;
+      }
+    }
+
     $transaction  = db_transaction();
     try {
       // If our entity has no id, then we need to give it a
@@ -291,9 +312,10 @@ class TripalEntityController extends EntityAPIController {
         'type'      => $entity->type,
         'bundle'    => $entity->bundle,
         'title'     => $entity->title,
-        'uid'       => $user->uid,
-        'created'   => $entity->created,
-        'changed'   => time(),
+        'uid'       => $author->uid,
+        'created'   => $create_date,
+        'changed'   => $changed_date,
+        'status'    => $status,
       );
       if (property_exists($entity, 'nid') and $entity->nid) {
         $record['nid'] = $entity->nid;
@@ -327,6 +349,11 @@ class TripalEntityController extends EntityAPIController {
       module_invoke_all('entity_postsave', $entity, $entity->type);
       module_invoke_all($invocation, $entity, $entity->type);
 
+      // Clear any cache entries for this entity so it can be reloaded using
+      // the values that were just saved.
+      $cid = 'field:TripalEntity:' . $entity->id;
+      cache_clear_all($cid, 'cache_field', TRUE);
+
       return $entity;
     }
     catch (Exception $e) {
@@ -335,6 +362,8 @@ class TripalEntityController extends EntityAPIController {
       drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
       return FALSE;
     }
+
+
   }
 
   /**

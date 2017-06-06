@@ -11,10 +11,14 @@ scripts[]          = theme/js/tripal.js
 
 files[] = views_handlers/tripal_views_handler_field.inc
 files[] = views_handlers/tripal_views_handler_field_entity.inc
-files[] = views_handlers/tripal_views_handler_field_entity_status.inc
-files[] = views_handlers/tripal_views_handler_field_entity_default_formatter.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link_edit.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link_delete.inc
+files[] = views_handlers/tripal_views_handler_field_image.inc
+files[] = views_handlers/tripal_views_handler_field_boolean.inc
 files[] = views_handlers/tripal_views_handler_filter.inc
 files[] = views_handlers/tripal_views_handler_filter_string.inc
+files[] = views_handlers/tripal_views_handler_filter_boolean.inc
 files[] = views_handlers/tripal_views_handler_filter_entity_string.inc
 files[] = views_handlers/tripal_views_handler_filter_string_selectbox.inc
 files[] = views_handlers/tripal_views_handler_sort_entity_string.inc
