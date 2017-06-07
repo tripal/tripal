@@ -79,6 +79,28 @@ class TripalField {
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
 
+  // In order for this field to integrate with Drupal Views, a set of
+  // handlers must be specififed.  These include handlers for
+  // the field, for the filter, and the sort.  Within this variable,
+  // the key must be one of: field, filter, sort; and the value
+  // is the settings for those handlers as would be provided by
+  // a hook_views_data().  The following defaults make a field visible
+  // using the default formatter of the field, allow for filtering using
+  // a string value and sortable.  in order for filters to work you
+  // must implement the query() function.
+  public static $default_view_handlers = array(
+    'field' => array(
+      'handler' => 'tripal_views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'tripal_views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -281,6 +303,8 @@ class TripalField {
   public function viewsData() {
     $data = array();
 
+    $class = get_called_class();
+
     $bundle_name = $this->instance['bundle'];
     $field_name = $this->field['field_name'];
 
@@ -290,20 +314,20 @@ class TripalField {
     $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
     $table = $term->vocab->vocabulary . '__' . $term->accession;
 
+    $handlers = $class::$default_view_handlers;
     $data[$table][$field_name] = array(
       'title' => $this->instance['label'],
       'help' => $this->instance['description'],
-      'field' => array(
-        'handler' => 'tripal_views_handler_field',
-        'click sortable' => TRUE,
-      ),
-      'filter' => array(
-        'handler' => 'tripal_views_handler_filter_string',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
-      ),
     );
+    if (array_key_exists('field', $handlers)) {
+      $data[$table][$field_name]['field'] = $handlers['field'];
+    }
+    if (array_key_exists('sort', $handlers)) {
+      $data[$table][$field_name]['sort'] = $handlers['sort'];
+    }
+    if (array_key_exists('filter', $handlers)) {
+      $data[$table][$field_name]['filter'] = $handlers['filter'];
+    }
 
     return $data;
   }

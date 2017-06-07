@@ -238,7 +238,7 @@ class tripal_views_handler_filter_string extends tripal_views_handler_filter {
   }
 
   function op_equal($field) {
-    $this->query->add_where($this->options['group'], $field, $this->value, $this->operator());
+    $this->query->add_where($this->options['group'], $field, $this->value, $this->operator);
   }
 
   function op_contains($field) {

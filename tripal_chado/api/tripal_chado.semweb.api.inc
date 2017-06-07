@@ -199,7 +199,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *   The name of the Chado table.
  * @param $term
  *   The term. This can be a term name or a unique identifer of the form
- *   {db}:{accession}
+ *   {db}:{accession} or of the form {db}__{term_name}.
  *
  * @return
  *   The name of the Chado column that matches the given term or FALSE if the
@@ -212,23 +212,29 @@ function tripal_get_chado_semweb_column($chado_table, $term) {
     ->execute();
   while($column = $columns->fetchObject()) {
     $cvterm_id = $column->cvterm_id;
+
     if ($cvterm_id) {
+
       $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+
+      $full_accession = strtolower($cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession);
+      $full_accession = preg_replace('/ /', '_', $full_accession);
+      $full_name_uscore = strtolower($cvterm->dbxref_id->db_id->name . '__' . $cvterm->name);
+      $full_name_uscore = preg_replace('/ /', '_', $full_name_uscore);
+
+      $term = preg_replace('/ /', '_', $term);
+      $term = strtolower(preg_replace('/ /', '_', $term));
+
       // Does the term match identically?
       if ($term == $cvterm->name) {
         return $column->chado_column;
       }
       // Is the term a concatenation of the vocab and the accession?
-      else if ($term == $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession) {
+      else if ($term == $full_accession) {
         return $column->chado_column;
       }
-      // Does the term have spaces that are renamed to underscores?
-      else if ($term == preg_replace('/ /', '_', $cvterm->name)) {
-        return $column->chado_column;
-      }
-      // Does the term have spaces that are renamed to underscores and
-      // all lowercase.
-      else if (strtolower($term) == strtolower(preg_replace('/ /', '_', $cvterm->name))) {
+      // Is the term a concatenation of the vocab and the accession?
+      else if ($term == $full_name_uscore) {
         return $column->chado_column;
       }
     }

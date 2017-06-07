@@ -165,7 +165,7 @@ function tripal_views_data_tripal_entity(&$data) {
         ),
       ),
       'filter' => array(
-        'handler' => 'views_handler_filter_boolean_operator',
+        'handler' => 'tripal_views_handler_filter_boolean_operator',
         'label' => t('Published'),
         'type' => 'yes-no',
         'use equal' => TRUE, // Use status = 1 instead of status <> 0 in WHERE statment

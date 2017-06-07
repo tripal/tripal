@@ -59,10 +59,20 @@ class tripal_views_handler_field extends views_handler_field {
    */
   function render($values) {
 
-    $value = $this->get_value($values);
+    list ($vocabulary, $accession) = explode('__', $this->table_alias);
+    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    $field_name = $this->field_alias;
+    $field = field_info_field($field_name);
+    $instance = field_info_instance('TripalEntity', $field_name, $bundle->name);
+    $entity = $values->entity;
+
+    $items = $this->get_value($values);
+
     // Handle single value fields:
-    if (count($value == 1)) {
-      $value = $this->sanitize_value($value[0]['value'], 'xss');
+    if (count($items == 1)) {
+      $function = $field['module'] . '_field_formatter_view';
+      $value = $function('TripalEntity', $entity, $field, $instance, 'und', $items, $instance['display']['default']);
       return $value;
     }
     return '';
