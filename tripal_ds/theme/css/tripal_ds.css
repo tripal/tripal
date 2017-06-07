@@ -15,7 +15,7 @@
 }
 
 .hideTripalPane {
-	display: none;
+	display: none!important;
 }
 .showTripalPane {
 	display: inherit;
