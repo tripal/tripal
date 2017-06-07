@@ -698,7 +698,15 @@ function tripal_add_views_integration($defn_array, $setup_id = FALSE) {
     );
 
     // Insert Field Definitions
-    foreach ($defn_array['fields'] as $field) {
+    foreach ($defn_array['fields'] as $key => $field) {
+      // Set some defaults.
+      $field['name'] = (isset($field['name'])) ? $field['name'] : $key;
+      $field['title'] = (isset($field['title'])) ? $field['title'] : $field['name'];
+      $field['type'] = (isset($field['type'])) ? $field['type'] : 'text';
+      $field['description'] = (isset($field['description'])) ? $field['description'] : $field['name'];
+      $field['handlers'] = (isset($field['handlers'])) ? $field['handlers'] : array('field' => array('name' => 'views_handler_field'));
+
+      // Build the field record.
       $field_record = array(
         'setup_id' => $view_record['setup_id'],
         'column_name' => $field['name'],
