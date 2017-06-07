@@ -123,6 +123,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     // Check for new fields and notify the user.
     tripal_tripal_cron_notification();
 
+    // Clear the Drpual chace
+    cache_clear_all();
+
   }
   catch (Exception $e) {
     $transaction->rollback();
