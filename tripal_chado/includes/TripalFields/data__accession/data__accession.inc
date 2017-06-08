@@ -114,7 +114,8 @@ class data__accession extends ChadoField {
     $alias = 'dbx_linker';
     $operator = $condition['operator'];
 
-    if ($condition['column'] == 'accession') {
+    if ($condition['column'] == 'accession' or
+        $condition['column'] == 'data__accession') {
       $query->join('dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id");
       $query->condition("DBX.accession", $condition['value'], $operator);
     }

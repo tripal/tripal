@@ -279,8 +279,10 @@ class TripalEntityController extends EntityAPIController {
     $changed_date = time();
     $create_date = $changed_date;
     if (property_exists($entity, 'created')) {
-      $temp = new DateTime($entity->created);
-      $create_date = $temp->getTimestamp();
+      if (!is_numeric($entity->created)) {
+        $temp = new DateTime($entity->created);
+        $create_date = $temp->getTimestamp();
+      }
     }
 
     $status = 1;

@@ -111,6 +111,16 @@ class tripal_views_query extends views_plugin_query {
       }
     }
   }
+
+  public function add_orderby($table, $field = NULL, $order = 'ASC',
+      $alias = '', $params = array()) {
+
+    $this->orderby[] = array(
+      'field' => $field,
+      'direction' => strtoupper($order)
+    );
+
+  }
   /**
    *
    */
