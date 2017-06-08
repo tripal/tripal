@@ -105,9 +105,20 @@ class tripal_views_query extends views_plugin_query {
         // TODO: not sure how to handle these just yet.
       }
       else {
-        // Unforutnately, we don't know the column for this field, so leave it
-        // as NULL and the let the field_storage implementation handle it.
-        $this->query->fieldCondition($field_name, $field_name, $value, $operator);
+        // If the field_name comes to us with a period in it then it means that
+        // we need to separate the field name from sub-element names.
+        $matches = array();
+        if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
+           $field_name = $matches[1];
+           $element_name = $matches[2];
+           // Remove the double underscore from the $element_name and put
+           // back the colon
+           $element_name = preg_replace('/__/', ':', $element_name);
+          $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+        }
+        else {
+          $this->query->fieldCondition($field_name, $field_name, $value, $operator);
+        }
       }
     }
   }

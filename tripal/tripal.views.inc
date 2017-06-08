@@ -62,9 +62,17 @@ function tripal_views_data_fields(&$data) {
       $bundles = $field['bundles']['TripalEntity'];
       $result = array();
       foreach ($bundles as $bundle_name) {
+        $field_name = $field['field_name'];
+
+        // Fields should be associated with the bundle's term identifier
+        // (i.e. [vocab]__[accession].
+        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+        $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+        $view_base_id = $term->vocab->vocabulary . '__' . $term->accession;
+
         $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
         $tfield = new TripalField($field, $instance);
-        $result += $tfield->viewsData();
+        $result += $tfield->viewsData($view_base_id);
       }
     }
 

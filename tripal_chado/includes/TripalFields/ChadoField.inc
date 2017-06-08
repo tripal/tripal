@@ -44,16 +44,6 @@ class ChadoField extends TripalField {
     'base_table' => '',
   );
 
-  // By default our Chado fields are complicated and we only want to support
-  // viewing them, and not filtering by them.  Each field cand override as
-  // needed.
-  public static $default_view_handlers = array(
-    'field' => array(
-      'handler' => 'tripal_views_handler_field',
-      'click sortable' => TRUE,
-    ),
-  );
-
   // The module that manages this field.
   public static $module = 'tripal_chado';
 
@@ -120,4 +110,24 @@ class ChadoField extends TripalField {
     return $element;
   }
 
+  /**
+   * @see TripalField::viewsData()
+   */
+  public function viewsData($view_base_id) {
+    $data = array();
+    $field_name = $this->field['field_name'];
+
+    $data[$view_base_id][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      // By default our Chado fields are complicated and we only want to support
+      // viewing them, and not filtering by them.  Each field cand override as
+      // needed.
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => FALSE,
+      )
+    );
+    return $data;
+  }
 }

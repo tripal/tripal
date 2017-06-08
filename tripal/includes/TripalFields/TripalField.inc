@@ -79,29 +79,6 @@ class TripalField {
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
 
-  // In order for this field to integrate with Drupal Views, a set of
-  // handlers must be specififed.  These include handlers for
-  // the field, for the filter, and the sort.  Within this variable,
-  // the key must be one of: field, filter, sort; and the value
-  // is the settings for those handlers as would be provided by
-  // a hook_views_data().  The following defaults make a field visible
-  // using the default formatter of the field, allow for filtering using
-  // a string value and sortable.  in order for filters to work you
-  // must implement the query() function.
-  public static $default_view_handlers = array(
-    'field' => array(
-      'handler' => 'tripal_views_handler_field',
-      'click sortable' => TRUE,
-    ),
-    'filter' => array(
-      'handler' => 'tripal_views_handler_filter_string',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
-
-
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
   // --------------------------------------------------------------------------
@@ -299,36 +276,38 @@ class TripalField {
    * An array of views data, in the same format as the return value of
    * hook_views_data().
    *
+   * @param $view_base_id
+   *   Views was originally designed to integrate with SQL tables. And
+   *   each field is associated with a table.  Because these are TripalFields
+   *   and views is not directly querying the tables it doesn't make sense to
+   *   associate fields with a table, but we must associate the fields with
+   *   the bundle.  Each bundle is uniquely identified with the $view_base_id
+   *   that is passed here.
+   *
+   * @return
+   *   An associative array describing the data structure. Primary key is the
+   *   name used internally by Views for the bundle that is provided by
+   *   the $view_base_id. The returned array should be compatible with the
+   *   instructions provided by the hook_views_data() function.
    */
-  public function viewsData() {
+  public function viewsData($view_base_id) {
     $data = array();
-
-    $class = get_called_class();
-
-    $bundle_name = $this->instance['bundle'];
     $field_name = $this->field['field_name'];
 
-    // Fields should be associated with the bundle's term identifier
-    // (i.e. [vocab]__[accession].
-    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-    $table = $term->vocab->vocabulary . '__' . $term->accession;
-
-    $handlers = $class::$default_view_handlers;
-    $data[$table][$field_name] = array(
+    $data[$view_base_id][$field_name] = array(
       'title' => $this->instance['label'],
       'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      )
     );
-    if (array_key_exists('field', $handlers)) {
-      $data[$table][$field_name]['field'] = $handlers['field'];
-    }
-    if (array_key_exists('sort', $handlers)) {
-      $data[$table][$field_name]['sort'] = $handlers['sort'];
-    }
-    if (array_key_exists('filter', $handlers)) {
-      $data[$table][$field_name]['filter'] = $handlers['filter'];
-    }
-
     return $data;
   }
 
