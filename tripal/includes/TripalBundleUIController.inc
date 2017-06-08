@@ -432,7 +432,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       $update = $form_state['input']['set_titles']['title_format'];
       $type = 'title';
       $args = array(
-        'bundle_id' => $bundle->id,
+        'bundle_id' => $bundle->name,
         'update' => $update,
         'type' => $type
       );
