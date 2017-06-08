@@ -136,11 +136,15 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     $right_fields = array();
     $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
     if (is_array($all_field_groups)) {
-      if (!isset($all_field_groups['default'])) { $all_field_groups['default'] = array(); }
+      if (!isset($all_field_groups['default'])) {
+        $all_field_groups['default'] = array();
+      }
       foreach ($all_field_groups['default'] as $key => $field_name) {
         $right_fields[$key] = $field_name;
       }
       usort($right_fields, sort_object('label'));
+      watchdog('debug', '<pre>$right_fields: '. print_r($right_fields, TRUE) .'</pre>');
+
     }
 
     // Now build the $region_right array and the fields array.
@@ -175,8 +179,11 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     }
     // Add blocks to $region_left and build the toc field that is placed within.
     _ds_fields_info_write($bundle_name);
-    $region_left += [ 'toc' ];
+    $region_left = [ 'toc' ];
     $fields_with_regions += [ 'toc' => 'left' ];
+    watchdog('debug', '<pre>$fields_with_regions: '. print_r($fields_with_regions, TRUE) .'</pre>');
+    watchdog('debug', '<pre>$region_right: '. print_r($region_right, TRUE) .'</pre>');
+
     // Build the ds layout.
     $record = new stdClass;
     $record->id ='TripalEntity|' . $bundle_name . '|default';
@@ -207,6 +214,8 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     );
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
+    // Clear the Drpual chace
+    cache_clear_all();
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);
