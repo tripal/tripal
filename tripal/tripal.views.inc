@@ -45,7 +45,7 @@ function tripal_views_data_fields(&$data) {
   $fields = field_info_fields();
   foreach ($fields as $field) {
 
-    // Skip fields that aren't attached to TripalEntity fields.
+    // Skip fields that aren't attached to TripalEntity entities.
     if (!array_key_exists('TripalEntity', $field['bundles'])) {
       continue;
     }
@@ -58,7 +58,7 @@ function tripal_views_data_fields(&$data) {
     // Set defaults for the field if no data array was returned.
     if (empty($result)) {
       // Iterate through the bundles to which this field is attached and
-      // if it is a TripalField field then we'll call the viewsDataAlater function.
+      // if it is a TripalField field then we'll call the viewsData function.
       $bundles = $field['bundles']['TripalEntity'];
       $result = array();
       foreach ($bundles as $bundle_name) {
@@ -89,14 +89,20 @@ function tripal_views_data_tripal_entity(&$data) {
   // Iterate through the bundles.
   while ($bundle = $bundles->fetchObject()) {
 
+    // This isn't really the table name, but because our bundle table
+    // names are unique on every Tripal site we must ust a more generic
+    // name.  Because we're using our own query class this should be fine.
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $table = $term->vocab->vocabulary . '__' . $term->accession;
+
     // Each bundle gets it's own "table".
-    $data[$bundle->name]['table']['group'] = t($bundle->label);
-    $data[$bundle->name]['table']['base'] = array(
+    $data[$table]['table']['group'] = t($bundle->label);
+    $data[$table]['table']['base'] = array(
       'query class' => 'tripal_views_query',
       'title' => t($bundle->label),
       'help' => t('Tripal ' . $bundle->label . ' pages'),
     );
-    $data[$bundle->name]['entity_id'] = array(
+    $data[$table]['entity_id'] = array(
       'title' => t('Entity ID'),
       'help' => t('The unique entity ID for this content type.'),
       'field' => array(
@@ -104,6 +110,65 @@ function tripal_views_data_tripal_entity(&$data) {
       ),
       'filter' => array(
         'handler' => 'tripal_views_handler_filter',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
+    $data[$table]['link'] = array(
+      'title' => t('Link'),
+      'help' => t('Provide a simple link to the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link',
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
+    $data[$table]['edit_link'] = array(
+      'title' => t('Edit Link'),
+      'help' => t('Provide a simple link to edit the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link_edit',
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
+    $data[$table]['delete_link'] = array(
+      'title' => t('Delete Link'),
+      'help' => t('Provide a simple link to delete the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link_delete',
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    );
+    $data[$table]['status'] = array(
+      'title' => t('Published'),
+      'help' => t('Whether or not the content is published.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_boolean',
+        'click sortable' => TRUE,
+        'output formats' => array(
+          'published-notpublished' => array(t('Published'), t('Not published')),
+        ),
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_boolean_operator',
+        'label' => t('Published'),
+        'type' => 'yes-no',
+        'use equal' => TRUE, // Use status = 1 instead of status <> 0 in WHERE statment
       ),
       'sort' => array(
         'handler' => 'views_handler_sort',

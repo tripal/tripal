@@ -284,7 +284,13 @@ class TripalField {
     $bundle_name = $this->instance['bundle'];
     $field_name = $this->field['field_name'];
 
-    $data[$bundle_name][$field_name] = array(
+    // Fields should be associated with the bundle's term identifier
+    // (i.e. [vocab]__[accession].
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $table = $term->vocab->vocabulary . '__' . $term->accession;
+
+    $data[$table][$field_name] = array(
       'title' => $this->instance['label'],
       'help' => $this->instance['description'],
       'field' => array(
@@ -300,21 +306,6 @@ class TripalField {
     );
 
     return $data;
-  }
-
-  /**
-   * Allows the view data for this field to be altered.
-   *
-   * This function is the equivalent of the hook_field_views_data_alter()
-   * function of the Drupal Field API.  It provides the necessary details to
-   * allow views to integrate the field.
-   *
-   * @param $data
-   *   An array of views table data provided for a single field. This has the
-   *   same format as the return value of hook_views_data().
-   */
-  public function viewsDataAlter(&$data) {
-
   }
 
   /**

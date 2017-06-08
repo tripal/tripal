@@ -94,15 +94,15 @@ class ogi__location_on_map extends ChadoField {
         $value = array (
           // Map.
           'data:1274' => array(
-            'schema:name' => $featurmap->name,
+            'schema:name' => $featuremap->name,
             'schema:description' => $featuremap->description,
           ),
-          tripal_get_chado_semweb_term('featurepos', 'mappos') => $featurepos->mappos
+          'SIO:000056' => $featurepos->mappos
         );
         if (property_exists($featuremap, 'entity_id')) {
           $value['data:1274']['entity'] = 'TripalEntity:' . $featuremap->entity_id;
         }
-        $entity->{$field_name}['und'][$i]['value'][] = $value;
+        $entity->{$field_name}['und'][$i]['value'] = $value;
         $i++;
       }
     }

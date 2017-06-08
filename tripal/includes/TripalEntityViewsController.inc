@@ -31,7 +31,7 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     $data['tripal_entity']['uid']['help'] = 'The User\'s unique ID.';
 
     $data['tripal_entity']['status']['help'] = 'The publish status.';
-    $data['tripal_entity']['status']['field']['handler'] = 'tripal_views_handler_field_entity_status';
+    $data['tripal_entity']['status']['field']['handler'] = 'tripal_views_handler_field_boolean';
 
     // We want to use our own query plugin.
     $data['tripal_entity']['table']['base']['query class'] = 'tripal_views_query';

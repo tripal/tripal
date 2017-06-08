@@ -114,9 +114,8 @@ class obi__organism extends ChadoField {
       $entity->{$field_name}['und'][0]['chado-' . $field_table . '__organism_id'] = $organism->organism_id;
 
       // Is there a published entity for this organism?
-      if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
-        $fk_entity_id = $entity->chado_record->$field_column->entity_id;
-        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $fk_entity_id;
+      if (property_exists($record->{$field_column}, 'entity_id')) {
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $record->{$field_column}->entity_id;
       }
     }
   }

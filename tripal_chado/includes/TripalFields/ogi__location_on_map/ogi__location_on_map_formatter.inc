@@ -30,11 +30,11 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
       $val = $item['value'];
       $map_name = $item['value']['data:1274']['schema:name'];
       $map_desc = $item['value']['data:1274']['schema:description'];
-      $position = $item['value'][tripal_get_chado_semweb_term('featurepos', 'mappos')];
+      $position = $item['value']['SIO:000056'];
       $rows[] = array(
         $map_name,
-        $map_desc,
-        $position
+        $position,
+        $map_desc
       );
     }
     // the $table array contains the headers and rows array as well as other

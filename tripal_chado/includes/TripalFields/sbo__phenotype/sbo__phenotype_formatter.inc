@@ -23,9 +23,14 @@ class sbo__phenotype_formatter extends ChadoFieldFormatter {
     // Get the settings
     $settings = $display['settings'];
 
-    $headers = array('Name', 'Value', 'Type');
+    $headers = array();
     $rows = array();
+    $has_type = FALSE;
+    $has_value = FALSE;
+    $has_name = FALSE;
 
+    // First iterate through the phenotypes to see if
+    // we have all of the data columns.
     foreach ($items as $delta => $item) {
       $phenotype = $item['value'];
       if (!$phenotype) {
@@ -33,16 +38,43 @@ class sbo__phenotype_formatter extends ChadoFieldFormatter {
       }
 
       // Get the field values
-      $phenotype_name = $phenotype['name'];
-      $value = $phenotype['value'];
-      $type = $phenotype['type'];
-
-      // Add a link i there is an entity.
-      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
-        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
-        $phenotype_name = l($phenotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+      if ($phenotype['name']) {
+        $has_name = TRUE;
       }
-      $rows[] = array($phenotype_name, $value, $type);
+      if ($phenotype['value']) {
+        $has_value = TRUE;
+      }
+      if ($phenotype['type']) {
+        $has_type = TRUE;
+      }
+    }
+    foreach ($items as $delta => $item) {
+      $row = array();
+      if ($has_type) {
+        $row[] = $phenotype['type'];
+      }
+      if ($has_name) {
+        $phenotype_name = $phenotype['name'];
+        // Add a link i there is an entity.
+        if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
+          list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
+          $phenotype_name = l($phenotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+        }
+        $row[] = $phenotype_name;
+      }
+      if ($has_value) {
+        $row[] = $phenotype['value'];
+      }
+      $rows[] = $row;
+    }
+    if ($has_type) {
+      $headers[] = 'Phenotype';
+    }
+    if ($has_name) {
+      $headers[] = 'Property';
+    }
+    if ($has_value) {
+      $headers[] = 'Value';
     }
     $table = array(
       'header' => $headers,

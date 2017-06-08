@@ -46,6 +46,35 @@ class tripal_views_handler_field_entity extends tripal_views_handler_field {
   }
 
   /**
+   * Get the value that's supposed to be rendered.
+   *
+   * This api exists so that other modules can easy set the values of the field
+   * without having the need to change the render method as well.
+   *
+   * @param $values
+   *   An object containing all retrieved values.
+   * @param $field
+   *   Optional name of the field where the value is stored.
+   */
+  function get_value($values, $field = NULL) {
+
+    $alias = isset($field) ? $this->aliases[$field] : $this->field_alias;
+
+    // For some reason the alias isn't being added to the $this->aliases
+    // variable when the user clicks the checkbox 'Link this field to the
+    // original piece of content'.  That may need to be investigated and is
+    // probably a side effect of using the  views_handler_field as a parent
+    // class that is expecting something more for SQL. We don't use aliases
+    // for fields so the following if statement will fix the problem.
+    if (!$alias) {
+      $alias = $this->field_alias;
+    }
+    if (isset($values->{$alias})) {
+      return $values->{$alias}->id;
+    }
+  }
+
+  /**
    * Render whatever the data is as a link to the entity.
    *
    * Data should be made XSS safe prior to calling this function.
@@ -53,16 +82,19 @@ class tripal_views_handler_field_entity extends tripal_views_handler_field {
   function render_link($data, $values) {
     if (!empty($this->options['link_to_entity']) && !empty($this->additional_fields['id'])) {
       if ($data !== NULL && $data !== '') {
-        $this->options['alter']['make_link'] = TRUE;
-        $this->options['alter']['path'] = "bio_data/" . $this->get_value($values, 'id');
-        if (isset($this->aliases['language'])) {
-          $languages = language_list();
-          $language = $this->get_value($values, 'language');
-          if (isset($languages[$language])) {
-            $this->options['alter']['language'] = $languages[$language];
-          }
-          else {
-            unset($this->options['alter']['language']);
+        $alias = $this->field_alias;
+        if (entity_access('view', 'TripalEntity', $values->{$alias})) {
+          $this->options['alter']['make_link'] = TRUE;
+          $this->options['alter']['path'] = "bio_data/" . $this->get_value($values, 'id');
+          if (isset($this->aliases['language'])) {
+            $languages = language_list();
+            $language = $this->get_value($values, 'language');
+            if (isset($languages[$language])) {
+              $this->options['alter']['language'] = $languages[$language];
+            }
+            else {
+              unset($this->options['alter']['language']);
+            }
           }
         }
       }

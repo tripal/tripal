@@ -119,6 +119,9 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    $controller = entity_get_controller($entity->type);
    $content = $controller->view(array($entity->id => $entity));
    drupal_set_title($entity->title);
+   if ($entity->status == 0) {
+     drupal_set_message('This page is currently unpublished', 'warning');
+   }
    return $content;
  }
 
@@ -480,6 +483,81 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        );
      }
    }
+   $form['additional_settings'] = array(
+     '#type' => 'vertical_tabs',
+     '#weight' => 99,
+   );
+
+   // Node author information for administrators
+   $form['author'] = array(
+     '#type' => 'fieldset',
+     '#access' => user_access('administer nodes'),
+     '#title' => t('Authoring information'),
+     '#collapsible' => TRUE,
+     '#collapsed' => TRUE,
+     '#group' => 'additional_settings',
+     '#attributes' => array(
+       'class' => array('TripalEntity-form-author'),
+     ),
+     '#attached' => array(
+       'js' => array(
+         drupal_get_path('module', 'node') . '/node.js',
+         array(
+           'type' => 'setting',
+           'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
+         ),
+       ),
+     ),
+
+     '#weight' => 90,
+   );
+
+   $account = user_load($entity->uid);
+   $form['author']['author_name'] = array(
+     '#type' => 'textfield',
+     '#title' => t('Authored by'),
+     '#maxlength' => 60,
+     '#autocomplete_path' => 'user/autocomplete',
+     '#default_value' => !empty($account->name) ? $account->name : '',
+     '#weight' => -1,
+     '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
+   );
+   $form['author']['author_date'] = array(
+     '#type' => 'textfield',
+     '#title' => t('Authored on'),
+     '#maxlength' => 25,
+     '#description' => t('Format: %time. The date format is YYYY-MM-DD and ' .
+       '%timezone is the time zone offset from UTC. Leave blank to use the ' .
+       'time of form submission.',
+       array(
+         '%time' => !empty($entity->created) ? date('Y-m-d H:i:s O', $entity->created) : format_date($entity->created, 'custom', 'Y-m-d H:i:s O'),
+         '%timezone' => !empty($entity->created) ? date('O', $entity->created) : format_date($entity->created, 'custom', 'O'))
+       ),
+     '#default_value' => !empty($entity->created) ? date('Y-m-d H:i:s O', $entity->created) : '',
+   );
+   // Node options for administrators
+   $form['options'] = array(
+     '#type' => 'fieldset',
+     '#access' => user_access('administer nodes'),
+     '#title' => t('Publishing options'),
+     '#collapsible' => TRUE,
+     '#collapsed' => TRUE,
+     '#group' => 'additional_settings',
+     '#attributes' => array(
+       'class' => array('node-form-options'),
+     ),
+     '#attached' => array(
+       'js' => array(drupal_get_path('module', 'node') . '/node.js'),
+     ),
+     '#weight' => 95,
+   );
+   $form['options']['status'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Published'),
+     '#default_value' => $entity->status,
+   );
+
+
    $form['cancel_button'] = array(
      '#type' => 'submit',
      '#value' => t('Cancel'),
@@ -519,6 +597,19 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    // For adds and updates, perform validation.
    $entity = $form_state['TripalEntity'];
    field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
+
+   $username = $form_state['values']['author_name'];
+   $user = user_load_by_name($username);
+   if (!$user) {
+     form_set_error('author_name', 'Please provide a valid author name.');
+   }
+
+   try {
+    $create_date = new DateTime($form_state['values']['author_date']);
+   }
+   catch (Exception $e) {
+     form_set_error('author_date', 'Please provide a valid authored on date.');
+   }
  }
 
  /**
@@ -541,6 +632,17 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
      $form_state['redirect'] = 'bio_data/' . $entity->id .'/delete';
      return;
    }
+
+   $username = $form_state['values']['author_name'];
+   $user = user_load_by_name($username);
+   $entity->uid = $user->uid;
+
+   $create_date = $form_state['values']['author_date'];
+   $entity->created = $create_date;
+
+   $published = $form_state['values']['status'];
+   $entity->status = $published;
+
    // Allow the fields to perform actions prior to submit.
    $instances = field_info_instances('TripalEntity', $entity->bundle);
    $langcode = 'und';

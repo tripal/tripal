@@ -2148,3 +2148,23 @@ function tripal_chado_form_tripalbundle_form_alter(&$form, $form_state) {
     '#weight' => 0,
   );
 }
+
+/**
+ * Implements hook_field_views_data_alter();
+ */
+function tripal_chado_field_views_data_alter(&$result, $field, $module) {
+
+  // This module creates the data__image field for managing images on
+  // bio_data content types. But we want it to render correctly
+  // so we need to set some handlers.
+  if ($field['field_name'] == 'data__image') {
+    foreach ($result as $key => $fields) {
+      // It's not clear how to identify our bundle types, but they do have
+      // a double underscore in their name to separate the vocabulary from
+      // the accession, so we'll use that to find them.
+      if (preg_match('/__/', $key)) {
+        $result[$key]['data__image']['field']['handler'] = 'tripal_views_handler_field_image';
+      }
+    }
+  }
+}

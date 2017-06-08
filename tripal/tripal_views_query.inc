@@ -39,6 +39,7 @@ class tripal_views_query extends views_plugin_query {
    *
    */
   public function init($base_table = 'tripal_entity', $base_field = 'id', $options) {
+
     parent::init($base_table, $base_field, $options);
 
     $this->fields = array();
@@ -47,9 +48,16 @@ class tripal_views_query extends views_plugin_query {
     // Creqte the TripalFieldQuery object.
     $this->query = new TripalFieldQuery();
 
-    // Make suer we only query on the entities for this bundle type.
+    // Convert the $base_table into the bundle table.  Because every
+    // tripal site will have different bundle tables we have to do the
+    // conversion for cross-site compatibility.
+    list($vocabulary, $accession) = explode('__', $base_table);
+    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+
+    // Make sure we only query on the entities for this bundle type.
     $this->query->entityCondition('entity_type', 'TripalEntity');
-    $this->query->entityCondition('bundle', $base_table);
+    $this->query->entityCondition('bundle', $bundle->name);
   }
   /**
    *
@@ -107,35 +115,67 @@ class tripal_views_query extends views_plugin_query {
     $start = microtime(TRUE);
 
     // Execute the count query
+    // TODO: support paging.
     $cquery = clone $query;
     $cquery->count();
-    $num_records = $cquery->execute();
-    $views->total_rows = count($num_records['TripalEntity']);
+    //$views->total_rows = $cquery->execute();
 
+    // Get the IDs
     $results = $query->execute();
+    $entity_ids = array_keys($results['TripalEntity']);
 
-    // Iterate through the entities that were returned and get the field
-    // values that are requested.  Those go in the view->result array.
+
+    // Get the fields to attach to the entity
+    $fields = array();
+    $field_ids = array();
+    foreach ($this->fields as $details) {
+      $field_name = $details['field_name'];
+      $field = field_info_field($field_name);
+      if ($field) {
+        $fields[$field_name] = $field;
+        $field_ids[] = $field['id'];
+      }
+    }
+
+    $entities = tripal_load_entity('TripalEntity', $entity_ids, FALSE, $field_ids);
     $i = 0;
-    $view->result = array();
-    foreach ($results['TripalEntity'] as $entity_id => $stub) {
-      $entities = array($entity_id => $stub);
+    foreach ($entities as $entity_id => $entity) {
       $view->result[$i] = new stdClass();
-      $view->result[$i]->entity = $stub;
       foreach ($this->fields as $details) {
         $field_name = $details['field_name'];
-        $field = field_info_field($field_name);
-        module_invoke($field['storage']['module'], 'field_storage_load', 'TripalEntity',
-            $entities, FIELD_LOAD_CURRENT, array($field['id'] => array($entity_id)));
-        $view->result[$i]->$field_name = $entities[$entity_id]->$field_name['und'][0]['value'];
+        // The entity_id and link fields are not true fields. They are
+        // added by the tripal_views_data_tripal_entity() function to provide
+        // useful fields to reference entities. If we see these
+        // we need to support them here by giving them values.
+        if ($field_name == 'entity_id') {
+          $view->result[$i]->$field_name = $entity;
+          continue;
+        }
+        if ($field_name == 'link') {
+          $view->result[$i]->$field_name = $entity;
+          continue;
+        }
+        if ($field_name == 'edit_link') {
+          $view->result[$i]->$field_name = $entity;
+          continue;
+        }
+        if ($field_name == 'delete_link') {
+          $view->result[$i]->$field_name = $entity;
+          continue;
+        }
+        if ($field_name == 'status') {
+          $view->result[$i]->$field_name = $entity->status;
+          continue;
+        }
+        if (array_key_exists($field_name, $fields)) {
+          $items = field_get_items('TripalEntity', $entity, $field_name);
+          $view->result[$i]->$field_name = $items;
+        }
       }
-      $view->result[$i]->entity_id = $stub->id;
       $i++;
     }
     $view->execute_time = microtime(TRUE) - $start;
     $view->current_page = 0;
-    //dpm($view->query);
-    //dpm($view->result);
   }
 
 }
