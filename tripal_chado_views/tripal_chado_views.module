@@ -30,15 +30,15 @@ require_once 'includes/tripal_chado_views_integration_port.inc';
 function tripal_chado_views_menu() {
   $items = array();
 
-  $items['chado'] = array(
-    'title' => 'Search Data',
-    'description' => 'Listings of the various biological data available categorized by type.',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_chado_views_search_biological_content'),
-    'access arguments' => array('access content'),
-    'expanded' => TRUE,
-    'type' => MENU_NORMAL_ITEM,
-  );
+//   $items['chado'] = array(
+//     'title' => 'Search Data',
+//     'description' => 'Listings of the various biological data available categorized by type.',
+//     'page callback' => 'theme',
+//     'page arguments' => array('tripal_chado_views_search_biological_content'),
+//     'access arguments' => array('access content'),
+//     'expanded' => TRUE,
+//     'type' => MENU_NORMAL_ITEM,
+//   );
 
   // TODO: should the views integration be moved into the tripal_chado module?
   $items['admin/tripal/storage/chado/views-integration'] = array(
