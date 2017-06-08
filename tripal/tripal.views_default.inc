@@ -201,7 +201,7 @@ function tripal_bundle_default_views(&$views) {
     $handler = $view->new_display('page', 'Page', 'page_1');
     $handler->display->display_options['path'] = 'data_search/' . strtolower(preg_replace('/[^\w]/', '_', $bundle->label));
     $handler->display->display_options['menu']['type'] = 'normal';
-    $handler->display->display_options['menu']['title'] = 'Find ' . $bundle->label . '(s)';
+    $handler->display->display_options['menu']['title'] = $bundle->label . ' search';
     $handler->display->display_options['menu']['description'] = 'A search form for finding ' . $bundle->label . ' records';
     $handler->display->display_options['menu']['weight'] = '-10';
 
