@@ -810,7 +810,12 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     // Set some default semantic web information
     if ($column_name == 'uniquename') {
       $base_info['label'] = 'Identifier';
-      $base_info['widget_type'] = 'text_textfield';
+      $base_info['widget']['type'] = 'text_textfield';
+      if ($details['type'] == 'text') {
+        unset($base_info['display']['default']['label']);
+        unset($base_info['settings']['text_processing']);
+        unset($base_info['settings']['format']);
+      }
     }
     elseif ($base_info['label'] == 'Timeaccessioned') {
       $base_info['label'] = 'Time Accessioned';
