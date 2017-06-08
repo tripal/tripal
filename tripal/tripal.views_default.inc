@@ -55,7 +55,7 @@ function tripal_bundle_default_views(&$views) {
 
     /* Display: Defaults */
     $handler = $view->new_display('default', 'Defaults', 'default');
-    $handler->display->display_options['title'] = 'Find ' . $bundle->label . ' records';
+    $handler->display->display_options['title'] = $bundle->label . ' Search';
     $handler->display->display_options['use_more_always'] = FALSE;
     $handler->display->display_options['access']['type'] = 'perm';
     $handler->display->display_options['access']['perm'] = 'view ' . $bundle->name;
@@ -78,8 +78,8 @@ function tripal_bundle_default_views(&$views) {
     $columns = array();
     $default_fields = array('data__image', 'data__identifier', 'schema__name',
       'data__accession', 'rdfs__label', 'taxrank__genus',
-      'taxrank__species', 'obi__organism',
-      'schema__alternate_name', 'schema__description'
+      'taxrank__species', 'obi__organism', 'tpub__title',
+      'schema__alternate_name', 'schema__description', 'tpub__abstract'
     );
     $selected_fields = array();
     foreach ($default_fields as $field_name) {
@@ -118,14 +118,15 @@ function tripal_bundle_default_views(&$views) {
       if (in_array($field_name, array('data__identifier', 'schema__name',
           'data__accession', 'rdfs__label', 'taxrank__genus',
           'taxrank__species', 'obi__organism',
-          'schema__alternate_name'))) {
+          'schema__alternate_name', 'tpub__title'))) {
         $handler->display->display_options['style_options']['info'][$field_name]['sortable'] = 1;
         $handler->display->display_options['style_options']['info'][$field_name]['default_sort_order'] = 'asc';
       }
 
       // The name or identifier fields should link to the record.
       if ($field_name == 'data__identifier' or $field_name == 'schema__name' or
-          $field_name == 'taxrank__genus' or $field_name == 'taxrank__species') {
+          $field_name == 'taxrank__genus' or $field_name == 'taxrank__species' or
+          $field_name == 'tpub__title') {
         $handler->display->display_options['fields'][$field_name]['alter']['make_link'] = TRUE;
         $handler->display->display_options['fields'][$field_name]['alter']['path'] = 'bio_data/[entity_id]';
       }
@@ -147,7 +148,7 @@ function tripal_bundle_default_views(&$views) {
       // Filter criterion.
       if (in_array($field_name, array('data__identifier', 'schema__name',
           'data__accession', 'rdfs__label', 'taxrank__genus',
-          'taxrank__species', 'obi__organism'))) {
+          'taxrank__species', 'obi__organism', 'tpub__title'))) {
         $handler->display->display_options['filters'][$field_name]['id'] = $field_name;
         $handler->display->display_options['filters'][$field_name]['table'] = $base_table;
         $handler->display->display_options['filters'][$field_name]['field'] = $field_name;
@@ -201,7 +202,7 @@ function tripal_bundle_default_views(&$views) {
     $handler = $view->new_display('page', 'Page', 'page_1');
     $handler->display->display_options['path'] = 'data_search/' . strtolower(preg_replace('/[^\w]/', '_', $bundle->label));
     $handler->display->display_options['menu']['type'] = 'normal';
-    $handler->display->display_options['menu']['title'] = $bundle->label . ' search';
+    $handler->display->display_options['menu']['title'] = $bundle->label . ' Search';
     $handler->display->display_options['menu']['description'] = 'A search form for finding ' . $bundle->label . ' records';
     $handler->display->display_options['menu']['weight'] = '-10';
 
