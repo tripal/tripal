@@ -34,6 +34,7 @@ class TripalFieldQuery extends EntityFieldQuery {
       foreach ($this->field_storage as $storage_type => $storage_module) {
         // Execute the query using the correct callback.
         $callback = $this->queryStorageCallback($storage_module);
+
         $st_results = call_user_func($callback, $this);
         // If this is the first storage type to be queries then save these
         // as the current results list.
@@ -60,7 +61,11 @@ class TripalFieldQuery extends EntityFieldQuery {
     else {
       $results = call_user_func($this->queryCallback(), $this);
     }
+
     if ($results and $this->count) {
+      if (!is_numeric($results)) {
+        throw new Exception('Query callback function did not provide a numeric value: ' . $this->queryCallback());
+      }
       return $results;
     }
     else {
@@ -95,6 +100,7 @@ class TripalFieldQuery extends EntityFieldQuery {
     if (empty($this->fields)) {
       return array($this, 'propertyQuery');
     }
+
     if ($storage) {
       // Use hook_field_storage_query() from the field storage.
       return $storage . '_field_storage_query';

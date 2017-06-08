@@ -89,20 +89,22 @@ class data__sequence_coordinates extends ChadoField {
 
     // Get the featureloc records that this feature is aligned to.
     $aligned = $feature->featureloc->feature_id;
-    foreach ($aligned as $index => $featureloc) {
-      $srcfeature = $featureloc->srcfeature_id->name;
-      $entity->{$field_name}['und'][0] = array(
-        'value' => array(
-          'data:3002' => $srcfeature,
-          'local:fmin' => $featureloc->fmin + 1,
-          'local:fmax' => $featureloc->fmax,
-          'data:2336' => $featureloc->phase,
-          'data:0853' => $featureloc->strand,
-        ),
-      );
-      $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
-      if ($sentity_id) {
-        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
+    if ($aligned) {
+      foreach ($aligned as $index => $featureloc) {
+        $srcfeature = $featureloc->srcfeature_id->name;
+        $entity->{$field_name}['und'][0] = array(
+          'value' => array(
+            'data:3002' => $srcfeature,
+            'local:fmin' => $featureloc->fmin + 1,
+            'local:fmax' => $featureloc->fmax,
+            'data:2336' => $featureloc->phase,
+            'data:0853' => $featureloc->strand,
+          ),
+        );
+        $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
+        if ($sentity_id) {
+          $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
+        }
       }
     }
   }

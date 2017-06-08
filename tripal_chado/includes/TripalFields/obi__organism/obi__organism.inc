@@ -30,6 +30,28 @@ class obi__organism extends ChadoField {
     'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
   );
 
+  // In order for this field to integrate with Drupal Views, a set of
+  // handlers must be specififed.  These include handlers for
+  // the field, for the filter, and the sort.  Within this variable,
+  // the key must be one of: field, filter, sort; and the value
+  // is the settings for those handlers as would be provided by
+  // a hook_views_data().  The following defaults make a field visible
+  // using the default formatter of the field, allow for filtering using
+  // a string value and sortable.  in order for filters to work you
+  // must implement the query() function.
+  public static $default_view_handlers = array(
+    'field' => array(
+      'handler' => 'tripal_views_handler_field',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'tripal_views_handler_filter_string',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
   // The default widget for this field.
   public static $default_widget = 'OBI__organism_widget';
 
@@ -188,24 +210,140 @@ class obi__organism extends ChadoField {
   }
 
   /**
+   * @see ChadoField::viewsData()
+   */
+  public function viewsData($view_base_id) {
+    $data = array();
+    $options = array('return_object' => TRUE);
+
+    // Add a views field for the field.
+    $field_name = $this->field['field_name'];
+    $data[$view_base_id][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      )
+    );
+
+    // Add a views field for the genus.
+    $cvterm = tripal_get_chado_semweb_term('organism', 'genus', $options);
+    $term = tripal_get_term_details($cvterm->dbxref_id->db_id->name, $cvterm->dbxref_id->accession);
+    $element_name = tripal_format_views_field_element($field_name, $term);
+    $data[$view_base_id][$element_name] = array(
+      'title' => ucfirst($term['name']),
+      'help' => $term['definition'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_element',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_element_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      )
+    );
+
+    // Add a views field for the species.
+    $cvterm = tripal_get_chado_semweb_term('organism', 'species', $options);
+    $term = tripal_get_term_details($cvterm->dbxref_id->db_id->name, $cvterm->dbxref_id->accession);
+    $element_name = tripal_format_views_field_element($field_name, $term);
+    $data[$view_base_id][$element_name] = array(
+      'title' => ucfirst($term['name']),
+      'help' => $term['definition'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_element',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_element_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      )
+    );
+
+    // Suppor the Chado v1.3 fields.
+    if(chado_get_version() >= '1.3') {
+      // Add a views field for the infraspecific name.
+      $cvterm = tripal_get_chado_semweb_term('organism', 'infraspecific_name', $options);
+      $term = tripal_get_term_details($cvterm->dbxref_id->db_id->name, $cvterm->dbxref_id->accession);
+      $element_name = tripal_format_views_field_element($field_name, $term);
+      $data[$view_base_id][$element_name] = array(
+        'title' => ucfirst($term['name']),
+        'help' => $term['definition'],
+        'field' => array(
+          'handler' => 'tripal_views_handler_field_element',
+          'click sortable' => TRUE,
+        ),
+        'filter' => array(
+          'handler' => 'tripal_views_handler_filter_element_string',
+        ),
+        'sort' => array(
+          'handler' => 'views_handler_sort',
+        )
+      );
+
+      // Add a views field for the infraspecific type.
+      $cvterm = tripal_get_chado_semweb_term('organism', 'type_id', $options);
+      $term = tripal_get_term_details($cvterm->dbxref_id->db_id->name, $cvterm->dbxref_id->accession);
+      $element_name = tripal_format_views_field_element($field_name, $term);
+      $data[$view_base_id][$element_name] = array(
+        'title' => ucfirst($term['name']),
+        'help' => $term['definition'],
+        'field' => array(
+          'handler' => 'tripal_views_handler_field_element',
+          'click sortable' => TRUE,
+        ),
+        'filter' => array(
+          'handler' => 'tripal_views_handler_filter_element_string',
+        ),
+        'sort' => array(
+          'handler' => 'views_handler_sort',
+        )
+      );
+    }
+    return $data;
+  }
+
+  /**
    * @see ChadoField::query()
    */
   public function query($query, $condition) {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
+    $genus_term = tripal_get_chado_semweb_term('organism', 'genus');
+    $species_term = tripal_get_chado_semweb_term('organism', 'species');
+    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+
     $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
 
-    if ($condition['column'] == 'organism.species') {
+    // If the column is the field name.
+    if ($condition['column'] == 'obi__organism') {
+      $query->where("CONCAT($alias.genus, ' ', $alias.species) $operator :full_name",  array(':full_name' => $condition['value']));
+    }
+
+    // If the column is a subfield.
+    if ($condition['column'] == $species_term) {
       $query->condition("$alias.species", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'organism.genus') {
+    if ($condition['column'] == $genus_term) {
       $query->condition("$alias.genus", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'organism.infraspecies') {
+    if ($condition['column'] == $infraspecific_name_term) {
       $query->condition("$alias.infraspecific_name", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'organism.infraspecific_taxon') {
+    if ($condition['column'] == $infraspecific_type_term) {
       $query->join('cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
       $query->condition("CVT.name", $condition['value'], $operator);
     }

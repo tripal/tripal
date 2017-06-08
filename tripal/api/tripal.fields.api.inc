@@ -224,4 +224,24 @@ function tripal_get_field_item_keyval($items, $delta, $key, $default='') {
   return $items[$delta][$key];
 }
 
-
+/**
+ * Formats an element of a TripalField for use by Drupal Views.
+ *
+ * Sometimes the value of TripalField can be more than just a single scalar. In
+ * this case the value is an array of key value pairs where each key is a
+ * controlled vocabulary term.  In order to support fields, filtering and
+ * sorting by these sub elements using Drupal Views, the TripalField
+ * implementation must provide some help to Views by describing these elements,
+ * and then implementing a query() function to support them.  However, the
+ * naming of sub elements must follow a set convention. This function
+ * guarantees proper naming for sub elements.
+ *
+ * @param $field_name
+ *   The name of the field to which the element belongs.
+ * @param $term
+ *   The term object as returned by tripal_get_term_details();
+ */
+function tripal_format_views_field_element($field_name, $term) {
+  $element_name = $term['vocabulary']['short_name'] . '__' . $term['accession'];
+  return $field_name . '.' . $element_name;
+}

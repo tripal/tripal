@@ -477,7 +477,6 @@ function tripal_chado_field_storage_query($query) {
   $schema = chado_get_schema($data_table);
   $pkey = $schema['primary key'][0];
 
-
   // Initialize the Query object.
   $cquery = chado_db_select($data_table, 'base');
   $cquery->fields('base', array($pkey));
@@ -620,11 +619,17 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-  //print_r($cquery->__toString());
-  //print_r($cquery->getArguments());
+  //dpm($cquery->__toString());
+  //dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 
+  // If the query is a count query then just return the  total count.
+  if ($query->count) {
+    return $records->rowCount();
+  }
+
+  // If this is not a count query then return the results.
   $result = array();
   while ($record = $records->fetchObject()) {
     $ids = array($record->entity_id, 0, $record->bundle);

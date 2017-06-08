@@ -119,11 +119,11 @@ function tripal_chado_views_get_integration_array_for_chado_table($table_name, $
   foreach ($schema['fields'] as $field_name => $field_schema) {
 
     // Base field definition
-    if (!empty($field_name) && !empty($field_schema['type'])) {
+    if (!empty($field_name)) {
       $defn_array['fields'][$field_name] = array(
         'name' => $field_name,
         'title' => ucwords(str_replace('_', ' ', $field_name)),
-        'type' => $field_schema['type'],
+        'type' => (isset($field_schema['type'])) ? $field_schema['type'] : 'text',
         'description' => (!empty($field_schema['description'])) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
         'handlers' => array(),
         'joins' => array()

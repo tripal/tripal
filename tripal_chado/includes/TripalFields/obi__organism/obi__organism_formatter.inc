@@ -14,11 +14,6 @@ class obi__organism_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     if (count($items) > 0) {
       $content = $items[0]['value']['rdfs:label'];
-      $entity = isset($item['value']['entity']) ? $item['value']['entity'] : '';
-      if ($entity) {
-        list($entity_type, $entity_id) = explode(':', $entity);
-        $content = l(content, 'bio_data/' . $entity_id);
-      }
       if (array_key_exists('entity', $items[0]['value'])) {
         list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity']);
         $content = l(strip_tags($items[0]['value']['rdfs:label']), 'bio_data/' . $entity_id);

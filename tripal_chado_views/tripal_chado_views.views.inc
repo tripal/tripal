@@ -218,7 +218,7 @@ function tripal_chado_views_views_data() {
       foreach ($fields as $column => $attrs) {
         $base_fields[$column] = array(
           'column_name' => $column,
-          'type' => $attrs['type'],
+          'type' => (isset($attrs['type'])) ? $attrs['type'] : 'text',
         );
       }
 

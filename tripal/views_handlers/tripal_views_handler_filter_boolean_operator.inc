@@ -129,14 +129,4 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
     $this->options['expose']['label'] = $this->value_value;
     $this->options['expose']['required'] = TRUE;
   }
-
-  function query() {
-//     $this->ensure_my_table();
-//     $field = $this->real_field;
-
-//     $info = $this->operators();
-//     if (!empty($info[$this->operator]['method'])) {
-//       $this->{$info[$this->operator]['method']}($field);
-//     }
-  }
 }
