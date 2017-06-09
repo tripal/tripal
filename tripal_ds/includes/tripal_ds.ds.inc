@@ -39,6 +39,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $fields_with_regions = array();
   $i = 0;
   $all_fields = array();
+  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
 
   try {
     // Get the bundle and term objects.
@@ -134,8 +135,8 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     // Build one large multidimensional array of all instances to sort in alpha
     // order to display fields in label alpha order.
     $right_fields = array();
-    $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
-    if (is_array($all_field_groups)) {
+    $all_field_groups = array() /*= field_group_info_groups('TripalEntity', $bundle_name)*/;
+    if (/*is_array($all_field_groups)*/ FALSE) {
       if (!isset($all_field_groups['default'])) {
         $all_field_groups['default'] = array();
       }
@@ -143,36 +144,68 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         $right_fields[$key] = $field_name;
       }
       usort($right_fields, sort_object('label'));
-      watchdog('debug', '<pre>$right_fields: '. print_r($right_fields, TRUE) .'</pre>');
+    }
+    elseif(empty($all_field_groups)) {
+      //Add the original instances that were passed and the field_groups that
+      //were created.
+      $field_group_fields = db_select('field_group', 'fg')
+        ->fields('fg', array('group_name', 'data'))
+        ->condition('bundle', $bundle_name, '=')
+        ->execute()
+        ->fetchAll();
 
+      $instance_names = array();
+      $field_group_names = array();
+      foreach ($all_fields as $key => $instance){
+        $instance_names[$key]['field_name'] = $instance['field_name'];
+        $instance_names[$key]['label'] = $instance['label'];
+
+      }
+      foreach ($field_group_fields as $key => $field_group_name){
+        $data = unserialize($field_group_name->data);
+        $field_group_names[$key]['field_name'] = $field_group_name->group_name;
+        $field_group_names[$key]['label'] = $data['format_settings']['label'];
+
+      }
+      $all_field_groups = array_merge($instance_names, $field_group_names);
+      usort($all_field_groups, sort_array('label'));
     }
 
     // Now build the $region_right array and the fields array.
     $i = 0;
-    foreach ($right_fields as $index => $field) {
-      // Check if the child is already present which is a problem when groups
-      // are nested within groups.
-      if (in_array($field->group_name, $region_right)) {
-        // Still need to check for children and add them.
-        if (!empty($field->children)) {
-          foreach($field->children as $index => $child){
-            $region_right[$i] = $child;
-            $i++;
-          }
-        }
-      }
-      else {
-        $region_right[$i] = $field->group_name;
-        if (!empty($field->children)) {
-          foreach ($field->children as $index => $child) {
-            $i++;
-            $region_right[$i] = $child;
-          }
-        }
+    if(empty($right_fields)) {
+      foreach ($all_field_groups as $index => $field) {
+        $region_right[$i] = $field['field_name'];
         $i++;
+        tripal_ds_field_group_update_weight($field['field_name'], $bundle_name, $i);
       }
-      // Now update the weights of the field_groups.
-      tripal_ds_field_group_update_weight($field->group_name, $bundle_name, $i);
+    }
+    elseif (!empty($right_fields)) {
+      foreach ($right_fields as $index => $field) {
+        // Check if the child is already present which is a problem when groups
+        // are nested within groups.
+        if (in_array($field->group_name, $region_right)) {
+          // Still need to check for children and add them.
+          if (!empty($field->children)) {
+            foreach ($field->children as $index => $child) {
+              $region_right[$i] = $child;
+              $i++;
+            }
+          }
+        }
+        else {
+          $region_right[$i] = $field->group_name;
+          if (!empty($field->children)) {
+            foreach ($field->children as $index => $child) {
+              $i++;
+              $region_right[$i] = $child;
+            }
+          }
+          $i++;
+        }
+        // Now update the weights of the field_groups.
+        tripal_ds_field_group_update_weight($field->group_name, $bundle_name, $i);
+      }
     }
     foreach($region_right as $index => $field){
       $fields_with_regions[$field] = 'right';
