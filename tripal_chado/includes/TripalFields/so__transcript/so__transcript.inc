@@ -54,7 +54,49 @@ class so__transcript extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
-
+  /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'rdfs:type' => array(
+            'name' => 'transcript_type',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'schema:name' => array(
+            'name' => 'transcript_name',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'data:0842' => array(
+            'name' => 'transcript_uniquename',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'SO:0000735' => array(
+            'name' => 'loc',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'entity' => array(
+            'searchable' => FALSE,
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
   /**
    *
    * @see TripalField::load()

@@ -43,6 +43,20 @@ class so__cds extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'so__cds_formatter';
 
+
+  /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+      ),
+    );
+  }
+
   /**
    * @see TripalField::load()
    */

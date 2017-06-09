@@ -56,6 +56,45 @@ class local__source_data extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+
+    $sourcename_term = tripal_get_chado_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = tripal_get_chado_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = tripal_get_chado_semweb_term('analysis', 'sourceuri');
+
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          $sourcename_term => array(
+            'searchable' => TRUE,
+            'name' => 'sourcename',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $sourceversion_term => array(
+            'searchable' => FALSE,
+            'name' => 'sourceversion',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          $sourceuri_term => array(
+            'searchable' => FALSE,
+            'name' => 'sourceuri',
+            'operations' => array(),
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */
@@ -66,14 +105,15 @@ class local__source_data extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
+    $sourcename_term = tripal_get_chado_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = tripal_get_chado_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = tripal_get_chado_semweb_term('analysis', 'sourceuri');
+
     $entity->{$field_name}['und'][0] = array(
       'value' => array(
-        // The name of the data source.
-        'schema:name' => $analysis->sourcename,
-        // The version of the data source.
-        'IAO:0000129' => $analysis->sourceversion,
-        // The URI of the data source.
-        'data:1047' => $analysis->sourceuri,
+        $sourcename_term => $analysis->sourcename,
+        $sourceversion_term => $analysis->sourceversion,
+        $sourceuri_term => $analysis->sourceuri,
       ),
       'chado-analysis__sourcename' => $analysis->sourcename,
       'chado-analysis__sourceversion' => $analysis->sourceversion,

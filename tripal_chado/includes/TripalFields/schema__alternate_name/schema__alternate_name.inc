@@ -43,6 +43,7 @@ class schema__alternate_name extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'schema__alternate_name_formatter';
 
+
   /**
    *
    * @see TripalField::load()

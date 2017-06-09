@@ -57,6 +57,40 @@ class so__genotype extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'rdfs:type' => array(
+            'searchable' => FALSE,
+            'name' => 'genotype_type_name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'schema:name' => array(
+            'name' => 'genotype_name',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'schema:description' => array(
+            'name' => 'genotype_description',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+        )
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */
@@ -105,10 +139,9 @@ class so__genotype extends ChadoField {
         $genotype = $genotype_linker->genotype_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            '@type' => $genotype->type_id->dbxref_id->db_id->name . ':' . $genotype->type_id->dbxref_id->accession,
-            'type' => $genotype->type_id->name,
-            'name' => $genotype->name,
-            'description' => $genotype->description,
+            'rdfs:type' => $genotype->type_id->name,
+            'schema:name' => $genotype->name,
+            'schema:description' => $genotype->description,
           ),
           $field_table . '__' . $pkey => $genotype_linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $genotype_linker->$fkey_lcolumn->$fkey_lcolumn,

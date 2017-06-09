@@ -57,7 +57,48 @@ class chado_linker__contact extends ChadoField {
   protected $instance;
 
 
+  /**
+   * @see TripalField::elements()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
 
+    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
+    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'contains', 'starts'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+        'type' => 'string',
+        'elements' => array(
+          $type_term => array(
+            'searchable' => TRUE,
+            'name' => 'type',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $name_term => array(
+            'searchable' => TRUE,
+            'name' => 'name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $description_term => array(
+            'searchable' => TRUE,
+            'name' => 'description',
+            'operations' => array('contains'),
+            'sortable' => FALSE,
+          ),
+          'entity' => array(
+            'searchable' => FALSE,
+          ),
+        ),
+      )
+    );
+  }
   /**
    *
    * @see TripalField::load()
@@ -69,6 +110,10 @@ class chado_linker__contact extends ChadoField {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
+
+    $type_term = tripal_get_chado_semweb_term('contact', 'type');
+    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $description_term = tripal_get_chado_semweb_term('contact', 'description');
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
@@ -111,27 +156,12 @@ class chado_linker__contact extends ChadoField {
         $contact = $contact_linker->contact_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            'type' => $contact->type_id ? $contact->type_id->name : '',
-            'name' => $contact->name,
-            'description' => $contact->description,
+            $type_term => $contact->type_id ? $contact->type_id->name : '',
+            $name_term => $contact->name,
+            $description_term => $contact->description,
           ),
-          // Add in the semantic web settings.  This array is expected by
-          // other Tripal modules that handle semantic web for fields.
-          'semantic_web' => array(
-            'type' => $contact->type_id ? $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession : '',
-            'name' => tripal_get_chado_semweb_term('contact', 'name'),
-            'description' => tripal_get_chado_semweb_term('contact', 'description'),
-          ),
-          // Add in subfield mapping to Chado tables. This is used by the
-          // chado_field_storage for performing queries on sub element values.
-          // It should be a comma-separated list (no spacing) of the field names
-          // as foreign keys are followed starting from the Chado table to which
-          // this field maps.
-          'chado_mapping' => array(
-            'type' => 'type_id,name',
-            'name' => 'contact_id,name',
-            'description' => 'contact_id,name'
-          ),
+          // Add elements that are not part of the values but used by
+          // the chado storage back-end for saving values.
           'chado-' . $field_table . '__' . $pkey => $contact_linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $contact_linker->$fkey_lcolumn->$fkey_lcolumn,
           'chado-' . $field_table . '__' . 'contact_id' => $contact->contact_id
@@ -155,7 +185,11 @@ class chado_linker__contact extends ChadoField {
     $alias = 'contact_linker';
     $operator = $condition['operator'];
 
-    if ($condition['column'] == 'contact.name') {
+    $type_term = tripal_get_chado_semweb_term('contact', 'type');
+    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+
+    if ($condition['column'] == $name_term) {
       $query->join($contact_linker, $alias, "base.$bpkey = $alias.$bpkey");
       $query->join('contact', 'C', "C.contact_id = $alias.contact_id");
       $query->condition("C.name", $condition['value'], $operator);

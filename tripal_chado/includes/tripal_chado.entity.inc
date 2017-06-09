@@ -144,10 +144,18 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
   $table = $bundle->data_table;
 
   if ($table == 'organism') {
-    $format[] = array(
-      'format' => '[taxrank__genus] [taxrank__species]',
-      'weight' => -5
-    );
+    if (chado_get_version() <= '1.2') {
+      $format[] = array(
+        'format' => '[taxrank__genus] [taxrank__species]',
+        'weight' => -5
+      );
+    }
+    else {
+      $format[] = array(
+        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecies]',
+        'weight' => -5
+      );
+    }
   }
   if ($table == 'analysis') {
     $format[] = array(

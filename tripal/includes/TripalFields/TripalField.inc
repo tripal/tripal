@@ -91,6 +91,9 @@ class TripalField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
+  // The term array that provides all the details about the controlled
+  // vocabulary term that this field maps to.
+  protected $term;
 
   // --------------------------------------------------------------------------
   //                     CONSTRUCTOR
@@ -109,6 +112,8 @@ class TripalField {
     $this->instance = $instance;
 
     $class = get_called_class();
+
+    $this->term = tripal_get_term_details($this->instance['settings']['term_vocabulary'], $this->instance['settings']['term_accession']);
 
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
@@ -146,7 +151,7 @@ class TripalField {
 
 
   // --------------------------------------------------------------------------
-  //                 GETTERS AND SETTERS -- DO NOT OVERRIDE
+  //                 DO NOT OVERRIDE THESE FUNCTIONS
   // --------------------------------------------------------------------------
 
   /**
@@ -172,6 +177,200 @@ class TripalField {
    */
   protected function getPagerElementID() {
     return $this->field['id'];
+  }
+
+  public function getFieldTerm(){
+    return $this->term;
+  }
+
+  protected function getFieldTermID() {
+    $class = get_called_class();
+    return $this->instance['settings']['term_vocabulary'] . ':' . $this->instance['settings']['term_accession'];
+  }
+
+  /**
+   * Describes this field to Tripal web services.
+   *
+   * The child class need not implement this function has all of the details
+   * provided for elements by the elementInfo() function are used to generate
+   * the details needed for Views.
+   *
+   * @return
+   *   An associative array with the keys available for searching. The value
+   *   is the term array for the element.
+   */
+  public function webServicesData() {
+    $elements = $this->elementInfo();
+
+    $field_term = $this->getFieldTermID();
+    $field_term_name = strtolower(preg_replace('/[^\w]/', '_', $this->term['name']));
+    $field_details = $elements[$field_term];
+
+    $searchable_keys = array();
+    if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
+      $searchable_keys[$field_term_name] = $field_term;
+    }
+
+    // Now add any entries for child elements.
+    if (array_key_exists('elements', $field_details)) {
+      $elements = $field_details['elements'];
+      foreach ($elements as $element_name => $element_details) {
+        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+      }
+    }
+
+    return $searchable_keys;
+  }
+
+  /**
+   *
+   * @param $searchabe_keys
+   * @param $field_name
+   * @param $element_name
+   * @param $element_details
+   */
+  protected function _addWebServiceElement(&$searchable_keys, $parent_term_name, $parent_term, $element_name, $element_details) {
+    // Skip the 'entity' element, as we'll never make this searchable or
+    // viewable. It's meant for linking.
+    if ($element_name == 'entity') {
+      return;
+    }
+
+    list($vocabulary, $accession) = explode(':', $element_name);
+    $term = tripal_get_term_details($vocabulary, $accession);
+    $field_term = $parent_term . ',' . $term['vocabulary']['short_name'] . ':' . $term['accession'];
+    $field_term_name = $parent_term_name . '.' . strtolower(preg_replace('/[^\w]/', '_', $term['name']));
+
+    // Is the field searchable?
+    if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
+      $searchable_keys[$field_term_name] =  $field_term;
+    }
+
+    // Now add any entries for child elements.
+    if (array_key_exists('elements', $element_details)) {
+      $elements = $element_details['elements'];
+      foreach ($elements as $element_name => $element_details) {
+        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+      }
+    }
+  }
+
+  /**
+   * Describes this field to Views.
+   *
+   * The child class need not implement this function has all of the details
+   * provided for elements by the elementInfo() function are used to generate
+   * the details needed for Views.
+   *
+   * @param $view_base_id
+   *   Views was originally designed to integrate with SQL tables. And
+   *   each field is associated with a table.  Because these are TripalFields
+   *   and views is not directly querying the tables it doesn't make sense to
+   *   associate fields with a table, but we must associate the fields with
+   *   the bundle.  Each bundle is uniquely identified with the $view_base_id
+   *   that is passed here.
+   *
+   * @return
+   *   An associative array describing the data structure. Primary key is the
+   *   name used internally by Views for the bundle that is provided by
+   *   the $view_base_id. The returned array should be compatible with the
+   *   instructions provided by the hook_views_data() function.
+   */
+  public function viewsData($view_base_id) {
+    $data = array();
+    $field_name = $this->field['field_name'];
+    $field_term = $this->getFieldTermID();
+
+    $elements = $this->elementInfo();
+    $field_details = $elements[$field_term];
+
+    // Build the entry for the field.
+    $data[$view_base_id][$field_name] = array(
+      'title' => $this->instance['label'],
+      'help' => $this->instance['description'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field',
+        'click sortable' => TRUE,
+      ),
+    );
+    // Is the field sortable?
+    if (array_key_exists('sortable', $field_details) and $field_details['sortable']) {
+      $data[$view_base_id][$field_name]['sort']['click handler'] = 'views_handler_sort';
+      $data[$view_base_id][$field_name]['field']['click sortable'] = TRUE;
+    }
+
+    // Is the field searchable?
+    if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
+      $filter_handler = 'tripal_views_handler_filter_string';
+      if (array_key_exists('type', $field_details) and $field_details['type'] == 'numeric') {
+        $filter_handler = 'tripal_views_handler_filter';
+      }
+      $data[$view_base_id][$field_name]['filter'] = array(
+        'handler' => $filter_handler,
+      );
+    }
+
+    // Now add any entries for child elements.
+    if (array_key_exists('elements', $field_details)) {
+      $elements = $field_details['elements'];
+      foreach ($elements as $element_name => $element_details) {
+        $this->_addViewsDataElement($data, $view_base_id, $field_name, $element_name, $element_details);
+      }
+    }
+
+    return $data;
+  }
+
+  /**
+   *
+   * @param unknown $data
+   * @param unknown $view_base_id
+   * @param unknown $parent
+   * @param unknown $element_name
+   * @param unknown $element_details
+   */
+  protected function _addViewsDataElement(&$data, $view_base_id, $parent, $element_name, $element_details) {
+    // Skip the 'entity' element, as we'll never make this searchable or
+    // viewable. It's meant for linking.
+    if ($element_name == 'entity') {
+      return;
+    }
+    $field_name = $parent . '.' . $element_name;
+    list($vocabulary, $accession) = explode(':', $element_name);
+    $term = tripal_get_term_details($vocabulary, $accession);
+
+    // Build the entry for the field.
+    $data[$view_base_id][$field_name] = array(
+      'title' => ucfirst($term['name']),
+      'help' => $term['definition'],
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_element',
+      ),
+    );
+    // Is the field sortable?
+    if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
+      $data[$view_base_id][$field_name]['sort']['click handler'] = 'views_handler_sort';
+      $data[$view_base_id][$field_name]['field']['click sortable'] = TRUE;
+    }
+
+    // Is the field searchable?
+    if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
+      $filter_handler = 'tripal_views_handler_filter_element_string';
+      if (array_key_exists('type', $element_details) and $element_details['type'] == 'numeric') {
+        $filter_handler = 'tripal_views_handler_filter';
+      }
+      $data[$view_base_id][$field_name]['filter'] = array(
+        'handler' => $filter_handler,
+      );
+    }
+
+    // Recusrively add any entries for child elements.
+    if (array_key_exists('elements', $element_details)) {
+      $elements = $element_details['elements'];
+      foreach ($elements as $element_name => $element_details) {
+        $this->_addViewsDataElement($data, $view_base_id, $field_name, $element_name, $element_details);
+      }
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -243,6 +442,108 @@ class TripalField {
   }
 
   /**
+   * Provides the list of elements returned by the 'value' of the field. \
+   *
+   * The elements provided by this function are used to integrate with
+   * Drupal Views and Web services.  The return value is an associative array
+   * that contains all of the elements that will be returned by the
+   * 'value' of this field. If the value field returns an element which
+   * is not defined here a warning will be generated.
+   *
+   * The array structure should contain at the top-level a key of the form
+   * {db}:{accession}. This represents the term that this field belongs to.
+   * The value of this top-level key is an array with the following keys:
+   *   -name: this key is not actually used but is availble to improve
+   *     readability of the array.  Because the key is a vocabulary term
+   *     conaining only the accession it's not always clear what it means.
+   *     Providing a 'name' key helps other's know what the term is.
+   *   -searchable:  TRUE if the element can be used for filtering the content
+   *     type to which tis field is attached.  FALSE if not.
+   *   -operations:  an array of filtering operations that can be used for this
+   *     field.  These include: 'eq', 'ne', 'contains', 'starts', 'gt', 'lt',
+   *     'gte', 'lte'.  These opertaions are applicable to strings: 'eq', 'ne',
+   *     'contains', and 'starts'.  These operations are applicable for numeric
+   *     values: 'gt', 'lt', 'gte', 'lte'.
+   *   -sortable: TRUE if the element can be sorted.  FALSE if not.
+   *   -elements:  If this field value is a simple scalar (i.e. string or
+   *     number) then this key is not needed. But, if the 'value' of the
+   *     field is an array with sub keys then those subkeys must be defined
+   *     using this key.  The members of the element array follows the same
+   *     format as the top-level key and the above subkeys can be used as well.
+   *
+   * The following code provides an example for describing the value elements
+   * of this field.  The Tripal Chado module provides an obi__organism field
+   * that attaches organism details to content types such as genes, mRNA,
+   * stocks, etc.  It provides a label containing the full scientific name of
+   * the organism as well as the genus, species, infraspecific name,
+   * and infraspecific type. If the organism to which the field belong is
+   * published then an entity ID is provided.  The following array describes
+   * all of these.
+   * @code
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'contains', 'starts'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+        'elements' => array(
+          'rdfs:label' => array(
+            'searchable' => TRUE,
+            'name' => 'scientfic_name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'TAXRANK:0000005' => array(
+            'searchable' => TRUE,
+            'name' => 'genus',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'TAXRANK:0000006' => array(
+            'searchable' => TRUE,
+            'name' => 'species',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'TAXRANK:0000045' => array(
+            'searchable' => TRUE,
+            'name' => 'infraspecies',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'local:infraspecific_type' => array(
+            'searchable' => TRUE,
+            'name' => 'infraspecific_type',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'entity' => array(
+            'searchable' => FALSE,
+          ),
+        ),
+      )
+    );
+   * @endcode
+   *
+   * If a field does not have a complex nested set of values, but simply returns
+   * a scalar then the default elementInfo provides default string-based
+   * searchabilty.
+   *
+   * @return
+   *   An associative array of the value elements provided by this field.
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'ne', 'contains', 'starts'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+      ),
+    );
+  }
+
+  /**
    * Provides a form for the 'Field Settings' of the field management page.
    *
    * This is an optional hook function and is similar to the
@@ -268,47 +569,6 @@ class TripalField {
    */
   public function settingsFormValidate($form, &$form_state) {
 
-  }
-
-  /**
-   * Describes this field to Views.
-   *
-   * An array of views data, in the same format as the return value of
-   * hook_views_data().
-   *
-   * @param $view_base_id
-   *   Views was originally designed to integrate with SQL tables. And
-   *   each field is associated with a table.  Because these are TripalFields
-   *   and views is not directly querying the tables it doesn't make sense to
-   *   associate fields with a table, but we must associate the fields with
-   *   the bundle.  Each bundle is uniquely identified with the $view_base_id
-   *   that is passed here.
-   *
-   * @return
-   *   An associative array describing the data structure. Primary key is the
-   *   name used internally by Views for the bundle that is provided by
-   *   the $view_base_id. The returned array should be compatible with the
-   *   instructions provided by the hook_views_data() function.
-   */
-  public function viewsData($view_base_id) {
-    $data = array();
-    $field_name = $this->field['field_name'];
-
-    $data[$view_base_id][$field_name] = array(
-      'title' => $this->instance['label'],
-      'help' => $this->instance['description'],
-      'field' => array(
-        'handler' => 'tripal_views_handler_field',
-        'click sortable' => TRUE,
-      ),
-      'filter' => array(
-        'handler' => 'tripal_views_handler_filter_string',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
-      )
-    );
-    return $data;
   }
 
   /**
@@ -371,18 +631,24 @@ class TripalField {
   /**
    * Used to filter records that match a given condition.
    *
-   * Entities can be filtered using the fields.  This function should be
-   * implemented if the field  supports filtering.  To provide filtering,
-   * the $query object should be updated to including any joins and
-   * conditions necessary. The following rules should be followed when
-   * implementing this function:
-   * - Any keys from the value array that support filtering should be set
-   *   in the $default_settings['searchable_keys'] array of this class file.
-   * - Implement support for every key in the
-   *   $default_settings['searchable_keys'] array.
-   * - However, avoid making filteres for non-indexed database columns.
-   * - This function should never set the fields that should be returned
-   *   nor ordering or group by.
+   * Records that belong to a content type can be filtered using the fields.
+   * This function should be implemented if the field  supports filtering as
+   * specified in the elementInfo() function.  With this function, the query
+   * object appropriate for the storage back-end is passed into the function.
+   *
+   * The condition array passesd in will have three values:
+   *   - column:  the key indicating how the filter should occur.
+   *   - op: the operation to perform (e.g. equals, contains, starts with etc.
+   *   - value:  the value for filtering.
+   *
+   * The column used for filtering will be a comma-speperated list of
+   * controlled vocabulary IDs. This comma-separate list corresponds directly
+   * to the heirarchy of elements provided by the elementInfo() function.
+   * For example, if a field provides organism information then it may use
+   * the OBI:0100026 term for the field, and the term TAXRANK:0000005 for the
+   * term to indicate the 'Genus'.  If these fields are properly organized in
+   * the elementInfo() function then the "column" of the condition when
+   * a user wants to search by genus will be: OBI:0100026,TAXRANK:0000005.
    *
    * @param $query
    *   A query object appropriate for the data storage backend. For example,

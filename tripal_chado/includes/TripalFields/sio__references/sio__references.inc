@@ -55,6 +55,44 @@ class sio__references extends ChadoField {
   // and field_create_instance().
   public static $no_ui = FALSE;
 
+
+  /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'rdfs:type' => array(
+            'searchable' => TRUE,
+            'name' => 'type',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'schema:name' => array(
+            'searchable' => TRUE,
+            'name' => 'name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'data:0842'=> array(
+            'searchable' => TRUE,
+            'name' => 'identifier',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'entity'=> array(
+            'searchable' => FALSE,
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
   /**
    *
    * @see TripalField::load()

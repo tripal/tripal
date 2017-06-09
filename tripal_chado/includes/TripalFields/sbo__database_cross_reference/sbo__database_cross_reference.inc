@@ -58,6 +58,42 @@ class sbo__database_cross_reference extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+
+    $dbname_term = tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
+
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          $dbname_term => array(
+            'searchable' => TRUE,
+            'name' => 'db_name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $accession_term => array(
+            'searchable' => TRUE,
+            'name' => 'accession',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'schema:url' => array(
+            'searchable' => FALSE,
+            'name' => 'URL',
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  /**
    *
    * @see TripalField::load()
    */

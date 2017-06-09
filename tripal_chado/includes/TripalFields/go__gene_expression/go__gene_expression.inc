@@ -61,6 +61,20 @@ class go__gene_expression extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */

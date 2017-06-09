@@ -54,7 +54,54 @@ class ogi__location_on_map extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
+  /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
 
+    $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
+    $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
+    $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
+
+    return array(
+      $field_term => array(
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'data:1274' => array(
+            'name' => 'Map',
+            'searchable' => FALSE,
+            'sortable' => FALSE,
+            'elements' => array(
+              $name_term => array(
+                'name' => 'map_name',
+                'searchable' => TRUE,
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => FALSE,
+              ),
+              $description_term => array(
+                'name' => 'map_description',
+                'searchable' => TRUE,
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => FALSE,
+              ),
+            ),
+          ),
+          $mappos_term => array(
+            'name' => 'Map',
+            'searchable' => TRUE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'entity' => array(
+            'searchable' => FALSE,
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
   /**
    *
    * @see TripalField::load()
@@ -65,6 +112,10 @@ class ogi__location_on_map extends ChadoField {
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
+
+    $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
+    $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
+    $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
@@ -94,10 +145,10 @@ class ogi__location_on_map extends ChadoField {
         $value = array (
           // Map.
           'data:1274' => array(
-            'schema:name' => $featuremap->name,
-            'schema:description' => $featuremap->description,
+            $name_term => $featuremap->name,
+            $description_term => $featuremap->description,
           ),
-          'SIO:000056' => $featurepos->mappos
+          $mappos_term => $featurepos->mappos
         );
         if (property_exists($featuremap, 'entity_id')) {
           $value['data:1274']['entity'] = 'TripalEntity:' . $featuremap->entity_id;

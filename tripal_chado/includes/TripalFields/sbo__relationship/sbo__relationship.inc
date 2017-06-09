@@ -72,6 +72,77 @@ class sbo__relationship extends ChadoField {
 
 
   /**
+   * @see TripalField::elements()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'contains', 'starts'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+        'type' => 'string',
+        'elements' => array(
+          'local:relationship_subject' => array(
+            'searchable' => FALSE,
+            'name' => 'scientfic_name',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+            'elements' => array(
+              'rdfs:type' => array(
+                'searchable' => TRUE,
+                'name' => 'subject_type',
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => TRUE,
+              ),
+              'schema:name' => array(
+                'searchable' => TRUE,
+                'name' => 'subject_name',
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => TRUE,
+              ),
+              'entity' => array(
+                'searchable' => FALSE,
+                'sortable' => FALSE,
+              )
+            ),
+          ),
+          'local:relationship_type' => array(
+            'searchable' => TRUE,
+            'name' => 'genus',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'local:relationship_object' => array(
+            'searchable' => TRUE,
+            'name' => 'species',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+            'elements' => array(
+              'rdfs:type' => array(
+                'searchable' => TRUE,
+                'name' => 'object_type',
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => TRUE,
+              ),
+              'schema:name' => array(
+                'searchable' => TRUE,
+                'name' => 'object_name',
+                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => TRUE,
+              ),
+              'entity' => array(
+                'searchable' => FALSE,
+                'sortable' => FALSE,
+              )
+            ),
+          ),
+        ),
+      )
+    );
+  }
+  /**
    *
    * @see TripalField::load()
    */
@@ -445,38 +516,50 @@ class sbo__relationship extends ChadoField {
     $bpkey = $bschema['primary key'][0];
     $operator = $condition['operator'];
 
+    // Bulid the list of expected elements that will be provided.
+    $field_term_id = $this->getFieldTermID();
+    $rel_subject = $field_term_id . ',local:relationship_subject';
+    $rel_subject_type =  $rel_subject . ',' . 'rdfs:type';
+    $rel_subject_name =  $rel_subject . ',' . 'schema:name';
+    $rel_subject_identifier = $rel_subject . ',' . 'data:0842';
+    $rel_type = $field_term_id . ',local:relationship_type';
+    $rel_object = $field_term_id . ',local:relationship_object';
+    $rel_object_type = $rel_object . ',' . 'rdfs:type';
+    $rel_object_name = $rel_object . ',' . 'schema:name';
+    $rel_object_identifier = $rel_object . ',' . 'data:0842';
+
     // Filter by the name of the subject or object.
-    if ($condition['column'] == 'relationship.clause_subject.name') {
+    if ($condition['column'] == $rel_subject_name) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
       $query->condition("base2.name", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'relationship.clause_predicate.name') {
+    if ($condition['column'] == $rel_object_name) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
       $query->condition("base2.name", $condition['value'], $operator);
     }
 
     // Filter by unique name of the subject or object.
-    if ($condition['column'] == 'relationship.clause_subject.identifier') {
+    if ($condition['column'] == $rel_subject_identifier) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
       $query->condition("base2.uniquename", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'relationship.clause_predicate.identifier') {
+    if ($condition['column'] == $rel_object_identifier) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
       $query->condition("base2.uniquename", $condition['value'], $operator);
     }
 
     // Filter by the type of the subject or object
-    if ($condition['column'] == 'relationship.clause_subject.type') {
+    if ($condition['column'] == $rel_subject_type) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
       $query->join('cvterm', 'SubjectCVT', "SubjectCVT.cvterm_id = base2.type_id");
       $query->condition("SubjectCVT.name", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'relationship.clause_predicate.type') {
+    if ($condition['column'] == $rel_object_type) {
       $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
       $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
       $query->join('cvterm', 'ObjectCVT', "ObjectCVT.cvterm_id = base2.type_id");

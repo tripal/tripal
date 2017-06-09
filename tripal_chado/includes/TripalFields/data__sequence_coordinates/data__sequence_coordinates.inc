@@ -56,6 +56,56 @@ class data__sequence_coordinates extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  protected function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'data:3002' => array(
+            'searchable' => TRUE,
+            'name' => 'source_feature',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'local:fmin' => array(
+            'searchable' => TRUE,
+            'name' => 'feature min',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'local:fmax' => array(
+            'searchable' => TRUE,
+            'name' => 'feature max',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'data:2336' => array(
+            'searchable' => TRUE,
+            'name' => 'phase',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'data:0853' => array(
+            'searchable' => TRUE,
+            'name' => 'strand',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */

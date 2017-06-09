@@ -75,7 +75,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // If we couldn't match this field argument to a field and entity then return
     if (!$entity) {
-      throw new Exception("Canno find this entity.");
+      throw new Exception("Cannot find this entity.");
     }
 
     list($field, $instance, $term) = $this->findField($bundle, $expfield);
@@ -485,22 +485,46 @@ class TripalEntityService_v0_1 extends TripalWebService {
         $op = $matches[2];
       }
 
-      // Break apart any subkeys and pull the first one out for the term name key.
+      // Break apart any subkeys and pull the first one as this is the parent
+      // field.
       $subkeys = explode(',', $key);
       if (count($subkeys) > 0) {
-        $key = array_shift($subkeys);
+        $key = $subkeys[0];
       }
-      $column_name = $key;
 
       // Map the values in the filters to their appropriate field names.
       if (array_key_exists($key, $field_mapping)) {
-        $field_name = $field_mapping[$key];
-        if (count($subkeys) > 0) {
-          $column_name .= '.' . implode('.', $subkeys);
+        $key_field_name = $field_mapping[$key];
+        $key_field = field_info_field($key_field_name);
+        $key_instance = field_info_instance('TripalEntity', $key_field_name, $bundle->name);
+
+        // Complex fields provied by the TripalField class may have sub
+        // elements that support filtering.  We need to see if the user
+        // wants to filter on those.
+        if (tripal_load_include_field_class($key_field_name)) {
+          // To find out which fields are searchable we'll call the wsData()
+          // function.
+          $key_field = new $key_field_name($key_field, $key_instance);
+          $searchable_keys = $key_field->webServicesData();
+          $criteria = implode('.', $subkeys);
+          if (array_key_exists($criteria, $searchable_keys)) {
+            $new_params[$key_field_name]['value'] = $value;
+            $new_params[$key_field_name]['op'] = $op;
+            $new_params[$key_field_name]['column'] = $searchable_keys[$criteria];
+          }
+          else {
+            throw new Exception("The filter term, '$criteria', is not available for use.");
+          }
         }
-        $new_params[$field_name]['value'] = $value;
-        $new_params[$field_name]['op'] = $op;
-        $new_params[$field_name]['column'] = $column_name;
+        // If this field is not a TripalField then it should just have
+        // a simple value and we can query for that.
+        else {
+          $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
+
+          $new_params[$key_field_name]['value'] = $value;
+          $new_params[$key_field_name]['op'] = $op;
+          $new_params[$key_field_name]['column'] = $key_field_id;
+        }
       }
       else {
         throw new Exception("The filter term, '$key', is not available for use.");
