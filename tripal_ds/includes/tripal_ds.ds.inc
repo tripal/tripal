@@ -135,8 +135,8 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     // Build one large multidimensional array of all instances to sort in alpha
     // order to display fields in label alpha order.
     $right_fields = array();
-    $all_field_groups = array() /*= field_group_info_groups('TripalEntity', $bundle_name)*/;
-    if (/*is_array($all_field_groups)*/ FALSE) {
+    $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
+    if (is_array($all_field_groups)) {
       if (!isset($all_field_groups['default'])) {
         $all_field_groups['default'] = array();
       }
@@ -214,8 +214,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     _ds_fields_info_write($bundle_name);
     $region_left = [ 'toc' ];
     $fields_with_regions += [ 'toc' => 'left' ];
-    watchdog('debug', '<pre>$fields_with_regions: '. print_r($fields_with_regions, TRUE) .'</pre>');
-    watchdog('debug', '<pre>$region_right: '. print_r($region_right, TRUE) .'</pre>');
 
     // Build the ds layout.
     $record = new stdClass;
