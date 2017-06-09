@@ -111,13 +111,23 @@ class tripal_views_query extends views_plugin_query {
         if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
            $field_name = $matches[1];
            $element_name = $matches[2];
-           // Remove the double underscore from the $element_name and put
-           // back the colon
-           $element_name = preg_replace('/__/', ':', $element_name);
-          $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+           if (tripal_load_include_field_class($field_name)) {
+             $field = field_info_field($field_name);
+             $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+             $field_obj = new $field_name($field, $instance);
+             $element_name = $field_obj->getFieldTermID() . ',' . $element_name;
+             // Replace periods with commas.
+             $element_name = preg_replace('/\./', ',', $element_name);
+             $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+           }
+           else {
+             throw new Exception("Unkown element id: '$element_name'.");
+           }
         }
         else {
-          $this->query->fieldCondition($field_name, $field_name, $value, $operator);
+          $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+          $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+          $this->query->fieldCondition($field_name, $field_term, $value, $operator);
         }
       }
     }

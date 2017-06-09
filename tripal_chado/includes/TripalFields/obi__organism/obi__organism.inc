@@ -272,7 +272,7 @@ class obi__organism extends ChadoField {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    dpm($condition);
+    //dpm($condition);
 
     $field_term_id = $this->getFieldTermID();
     $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');

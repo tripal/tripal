@@ -57,7 +57,7 @@ class ogi__location_on_map extends ChadoField {
   /**
    * @see TripalField::elementInfo()
    */
-  protected function elementInfo() {
+  public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
     $name_term = tripal_get_chado_semweb_term('featuremap', 'name');

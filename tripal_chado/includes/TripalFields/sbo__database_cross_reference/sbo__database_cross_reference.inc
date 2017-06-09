@@ -60,7 +60,7 @@ class sbo__database_cross_reference extends ChadoField {
   /**
    * @see TripalField::elementInfo()
    */
-  protected function elementInfo() {
+  public function elementInfo() {
 
     $dbname_term = tripal_get_chado_semweb_term('db', 'name');
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');

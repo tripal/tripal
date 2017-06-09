@@ -57,7 +57,7 @@ class so__transcript extends ChadoField {
   /**
    * @see TripalField::elementInfo()
    */
-  protected function elementInfo() {
+  public function elementInfo() {
     $field_term = $this->getFieldTermID();
     return array(
       $field_term => array(

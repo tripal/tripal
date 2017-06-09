@@ -183,7 +183,7 @@ class TripalField {
     return $this->term;
   }
 
-  protected function getFieldTermID() {
+  public function getFieldTermID() {
     $class = get_called_class();
     return $this->instance['settings']['term_vocabulary'] . ':' . $this->instance['settings']['term_accession'];
   }
@@ -284,10 +284,20 @@ class TripalField {
     $elements = $this->elementInfo();
     $field_details = $elements[$field_term];
 
+    // Get any titles or help text that is overriden.
+    $title = ucfirst($this->instance['label']);
+    if (array_key_exists('label', $field_details)) {
+      $title = $field_details['label'];
+    }
+    $help = $this->instance['description'];
+    if (array_key_exists('help', $field_details)) {
+      $help = $field_details['help'];
+    }
+
     // Build the entry for the field.
     $data[$view_base_id][$field_name] = array(
-      'title' => $this->instance['label'],
-      'help' => $this->instance['description'],
+      'title' => $title,
+      'help' => $help,
       'field' => array(
         'handler' => 'tripal_views_handler_field',
         'click sortable' => TRUE,
@@ -317,7 +327,6 @@ class TripalField {
         $this->_addViewsDataElement($data, $view_base_id, $field_name, $element_name, $element_details);
       }
     }
-
     return $data;
   }
 
@@ -339,10 +348,20 @@ class TripalField {
     list($vocabulary, $accession) = explode(':', $element_name);
     $term = tripal_get_term_details($vocabulary, $accession);
 
+    // Get any titles or help text that is overriden.
+    $title = ucfirst($term['name']);
+    if (array_key_exists('label', $element_details)) {
+      $title = $element_details['label'];
+    }
+    $help = $term['definition'];
+    if (array_key_exists('help', $element_details)) {
+      $help = $element_details['help'];
+    }
+
     // Build the entry for the field.
     $data[$view_base_id][$field_name] = array(
-      'title' => ucfirst($term['name']),
-      'help' => $term['definition'],
+      'title' => $title,
+      'help' => $help,
       'field' => array(
         'handler' => 'tripal_views_handler_field_element',
       ),
@@ -464,6 +483,11 @@ class TripalField {
    *     'gte', 'lte'.  These opertaions are applicable to strings: 'eq', 'ne',
    *     'contains', and 'starts'.  These operations are applicable for numeric
    *     values: 'gt', 'lt', 'gte', 'lte'.
+   *   -label: The label (if applicable) to appear for the elmeent. The default
+   *     is to use the term's name.
+   *   -help: Help text (if applicable) to appear for the element. The default
+   *     is to use the term's definition.
+   *   -type: The data type: e.g. 'string' or 'numeric'. Default is 'string'.
    *   -sortable: TRUE if the element can be sorted.  FALSE if not.
    *   -elements:  If this field value is a simple scalar (i.e. string or
    *     number) then this key is not needed. But, if the 'value' of the
@@ -532,7 +556,7 @@ class TripalField {
    * @return
    *   An associative array of the value elements provided by this field.
    */
-  protected function elementInfo() {
+  public function elementInfo() {
     $field_term = $this->getFieldTermID();
     return array(
       $field_term => array(

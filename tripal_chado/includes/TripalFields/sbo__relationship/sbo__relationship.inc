@@ -86,7 +86,7 @@ class sbo__relationship extends ChadoField {
         'elements' => array(
           'local:relationship_subject' => array(
             'searchable' => FALSE,
-            'name' => 'scientfic_name',
+            'name' => 'relationship_subject',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
             'elements' => array(
@@ -99,6 +99,7 @@ class sbo__relationship extends ChadoField {
               'schema:name' => array(
                 'searchable' => TRUE,
                 'name' => 'subject_name',
+                'label' => 'Relationship clause subject name',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => TRUE,
               ),
@@ -110,12 +111,12 @@ class sbo__relationship extends ChadoField {
           ),
           'local:relationship_type' => array(
             'searchable' => TRUE,
-            'name' => 'genus',
+            'name' => 'relationship_type',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),
           'local:relationship_object' => array(
-            'searchable' => TRUE,
+            'searchable' => FALSE,
             'name' => 'species',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
