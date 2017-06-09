@@ -78,7 +78,7 @@ class obi__organism extends ChadoField {
       if (!$organism_id or $organism_id == 0) {
         $errors[$field_name]['und'][0][] = array(
           'message' =>  t("Please specify an organism."),
-          'error' => 'chado_base__organism_id'
+          'error' => 'obi__organism_id'
         );
       }
     }
@@ -231,7 +231,7 @@ class obi__organism extends ChadoField {
             'searchable' => TRUE,
             'name' => 'scientfic_name',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
+            'sortable' => FALSE,
           ),
           $genus_term => array(
             'searchable' => TRUE,
@@ -272,14 +272,14 @@ class obi__organism extends ChadoField {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    //dpm($condition);
-
     $field_term_id = $this->getFieldTermID();
     $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
     $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
     $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
     $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
-    $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
+
+    // Join to the organism table for this field.
+    $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");
 
     // If the column is the field name then we're during a search on the full
     // scientific name.
@@ -289,7 +289,7 @@ class obi__organism extends ChadoField {
         $query->where("CONCAT($alias.genus, ' ', $alias.species) $operator :full_name",  array(':full_name' => $condition['value']));
       }
       else {
-        $query->leftJoin('cvterm', $alias . '_cvterm', 'base.infraspecific_type = ' . $alias . '_cvterm.type_id');
+        $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', 'base.infraspecific_type = ' . $alias . '_cvterm.type_id', 'LEFT OUTER');
         $query->where("CONCAT($alias.genus, ' ', $alias.species, ' ', " . $alias . "'_cvterm.name', ' ', $alias.infraspecific_name) $operator :full_name",  array(':full_name' => $condition['value']));
       }
     }
@@ -305,7 +305,7 @@ class obi__organism extends ChadoField {
       $query->condition("$alias.infraspecific_name", $condition['value'], $operator);
     }
     if ($condition['column'] == $infraspecific_type_term) {
-      $query->join('cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+      $this->queryJoinOnce($query, 'cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
       $query->condition("CVT.name", $condition['value'], $operator);
     }
   }
@@ -314,27 +314,30 @@ class obi__organism extends ChadoField {
    * @see ChadoField::queryOrder()
    */
   public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
 
-    // If the table hasn't yet been joined then add it.
-    $joins = $query->getTables();
-    if (!in_array($this->field['field_name'], $joins)) {
-      $alias = $this->field['field_name'];
-      $query->join('organism', $alias, "base.organism_id = $alias.organism_id");
-    }
+    $field_term_id = $this->getFieldTermID();
+    $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
+    $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
+    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+
+    // Join to the organism table for this field.
+    $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");
 
     // Now perform the sort.
-    if ($order['column'] == 'organism.species') {
-      $query->orderBy("$alias.genus", $order['direction']);
-    }
-    if ($order['column'] == 'organism.genus') {
+    if ($order['column'] == $species_term) {
       $query->orderBy("$alias.species", $order['direction']);
     }
-    if ($order['column'] == 'organism.infraspecies') {
+    if ($order['column'] == $genus_term) {
+      $query->orderBy("$alias.genus", $order['direction']);
+    }
+    if ($order['column'] == $infraspecific_name_term) {
       $query->orderBy("$alias.infraspecific_name", $order['direction']);
     }
-    if ($order['column'] == 'organism.infraspecies') {
+    if ($order['column'] == $infraspecific_type_term) {
       if (!in_array('CVT', $joins)) {
-        $query->join('cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+        $this->queryJoinOnce($query, 'cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
       }
       $query->orderBy("CVT.name", $order['direction']);
     }

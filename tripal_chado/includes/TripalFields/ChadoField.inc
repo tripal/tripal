@@ -89,6 +89,40 @@ class ChadoField extends TripalField {
   }
 
   /**
+   * A convient way to join a table to a query without duplicates.
+   *
+   * @param $query
+   *   The SelectQuery object.
+   * @param $table
+   *   The table to join.
+   * @param $alias
+   *   The table alias to use.
+   * @param $condition
+   *   The join condition.
+   * @param $type
+   *   The type of join: INNER, LEFT OUTER, or RIGHT OUTER.
+   */
+  protected function queryJoinOnce($query, $table, $alias, $condition, $type = 'INNER') {
+    $joins = $query->getTables();
+
+    // If this join is already present then don't add it again.
+    if (in_array($alias, array_keys($joins))) {
+      return;
+    }
+
+    switch($type) {
+      case 'LEFT OUTER':
+        $query->leftjoin($table, $alias, $condition);
+        break;
+      case 'RIGHT OUTER':
+        $query->rightjoin($table, $alias, $condition);
+        break;
+      default:
+        $query->innerjoin($table, $alias, $condition);
+    }
+  }
+
+  /**
    * @see TripalField::instanceSettingsForm()
    */
   public function instanceSettingsForm() {

@@ -179,14 +179,14 @@ class sbo__database_cross_reference extends ChadoField {
     $operator = $condition['operator'];
 
     if ($condition['column'] == 'database_cross_reference.database_name') {
-      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
-      $query->join('db', 'DB', "DB.db_id = DBX.db_id");
+      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $this->queryJoinOnce($query, 'db', 'DB', "DB.db_id = DBX.db_id");
       $query->condition("DB.name", $condition['value'], $operator);
     }
     if ($condition['column'] == 'database_cross_reference.accession') {
-      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
       $query->condition("DBX.accession", $condition['value'], $operator);
     }
   }

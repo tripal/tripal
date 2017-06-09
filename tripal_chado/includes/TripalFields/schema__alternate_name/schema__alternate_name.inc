@@ -115,8 +115,8 @@ class schema__alternate_name extends ChadoField {
     $operator = $condition['operator'];
 
     if ($condition['column'] == 'alternatename') {
-      $query->join($syn_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('synonym', 'SYN', "SYN.synonym_id = $alias.synonym_id");
+      $this->queryJoinOnce($query, $syn_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'synonym', 'SYN', "SYN.synonym_id = $alias.synonym_id");
       $query->condition("SYN.name", $condition['value']);
     }
   }

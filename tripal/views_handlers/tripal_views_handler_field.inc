@@ -23,6 +23,18 @@ class tripal_views_handler_field extends views_handler_field {
   }
 
   /**
+   * Overrides click_sort().
+   */
+  function click_sort($order) {
+    if (isset($this->field_alias)) {
+      // Since fields should always have themselves already added, just
+      // add a sort on the field.
+      $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
+      $this->query->add_orderby($this->table_alias, $this->real_field, $order, $this->field_alias, $params);
+    }
+  }
+
+  /**
    * Get the value that's supposed to be rendered.
    *
    * This api exists so that other modules can easy set the values of the field

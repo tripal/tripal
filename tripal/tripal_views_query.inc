@@ -2,12 +2,33 @@
 
 class tripal_views_query extends views_plugin_query {
 
-  // The EntityFieldQuery object.
+  /**
+   * The EntityFieldQuery object used to perform the query
+   */
   var $query;
 
+  /**
+   * The EntityFieldQuery object used to perform the count query.
+   * It will not include the order by and only fields that are used in
+   * filters.
+   */
+  var $cquery;
+
+  /**
+   * The fields that are to be included in the query.
+   */
   var $fields;
 
+  /**
+   * The filters that are to be included in the query.
+   */
   var $filters;
+
+  /**
+   * The sort item that are to be included in the query.
+   */
+  var $sort;
+
 
 
   /**
@@ -45,6 +66,8 @@ class tripal_views_query extends views_plugin_query {
 
     // Creqte the TripalFieldQuery object.
     $this->query = new TripalFieldQuery();
+    $this->cquery = new TripalFieldQuery();
+    $this->cquery->count();
 
     // Convert the $base_table into the bundle table.  Because every
     // tripal site will have different bundle tables we have to do the
@@ -56,6 +79,9 @@ class tripal_views_query extends views_plugin_query {
     // Make sure we only query on the entities for this bundle type.
     $this->query->entityCondition('entity_type', 'TripalEntity');
     $this->query->entityCondition('bundle', $bundle->name);
+
+    $this->cquery->entityCondition('entity_type', 'TripalEntity');
+    $this->cquery->entityCondition('bundle', $bundle->name);
   }
   /**
    *
@@ -100,50 +126,78 @@ class tripal_views_query extends views_plugin_query {
       // Handle the bundle properties separate from real fields.
       if ($field_name == 'entity_id' or $field_name == 'status') {
         $this->query->propertyCondition($field_name, $value, $operator);
+        $this->cquery->propertyCondition($field_name, $value, $operator);
+        return;
       }
-      else if ($field_name == 'link' or $field_name == 'edit_link' or $field_name == 'delete_link') {
-        // TODO: not sure how to handle these just yet.
+
+      // If the field_name comes to us with a period in it then it means that
+      // we need to separate the field name from sub-element names.
+      $matches = array();
+      if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
+         $field_name = $matches[1];
+         $element_name = $matches[2];
+         if (tripal_load_include_field_class($field_name)) {
+           $field = field_info_field($field_name);
+           $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+           $field_obj = new $field_name($field, $instance);
+           $element_name = $field_obj->getFieldTermID() . ',' . $element_name;
+           // Replace periods with commas.
+           $element_name = preg_replace('/\./', ',', $element_name);
+           $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+           $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
+         }
+         else {
+           throw new Exception("Unkown element id: '$element_name'.");
+         }
       }
       else {
-        // If the field_name comes to us with a period in it then it means that
-        // we need to separate the field name from sub-element names.
-        $matches = array();
-        if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
-           $field_name = $matches[1];
-           $element_name = $matches[2];
-           if (tripal_load_include_field_class($field_name)) {
-             $field = field_info_field($field_name);
-             $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
-             $field_obj = new $field_name($field, $instance);
-             $element_name = $field_obj->getFieldTermID() . ',' . $element_name;
-             // Replace periods with commas.
-             $element_name = preg_replace('/\./', ',', $element_name);
-             $this->query->fieldCondition($field_name, $element_name, $value, $operator);
-           }
-           else {
-             throw new Exception("Unkown element id: '$element_name'.");
-           }
-        }
-        else {
-          $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
-          $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-          $this->query->fieldCondition($field_name, $field_term, $value, $operator);
-        }
+        $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+        $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+        $this->query->fieldCondition($field_name, $field_term, $value, $operator);
+        $this->cquery->fieldCondition($field_name, $field_term, $value, $operator);
       }
     }
   }
 
-  public function add_orderby($table, $field = NULL, $order = 'ASC',
-      $alias = '', $params = array()) {
-
-    $this->orderby[] = array(
-      'field' => $field,
-      'direction' => strtoupper($order)
-    );
-
-  }
   /**
-   *
+   * Overrides add_orderby().
+   */
+  public function add_orderby($table, $field_name = NULL, $order = 'ASC', $alias = '', $params = array()) {
+
+    if ($field_name) {
+      // Make sure we don't put the orderby in more than once.
+      foreach ($this->order as $index => $order_details) {
+        if ($order_details['field'] == $field_name) {
+          return;
+        }
+      }
+      $this->order[] = array(
+        'field' => $field_name,
+        'direction' => strtoupper($order)
+      );
+
+      // If the field_name comes to us with a period in it then it means that
+      // we need to separate the field name from sub-element names.
+      $matches = array();
+      if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
+        $field_name = $matches[1];
+        $element_name = $matches[2];
+        $field = field_info_field($field_name);
+        $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+        $element_name = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession']  . ',' . $element_name;
+        $this->query->fieldOrderBy($field_name, $element_name, $order);
+
+      }
+      else {
+        $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+        $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+        $this->query->fieldOrderBy($field_name, $field_term, $order);
+      }
+    }
+  }
+
+  /**
+   * Overrides build().
    */
   function build(&$view) {
     // Make the query distinct if the option was set.
@@ -159,9 +213,8 @@ class tripal_views_query extends views_plugin_query {
     // Let the pager modify the query to add limits.
     $this->pager->query();
 
-    $cquery = clone $this->query;
     $view->build_info['query'] = $this->query;
-    $view->build_info['count_query'] = $cquery->count();
+    $view->build_info['count_query'] = $this->cquery;
   }
   /**
    *
@@ -169,7 +222,7 @@ class tripal_views_query extends views_plugin_query {
    */
   function execute(&$view) {
     $query = $view->build_info['query'];
-    $count_query = $view->build_info['count_query'];
+    $cquery = $view->build_info['count_query'];
 
     if ($query) {
       $start = microtime(TRUE);
@@ -184,7 +237,8 @@ class tripal_views_query extends views_plugin_query {
           // really should create a new tripal_views_plugin_pager class
           // and call the corresponding function here, but due to time
           // constraints this is the shortcut.
-          $this->pager->total_items = $count_query->execute();
+          $total_items = $cquery->execute();
+          $this->pager->total_items = $total_items;
           if (!empty($this->pager->options['offset'])) {
             $this->pager->total_items -= $this->pager->options['offset'];
           };
@@ -201,11 +255,9 @@ class tripal_views_query extends views_plugin_query {
 
         // Get the IDs
         $results = $query->execute();
-
         $entity_ids = array_keys($results['TripalEntity']);
 
         $this->pager->post_execute($view->result);
-
         if ($this->pager->use_count_query() || !empty($view->get_total_rows)) {
           $view->total_rows = $this->pager->get_total_items();
         }
@@ -222,6 +274,7 @@ class tripal_views_query extends views_plugin_query {
           }
         }
 
+        // Get the entity IDs from the query.
         $entities = tripal_load_entity('TripalEntity', $entity_ids, FALSE, $field_ids);
         $i = 0;
         foreach ($entities as $entity_id => $entity) {

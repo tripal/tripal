@@ -305,8 +305,7 @@ class TripalField {
     );
     // Is the field sortable?
     if (array_key_exists('sortable', $field_details) and $field_details['sortable']) {
-      $data[$view_base_id][$field_name]['sort']['click handler'] = 'views_handler_sort';
-      $data[$view_base_id][$field_name]['field']['click sortable'] = TRUE;
+      $data[$view_base_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
     }
 
     // Is the field searchable?
@@ -368,7 +367,7 @@ class TripalField {
     );
     // Is the field sortable?
     if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
-      $data[$view_base_id][$field_name]['sort']['click handler'] = 'views_handler_sort';
+      $data[$view_base_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
       $data[$view_base_id][$field_name]['field']['click sortable'] = TRUE;
     }
 

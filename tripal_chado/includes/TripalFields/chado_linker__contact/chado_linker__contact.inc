@@ -190,8 +190,8 @@ class chado_linker__contact extends ChadoField {
     $description_term = tripal_get_chado_semweb_term('contact', 'description');
 
     if ($condition['column'] == $name_term) {
-      $query->join($contact_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('contact', 'C', "C.contact_id = $alias.contact_id");
+      $this->queryJoinOnce($query, $contact_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'contact', 'C', "C.contact_id = $alias.contact_id");
       $query->condition("C.name", $condition['value'], $operator);
     }
     if ($condition['column'] == 'contact.type') {

@@ -37,6 +37,53 @@ function tripal_views_data() {
 }
 
 /**
+ * Implements hook views_data_alter()
+ *
+ * Ensures that all fields attached to TripalEntities use the proper
+ * handlers.
+ */
+function tripal_views_data_alter(&$data) {
+
+  $fields = field_info_fields();
+  $tripal_fields = tripal_get_field_types();
+
+  // Iterate through all of the fields.
+  foreach ($fields as $field) {
+
+    // Skip fields that aren't attached to TripalEntity entities.
+    if (!array_key_exists('TripalEntity', $field['bundles'])) {
+      continue;
+    }
+
+    // Iterate through the bundles to which this field is attached and
+    // if it is a TripalField field then we'll call the viewsData function.
+    $bundles = $field['bundles']['TripalEntity'];
+    $result = array();
+    foreach ($bundles as $bundle_name) {
+      $field_name = $field['field_name'];
+
+      // Skip fields that aren't setup for views with this bundle.
+      // Fields should be associated with the bundle's term identifier
+      // (i.e. [vocab]__[accession].
+      $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+      $bundle_term_id = $term->vocab->vocabulary . '__' . $term->accession;
+      if (!array_key_exists($bundle_term_id, $data)) {
+        continue;
+      }
+
+      // Skip fields implemented using a TripalField class. These fields
+      // should already have the proper handlers because the class sets
+      // them up automatically.
+      if (in_array($field_name, $tripal_fields)) {
+        continue;
+      }
+
+      $data[$bundle_term_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
+    }
+  }
+}
+/**
  * Integreates the Tripal fields with Views.
  */
 function tripal_views_data_fields(&$data) {
@@ -50,6 +97,8 @@ function tripal_views_data_fields(&$data) {
       continue;
     }
 
+    // TODO: do we really need this hook? Just substitute the code here
+    // for what that hook does... it's only called in one plac.e
     // Call the hook_field_views_data() but only for the tripal module.
     // Otherwise the other modules will expect that this is an SQL-based
     // view.
@@ -120,7 +169,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'handler' => 'tripal_views_handler_filter',
       ),
       'sort' => array(
-        'handler' => 'views_handler_sort',
+        'handler' => 'tripal_views_handler_sort',
       ),
     );
     $data[$table]['link'] = array(
@@ -129,12 +178,6 @@ function tripal_views_data_tripal_entity(&$data) {
       'field' => array(
         'handler' => 'tripal_views_handler_field_entity_link',
       ),
-      'filter' => array(
-        'handler' => 'tripal_views_handler_filter',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
-      ),
     );
     $data[$table]['edit_link'] = array(
       'title' => t('Edit Link'),
@@ -142,24 +185,12 @@ function tripal_views_data_tripal_entity(&$data) {
       'field' => array(
         'handler' => 'tripal_views_handler_field_entity_link_edit',
       ),
-      'filter' => array(
-        'handler' => 'tripal_views_handler_filter',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
-      ),
     );
     $data[$table]['delete_link'] = array(
       'title' => t('Delete Link'),
       'help' => t('Provide a simple link to delete the content.'),
       'field' => array(
         'handler' => 'tripal_views_handler_field_entity_link_delete',
-      ),
-      'filter' => array(
-        'handler' => 'tripal_views_handler_filter',
-      ),
-      'sort' => array(
-        'handler' => 'views_handler_sort',
       ),
     );
     $data[$table]['status'] = array(
@@ -179,7 +210,7 @@ function tripal_views_data_tripal_entity(&$data) {
         'use equal' => TRUE, // Use status = 1 instead of status <> 0 in WHERE statment
       ),
       'sort' => array(
-        'handler' => 'views_handler_sort',
+        'handler' => 'tripal_views_handler_sort',
       ),
     );
   }

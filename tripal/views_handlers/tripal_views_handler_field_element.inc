@@ -33,7 +33,6 @@ class tripal_views_handler_field_element extends tripal_views_handler_field {
    *   Optional name of the field where the value is stored.
    */
   function get_value($values, $field = NULL) {
-
     $field_name = $this->field_alias;
 
     if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
@@ -65,9 +64,19 @@ class tripal_views_handler_field_element extends tripal_views_handler_field {
     $value = $this->get_value($values);
 
     // Handle single value fields:
-    if (count($value == 1)) {
+    if (count($value) == 0) {
+      return '';
+    }
+    if (count($value) == 1) {
       return $this->sanitize_value($value[0]['value'][$element_name], 'xss');
     }
-    return '';
+    else {
+      dpm($value);
+      return t('Too many values to show.');
+    }
+  }
+
+  protected function get_element_value($value, $element_name) {
+
   }
 }

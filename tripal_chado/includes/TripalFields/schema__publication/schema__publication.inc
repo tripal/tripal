@@ -136,17 +136,17 @@ class schema__publication extends ChadoField {
     if ($condition['column'] == 'publication.database_cross_reference') {
       list($db_name, $accession) = explode(':', $condition['value']);
 
-      $query->join($pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('pub_dbxref', 'PDBX', "PDBX.pub_id = $alias.pub_id");
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = PDBX.dbxref_id");
-      $query->join('db', 'DB', "DB.db_id = DBX.db_id");
+      $this->queryJoinOnce($query, $pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'pub_dbxref', 'PDBX', "PDBX.pub_id = $alias.pub_id");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = PDBX.dbxref_id");
+      $this->queryJoinOnce($query, 'db', 'DB', "DB.db_id = DBX.db_id");
       $query->condition("DB.name", $db_name);
       $query->condition("DBX.accession", $accession);
     }
 
     if ($condition['column'] == 'publication.title') {
-      $query->join($pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('pub', 'PUB', "PUB.pub_id = $alias.pub_id");
+      $this->queryJoinOnce($query, $pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'pub', 'PUB', "PUB.pub_id = $alias.pub_id");
       $query->condition('PUB.title', $condition['value'], $operator);
     }
 

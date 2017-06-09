@@ -80,8 +80,8 @@ class sbo__relationship extends ChadoField {
     return array(
       $field_term => array(
         'operations' => array('eq', 'contains', 'starts'),
-        'sortable' => TRUE,
-        'searchable' => TRUE,
+        'sortable' => FALSE,
+        'searchable' => FALSE,
         'type' => 'string',
         'elements' => array(
           'local:relationship_subject' => array(
@@ -93,13 +93,16 @@ class sbo__relationship extends ChadoField {
               'rdfs:type' => array(
                 'searchable' => TRUE,
                 'name' => 'subject_type',
+                'label' => 'Relationship Subject Type',
+                'help' => 'The subject\'s data type in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => TRUE,
               ),
               'schema:name' => array(
                 'searchable' => TRUE,
                 'name' => 'subject_name',
-                'label' => 'Relationship clause subject name',
+                'label' => 'Relationship Subject Name',
+                'help' => 'The subject\'s name in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => TRUE,
               ),
@@ -119,17 +122,21 @@ class sbo__relationship extends ChadoField {
             'searchable' => FALSE,
             'name' => 'species',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
+            'sortable' => FALSE,
             'elements' => array(
               'rdfs:type' => array(
                 'searchable' => TRUE,
                 'name' => 'object_type',
+                'label' => 'Relationship Object Type',
+                'help' => 'The objects\'s data type in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => TRUE,
               ),
               'schema:name' => array(
                 'searchable' => TRUE,
                 'name' => 'object_name',
+                'label' => 'Relationship Object Name',
+                'help' => 'The objects\'s name in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => TRUE,
               ),
@@ -531,47 +538,47 @@ class sbo__relationship extends ChadoField {
 
     // Filter by the name of the subject or object.
     if ($condition['column'] == $rel_subject_name) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
       $query->condition("base2.name", $condition['value'], $operator);
     }
     if ($condition['column'] == $rel_object_name) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.object_id");
       $query->condition("base2.name", $condition['value'], $operator);
     }
 
     // Filter by unique name of the subject or object.
     if ($condition['column'] == $rel_subject_identifier) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
       $query->condition("base2.uniquename", $condition['value'], $operator);
     }
     if ($condition['column'] == $rel_object_identifier) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.object_id");
       $query->condition("base2.uniquename", $condition['value'], $operator);
     }
 
     // Filter by the type of the subject or object
     if ($condition['column'] == $rel_subject_type) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.object_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.subject_id");
-      $query->join('cvterm', 'SubjectCVT', "SubjectCVT.cvterm_id = base2.type_id");
-      $query->condition("SubjectCVT.name", $condition['value'], $operator);
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, 'cvterm', 'SubjectCVT', "SubjectCVT.cvterm_id = base2.type_id");
+      $this->queryJoinOnce($query, "SubjectCVT.name", $condition['value'], $operator);
     }
     if ($condition['column'] == $rel_object_type) {
-      $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id");
-      $query->join($base_table, 'base2', "base2.$bpkey = $alias.object_id");
-      $query->join('cvterm', 'ObjectCVT', "ObjectCVT.cvterm_id = base2.type_id");
+      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id");
+      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.object_id");
+      $this->queryJoinOnce($query, 'cvterm', 'ObjectCVT', "ObjectCVT.cvterm_id = base2.type_id");
       $query->condition("ObjectCVT.name", $condition['value'], $operator);
     }
 
     // Filter by relationship type
     if ($condition['column'] == 'relationship.relationship_type') {
       // This filter commented out because it's way to slow...
-//       $query->join($chado_table, $alias, "base.$bpkey = $alias.subject_id OR base.$bpkey = $alias.object_id");
-//       $query->join('cvterm', 'RelTypeCVT', "RelTypeCVT.cvterm_id = $alias.type_id");
+//       $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id OR base.$bpkey = $alias.object_id");
+//       $this->queryJoinOnce($query, 'cvterm', 'RelTypeCVT', "RelTypeCVT.cvterm_id = $alias.type_id");
 //       $query->condition("RelTypeCVT.name", $condition['value'], $operator);
     }
   }

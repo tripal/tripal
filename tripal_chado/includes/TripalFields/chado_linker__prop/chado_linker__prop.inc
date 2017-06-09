@@ -140,7 +140,7 @@ class chado_linker__prop extends ChadoField {
 
     $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
 
-    $query->join($prop_linker, $alias, "base.$bpkey = $alias.$bpkey");
+    $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey");
     $query->condition("$alias.type_id", $cvterm->cvterm_id);
     $query->condition("$alias.value", $condition['value'], $operator);
 

@@ -6,9 +6,14 @@
  */
 class TripalFieldQuery extends EntityFieldQuery {
 
-  protected $field_storage = array();
+  /**
+   * Holds a list of fields that should be included in the results
+   */
+  protected $includes = array();
 
-
+  /**
+   * Overrides the EntityFieldQuery::execute() function.
+   */
   public function execute() {
     // Give a chance for other modules to alter the query.
     drupal_alter('entity_query', $this);
@@ -73,7 +78,6 @@ class TripalFieldQuery extends EntityFieldQuery {
     }
   }
 
-
   /**
    * Determines the query callback to use for this entity query.
    *
@@ -89,7 +93,7 @@ class TripalFieldQuery extends EntityFieldQuery {
    *   A callback that can be used with call_user_func().
    *
    */
-  public function queryStorageCallback($storage) {
+  protected function queryStorageCallback($storage) {
     // Use the override from $this->executeCallback. It can be set either
     // while building the query, or using hook_entity_query_alter().
     if (function_exists($this->executeCallback)) {
