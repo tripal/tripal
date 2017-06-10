@@ -555,8 +555,8 @@ function tripal_chado_field_storage_query($query) {
   // Now set any ordering.
   foreach ($query->order as $index => $sort) {
     // Add in property ordering.
-    if ($order['type'] == 'property') {
-
+    if ($sort['type'] == 'property') {
+       // TODO: support ordering by bundle properties.
     }
     // Add in filter ordering
     if ($sort['type'] == 'field') {
