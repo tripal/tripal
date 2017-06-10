@@ -70,17 +70,23 @@ class so__genotype extends ChadoField {
           'rdfs:type' => array(
             'searchable' => FALSE,
             'name' => 'genotype_type_name',
+            'label' => 'Genotype Type',
+            'help' => 'The type of genotype.',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
           ),
           'schema:name' => array(
             'name' => 'genotype_name',
+            'label' => 'Genotype Name',
+            'help' => 'The name of the genotype.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
           ),
           'schema:description' => array(
             'name' => 'genotype_description',
+            'label' => 'Genotype Description',
+            'help' => 'A description of the genotype.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,

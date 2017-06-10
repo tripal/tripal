@@ -67,24 +67,32 @@ class so__transcript extends ChadoField {
         'elements' => array(
           'rdfs:type' => array(
             'name' => 'transcript_type',
+            'label' => 'Transcript Type',
+            'help' => 'The type of a transcript.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
           ),
           'schema:name' => array(
             'name' => 'transcript_name',
+            'label' => 'Transcript Name',
+            'help' => 'The name of a transcript.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
           ),
           'data:0842' => array(
             'name' => 'transcript_uniquename',
+            'label' => 'Transcript Identifier',
+            'help' => 'The unique identifier of a transcript.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
           ),
           'SO:0000735' => array(
             'name' => 'loc',
+            'label' => 'Transcript Location',
+            'help' => 'The location of the transcript on a reference feature.',
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,

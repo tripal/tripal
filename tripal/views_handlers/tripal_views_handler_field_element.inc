@@ -61,22 +61,65 @@ class tripal_views_handler_field_element extends tripal_views_handler_field {
       $element_name = preg_replace('/__/', ':', $element_name);
     }
 
-    $value = $this->get_value($values);
+    // Get the items for this field.
+    $items = $this->get_value($values);
+
+    // Is this a nested element? If not make sure we have an array of element
+    // names to make it easier to deal with the name below.
+    $elements = explode('.', $element_name);
+    if (count($elements) == 0) {
+      $elements[] = $element_name;
+    }
 
     // Handle single value fields:
-    if (count($value) == 0) {
+    if (count($items) == 0) {
       return '';
     }
-    if (count($value) == 1) {
-      return $this->sanitize_value($value[0]['value'][$element_name], 'xss');
+    else if (count($items) == 1) {
+      $item = $items[0];
+      $element = array_shift($elements);
+      if (is_array($item['value'][$element])) {
+        return $this->_get_element_value($elements, $item['value'][$element]);
+      }
+      else {
+        return $this->sanitize_value($item['value'][$element_name], 'xss');
+      }
+    }
+    else if (count($items) <= 10) {
+      $element = array_shift($elements);
+      $element_values = array();
+      foreach ($items as $index => $item) {
+        if (is_array($item['value'][$element])) {
+          $element_values[] = $this->_get_element_value($elements, $item['value'][$element]);
+        }
+        else {
+          $element_values[] = $this->sanitize_value($item['value'][$element], 'xss');
+        }
+      }
+      // TODO: theming this way should probably be handled by a sepcial
+      // field handler that the user can tweak. But for now we'll just do this.
+      return theme_item_list(array(
+        'items' => $element_values,
+        'title' => NULL,
+        'type' => 'ul',
+        'attributes' => array(),
+      ));
     }
     else {
-      dpm($value);
       return t('Too many values to show.');
     }
   }
 
-  protected function get_element_value($value, $element_name) {
-
+  /**
+   * A recursive function for retrieving a nested element value.
+   */
+  private function _get_element_value($elements, $item_values) {
+    $element = array_shift($elements);
+    if (is_array($item_values[$element])) {
+      return $this->_get_element_value($elements, $item_values[$element]);
+    }
+    else {
+      return $this->sanitize_value($item_values[$element], 'xss');
+    }
   }
 }

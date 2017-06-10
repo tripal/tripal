@@ -76,12 +76,16 @@ class ogi__location_on_map extends ChadoField {
             'elements' => array(
               $name_term => array(
                 'name' => 'map_name',
+                'label' => 'Map Name',
+                'help' => 'The name of the map.',
                 'searchable' => TRUE,
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => FALSE,
               ),
               $description_term => array(
                 'name' => 'map_description',
+                'label' => 'Map Description',
+                'help' => 'A description of the map.',
                 'searchable' => TRUE,
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
                 'sortable' => FALSE,
@@ -89,7 +93,9 @@ class ogi__location_on_map extends ChadoField {
             ),
           ),
           $mappos_term => array(
-            'name' => 'Map',
+            'name' => 'map_position_type',
+            'label' => 'Map Position Type',
+            'help' => 'Maps may use different coordinate systems. This indicates the type of coordinate.',
             'searchable' => TRUE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,

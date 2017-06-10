@@ -27,7 +27,7 @@ class tripal_views_query extends views_plugin_query {
   /**
    * The sort item that are to be included in the query.
    */
-  var $sort;
+  var $order;
 
 
 
@@ -63,6 +63,7 @@ class tripal_views_query extends views_plugin_query {
     parent::init($base_table, $base_field, $options);
     $this->fields = array();
     $this->where = array();
+    $this->order = array();
 
     // Creqte the TripalFieldQuery object.
     $this->query = new TripalFieldQuery();
@@ -267,6 +268,13 @@ class tripal_views_query extends views_plugin_query {
         $field_ids = array();
         foreach ($this->fields as $details) {
           $field_name = $details['field_name'];
+          // If the field_name comes to us with a period in it then it means that
+          // we need to separate the field name from sub-element names.
+          $matches = array();
+          if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
+            $field_name = $matches[1];
+            $element_name = $matches[2];
+          }
           $field = field_info_field($field_name);
           if ($field) {
             $fields[$field_name] = $field;
@@ -305,6 +313,15 @@ class tripal_views_query extends views_plugin_query {
               $view->result[$i]->$field_name = $entity->status;
               continue;
             }
+
+            // If the field_name comes to us with a period in it then it means that
+            // we need to separate the field name from sub-element names.
+            $matches = array();
+            if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
+              $field_name = $matches[1];
+              $element_name = $matches[2];
+            }
+
             if (array_key_exists($field_name, $fields)) {
               $items = field_get_items('TripalEntity', $entity, $field_name);
               $view->result[$i]->$field_name = $items;
