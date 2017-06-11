@@ -15,8 +15,8 @@ class TripalField {
   public static $default_label = 'Tripal Field';
 
   // The default description for this field.
-  public static $default_description = 'The generic base class for all Tripal fields. ' .
-    'Replace this text as appropriate for the child implementation.';
+  public static $default_description = 'The generic base class for all Tripal fields. 
+    Replace this text as appropriate for the child implementation.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
