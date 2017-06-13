@@ -561,6 +561,7 @@ function tripal_create_bundle_fields($bundle, $term) {
 
   // Iterate through all of the field instances and create them.
   foreach ($info as $field_name => $details) {
+
     // If the field is already attached to this bundle then skip it.
     $field = field_info_field($details['field_name']);
     if ($field and array_key_exists('bundles', $field) and
@@ -568,6 +569,7 @@ function tripal_create_bundle_fields($bundle, $term) {
         in_array($bundle->name, $field['bundles']['TripalEntity'])) {
       continue;
     }
+
     // Create the field instance.
     $instance = field_create_instance($details);
     $added[] = $field_name;
