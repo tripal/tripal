@@ -15,8 +15,8 @@ class TripalField {
   public static $default_label = 'Tripal Field';
 
   // The default description for this field.
-  public static $default_description = 'The generic base class for all Tripal fields. ' .
-    'Replace this text as appropriate for the child implementation.';
+  public static $default_description = 'The generic base class for all Tripal fields. 
+    Replace this text as appropriate for the child implementation.';
 
   // Provide a list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -108,12 +108,30 @@ class TripalField {
    *   An array containing the instance data as returned by field_instance_info().
    */
   public function __construct($field, $instance) {
+    $vocabulary = $term = NULL;
     $this->field = $field;
     $this->instance = $instance;
 
     $class = get_called_class();
 
-    $this->term = tripal_get_term_details($this->instance['settings']['term_vocabulary'], $this->instance['settings']['term_accession']);
+    // Use the term info defined in the class by default (assuming it's not schema:Thing ;-).
+    if ($class::$default_instance_settings['term_name'] != 'Thing') {
+      $vocabulary = $class::$default_instance_settings['term_vocabulary'];
+      $accession = $class::$default_instance_settings['term_accession'];
+    }
+
+    // Allow the constructor to override the term info.
+    $vocabulary = isset($this->instance['settings']['term_vocabulary']) ? $this->instance['settings']['term_vocabulary'] : $vocabulary;
+    $accession = isset($this->instance['settings']['term_accession']) ? $this->instance['settings']['term_accession'] : $accession;
+
+    // Assuming we have term info, load the term.
+    if (!empty($vocabulary) AND !empty($accession)) {
+      $this->term = tripal_get_term_details($vocabulary, $accession);
+    }
+    else {
+      tripal_report_error('tripal_field', TRIPAL_ERROR, 'Unable to instantiate Field :name due to missing vocabulary and/or accession.',
+        array(':name' => $class::$default_label));
+    }
 
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
