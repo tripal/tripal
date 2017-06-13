@@ -104,7 +104,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     // Build the pager
     $items_per_page = array_key_exists('items_per_page', $this->instance['settings']) ? $this->instance['settings']['items_per_page'] : 10;
-    $total_records = count($items);
+    $total_records = count($rows);
     $total_pages = (int) ($total_records / $items_per_page) + 1;
     $pelement = 0; //$this->getPagerElementID();
     $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);

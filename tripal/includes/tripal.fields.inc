@@ -853,16 +853,14 @@ function tripal_field_is_empty($item, $field) {
     return TRUE;
   }
 
-  // Iterate through all of the fields and if at least one has a value
-  // the field is not empty.
-  foreach ($item as $form_field_name => $value) {
-    if (isset($value) and $value != NULL and $value != '') {
-      return FALSE;
-    }
+  // If there is a value field but there's nothing in it, the the field is
+  // empty.
+  if (array_key_exists('value', $item) and empty($item['value'])){
+    return TRUE;
   }
 
-  // Otherwise, the field is empty.
-  return TRUE;
+  // Otherwise, the field is not empty.
+  return FALSE;
 }
 
 /**
