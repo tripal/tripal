@@ -633,6 +633,7 @@ function chado_get_cvterm_mapping($params) {
   $cvterm_id = array_key_exists('cvterm_id', $params) ? $params['cvterm_id'] : NULL;
   $vocabulary = array_key_exists('vocabulary', $params) ? $params['vocabulary'] : NULL;
   $accession = array_key_exists('accession', $params) ? $params['accession'] : NULL;
+  $cvterm = NULL;
 
   if ($cvterm_id) {
     $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
@@ -649,13 +650,16 @@ function chado_get_cvterm_mapping($params) {
     $cvterm = chado_generate_var('cvterm', $match);
   }
 
-  $result = db_select('chado_cvterm_mapping', 'tcm')
-    ->fields('tcm')
-    ->condition('cvterm_id', $cvterm->cvterm_id)
-    ->execute();
-  $result = $result->fetchObject();
-  if ($result) {
-    $result->cvterm = $cvterm;
+  if ($cvterm) {
+    $result = db_select('chado_cvterm_mapping', 'tcm')
+      ->fields('tcm')
+      ->condition('cvterm_id', $cvterm->cvterm_id)
+      ->execute();
+    $result = $result->fetchObject();
+    if ($result) {
+      $result->cvterm = $cvterm;
+    }
+    return $result;
   }
-  return $result;
+  return NULL;
 }

@@ -487,7 +487,6 @@ function tripal_bundle_access($op, $type = NULL, $account = NULL) {
  */
 function tripal_admin_add_type_form($form, &$form_state) {
 
-
   $stores = module_invoke_all('vocab_storage_info');
   if (!is_array($stores) or count($stores) == 0) {
     tripal_set_message('A storage backend is not enabled for managing
@@ -529,6 +528,8 @@ function tripal_admin_add_type_form($form, &$form_state) {
       'method' => 'replace'
     ),
   );
+  $form['#prefix'] = '<div id = "tripal-vocab-select-form">';
+  $form['#suffix'] = '</div>';
 
   // If the term has been provided by the user then we want to search for
   // matching terms in the database and let them select among any matches.
@@ -588,6 +589,7 @@ function tripal_admin_add_type_form($form, &$form_state) {
         '#type' => 'item',
         '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
       );
+      return $form;
     }
 
     // Now let the user select where the data type will be stored.
@@ -643,9 +645,6 @@ function tripal_admin_add_type_form($form, &$form_state) {
       );
     }
   }
-
-  $form['#prefix'] = '<div id = "tripal-vocab-select-form">';
-  $form['#suffix'] = '</div>';
 
 
   return $form;

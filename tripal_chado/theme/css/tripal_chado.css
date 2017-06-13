@@ -58,3 +58,7 @@
 #autocomplete {
   width: 600px !important;
 }
+
+.properties-field-list {
+  margin: 0px;
+}

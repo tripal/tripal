@@ -1246,7 +1246,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   // If we have a type_column then we know this type uses a column in the
   // base table, so we can set the storage args and return.
-  if ($default['type_column']) {
+  if ($default['type_column'] and $default['type_column'] != 'none') {
     $storage_args['data_table'] = $default['table'];
     $storage_args['type_column'] = $default['type_column'];
     return;
