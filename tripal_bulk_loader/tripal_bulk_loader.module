@@ -306,10 +306,15 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
     ),
 
     // form element themes
-    'tripal_bulk_loader_modify_template_base_form' => array(
-      'template' => 'tripal_bulk_loader_modify_template_base_form',
+    'tripal_bulk_loader_modify_template_base_form_records' => array(
+      'template' => 'tripal_bulk_loader_modify_template_base_form_records',
       'path' => "$path/theme/templates",
-      'render element' => 'form'
+      'render element' => 'element'
+    ),
+    'tripal_bulk_loader_modify_template_base_form_fields' => array(
+      'template' => 'tripal_bulk_loader_modify_template_base_form_fields',
+      'path' => "$path/theme/templates",
+      'render element' => 'element'
     ),
     'tripal_bulk_loader_field_regex_fieldset' => array(
       'file' => 'theme/tripal_bulk_loader.theme.inc',
