@@ -1674,7 +1674,7 @@ function chado_query($sql, $args = array()) {
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
   else {
-    $previous_db = chado_set_active('chado') ;
+    $previous_db = chado_set_active('chado');
     $results = db_query($sql, $args);
     chado_set_active($previous_db);
   }
