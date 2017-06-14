@@ -1580,10 +1580,12 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
 }
 
 /**
- * Use this function instead of db_query() to avoid switching databases
- * when making query to the chado database
+ * A substitute for db_query() when querying from Chado.
  *
- * Will use a chado persistent connection if it already exists
+ * This function is needed to avoid switching databases when making query to
+ * the chado database.
+ *
+ * Will use a chado persistent connection if it already exists.
  *
  * @param $sql
  *   The sql statement to execute
@@ -1625,11 +1627,20 @@ function chado_query($sql, $args = array()) {
   // if Chado is local to the database then prefix the Chado table
   // names with 'chado'.
   if ($is_local) {
-    $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-    $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
+    // Remove carriage returns from the SQL.
+    $sql = preg_replace('/\n/', '', $sql);
 
-    // the featureloc table has some indexes that use function that call other functions
-    // and those calls do not reference a schema, therefore, any tables with featureloc
+    // Prefix the tables with their correct schema.
+    // Chado tables should be enclosed in curly brackets (ie: {feature} )
+    // and Drupal tables should be enclosed in square brackets
+    // (ie: [tripal_jobs] ).
+    // @todo: remove assumption that the chado schema is called 'chado' and the
+    // drupal schema is called 'public'.
+    $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
+    $sql = preg_replace('/\[(\w+)\]/', 'public.$1', $sql);
+
+    // The featureloc table has some indexes that use function that call other
+    // functions and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
     if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
@@ -1647,6 +1658,16 @@ function chado_query($sql, $args = array()) {
     else {
       $results = db_query($sql, $args);
     }
+  }
+  // Check for any cross schema joins (ie: both drupal and chado tables
+  // represented and if present don't execute the query but instead warn the
+  // administrator.
+  else if (preg_match('/\[(\w*?)\]/', $sql)) {
+    tripal_report_error('chado_query', TRIPAL_ERROR,
+      'The following query does not support external chado databases. Please file an issue with the Drupal.org Tripal Project. Query: @query',
+       array('@query' => $sql)
+    );
+    return FALSE;
   }
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
