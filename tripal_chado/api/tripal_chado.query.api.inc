@@ -1615,7 +1615,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * @ingroup tripal_chado_query_api
  */
 function chado_query($sql, $args = array()) {
-  $is_local = $GLOBALS["chado_is_local"];
+  $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
 
   // Args should be an array
   if (!is_array($args)) {
