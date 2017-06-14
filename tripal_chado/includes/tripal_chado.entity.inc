@@ -199,6 +199,12 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
       'weight' => -5,
     );
   }
+  if ($table == 'contact') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
   return $format;
 }
 

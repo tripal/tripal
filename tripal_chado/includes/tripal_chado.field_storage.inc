@@ -43,7 +43,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-
+dpm($field_vals);
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
   // is an insert and we need to set the type_id if the table supports it.
@@ -60,13 +60,14 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   if ($op == FIELD_STORAGE_INSERT) {
     // Add the record to the proper chado entity table
     $chado_entity_table = chado_get_bundle_entity_table($bundle);
-    $record = array(
-      'entity_id' => $entity->id,
-      'record_id' => $base_record_id,
-    );
-    $success = drupal_write_record($chado_entity_table, $record);
-    if (!$success) {
-      drupal_set_message('Unable to insert new Chado entity.', 'error');
+    $record_id = db_insert($chado_entity_table)
+      ->fields(array(
+        'entity_id' => $entity->id,
+        'record_id' => $base_record_id
+      ))
+      ->execute();
+    if (!$record_id) {
+      throw new Exception('Unable to insert new Chado entity.');
     }
   }
 

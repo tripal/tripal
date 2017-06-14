@@ -7,9 +7,9 @@
 /**
  * The page allowing users to download feature sequences
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_chado_feature
  */
-function tripal_feature_seq_extract_download() {
+function tripal_chado_feature_seq_extract_download() {
 
   if (!array_key_exists('tripal_feature_seq_extract', $_SESSION)) {
     drupal_goto('find/sequences');
@@ -73,9 +73,9 @@ function tripal_feature_seq_extract_download() {
 /**
  * Form to choose which features to extract sequence for
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_chado_feature
  */
-function tripal_feature_seq_extract_form($form, &$form_state) {
+function tripal_chado_feature_seq_extract_form($form, &$form_state) {
 
   $form['#true'] = TRUE;
 
@@ -180,7 +180,7 @@ function tripal_feature_seq_extract_form($form, &$form_state) {
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
     '#ajax' => array(
-      'callback'    => 'tripal_feature_seq_extract_form_ajax_callback',
+      'callback'    => 'tripal_chado_feature_seq_extract_form_ajax_callback',
       'wrapper' => 'tripal-feature-seq-extract-form',
       'event'   => 'change',
       'method'  => 'replace',
@@ -209,7 +209,7 @@ function tripal_feature_seq_extract_form($form, &$form_state) {
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
     '#ajax' => array(
-      'callback'    => 'tripal_feature_seq_extract_form_ajax_callback',
+      'callback'    => 'tripal_chado_feature_seq_extract_form_ajax_callback',
       'wrapper' => 'tripal-feature-seq-extract-form',
       'event'   => 'change',
       'method'  => 'replace',
@@ -363,9 +363,9 @@ function tripal_feature_seq_extract_form($form, &$form_state) {
 /**
  * Theme the Form to choose which features to extract sequence for
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_chado_feature
  */
-function theme_tripal_feature_seq_extract_form(&$variables) {
+function theme_tripal_chado_feature_seq_extract_form(&$variables) {
   $form = $variables['form'];
 
   $headers = array();
@@ -423,16 +423,16 @@ function theme_tripal_feature_seq_extract_form(&$variables) {
 /**
  * Ajax function which returns the form via ajax
  */
-function tripal_feature_seq_extract_form_ajax_callback($form, &$form_state) {
+function tripal_chado_feature_seq_extract_form_ajax_callback($form, &$form_state) {
   return $form;
 }
 
 /**
  * Validate the extract sequence form
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_chado_feature
  */
-function tripal_feature_seq_extract_form_validate($form, &$form_state) {
+function tripal_chado_feature_seq_extract_form_validate($form, &$form_state) {
   $genus      = $form_state['values']['genus'];
   $species    = $form_state['values']['species'];
   $analysis   = $form_state['values']['analysis'];
@@ -467,9 +467,9 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
 /**
  * Submit the extract sequence form
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_chado_feature
  */
-function tripal_feature_seq_extract_form_submit($form, &$form_state) {
+function tripal_chado_feature_seq_extract_form_submit($form, &$form_state) {
   $genus      = $form_state['values']['genus'];
   $species    = $form_state['values']['species'];
   $analysis   = $form_state['values']['analysis'];

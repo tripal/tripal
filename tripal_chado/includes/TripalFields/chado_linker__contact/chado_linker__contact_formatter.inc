@@ -24,6 +24,10 @@ class chado_linker__contact_formatter extends ChadoFieldFormatter {
     // Get the settings
     $settings = $display['settings'];
 
+    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
+    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+
     $headers = array('Name', 'Description', 'Type');
     $rows = array();
 
@@ -34,9 +38,9 @@ class chado_linker__contact_formatter extends ChadoFieldFormatter {
       }
 
       // Get the field values
-      $contact_name = $contact['name'];
-      $description = $contact['description'];
-      $type = $contact['type'];
+      $contact_name = $contact[$name_term];
+      $description = $contact[$description_term];
+      $type = $contact[$type_term];
 
       // Add a link i there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
