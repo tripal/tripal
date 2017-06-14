@@ -70,14 +70,14 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $select = "SELECT T.$pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
-      LEFT JOIN public.$chado_entity_table CE on CE.record_id = T.$pkey_field
+      LEFT JOIN {" . $chado_entity_table . "} CE on CE.record_id = T.$pkey_field
   ";
 
   // For migration of Tripal v2 nodes to entities we want to include the
   // coresponding chado linker table.
   if ($sync_node && db_table_exists('chado_' . $table)) {
     $select = "SELECT T.$pkey_field as record_id, CT.nid ";
-    $from .= " INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
+    $from .= " INNER JOIN {chado_" . $table . "} CT ON CT.$pkey_field = T.$pkey_field";
   }
   $where = " WHERE CE.record_id IS NULL ";
 

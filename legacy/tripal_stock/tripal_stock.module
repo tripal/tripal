@@ -392,7 +392,7 @@ function tripal_stock_match_stocks_page($id) {
     FROM {stock} S
       INNER JOIN {organism} O on S.organism_id = O.organism_id
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = S.type_id
-      INNER JOIN public.chado_stock CS on CS.stock_id = S.stock_id
+      INNER JOIN {chado_stock} CS on CS.stock_id = S.stock_id
     WHERE
       S.uniquename = :uname or S.name = :name
   ";
