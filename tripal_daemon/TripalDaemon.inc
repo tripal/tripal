@@ -40,7 +40,7 @@ class TripalDaemon extends DrushDaemon {
 
   // Maximum number of jobs that can be run in parallel.
   // @todo: Implement actually changing this setting (see above note).
-  protected $max_num_jobs = 2;
+  protected $max_num_jobs = 3;
 
   /**
    * Implements DaemonAPIDaemon::executeTask() function.
@@ -300,5 +300,18 @@ class TripalDaemon extends DrushDaemon {
     $status_details['Current Jobs'] = array_keys($this->tripal_jobs);
 
     return $status_details;
+  }
+
+  /**
+   * Set whether we should run parallel jobs or not.
+   *
+   * @param $do_parallel
+   *   Boolean indicating whether to allow parallel processing of jobs.
+   * @param $max_num_jobs
+   *   Integer indicating the maximum number of jobs to run at once.
+   */
+  public function setParallel($do_parallel, $max_num_jobs) {
+    $this->do_parallel = $do_parallel;
+    $this->max_num_jobs = $max_num_jobs;
   }
 }
