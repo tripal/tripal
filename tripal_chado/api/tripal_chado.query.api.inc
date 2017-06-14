@@ -1641,6 +1641,17 @@ function chado_query($sql, $args = array()) {
     $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
     $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
 
+    // Add an alter hook to allow module developers to change the query right before it's
+    // executed. Since all queriying of chado by Tripal eventually goes through this
+    // function, we only need to provide an alter hook at this point in order to ensure
+    // developers have complete control over the query being executed. For example,
+    // a module developer might want to remove schema prefixing from queries and rely
+    // on the search path. This alter hook would allow them to do that by implementing
+    // mymodule_chado_query_alter($sql, $args) and using a regular expression to remove
+    // table prefixing from the query.
+    // @see hook_chado_query_alter().
+    drupal_alter('chado_query', $sql, $args);
+
     // The featureloc table has some indexes that use function that call other
     // functions and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
@@ -1681,7 +1692,41 @@ function chado_query($sql, $args = array()) {
 
   return $results;
 }
+/**
+ * This hook provides a way for module developers to alter any/all queries on the chado
+ * schema by Tripal.
+ *
+ * Example: a module developer might want to remove schema prefixing from queries and rely
+ * on the search path. This alter hook would allow them to do that by implementing
+ * mymodule_chado_query_alter($sql, $args) and using a regular expression to remove
+ * table prefixing from the query.
+ *
+ * @param $sql
+ *    A string describing the SQL query to be executed by Tripal. All parameters should be
+ *    indicated by :tokens with values being in the $args array and all tables should
+ *    be prefixed with the schema name described in tripal_get_schema_name().
+ * @param $args
+ *    An array of arguements where the key is the token used in $sql (for example, :value)
+ *    and the value is the value you would like substituted in.
+ */
+function hook_chado_query_alter(&$sql, &$args) {
 
+  // The following code is an example of how this alter function might be used.
+  // Say you would like only a portion of node => feature connections available
+  // for a period of time or under a specific condition. To "hide" the other connections
+  // you might create a temporary view of the chado_feature table that only includes
+  // the connections you would like to be available. In order to ensure this view
+  // is used rather than the original chado_feature table you could alter all Tripal
+  // queries referring to chado_feature to instead refer to your view.
+  if (preg_match('/(\w+)\.chado_feature/', $sql, $matches)) {
+
+    $sql = str_replace(
+        $matches[1] . '.chado_feature',
+        'chado_feature_view',
+        $sql
+    );
+  }
+}
 /**
  * Use this function instead of pager_query() when selecting a
  * subset of records from a Chado table.
