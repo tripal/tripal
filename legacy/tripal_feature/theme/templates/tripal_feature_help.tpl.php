@@ -6,16 +6,14 @@
   <ol>
     <li><p><b>Set Permissions</b>: By default only the site administrator account has access to create, edit, delete
    or administer features. Navigate to the <?php print l('permissions page', 'admin/user/permissions')?> and set the
-   permissions under the 'tripal_feature' section as appropriate for your site. For a simple setup, allow anonymous 
+   permissions under the 'tripal_feature' section as appropriate for your site. For a simple setup, allow anonymous
    users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
-   
-   <li><p><b>Loading of Ontologies</b>:  
+
+   <li><p><b>Loading of Ontologies</b>:
      Before loading genomic features you must also have several vocabularies loaded as well. Using the
      <?php print l('OGO loader','admin/tripal/tripal_cv/obo_loader')?> you should load the following
      ontologies:</p>
      <ul>
-        <li>Chado Feature Properties</li>
-        <li>Relationship Ontology</li>
         <li>Sequence Ontology</li>
         <li>Gene Ontology (if loading GO terms for features)</li>
      </ul>
@@ -40,7 +38,7 @@
      <li><p><b>Data Import</b>:  if you do not already have an existing Chado database with preloaded data
      then you will want
      to import data.  You can do so using the Chado perl scripts that come with the normal
-     <a href="http://gmod.org/wiki/Chado">distribution of Chado</a> or you can use 
+     <a href="http://gmod.org/wiki/Chado">distribution of Chado</a> or you can use
      the <a href="<?php print url('admin/tripal/tripal_feature/fasta_loader') ?>">FASTA loader</a> and
      <a href="<?php print url('admin/tripal/tripal_feature/gff3_load') ?>">GFF loader</a> provided here.  If you
      created the Chado database using Tripal then you'll most likely want to use the Tripal loaders.  If your data
@@ -70,27 +68,27 @@
   <p>Aside from data loading and feature page setup (as described in the Setup section above),
   The Tripal feature module also provides the following functionality</p>
   <ul>
-    <li><p><b>Retrieve Sequences</b>: A tool to <?php print l('retrieve sequences','find/sequences') ?> is provided 
+    <li><p><b>Retrieve Sequences</b>: A tool to <?php print l('retrieve sequences','find/sequences') ?> is provided
      which allows end-users to download sequences in FASTA format.  The site admin must first load sequence residues
-     as well as alignments.  The <?php  print l('organism_feature_count', 'admin/tripal/mviews') ?> and 
+     as well as alignments.  The <?php  print l('organism_feature_count', 'admin/tripal/mviews') ?> and
      <?php print l('analysis_organism', 'admin/tripal/mviews') ?> materialized
-     views must be populated before using this tool.  Those views should be re-populated 
+     views must be populated before using this tool.  Those views should be re-populated
      when new data is added.  If you use the <?php print l('jquery_update module', 'http://drupal.org/project/jquery_update') ?>
-     the tool may break.  You will need to update the jquery_update/replace/jquery.form.js file with <?php 
+     the tool may break.  You will need to update the jquery_update/replace/jquery.form.js file with <?php
      print l('a more recent version','https://raw.github.com/malsup/form/master/jquery.form.js') ?>. </p></li>
-    
-     <li><p><b>Generic Feature URL</b>:  As described in the setup instructions above, it is often convenient to have a 
-     simple URL for each feature page. For example, http://www.mygenomesite.org/[feature], where [feature] is a 
+
+     <li><p><b>Generic Feature URL</b>:  As described in the setup instructions above, it is often convenient to have a
+     simple URL for each feature page. For example, http://www.mygenomesite.org/[feature], where [feature] is a
      unique identifier for a feature page.  The
-     <?php print l('Feature Configuration page','admin/tripal/tripal_feature/configuration') ?> allows a 
+     <?php print l('Feature Configuration page','admin/tripal/tripal_feature/configuration') ?> allows a
      site admin to generate unique URLs for all feature.  The unique URL is necessary, however, sometimes
      it is easier to allow for links to the feature name without knowing the unique URL.  This is possible
-     using the URL: http://[site url]/feature/[feature name], where [site url] is the URL for the site and 
+     using the URL: http://[site url]/feature/[feature name], where [site url] is the URL for the site and
      [feature name] is the name of the feature.  If the feature name is not unique then a page will be
-     presented listing all of the features with the same name and allow the user to choose which one to 
-     view.  If the feature name is unique then the user will automatically be redirected to the 
+     presented listing all of the features with the same name and allow the user to choose which one to
+     view.  If the feature name is unique then the user will automatically be redirected to the
      unique URL for the feature.</p></li>
-     
+
     <li><p><b>Feature Browser:</b>  The feature browser is a tabular list of features with links to their
      feature pages which appears on the organism
      page.  It was created to provide a mechanism to allow site visitors to quickly
@@ -112,9 +110,9 @@
     published data (only works if Chado was installed using Tripal).  You can see a list of available pre-existing
     Views <a href="<?php print url('admin/build/views/') ?>">here</a>, as well as create your own. </p></li>
 
-    <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/features') ?> is provided for 
+    <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/features') ?> is provided for
     finding features. This tool relies on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a>
-    which must be installed to see the search tool.  Look for it in the navigation menu under the item 
+    which must be installed to see the search tool.  Look for it in the navigation menu under the item
     "Search Data". </p></li>
 
     <li><p><b>Delete Features</b>: You can  <a href="<?php print url('admin/tripal/tripal_feature/delete') ?>">bulk delete features</a>
