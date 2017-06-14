@@ -794,7 +794,7 @@ function tripal_job_set_progress($job_id, $percentage) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_refresh_mview(),  and 
+ * This function has been replaced by tripal_refresh_mview(),  and
  * tripal_delete_mview().
  *
  * @see tripal_refresh_mview() or tripal_delete_mview().
@@ -897,7 +897,7 @@ function tripal_mviews_get_mview_id($view_name) {
       '%new_function' => 'tripal_get_mview_id'
     )
   );
-  
+
   //New API Function
   return tripal_get_mview_id($view_name);
 }
@@ -915,7 +915,7 @@ function tripal_core_delete_property_by_id($basetable, $property_id) {
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. This requires manual
-      intervention since the arguements for the two functions are different.
+      intervention since the arguments for the two functions are different.
       Please update your code.",
     array(
       '%old_function'=>'tripal_core_delete_property_by_id',
@@ -958,7 +958,7 @@ function tripal_core_delete_property($basetable, $record_id, $property, $cv_name
     'type_name' => $property,
     'cv_name' => $cv_name,
   );
-  
+
   //New API Function
   return chado_delete_property($record, $property);
 }
@@ -980,7 +980,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
       '%new_function' => 'chado_get_property'
     )
   );
-  
+
   $record = array(
     'table' => $basetable,
     'id' => $record_id
@@ -1101,7 +1101,7 @@ function tripal_core_update_property_by_id($basetable, $record_id, $property,
     'cv_name' => $cv_name,
     'value' => $value,
   );
-  
+
   // New API Function.
   return chado_update_property($record, $property);
 }

@@ -7,19 +7,20 @@
 /**
  * This Handler provides a select list for the type field
  *
- *  NOTE: This handler only works when applied to the type_id field in the base_table of
- *  this view.
+ *  NOTE: This handler only works when applied to the type_id field in the
+ *  base_table of this view.
  *
  * @ingroup tripal_views
  */
-class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_filter_select_string {
+class tripal_views_handler_filter_select_cvterm extends views_handler_filter_string {
 
   /**
    * Provide the options used in the select list.
    * Override this function in extended handlers to easily change option list.
    *
    * @return
-   *   An array of options where the key is the value of this field in the database
+   *   An array of options where the key is the value of this field in the
+   *   database
    */
   function get_select_options() {
 
@@ -36,7 +37,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
 
         $return = $this->get_select_option_where($this->table);
         $where_clauses = $return['where_clauses'];
-        $arguements = $return['arguements'];
+        $arguments = $return['arguments'];
         $base_where = '';
         if (!empty($where_clauses)) {
           $base_where = implode(' AND ', $where_clauses);
@@ -69,7 +70,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         // show these exact types.
         $return = $this->get_select_option_where('cvterm');
         $where_clauses = $return['where_clauses'];
-        $cvterm_args = $return['arguements'];
+        $cvterm_args = $return['arguments'];
         $cvterm_where = '';
         if (!empty($where_clauses)) {
           $cvterm_where = implode(' AND ', $where_clauses);
@@ -78,13 +79,13 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         // have been used.
         $return = $this->get_select_option_where($this->table);
         $where_clauses = $return['where_clauses'];
-        $base_args = $return['arguements'];
+        $base_args = $return['arguments'];
         $base_where = '';
         if (!empty($where_clauses)) {
           $base_where = implode(' AND ', $where_clauses);
         }
-        // We only supply one set or arguements those so merge the two.
-        $arguements = array_merge($cvterm_args, $base_args);
+        // We only supply one set or arguments those so merge the two.
+        $arguments = array_merge($cvterm_args, $base_args);
 
         // Using a "Loose Index Scan" to get a list of all the cvs used
         // in the table the drop-down filter is from.
@@ -110,7 +111,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             ORDER BY cvterm.name ASC";
         $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
       }
-      $resource = chado_query($sql, $arguements);
+      $resource = chado_query($sql, $arguments);
 
       // Now actually gerenate the select list
       // based on the results from the above query.
@@ -130,7 +131,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       // show these exact types.
       $return = $this->get_select_option_where('cvterm');
       $where_clauses = $return['where_clauses'];
-      $cvterm_args = $return['arguements'];
+      $cvterm_args = $return['arguments'];
       $cvterm_where = '';
       if (!empty($where_clauses)) {
         $cvterm_where = implode(' AND ', $where_clauses);
@@ -139,13 +140,13 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       // have been used.
       $return = $this->get_select_option_where($this->table);
       $where_clauses = $return['where_clauses'];
-      $base_args = $return['arguements'];
+      $base_args = $return['arguments'];
       $base_where = '';
       if (!empty($where_clauses)) {
         $base_where = implode(' AND ', $where_clauses);
       }
-      // We only supply one set or arguements those so merge the two.
-      $arguements = array_merge($cvterm_args, $base_args);
+      // We only supply one set or arguments those so merge the two.
+      $arguments = array_merge($cvterm_args, $base_args);
 
       // Using a "Loose Index Scan" to get a list of all the cvterms used
       // in the base table. See https://wiki.postgresql.org/wiki/Loose_indexscan
@@ -167,7 +168,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
           ORDER BY cvterm.name ASC";
       $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
 
-      $resource = chado_query($sql, $arguements);
+      $resource = chado_query($sql, $arguments);
       $cvterms = array();
 
       // Add an "- Any - " option to allow a type to not be set by default.

@@ -1245,7 +1245,7 @@ function hook_chado_node_sync_form($form, &$form_state) {
  *
  * Allows you to use this function as your own submit.
  *
- * This might be necessary if you want to add additional arguements to the
+ * This might be necessary if you want to add additional arguments to the
  * tripal job or to call your own sync'ing function if the generic
  * chado_node_sync_records() is not sufficient.
  *

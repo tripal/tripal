@@ -867,7 +867,7 @@ function tripal_chado_exclude_type_by_default() {
 /**
  * Implements hook_job_describe_args().
  *
- * Describes the arguements for the tripal_populate_mview job to allow for
+ * Describes the arguments for the tripal_populate_mview job to allow for
  * greater readability in the jobs details pages.
  *
  * @param $callback
