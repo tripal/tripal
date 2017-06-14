@@ -1304,11 +1304,13 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
  * @return
  *   The value of the token
  */
-function chado_get_token_value($token_info, $node) {
+function chado_get_token_value($token_info, $node, $options = array()) {
 
   $token = $token_info['token'];
   $table = $token_info['table'];
   $var = $node;
+
+  $supress_errors = (isset($options['supress_errors'])) ? $options['supress_errors'] : FALSE;
 
   // Iterate through each portion of the location string. An example string
   // might be:  stock > type_id > name.
@@ -1325,11 +1327,13 @@ function chado_get_token_value($token_info, $node) {
         $var = $var->$index;
       }
       else {
-        tripal_report_error('chado_node_api', TRIPAL_WARNING,
-          'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
-          'to access \'%index\' for the following: \'%var\'.',
-          array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
-        );
+        if (!$supress_errors) {
+          tripal_report_error('chado_node_api', TRIPAL_WARNING,
+            'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
+            'to access \'%index\' for the following: \'%var\'.',
+            array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
+          );
+        }
         return '';
       }
     }
@@ -1339,11 +1343,13 @@ function chado_get_token_value($token_info, $node) {
       $var = $var[$index];
     }
     else {
-      tripal_report_error('chado_node_api', TRIPAL_WARNING,
-        'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
-        'to access \'%index\' for the following: \'%var\'.',
-        array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
-      );
+      if (!$supress_errors) {
+        tripal_report_error('chado_node_api', TRIPAL_WARNING,
+          'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
+          'to access \'%index\' for the following: \'%var\'.',
+          array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
+        );
+      }
       return '';
     }
   }
