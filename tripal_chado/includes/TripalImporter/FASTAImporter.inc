@@ -416,16 +416,18 @@ class FASTAImporter extends TripalImporter {
     }
 
     // Second, if there is a parent type then get that.
+    $parentcvterm = NULL;
     if ($parent_type) {
       $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type,':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
-        $this->logMessage("Cannot find the paretne term type: '!type'",
+        $this->logMessage("Cannot find the parent term type: '!type'",
           array('!type' => $parentcvterm), TRIPAL_ERROR);
         return 0;
       }
     }
 
     // Third, if there is a relationship type then get that.
+    $relcvterm = NULL;
     if ($rel_type) {
       $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
@@ -465,6 +467,7 @@ class FASTAImporter extends TripalImporter {
         $defline = preg_replace("/^>/", '', $line);
 
         // Get the feature name if a regular expression is provided.
+        $name = "";
         if ($re_name) {
           if (!preg_match("/$re_name/", $defline, $matches)) {
             $this->logMessage("Regular expression for the feature name finds nothing. Line !line.",
@@ -497,6 +500,7 @@ class FASTAImporter extends TripalImporter {
         }
 
         // Get the feature uniquename if a regular expression is provided.
+        $uname = "";
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
             $this->logMessage("Regular expression for the feature unique name finds nothing. Line !line.",
@@ -506,7 +510,7 @@ class FASTAImporter extends TripalImporter {
         }
         // If the match_type is name and no regular expression was provided
         // then use the first word as the name, otherwise, we don't set the
-        // unqiuename.
+        // uniquename.
         elseif (strcmp($match_type, 'Unique name') == 0) {
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             $uname = trim($matches[1]);
@@ -518,18 +522,25 @@ class FASTAImporter extends TripalImporter {
         }
 
         // Get the accession if a regular expression is provided.
-        preg_match("/$re_accession/", $defline, $matches);
-        if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          $this->logMessage("Regular expression retrieves an accession too long for the feature name. " .
-            "Cannot add cross reference. Line !line.", array('!line' => $i), TRIPAL_WARNING);
-        }
-        else {
-          $accession = trim($matches[1]);
+        $accession = "";
+        if (!empty($re_accession)) {
+          preg_match("/$re_accession/", $defline, $matches);
+          if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+            tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
+               "Cannot add cross reference. Line %line.", array('%line' => $i
+            ));
+          }
+          else {
+            $accession = trim($matches[1]);
+          }
         }
 
         // Get the relationship subject
-        preg_match("/$re_subject/", $line, $matches);
-        $subject = trim($matches[1]);
+         $subject = "";
+        if (!empty($re_subject)) {
+          preg_match("/$re_subject/", $line, $matches);
+          $subject = trim($matches[1]);
+        }
 
         // Add the details to the sequence.
         $seqs[$num_seqs] = array(
@@ -561,9 +572,10 @@ class FASTAImporter extends TripalImporter {
     $this->logMessage("Found !num_seqs sequence(s).", array('!num_seqs' => $num_seqs));
     $this->setTotalItems($num_seqs);
     $this->setItemsHandled(0);
-    for ($i = 0; $i < $num_seqs; $i++) {
-      $seq = $seqs[$i];
+    for ($j = 0; $j < $num_seqs; $j++) {
+      $seq = $seqs[$j];
       //$this->logMessage("Importing !seqname.", array('!seqname' => $seq['name']));
+      $source = NULL;
       $this->loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id,
           $seq['accession'], $seq['subject'], $rel_type, $parent_type,
           $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
@@ -628,7 +640,7 @@ class FASTAImporter extends TripalImporter {
 
     // If we don't have a feature and we're doing an insert then do the insert.
     $inserted = 0;
-    if (!$feature and (strcmp($method, 'Insert only') == 0 or strcmp($method, 'Insert and update') == 0)) {
+    if (!isset($feature) and (strcmp($method, 'Insert only') == 0 or strcmp($method, 'Insert and update') == 0)) {
       // If we have a unique name but not a name then set them to be the same
       if (!$uname) {
         $uname = $name;
@@ -673,7 +685,7 @@ class FASTAImporter extends TripalImporter {
     }
 
     // if we don't have a feature and the user wants to do an update then fail
-    if (!$feature and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
+    if (!isset($feature) and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
       $this->logMessage("Failed to find feature '!name' ('!uname') while matching on " . drupal_strtolower($match_type) . ".",
           array('!name' => $name,'!uname' => $uname), TRIPAL_ERROR);
       return 0;
@@ -861,7 +873,7 @@ class FASTAImporter extends TripalImporter {
     fseek($fh, $seq_start, SEEK_SET);
     $chunk_size = 100000000;
     $chunk = '';
-    $seqlen = ($seq_end - $seq_start) + 1;
+    $seqlen = ($seq_end - $seq_start);
 
     $num_read = 0;
     $total_seq_size = 0;
@@ -873,9 +885,11 @@ class FASTAImporter extends TripalImporter {
     // Read in the lines until we reach the end of the sequence. Once we
     // get a specific bytes read then append the sequence to the one in the
     // database.
+    $partial_seq_size = 0;
     while ($line = fgets($fh)) {
       $num_read += strlen($line) + 1;
       $chunk_intv_read += strlen($line) + 1;
+      $partial_seq_size += strlen($line);
       $chunk .= trim($line);
 
       // If we've read in enough of the sequence then append it to the database.
@@ -894,7 +908,7 @@ class FASTAImporter extends TripalImporter {
         $chunk_intv_read = 0;
       }
 
-      // If we've reached the ned of the sequence then break out of the loop
+      // If we've reached the end of the sequence then break out of the loop
       if (ftell($fh) == $seq_end) {
         break;
       }
@@ -911,7 +925,8 @@ class FASTAImporter extends TripalImporter {
       if (!$success) {
         return FALSE;
       }
-      $total_seq_size += strlen($chunk);
+      $total_seq_size += $partial_seq_size;
+      $partial_seq_size = 0;
       $chunk = '';
       $chunk_intv_read = 0;
     }
