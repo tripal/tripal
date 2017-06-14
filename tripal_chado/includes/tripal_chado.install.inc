@@ -17,6 +17,7 @@ function tripal_chado_load_form($form, $form_state) {
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
   $version = chado_get_version(FALSE, TRUE);
+
   if (array_key_exists('values', $form_state)) {
     if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
       $tables_list = implode(', ', array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub',

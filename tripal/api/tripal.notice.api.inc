@@ -210,10 +210,11 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
- *     - first_progress_bar: this sohuld be used for the first log call for a progress bar
- *     - is_progress_bar: this option should be used for all but the first print of a
- *         progress bar to allow it all to be printed on the same line without intervening
- *         date prefixes
+ *     - first_progress_bar: this sohuld be used for the first log call for a
+ *       progress bar
+ *     - is_progress_bar: this option should be used for all but the first print
+ *       of a progress bar to allow it all to be printed on the same line
+ *       without intervening date prefixes
  * @return
  *   The number of bytes that were written to the file, or FALSE on failure
  */
