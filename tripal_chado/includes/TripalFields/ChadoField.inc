@@ -6,8 +6,7 @@ class ChadoField extends TripalField {
   public static $default_label = 'Chado Field';
 
   // The default description for this field.
-  public static $default_description = 'The generic base class for all Chado fields. ' .
-    'Replace this text as appropriate for the child implementation.';
+  public static $default_description = 'The generic base class for all Chado fields. Replace this text as appropriate for the child implementation.';
 
   // A list of global settings. These can be accessed witihn the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
@@ -89,6 +88,40 @@ class ChadoField extends TripalField {
   }
 
   /**
+   * A convient way to join a table to a query without duplicates.
+   *
+   * @param $query
+   *   The SelectQuery object.
+   * @param $table
+   *   The table to join.
+   * @param $alias
+   *   The table alias to use.
+   * @param $condition
+   *   The join condition.
+   * @param $type
+   *   The type of join: INNER, LEFT OUTER, or RIGHT OUTER.
+   */
+  protected function queryJoinOnce($query, $table, $alias, $condition, $type = 'INNER') {
+    $joins = $query->getTables();
+
+    // If this join is already present then don't add it again.
+    if (in_array($alias, array_keys($joins))) {
+      return;
+    }
+
+    switch($type) {
+      case 'LEFT OUTER':
+        $query->leftjoin($table, $alias, $condition);
+        break;
+      case 'RIGHT OUTER':
+        $query->rightjoin($table, $alias, $condition);
+        break;
+      default:
+        $query->innerjoin($table, $alias, $condition);
+    }
+  }
+
+  /**
    * @see TripalField::instanceSettingsForm()
    */
   public function instanceSettingsForm() {
@@ -108,26 +141,5 @@ class ChadoField extends TripalField {
       '#value' => $this->instance['settings']['chado_column'],
     );
     return $element;
-  }
-
-  /**
-   * @see TripalField::viewsData()
-   */
-  public function viewsData($view_base_id) {
-    $data = array();
-    $field_name = $this->field['field_name'];
-
-    $data[$view_base_id][$field_name] = array(
-      'title' => $this->instance['label'],
-      'help' => $this->instance['description'],
-      // By default our Chado fields are complicated and we only want to support
-      // viewing them, and not filtering by them.  Each field cand override as
-      // needed.
-      'field' => array(
-        'handler' => 'tripal_views_handler_field',
-        'click sortable' => FALSE,
-      )
-    );
-    return $data;
   }
 }

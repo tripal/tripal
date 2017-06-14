@@ -134,8 +134,9 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  * @param $message
  *   The message to be displayed to the tripal administrators
  * @param $importance
- *   The level of importance for this message. In the future this will be used to allow
- *   administrators to filter some of these messages. It can be one of the following:
+ *   The level of importance for this message. In the future this will be used
+ *   to allow administrators to filter some of these messages. It can be one of
+ *   the following:
  *     - TRIPAL_CRITICAL: Critical conditions.
  *     - TRIPAL_ERROR: Error conditions.
  *     - TRIPAL_WARNING: Warning conditions.
@@ -144,9 +145,9 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $options
  *   Any options to apply to the current message. Supported options include:
- *     - return_html: return HTML instead of setting a drupal message. This can be
- *         used to place a tripal message in a particular place in the page.
- *         The default is FALSE.
+ *     - return_html: return HTML instead of setting a drupal message. This can
+ *       be used to place a tripal message in a particular place in the page.
+ *       The default is FALSE.
  */
 function tripal_set_message($message, $importance = TRIPAL_INFO, $options = array()) {
   global $user;

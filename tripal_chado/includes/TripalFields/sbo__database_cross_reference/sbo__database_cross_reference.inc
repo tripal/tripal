@@ -58,6 +58,48 @@ class sbo__database_cross_reference extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+
+    $dbname_term = tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
+
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          $dbname_term => array(
+            'searchable' => TRUE,
+            'name' => 'db_name',
+            'label' => 'Database Name',
+            'help' => 'The name of the remote database that houses the cross reference.',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $accession_term => array(
+            'searchable' => TRUE,
+            'name' => 'accession',
+            'label' => 'Database Accession',
+            'help' => 'The unique accession (identifier) in the database that houses the cross reference.',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'schema:url' => array(
+            'searchable' => FALSE,
+            'name' => 'URL',
+            'label' => 'Database URL',
+            'help' => 'The URL of the database that houses the cross reference.',
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  /**
    *
    * @see TripalField::load()
    */
@@ -143,14 +185,14 @@ class sbo__database_cross_reference extends ChadoField {
     $operator = $condition['operator'];
 
     if ($condition['column'] == 'database_cross_reference.database_name') {
-      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
-      $query->join('db', 'DB', "DB.db_id = DBX.db_id");
+      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $this->queryJoinOnce($query, 'db', 'DB', "DB.db_id = DBX.db_id");
       $query->condition("DB.name", $condition['value'], $operator);
     }
     if ($condition['column'] == 'database_cross_reference.accession') {
-      $query->join($dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
+      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
       $query->condition("DBX.accession", $condition['value'], $operator);
     }
   }

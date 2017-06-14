@@ -131,7 +131,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
            "SELECT count(*)
             FROM {organism} O
-            INNER JOIN public.chado_organism CO ON O.organism_id = CO.organism_id
+            INNER JOIN {chado_organism} CO ON O.organism_id = CO.organism_id
           ";
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
@@ -147,7 +147,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
         "SELECT count(*)
           FROM {analysis} A
-          INNER JOIN public.chado_analysis CA ON A.analysis_id = CA.analysis_id
+          INNER JOIN {chado_analysis} CA ON A.analysis_id = CA.analysis_id
          ";
         $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
@@ -163,7 +163,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
           "SELECT count(*)
            FROM {project} P
-           INNER JOIN public.chado_project CP ON P.project_id = CP.project_id
+           INNER JOIN {chado_project} CP ON P.project_id = CP.project_id
           ";
         $proj_count = chado_query($sql)->fetchField();
         if ($proj_count > 0) {
@@ -179,7 +179,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
           "SELECT count(*)
             FROM {featuremap} M
-            INNER JOIN public.chado_featuremap CM ON M.featuremap_id = CM.featuremap_id
+            INNER JOIN {chado_featuremap} CM ON M.featuremap_id = CM.featuremap_id
           ";
         $map_count = chado_query($sql)->fetchField();
         if ($map_count > 0) {
@@ -195,7 +195,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
           "SELECT count(*)
            FROM {pub} P
-           INNER JOIN public.chado_pub CP ON P.pub_id = CP.pub_id
+           INNER JOIN {chado_pub} CP ON P.pub_id = CP.pub_id
          ";
         $proj_count = chado_query($sql)->fetchField();
         if ($proj_count > 0) {
@@ -212,7 +212,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
             "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
               FROM {" . $table . "} T
-              INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+              INNER JOIN {" . $tv2_content_type CT . "} ON T.$pkey = CT.$pkey
               INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
               INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
               INNER JOIN {db} ON db.db_id = X.db_id
@@ -671,7 +671,7 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
       $sql = "
         SELECT V.name AS type, X.accession, db.name AS vocabulary
         FROM {" . $table . "} T
-          INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+          INNER JOIN {" . $tv2_content_type . "} CT ON T.$pkey = CT.$pkey
           INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
           INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
           INNER JOIN {db} ON db.db_id = X.db_id

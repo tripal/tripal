@@ -54,7 +54,57 @@ class so__transcript extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
-
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'rdfs:type' => array(
+            'name' => 'transcript_type',
+            'label' => 'Transcript Type',
+            'help' => 'The type of a transcript.',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'schema:name' => array(
+            'name' => 'transcript_name',
+            'label' => 'Transcript Name',
+            'help' => 'The name of a transcript.',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'data:0842' => array(
+            'name' => 'transcript_uniquename',
+            'label' => 'Transcript Identifier',
+            'help' => 'The unique identifier of a transcript.',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'SO:0000735' => array(
+            'name' => 'loc',
+            'label' => 'Transcript Location',
+            'help' => 'The location of the transcript on a reference feature.',
+            'searchable' => FALSE,
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => FALSE,
+          ),
+          'entity' => array(
+            'searchable' => FALSE,
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
   /**
    *
    * @see TripalField::load()

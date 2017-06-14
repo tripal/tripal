@@ -36,28 +36,6 @@ class data__accession extends ChadoField {
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
   );
-
-  // In order for this field to integrate with Drupal Views, a set of
-  // handlers must be specififed.  These include handlers for
-  // the field, for the filter, and the sort.  Within this variable,
-  // the key must be one of: field, filter, sort; and the value
-  // is the settings for those handlers as would be provided by
-  // a hook_views_data().  The following defaults make a field visible
-  // using the default formatter of the field, allow for filtering using
-  // a string value and sortable.  in order for filters to work you
-  // must implement the query() function.
-  public static $default_view_handlers = array(
-    'field' => array(
-      'handler' => 'tripal_views_handler_field',
-      'click sortable' => TRUE,
-    ),
-    'filter' => array(
-      'handler' => 'tripal_views_handler_filter_string',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
   // The default widget for this field.
   public static $default_widget = 'data__accession_widget';
 
@@ -114,8 +92,10 @@ class data__accession extends ChadoField {
     $alias = 'dbx_linker';
     $operator = $condition['operator'];
 
+    // We don't offer any sub elements so the value coming in should
+    // always be the field_name.
     if ($condition['column'] == 'data__accession') {
-      $query->join('dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id");
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id");
       $query->condition("DBX.accession", $condition['value'], $operator);
     }
   }

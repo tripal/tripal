@@ -56,6 +56,66 @@ class data__sequence_coordinates extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'elements' => array(
+          'data:3002' => array(
+            'searchable' => TRUE,
+            'name' => 'source_feature',
+            'label' => 'Location Reference Name',
+            'help' => 'The genomic feature on which this feature is localized.',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          'local:fmin' => array(
+            'searchable' => TRUE,
+            'name' => 'feature min',
+            'label' => 'Location Start Position',
+            'help' => 'The start position',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'local:fmax' => array(
+            'searchable' => TRUE,
+            'name' => 'feature max',
+            'label' => 'Location End Position',
+            'help' => 'The end position',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'data:2336' => array(
+            'searchable' => TRUE,
+            'name' => 'phase',
+            'type' => 'numeric',
+            'label' => 'Location Phase',
+            'help' => 'The phase of the feature (applicable only to coding sequences).',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          'data:0853' => array(
+            'searchable' => TRUE,
+            'name' => 'strand',
+            'type' => 'numeric',
+            'label' => 'Location Strand',
+            'help' => 'The orientation of this feature where it is localized',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */

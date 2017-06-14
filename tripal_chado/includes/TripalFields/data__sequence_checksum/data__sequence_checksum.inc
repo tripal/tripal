@@ -54,5 +54,18 @@ class data__sequence_checksum extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+      ),
+    );
+  }
 
 }

@@ -44,7 +44,6 @@ class schema__additional_type extends ChadoField {
   public static $default_formatter = 'schema__additional_type_formatter';
 
 
-
   /**
    *
    * @see TripalField::load()

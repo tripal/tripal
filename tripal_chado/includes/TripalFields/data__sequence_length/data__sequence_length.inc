@@ -55,4 +55,19 @@ class data__sequence_length extends ChadoField {
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'gt', 'lt', 'gte', 'lte'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+        'type' => 'numeric',
+      ),
+    );
+  }
+
 }

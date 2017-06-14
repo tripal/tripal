@@ -206,9 +206,12 @@ function chado_library_form($node, &$form_state) {
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
-    'linking_table' => 'library_dbxref',  // the name of the _dbxref table
-    'base_foreign_key' => 'library_id',   // the name of the key in your base chado table
-    'base_key_value' => $library_id       // the value of library_id for this record
+    // The name of the _dbxref table.
+    'linking_table' => 'library_dbxref',
+    // The name of the key in your base chado table.
+    'base_foreign_key' => 'library_id',
+    // The value of library_id for this record.
+    'base_key_value' => $library_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_dbxrefs($form, $form_state, $details);

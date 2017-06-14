@@ -92,7 +92,7 @@ class sio__vocabulary extends ChadoField {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    $query->join('cv', $alias, "base.cv_id = $alias.cv_id");
+    $this->queryJoinOnce($query, 'cv', $alias, "base.cv_id = $alias.cv_id");
     $query->condition("$alias.name", $condition['value'], $operator);
   }
 
@@ -105,7 +105,7 @@ class sio__vocabulary extends ChadoField {
     $joins = $query->getTables();
     if (!in_array($this->field['field_name'], $joins)) {
       $alias = $this->field['field_name'];
-      $query->join('cv', $alias, "base.cv_id = $alias.cv_id");
+      $this->queryJoinOnce($query, 'cv', $alias, "base.cv_id = $alias.cv_id");
       $query->orderBy("$alias.name", $order['direction']);
     }
   }

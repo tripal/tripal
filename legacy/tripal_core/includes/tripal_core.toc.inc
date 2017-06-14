@@ -28,7 +28,7 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
       the following order in the Table of Contents (TOC). You may rename
       the titles or drag and drop them to change the order.  <b>Any changes will
       only apply to this page</b>. If you would like to make changes apply to multiple
-      pages of the same tpye, please visit the $admin_link. ") . '</p>' .
+      pages of the same type, please visit the $admin_link. ") . '</p>' .
       '<p>' . t('The list below shows all possible content panes that can appear.
       However, those without content are automatically hidden and do not
       appear in the TOC.' . '</p>'),
@@ -653,7 +653,8 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
 
   $form["#tree"] = TRUE;
 
-  // Get a single node of this type so we can get all the possible content for it
+  // Get a single node of this type so we can get all the possible content
+  // for it.
   $sql = "SELECT nid FROM {node} WHERE type = :type LIMIT 1 OFFSET 0";
   $nid = db_query($sql, array(':type' => $content_type))->fetchField();
   if (!$nid) {

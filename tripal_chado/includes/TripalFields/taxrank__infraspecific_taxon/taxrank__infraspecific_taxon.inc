@@ -55,6 +55,20 @@ class taxrank__infraspecific_taxon extends ChadoField {
   protected $instance;
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+      ),
+    );
+  }
+
+  /**
    *
    * @see TripalField::load()
    */

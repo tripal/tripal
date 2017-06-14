@@ -937,7 +937,7 @@ function tripal_bulk_loader_edit_template_record_form($form, &$form_state) {
       $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
     }
     else {
-      $select_if_duplicate = 1;
+      $select_if_duplicate = 0;
     }
 
     // get default for the update if duplicate

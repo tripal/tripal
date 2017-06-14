@@ -1029,3 +1029,46 @@ function tripal_chado_update_7307() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Add cvterm mapping for the analysis.sourcversion and analysis.sourcename.
+ */
+function tripal_chado_update_7308() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'id' => 'IAO:0000129',
+      'name' => 'version number',
+      'cv_name' => 'IAO',
+      'definition' => 'A version number is an ' .
+      'information content entity which is a sequence of characters ' .
+      'borne by part of each of a class of manufactured products or its ' .
+      'packaging and indicates its order within a set of other products ' .
+      'having the same name.',
+    ));
+    tripal_associate_chado_semweb_term('analysis', 'sourceversion', $term);
+    tripal_associate_chado_semweb_term(NULL, 'version', $term);
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'schema:name',
+      'name' => 'name',
+      'cv_name' => 'schema',
+      'definition' => 'The name of the item.',
+    ));
+    tripal_associate_chado_semweb_term('analysis', 'sourcename', $term);
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'data:2091',
+      'name' => 'Accession',
+      'cv_name' => 'EDAM',
+      'definition' => 'A persistent (stable) and unique identifier, typically identifying an object (entry) from a database.',
+    ));
+    tripal_associate_chado_semweb_term('dbxref', 'accession', $term);
+
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+

@@ -51,6 +51,7 @@ class chado_linker__cvterm extends ChadoField {
   public static $no_ui = FALSE;
 
 
+
   /**
    *
    * @see TripalField::load()

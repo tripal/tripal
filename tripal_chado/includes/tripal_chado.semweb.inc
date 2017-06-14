@@ -161,6 +161,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'definition' => 'The name of the item.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'name', $term);
+  tripal_associate_chado_semweb_term('analysis', 'sourcename', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'schema:alternateName',
@@ -376,6 +377,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'definition' => 'A persistent (stable) and unique identifier, typically identifying an object (entry) from a database.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'dbxref_id', $term);
+  tripal_associate_chado_semweb_term('dbxref', 'accession', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'data:2044',
@@ -597,6 +599,8 @@ function tripal_chado_populate_vocab_IAO() {
     'having the same name.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'programversion', $term);
+  tripal_associate_chado_semweb_term('analysis', 'sourceversion', $term);
+  tripal_associate_chado_semweb_term(NULL, 'version', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'IAO:0000064',

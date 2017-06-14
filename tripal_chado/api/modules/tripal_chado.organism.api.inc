@@ -145,7 +145,7 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
   if ($syncd_only) {
     $sql = "
       SELECT *
-      FROM public.chado_organism CO
+      FROM {chado_organism} CO
         INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
     ";

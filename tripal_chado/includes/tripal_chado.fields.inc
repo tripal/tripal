@@ -20,6 +20,7 @@ function tripal_chado_bundle_fields_info($entity_type, $bundle) {
     'chado_table' => $chado_bundle->data_table,
     'chado_type_table' => $chado_bundle->type_linker_table,
     'chado_type_column' => $chado_bundle->type_column,
+    'chado_type_value' => $chado_bundle->type_value,
   );
 
   $info = array();
@@ -44,8 +45,9 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
 
   // Iterate through the columns of the table and see if fields have been
   // created for each one. If not, then create them.
@@ -74,7 +76,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
     }
 
     // Don't create base fields for the primary key and the type_id field.
-    if ($column_name == $pkey or $column_name == $type_field) {
+    if ($column_name == $pkey or $column_name == $type_column) {
       continue;
     }
     $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
@@ -95,7 +97,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
     }
 
     // Skip the type field that will always be custom
-    if (($table_name == $type_table and $column_name == $type_field) or
+    if (($table_name == $type_table and $column_name == $type_column) or
          $column_name == 'type_id') {
       continue;
     }
@@ -179,8 +181,9 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
 function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, $bundle) {
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
 
   $schema = chado_get_schema($table_name);
 
@@ -189,7 +192,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   // by the type_id field or on the organism table where the type_id is mean
   // as an infraspecific name type.
   if (array_key_exists('type_id', $schema['fields']) and
-      $table_name != 'organism' and $type_field != 'type_id') {
+      $table_name != 'organism' and $type_column != 'type_id') {
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -409,8 +412,9 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
 
   // CONTACTS
   $contact_table = $table_name . '_contact';
@@ -537,7 +541,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
       // The tripal_analysis_KEGG, tripal_analysis_blast, and
       // tripal_analysis_interpro modules store results in the analysisprop
       // table which is probably not the best place, but we don't want to
-      // create a ton of fields for this.
+      // create a ton of fields for this, so skip them.
       if ($prop_table == 'analysisprop' and
           ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
            $term->dbxref_id->db_id->name == 'tripal')) {
@@ -647,6 +651,7 @@ function tripal_chado_bundle_instances_info($entity_type, $bundle) {
     'chado_table' => $chado_bundle->data_table,
     'chado_type_table' => $chado_bundle->type_linker_table,
     'chado_type_column' => $chado_bundle->type_column,
+    'chado_type_value' => $chado_bundle->type_value,
   );
 
   $info = array();
@@ -674,8 +679,9 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
   // Get Chado information
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
 
   // Iterate through the columns of the table and see if fields have been
   // created for each one. If not, then create them.
@@ -697,12 +703,12 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     }
 
     // Don't create base fields for the primary key and the type_id field.
-    if ($column_name == $pkey or $column_name == $type_field) {
+    if ($column_name == $pkey or $column_name == $type_column) {
       continue;
     }
 
     // Skip the type field that will always be custom
-    if (($table_name == $type_table and $column_name == $type_field) or
+    if (($table_name == $type_table and $column_name == $type_column) or
         $column_name == 'type_id') {
       continue;
     }
@@ -723,7 +729,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     }
 
     // Skip the type field.
-    if ($table_name == $type_table and $column_name == $type_field) {
+    if ($table_name == $type_table and $column_name == $type_column) {
       continue;
     }
 
@@ -890,8 +896,9 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
 function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle, $details) {
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
   $schema = chado_get_schema($table_name);
 
   // BASE TYPE_ID
@@ -899,7 +906,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   // by the type_id field or on the organism table where the type_id is mean
   // as an infraspecific name type.
   if (array_key_exists('type_id', $schema['fields']) and
-      $table_name != 'organism' and $type_field != 'type_id') {
+      $table_name != 'organism' and $type_column != 'type_id') {
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
@@ -1370,8 +1377,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 
   $table_name = $details['chado_table'];
   $type_table = $details['chado_type_table'];
-  $type_field = $details['chado_type_column'];
+  $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
+  $type_value = $details['chado_type_value'];
 
   // CONTACTS
   $contact_table = $table_name . '_contact';
@@ -1624,69 +1632,113 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
      $schema = chado_get_schema($prop_table);
      $tpkey = $tschema['primary key'][0];
      $pkey = $schema['primary key'][0];
-     // Get the list of existing property types for this table.
+
+     // Property tables can be a bit tricky because not all property types
+     // in the prop table are appropriate for each type of data.  Also som
+     // bundle types are resolved via a property.  So, we have to distinguish
+     // between these two cases.
+     $sql = '';
      $args = array();
-     $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
 
-//       $sql = "
-//         SELECT DISTINCT P.type_id
-//         FROM {" . $prop_table . "} P
-//       ";
-//       if (array_key_exists('type_id', $tschema['fields'])) {
-//         $sql .= "
-//             INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-//           WHERE T.type_id = :cvterm_id
-//         ";
-//         $args[':cvterm_id'] = $cvterm_id;
-//       }
+     // First, is this the case where all of the records in the table are
+     // of this type?  If so, then all properties apply
+     if (!$type_column) {
+        $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+        $props = chado_query($sql, $args);
+     }
+     // Second, if this is the case where a content type is uniquely identified
+     // by a type_id value in the base table, then only properties associated
+     // with that type ID should be used.
+     else if ($type_column and !$type_table) {
+      $sql = "
+        SELECT DISTINCT P.type_id
+        FROM {" . $prop_table . "} P
+          INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+        WHERE T.$type_column = :cvterm_id
+      ";
+      $args[':cvterm_id'] = $cvterm_id;
+      $props = chado_query($sql, $args);
+     }
+     // Third, if this is the case where a content type is uniquely identified
+     // via a term/value pair in the prop table.
+     else if ($type_column and $type_table == $prop_table and !empty($type_value)) {
+       $sql = "
+        SELECT DISTINCT P2.type_id
+        FROM {" . $prop_table . "} P1
+          INNER JOIN {" . $table_name . "} T on T.$tpkey = P1.$tpkey
+          INNER JOIN {" . $prop_table . "} P2 on T.$tpkey = P2.$tpkey
+        WHERE P1.$type_column = :cvterm_id AND P1.value = :prop_value AND
+          P2.type_id != P1.type_id
+       ";
+       $args[':cvterm_id'] = $cvterm_id;
+       $args[':prop_value'] = $type_value;
+       $props = chado_query($sql, $args);
+     }
+     // Fourth, if this is the case where the content type is uinquely identifed
+     // via another table (e.g. cvterm linking table) and not this prop table.
+     else if ($type_column and $type_table != $prop_table and empty($type_value)) {
+       $sql = "
+         SELECT DISTINCT P.type_id
+         FROM {" . $prop_table . "} P
+           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+           INNER JOIN {" . $type_table . "} TT on TT.$tpkey = T.$tpkey
+         WHERE TT.$type_column = :cvterm_id
+       ";
+       $args[':cvterm_id'] = $cvterm_id;
+       $props = chado_query($sql, $args);
+     }
+     else {
+       // Do nothing;
+     }
 
-     $props = chado_query($sql, $args);
-     while ($prop = $props->fetchObject()) {
+     if ($props) {
+       while ($prop = $props->fetchObject()) {
 
-       $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+         $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
 
-       // The tripal_analysis_KEGG, tripal_analysis_blast, and
-       // tripal_analysis_interpro modules store results in the analysisprop
-       // table which is probably not the best place, but we don't want to
-       // create a ton of fields for this.
-       if ($prop_table == 'analysisprop' and
-           ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
-            $term->dbxref_id->db_id->name == 'tripal')) {
-         continue;
-       }
+         // The tripal_analysis_KEGG, tripal_analysis_blast, and
+         // tripal_analysis_interpro modules store results in the analysisprop
+         // table which is probably not the best place, but we don't want to
+         // create a ton of fields for this.
+         if ($prop_table == 'analysisprop' and
+             ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
+              $term->dbxref_id->db_id->name == 'tripal')) {
+           continue;
+         }
 
-       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
-       $field_name = substr($field_name, 0, 32);
-       $info[$field_name] = array(
-         'field_name' => $field_name,
-         'entity_type' => $entity_type,
-         'bundle' => $bundle->name,
-         'label' => ucwords(preg_replace('/_/', ' ', $term->name)),
-         'description' => $term->definition,
-         'required' => FALSE,
-         'settings' => array(
-           'auto_attach' => TRUE,
-           'term_vocabulary' => $term->dbxref_id->db_id->name,
-           'term_accession' => $term->dbxref_id->accession,
-           'term_name' => $term->name,
-           'base_table' => $table_name,
-           'chado_table' => $prop_table,
-           'chado_column' => $pkey,
-         ),
-         'widget' => array(
-           'type' => 'chado_linker__prop_widget',
+         $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
+         $field_name = substr($field_name, 0, 32);
+         $info[$field_name] = array(
+           'field_name' => $field_name,
+           'entity_type' => $entity_type,
+           'bundle' => $bundle->name,
+           'label' => ucwords(preg_replace('/_/', ' ', $term->name)),
+           'description' => $term->definition,
+           'required' => FALSE,
            'settings' => array(
-             'display_label' => 1,
+             'auto_attach' => TRUE,
+             'term_vocabulary' => $term->dbxref_id->db_id->name,
+             'term_accession' => $term->dbxref_id->accession,
+             'term_name' => $term->name,
+             'base_table' => $table_name,
+             'chado_table' => $prop_table,
+             'chado_column' => $pkey,
            ),
-         ),
-         'display' => array(
-           'default' => array(
-             'label' => 'hidden',
-             'type' => 'chado_linker__prop_formatter',
-             'settings' => array(),
+           'widget' => array(
+             'type' => 'chado_linker__prop_widget',
+             'settings' => array(
+               'display_label' => 1,
+             ),
            ),
-         ),
-       );
+           'display' => array(
+             'default' => array(
+               'label' => 'hidden',
+               'type' => 'chado_linker__prop_formatter',
+               'settings' => array(),
+             ),
+           ),
+         );
+       }
      }
    }
 

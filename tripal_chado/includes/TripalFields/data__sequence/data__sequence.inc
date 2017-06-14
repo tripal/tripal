@@ -43,6 +43,21 @@ class data__sequence extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'data__sequence_formatter';
 
+
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+      ),
+    );
+  }
+
   /**
    * @see TripalField::load()
    */

@@ -156,6 +156,7 @@ function tripal_chado_prepare_chado() {
     $real_version = chado_get_version(TRUE);
 
     // Create custom tables depending on the Chado version installed.
+    drush_print("Creating Tripal Materialized Views and Custom Tables...");
     $chado_version = chado_get_version();
     if ($chado_version == '1.1') {
       tripal_chado_add_v1_1_custom_tables();
@@ -171,15 +172,20 @@ function tripal_chado_prepare_chado() {
     }
 
     // Import commonly used ontologies if needed.
+    drush_print("Loading Ontologies...");
     tripal_chado_load_ontologies();
 
     // Populate the semantic web associations for Chado tables/fields.
+    drush_print("Making semantic connections for Chado tables/fields...");
     tripal_chado_populate_chado_semweb_table();
 
     // Initialize the population of the chado_cvterm_mapping table.  This will
     // map existing data types already in Chado so that when users want to
     // add new content types it simplifies the form for them.
+    drush_print("Map Chado Controlled vocabularies to Tripal Terms...");
     tripal_chado_map_cvterms();
+
+    drush_print("Creating common Tripal Content Types...");
 
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';

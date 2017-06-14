@@ -552,7 +552,7 @@ function chado_node_sync_form($form, &$form_state) {
       // yet been synced.
       $query = "SELECT " . implode(', ', $select) . ' ' .
                'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-               "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+               "  LEFT JOIN {" . $linking_table . "} CT ON CT.$base_table_id = $base_table.$base_table_id " .
                "WHERE CT.$base_table_id IS NULL";
 
       // extend the where clause if needed
@@ -862,7 +862,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   $query = "
     SELECT " . implode(', ', $select) . ' ' .
     'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-    "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+    "  LEFT JOIN {" . $linking_table . "} CT ON CT.$base_table_id = $base_table.$base_table_id " .
     "WHERE CT.$base_table_id IS NULL ";
 
   // extend the where clause if needed

@@ -607,8 +607,10 @@ function chado_pub_insert($node) {
     // to automatically generate a citation if a uniquename doesn't already exist
     $pub_arr = array();
 
-    $properties = array(); // stores all of the properties we need to add
-    $cross_refs = array(); // stores any cross references for this publication
+    // Stores all of the properties we need to add.
+    $properties = array();
+    // Stores any cross references for this publication.
+    $cross_refs = array();
 
     // get the properties from the form
     $properties = chado_retrieve_node_form_properties($node);

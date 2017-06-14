@@ -809,7 +809,7 @@ function tripal_pub_create_citation($pub) {
   //----------------------
   // Review
   //----------------------
-  if ($pub_type == 'Review') {
+  else if ($pub_type == 'Review') {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }

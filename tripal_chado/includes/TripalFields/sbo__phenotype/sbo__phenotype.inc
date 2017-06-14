@@ -58,6 +58,19 @@ class sbo__phenotype extends ChadoField {
 
 
   /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    return array(
+      $field_term => array(
+        'operations' => array('eq', 'ne', 'contains', 'starts'),
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+      ),
+    );
+  }
+  /**
    *
    * @see TripalField::load()
    */
@@ -112,7 +125,7 @@ class sbo__phenotype extends ChadoField {
         else {
           $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->value;
         }
-        
+
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $phenotype_linker->$pkey;
         $entity->{$field_name}['und'][$i][$field_table . '__' . $fkey_lcolumn] = $phenotype_linker->$fkey_lcolumn->$fkey_lcolumn;
         $entity->{$field_name}['und'][$i][$field_table . '__' . 'phenotype_id'] = $phenotype->phenotype_id;
