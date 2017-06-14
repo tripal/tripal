@@ -12,6 +12,7 @@ require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
 require_once 'api/tripal_core.chado_nodes.relationships.api.inc';
 require_once 'api/tripal_core.tripal_variables.api.inc';
 require_once 'includes/tripal_core.form_elements.inc';
+require_once 'includes/tripal_core.search.inc';
 
 /**
  * @defgroup tripal_core Tripal Core Module
