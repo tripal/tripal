@@ -653,7 +653,8 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
 
   $form["#tree"] = TRUE;
 
-  // Get a single node of this type so we can get all the possible content for it
+  // Get a single node of this type so we can get all the possible content
+  // for it.
   $sql = "SELECT nid FROM {node} WHERE type = :type LIMIT 1 OFFSET 0";
   $nid = db_query($sql, array(':type' => $content_type))->fetchField();
   if (!$nid) {
