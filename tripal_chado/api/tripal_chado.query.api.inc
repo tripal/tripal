@@ -1685,7 +1685,10 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   // get the page and offset for the pager
   $page_arg = isset($_GET['page']) ? $_GET['page'] : '0';
   $pages = explode(',', $page_arg);
-  $page = $pages[$element];
+  $page = 0;
+  if (count($pages) >= $element) {
+     $page = $pages[$element];
+  }
   $offset = $limit * $page;
   $q = $_GET['q'];
 
