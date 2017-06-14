@@ -331,11 +331,8 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
     $cv_id = $form_state['build_info']['args'][0];
     $cvterm_id = $form_state['build_info']['args'][1];
     if ($form_state['build_info']['args'][1]) {
-      $result = db_select('chado.cvterm','c')
-      ->fields('c', array('name'))
-      ->condition('c.cvterm_id',$cvterm_id)
-      ->execute();
-      $cvterm_name = $result->fetchObject()->name;
+      $cvterm_name = chado_query('SELECT name FROM {cvterm} WHERE cvterm_id = :id',
+          array(':id' => $cvterm_id))->fetchField();
       $step = 1;
     }
   }

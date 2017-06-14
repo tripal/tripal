@@ -113,17 +113,19 @@ function chado_set_active($dbname = 'default') {
     $GLOBALS['chado_active_db'] = 'default';
   }
 
-  $previous_db = $GLOBALS['chado_active_db'];
-
+  $previous_db = $active_db = $GLOBALS['chado_active_db'];
+  $search_path = tripal_get_schema_name('drupal');
 
   // Change only if 'chado' has been specified.
+  // Notice that we leave the active_db set as chado but use the possibly user-altered
+  // schema name for the actual search path. This is to keep outward facing mentions of
+  // chado as "chado" while still allowing the user to alter the schema name used.
   if ($dbname == 'chado') {
     $active_db = 'chado';
-    $search_path = 'chado,public';
+    $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
   }
   else {
     $active_db = $dbname;
-    $search_path = 'public';
   }
 
   $settings = array(
@@ -136,10 +138,10 @@ function chado_set_active($dbname = 'default') {
   // note: hooks can alter $active_db and $search_path.
   drupal_alter('chado_connection', $settings);
 
-  // Set chado_active_db to remember active db.
+  // set chado_active_db to remember active db
   $GLOBALS['chado_active_db'] = $active_db;
 
-  // Set PostgreSQL search_path.
+  // set PostgreSQL search_path
   db_query('SET search_path TO ' . $search_path);
 
   return $previous_db;
@@ -1634,15 +1636,15 @@ function chado_query($sql, $args = array()) {
     // Chado tables should be enclosed in curly brackets (ie: {feature} )
     // and Drupal tables should be enclosed in square brackets
     // (ie: [tripal_jobs] ).
-    // @todo: remove assumption that the chado schema is called 'chado' and the
-    // drupal schema is called 'public'.
-    $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    $sql = preg_replace('/\[(\w+)\]/', 'public.$1', $sql);
+    $chado_schema_name = tripal_get_schema_name('chado');
+    $drupal_schema_name = tripal_get_schema_name('drupal');
+    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
+    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
 
     // The featureloc table has some indexes that use function that call other
     // functions and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
-    if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
+    if (preg_match('/'.$chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
       try {
         $results = db_query($sql, $args);
@@ -1905,7 +1907,40 @@ function tripal_get_schema_name($schema = 'chado') {
 
   return $schema_name;
 }
+/**
+ * Alter the name of the schema housing Chado and/or Drupal.
+ *
+ * This example implementation shows a solution for the case where your chado database
+ * was well established in the "public" schema and you added Drupal later in a
+ * "drupal" schema. Please note that this has not been tested and while we can ensure
+ * that Tripal will work as expected, we have no control over whether Drupal is
+ * compatible with not being in the public schema. That's why we recommened the
+ * organization we have (ie: Chado in a "chado" schema and Drupal in the "public schema).
+ *
+ * @param $schema_name
+ *   The current name of the schema as known by Tripal. This is likely the default
+ *   set in tripal_get_schema_name() but in the case of multiple alter hooks, it might
+ *   be different.
+ * @param $context
+ *   This is an array of items to provide context.
+ *     - schema: this is the schema that was passed to tripal_get_schema_name() and will
+ *       be either "chado" or "drupal". This should be used to determine you are changing
+ *       the name of the correct schema.
+ */
+function hook_tripal_get_schema_name_alter($schema_name, $context) {
 
+  // First we check which schema was passed to chado_get_schema().
+  // Notice that we do not use $schema_name since it may already have
+  // been altered by another module.
+  if ($context['schema'] == 'chado') {
+    $schema_name = 'public';
+  }
+  // Notice that we use elseif to capture the second case rather than else. This
+  // avoids the assumption that there is only one chado and one drupal schema.
+  elseif ($context['schema'] == 'drupal') {
+    $schema_name = 'drupal';
+  }
+}
 /**
  * A replacment for db_select when querying Chado.
  *

@@ -493,10 +493,8 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
 function tripal_chado_upgrade_chado_1_11_to_1_2() {
 
   // Get the path to the schema diff and upgarde SQL files.
-  $schema_file = drupal_get_path('module', 'tripal_chado') .
-    '/chado_schema/default_schema-1.11-1.2-diff.sql';
-  $init_file = drupal_get_path('module', 'tripal_chado') .
-    '/chado_schema/upgrade-1.11-1.2.sql';
+  $schema_file = drupal_get_path('module', 'tripal_chado') . '/chado_schema/default_schema-1.11-1.2-diff.sql';
+  $init_file = drupal_get_path('module', 'tripal_chado') . '/chado_schema/upgrade-1.11-1.2.sql';
 
   $success = tripal_chado_install_sql($schema_file);
   if ($success) {
