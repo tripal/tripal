@@ -1,5 +1,6 @@
-Drupal.behaviors.tripalDashboard = {
-  attach: function (context, settings) {
+(function ($) {
+  Drupal.behaviors.tripalDashboard = {
+    attach: function (context, settings) {
 
 
     /**
@@ -9,13 +10,18 @@ Drupal.behaviors.tripalDashboard = {
      * fData: The data to be rendered in graphs.
      */
 
-    function barchart2(id, data) {
+    function barchart2(id, parent, data) {
         // Set aside 10 colors
         var c10 = d3.scale.category10();
-
-        var m = [30, 100, 10, 120],
-            w = 960 - m[1] - m[3],
-            h = 930 - m[0] - m[2];
+        
+        // Set some default margins.
+        var m = [30, 100, 10, 120];
+        
+        // Set the width of the viewport to fit inside the block.
+        var w = $(parent).width() - m[1] - m[3] - 50;
+        // Set the height to be tall enough to read each legend and surrounding
+        // margins.
+        var h = (data.length * 30) - m[0] - m[2]
 
         var format = d3.format(",.0f");
 
@@ -30,8 +36,6 @@ Drupal.behaviors.tripalDashboard = {
             .attr("height", h + m[0] + m[2])
             .append("g")
             .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
-
-
 
             // Parse numbers, and sort by count.
             data.forEach(function(d) { d.count = +d.count; });
@@ -56,7 +60,7 @@ Drupal.behaviors.tripalDashboard = {
                 .attr("class", "count")
                 .attr("x", function(d) { return x(d.count); })
                 .attr("y", y.rangeBand() / 2)
-                .attr("dx", 35)
+                .attr("dx", 50)
                 .attr("dy", ".35em")
                 .attr("text-anchor", "end")
                 .text(function(d) { return format(d.count); });
@@ -68,8 +72,10 @@ Drupal.behaviors.tripalDashboard = {
             svg.append("g")
                 .attr("class", "y axis")
                 .call(yAxis);
-    }
+      }
 
-    barchart2('#tripal-entity-type-chart', entityCountListing);
-  }
-};
+      // Now insert the bar chart.
+      barchart2('#tripal-entity-type-chart', '#block-tripal-content-type-barchart', entityCountListing);
+    }
+  };
+}) (jQuery);

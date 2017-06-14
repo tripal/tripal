@@ -810,7 +810,12 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     // Set some default semantic web information
     if ($column_name == 'uniquename') {
       $base_info['label'] = 'Identifier';
-      $base_info['widget_type'] = 'text_textfield';
+      $base_info['widget']['type'] = 'text_textfield';
+      if ($details['type'] == 'text') {
+        unset($base_info['display']['default']['label']);
+        unset($base_info['settings']['text_processing']);
+        unset($base_info['settings']['format']);
+      }
     }
     elseif ($base_info['label'] == 'Timeaccessioned') {
       $base_info['label'] = 'Time Accessioned';
@@ -943,7 +948,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Organism',
-      'description' => 'Select an organism.',
+      'description' => 'The full scientific name for a species..',
       'required' => $is_required,
       'settings' => array(
         'auto_attach' => TRUE,
@@ -967,7 +972,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   }
 
-  // BASE ORGANISM_ID
+  // BASE CVTERM
   if ($table_name == 'cvterm') {
     $field_name = 'sio__vocabulary';
     $is_required = TRUE;
@@ -976,7 +981,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Vocabulary',
-      'description' => 'Select a vocabulary.',
+      'description' => 'A controlled vocabulary.',
       'required' => $is_required,
       'settings' => array(
         'auto_attach' => TRUE,

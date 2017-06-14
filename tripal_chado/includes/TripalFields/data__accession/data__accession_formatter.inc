@@ -13,7 +13,7 @@ class data__accession_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $content = 'N/A';
+    $content = '';
     if ($items[0]['value']) {
       $content = $items[0]['value'];
     }

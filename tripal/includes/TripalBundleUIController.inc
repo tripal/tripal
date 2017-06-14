@@ -245,13 +245,13 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $form['set_titles']['bp_explanation'] = array(
     '#type' => 'item',
     '#markup' => t('Retroactively apply the new title pattern to
-        existing content.',
+        existing content by clicking the button below.',
       array('%type' => $bundle->label)),
   );
   $form['set_titles']['bulk_update'] = array(
     '#type' => 'submit',
     '#value' => t('Bulk update all titles'),
-    '#submit' => array('tripal_bulk_update_submit'),
+    //'#submit' => array('tripal_bulk_update_submit'),
   );
 
   // Set URL Alias Pattern.
@@ -310,13 +310,13 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $form['url']['bp_explanation'] = array(
     '#type' => 'item',
     '#markup' => t('Retroactively apply the new url alias pattern to
-        existing content.',
+        existing content by clicking the button below.',
       array('%type' => $bundle->label)),
   );
   $form['url']['bulk_update'] = array(
     '#type' => 'submit',
     '#value' => t('Bulk update all aliases'),
-    '#submit' => array('tripal_bulk_update_submit'),
+    //'#submit' => array('tripal_bulk_update_submit'),
   );
   // Submit Buttons
   //-------------------------
@@ -397,38 +397,73 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
  * Submit: Tripal content type edit form.
  */
 function tripal_tripal_bundle_form_submit($form, &$form_state) {
+  global $user;
 
-  $bundle_entity = $form_state['build_info']['args'][0];
+  $trigger = $form_state['triggering_element']['#value'];
+  $bundle = $form_state['build_info']['args'][0];
 
-  if ($form_state['triggering_element']['#value'] == 'Save Content Type') {
+  if ($trigger == 'Save Content Type' or $trigger == 'Bulk update all aliases' or
+      $trigger == 'Bulk update all titles') {
 
     // Save the label.
-    $bundle_entity->label = $form_state['values']['label'];
-    $bundle_entity->save();
+    $bundle->label = $form_state['values']['label'];
+    $bundle->save();
 
     // Save the description.
-    tripal_set_bundle_variable('description', $bundle_entity->id, $form_state['values']['description']);
+    tripal_set_bundle_variable('description', $bundle->id, $form_state['values']['description']);
 
     // Save the hide_empty_field setting.
-    tripal_set_bundle_variable('hide_empty_field', $bundle_entity->id, $form_state['values']['hide_empty_field']);
+    tripal_set_bundle_variable('hide_empty_field', $bundle->id, $form_state['values']['hide_empty_field']);
 
     // Save the page title format.
     tripal_save_title_format(
-      $bundle_entity,
+      $bundle,
       $form_state['values']['set_titles']['title_format']
     );
 
     // Save the URL alias pattern if it's set.
     if ($form_state['values']['url']['url_pattern']) {
-      tripal_set_bundle_variable('url_format', $bundle_entity->id, $form_state['values']['url']['url_pattern']);
+      tripal_set_bundle_variable('url_format', $bundle->id, $form_state['values']['url']['url_pattern']);
+    }
+
+    // There are two submit buttons for this either updating the paths or the
+    // titles.
+    if ($trigger == 'Bulk update all titles') {
+      $update = $form_state['input']['set_titles']['title_format'];
+      $type = 'title';
+      $args = array(
+        'bundle_id' => $bundle->name,
+        'update' => $update,
+        'type' => $type
+      );
+      $includes = array(
+        module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
+      );
+      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all', $args,
+        $user->uid, 10, $includes);
+    }
+    elseif ($trigger == 'Bulk update all aliases'){
+      $update = $form_state['input']['url']['url_pattern'];
+      $type = 'alias';
+      $args = array(
+        'bundle_id' => $bundle->name,
+        'update' => $update,
+        'type' => $type
+      );
+      $includes = array(
+        module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
+      );
+      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all', $args,
+        $user->uid, 10, $includes);
     }
 
     $form_state['redirect'] = 'admin/structure/bio_data';
     drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
   }
+
   else {
     $form_state['redirect'] = array(
-      'admin/structure/bio_data/manage/' . $bundle_entity->name . '/delete',
+      'admin/structure/bio_data/manage/' . $bundle->name . '/delete',
       array('query' => array('destination' => 'admin/structure/bio_data'))
     );
   }
@@ -759,42 +794,4 @@ function tripal_admin_access($entity) {
     user_role_change_permissions($role, $permission_for_role);
   }
   return TRUE;
-}
-
-/**
- * Process function for the bulk_update field of the bundle form.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
- */
-function tripal_bulk_update_submit($form, &$form_state) {
-  $trigger = $form_state['triggering_element']['#value'];
-  $bundle_entity = $form_state['build_info']['args'][0];
-  $bundle_id = $bundle_entity->name;
-
-  //There are two submit buttons for this function, so to keep it DRY we'll
-  // use the triggering_element into to determine $update value.
-  if($trigger == 'Bulk update all titles'){
-    $update = $form_state['input']['set_titles']['title_format'];
-    $type = 'title';
-  }
-  elseif ($trigger == 'Bulk update all aliases'){
-    $update = $form_state['input']['url']['url_pattern'];
-    $type = 'alias';
-  }
-  global $user;
-  $args = array(
-    'bundle_id' => $bundle_id,
-    'update' => $update,
-    'type' => $type
-  );
-  $includes = array(
-    module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
-  );
-  tripal_add_job('Update all aliases', 'tripal',
-     'tripal_update_all', $args,
-     $user->uid, 10, $includes);
-  return $form;
 }

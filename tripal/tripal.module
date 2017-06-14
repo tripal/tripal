@@ -671,7 +671,7 @@ function tripal_block_info() {
     ),
   );
   $blocks['content_type_barchart'] = array(
-    'info' => t('Tripal Content Type Count'),
+    'info' => t('Published Tripal Content'),
     'visibility' => BLOCK_VISIBILITY_LISTED,
     'pages' => 'admin/dashboard',
     'status' => TRUE,
@@ -725,9 +725,10 @@ function tripal_block_view($delta = ''){
         ->fetchAll();
 
       $entity_count_listing = array();
+
       // The number of entities per content type.
       foreach($entity_types as $entity_types => $entity_type){
-        $result = db_select('chado_'.$entity_type->name, 'et')
+        $result = db_select('chado_' . $entity_type->name, 'et')
           ->fields('et')
           ->execute();
         $number_of_entities = $result->rowCount();
@@ -735,7 +736,6 @@ function tripal_block_view($delta = ''){
           'name' => $entity_type->label,
           'count' => $number_of_entities,
         );
-
       }
       tripal_add_d3js();
       drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal.dashboard.js');
@@ -744,7 +744,7 @@ function tripal_block_view($delta = ''){
       drupal_add_js("var entityCountListing = " . json_encode($entity_count_listing) . ";", array('type' => 'inline'));
 
       $output = "<div id=\"tripal-entity-types\" class=\"tripal-entity-types-pane\">
-            <p>A list of the Tripal Content Types and the number of each.</p>
+            <p>A list of the published Tripal content types and the number of each.</p>
             <div id=\"tripal-entity-type-chart\"></div>
           </div>";
 

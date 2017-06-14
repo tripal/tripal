@@ -14,11 +14,201 @@ function tripal_views_default_views() {
 
   $view = tripal_admin_defaultview_jobs();
   $views[$view->name] = $view;
-    
+
+  // Add in the views for existing content types.
+  tripal_bundle_default_views($views);
+
   return $views;
-}  
+}
+
+function tripal_bundle_default_views(&$views) {
+  // Get the list of all of the bundles (entity types) and add them
+  // as "base tables" for views.
+  $bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute();
+
+  // Iterate through the bundles.
+  while ($bundle = $bundles->fetchObject()) {
+
+    // The base table for a TripalEntity content type is simply the
+    // vocab and the accession for the term.  It's not really a table
+    // but we use that nomenclature for views.
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $base_table = $term->vocab->vocabulary . '__' . $term->accession;
+    $view_name = preg_replace('/[^\w]/', '_', $bundle->label) . '_search';
+
+    // Get the fields that are attached to this bundle type.
+    $fields = field_info_instances('TripalEntity', $bundle->name);
+
+    // Initalize the view.
+    $view = new view();
+    $view->name = $view_name;
+    $view->description = 'A search tool for ' . $bundle->label . ' content.';
+    $view->tag = $bundle->label . ' search';
+    $view->base_table = $base_table;
+    $view->human_name = $bundle->label . ' Search';
+    $view->core = 7;
+    $view->api_version = '3.0';
+    $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
 
+    /* Display: Defaults */
+    $handler = $view->new_display('default', 'Defaults', 'default');
+    $handler->display->display_options['title'] = $bundle->label . ' Search';
+    $handler->display->display_options['use_more_always'] = FALSE;
+    $handler->display->display_options['access']['type'] = 'perm';
+    $handler->display->display_options['access']['perm'] = 'view ' . $bundle->name;
+    $handler->display->display_options['cache']['type'] = 'none';
+    $handler->display->display_options['query']['type'] = 'views_query';
+    $handler->display->display_options['exposed_form']['type'] = 'basic';
+    $handler->display->display_options['pager']['type'] = 'full';
+    $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+    $handler->display->display_options['pager']['options']['offset'] = '0';
+    $handler->display->display_options['pager']['options']['id'] = '0';
+    $handler->display->display_options['pager']['options']['quantity'] = '9';
+
+    // Start the default display style options.
+    $handler->display->display_options['style_plugin'] = 'table';
+    $handler->display->display_options['style_options']['grouping'] = '';
+
+    // We can't have all fields show up as columns in a table so we have
+    // to be selective and choose those that are most likely to be most
+    // descriptive of a content type.
+    $columns = array();
+    $default_fields = array('data__image', 'data__identifier', 'schema__name',
+      'data__accession', 'rdfs__label', 'taxrank__genus',
+      'taxrank__species', 'obi__organism', 'tpub__title',
+      'schema__alternate_name', 'schema__description', 'tpub__abstract'
+    );
+    $selected_fields = array();
+    foreach ($default_fields as $field_name) {
+      if (in_array($field_name, array_keys($fields))) {
+        $selected_fields[] = $field_name;
+      }
+    }
+    $handler->display->display_options['style_options']['default'] = '-1';
+
+    // Add in the entity_id field.
+    $handler->display->display_options['style_options']['columns']['entity_id'] = 'entity_id';
+    $handler->display->display_options['style_options']['info']['entity_id'] = array(
+      'sortable' => 1,
+      'separator' => '',
+    );
+    $handler->display->display_options['fields']['entity_id']['id'] = 'entity_id';
+    $handler->display->display_options['fields']['entity_id']['table'] = $base_table;
+    $handler->display->display_options['fields']['entity_id']['field'] = 'entity_id';
+    $handler->display->display_options['fields']['entity_id']['exclude'] = TRUE;
+
+    // Add in other selected fields to the view.
+    foreach ($selected_fields as $field_name) {
+      $field = $fields[$field_name];
+
+      // Make sure the table headers are there for this field.
+      $handler->display->display_options['style_options']['columns'][$field_name] = $field_name;
+      $handler->display->display_options['style_options']['info'][$field_name]['separator'] = '';
+
+      // Add in the current field.
+      $handler->display->display_options['fields'][$field_name]['id'] = $field_name;
+      $handler->display->display_options['fields'][$field_name]['table'] = $base_table;
+      $handler->display->display_options['fields'][$field_name]['field'] = $field_name;
+      $handler->display->display_options['fields'][$field_name]['label'] = $field['label'];
+
+      // Only some fields are sortable.
+      if (in_array($field_name, array('data__identifier', 'schema__name',
+          'data__accession', 'rdfs__label', 'taxrank__genus',
+          'taxrank__species', 'obi__organism',
+          'schema__alternate_name', 'tpub__title'))) {
+        $handler->display->display_options['style_options']['info'][$field_name]['sortable'] = 1;
+        $handler->display->display_options['style_options']['info'][$field_name]['default_sort_order'] = 'asc';
+      }
+
+      // The name or identifier fields should link to the record.
+      if ($field_name == 'data__identifier' or $field_name == 'schema__name' or
+          $field_name == 'taxrank__genus' or $field_name == 'taxrank__species' or
+          $field_name == 'tpub__title') {
+        $handler->display->display_options['fields'][$field_name]['alter']['make_link'] = TRUE;
+        $handler->display->display_options['fields'][$field_name]['alter']['path'] = 'bio_data/[entity_id]';
+      }
+
+      // Set a default image width to 100px.
+      if ($field_name == 'data__image') {
+        $handler->display->display_options['fields']['data__image']['image_width'] = '100';
+      }
+
+      // Add a 'read more' link to the description field if it's too big
+      if ($field_name == 'schema__description') {
+        $handler->display->display_options['fields']['schema__description']['alter']['max_length'] = '512';
+        $handler->display->display_options['fields']['schema__description']['alter']['more_link'] = TRUE;
+        $handler->display->display_options['fields']['schema__description']['alter']['more_link_text'] = 'read more';
+        $handler->display->display_options['fields']['schema__description']['alter']['more_link_path'] = 'bio_data/[entity_id]';
+        $handler->display->display_options['fields']['schema__description']['alter']['trim'] = TRUE;
+      }
+
+      // Filter criterion.
+      if (in_array($field_name, array('data__identifier', 'schema__name',
+          'data__accession', 'rdfs__label', 'taxrank__genus',
+          'taxrank__species', 'obi__organism', 'tpub__title'))) {
+        $handler->display->display_options['filters'][$field_name]['id'] = $field_name;
+        $handler->display->display_options['filters'][$field_name]['table'] = $base_table;
+        $handler->display->display_options['filters'][$field_name]['field'] = $field_name;
+        $handler->display->display_options['filters'][$field_name]['operator'] = 'contains';
+        $handler->display->display_options['filters'][$field_name]['group'] = 1;
+        $handler->display->display_options['filters'][$field_name]['exposed'] = TRUE;
+        $handler->display->display_options['filters'][$field_name]['expose']['operator_id'] = $field_name . '_op';
+        $handler->display->display_options['filters'][$field_name]['expose']['label'] = $field['label'];
+        $handler->display->display_options['filters'][$field_name]['expose']['use_operator'] = TRUE;
+        $handler->display->display_options['filters'][$field_name]['expose']['operator'] = $field_name . '_op';
+        $handler->display->display_options['filters'][$field_name]['expose']['identifier'] = $field_name;
+        $handler->display->display_options['filters'][$field_name]['expose']['remember_roles'] = array(
+          2 => '2',
+          1 => 0,
+          3 => 0,
+        );
+        $handler->display->display_options['filters'][$field_name]['select_optional'] = TRUE;
+        $handler->display->display_options['filters'][$field_name]['max_length'] = '40';
+      }
+    }
+
+    // Add the default sorted column.
+    if (in_array('data__identifier', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'data__identifier';
+    }
+    else if (in_array('schema__name', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'schema__name';
+    }
+    else if (in_array('obi__organism', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'obi__organism';
+    }
+    else if (in_array('rdfs_label', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'rdfs_label';
+    }
+    else if (in_array('taxrank__genus', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'taxrank__genus';
+    }
+    else if (in_array('taxrank__species', $selected_fields)) {
+      $handler->display->display_options['style_options']['default'] = 'taxrank__species';
+    }
+
+    // No results behavior: Global: Text area.
+    $handler->display->display_options['empty']['text']['id'] = 'text';
+    $handler->display->display_options['empty']['text']['table'] = 'views';
+    $handler->display->display_options['empty']['text']['field'] = 'area';
+    $handler->display->display_options['empty']['text']['empty'] = TRUE;
+    $handler->display->display_options['empty']['text']['content'] = 'No ' . strtolower($bundle->label) . ' records matched the supplied criteria.';
+    $handler->display->display_options['empty']['text']['format'] = 'filtered_html';
+
+    // Add page and menu.
+    $handler = $view->new_display('page', 'Page', 'page_1');
+    $handler->display->display_options['path'] = 'data_search/' . strtolower(preg_replace('/[^\w]/', '_', $bundle->label));
+    $handler->display->display_options['menu']['type'] = 'normal';
+    $handler->display->display_options['menu']['title'] = $bundle->label . ' Search';
+    $handler->display->display_options['menu']['description'] = 'A search form for finding ' . $bundle->label . ' records';
+    $handler->display->display_options['menu']['weight'] = '-10';
+
+    $views[$view_name] = $view;
+  }
+}
 /**
  * Describes the jobs administration view.
  *

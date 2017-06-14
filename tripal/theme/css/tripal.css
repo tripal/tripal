@@ -82,23 +82,25 @@ div.messages.tripal-site-admin-only{
  /******************************************************************************
   * Format for tripal dashbaord chart
   *****************************************************************************/
- .bar text.value {
+ #tripal-entity-type-chart .bar text.value {
    fill: white;
  }
 
- .axis {
+ #tripal-entity-type-chart .axis {
    shape-rendering: crispEdges;
  }
 
- .axis path {
+ #tripal-entity-type-chart .axis path {
    fill: none;
  }
 
- .x.axis line {
+ #tripal-entity-type-chart .x.axis line {
    stroke: #fff;
    stroke-opacity: .8;
  }
 
- .y.axis path {
+ #tripal-entity-type-chart .y.axis path {
    stroke: black;
  }
+ 
+ #tripal-entity-type-chart .x.axis text { display: none; }
