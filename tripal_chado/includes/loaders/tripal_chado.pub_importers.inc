@@ -169,9 +169,9 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
       $i = $page * $limit + 1;
       if (count($pubs) > 0) {
         foreach ($pubs as $pub) {
-          $citation = htmlspecialchars($pub['Citation']);
+          $citation = array_key_exists('Citation', $pub) ? htmlspecialchars($pub['Citation']) : 'Unable to generate citation';
           $raw_link = '';
-          if($pub['Publication Dbxref']) {
+          if(array_key_exists('Publication Dbxref', $pub) and $pub['Publication Dbxref']) {
             $raw_link = l('raw', 'admin/tripal/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
           }
           $rows[] = array(

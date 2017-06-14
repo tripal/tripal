@@ -171,7 +171,7 @@ function chado_analysis_form($node, &$form_state) {
   );
   $form['programversion']= array(
     '#type' => 'textfield',
-    '#title' => t('Program, Pipeline  or Method version'),
+    '#title' => t('Program, Pipeline  or Method Version'),
     '#required' => TRUE,
     '#default_value' => $programversion,
     '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available or applicable."),

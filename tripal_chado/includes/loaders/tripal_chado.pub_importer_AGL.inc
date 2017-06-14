@@ -2,10 +2,10 @@
 /**
  * @file
  * This file provides support for importing and parsing of results from the
- * USDA National Agricultural Library (AGL) database.  The functions here are used by
- * both the publication importer setup form and the publication importer.
- *
- * The USDA AGL database uses a YAZ protocol for querying and retrieving records.
+ * USDA National Agricultural Library (AGL) database.  The functions here are
+ * used by both the publication importer setup form and the publication
+ * importer. The USDA AGL database uses a YAZ protocol for querying and
+ * retrieving records.
  *
  */
 
@@ -353,8 +353,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
   // and does not attempt to establish a connection - it merely prepares a connect to be
   // performed later when yaz_wait() is called.
-  //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager'); // NAL Catalog
-  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');  // NAL Article Citation Database
+  // NAL Catalog
+  //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager');
+  // NAL Article Citation Database
+  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');
 
   // use the USMARC record type.  But OPAC is also supported by Agricola
   yaz_syntax($yazc, "usmarc");
