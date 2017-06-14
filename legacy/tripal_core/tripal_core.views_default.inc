@@ -14,10 +14,12 @@ function tripal_core_views_default_views() {
 
   // We only want to make this view available if the Search API module is installed
   // and the "Default Node Index has been enabled.
-  $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', array(':name' => 'default_node_index'))->fetchField();
-  if (module_exists('search_api') AND $index_enabled) {
-    $view = tripal_core_search_default_node_index();
-    $views[$view->name] = $view;
+  if (module_exists('search_api')) {
+    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', array(':name' => 'default_node_index'))->fetchField();
+    if ($index_enabled) {
+      $view = tripal_core_search_default_node_index();
+      $views[$view->name] = $view;
+    }
   }
   return $views;
 }
