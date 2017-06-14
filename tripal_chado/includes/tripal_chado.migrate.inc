@@ -212,7 +212,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $sql =
             "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
               FROM {" . $table . "} T
-              INNER JOIN {" . $tv2_content_type CT . "} ON T.$pkey = CT.$pkey
+              INNER JOIN {" . $tv2_content_type . "} CT ON T.$pkey = CT.$pkey
               INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
               INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
               INNER JOIN {db} ON db.db_id = X.db_id
