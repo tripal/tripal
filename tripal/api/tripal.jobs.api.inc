@@ -534,9 +534,9 @@ function tripal_get_active_jobs($modulename = NULL) {
  * Execute a specific Tripal Job.
  *
  * @param $job_id
- *          The job id to be exeuted
+ *   The job id to be exeuted.
  * @param bool $redirect [optional]
- *          Whether to redirect to the job page or not
+ *   Whether to redirect to the job page or not.
  */
 function tripal_execute_job($job_id, $redirect = TRUE) {
 
