@@ -177,7 +177,7 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
   $element['upstream'] = array(
      '#type' => 'textfield',
      '#title' => t('Get Upstream Bases'),
-     '#description' => t('Specify the number of upstream bases to include in the sequnce'),
+     '#description' => t('Specify the number of upstream bases to include in the sequence'),
      '#default_value' => $element['#value']['upstream'],
   );
   // add the downstream box
@@ -187,7 +187,7 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
      '#type' => 'textfield',
      '#prefix' => '<br>',
      '#title' => t('Get Downstream Bases'),
-     '#description' => t('Specify the number of downstream bases to include in the sequnce'),
+     '#description' => t('Specify the number of downstream bases to include in the sequence'),
      '#default_value' => $element['#value']['downstream'],
   );
   return $element;
