@@ -213,8 +213,14 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.jobs.inc',
   );
-
-
+  $items['admin/tripal/tripal_jobs/execute/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Execute an existing job'),
+    'page callback' => 'tripal_execute_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
 
   /*
    * AJAX Callbacks.

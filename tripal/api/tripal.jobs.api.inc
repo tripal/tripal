@@ -528,3 +528,31 @@ function tripal_get_active_jobs($modulename = NULL) {
   }
   return $jobs;
 }
+
+
+/**
+ * Execute a specific Tripal Job.
+ *
+ * @param $job_id
+ *          The job id to be exeuted
+ * @param bool $redirect [optional]
+ *          Whether to redirect to the job page or not
+ */
+function tripal_execute_job($job_id, $redirect = TRUE) {
+
+  $job = new TripalJob();
+  $job->load($job_id);
+
+  // Run the job.
+  if ($job->getStartTime() == 0 and $job->getEndTime() == 0) {
+    tripal_launch_job(1, $job_id);
+    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", array('%job_id' => $job_id)));
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
+  }
+
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
+  }
+}
