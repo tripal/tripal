@@ -1188,7 +1188,7 @@ function tripal_pub_node_insert($node) {
 function tripal_pub_node_load($nodes, $types) {
   if (count(array_intersect(array('chado_pub'), $types))) {
     foreach ($nodes as $nid => $node) {
-      if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {
+      if ($node->type == 'chado_pub' and !drupal_lookup_path('alias', 'node/' . $nid)) {
         $pub_id = chado_get_id_from_nid('pub', $node->nid);
         $path = tripal_pub_set_pub_url($node, $pub_id);
       }
