@@ -631,7 +631,7 @@ class FASTAImporter extends TripalImporter {
       }
 
       // If the feature exists but this is an "insert only" then skip.
-      if ($feature and (strcmp($method, 'Insert only') == 0)) {
+      if (isset($feature) and (strcmp($method, 'Insert only') == 0)) {
         $this->logMessage("Feature already exists '!name' ('!uname') while matching on !type. Skipping insert.",
           array('!name' => $name,'!uname' => $uname,'!type' => drupal_strtolower($match_type)), TRIPAL_WARNING);
         return 0;
@@ -692,7 +692,7 @@ class FASTAImporter extends TripalImporter {
     }
 
     // if we do have a feature and this is an update then proceed with the update
-    if ($feature and !$inserted and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
+    if (isset($feature) and !$inserted and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
 
       // if the user wants to match on the Name field
       if (strcmp($match_type, 'Name') == 0) {
