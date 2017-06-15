@@ -267,7 +267,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
 
   // This SQL gets all of the phylonodes for a given tree as well as the
   // features and organisms with which it is assocaited.  Each phylonode
-  // can be associated with an orgnaism in one of two ways: 1) via a
+  // can be associated with an organism in one of two ways: 1) via a
   // feature linked by the phylonode.feature_id field or 2) via a
   // a record in the phylonde_organsim table.  Therefore both types of
   // organism records are returned in the query below, but those
