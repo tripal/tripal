@@ -1,7 +1,11 @@
 <?php
 /**
+ * Creates the Summary tripal pane and the table within that pane.
+ *
  * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
  * @param $fields
+ *  Array of the machine names of the children of the field group being created.
  */
 function _summary_field_group_info($bundle_name, $fields){
   //Tripal pane to nest the summary fieldset within.
@@ -69,8 +73,12 @@ function _summary_field_group_info($bundle_name, $fields){
 }
 
 /**
+ * Creates the Properties Table tripal pane and the table within that pane.
+ *
  * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
  * @param $fields
+ *  Array of the machine names of the children of the field group being created.
  */
 function _prop_field_group_info($bundle_name, $fields){
   //Tripal pane  to nest the fieldset within.
@@ -137,8 +145,12 @@ function _prop_field_group_info($bundle_name, $fields){
 }
 
 /**
+ * Creates the Data Sequence tripal pane and the table within that pane.
+ *
  * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
  * @param $fields
+ *  Array of the machine names of the children of the field group being created.
  */
 function _data_sequence_field_group_info($bundle_name, $fields){
   //Tripal pane  to nest the fieldset within.
@@ -204,9 +216,19 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   drupal_write_record('field_group', $field_group);
 }
 
+
 /**
+ * Processes all fields other than those that belong in the summary table,
+ * property table, or data sequence table.
+ *
  * @param $bundle_name
- * @param $fields
+ *  Machine name of bundle, example bio_data_1
+ * @param $field_label
+ *  Human readable name of the field.
+ * @param $group_field_name
+ *  Machine name of the field.
+ * @param $field_name
+ *  Machine name of the child element.
  */
 function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name){
   //Write to the tripal_ds table to record the new tripal pane.
@@ -243,7 +265,12 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
 }
 
 /**
- * Implements hook_field_group_info().
+ * Creates the tripal panes for Publications..
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ * @param $fields
+ *  Array of the machine names of the children of the field group being created.
  */
 function _publication_prop_field_group_info($bundle_name, $fields){
   //Tripal pane  to nest the fieldset within.

@@ -5,6 +5,11 @@ require_once "includes/tripal_ds.ds.inc";
 require_once "includes/tripal_ds.field_group.inc";
 require_once "includes/tripal_ds.field_formatter.inc";
 
+/**
+ * Implements hook_init().
+ *
+ * Injects required javascript and css.
+ */
 function tripal_ds_init() {
   drupal_add_css(drupal_get_path('module', 'tripal_ds') . '/theme/css/tripal_ds.css');
   drupal_add_js(drupal_get_path('module', 'tripal_ds') . '/theme/js/tripal_ds.js');
@@ -53,11 +58,14 @@ function tripal_ds_menu() {
   );
   return $items;
 }
+
 /**
  * Implements hook_bundle_postcreate().
  *
  * This is a Triapl defined hook and is called in the TripalBundle::create()
  * function to allow modules to perform tasks when a bundle is created.
+ *
+ * @param $bundle
  */
 function tripal_ds_bundle_postcreate($bundle) {
   $bundle_name = $bundle->name;
@@ -73,7 +81,10 @@ function tripal_ds_bundle_postcreate($bundle) {
 }
 
 /**
- * Update the tripal_ds table when a tripal pane is deleted.
+ * Update the tripal_ds table when a tripal pane is deleted. This will remove
+ * the link from the table of contents block.
+ *
+ * @param $bundle
  */
 function tripal_ds_table_column_delete($bundle){
     $bundle_name = $bundle->name;
@@ -83,13 +94,23 @@ function tripal_ds_table_column_delete($bundle){
 }
 /**
  * Trigger the update to the tripal_ds table when a tripal pane is deleted.
+ *
+ * @param $bundle
  */
 function tripal_ds_bundle_delete($bundle){
   tripal_ds_table_column_delete($bundle);
 }
 
+
 /**
  * Implements hook_ds_field_settings_alter()
+ *
+ * Upon save field groups are reviewed so that the tripal_ds table is update and
+ * thus the table of contents block is be updated.
+ *
+ * @param $field_settings
+ * @param $form
+ * @param $form_state
  */
 function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state){
   // Get the form info from the bundle about to be saved.
@@ -169,7 +190,10 @@ function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $en
 
 /**
  * Implements hook_ds_layout_info() to define layouts from code in a module for
- * display suite
+ * display suite.
+ *
+ * Defines the Tripal Feature Layout option.
+ *
  */
 function tripal_ds_ds_layout_info() {
   $path = drupal_get_path('module', 'tripal_ds');
@@ -193,7 +217,7 @@ function tripal_ds_ds_layout_info() {
  * Implements hook_form()
  *
  * Adds a confirmation message to applying default layout option in 'Manage
- * Display'
+ * Display'.
  *
  * @param $form
  * @param $form_state
@@ -222,6 +246,9 @@ function tripal_ds_update_layout_form($form, &$form_state, $bundle_name) {
 
 /**
  * Implements hook_form_submit()
+ *
+ * Deletes all existing settings associated with a bundle's display settings
+ * so that the default layout is applied cleanly.
  *
  * @param $form_state
  * @param $form
@@ -358,8 +385,17 @@ function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
 
+
 /**
+ * When called the function will add field_groups to the existing tripal_ds
+ * layout in the correct regions.
+ *
  * @param $bundle_name
+ *  The name of the bundle the pane is being added to.
+ * @param $field_name
+ *  The machine name for the field.
+ * @param $tripal_pane_name
+ *  The machine name for the tripal pane.
  */
 function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name) {
   //Build the identifier to check against ds_layout_settings.
@@ -415,7 +451,13 @@ function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name
 */
 
 /**
- *  Implements hook_field_display_alter().
+ * Implements hook_field_display_alter().
+ * Alters the display settings of a field before it gets displayed.
+ *
+ * Hides the empty tripal panes if the content type has been set to hide empty
+ * fields. This option is found in the edit tab of the tripal content type with
+ * a title 'Field Display'.
+ *
  * @param $display
  * @param $context
  */
@@ -473,10 +515,10 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
   foreach ($fg_for_bundle as $field_groups => $field_group) {
    $field_group_data = unserialize($field_group->data);
    // There is a separate function to deal with tables, so disregard.
-    if ($field_group_data['format_type'] == 'table'){
+    /*if ($field_group_data['format_type'] == 'table'){
       // Do nothing
     }
-    elseif (!empty($field_group_data['children'][0])) {
+    else*/if (!empty($field_group_data['children'][0])) {
       $children = $field_group_data['children'];
       //If there is more than one child all need to be checked.
       if (count($children) > 1) {

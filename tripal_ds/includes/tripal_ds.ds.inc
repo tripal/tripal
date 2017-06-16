@@ -8,7 +8,7 @@
  *
  * @return \Closure
  */
-function sort_array($key) {
+function tripal_ds_sort_array($key) {
   return function ($a, $b) use ($key) {
     return strnatcmp($a[$key], $b[$key]);
   };
@@ -21,13 +21,20 @@ function sort_array($key) {
  *
  * @return \Closure
  */
-function sort_object($key) {
+function tripal_ds_sort_object($key) {
   return function ($a, $b) use ($key) {
     return strnatcmp($a->$key, $b->$key);
   };
 }
+
 /**
- * Implements hook_ds_layout_settings_info().
+ * Builds the tripal_ds layout for all content types other than Publications.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ * @param $instances
+ *
+ * @return bool
  */
 function _ds_layout_settings_info($bundle_name, $instances) {
   $region_right = array();
@@ -39,7 +46,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $fields_with_regions = array();
   $i = 0;
   $all_fields = array();
-  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
 
   try {
     // Get the bundle and term objects.
@@ -52,7 +58,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
       $all_fields[$i] = $instance;
       $i++;
     }
-    usort($all_fields, sort_array('label'));
+    usort($all_fields, tripal_ds_sort_array('label'));
 
     // Iterate through the fields of this bundle.
     foreach ($all_fields as $key => $instance){
@@ -143,7 +149,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
       foreach ($all_field_groups['default'] as $key => $field_name) {
         $right_fields[$key] = $field_name;
       }
-      usort($right_fields, sort_object('label'));
+      usort($right_fields, tripal_ds_sort_object('label'));
     }
     elseif(empty($all_field_groups)) {
       //Add the original instances that were passed and the field_groups that
@@ -168,7 +174,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
       }
       $all_field_groups = array_merge($instance_names, $field_group_names);
-      usort($all_field_groups, sort_array('label'));
+      usort($all_field_groups, tripal_ds_sort_array('label'));
     }
 
     // Now build the $region_right array and the fields array.
@@ -245,7 +251,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     );
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
-    // Clear the Drpual chace
+    // Clear the Drupal cache.
     cache_clear_all();
   }
   catch (Exception $e) {
@@ -257,7 +263,13 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
 
 /**
- *  Implements hook_ds_layout_settings_info().
+ * Builds the tripal_ds layout for Publications.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ * @param $instances
+ *
+ * @return bool
  */
 function _ds_layout_pub_settings_info($bundle_name, $instances) {
   $region_right = array();
@@ -370,6 +382,9 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
 
 /**
  * Implements hook_ds_fields_info().
+ * Creates the Table of Contents field.
+ *
+ * $param $entity_type
  */
 function tripal_ds_ds_fields_info($entity_type) {
   $fields = array();
@@ -383,9 +398,10 @@ function tripal_ds_ds_fields_info($entity_type) {
 }
 
 /**
+ * Adds the content the to Table of Contents block.
  *
  * @param $entity_type
- * @return
+ * @return Object
  */
 function tripal_ds_toc_block($entity_type) {
   $bundle_name = $entity_type['bundle'];
@@ -393,6 +409,12 @@ function tripal_ds_toc_block($entity_type) {
   return $toc;
 }
 
+/**
+ * Creates the field_group for the Table of Contents.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ */
 function _ds_fields_info_write($bundle_name) {
   $fields = new stdClass;
   $fields->id ='TripalEntity|' . $bundle_name . '|default';
