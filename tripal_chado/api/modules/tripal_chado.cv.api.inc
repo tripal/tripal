@@ -5,8 +5,6 @@
  * controlled vocabularies.
  */
 
-$loop_data;
-
 /**
  * @defgroup tripal_chado_api Controlled Vocabulary API
  * @ingroup tripal_api
@@ -432,7 +430,7 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
   $result = $ttype->execute()->fetchObject();
 
   // Descends through the branch starting at this "root" term.
-  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, 0, 0, array());
+  tripal_update_cvtermpath_loop($rootid, $rootid, $rootid, $cvid, $result->cvterm_id, 0, array());
 
   // Get's the children terms of this "root" term and then recursively calls
   // this function making each child root.
@@ -461,21 +459,13 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
  *   The relationship type between the origin term and the child.
  * @param $depth
  *   The depth of the recursion.
- * @param $increment_of_depth.
- *   An integer ??
  * @param $tree_path.
- *   The array of every term between the current child and the origin. Each
- *   element in the array is an associative array with the keys:
- *     -build_id: an string identifier for the child that combines the origin,
- *      child cvterm_id,cv_id, and the type_id.
- *     -depth: the depth that a child was inserted into the cvtermpath table.
+ *   The array of every term between the current child and the origin. The
+ *   string identifier for the child that combines the origin, parent cvterm_id,
+ *   child cvterm_id,cv_id, and the type_id.
  * @return multitype:
  */
-function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $depth,
-    $increment_of_depth, $tree_path){
-
-  // An array of
-  global $loop_data;
+function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $type_id, $depth, $tree_path){
 
   // Check to see if a row with these values already exists.
   chado_set_active('chado');
@@ -494,44 +484,16 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
   // If we've already seen this term then just return, we don't want
   // to insert it again.
   if ($count_total > 0) {
-    return $loop_data;
+    return;
   }
 
   // Build the ID.
-  $child_id = $origin . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
+  $child_id = $origin . '|' . $parent_id . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
 
-  // Now check if the most recent entry already exists in the array.
-  if ($increment_of_depth != 0 && empty($loop_data)) {
-
-    // Search the $tree_path for the new $child_id in the build_id column.
-    foreach ($tree_path as $parent) {
-
-      // If this child is the same as a parent term that has already been
-      // processed then we have a potential loop.
-      if ($parent['build_id'] == $child_id) {
-
-        // The loop checker function below.
-        $result_of_loop_checker = tripal_update_cvtermpath_loop_checker($origin,
-            $child_id, $cv_id, $type_id, $depth, $increment_of_depth, 0,
-            $parent, array(), $depth);
-
-        if (!empty($result_of_loop_checker)) {
-          $loop_data = $result_of_loop_checker;
-          //Find the depth of the loop start by finding it in the array_of_children
-          foreach($tree_path as $children => $child){
-            if($child['build_id'] == $loop_data['build_id']){
-              $loop_location = $child['depth'];
-            }
-          }
-          $array_loop_data = (array)$loop_data;
-          $array_loop_data['depth'] = $loop_location;
-          $loop_data = $array_loop_data;
-          break;
-        }
-      }
-      if (!empty($loop_data)) {
-        return $loop_data;
-      }
+  // If the child_id matches any other id in the array then we've hit a loop.
+  foreach ($tree_path as $element_id) {
+    if ($element_id == $child_id) {
+      return;
     }
   }
 
@@ -547,10 +509,7 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
   $rows = $query->execute();
 
   // Then add that new entry to the $tree_path.
-  $tree_path[$increment_of_depth] = [
-    'build_id' => $child_id,
-    'depth' => $depth
-  ];
+  $tree_path[] =  $child_id;
 
   // Get all of the relationships of this child term, and recursively
   // call the tripal_update_cvtermpath_loop() function to continue
@@ -561,23 +520,9 @@ function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $de
     ->execute();
   $cterm_relationships = $query->fetchAll();
   foreach ($cterm_relationships as $item) {
-
-    if (!empty($loop_data)) {
-      if ($loop_data['depth'] < $depth) {
-        break;
-      }
-      elseif ($loop_data['depth'] > $depth) {
-        $loop_data = NULL;
-        break;
-      }
-    }
-    else {
-      $increment_of_depth++;
-      tripal_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
-          $item->type_id, $depth + 1, $increment_of_depth, $tree_path);
-    }
+    tripal_update_cvtermpath_loop($origin, $child_id, $item->subject_id, $cv_id,
+        $item->type_id, $depth + 1, $tree_path);
   }
-
 }
 
 /**
