@@ -380,7 +380,9 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     ";
     $jobs = db_query($sql);
   }
-  print date('Y-m-d H:i:s') . ": There are " . $job_res->rowCount() . " jobs queued.\n";
+  if ($jobs) {
+    print date('Y-m-d H:i:s') . ": There are " . $jobs->rowCount() . " jobs queued.\n";
+  }
 
   foreach ($jobs as $jid) {
 
