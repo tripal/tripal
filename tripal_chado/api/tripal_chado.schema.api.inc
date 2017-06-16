@@ -31,13 +31,15 @@
  * This function is necessary because Drupal's db_table_exists() function will
  * not look in any other schema but the one were Drupal is installed
  *
+ * @param $table
+ *   The name of the chado table whose existence should be checked.
+ *
  * @return
- *   TRUE/FALSE depending upon whether it exists
+ *   TRUE if the table exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
 function chado_table_exists($table) {
-  global $databases;
 
   global $databases;
 
@@ -264,9 +266,9 @@ function chado_is_local() {
     FROM pg_namespace
     WHERE
       has_schema_privilege(nspname, 'USAGE') AND
-      nspname = 'chado'
+      nspname = :chado
   ";
-  $results = db_query($sql);
+  $results = db_query($sql, array(':chado' => tripal_get_schema_name('chado')));
   $name = $results->fetchObject();
   if ($name) {
     variable_set('chado_schema_exists', FALSE);
@@ -290,7 +292,7 @@ function chado_is_installed() {
   global $databases;
 
   // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists('chado', $databases)) {
+  if (array_key_exists(tripal_get_schema_name('chado'), $databases)) {
     return TRUE;
   }
 
@@ -332,7 +334,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (!$chado_exists) {
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php
-    if (!array_key_exists('chado', $databases)) {
+    if (!array_key_exists(tripal_get_schema_name('chado'), $databases)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';
@@ -344,7 +346,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   }
   else {
     $is_local = 1;
-    $prop_exists = chado_table_exists('chadoprop');
+    // @todo we need a chado aware db_table_exists.
+    $prop_exists = db_table_exists(tripal_get_schema_name('chado') . '.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know
@@ -400,6 +403,9 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   $effective_version = $exact_version;
   if (preg_match('/^1\.2\d+$/', $effective_version)) {
     $effective_version = "1.2";
+  }
+  else if (preg_match('/^1\.3\d+$/', $effective_version)) {
+    $effective_version = "1.3";
   }
   if ($warn_if_unsupported and ($effective_version  < 1.11 and $effective_version != 'not installed')) {
     drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."), 'warning');

@@ -117,7 +117,7 @@ class chado_linker__contact extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    $type_term = tripal_get_chado_semweb_term('contact', 'type');
+    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
     $name_term = tripal_get_chado_semweb_term('contact', 'name');
     $description_term = tripal_get_chado_semweb_term('contact', 'description');
 
@@ -136,7 +136,7 @@ class chado_linker__contact extends ChadoField {
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
       'chado-' . $field_table . '__' . 'contact_id' => '',
       // Ignore the synonym_sgml column for now.
     );
@@ -169,7 +169,7 @@ class chado_linker__contact extends ChadoField {
           // Add elements that are not part of the values but used by
           // the chado storage back-end for saving values.
           'chado-' . $field_table . '__' . $pkey => $contact_linker->$pkey,
-          'chado-' . $field_table . '__' . $fkey_lcolumn => $contact_linker->$fkey_lcolumn->$fkey_lcolumn,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
           'chado-' . $field_table . '__' . 'contact_id' => $contact->contact_id
         );
 

@@ -345,12 +345,12 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
   // First check if any jobs are currently running if they are, don't continue,
   // we don't want to have more than one job script running at a time.
   if (!$do_parallel and tripal_is_job_running()) {
-    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.\n";
+    print date('Y-m-d H:i:s') . ": Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
     return;
   }
 
   if ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
-    print "At least $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.\n";
+    print date('Y-m-d H:i:s') . ": More than $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.";
     return;
   }
 
@@ -380,7 +380,10 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     ";
     $jobs = db_query($sql);
   }
-  print "There are " . $jobs->rowCount() . " jobs queued.\n";
+  if ($jobs) {
+    print date('Y-m-d H:i:s') . ": There are " . $jobs->rowCount() . " jobs queued.\n";
+  }
+
   foreach ($jobs as $jid) {
 
     $job_id = $jid->job_id;
@@ -408,7 +411,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
 
     // Run the job
     $callback = $job->getCallback();
-    print "Calling Job #$job_id: $callback(" . implode(", ", $string_args) . ")\n";
+    print date('Y-m-d H:i:s') .": Calling: $callback(" . implode(", ", $string_args) . ")\n";
     try {
       $job->run();
     }
@@ -527,4 +530,32 @@ function tripal_get_active_jobs($modulename = NULL) {
     $jobs[] = $job;
   }
   return $jobs;
+}
+
+
+/**
+ * Execute a specific Tripal Job.
+ *
+ * @param $job_id
+ *   The job id to be exeuted.
+ * @param bool $redirect [optional]
+ *   Whether to redirect to the job page or not.
+ */
+function tripal_execute_job($job_id, $redirect = TRUE) {
+
+  $job = new TripalJob();
+  $job->load($job_id);
+
+  // Run the job.
+  if ($job->getStartTime() == 0 and $job->getEndTime() == 0) {
+    tripal_launch_job(1, $job_id);
+    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", array('%job_id' => $job_id)));
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
+  }
+
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
+  }
 }

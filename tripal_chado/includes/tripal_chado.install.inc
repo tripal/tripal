@@ -17,6 +17,7 @@ function tripal_chado_load_form($form, $form_state) {
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
   $version = chado_get_version(FALSE, TRUE);
+
   if (array_key_exists('values', $form_state)) {
     if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
       $tables_list = implode(', ', array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub',
@@ -492,10 +493,8 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
 function tripal_chado_upgrade_chado_1_11_to_1_2() {
 
   // Get the path to the schema diff and upgarde SQL files.
-  $schema_file = drupal_get_path('module', 'tripal_chado') .
-    '/chado_schema/default_schema-1.11-1.2-diff.sql';
-  $init_file = drupal_get_path('module', 'tripal_chado') .
-    '/chado_schema/upgrade-1.11-1.2.sql';
+  $schema_file = drupal_get_path('module', 'tripal_chado') . '/chado_schema/default_schema-1.11-1.2-diff.sql';
+  $init_file = drupal_get_path('module', 'tripal_chado') . '/chado_schema/upgrade-1.11-1.2.sql';
 
   $success = tripal_chado_install_sql($schema_file);
   if ($success) {
@@ -538,8 +537,13 @@ function tripal_chado_reset_chado_schema() {
     print "Dropping existing 'frange' schema\n";
     db_query("drop schema frange cascade");
   }
-  if (chado_dbschema_exists('chado')) {
-    print "Dropping existing 'chado' schema\n";
+  if (chado_dbschema_exists($chado_schema)) {
+    if ($chado_schema != 'chado') {
+      print "Dropping existing Chado ('$chado_schema') schema\n";
+    }
+    else {
+      print "Dropping existing 'chado' schema\n";
+    }
     db_query("drop schema $chado_schema cascade");
   }
 

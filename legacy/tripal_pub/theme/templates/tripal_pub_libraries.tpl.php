@@ -86,14 +86,19 @@ if(count($libraries) > 0){ ?>
   // here we add the paramter 'block' => 'libraries'. This is because
   // the pager is not on the default block that appears. When the user clicks a
   // page number we want the browser to re-appear with the page is loaded.
+  // We remove the 'pane' parameter from the original query parameters because
+  // Drupal won't reset the parameter if it already exists.
+  $get = $_GET;
+  unset($_GET['pane']);
   $pager = array(
     'tags' => array(),
     'element' => $element,
     'parameters' => array(
-      'block' => 'libraries'
+      'pane' => 'libraries'
     ),
     'quantity' => $num_per_page,
   );
   print theme_pager($pager);
+  $_GET = $get;
 }
 

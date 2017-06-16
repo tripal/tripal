@@ -925,7 +925,7 @@ class OBOImporter extends TripalImporter {
       'is_obsolete' => 0,
       'cv_name' => $defaultcv,
       'is_relationship' => TRUE,
-      'db_naame' => $default_db
+      'db_name' => $default_db
     );
     $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
 

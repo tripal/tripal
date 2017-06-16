@@ -357,26 +357,6 @@ function tripal_chado_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
-//   $items['admin/tripal/loaders/fasta_loader'] = array(
-//     'title' => 'Chado FASTA File Loader',
-//     'description' => 'Load sequences from a multi-FASTA file into Chado',
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_feature_fasta_load_form'),
-//     'access arguments' => array('administer tripal'),
-//     'file' => 'includes/loaders/tripal_chado.fasta_loader.inc',
-//     'file path' => drupal_get_path('module', 'tripal_chado'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
-//   $items['admin/tripal/loaders/gff3_load'] = array(
-//     'title' => 'Chado GFF3 File Loader',
-//     'description' => 'Import a GFF3 file into Chado',
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_feature_gff3_load_form'),
-//     'access arguments' => array('administer tripal'),
-//     'file' => 'includes/loaders/tripal_chado.gff_loader.inc',
-//     'file path' => drupal_get_path('module', 'tripal_chado'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
   $items['admin/tripal/loaders/ncbi_taxonomy_loader'] = array(
     'title' => 'Chado NCBI Taxonomy Loader',
     'description' => 'Loads taxonomic details about installed organisms.',
@@ -684,6 +664,37 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  //                           FEATURES
+  //////////////////////////////////////////////////////////////////////////////
+  // the menu link for addressing any feature (by name, uniquename, synonym)
+  $items['feature/%'] = array(
+    'page callback' => 'tripal_feature_match_features_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  // the administative settings menu
+  $items['find/sequences'] = array(
+    'title' => 'Sequence Retrieval',
+    'description' => 'Download a file of sequences',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_feature_seq_extract_form'),
+    'access arguments' => array('access chado_feature content'),
+    'file' =>  'includes/tripal_chado.seq_extract.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['find/sequences/download'] = array(
+    'page callback' => 'tripal_chado_feature_seq_extract_download',
+    'access arguments' => array('access chado_feature content'),
+    'file' =>  'includes/tripal_chado.seq_extract.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -721,6 +732,10 @@ function tripal_chado_permission() {
  */
 function tripal_chado_theme($existing, $type, $theme, $path) {
   $themes = array(
+    // Themed Forms
+    'tripal_chado_feature_seq_extract_form' => array(
+      'render element' => 'form',
+    ),
 
     'tripal_chado_date_combo' => array(
       'render element' => 'element',
@@ -832,7 +847,7 @@ function tripal_chado_exclude_type_by_default() {
 /**
  * Implements hook_job_describe_args().
  *
- * Describes the arguements for the tripal_populate_mview job to allow for
+ * Describes the arguments for the tripal_populate_mview job to allow for
  * greater readability in the jobs details pages.
  *
  * @param $callback
@@ -901,4 +916,122 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
   }
 
   // TODO: don't the the maximum length be larger than the field size.
+}
+
+
+/**
+ * Uses the value provided in the $id argument to find all features that match
+ * that ID by name, featurename or synonym.  If it matches uniquenly to a single
+ * feature it will redirect to that feature page, otherwise, a list of matching
+ * features is shown.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_match_features_page($id) {
+
+  // first check to see if the URL (e.g. /feature/$id) is already
+  // assigned to a node. If so, then just go there.  Otherwise,
+  // try to find the feature.
+  $sql = "
+    SELECT source
+    FROM {url_alias}
+    WHERE alias = :alias
+  ";
+  $match = db_query($sql, array(':alias' => "feature/$id"))->fetchObject();
+  if ($match) {
+    drupal_goto($match->source);
+    return;
+  }
+  $sql = "
+    SELECT
+      F.name, F.uniquename, F.feature_id,
+      O.genus, O.species, O.organism_id,
+      CVT.cvterm_id, CVT.name as type_name,
+      array_agg(S.name) as synonyms
+    FROM {feature} F
+      INNER JOIN {organism} O on F.organism_id = O.organism_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+      LEFT JOIN {feature_synonym} FS on FS.feature_id = F.feature_id
+      LEFT JOIN {synonym} S on S.synonym_id = FS.synonym_id
+    WHERE
+      F.uniquename = :uname or
+      F.name = :fname or
+      S.name = :sname
+    GROUP BY F.name, F.uniquename, F.feature_id, O.genus, O.species,
+      O.organism_id, CVT.cvterm_id, CVT.name
+  ";
+
+  $args = array(':uname' => $id, ':fname' => $id, ':sname' => $id);
+  $results = chado_query($sql, $args);
+
+  $num_matches = $results->rowCount();
+
+  // If there are no matches then just return a friendly message.
+  if ($num_matches == 0) {
+    drupal_set_message("No features matched the given name '$id'", 'warning');
+    return "No matches found";
+  }
+  // if we have more than one match then generate the table, otherwise, redirect
+  // to the matched feature
+  elseif ($num_matches == 1) {
+    $curr_match = $results->fetchObject();
+    $entity_id = chado_get_record_entity_by_table('feature', $curr_match->feature_id);
+    if ($entity_id) {
+      drupal_goto("bio_data/" . $entity_id);
+      return;
+    }
+    // If we are here it's because we couldn't find the entity. Check if a node
+    // exists (Tv2 backwards compatibility).
+    if (module_exists(tripal_feature)) {
+      $nid = chado_get_nid_from_id('feature', $curr_match->feature_id);
+      drupal_goto("node/" . $nid);
+      return;
+    }
+    // If we are here it's because we couldn't find an entity_id or an nid
+    drupal_set_message("No published features matched the given name '$id'", 'warning');
+    return "No matches found";
+
+  }
+  elseif ($num_matches > 1) {
+    // iterate through the matches and build the table for showing matches
+    $header = array('Uniquename', 'Name', 'Type', 'Species', 'Synonyms');
+    $rows = array();
+    $curr_match;
+    while ($match = $results->fetchObject()) {
+      $curr_match = $match;
+      $synonyms = $match->synonyms;
+      $synonyms = preg_replace('/[\"\{\}]/', '', $synonyms);
+
+      // Build the link to this page.
+      $entity_id = chado_get_record_entity_by_table('feature', $curr_match->feature_id);
+      $link = '';
+      if ($entity_id) {
+        $link = "bio_data/" . $entity_id;
+      }
+      // If we didn't find an entity ID we need to check nodes for
+      // backwards compatibility with Tv2.
+      if (!$entity_id and module_exists(tripal_feature)) {
+        $nid = chado_get_nid_from_id('feature', $curr_match->feature_id);
+        $link = "node/" . $nid;
+      }
+      if (!$link) {
+        continue;
+      }
+
+      $rows[] = array(
+        $match->uniquename,
+        l($match->name, $link),
+        $match->type_name,
+        '<i>' . $match->genus . ' ' . $match->species . '</i>',
+        $synonyms,
+      );
+      $num_matches++;
+    }
+    $table_attrs = array('class' => 'tripal-data-table');
+    $output = "<p>The following features match the name '$id'.</p>";
+    $output .= theme_table($header, $rows, $table_attrs, $caption);
+    return $output;
+  }
+
+
 }

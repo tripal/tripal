@@ -878,10 +878,6 @@ function tripal_insert_cv($name, $definition) {
  *   An associative array with the following keys:
  *    - update_existing: By default this is TRUE.  If the term exists it is
  *      automatically updated.
- *    - force_db_change:  Sometimes a term may need to switch from one
- *      database to another.  If the term already exists, but associated
- *      with another term the insert (or update, rather) will fail.  Set
- *      this variable to TRUE to force the change to occur.
  *
  * @return
  *   A cvterm object
@@ -922,7 +918,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $dbname = $term['db_name'];
   }
   else {
-    $dbname = 'local';
+    $dbname = 'internal';
   }
 
   if (isset($options['update_existing'])) {
@@ -953,7 +949,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     }
   }
   if (!$name and !$id) {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING, "Cannot find cvterm without 'id' or 'name'", NULL);
+    tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find cvterm without 'id' or 'name'", NULL);
     return 0;
   }
   if (!$id) {
@@ -973,13 +969,11 @@ function tripal_insert_cvterm($term, $options = array()) {
   // Check that we have a database name, give a different message if it's a
   // relationship.
   if ($is_relationship and !$dbname) {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      "A database name is not provided for this relationship term: $id", NULL);
+    tripal_report_error('tripal_cv', TRIPAL_WARNING, "A database name is not provided for this relationship term: $id", NULL);
     return 0;
   }
   if (!$is_relationship and !$dbname) {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      "A database identifier is missing from the term: $id", NULL);
+    tripal_report_error('tripal_cv', TRIPAL_WARNING, "A database identifier is missing from the term: $id", NULL);
     return 0;
   }
 
@@ -989,8 +983,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $cv = tripal_insert_cv($cvname, '');
   }
   if (!$cv) {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      "Cannot find namespace '$cvname' when adding/updating $id", NULL);
+    tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);
     return 0;
   }
 
@@ -1015,7 +1008,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $db = tripal_insert_db(array('name' => $dbname));
   }
   if (!$db) {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
+    tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
     return 0;
   }
 
@@ -1038,8 +1031,8 @@ function tripal_insert_cvterm($term, $options = array()) {
     $dbxref = $result[0];
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_ERROR,
-        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
-        array(':term' => $name, '!record' => print_r($cvterm, TRUE))
+          'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
+          array(':term' => $name, '!record' => print_r($cvterm, TRUE))
       );
       return FALSE;
     }
@@ -1049,47 +1042,40 @@ function tripal_insert_cvterm($term, $options = array()) {
     $result = chado_select_record('db', array('*'), $values);
     $db_check = $result[0];
 
-    // If the database from the existing record doesn't match the one that
-    // has been provided then we have a problem.  The term already exists
-    // but we don't want to just switch the term, the callee must force it.
-    if ($db_check->name != $db->name) {
-      if (array_key_exists('force_db_change', $options) and
-          $options['force_db_change'] != TRUE) {
-        tripal_report_error('tripal_cv', TRIPAL_ERROR,
-            'The term already exists, but associated with a different database record: \'!db\'. It cannot be added: !record',
-            array(':term' => $name, '!db' => $db_check->name, '!record' => print_r($cvterm, TRUE))
-        );
-        return FALSE;
-      }
+    //     // The database name for this existing term does not match that of the
+    //     // one provided to this function.  The CV name matches otherwise we
+    //     // wouldn't have made it this far. So, let's swap the database for
+    //     // this term.
+    //     if ($db_check->name != $db->name) {
 
-      // Look to see if the correct dbxref record already exists for this
-      // database.
-      $values = array(
-        'db_id' => $db->db_id,
-        'accession' => $accession,
-      );
-      $result = chado_select_record('dbxref', array('*'), $values);
+    //       // Look to see if the correct dbxref record already exists for this
+    //       // database.
+    //       $values = array(
+    //         'db_id' => $db->db_id,
+    //         'accession' => $accession,
+    //       );
+    //       $result = chado_select_record('dbxref', array('*'), $values);
 
-      // If we already have a good dbxref then we want to update our cvterm
-      // to use this dbxref.
-      if (count($result) > 0) {
-        $dbxref = $result[0];
-        $match = array('cvterm_id' => $cvterm->cvterm_id);
-        $values = array('dbxref_id' => $dbxref->dbxref_id);
-        $success = chado_update_record('cvterm', $match, $values);
-        if (!$success) {
-          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to correct the dbxref id for the cvterm " .
-            "'$name' (id: $accession), for database $dbname", NULL);
-          return 0;
-        }
-      }
-      // If we don't have the dbxref then we want to delete our cvterm and let
-      // the code below recreate it with the correct info.
-      else {
-        $match = array('cvterm_id' => $cvterm->cvterm_id);
-        chado_delete_record('cvterm', $match);
-      }
-    }
+    //       // If we already have a good dbxref then we want to update our cvterm
+    //       // to use this dbxref.
+    //       if (count($result) > 0) {
+    //         $dbxref = $result[0];
+    //         $match = array('cvterm_id' => $cvterm->cvterm_id);
+    //         $values = array('dbxref_id' => $dbxref->dbxref_id);
+    //         $success = chado_update_record('cvterm', $match, $values);
+    //         if (!$success) {
+    //           tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to correct the dbxref id for the cvterm " .
+    //             "'$name' (id: $accession), for database $dbname", NULL);
+    //           return 0;
+    //         }
+    //       }
+    //       // If we don't have the dbxref then we want to delete our cvterm and let
+    //       // the code below recreate it with the correct info.
+    //       else {
+    //         $match = array('cvterm_id' => $cvterm->cvterm_id);
+    //         chado_delete_record('cvterm', $match);
+    //       }
+    //     }
 
     // Check that the accession matches.  Sometimes an OBO can define a term
     // multiple times but with different accessions.  If this is the case we
@@ -1103,8 +1089,8 @@ function tripal_insert_cvterm($term, $options = array()) {
         'accession' => $accession
       ));
       if (!$dbxref_new) {
-        tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-          "$name (id: $accession), for database $dbname", NULL);
+        tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
+            "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
 
@@ -1123,8 +1109,8 @@ function tripal_insert_cvterm($term, $options = array()) {
         );
         $success = chado_insert_record('cvterm_dbxref', $values, $options);
         if (!$success) {
-          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the cvterm_dbxref record for a " .
-            "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
+          tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the cvterm_dbxref record for a " .
+              "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
           return 0;
         }
       }
@@ -1133,7 +1119,6 @@ function tripal_insert_cvterm($term, $options = array()) {
       $cvterm = $result->fetchObject();
       return $cvterm;
     }
-
     // Continue on, we've fixed the record if the db_id did not match.
     // We can now perform and updated if we need to.
   }
@@ -1149,8 +1134,8 @@ function tripal_insert_cvterm($term, $options = array()) {
       'accession' => $accession
     ));
     if (!$dbxref) {
-      tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-        "$name (id: $accession), for database $dbname", NULL);
+      tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
+          "$name (id: $accession), for database $dbname", NULL);
       return 0;
     }
 
@@ -1170,18 +1155,18 @@ function tripal_insert_cvterm($term, $options = array()) {
       $success = chado_insert_record('cvterm', $ins_values);
       if (!$success) {
         if (!$is_relationship) {
-          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to insert the term: $name ($dbname)", NULL);
+          tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to insert the term: $name ($dbname)", NULL);
           return 0;
         }
         else {
-          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)", NULL);
+          tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to insert the relationship term: $name (cv: " . $cvname . " db: $dbname)", NULL);
           return 0;
         }
       }
     }
     // This dbxref already exists in the cvterm table.
     else {
-      tripal_report_error('tripal_chado', TRIPAL_WARNING, "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", NULL);
+      tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", NULL);
       return 0;
     }
     $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
@@ -1200,7 +1185,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     );
     $success = chado_update_record('cvterm', $match, $upd_values);
     if (!$success) {
-      tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
+      tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
       return 0;
     }
 
@@ -1239,15 +1224,16 @@ function tripal_insert_cvterm($term, $options = array()) {
     }
 
     // Finally grab the updated details.
-    $result = chado_query($cvtermsql, array(':accession' => $dbxref->accession, ':name' => $dbname));
+    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
     $cvterm = $result->fetchObject();
   }
   else {
-     // do nothing, we have the cvterm but we don't want to update
+    // do nothing, we have the cvterm but we don't want to update
   }
   // return the cvterm
   return $cvterm;
 }
+
 
 /**
  * TODO: deprecate this function

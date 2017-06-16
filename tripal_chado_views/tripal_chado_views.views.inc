@@ -117,6 +117,9 @@ function tripal_chado_views_views_data() {
   // Manually integrate the drupal.tripal_views* tables
   $data = tripal_chado_views_views_data_tripal_views_tables($data);
 
+  // Determine the name of the chado schema
+  $chado_schema = tripal_get_schema_name('chado');
+
   // MAKE SURE ALL CHADO TABLES ARE INTEGRATED
   tripal_chado_views_integrate_all_chado_tables();
 
@@ -218,8 +221,28 @@ function tripal_chado_views_views_data() {
       foreach ($fields as $column => $attrs) {
         $base_fields[$column] = array(
           'column_name' => $column,
+          // Add a default for type since module developers may sometimes need to use a
+          // PostgreSQL-specific type.
           'type' => (isset($attrs['type'])) ? $attrs['type'] : 'text',
         );
+        // If PostgreSQL-specifc types are needed the module developer should be given
+        // a way to set the most closely matching type for views. They should also be
+        // allowed to override the type for views. This can be done by adding a views_type
+        // to the schema definition :-).
+        if (isset($attrs['views_type'])) {
+          $base_fields[$column]['type'] = $attrs['views_type'];
+        }
+        // Tell admin about this feature and warn them that we made an assumption for them.
+        if (!isset($attrs['type']) AND !isset($attrs['views_type'])) {
+          tripal_report_error(
+              'tripal_views',
+              TRIPAL_WARNING,
+              "Unable to determine the type for %column thus we have defaulted to type 'text'.
+              Tip: This may be due to setting a  postgresql-specific type. Solution: Add a
+              'views_type' to your schema definition to specify what type should be used.",
+              array('%column' => $column)
+          );
+        }
       }
 
       // get the field name and descriptions
@@ -239,7 +262,7 @@ function tripal_chado_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
-        'search_path' => 'chado'
+        'search_path' => $chado_schema
       );
     }
     else {
@@ -247,7 +270,7 @@ function tripal_chado_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
-        'search_path' => 'chado'
+        'search_path' => $chado_schema
       );
     }
 
@@ -264,7 +287,7 @@ function tripal_chado_views_views_data() {
 
         tripal_report_error(
           'tripal_chado_views',
-          TRIPAL_WARNING,
+          TRIPAL_DEBUG,
           "The name and help were not set for %table.%column. As a consequence the column
             name has been used... You should ensure that the 'name' and 'help' keys for
             this field are set in the integration array (priority = %priority)",
@@ -305,7 +328,7 @@ function tripal_chado_views_views_data() {
       if ($num_handlers == 0) {
         tripal_report_error(
           'tripal_chado_views',
-          TRIPAL_WARNING,
+          TRIPAL_DEBUG,
           "No handlers were registered for %table.%column. This means there is no views
             functionality for this column. To register handlers, make sure the 'handlers'
             key for this field is set in the integration array (priority = %priority).

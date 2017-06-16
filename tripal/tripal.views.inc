@@ -326,7 +326,7 @@ function tripal_views_data_jobs(&$data) {
   // Arguments
   $data['tripal_jobs']['arguments'] = array(
     'title' => t('Arguements'),
-    'help' => t('Any arguements passed to the callback.'),
+    'help' => t('Any arguments passed to the callback.'),
     'field' => array(
       'handler' => 'views_handler_field',
       'click sortable' => TRUE, // This is use by the table display plugin.

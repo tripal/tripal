@@ -261,6 +261,134 @@ function tripal_entity_info_alter(&$entity_info){
 }
 
 /**
+ * Implements hook_entity_property_info_alter().
+ *
+ * For some reason not all our TripalFields end up in the properties field for
+ * each bundle. This becomes a problem with Search API integration because only
+ * fields listed in the properties for a bundle are available to be indexed.
+ * Thus we are altering the property info to add any fields attached to
+ * TripalEntities which may have been missed.
+ *
+ * Furthermore, there are some pecularities with how TripalFields store their
+ * value that causes the default getter callback difficulties in some edge cases.
+ * Thus we are overriding that function below.
+ */
+function tripal_entity_property_info_alter(&$info) {
+
+  // For each Tripal Content Type, we want to ensure all attached fields
+  // are added to the bundle properties.
+  foreach ($info['TripalEntity']['bundles'] as $bundle_name => $bundle) {
+
+    // Retrieve information for all fields attached to this Tripal Content Type.
+    $fields = field_info_instances('TripalEntity', $bundle_name);
+    foreach ($fields as $field_name => $field_info) {
+
+      // If there is a field attached to the current Tripal Content Type that
+      // is not listed in properties, then add it. We use the full defaults here
+      // just in case it's not a TripalField or ChadoField.
+      if (!isset($info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name])) {
+        $info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name] = array(
+          'label' => $field_info['label'],
+          'type' => 'text',
+          'description' => $field_info['description'],
+          'getter callback' => 'entity_metadata_field_property_get',
+          'setter callback' => 'entity_metadata_field_property_set',
+          'access callback' => 'entity_metadata_field_access_callback',
+          'query callback' => 'entity_metadata_field_query',
+          'translatable' => FALSE,
+          'field' => TRUE,
+          'required' => $field_info['required'],
+        );
+      }
+
+      // Now, if it's a TripalField or a ChadoField, then we want to use a custom
+      // getter callback in order to ensure values are retrieved properly.
+      // ASSUMPTION: All TripalFields and ChadoFields have an ontology term
+      // defining them.
+      if (isset($field_info['settings']['term_accession'])) {
+        $info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name]['getter callback'] = 'tripal_field_property_get';
+      }
+    }
+  }
+}
+
+/**
+ * Callback for getting TripalField and ChadoField property values.
+ *
+ * This function retrieves the value from a field. Since the value has already
+ * been set by the Tripal/ChadoField class at this point, it should just be a
+ * matter of grabbing the value.
+ *
+ * @param $entity
+ *   The fully-loaded entity object to be indexed.
+ * @param $options
+ *   Options that can be ued when retrieving the value.
+ * @param $field_name
+ *   The machine name of the field we want to retrieve.
+ * @param $entity_type
+ *   The type of entity (ie: TripalEntity).
+ *
+ * @return
+ *   The rendered value of the field specified by $field_name.
+ */
+function tripal_field_property_get($entity, array $options, $field_name, $entity_type, $info) {
+
+  // Retrieve information for the field.
+  $field = field_info_field($field_name);
+
+  // Retrieve the language code.
+  $langcode = isset($options['language']) ? $options['language']->language : LANGUAGE_NONE;
+  $langcode = entity_metadata_field_get_language($entity_type, $entity, $field, $langcode, TRUE);
+
+  $values = array();
+  if (isset($entity->{$field_name}[$langcode])) {
+    // For each value of the field... (this will be multiple if cardinality is > 1).
+    foreach ($entity->{$field_name}[$langcode] as $delta => $data) {
+
+      // All Tripal/ChadoFields should have a value key. Only the information
+      // stored in this value key should be displayed on the page, available
+      // via web services or indexed for searching. This is there is no value
+      // key, we will not index anything.
+      if (!isset($data['value'])) {
+        return NULL;
+      }
+
+      // Sometimes TripalFields may return multiple pieces of information in the
+      // value field. In this case, the key should be an ontology term describing
+      // what each piece of data is and the value should be the data.
+      if (is_array($data['value'])) {
+
+        // Just include all the pieces of information seperated by spaces
+        // so they are tokenized out later on.
+        $tmp = $data['value'];
+        if (isset($tmp['entity'])) { unset($tmp['entity']); }
+        foreach ($tmp as $k => $v) { $tmp[$k] = strip_tags($v); }
+        $curr_val = implode(' ', $tmp);
+      }
+      else {
+
+        // Otherwise, assume the value is a single piece of information
+        // and add that directly to be indexed.
+        $curr_val = strip_tags($data['value']);
+
+        // Ensure that we have a clean boolean data type.
+        if ($info['type'] == 'boolean' || $info['type'] == 'list<boolean>') {
+          $curr_val = (boolean) $curr_val;
+        }
+      }
+      
+      // Only add the current value if it's not empty.
+      if (!empty(trim($curr_val))) {
+        $values[$delta] = $curr_val;
+      }
+    }
+  }
+
+  // For an empty single-valued field, we have to return NULL.
+  return $field['cardinality'] == 1 ? ($values ? reset($values) : NULL) : $values;
+}
+
+/**
  * Checks access permissions for a given entity.
  *
  * This function is set for TripalEntity access checking in the

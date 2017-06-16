@@ -127,6 +127,9 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
   $created = 0;
   $recreated = 0;
 
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $chado_schema . '.';
+
   $transaction = db_transaction();
   try {
     // see if the table entry already exists in the tripal_custom_tables table.
@@ -139,7 +142,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
 
     // if the table does not exist then create it
     if (!$exists) {
-      $ret = db_create_table('chado.' . $table, $schema);
+      $ret = db_create_table($chado_dot . $table, $schema);
       $created = 1;
     }
 
@@ -154,7 +157,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
       if (array_key_exists('referring_tables', $new_schema)) {
         unset($new_schema['referring_tables']);
       }
-      db_create_table('chado.' . $table, $new_schema);
+      db_create_table($chado_dot . $table, $new_schema);
       $recreated = 1;
     }
 

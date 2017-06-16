@@ -88,7 +88,7 @@ class tripal_views_handler_filter_string_selectbox extends views_handler_filter_
 
     $return = $this->get_select_option_where();
     $where_clauses = $return['where_clauses'];
-    $arguements = $return['arguements'];
+    $arguments = $return['arguments'];
     $where = '';
     if (!empty($where_clauses)) {
       $where = ' WHERE ' . implode(' AND ', $where_clauses);
@@ -96,7 +96,7 @@ class tripal_views_handler_filter_string_selectbox extends views_handler_filter_
 
     // get the values from the table
     $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '} ' . $where . ' ORDER BY ' . $this->field . ' ASC';
-    $results = db_query($sql, $arguements);
+    $results = db_query($sql, arguments);
 
     // Build the select box options
     $max_length = (isset($this->options['max_length'])) ? $this->options['max_length'] : 40;

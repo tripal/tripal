@@ -926,3 +926,59 @@ function chado_stock_chado_node_default_title_format() {
 function chado_stock_chado_node_default_url_format() {
   return '/stock/[stock.organism_id>organism.genus]/[stock.organism_id>organism.species]/[stock.type_id>cvterm.name]/[stock.uniquename]';
 }
+
+/**
+ * Implement hook_node_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always
+ *  return TRUE if the permission is set.
+ *
+ * @ingroup tripal_stock
+ */
+
+function tripal_stock_node_access($node, $op, $account) {
+  $node_type = $node;
+  if (is_object($node)) {
+    $node_type = $node->type;
+  }
+
+  if($node_type == 'chado_stock') {
+    if ($op == 'create') {
+      if (!user_access('create chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+      return NODE_ACCESS_ALLOW;
+    }
+    if ($op == 'update') {
+      if (!user_access('edit chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'delete') {
+      if (!user_access('delete chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'view') {
+      if (!user_access('access chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    return NODE_ACCESS_IGNORE;
+  }
+}
