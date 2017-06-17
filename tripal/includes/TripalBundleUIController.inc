@@ -752,7 +752,8 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
         $form_state['redirect'] = "admin/structure/bio_data";
       }
       else {
-        drupal_set_message('New data type created.');
+        drupal_set_message('New content type created!');
+        drupal_set_message('Please ' . l("set the user permissions", "admin/people/permissions") . ' for this new content type.');
         tripal_admin_access($bundle);
         $form_state['redirect'] = "admin/structure/bio_data";
       }
