@@ -199,73 +199,13 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
       'weight' => -5,
     );
   }
+  if ($table == 'contact') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
   return $format;
-}
-
-/**
- * Implements hook_entity_property_info_alter().
- *
- * This is being implemented to ensure chado fields are exposed for search api
- * indexing. All fields are available for index by default but the getter
- * function set by default is not actually capable of getting the value from
- * chado. Thus we change the getter function to one that can :-).
- */
-function tripal_chado_entity_property_info_alter(&$info) {
-
-  // Get a list of fields with the chado storage backend.
-
-  // Loop through all of the bundles.
-  if (isset($info['TripalEntity']['bundles'])) {
-    foreach ($info['TripalEntity']['bundles'] as $bundle_id => $bundle) {
-      // Loop through each of the fields for a given bundle.
-      foreach ($bundle['properties'] as $field_name => $field_info) {
-        // If the field is a chado field, then change the callback.
-        // @todo check this properly.
-        if (preg_match('/(\w+)__(\w+)/', $field_name, $matches)) {
-          $info['TripalEntity']['bundles'][$bundle_id]['properties'][$field_name]['getter callback'] =
-          'tripal_chado_entity_property_get_value';
-        }
-      }
-    }
-  }
-
-}
-
-/**
- * Provides a way for the search api to grab the value of a chado field.
- *
- * @param $entity
- *   The fully-loaded entity object to be indexed.
- * @param $options
- *   Options that can be ued when retrieving the value.
- * @param $field_name
- *   The machine name of the field we want to retrieve.
- * @param $entity_type
- *   The type of entity (ie: TripalEntity).
- *
- * @return
- *   The rendered value of the field specified by $field_name.
- */
-function tripal_chado_entity_property_get_value($entity, $options, $field_name, $entity_type) {
-
-  $display = array(
-    'type' => '',
-    'label' => 'hidden',
-  );
-
-  $langcode = LANGUAGE_NONE;
-  $items = field_get_items($entity_type, $entity, $field_name);
-  if (count($items) == 1) {
-    $render_array = field_view_value($entity_type, $entity, $field_name, $items[0], $display, $langcode);
-  }
-  // @todo: handle fields with multiple values.
-  else {
-    $render_array = field_view_value($entity_type, $entity, $field_name, $items[0], $display, $langcode);
-    drupal_set_message('Tripal Chado currently only supports views integration ' .
-      'for single value fields. The first value has been shown.', 'warning');
-  }
-
-  return drupal_render($render_array);
 }
 
 /**

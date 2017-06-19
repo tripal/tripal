@@ -603,6 +603,11 @@ function tripal_feature_load_organism_feature_counts($organism) {
   $order = array();
   $names = array();
 
+  // We should not assume this table is present since it is a materialized view.
+  if (!chado_table_exists('organism_feature_count')) {
+      return NULL;
+  }
+
   // build the where clause for the SQL statement if we have a custom term list
   // we'll also keep track of the names the admin provided (if any) and the
   // order that the terms should appear.

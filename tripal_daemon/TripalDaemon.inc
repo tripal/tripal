@@ -204,7 +204,7 @@ class TripalDaemon extends DrushDaemon {
     drush_invoke_process(
       '@self',                               // Obviously run on the current site.
       'trp-run-jobs',                        // Run the tripal job launcher.
-      array(),                               // No arguements (only options below).
+      array(),                               // No arguments (only options below).
       array(
         'job_id' => $job_id,                 // The job to be run.
         'username' => $username,             // The user to run it as.

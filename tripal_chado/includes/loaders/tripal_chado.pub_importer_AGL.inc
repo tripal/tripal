@@ -2,10 +2,10 @@
 /**
  * @file
  * This file provides support for importing and parsing of results from the
- * USDA National Agricultural Library (AGL) database.  The functions here are used by
- * both the publication importer setup form and the publication importer.
- *
- * The USDA AGL database uses a YAZ protocol for querying and retrieving records.
+ * USDA National Agricultural Library (AGL) database.  The functions here are
+ * used by both the publication importer setup form and the publication
+ * importer. The USDA AGL database uses a YAZ protocol for querying and
+ * retrieving records.
  *
  */
 
@@ -353,8 +353,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
   // and does not attempt to establish a connection - it merely prepares a connect to be
   // performed later when yaz_wait() is called.
-  //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager'); // NAL Catalog
-  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');  // NAL Article Citation Database
+  // NAL Catalog
+  //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager');
+  // NAL Article Citation Database
+  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');
 
   // use the USMARC record type.  But OPAC is also supported by Agricola
   yaz_syntax($yazc, "usmarc");
@@ -434,9 +436,9 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
     }
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
     watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
-    array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
+      array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
     return array(
-      'total_records' => $total_records,
+      'total_records' => 0,
       'search_str'    => $search_str,
       'pubs'          => array(),
     );
@@ -449,7 +451,18 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
   for($i = $start; $i < $start + $num_to_retrieve; $i++) {
     // retrieve the XML results
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
-
+    if (!$pub_xml) {
+      $error_no = yaz_errno($yazc);
+      $error_msg = yaz_error($yazc);
+      drupal_set_message("ERROR retrieving records from AGL: ($error_no) $error_msg", "error");
+      watchdog('tpub_import', "ERROR retrieving records from AGL: (%error_no) %error_msg",
+        array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
+      return array(
+        'total_records' => 0,
+        'search_str'    => $search_str,
+        'pubs'          => array(),
+      );
+    }
     // parse the pub XML
     $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
     $pubs[]  = $pub;

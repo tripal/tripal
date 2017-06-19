@@ -30,28 +30,6 @@ class obi__organism extends ChadoField {
     'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
   );
 
-  // In order for this field to integrate with Drupal Views, a set of
-  // handlers must be specififed.  These include handlers for
-  // the field, for the filter, and the sort.  Within this variable,
-  // the key must be one of: field, filter, sort; and the value
-  // is the settings for those handlers as would be provided by
-  // a hook_views_data().  The following defaults make a field visible
-  // using the default formatter of the field, allow for filtering using
-  // a string value and sortable.  in order for filters to work you
-  // must implement the query() function.
-  public static $default_view_handlers = array(
-    'field' => array(
-      'handler' => 'tripal_views_handler_field',
-      'click sortable' => TRUE,
-    ),
-    'filter' => array(
-      'handler' => 'tripal_views_handler_filter_string',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
-
   // The default widget for this field.
   public static $default_widget = 'OBI__organism_widget';
 

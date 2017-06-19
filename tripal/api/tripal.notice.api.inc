@@ -86,6 +86,12 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       break;
   }
 
+  // If we are not set to return debugging information and the severity string
+  // is debug then don't report the error.
+  if (($severity == TRIPAL_DEBUG) AND (getenv('TRIPAL_DEBUG') != 1)) {
+      return FALSE;
+  }
+
   // Get the backtrace and include in the error message, but only if the
   // TRIPAL_DEBUG environment variable is set.
   if (getenv('TRIPAL_DEBUG') == 1) {
@@ -98,7 +104,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     }
   }
 
-  // Send to watchdog
+  // Send to watchdog.
   try {
     watchdog($type, $message, $variables, $severity);
   }
@@ -107,7 +113,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $options['print'] = TRUE;
   }
 
-  // Format the message for printing (either to the screen, log or both)
+  // Format the message for printing (either to the screen, log or both).
   if (sizeof($variables) > 0) {
     $print_message = str_replace(array_keys($variables), $variables, $message);
   }
@@ -115,13 +121,15 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $print_message = $message;
   }
 
-  // If print option supplied then print directly to the screen
+  // If print option supplied then print directly to the screen.
   if (isset($options['print'])) {
     print $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n";
   }
 
-  // Print to the Tripal error log
-  tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
+  // Print to the Tripal error log but only if the severity is not info.
+  if (($severity != TRIPAL_INFO)) {
+    tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
+  }
 
 }
 
@@ -210,10 +218,11 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
- *     - first_progress_bar: this sohuld be used for the first log call for a progress bar
- *     - is_progress_bar: this option should be used for all but the first print of a
- *         progress bar to allow it all to be printed on the same line without intervening
- *         date prefixes
+ *     - first_progress_bar: this sohuld be used for the first log call for a
+ *       progress bar
+ *     - is_progress_bar: this option should be used for all but the first print
+ *       of a progress bar to allow it all to be printed on the same line
+ *       without intervening date prefixes
  * @return
  *   The number of bytes that were written to the file, or FALSE on failure
  */

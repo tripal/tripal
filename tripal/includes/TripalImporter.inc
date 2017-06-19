@@ -434,49 +434,6 @@ class TripalImporter {
     }
   }
 
-  // --------------------------------------------------------------------------
-  //                     OVERRIDEABLE FUNCTIONS
-  // --------------------------------------------------------------------------
-
-  /**
-   * Provides form elements to be added to the loader form.
-   *
-   * These form elements are added after the file uploader section that
-   * is automaticaly provided by the TripalImporter.
-   *
-   * @return
-   *   A $form array.
-   */
-  public function form($form, &$form_state) {
-    return $form;
-  }
-
-  /**
-   * Handles submission of the form elements.
-   *
-   * The form elements provided in the implementation of the form() function
-   * can be used for special submit if needed.
-   */
-  public function formSubmit($form, &$form_state) {
-
-  }
-
-  /**
-   * Handles validation of the form elements.
-   *
-   * The form elements provided in the implementation of the form() function
-   * should be validated using this function.
-   */
-  public function formValidate($form, &$form_state) {
-
-  }
-
-  /**
-   * Performs the import.
-   */
-  public function run() {
-  }
-
   /**
    * Logs a message for the importer.
    *
@@ -537,7 +494,7 @@ class TripalImporter {
    *   The total number of items to process.
    */
   protected function setTotalItems($total_items) {
-     $this->total_items = $total_items;
+    $this->total_items = $total_items;
   }
   /**
    * Adds to the count of the total number of items that have been handle.d
@@ -603,4 +560,49 @@ class TripalImporter {
   protected function setInterval($interval) {
     $this->interval = $interval;
   }
+
+  // --------------------------------------------------------------------------
+  //                     OVERRIDEABLE FUNCTIONS
+  // --------------------------------------------------------------------------
+
+  /**
+   * Provides form elements to be added to the loader form.
+   *
+   * These form elements are added after the file uploader section that
+   * is automaticaly provided by the TripalImporter.
+   *
+   * @return
+   *   A $form array.
+   */
+  public function form($form, &$form_state) {
+    return $form;
+  }
+
+  /**
+   * Handles submission of the form elements.
+   *
+   * The form elements provided in the implementation of the form() function
+   * can be used for special submit if needed.
+   */
+  public function formSubmit($form, &$form_state) {
+
+  }
+
+  /**
+   * Handles validation of the form elements.
+   *
+   * The form elements provided in the implementation of the form() function
+   * should be validated using this function.
+   */
+  public function formValidate($form, &$form_state) {
+
+  }
+
+  /**
+   * Performs the import.
+   */
+  public function run() {
+  }
+
+
 }

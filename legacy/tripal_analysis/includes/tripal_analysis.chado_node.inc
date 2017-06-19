@@ -171,7 +171,7 @@ function chado_analysis_form($node, &$form_state) {
   );
   $form['programversion']= array(
     '#type' => 'textfield',
-    '#title' => t('Program, Pipeline  or Method version'),
+    '#title' => t('Program, Pipeline  or Method Version'),
     '#required' => TRUE,
     '#default_value' => $programversion,
     '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available or applicable."),
@@ -441,7 +441,7 @@ function chado_analysis_insert($node) {
     );
     $analysis = chado_insert_record('analysis', $values);
     if (!$analysis) {
-      drupal_set_message(t('Unable to add analysis.', 'warning'));
+      drupal_set_message(t('Unable to add analysis.'), 'warning');
       tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
         array('%values' => print_r($values, TRUE)));
       return;
