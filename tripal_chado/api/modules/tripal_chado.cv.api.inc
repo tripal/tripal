@@ -488,11 +488,12 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
   }
 
   // Build the ID.
-  $child_id = $origin . '|' . $parent_id . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
-
+  $term_id = $origin . '|' . $parent_id . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
+  print($depth . "\t" .$term_id . "\n" );
   // If the child_id matches any other id in the array then we've hit a loop.
   foreach ($tree_path as $element_id) {
-    if ($element_id == $child_id) {
+    if ($element_id == $term_id) {
+
       return;
     }
   }
@@ -509,7 +510,7 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
   $rows = $query->execute();
 
   // Then add that new entry to the $tree_path.
-  $tree_path[] =  $child_id;
+  $tree_path[] =  $term_id;
 
   // Get all of the relationships of this child term, and recursively
   // call the tripal_update_cvtermpath_loop() function to continue
