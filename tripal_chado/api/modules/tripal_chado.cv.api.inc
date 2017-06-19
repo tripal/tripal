@@ -420,7 +420,6 @@ function tripal_update_cvtermpath_bak($cv_id, $job_id = NULL){
 function tripal_update_cvtermpath_root_loop($rootid, $cvid){
 
   // Get's the cvterm record for this "root".
-  chado_set_active('chado');
   $ttype = db_select('cvterm', 'cv')
           ->fields('cv', array('cvterm_id'));
   $db_or = db_or();
@@ -468,7 +467,6 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
 function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $type_id, $depth, $tree_path){
 
   // Check to see if a row with these values already exists.
-  chado_set_active('chado');
   $count =  db_query(
     'SELECT *
      FROM cvtermpath
@@ -481,15 +479,17 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
   );
   $count_total = $count->rowCount();
 
+  // Build the ID.
+  $memory = number_format(memory_get_usage());
+  $term_id = $origin . '|' . $parent_id . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
+  print($depth . "\t" .$term_id . "\t" . $memory . " bytes\n" );
+
   // If we've already seen this term then just return, we don't want
   // to insert it again.
   if ($count_total > 0) {
     return;
   }
 
-  // Build the ID.
-  $term_id = $origin . '|' . $parent_id . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
-  print($depth . "\t" .$term_id . "\n" );
   // If the child_id matches any other id in the array then we've hit a loop.
   foreach ($tree_path as $element_id) {
     if ($element_id == $term_id) {
