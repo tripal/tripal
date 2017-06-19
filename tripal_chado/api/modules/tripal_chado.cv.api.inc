@@ -429,7 +429,9 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
   $result = $ttype->execute()->fetchObject();
 
   // Descends through the branch starting at this "root" term.
-  tripal_update_cvtermpath_loop($rootid, $rootid, $rootid, $cvid, $result->cvterm_id, 0, array());
+  $visited = array();
+  $depth = 0;
+  tripal_update_cvtermpath_loop($rootid, $rootid, $rootid, $cvid, $result->cvterm_id, $depth, $visited);
 
   // Get's the children terms of this "root" term and then recursively calls
   // this function making each child root.
@@ -458,13 +460,10 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid){
  *   The relationship type between the origin term and the child.
  * @param $depth
  *   The depth of the recursion.
- * @param $tree_path.
- *   The array of every term between the current child and the origin. The
- *   string identifier for the child that combines the origin, parent cvterm_id,
- *   child cvterm_id,cv_id, and the type_id.
- * @return multitype:
+ * @param $visited.
+ *   An array of every term visited in the descent of the ontology tree.
  */
-function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $type_id, $depth, $tree_path){
+function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $type_id, $depth, &$visited){
 
   // Check to see if a row with these values already exists.
   $count =  db_query(
@@ -491,9 +490,8 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
   }
 
   // If the child_id matches any other id in the array then we've hit a loop.
-  foreach ($tree_path as $element_id) {
+  foreach ($visited as $element_id) {
     if ($element_id == $term_id) {
-
       return;
     }
   }
@@ -510,7 +508,7 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
   $rows = $query->execute();
 
   // Then add that new entry to the $tree_path.
-  $tree_path[] =  $term_id;
+  $visited[] =  $term_id;
 
   // Get all of the relationships of this child term, and recursively
   // call the tripal_update_cvtermpath_loop() function to continue
@@ -521,8 +519,9 @@ function tripal_update_cvtermpath_loop($origin, $parent_id, $child_id, $cv_id, $
     ->execute();
   $cterm_relationships = $query->fetchAll();
   foreach ($cterm_relationships as $item) {
+    $next_depth = $depth + 1;
     tripal_update_cvtermpath_loop($origin, $child_id, $item->subject_id, $cv_id,
-        $item->type_id, $depth + 1, $tree_path);
+        $item->type_id, $next_depth, $visited);
   }
 }
 
