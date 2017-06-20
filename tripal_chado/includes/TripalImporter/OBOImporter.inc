@@ -553,11 +553,9 @@ class OBOImporter extends TripalImporter {
   private function loadOBO_v1_2($file, &$newcvs) {
 
     $header = array();
-
-    // make sure our temporary table exists
     $ret = array();
 
-    // empty the temp table
+    // Empty the temp table.
     $sql = "DELETE FROM {tripal_obo_temp}";
     chado_query($sql);
 
@@ -566,7 +564,7 @@ class OBOImporter extends TripalImporter {
     // parse the obo file
     $default_db = $this->parse($file, $header);
 
-    // add the CV for this ontology to the database.  The v1.2 definition
+    // Add the CV for this ontology to the database.  The v1.2 definition
     // specifies a 'default-namespace' to be used if a 'namespace' is not
     // present for each stanza.  Some ontologies have adopted the v1.4 method
     // in their v1.2 files and not including it.
@@ -577,10 +575,10 @@ class OBOImporter extends TripalImporter {
       }
       $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
     }
-    // if the 'default-namespace' is missing
+    // If the 'default-namespace' is missing.
     else {
 
-      // look to see if an 'ontology' key is present.  It is part of the v1.4
+      // Look to see if an 'ontology' key is present.  It is part of the v1.4
       // specification so it shouldn't be in the file, but just in case
       if (array_key_exists('ontology', $header)) {
         $defaultcv = tripal_insert_cv(strtoupper($header['ontology'][0]), '');
@@ -597,11 +595,11 @@ class OBOImporter extends TripalImporter {
           "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
           array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
     }!
-    // add any typedefs to the vocabulary first
+    // Add any typedefs to the vocabulary first.
     $this->logMessage("Step 2: Loading type defs...");
     $this->loadTypeDefs($defaultcv, $newcvs, $default_db);
 
-    // next add terms to the vocabulary
+    // Next add terms to the vocabulary.
     $this->logMessage("Step 3: Loading terms...");
     if (!$this->processTerms($defaultcv, $newcvs, $default_db)) {
       throw new Exception('Cannot add terms from this ontology');
@@ -668,7 +666,7 @@ class OBOImporter extends TripalImporter {
 
     $i = 0;
 
-    // iterate through each term from the OBO file and add it
+    // Iterate through each term from the OBO file and add it.
     $sql = "
       SELECT * FROM {tripal_obo_temp}
       WHERE type = 'Term'
@@ -691,7 +689,7 @@ class OBOImporter extends TripalImporter {
       $term = unserialize(base64_decode($t->stanza));
       $this->setItemsHandled($i);
 
-      // add/update this term
+      // Add/update this term.
       if (!$this->processTerm($term, $defaultcv->name, 0, $newcvs, $default_db)) {
         throw new Exception("Failed to process terms from the ontology");
       }
@@ -751,6 +749,14 @@ class OBOImporter extends TripalImporter {
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
     }
+
+    // Remove any relationships that this term already has (in case it was
+    // updated) and we'll re-add them.
+    $sql = "
+      DELETE FROM {cvterm_relationship} CVTR
+      WHERE CVTR.subject_id = :cvterm_id
+    ";
+    chado_query($sql, array(':cvterm_id' => $cvterm->cvterm_id));
 
     if (array_key_exists('namespace', $term)) {
       $newcvs[$term['namespace'][0]] = $cvterm->cv_id;
@@ -863,18 +869,6 @@ class OBOImporter extends TripalImporter {
       foreach ($term['relationship'] as $value) {
         $rel = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
         $object = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
-        // The Gene Ontology uses 'has_part' for transitive relationships, but
-        // it specifically indicates that 'has_part' should not be used for
-        // grouping annotations.  Unfortunately, this means that when we
-        // try to popoulate the cvtermpath table a 'has_part' relationships
-        // will be used for exactly that purpose: to group annotations.  This
-        // doesn't seem to the be the case for other vocabularies such as the
-        // sequence ontology that uses has_part as primary relationship between
-        // terms. So, when loading the GO, we'll not include has_part
-        // relationships.
-        /*if ($rel == 'has_part' and $cvterm->dbxref_id->db_id->name == 'GO') {
-        continue;
-        }*/
         if (!$this->addRelationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
           throw new Exception("Cannot add relationship $rel: $object");
         }
@@ -917,7 +911,7 @@ class OBOImporter extends TripalImporter {
   private function addRelationship($cvterm, $defaultcv, $rel,
       $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
 
-    // make sure the relationship cvterm exists
+    // Make sure the relationship cvterm exists.
     $term = array(
       'name' => $rel,
       'id' => "$default_db:$rel",
@@ -930,7 +924,7 @@ class OBOImporter extends TripalImporter {
     $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
 
     if (!$relcvterm) {
-      // if the relationship term couldn't be found in the default_db provided
+      // If the relationship term couldn't be found in the default_db provided
       // then do on more check to find it in the relationship ontology
       $term = array(
         'name' => $rel,
@@ -947,7 +941,7 @@ class OBOImporter extends TripalImporter {
       }
     }
 
-    // get the object term
+    // Get the object term.
     $oterm = $this->getTerm($objname);
     if (!$oterm) {
       throw new Exception("Could not find object term $objname\n");

@@ -151,6 +151,11 @@ function tripal_chado_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
     $default_desc = $db->description;
     $default_url = $db->url;
     $default_urlprefix = $db->urlprefix;
+
+    $form['dbid'] = array(
+      '#type' => 'value',
+      '#value' => $dbid,
+    );
   }
 
   // add a fieldset for the Drupal Schema API

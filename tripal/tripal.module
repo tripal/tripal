@@ -1096,7 +1096,7 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
  * @param $element
  *   The field group object.
  * @param $children
- *   An array of field names that are cpntained in the field group
+ *   An array of field names that are contained in the field group.
  */
 function tripal_field_group_table_rows_alter(&$element, &$children) {
 
