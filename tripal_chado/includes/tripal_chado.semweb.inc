@@ -270,6 +270,34 @@ function tripal_chado_populate_vocab_SIO() {
   ));
   tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:001166',
+    'name' => 'annotation',
+    'cv_name' => 'SIO',
+    'definition' => 'An annotation is a written explanatory or critical description, or other in-context information (e.g., pattern, motif, link), that has been associated with data or other types of information.',
+  ));
+  tripal_associate_chado_semweb_term('feature_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('analysis_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('cell_line_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('environment_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('expression_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('library_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('organism_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('phenotype_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('stock_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:000281',
+    'name' => 'negation',
+    'cv_name' => 'SIO',
+    'definition' => 'NOT is a logical operator in that has the value true if its operand is false.',
+  ));
+  tripal_associate_chado_semweb_term('feature_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('analysis_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('organism_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('stock_cvterm', 'is_not', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'SIO:001080',

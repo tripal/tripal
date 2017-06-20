@@ -563,6 +563,27 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     }
   }
 
+  // CVTERMS
+  $term_table = $table_name . '_cvterm';
+  if (chado_table_exists($term_table)) {
+    $schema = chado_get_schema($term_table);
+    $pkey = $schema['primary key'][0];
+    $lkey = key($schema['foreign keys'][$table_name]['columns']);
+    $rkey = $schema['foreign keys'][$table_name]['columns'][$lkey];
+
+    $field_name = 'sio__annotation';
+    $field_type = 'sio__annotation';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
   // PUBLICATIONS
   $pub_table = $table_name . '_pub';
   if (chado_table_exists($pub_table)) {
@@ -1741,6 +1762,44 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
        }
      }
    }
+
+  // CVTERMS
+  $term_table = $table_name . '_cvterm';
+  if (chado_table_exists($term_table)) {
+    $schema = chado_get_schema($term_table);
+    $pkey = $schema['primary key'][0];
+    $lkey = key($schema['foreign keys'][$table_name]['columns']);
+    $rkey = $schema['foreign keys'][$table_name]['columns'][$lkey];
+
+    $field_name = 'sio__annotation';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Annotations',
+      'description' => 'Annotations that are associated with this record.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $term_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sio__annotation_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'sio__annotation_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
 
   // PUBLICATIONS

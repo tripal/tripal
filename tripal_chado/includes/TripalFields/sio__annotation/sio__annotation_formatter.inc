@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
+class sio__annotation_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
   public static $default_label = 'Chado Annotation';
 
@@ -74,9 +74,10 @@ class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $headers = array('Term', 'Definition', 'Is Not', 'Publication');
+    $headers = array('Term', 'Definition', 'Is Not');
     $rows = array();
 
+    dpm($items);
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
@@ -89,18 +90,10 @@ class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
           $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
-        // Build the publication reference.
-        $pub_ref = '';
-        $pub_id = $item['chado-' . $chado_table . '__pub_id'];
-        if ($pub_id) {
-          $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
-          $pub_ref = $pub->uniquename;
-        }
         $rows[] = array(
           $accession,
           $cvterm->definition,
           $item['chado-' . $chado_table . '__is_not'] ? 'Yes' : '',
-          $pub_ref,
         );
       }
     }
@@ -116,7 +109,7 @@ class chado_linker__cvterm_formatter extends ChadoFieldFormatter {
         'id' => "$chado_table-table-terms",
         'class' => 'tripal-data-table'
       ),
-      'caption' => '',
+      'caption' => 'This record is associated with the following annotations:',
       'sticky' => FALSE,
       'colgroups' => array(),
       'empty' => 'There are no annotations of this type',

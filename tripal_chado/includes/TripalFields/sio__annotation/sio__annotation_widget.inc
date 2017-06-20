@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__cvterm_widget extends ChadoFieldWidget {
+class sio__annotation_widget extends ChadoFieldWidget {
   // The default lable for this field.
   public static $default_label = 'Chado Annotation';
 

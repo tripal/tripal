@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__cvterm extends ChadoField {
+class sio__annotation extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -12,11 +12,10 @@ class chado_linker__cvterm extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default lable for this field.
-  public static $default_label = 'Chado Annotation';
+  public static $default_label = 'Annotations';
 
   // The default description for this field.
-  public static $description = 'This record can be annotated with terms from other
-              vocabularies.';
+  public static $description = 'This record is annotated with controlled vocabulary terms.';
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -27,11 +26,11 @@ class chado_linker__cvterm extends ChadoField {
   // required for all TripalFields.
   public static $default_instance_settings  = array(
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
-    'term_vocabulary' => 'local',
+    'term_vocabulary' => 'SIO',
     // The name of the term.
-    'term_name' => 'cvterm',
+    'term_name' => 'annotation',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'cvterm',
+    'term_accession' => '001166',
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
@@ -50,8 +49,6 @@ class chado_linker__cvterm extends ChadoField {
   // and field_create_instance().
   public static $no_ui = FALSE;
 
-
-
   /**
    *
    * @see TripalField::load()
@@ -63,17 +60,9 @@ class chado_linker__cvterm extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $vocabulary = $this->instance['settings']['term_vocabulary'];
-    $accession = $this->instance['settings']['term_accession'];
-    $cvterm = tripal_get_cvterm(array(
-      'dbxref_id' => array(
-        'db_id' => array(
-          'name' => $vocabulary,
-        ),
-        'accession' => $accession,
-      ),
-    ));
-    $cvterm_id = $cvterm->cvterm_id;
+    $vocabulary = tripal_get_chado_semweb_term('db', 'name');
+    $accession = tripal_get_chado_semweb_term('db', 'accession');
+    $definition = tripal_get_chado_semweb_term('cvterm', 'definition');
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
@@ -85,7 +74,8 @@ class chado_linker__cvterm extends ChadoField {
     $chado_record = $entity->chado_record;
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . $pkey => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->$fkey_rcolumn,
       'chado-' . $field_table . '__' . 'cvterm_id' => '',
       // The pub column is present in the cell_line_cvterm, feature_cvterm,
       // library_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
@@ -97,18 +87,12 @@ class chado_linker__cvterm extends ChadoField {
       // feature_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
       // and stock_cvterm tables.
       'chado-' . $field_table . '__' . 'rank' => '',
-      // The cvterm_type_id is present in the expression_cvterm table.
-      'cvterm_type_id' => '',
-      // The following field are to help link the cvterm.
-      'cv__cv_id' => '',
-      'cvterm__name' => '',
     );
 
     // Get the annotations associated with this base record for this fields type.
     $columns = array('*');
     $match = array(
       $fkey_lcolumn => $chado_record->$fkey_rcolumn,
-      'cvterm_id' => $cvterm_id,
     );
     $options = array(
       'return_array' => TRUE,
@@ -119,15 +103,18 @@ class chado_linker__cvterm extends ChadoField {
       $linker = $fcvterms[$i];
       $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $linker->cvterm_id));
       $entity->{$field_name}['und'][$i] = array(
-        'value' => $linker->$pkey,
+        'value' => array(
+          $vocabulary => $cvterm->dbxref_id->db_id->name,
+          $accession => $cvterm->dbxref_id->accession,
+          $definition => $cvterm->cvterm_id->name
+        ),
+        'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
         'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
         'chado-' . $field_table . '__' . 'cvterm_id' => $linker->cvterm_id,
         'chado-' . $field_table . '__' . 'pub_id' => property_exists($linker, 'pub_id') ? $linker->pub_id : '',
         'chado-' . $field_table . '__' . 'is_not' => property_exists($linker, 'is_not') ? $linker->is_not : '',
         'chado-' . $field_table . '__' . 'rank' => property_exists($linker, 'rank') ? $linker->rank : '',
         'chado-' . $field_table . '__' . 'cvterm_type_id' => property_exists($linker, 'cvterm_type_id') ? $linker->cvterm_type_id : '',
-        'cv__cv_id' => $cvterm->cv_id->cv_id,
-        'cvterm__name' => $cvterm->name,
       );
     }
   }
