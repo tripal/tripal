@@ -515,10 +515,10 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
   foreach ($fg_for_bundle as $field_groups => $field_group) {
    $field_group_data = unserialize($field_group->data);
    // There is a separate function to deal with tables, so disregard.
-    /*if ($field_group_data['format_type'] == 'table'){
+    if ($field_group_data['format_type'] == 'table'){
       // Do nothing
     }
-    else*/if (!empty($field_group_data['children'][0])) {
+    else if (!empty($field_group_data['children'][0])) {
       $children = $field_group_data['children'];
       //If there is more than one child all need to be checked.
       if (count($children) > 1) {
