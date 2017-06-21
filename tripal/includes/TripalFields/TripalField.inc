@@ -208,7 +208,7 @@ class TripalField {
   /**
    * Describes this field to Tripal web services.
    *
-   * The child class need not implement this function has all of the details
+   * The child class need not implement this function. It has all of the details
    * provided for elements by the elementInfo() function are used to generate
    * the details needed for Views.
    *

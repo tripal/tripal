@@ -16,6 +16,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     $headers = array('Term', 'Definition', 'Is Not', 'Reference');
     $rows = array();
 
+
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
@@ -76,7 +77,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $headers = array('Term', 'Definition');
     $rows = array();
-
+    dpm($items);
     $field_table = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($field_table);
 

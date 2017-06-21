@@ -510,9 +510,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
           $searchable_keys = $key_field->webServicesData();
           $criteria = implode('.', $subkeys);
           if (array_key_exists($criteria, $searchable_keys)) {
-            $new_params[$key_field_name]['value'] = $value;
-            $new_params[$key_field_name]['op'] = $op;
-            $new_params[$key_field_name]['column'] = $searchable_keys[$criteria];
+            $new_params[$key_field_name][] = array(
+              'value' => $value,
+              'op' => $op,
+              'column' => $searchable_keys[$criteria]
+            );
           }
           else {
             throw new Exception("The filter term, '$criteria', is not available for use.");
@@ -523,9 +525,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
         else {
           $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
 
-          $new_params[$key_field_name]['value'] = $value;
-          $new_params[$key_field_name]['op'] = $op;
-          $new_params[$key_field_name]['column'] = $key_field_id;
+          $new_params[$key_field_name][] = array(
+            'value' => $value,
+            'op' => $op,
+            'column' => $key_field_id,
+          );
         }
       }
       else {
@@ -537,40 +541,42 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $query = new TripalFieldQuery();
     $query->entityCondition('entity_type', 'TripalEntity');
     $query->entityCondition('bundle', $bundle->name);
-    foreach($new_params as $field_name => $details) {
-      $value = $details['value'];
-      $column_name = $details['column'];
-      switch ($details['op']) {
-        case 'eq':
-          $op = '=';
-          break;
-        case 'gt':
-          $op = '>';
-          break;
-        case 'gte':
-          $op = '>=';
-          break;
-        case 'lt':
-          $op = '<';
-          break;
-        case 'lte':
-          $op = '<=';
-          break;
-        case 'ne':
-          $op = '<>';
-          break;
-        case 'contains':
-          $op = 'CONTAINS';
-          break;
-        case 'starts':
-          $op = 'STARTS WITH';
-          break;
-        default:
-          $op = '=';
+    foreach($new_params as $field_name => $param_list) {
+      foreach ($param_list as $param_index => $details) {
+        $value = $details['value'];
+        $column_name = $details['column'];
+        switch ($details['op']) {
+          case 'eq':
+            $op = '=';
+            break;
+          case 'gt':
+            $op = '>';
+            break;
+          case 'gte':
+            $op = '>=';
+            break;
+          case 'lt':
+            $op = '<';
+            break;
+          case 'lte':
+            $op = '<=';
+            break;
+          case 'ne':
+            $op = '<>';
+            break;
+          case 'contains':
+            $op = 'CONTAINS';
+            break;
+          case 'starts':
+            $op = 'STARTS WITH';
+            break;
+          default:
+            $op = '=';
+        }
+        // We pass in the $column_name as an identifier for any sub fields
+        // that are present for the fields.
+        $query->fieldCondition($field_name, $column_name, $value, $op);
       }
-      // We pass in the $column_name as an identifier for any sub fields
-      // that are present for the fields.
-      $query->fieldCondition($field_name, $column_name, $value, $op);
     }
 
     // Perform the query just as a count first to get the number of records.

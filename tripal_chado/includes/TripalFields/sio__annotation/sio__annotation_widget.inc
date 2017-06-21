@@ -7,6 +7,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__cvterm');
 
+
   /**
    *
    * @see TripalFieldWidget::form()

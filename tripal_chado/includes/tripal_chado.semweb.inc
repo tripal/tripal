@@ -27,6 +27,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_IAO();
   tripal_chado_populate_vocab_LOCAL();
   tripal_chado_populate_vocab_NCBITAXON();
+  tripal_chado_populate_vocab_OBCS();
   tripal_chado_populate_vocab_OBI();
   tripal_chado_populate_vocab_OGI();
   tripal_chado_populate_vocab_RDFS();
@@ -544,6 +545,29 @@ function tripal_chado_populate_vocab_ERO() {
 /**
  * Adds the Information Artifact Ontology database and terms.
  */
+function tripal_chado_populate_vocab_OBCS() {
+  tripal_insert_db(array(
+    'name' => 'OBCS',
+    'description' => 'Ontology of Biological and Clinical Statistics.',
+    'url' => 'https://github.com/obcs/obcs',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv(
+    'OBCS',
+    'Ontology of Biological and Clinical Statistics.'
+  );
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'OBCS:0000117',
+    'name' => 'rank order',
+    'cv_name' => 'OBCS',
+    'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'rank', $term);
+}
+/**
+ * Adds the Information Artifact Ontology database and terms.
+ */
 function tripal_chado_populate_vocab_OBI() {
   tripal_insert_db(array(
     'name' => 'OBI',
@@ -597,7 +621,7 @@ function tripal_chado_populate_vocab_IAO() {
     'name' => 'IAO',
     'description' => 'The Information Artifact Ontology (IAO).',
     'url' => 'https://github.com/information-artifact-ontology/IAO/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/IAO_',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
   ));
   tripal_insert_cv(
     'IAO',

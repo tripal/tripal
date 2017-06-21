@@ -1110,3 +1110,32 @@ function tripal_chado_update_7309() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+/**
+ * Adds the 'OBCS' and rank order term.
+ */
+function tripal_chado_update_7310() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'OBCS',
+      'description' => 'Ontology of Biological and Clinical Statistics.',
+      'url' => 'https://github.com/obcs/obcs',
+      'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+    ));
+    tripal_insert_cv(
+        'OBCS',
+        'Ontology of Biological and Clinical Statistics.'
+    );
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'OBCS:0000117',
+      'name' => 'rank order',
+      'cv_name' => 'OBCS',
+      'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
+    ));
+    tripal_associate_chado_semweb_term(NULL, 'rank', $term);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
