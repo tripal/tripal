@@ -80,10 +80,6 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     $field_table = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($field_table);
 
-    if (array_key_exists('is_not', $schema['fields'])) {
-      $headers[] = 'Negates';
-    }
-
     $vocabulary_term = tripal_get_chado_semweb_term('cvterm', 'cv_id');
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
     $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
@@ -110,7 +106,9 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         );
 
         if (array_key_exists('is_not', $schema['fields'])) {
-          $row[] = $item['value'][$negation_term];
+          if ($negation_term == FALSE) {
+            $row[1] = 'NOT ' . $row[1];
+          }
         }
 
         $rows[] = $row;
@@ -119,9 +117,6 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
 
     // Theme the results in a talbe.
     $caption = 'This record is associated with the following annotations.';
-    if (array_key_exists('is_not', $schema['fields'])) {
-      $caption .= 'The "Negates" column indicates if the term does NOT apply.';
-    }
     $table = array(
       'header' => $headers,
       'rows' => $rows,

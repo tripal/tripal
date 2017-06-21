@@ -39,7 +39,6 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $cvterm_id = '';
     $pub_id = '';
     $is_not = FALSE;
-    $rank = $delta;
     $cvterm_name = '';
     $cv_id = '';
     $cvterm = NULL;
@@ -56,9 +55,6 @@ class sio__annotation_widget extends ChadoFieldWidget {
       if (array_key_exists('pub_id', $schema['fields'])) {
         $pub_name = tripal_get_field_item_keyval($items, $delta, 'pub', $pub_name);
         $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__pub_id', $pub_id);
-      }
-      if (array_key_exists('rank', $schema['fields'])) {
-        $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
       }
       if (array_key_exists('is_not', $schema['fields'])) {
         $is_not = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__is_not', $is_not);
@@ -88,9 +84,6 @@ class sio__annotation_widget extends ChadoFieldWidget {
         $pub_name = $form_state[$vtype][$field_name]['und'][$delta]['pub'];
         $pub_id = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'];
       }
-      if (array_key_exists('rank', $schema['fields'])) {
-        $rank = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'];
-      }
       if (array_key_exists('is_not', $schema['fields'])) {
         $is_not = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__is_not'];
       }
@@ -108,9 +101,12 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $widget['#prefix'] =  "<span id='$field_name-sio--annotation-$delta'>";
     $widget['#suffix'] =  "</span>";
 
+    // The value field isn't really used but it's needed because if
+    // it doesn't have a value the element won't be considered for
+    // insert/update.
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => key_exists($delta, $items) ? $items[$delta]['value'] : '',
+      '#value' => $cvterm_id,
     );
 
     $widget['chado-' . $field_table . '__' . $pkey] = array(
@@ -175,6 +171,12 @@ class sio__annotation_widget extends ChadoFieldWidget {
         '#disabled' => $cv_id ? FALSE : TRUE,
       );
     }
+    if (array_key_exists('rank', $schema['fields'])) {
+      $widget['chado-' . $field_table . '__rank'] = array(
+        '#type' => 'value',
+        '#default_value' => $delta,
+      );
+    }
   }
 
   /**
@@ -201,10 +203,8 @@ class sio__annotation_widget extends ChadoFieldWidget {
       $negation = tripal_get_chado_semweb_term($field_table, 'is_not');
     }
 
-
     $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
     $fk_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn];
-
 
     // If a publication ID was provided then make sure the form_state
     // value for the pub_id is set correctly.
@@ -213,8 +213,13 @@ class sio__annotation_widget extends ChadoFieldWidget {
       if ($pub_name) {
         $pub = chado_generate_var('pub', array('uniquename' => $pub_name));
         if ($pub) {
-          $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+          $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
         }
+      }
+      // Use the NULL pub.
+      else {
+        $pub = tripal_get_publication(array('uniquename' => 'null'));
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
       }
     }
 
@@ -234,6 +239,24 @@ class sio__annotation_widget extends ChadoFieldWidget {
     if ($cvterm) {
       $form_state['values'][$field_name]['und'][$delta]['cvterm_name'] = '';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__cvterm_id'] = $cvterm->cvterm_id;
+      $form_state['values'][$field_name]['und'][$delta]['value'] = $cvterm->cvterm_id;
+    }
+    // Remove all values so we can delete this record if there is no
+    // cvterm.
+    else {
+      // There must be some value set.
+      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__cvterm_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn] = '';
+      if (array_key_exists('rank', $schema['fields'])) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
+      if (array_key_exists('pub_id', $schema['fields'])) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '';
+      }
+      if (array_key_exists('is_not', $schema['fields'])) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '_is_not'] = '';
+      }
     }
   }
 

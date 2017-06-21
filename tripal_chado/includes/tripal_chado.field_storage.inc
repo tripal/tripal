@@ -387,7 +387,8 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
     $instance = field_info_instance('TripalEntity', $field['field_name'], $entity->bundle);
-    // Some fields (e.g. chado_linker_cvterm_adder) don't add data to
+
+    // Some fields don't add data to
     // Chado so they don't have a table, but they are still attached to the
     // entity. Just skip these.
     if (!array_key_exists('chado_table', $instance['settings'])) {

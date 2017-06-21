@@ -376,8 +376,8 @@ function tripal_populate_mview($mview_id) {
       chado_set_active($previous_db);
     }
     catch (Exception $e) {
-      chado_set_active($previous_db);
       $transaction->rollback();
+      chado_set_active($previous_db);
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;

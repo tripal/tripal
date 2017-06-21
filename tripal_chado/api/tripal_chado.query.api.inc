@@ -1666,10 +1666,13 @@ function chado_query($sql, $args = array()) {
         chado_set_active($previous_db);
       }
       catch (Exception $e) {
-        chado_set_active($previous_db);
-        throw $e;
+        try {
+          chado_set_active($previous_db);
+        }
+        catch (Exception $e2) {
+          throw Exception($e->getMessage() . $e2->getMessage());
+        }
       }
-
     }
     // for all other tables we should have everything in scope so just run the query
     else {
