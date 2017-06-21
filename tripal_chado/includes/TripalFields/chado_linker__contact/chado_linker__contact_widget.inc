@@ -118,6 +118,5 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $chado_table . '__contact_id'] = $contact->contact_id;
       $form_state['values'][$field_name][$langcode][$delta]['value'] = $name;
     }
-    dpm($form_state['values']);
   }
 }

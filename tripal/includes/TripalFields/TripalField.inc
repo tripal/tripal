@@ -422,10 +422,6 @@ class TripalField {
    *    The type of $entity.
    *  @param $entity
    *    The entity for the operation.
-   *  @param $field
-   *    The field structure for the operation.
-   *  @param $instance
-   *    The instance structure for $field on $entity's bundle.
    *  @param $langcode
    *    The language associated with $items.
    *  @param $items
@@ -440,7 +436,7 @@ class TripalField {
    *      - message: The human readable message to be displayed.
    *
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
   }
 

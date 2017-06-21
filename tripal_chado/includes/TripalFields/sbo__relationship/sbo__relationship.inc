@@ -743,123 +743,112 @@ class sbo__relationship extends ChadoField {
     $option3 = isset($settings['relationship_types']) && trim($settings['relationship_types']);
     if ($option1 && ($option2 || $option3) == 1 ||
         $option2 && ($option1 || $option3) == 1 ||
-        $option3 && ($option1 || $option2) == 1
-        ) {
-          form_set_error(
-              "instance][settings][relationships",
-              t("Only one option is allowed to limit the relationship types.")
-              );
-          return;
-        }
+        $option3 && ($option1 || $option2) == 1) {
+      form_set_error("instance][settings][relationships", t("Only one option is allowed to limit the relationship types."));
+      return;
+    }
 
-        // For option3, make sure the supplied types are valid cvterms
-        if ($option3) {
-          $rel_types = explode(PHP_EOL, $settings['relationship_types']);
-          foreach($rel_types AS $type) {
-            $type =  trim($type);
-            // Ignore empty lines
-            if ($type == '') {
-              continue;
-            }
-            // Find the matching cvterm
-            $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
-            $results = chado_query($sql, array(':name' => $type));
-            $terms = array();
-            while ($obj = $results->fetchObject()) {
-              $terms[] = $obj;
-            }
-            // Don't save the form  if a term can not be found or it matches more than one cvterm
-            $cv = '';
-            if (count($terms) == 0) {
-              // If a term can not be found, maybe the type contains '|', parse it as 'vocabulary|cvterm'
-              if (strpos($type, '|')) {
-                $tmp = explode('|', $type, 2);
-                $type = trim($tmp[1]);
-                $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-                if($cv) {
-                  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-                  $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
-                  while ($obj = $results->fetchObject()) {
-                    $terms[] = $obj;
-                  }
-                }
-                else {
-                  $cv = $tmp[0];
-                }
-              }
-              if (count($terms) != 1) {
-                $message = "The term '@type' can not be found.";
-                $token = array('@type' => $type);
-                if ($cv) {
-                  $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
-                  $token['@vocab'] = $cv;
-                }
-                form_set_error(
-                    "instance][settings][relationships][relationship_types",
-                    t($message, $token)
-                    );
+    // For option3, make sure the supplied types are valid cvterms
+    if ($option3) {
+      $rel_types = explode(PHP_EOL, $settings['relationship_types']);
+      foreach($rel_types AS $type) {
+        $type =  trim($type);
+        // Ignore empty lines
+        if ($type == '') {
+          continue;
+        }
+        // Find the matching cvterm
+        $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
+        $results = chado_query($sql, array(':name' => $type));
+        $terms = array();
+        while ($obj = $results->fetchObject()) {
+          $terms[] = $obj;
+        }
+        // Don't save the form  if a term can not be found or it matches more than one cvterm
+        $cv = '';
+        if (count($terms) == 0) {
+          // If a term can not be found, maybe the type contains '|', parse it as 'vocabulary|cvterm'
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
               }
             }
-            else if (count($terms) > 1) {
-              // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
-              if (strpos($type, '|')) {
-                $tmp = explode('|', $type, 2);
-                $type = trim($tmp[1]);
-                $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-                if ($cv) {
-                  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-                  $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
-                  while ($obj = $results->fetchObject()) {
-                    $terms[] = $obj;
-                  }
-                }
-              }
-              if(count($terms) != 1) {
-                form_set_error(
-                    "instance][settings][relationships][relationship_types",
-                    t("The term '@type' matches more than one term. Please specify its vocabulary in
-                  the format of 'vocabulary|@type'.", array('@type' => $type))
-                    );
+            else {
+              $cv = $tmp[0];
+            }
+          }
+          if (count($terms) != 1) {
+            $message = "The term '@type' can not be found.";
+            $token = array('@type' => $type);
+            if ($cv) {
+              $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
+              $token['@vocab'] = $cv;
+            }
+            form_set_error("instance][settings][relationships][relationship_types",
+                t($message, $token));
+          }
+        }
+        else if (count($terms) > 1) {
+          // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if ($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
               }
             }
           }
+          if(count($terms) != 1) {
+            form_set_error("instance][settings][relationships][relationship_types",
+              t("The term '@type' matches more than one term. Please specify its vocabulary in the format of 'vocabulary|@type'.", array('@type' => $type)));
+          }
         }
+      }
+    }
 
-        // For option2: Make sure the parent term is a valid cvterm
-        if ($option2) {
-          $cv_id = $settings['option2_vocab'];
-          $supertype = $settings['option2_parent'];
-          $term = tripal_get_cvterm(array(
-            'name' => trim($supertype),
-            'cv_id' => $cv_id,
-          ));
-          // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
-          // a cvterm, try cvtermsynonym
-          if (!$term) {
-            $synonym = tripal_get_cvterm(
-                array(
-                  'synonym' => array(
-                    'name' => trim($supertype),
-                  )
-                )
-                );
-            if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
-              $term = $synonym;
-            }
-          }
-          if (!isset($term->cvterm_id)) {
-            form_set_error(
-                "instance][settings][relationships][option2_parent",
-                t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype))
-                );
-          }
+    // For option2: Make sure the parent term is a valid cvterm
+    if ($option2) {
+      $cv_id = $settings['option2_vocab'];
+      $supertype = $settings['option2_parent'];
+      $term = tripal_get_cvterm(array(
+        'name' => trim($supertype),
+        'cv_id' => $cv_id,
+      ));
+      // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
+      // a cvterm, try cvtermsynonym
+      if (!$term) {
+        $synonym = tripal_get_cvterm(
+            array(
+              'synonym' => array(
+                'name' => trim($supertype),
+              )
+            )
+            );
+        if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
+          $term = $synonym;
         }
+      }
+      if (!isset($term->cvterm_id)) {
+        form_set_error("instance][settings][relationships][option2_parent",
+            t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype)));
+      }
+    }
   }
 
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];

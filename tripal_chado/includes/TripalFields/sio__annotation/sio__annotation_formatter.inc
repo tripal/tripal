@@ -74,12 +74,26 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $headers = array('Term', 'Definition', 'Is Not');
+    $headers = array('Term', 'Definition');
     $rows = array();
 
-    dpm($items);
+    $field_table = $this->instance['settings']['chado_table'];
+    $schema = chado_get_schema($field_table);
+
+    if (array_key_exists('is_not', $schema['fields'])) {
+      $headers[] = 'Negates';
+    }
+
+    $vocabulary_term = tripal_get_chado_semweb_term('cvterm', 'cv_id');
+    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
+    $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
+    if (array_key_exists('is_not', $schema['fields'])) {
+      $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
+    }
+
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
+
       if ($item['chado-' . $chado_table . '__cvterm_id']) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));
         $dbxref = $cvterm->dbxref_id;
@@ -90,18 +104,24 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
           $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
-        $rows[] = array(
-          $accession,
-          $cvterm->definition,
-          $item['chado-' . $chado_table . '__is_not'] ? 'Yes' : '',
+        $row = array(
+          $item['value'][$vocabulary_term] . ':' . $item['value'][$accession_term],
+          $item['value'][$definition_term],
         );
+
+        if (array_key_exists('is_not', $schema['fields'])) {
+          $row[] = $item['value'][$negation_term];
+        }
+
+        $rows[] = $row;
       }
     }
 
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    // Theme the results in a talbe.
+    $caption = 'This record is associated with the following annotations.';
+    if (array_key_exists('is_not', $schema['fields'])) {
+      $caption .= 'The "Negates" column indicates if the term does NOT apply.';
+    }
     $table = array(
       'header' => $headers,
       'rows' => $rows,
@@ -109,7 +129,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         'id' => "$chado_table-table-terms",
         'class' => 'tripal-data-table'
       ),
-      'caption' => 'This record is associated with the following annotations:',
+      'caption' => $caption,
       'sticky' => FALSE,
       'colgroups' => array(),
       'empty' => 'There are no annotations of this type',

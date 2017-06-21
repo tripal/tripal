@@ -810,7 +810,7 @@ function tripal_field_validate($entity_type, $entity, $field, $instance,
    $field_type = $field['type'];
    if (tripal_load_include_field_class($field_type)) {
      $tfield = new $field_type($field, $instance);
-     $tfield->validate($entity_type, $entity, $langcode,$items, $errors);
+     $tfield->validate($entity_type, $entity, $langcode, $items, $errors);
    }
 }
 

@@ -327,10 +327,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
     if (is_array($value)) {
       $temp = array();
       foreach ($value as $k => $v) {
+
         // exclude fields that have no values so we can hide them
-        if (empty($v) and $hide_fields == 'hide') {
+        if (!isset($v) and $hide_fields == 'hide') {
           continue;
         }
+
         $matches = array();
         if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
           $vocabulary = $matches[1];
@@ -342,7 +344,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
             $temp[$key_adj] = $this->sanitizeFieldKeys($v, $bundle, $service_path);
           }
           else {
-            $temp[$key_adj] = $v !== "" ? $v : NULL;
+            $temp[$key_adj] = $v;
           }
           $this->resource->addContextItem($key_adj, $term['url']);
 
@@ -360,7 +362,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     }
     else {
-      $new_value = $value !== "" ? $value : NULL;
+      $new_value = $value;
     }
 
     return $new_value;

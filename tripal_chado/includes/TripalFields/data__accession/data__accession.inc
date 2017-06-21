@@ -103,7 +103,7 @@ class data__accession extends ChadoField {
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
     $field_name = $this->field['field_name'];
     $settings = $this->field['settings'];

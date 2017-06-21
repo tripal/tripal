@@ -207,7 +207,7 @@ class sbo__database_cross_reference extends ChadoField {
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];

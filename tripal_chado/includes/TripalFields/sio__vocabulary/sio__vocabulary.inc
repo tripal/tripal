@@ -38,7 +38,7 @@ class sio__vocabulary extends ChadoField {
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
