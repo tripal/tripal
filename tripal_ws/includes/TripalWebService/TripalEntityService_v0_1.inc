@@ -75,8 +75,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // If we couldn't match this field argument to a field and entity then return
     if (!$entity) {
-      throw new Exception("Cannot find this entity.");
+      throw new Exception("Cannot find this record.");
     }
+
+    // Check that the user has access to this entity.  If not then the
+    // function call will throw an error.
+    $this->checkAccess($entity);
 
     list($field, $instance, $term) = $this->findField($bundle, $expfield);
 
@@ -129,9 +133,18 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // Add the vocabulary to the context.
     $this->resource->addContextItem($term->name, $term->url);
 
-    // Get the TripalEntity
+    // Get the TripalEntity.
     $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
     $entity = reset($entity);
+
+    // If we couldn't match this field argument to a field and entity then return
+    if (!$entity) {
+      throw new Exception("Cannot find this record.");
+    }
+
+    // Check that the user has access to this entity.  If not then the
+    // function call will throw an error.
+    $this->checkAccess($entity);
 
     $itemPage = tripal_get_term_details('schema', 'ItemPage');
     $label = tripal_get_term_details('rdfs', 'label');
@@ -146,6 +159,29 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
 //    tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
 //    tripal_ws_services_v0_1_write_context($response, $ctype);
+  }
+
+  /**
+   * Ensures that user's only have access to content they should see.
+   *
+   * Denies access to an entity if it is unpublished or if the user does
+   * not have permission to see it.
+   *
+   * @param $entity
+   *   The full entity object.
+   *
+   * @throws Exception
+   */
+  private function checkAccess($entity) {
+    global $user;
+
+    if (!tripal_entity_access('view', $entity, $user, 'TripalEntity')) {
+      throw new Exception("Permission Denied.");
+    }
+    // Don't show entities that aren't published
+    if ($entity->status == 0) {
+      throw new Exception("This record is currently unavailable.");
+    }
   }
 
   /**
