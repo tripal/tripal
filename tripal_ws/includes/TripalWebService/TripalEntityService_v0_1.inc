@@ -713,4 +713,209 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     }
   }
+
+  /**
+   * @see TripalWebService::getSupportedClasses()
+   */
+  public function getSupportedClasses() {
+
+    global $user;
+
+    // An array of TripalWebServiceResources containing a
+    // description of the supported classes.
+    $supported_classes = array();
+
+    // Get the list of published terms (these are the bundle IDs)
+    $bundles = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->orderBy('tb.label', 'ASC')
+      ->execute();
+
+    // Iterate through the terms and add an entry in the collection.
+    $i = 0;
+    while ($bundle = $bundles->fetchObject()) {
+      $entity =  entity_load('TripalTerm', array('id' => $bundle->term_id));
+      $term = reset($entity);
+      $vocab = $term->vocab;
+
+      // Get the bundle description. If no description is provided then
+      // use the term definition
+      $description = tripal_get_bundle_variable('description', $bundle->id);
+      if (!$description) {
+        $description = $term->definition;
+      }
+
+      $supported = new TripalWebServiceResource($this->getServicePath());
+      $supported->addContextItem('supportedOperation', 'hydra:supportedOperation');
+      $supported->addContextItem('supportedProperty', 'hydra:supportedProperty');
+      $supported->setID(urlencode($bundle->label));
+      $supported->setType('hydra:Class');
+      $supported->addProperty('hydra:title', $bundle->label);
+      $supported->addProperty('hydra:description', $description);
+
+      // Add in the supported operations for this content type.
+      $operations = array();
+
+      // If the user can view this content type.
+      if (user_access('view ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $get_op = new TripalWebServiceResource($this->getServicePath());
+        $get_op->addContextItem('supportedOperation', 'hydra:supportedOperation');
+        $get_op->addContextItem('method', 'hydra:method');
+        $get_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $get_op->addContextItem('label', 'rdfs:label');
+        $get_op->addContextItem('description', 'rdfs:comment');
+        $get_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $get_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $get_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve');
+        $get_op->setType('hydra:Operation');
+        $get_op->addProperty('method', 'GET');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $get_op->addProperty('label', "Retrieves an " . $bundle->label . " entity.");
+        }
+        else {
+          $get_op->addProperty('label', "Retrieves a " . $bundle->label . " entity.");
+        }
+        $get_op->addProperty('description', NULL);
+        $get_op->addProperty('expects', NULL);
+        $get_op->addProperty('returns', $term->url);
+        $get_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be found using the provided ID.'
+          ),
+        ));
+        $operations[] = $get_op;
+      }
+
+      // If the user can create this content type.
+      if (user_access('create ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $create_op = new TripalWebServiceResource($this->getServicePath());
+        $create_op->addContextItem('method', 'hydra:method');
+        $create_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $create_op->addContextItem('label', 'rdfs:label');
+        $create_op->addContextItem('description', 'rdfs:comment');
+        $create_op->addContextItem('code', 'hydra:statusCode');
+        $create_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $create_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $create_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create');
+        $create_op->setType('http://schema.org/CreateAction');
+        $create_op->addProperty('method', 'POST');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $create_op->addProperty('label', "Creates an " . $bundle->label . " entity.");
+        }
+        else {
+          $create_op->addProperty('label', "Creates a " . $bundle->label . " entity.");
+        }
+        $create_op->addProperty('description', NULL);
+        $create_op->addProperty('expects', $term->url);
+        $create_op->addProperty('returns', $term->url);
+        $create_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be created.'
+          ),
+          array(
+            'code' => 409,
+            'description' => 'The ' . $bundle->label . ' already exists.'
+          ),
+        ));
+        $operations[] = $create_op;
+      }
+
+      // If the user can edit this content type.
+      if (user_access('edit ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $edit_op = new TripalWebServiceResource($this->getServicePath());
+        $edit_op->addContextItem('method', 'hydra:method');
+        $edit_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $edit_op->addContextItem('label', 'rdfs:label');
+        $edit_op->addContextItem('description', 'rdfs:comment');
+        $edit_op->addContextItem('code', 'hydra:statusCode');
+        $edit_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $edit_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $edit_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update');
+        $edit_op->setType('http://schema.org/UpdateAction');
+        $edit_op->addProperty('method', 'PUT');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $edit_op->addProperty('label', "Update and replace an " . $bundle->label . " entity.");
+        }
+        else {
+          $edit_op->addProperty('label', "Update and replace a " . $bundle->label . " entity.");
+        }
+        $edit_op->addProperty('description', NULL);
+        $edit_op->addProperty('expects', $term->url);
+        $edit_op->addProperty('returns', $term->url);
+        $edit_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be updated using the provided ID.'
+          ),
+        ));
+        $operations[] = $edit_op;
+      }
+
+      // If the user can edit this content type.
+      if (user_access('delete ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $delete_op = new TripalWebServiceResource($this->getServicePath());
+        $delete_op->addContextItem('method', 'hydra:method');
+        $delete_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $delete_op->addContextItem('label', 'rdfs:label');
+        $delete_op->addContextItem('description', 'rdfs:comment');
+        $delete_op->addContextItem('code', 'hydra:statusCode');
+        $delete_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $delete_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $delete_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete');
+        $delete_op->setType('http://schema.org/DeleteAction');
+        $delete_op->addProperty('method', 'DELETE');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $delete_op->addProperty('label', "Deletes an " . $bundle->label . " entity.");
+        }
+        else {
+          $delete_op->addProperty('label', "Deletes a " . $bundle->label . " entity.");
+        }
+        $delete_op->addProperty('description', NULL);
+        $delete_op->addProperty('expects', $term->url);
+        $delete_op->addProperty('returns', $term->url);
+        $delete_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be deleted using the provided ID.'
+          ),
+        ));
+        $operations[] = $delete_op;
+      }
+
+      $supported->addProperty('supportedOperation', $operations);
+      $supported_classes[] = $supported;
+    }
+
+    return $supported_classes;
+  }
 }

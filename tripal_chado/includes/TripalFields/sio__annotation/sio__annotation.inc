@@ -135,7 +135,7 @@ class sio__annotation extends ChadoField {
         'name' => 'rank',
         'label' => 'Annotation Term Rank',
         'operations' => array('eq', 'ne', 'lte', 'gte'),
-        'type' => numeric
+        'type' => 'numeric'
       );
     }
     if (array_key_exists('pub_id', $schema['fields'])) {
