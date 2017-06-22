@@ -62,7 +62,7 @@ class TripalWebService {
    */
   public function __construct($base_path) {
     if (!$base_path) {
-      throw new Exception('Pleaes provide a $base_path argument when creating a new TripalWebService.');
+      throw new Exception('Please provide a $base_path argument when creating a new TripalWebService.');
     }
 
     // Create a default resource so that the service always some something.
@@ -190,11 +190,7 @@ class TripalWebService {
       '@id' => '',
       '@type' => $type,
     );
-
-    // Get the data array and set the IRIs fore each ID.
     $data = $this->getData();
-    //$this->setIDs($data);
-
     return array_merge($json_ld, $data);
   }
 
@@ -254,5 +250,20 @@ class TripalWebService {
     $this->resource->setID('error');
     $this->resource->addContextItem('error', 'rdfs:error');
     $this->resource->addProperty('error', $message);
+  }
+
+  /**
+   * Retrieves an array contining the supported classes.
+   *
+   * Supported classe are resources provided by this web services and the
+   * operations supported by those classes.
+   *
+   * @return
+   *   An array of TripalWebServiceResource objects that follow the Hydra
+   *   documentation for documenting supported classes.
+   */
+  public function getSupportedClasses() {
+     $supported_classes = array();
+     return $supported_classes;
   }
 }
