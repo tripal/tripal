@@ -695,20 +695,30 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $term = reset($entity);
       $vocab = $term->vocab;
 
+      $member = new TripalWebServiceResource($service_path);
+      // If the term has no URL then we'll default to using thie site's
+      // term lookup service.
+      $url = $term->url;
+      if (!$url) {
+        $url = url('cv/lookup/' . $term->vocab->vocabulary . '/' . $term->accession , array('absolute' => TRUE));
+      }
+      $member->addContextItem($term->name, $url);
+      $member->addContextItem('label', $label['url']);
+      $member->addProperty('label', $bundle->label);
+      $member->addContextItem('description', 'hydra:description');
       // Get the bundle description. If no description is provided then
       // use the term definition
       $description = tripal_get_bundle_variable('description', $bundle->id);
       if (!$description) {
         $description = $term->definition;
       }
-      $member = new TripalWebServiceResource($service_path);
-      $member->addContextItem($term->name, $term->url);
-      $member->addContextItem('label', $label['url']);
-      $member->addContextItem('description', 'hydra:description');
+      if (!$description) {
+        $description = '';
+      }
+      $member->addProperty('description', $description);
       $member->setID(urlencode($bundle->label));
       $member->setType($term->name);
-      $member->addProperty('label', $bundle->label);
-      $member->addProperty('description', $description);
+
       $this->resource->addMember($member);
 
     }
