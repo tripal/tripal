@@ -181,6 +181,7 @@ class TripalWebServiceResource {
       if ($vocab == '_') {
         return $id;
       }
+      return $id;
     }
     else {
       return $this->service_path . '/' . $id;

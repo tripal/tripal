@@ -196,19 +196,28 @@ function tripal_ws_list_services() {
 
   // Create the parent resource which is a collection.
   $resource = new TripalWebServiceResource($base_path);
-  $resource->addContextItem('entrypoint', 'hydra:entrypoint');
-  $resource->setType('entrypoint');
 
-  // Now add the member to the collection
+  // Add the vocabulary to the context.
+  tripal_load_include_web_service_class('TripalVocabService_v0_1');
+  $service = new TripalVocabService_v0_1($base_path);
+  $resource->addContextItem('vocab', $service->getServicePath());
+  $resource->addContextItem('EntryPoint', 'vocab:EntryPoint');
+  $resource->setType('EntryPoint');
+
+  // Now add the services as properties.
   foreach ($services as $service_class) {
     tripal_load_include_web_service_class($service_class);
+    if ($service_class == 'TripalVocabService_v0_1') {
+      continue;
+    }
     $service = new $service_class($base_path);
-    $version = $service->getVersion();
-    $resource->addContextItem($service_class::$type, '');
+    $resource->addContextItem($service_class::$type, array(
+      '@id' => 'vocab:EntryPoint/' . $service_class::$type,
+      '@type' => '@id',
+    ));
     $resource->addProperty($service_class::$type, $service->getServicePath());
   }
 
-  // For discoverability add the document webservice.
   $service->setResource($resource);
   $response = $service->getResponse();
   print drupal_json_encode($response);
@@ -250,17 +259,6 @@ function tripal_ws_services() {
 
   drupal_add_http_header('Content-Type', 'application/json');
   print drupal_json_encode($response);
-}
-
-/**
- *
- * @param $entities
- * @param $type
- */
-function tripal_ws_entity_load($entities, $type) {
-  foreach ($entities as $entity) {
-
-  }
 }
 
 /**
