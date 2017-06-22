@@ -275,6 +275,10 @@ function tripal_entity_info_alter(&$entity_info){
  */
 function tripal_entity_property_info_alter(&$info) {
 
+  // Sometimes this function is called when there are no Tripal Entities.
+  // Don't bother to do anything in this case.
+  if (!isset($info['TripalEntity']['bundles'])) { return TRUE; }
+
   // For each Tripal Content Type, we want to ensure all attached fields
   // are added to the bundle properties.
   foreach ($info['TripalEntity']['bundles'] as $bundle_name => $bundle) {
