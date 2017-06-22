@@ -104,7 +104,17 @@ function tripal_ws_get_services() {
   global $base_url;
   $service_path = $base_url . '/web-services';
 
-  drupal_add_http_header('Content-Type', 'application/json');
+
+  // This should go out as ld+json
+  drupal_add_http_header('Content-Type', 'application/ld+json');
+
+  // Add a link header for the vocabulary service so that clients
+  // know where to find the docs.
+  tripal_load_include_web_service_class('TripalVocabService_v0_1');
+  $service = new TripalVocabService_v0_1($service_path);
+  $vocab = tripal_get_vocabulary_details('hydra');
+  drupal_add_http_header('Link', '<' . $service->getServicePath() . '>; rel="http://www.w3.org/ns/hydra/core#apiDocumentation"');
+  drupal_add_http_header('Cache-Control', "no-cache");
 
   try {
     $ws_path = func_get_args();
@@ -200,7 +210,7 @@ function tripal_ws_list_services() {
   // Add the vocabulary to the context.
   tripal_load_include_web_service_class('TripalVocabService_v0_1');
   $service = new TripalVocabService_v0_1($base_path);
-  $resource->addContextItem('vocab', $service->getServicePath());
+  $resource->addContextItem('vocab', $service->getServicePath() . '#');
   $resource->addContextItem('EntryPoint', 'vocab:EntryPoint');
   $resource->setType('EntryPoint');
 
@@ -257,7 +267,7 @@ function tripal_ws_services() {
     // TODO: What do we do if no version is provided?
   }
 
-  drupal_add_http_header('Content-Type', 'application/json');
+  drupal_add_http_header('Content-Type', 'application/ld+json');
   print drupal_json_encode($response);
 }
 
