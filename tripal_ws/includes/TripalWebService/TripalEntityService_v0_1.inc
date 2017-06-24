@@ -573,10 +573,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
     }
 
-    // Get the list of entities for this bundle.
+    // Get the list of entities for this bundle and only those that are published.
     $query = new TripalFieldQuery();
     $query->entityCondition('entity_type', 'TripalEntity');
     $query->entityCondition('bundle', $bundle->name);
+    $query->propertyCondition('status', 1);
     foreach($new_params as $field_name => $param_list) {
       foreach ($param_list as $param_index => $details) {
         $value = $details['value'];
@@ -637,6 +638,23 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $query->fieldOrderBy($order_keys[$i], $order[$order_keys[$i]], $order_dir[$i]);
     }
 
+    // If there is no ordering that is set then set a default.
+    if (count($order_keys) == 0) {
+      if (in_array('data__identifier', $field_mapping)) {
+        $query->fieldOrderBy('data__identifier', 'data__identifier', 'ASC');
+      }
+      else if (in_array('schema__name', $field_mapping)) {
+        $query->fieldOrderBy('schema__name', 'schema__name', 'ASC');
+      }
+      else if (in_array('rdfs_label', $field_mapping)) {
+        $query->fieldOrderBy('rdfs_label', 'rdfs_label', 'ASC');
+      }
+      else if (in_array('taxrank__genus', $field_mapping)) {
+        $query->fieldOrderBy('taxrank__genus', 'taxrank__genus', 'ASC');
+        $query->fieldOrderBy('taxrank__species', 'taxrank__species', 'ASC');
+      }
+    }
+
     // Set the query range
     $start = ($page - 1) * $limit;
     $query->range($start, $limit);
@@ -646,7 +664,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $this->resource->initPager($num_records, $limit, $page);
 
-    // Iterate through the entities and add them to the list.
+    // Iterate through the entities and add them to the output list.
     foreach ($results['TripalEntity'] as $entity_id => $stub) {
       // We don't need all of the attached fields for an entity so, we'll
       // not use the entity_load() function.  Instead just pull it from the
