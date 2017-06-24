@@ -137,10 +137,12 @@ class tripal_views_query extends views_plugin_query {
       if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
          $field_name = $matches[1];
          $element_name = $matches[2];
-         if (tripal_load_include_field_class($field_name)) {
-           $field = field_info_field($field_name);
-           $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
-           $field_obj = new $field_name($field, $instance);
+         $field = field_info_field($field_name);
+         $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+         $field_class = $field['type'];
+         if (tripal_load_include_field_class($field_class)) {
+
+           $field_obj = new $field_class($field, $instance);
            $element_name = $field_obj->getFieldTermID() . ',' . $element_name;
            // Replace periods with commas.
            $element_name = preg_replace('/\./', ',', $element_name);
@@ -252,6 +254,9 @@ class tripal_views_query extends views_plugin_query {
         $this->pager->pre_execute($query);
         $num_items_per_page = $this->pager->get_items_per_page();
         $offset = $this->pager->get_current_page() * $num_items_per_page;
+        // I'm not sure why an offset would come back as -1 but it has happened
+        // with Drupal Views.  This is a quick band-aid fix.
+        $offset = ($offset < 0) ? 0 : $offset;
         $query->range($offset, $num_items_per_page);
 
         // Get the IDs

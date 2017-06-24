@@ -1670,7 +1670,7 @@ function chado_query($sql, $args = array()) {
           chado_set_active($previous_db);
         }
         catch (Exception $e2) {
-          throw Exception($e->getMessage() . $e2->getMessage());
+          throw new Exception($e->getMessage() . $e2->getMessage());
         }
       }
     }

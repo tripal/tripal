@@ -61,8 +61,8 @@ class chado_linker__contact extends ChadoField {
    * @see TripalField::elements()
    */
   public function elementInfo() {
-    $field_term = $this->getFieldTermID();
 
+    $field_term = $this->getFieldTermID();
     $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
     $name_term = tripal_get_chado_semweb_term('contact', 'name');
     $description_term = tripal_get_chado_semweb_term('contact', 'description');
@@ -96,7 +96,7 @@ class chado_linker__contact extends ChadoField {
             'label' => 'Contact Description',
             'help' => 'A descriptoin of the contact.',
             'operations' => array('contains'),
-            'sortable' => FALSE,
+            'sortable' => TRUE,
           ),
           'entity' => array(
             'searchable' => FALSE,
@@ -116,6 +116,7 @@ class chado_linker__contact extends ChadoField {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
     $name_term = tripal_get_chado_semweb_term('contact', 'name');
@@ -123,7 +124,6 @@ class chado_linker__contact extends ChadoField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
-    $base_table = $entity->chado_table;
     $pkey = $schema['primary key'][0];
     if (!isset($schema['foreign keys'][$base_table]['columns'])) {
       return;
@@ -184,27 +184,89 @@ class chado_linker__contact extends ChadoField {
    * @see ChadoField::query()
    */
   public function query($query, $condition) {
-    $contact_linker = $this->instance['settings']['chado_table'];
-    $base_table = $this->instance['settings']['base_table'];
-    $bschema = chado_get_schema($base_table);
-    $bpkey = $bschema['primary key'][0];
-    $alias = 'contact_linker';
+    $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    $type_term = tripal_get_chado_semweb_term('contact', 'type');
+    $field_term_id = $this->getFieldTermID();
+    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
     $name_term = tripal_get_chado_semweb_term('contact', 'name');
     $description_term = tripal_get_chado_semweb_term('contact', 'description');
 
-    if ($condition['column'] == $name_term) {
-      $this->queryJoinOnce($query, $contact_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'contact', 'C', "C.contact_id = $alias.contact_id");
-      $query->condition("C.name", $condition['value'], $operator);
-    }
-    if ($condition['column'] == 'contact.type') {
+    $contact_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
 
+    // Get the FK that links to the base record.
+    $schema = chado_get_schema($contact_linker);
+    $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    // Join the contact linker table and then join the contact table.
+    $calias = $contact_linker . '_contact';
+    $this->queryJoinOnce($query, $contact_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
+    $this->queryJoinOnce($query, 'contact', $calias, "$calias.contact_id = $alias.contact_id");
+
+    // Search by the contact name
+    if ($condition['column'] == $field_term_id or
+        $condition['column'] == $field_term_id . ',' . $name_term) {
+      $query->condition("$calias.name", $condition['value'], $operator);
+    }
+    // Search on the contact description.
+    if ($condition['column'] == $field_term_id . ',' . $description_term) {
+      $query->condition("$calias.description", $condition['value'], $operator);
+    }
+    // Search on the contact type.
+    if ($condition['column'] == $field_term_id . ',' . $type_term) {
+      $talias = $contact_linker . '_contact_type';
+      $this->queryJoinOnce($query, 'cvterm', $talias, "$calias.type_id = $talias.cvterm_id");
+      $query->condition("$talias.name", $condition['value'], $operator);
+    }
+  }
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+    $field_term_id = $this->getFieldTermID();
+    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
+    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+
+    $contact_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    // Get the FK that links to the base record.
+    $schema = chado_get_schema($contact_linker);
+    $base_table = $entity->chado_table;
+    $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    // Join the contact linker table and then join the contact table.
+    $calias = $contact_linker . '_contact';
+    $this->queryJoinOnce($query, $contact_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
+    $this->queryJoinOnce($query, 'contact', $calias, "$calias_contact.contact_id = $alias.contact_id");
+
+    // Search by the contact name
+    if ($condition['column'] == $field_term_id or
+        $condition['column'] == $field_term_id . ',' . $name_term) {
+      $query->orderBy("$calias.name", $order['direction']);
+    }
+    // Search on the contact description.
+    if ($condition['column'] == $field_term_id . ',' . $description_term) {
+      $query->condition("$calias.description", $condition['value'], $operator);
+    }
+    // Search on the contact type.
+    if ($condition['column'] == $field_term_id . ',' . $type_term) {
+      $talias = $contact_linker . '_contact_type';
+      $this->queryJoinOnce($query, 'cvterm', $talias, "$calias_contact.type_id = $talias.cvterm_id");
+      $query->condition("$talias.name", $condition['value'], $operator);
     }
   }
 }
+
+
 
 /**
  * An Ajax callback for the pub widget.

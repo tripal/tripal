@@ -694,9 +694,11 @@ function tripal_field_instance_settings_form_submit($form, &$form_state) {
 function tripal_field_widget_form_validate($element, &$form_state, $form) {
   $field = $element['#field'];
   $instance = $element['#instance'];
-  $widget_class = $element['#field_name'] . '_widget';
+
   $langcode = $element['#language'];
   $delta = $element['#delta'];
+
+  $widget_class = $instance['widget']['type'];
   tripal_load_include_field_class($widget_class);
   if (class_exists($widget_class)) {
     $widget = new $widget_class($field, $instance);

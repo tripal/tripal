@@ -84,14 +84,7 @@ class obi__organism extends ChadoField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        /*
-        // Types of elements that will appear in the value array.
-        $label_term => '',
-        $genus_term => '',
-        $species_term => '',
-        */
-      ),
+      'value' => array(),
     );
 
     if ($record) {

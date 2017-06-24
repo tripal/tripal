@@ -29,13 +29,6 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
           $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
-        // Build the publication reference.
-        $pub_ref = '';
-        $pub_id = $item['chado-' . $chado_table . '__pub_id'];
-        if ($pub_id) {
-          $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
-          $pub_ref = $pub->title;
-        }
         $rows[] = array(
           $accession,
           $cvterm->definition,
