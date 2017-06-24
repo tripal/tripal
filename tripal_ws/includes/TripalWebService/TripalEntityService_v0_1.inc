@@ -322,7 +322,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
       // If this is the expanded field page then we need to swap out
       // the resource for a collection.
-      $response = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield));
+      $response = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield), $this->params);
       $label = tripal_get_term_details('rdfs', 'label');
       $response->addContextItem('label', $label['url']);
       $response->addProperty('label', $instance['label']);
@@ -536,7 +536,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
               );
             }
             else {
-              throw new Exception("The term, '$criteria', is not available for sorting.");
+              throw new Exception("The value, '$criteria', is not available for sorting.");
             }
           }
           // If this field is not a TripalField then it should just have
@@ -552,7 +552,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
         }
         else {
-          throw new Exception("The term, '$key', is not available for sorting.");
+          throw new Exception("The value, '$key', is not available for sorting.");
         }
       }
     }
@@ -740,7 +740,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
   private function doContentTypeList($ctype) {
     $service_path = $this->getServicePath() . '/' . urlencode($ctype);
     $label = tripal_get_term_details('rdfs', 'label');
-    $this->resource = new TripalWebServiceCollection($service_path);
+    $this->resource = new TripalWebServiceCollection($service_path, $this->params);
     $this->resource->addContextItem('label', $label['url']);
 
     // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
@@ -841,7 +841,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
   private function doAllTypesList() {
     $service_path = $this->getServicePath();
     $label = tripal_get_term_details('rdfs', 'label');
-    $this->resource = new TripalWebServiceCollection($service_path);
+    $this->resource = new TripalWebServiceCollection($service_path, $this->params);
     $this->resource->addContextItem('label', $label['url']);
     $this->resource->addProperty('label', 'Content Types');
 
