@@ -172,22 +172,34 @@ function tripal_bundle_default_views(&$views) {
 
     // Add the default sorted column.
     if (in_array('data__identifier', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'data__identifier';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'data__identifier';
     }
     else if (in_array('schema__name', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'schema__name';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'schema__name';
     }
     else if (in_array('obi__organism', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'obi__organism';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'obi__organism';
     }
     else if (in_array('rdfs_label', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'rdfs_label';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'rdfs_label';
     }
     else if (in_array('taxrank__genus', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'taxrank__genus';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__genus';
     }
     else if (in_array('taxrank__species', $selected_fields)) {
-      $handler->display->display_options['style_options']['default'] = 'taxrank__species';
+      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+      $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__species';
     }
 
     // No results behavior: Global: Text area.
