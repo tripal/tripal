@@ -628,8 +628,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-  dpm($cquery->__toString());
-  dpm($cquery->getArguments());
+//   dpm($cquery->__toString());
+//   dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 
