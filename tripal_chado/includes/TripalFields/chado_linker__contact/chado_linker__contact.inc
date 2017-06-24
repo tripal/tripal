@@ -238,30 +238,29 @@ class chado_linker__contact extends ChadoField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($contact_linker);
-    $base_table = $entity->chado_table;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Join the contact linker table and then join the contact table.
     $calias = $contact_linker . '_contact';
-    $this->queryJoinOnce($query, $contact_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
-    $this->queryJoinOnce($query, 'contact', $calias, "$calias_contact.contact_id = $alias.contact_id");
+    $this->queryJoinOnce($query, $contact_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'contact', $calias, "$calias.contact_id = $alias.contact_id", "LEFT OUTER");
 
     // Search by the contact name
-    if ($condition['column'] == $field_term_id or
-        $condition['column'] == $field_term_id . ',' . $name_term) {
+    if ($order['column'] == $field_term_id or
+        $order['column'] == $field_term_id . ',' . $name_term) {
       $query->orderBy("$calias.name", $order['direction']);
     }
     // Search on the contact description.
-    if ($condition['column'] == $field_term_id . ',' . $description_term) {
-      $query->condition("$calias.description", $condition['value'], $operator);
+    if ($order['column'] == $field_term_id . ',' . $description_term) {
+      $query->orderBy("$calias.description", $order['direction']);
     }
     // Search on the contact type.
-    if ($condition['column'] == $field_term_id . ',' . $type_term) {
+    if ($order['column'] == $field_term_id . ',' . $type_term) {
       $talias = $contact_linker . '_contact_type';
-      $this->queryJoinOnce($query, 'cvterm', $talias, "$calias_contact.type_id = $talias.cvterm_id");
-      $query->condition("$talias.name", $condition['value'], $operator);
+      $this->queryJoinOnce($query, 'cvterm', $talias, "$calias.type_id = $talias.cvterm_id", "LEFT OUTER");
+      $query->orderBy("$talias.name", $order['direction']);
     }
   }
 }

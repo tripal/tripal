@@ -555,6 +555,12 @@ function tripal_chado_field_storage_query($query) {
   // Make sure we only get records of the correct entity type
   $cquery->condition('TE.bundle', $query->entityConditions['bundle']['value']);
 
+  // Iterate through all the property conditions. These will be filters
+  // on the tripal_entity table.
+  foreach ($query->propertyConditions as $index => $condition) {
+    $cquery->condition('TE.' . $condition['column'], $condition['value']);
+  }
+
   // Now set any ordering.
   foreach ($query->order as $index => $sort) {
     // Add in property ordering.
@@ -622,8 +628,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-  //dpm($cquery->__toString());
-  //dpm($cquery->getArguments());
+  dpm($cquery->__toString());
+  dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 

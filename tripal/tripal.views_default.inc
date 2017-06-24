@@ -145,6 +145,12 @@ function tripal_bundle_default_views(&$views) {
         $handler->display->display_options['fields']['schema__description']['alter']['trim'] = TRUE;
       }
 
+      // Add a filter to show published content only.
+      $handler->display->display_options['filters']['status']['id'] = 'status';
+      $handler->display->display_options['filters']['status']['table'] = $base_table;
+      $handler->display->display_options['filters']['status']['field'] = 'status';
+      $handler->display->display_options['filters']['status']['value'] = '1';
+
       // Filter criterion.
       if (in_array($field_name, array('data__identifier', 'schema__name',
           'data__accession', 'rdfs__label', 'taxrank__genus',

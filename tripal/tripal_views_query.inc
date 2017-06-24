@@ -124,6 +124,7 @@ class tripal_views_query extends views_plugin_query {
     );
 
     if ($value) {
+
       // Handle the bundle properties separate from real fields.
       if ($field_name == 'entity_id' or $field_name == 'status') {
         $this->query->propertyCondition($field_name, $value, $operator);
