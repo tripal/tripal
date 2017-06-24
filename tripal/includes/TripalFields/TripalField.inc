@@ -224,19 +224,28 @@ class TripalField {
     $field_details = $elements[$field_term];
 
     $searchable_keys = array();
+    $sortable_keys = array();
+
     if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
       $searchable_keys[$field_term_name] = $field_term;
+    }
+
+    if (array_key_exists('sortable', $field_details) and $field_details['sortable']) {
+      $sortable_keys[$field_term_name] = $field_term;
     }
 
     // Now add any entries for child elements.
     if (array_key_exists('elements', $field_details)) {
       $elements = $field_details['elements'];
       foreach ($elements as $element_name => $element_details) {
-        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+        $this->_addWebServiceElement($searchable_keys, $sortable_keys, $field_term_name, $field_term, $element_name, $element_details);
       }
     }
 
-    return $searchable_keys;
+    return array(
+      'searchable' => $searchable_keys,
+      'sortable' => $sortable_keys
+    );
   }
 
   /**
@@ -246,7 +255,9 @@ class TripalField {
    * @param $element_name
    * @param $element_details
    */
-  protected function _addWebServiceElement(&$searchable_keys, $parent_term_name, $parent_term, $element_name, $element_details) {
+  protected function _addWebServiceElement(&$searchable_keys, &$sortable_keys,
+      $parent_term_name, $parent_term, $element_name, $element_details) {
+
     // Skip the 'entity' element, as we'll never make this searchable or
     // viewable. It's meant for linking.
     if ($element_name == 'entity') {
@@ -262,12 +273,15 @@ class TripalField {
     if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
       $searchable_keys[$field_term_name] =  $field_term;
     }
+    if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
+      $sortable_keys[$field_term_name] =  $field_term;
+    }
 
     // Now add any entries for child elements.
     if (array_key_exists('elements', $element_details)) {
       $elements = $element_details['elements'];
       foreach ($elements as $element_name => $element_details) {
-        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+        $this->_addWebServiceElement($searchable_keys, $sortable_keys, $field_term_name, $field_term, $element_name, $element_details);
       }
     }
   }

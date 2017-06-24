@@ -432,22 +432,16 @@ class TripalEntityService_v0_1 extends TripalWebService {
   }
 
   /**
-   * Creates a collection of resources for a given type.
+   * A helper function to make it easy to map between keys and their fields.
+   *
+   * @bundle
+   *   The bundle object.  Fields attached to this bundle will be included
+   *   in the mapping array.
+   * @return
+   *   An associative arrray that maps web servcies keys to fields and
+   *   fields to web services keys (reciprocol).
    */
-  private function doContentTypeList($ctype) {
-    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
-    $label = tripal_get_term_details('rdfs', 'label');
-    $this->resource = new TripalWebServiceCollection($service_path);
-    $this->resource->addContextItem('label', $label['url']);
-
-    // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
-    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
-    $term = reset($term);
-
-    // Set the label for this collection.
-    $this->resource->addProperty('label', $bundle->label . " collection");
-
+  private function getFieldMapping($bundle) {
     // Iterate through the fields and create a $field_mapping array that makes
     // it easier to determine which filter criteria belongs to which field. The
     // key is the label for the field and the value is the field name. This way
@@ -460,8 +454,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
           if ($bundle_name == $bundle->name) {
             $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
             if (array_key_exists('term_accession', $instance['settings'])){
-              $vocabulary = $instance['settings']['term_vocabulary'];
-              $accession = $instance['settings']['term_accession'];
+                $vocabulary = $instance['settings']['term_vocabulary'];
+                $accession = $instance['settings']['term_accession'];
               $fterm = tripal_get_term_details($vocabulary, $accession);
               $key = $fterm['name'];
               $key = strtolower(preg_replace('/ /', '_', $key));
@@ -472,45 +466,171 @@ class TripalEntityService_v0_1 extends TripalWebService {
         }
       }
     }
+    return $field_mapping;
+  }
 
-    // Convert the filters to their field names
-    $new_params = array();
-    $order = array();
-    $order_dir = array();
-    $URL_add = array();
+  /**
+   * Gets any order by statements provided by the user.
+   *
+   * @field_mapping
+   *   An array that maps WS keys to field names. As provided by the
+   *   getFieldMapping() function.
+   * @return
+   *   An array of fields for ordering.
+   *
+   * @throws Exception
+   */
+  private function getOrderBy($field_mapping,  $bundle) {
+    $order_by = array();
+
+    // Handle order separately.
+    if (array_key_exists('order', $this->params)) {
+      $order_params = $this->params['order'];
+      $dir = 'ASC';
+
+      // If the user provided more than one order statement then those are
+      // separated by a semicolong.
+      $items = explode(';', $order_params);
+      foreach ($items as $key) {
+
+        // The user can provide a direction by separating the field key and the
+        // direction with a '|' character.
+        $matches = array();
+        if (preg_match('/^(.*)\|(.*)$/', $key, $matches)) {
+          $key = $matches[1];
+          if ($matches[2] == 'ASC' or $matches[2] == 'DESC') {
+            $dir = $matches[2];
+          }
+          else {
+            throw new Exception('Please provide "ASC" or "DESC" for the ordering direction');
+          }
+        }
+
+        // Break apart any subkeys and pull the first one as this is the parent
+        // field.
+        $subkeys = explode(',', $key);
+        if (count($subkeys) > 0) {
+          $key = $subkeys[0];
+        }
+
+        if (array_key_exists($key, $field_mapping)) {
+          $key_field_name = $field_mapping[$key];
+          $key_field = field_info_field($key_field_name);
+          $key_instance = field_info_instance('TripalEntity', $key_field_name, $bundle->name);
+
+          // Complex fields provied by the TripalField class may have sub
+          // elements that support filtering.  We need to see if the user
+          // wants to filter on those.
+          $field_class = $key_field['type'];
+          if (tripal_load_include_field_class($field_class)) {
+            // To find out which fields are sortable we'll call the
+            // webServicesData() function.
+            $key_field = new $field_class($key_field, $key_instance);
+            $ws_data = $key_field->webServicesData();
+            $sortable_keys = $ws_data['sortable'];
+            $criteria = implode('.', $subkeys);
+            if (array_key_exists($criteria, $sortable_keys)) {
+              $order_by[$key_field_name][] = array(
+                'column' => $sortable_keys[$criteria],
+                'dir' => $dir,
+              );
+            }
+            else {
+              throw new Exception("The term, '$criteria', is not available for sorting.");
+            }
+          }
+          // If this field is not a TripalField then it should just have
+          // a simple value and we can query for that.
+          else {
+            $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
+
+            $order_by[$key_field_name][] = array(
+              'column' => $key_field_id,
+              'dir' => $dir,
+            );
+          }
+
+        }
+        else {
+          throw new Exception("The term, '$key', is not available for sorting.");
+        }
+      }
+    }
+
+    // If there is no ordering that is set then set a default order.
+    if (count(array_keys($order_by)) == 0) {
+      $key_field_names = array();
+      if (in_array('data__identifier', $field_mapping)) {
+        $key_field_names['data__identifier'][] = 'identifier';
+      }
+      else if (in_array('schema__name', $field_mapping)) {
+        $key_field_names['schema__name'][] = 'name';
+      }
+      else if (in_array('rdfs_label', $field_mapping)) {
+        $key_field_names['rdfs_label'][] = 'label';
+      }
+      else if (in_array('taxrank__genus', $field_mapping)) {
+        $key_field_names['taxrank__genus'][] = 'genus';
+        $key_field_names['taxrank__species'][] = 'species';
+      }
+      foreach ($key_field_names as $key_field_name => $criteria) {
+        $key_field = field_info_field($key_field_name);
+        $key_instance = field_info_instance('TripalEntity', $key_field_name, $bundle->name);
+        $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
+        $field_class = $key_field['type'];
+        if (tripal_load_include_field_class($field_class)) {
+          // To find out which fields are sortable we'll call the
+          // webServicesData() function.
+          $key_field = new $field_class($key_field, $key_instance);
+          $ws_data = $key_field->webServicesData();
+          $sortable_keys = $ws_data['sortable'];
+          if (array_key_exists($criteria, $sortable_keys)) {
+            $order_by[$key_field_name][] = array(
+              'column' => $sortable_keys[$criteria],
+              'dir' => $dir,
+            );
+          }
+        }
+       // If this field is not a TripalField then it should just have
+          // a simple value and we can query for that.
+        else {
+          $order_by[$key_field_name][] = array(
+            'column' => $key_field_id,
+            'dir' => 'ASC',
+          );
+        }
+      }
+    }
+
+    return $order_by;
+  }
+
+  /**
+   * Gets any filter by statements provided by the user.
+   *
+   * @field_mapping
+   *   An array that maps WS keys to field names. As provided by the
+   *   getFieldMapping() function.
+   *
+   * @return
+   *   An array of fields for filtering.
+   *
+   * @throws Exception
+   */
+  private function getFilters($field_mapping, $bundle) {
+    $filters = array();
+
+    // Iterate through the paramter list provided by user.
     foreach ($this->params as $param => $value) {
-      $URL_add[] = "$param=$value";
 
-      // Ignore non filter parameters
+      // Ignore non filter parameters.
       if ($param == 'page' or $param == 'limit') {
         continue;
       }
 
-      // Handle order separately
+      // Ignore the order parameter as that is handled by the getOrderBy()
+      // function
       if ($param == 'order') {
-        $temp = explode(',', $value);
-        foreach ($temp as $key) {
-          $matches = array();
-          $dir = 'ASC';
-          // The user can provide a direction by separating the field key and the
-          // direction with a '|' character.
-          if (preg_match('/^(.*)\|(.*)$/', $key, $matches)) {
-            $key = $matches[1];
-            if ($matches[2] == 'ASC' or $matches[2] == 'DESC') {
-              $dir = $matches[2];
-            }
-            else {
-              // TODO: handle error of providing an incorrect direction.
-            }
-          }
-          if (array_key_exists($key, $field_mapping)) {
-            $order[$field_mapping[$key]] = $key;
-            $order_dir[] = $dir;
-          }
-          else {
-            // TODO: handle error of providing a non existing field name.
-          }
-        }
         continue;
       }
 
@@ -539,14 +659,16 @@ class TripalEntityService_v0_1 extends TripalWebService {
         // Complex fields provied by the TripalField class may have sub
         // elements that support filtering.  We need to see if the user
         // wants to filter on those.
-        if (tripal_load_include_field_class($key_field_name)) {
+        $field_class = $key_field['type'];
+        if (tripal_load_include_field_class($field_class)) {
           // To find out which fields are searchable we'll call the wsData()
           // function.
-          $key_field = new $key_field_name($key_field, $key_instance);
-          $searchable_keys = $key_field->webServicesData();
+          $key_field = new $field_class($key_field, $key_instance);
+          $ws_data = $key_field->webServicesData();
+          $searchable_keys = $ws_data['searchable'];
           $criteria = implode('.', $subkeys);
           if (array_key_exists($criteria, $searchable_keys)) {
-            $new_params[$key_field_name][] = array(
+            $filters[$key_field_name][] = array(
               'value' => $value,
               'op' => $op,
               'column' => $searchable_keys[$criteria]
@@ -561,7 +683,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
         else {
           $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
 
-          $new_params[$key_field_name][] = array(
+          $filters[$key_field_name][] = array(
             'value' => $value,
             'op' => $op,
             'column' => $key_field_id,
@@ -573,16 +695,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
     }
 
-    // Get the list of entities for this bundle and only those that are published.
-    $query = new TripalFieldQuery();
-    $query->entityCondition('entity_type', 'TripalEntity');
-    $query->entityCondition('bundle', $bundle->name);
-    $query->propertyCondition('status', 1);
-    foreach($new_params as $field_name => $param_list) {
-      foreach ($param_list as $param_index => $details) {
-        $value = $details['value'];
-        $column_name = $details['column'];
-        switch ($details['op']) {
+    // Now convert the operation for each filter to one that is compatible
+    // with TripalFieldQuery.
+    foreach ($filters as $key_field_name => $key_filters) {
+      foreach ($key_filters as $i => $filter) {
+        $op = '=';
+        switch ($filters[$key_field_name][$i]['op']) {
           case 'eq':
             $op = '=';
             break;
@@ -610,9 +728,59 @@ class TripalEntityService_v0_1 extends TripalWebService {
           default:
             $op = '=';
         }
-        // We pass in the $column_name as an identifier for any sub fields
-        // that are present for the fields.
-        $query->fieldCondition($field_name, $column_name, $value, $op);
+        $filters[$key_field_name][$i]['op'] = $op;
+      }
+    }
+    return $filters;
+  }
+
+  /**
+   * Creates a collection of resources for a given type.
+   */
+  private function doContentTypeList($ctype) {
+    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $label = tripal_get_term_details('rdfs', 'label');
+    $this->resource = new TripalWebServiceCollection($service_path);
+    $this->resource->addContextItem('label', $label['url']);
+
+    // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
+    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+    $term = reset($term);
+
+    // Set the label for this collection.
+    $this->resource->addProperty('label', $bundle->label . " collection");
+
+    // For quick lookup, get the mapping of WS keys to their appropriate fields.
+    $field_mapping = $this->getFieldMapping($bundle);
+
+    // Get arrays for filters and order by statements.
+    $filters = $this->getFilters($field_mapping, $bundle);
+    $order_by = $this->getOrderBy($field_mapping, $bundle);
+
+    // Initialize the query to search for records for out bundle type
+    // that are published.
+    $query = new TripalFieldQuery();
+    $query->entityCondition('entity_type', 'TripalEntity');
+    $query->entityCondition('bundle', $bundle->name);
+    $query->propertyCondition('status', 1);
+
+    // Now iterate through the filters and add those.
+    foreach ($filters as $key_field_name => $key_filters) {
+      foreach ($key_filters as $i => $filter) {
+         $column_name = $filter['column'];
+         $value = $filter['value'];
+         $op = $filter['op'];
+        $query->fieldCondition($key_field_name, $column_name, $value, $op);
+      }
+    }
+
+    // Now set the order by.
+    foreach ($order_by as $key_field_name => $key_order) {
+      foreach ($key_order as $i => $order) {
+        $column_name = $order['column'];
+        $dir = $order['dir'];
+        $query->fieldOrderBy($key_field_name, $column_name, $dir);
       }
     }
 
@@ -631,29 +799,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $total_pages = ceil($num_records / $limit);
     $page = array_key_exists('page', $this->params) ? $this->params['page'] : 1;
-
-    // Set the query order
-    $order_keys = array_keys($order);
-    for($i = 0; $i < count($order_keys); $i++) {
-      $query->fieldOrderBy($order_keys[$i], $order[$order_keys[$i]], $order_dir[$i]);
-    }
-
-    // If there is no ordering that is set then set a default.
-    if (count($order_keys) == 0) {
-      if (in_array('data__identifier', $field_mapping)) {
-        $query->fieldOrderBy('data__identifier', 'data__identifier', 'ASC');
-      }
-      else if (in_array('schema__name', $field_mapping)) {
-        $query->fieldOrderBy('schema__name', 'schema__name', 'ASC');
-      }
-      else if (in_array('rdfs_label', $field_mapping)) {
-        $query->fieldOrderBy('rdfs_label', 'rdfs_label', 'ASC');
-      }
-      else if (in_array('taxrank__genus', $field_mapping)) {
-        $query->fieldOrderBy('taxrank__genus', 'taxrank__genus', 'ASC');
-        $query->fieldOrderBy('taxrank__species', 'taxrank__species', 'ASC');
-      }
-    }
 
     // Set the query range
     $start = ($page - 1) * $limit;
