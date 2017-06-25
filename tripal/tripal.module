@@ -640,6 +640,36 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
     tripal_field_instance_settings_form_alter($form, $form_state);
   }
+
+  // Remove fields that have no form. It's just a bit too confusing to have
+  // widgets appear in the form but without and form elements inside them.
+  if ($form_id == 'tripal_entity_form') {
+    $children = element_children($form);
+    foreach ($children as $child) {
+      // count the number of form elements
+      if (array_key_exists('und', $form[$child])) {
+        $total_widgets = 0;
+        foreach ($form[$child]['und'] as $delta => $element) {
+          if (is_numeric($delta)) {
+            $total_widgets += count(element_children($element));
+            // Ignore the weight column
+            if (array_key_exists('_weight', $element)) {
+              $total_widgets--;
+            }
+            // Ignore a hidden value column
+            if (array_key_exists('value', $element) and $element['value']['#type'] == 'value') {
+              $total_widgets--;
+            }
+          }
+        }
+        // If we have no widgets then here's not a form for this field so just
+        // remove it.
+        if ($total_widgets == 0) {
+          //unset($form[$child]);
+        }
+      }
+    }
+  }
 }
 
 function tripal_check_new_fields($bundle_name) {

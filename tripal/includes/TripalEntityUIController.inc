@@ -648,7 +648,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    $langcode = 'und';
    foreach ($instances as $field_name => $instance) {
      $entity_type = $instance['entity_type'];
-     if($entity_type == 'TripalEntity') {
+     if($entity_type == 'TripalEntity' and array_key_exists($field_name, $form)) {
        foreach ($form[$field_name][$langcode] as $delta => $field_form) {
          if (!preg_match('/^\d+$/', $delta)) {
            continue;
