@@ -61,8 +61,6 @@ class data__accession extends ChadoField {
       'chado-' . $field_table . '__' . $field_column => '',
       'db_id' => '',
       'accession' => '',
-      'version' => '',
-      'description' => '',
     );
 
     // Get the primary dbxref record (if it's not NULL).  Because we have a
@@ -73,10 +71,8 @@ class data__accession extends ChadoField {
       $entity->{$field_name}['und'][0] = array(
         'value' => $dbxref->accession,
         'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
-        'db_id'       => $dbxref->db_id->db_id,
-        'accession'   => $dbxref->accession,
-        'version'     => $dbxref->version,
-        'description' => $dbxref->description,
+        'db_id' => $dbxref->db_id->db_id,
+        'accession' => $dbxref->accession,
       );
     }
   }
@@ -85,18 +81,36 @@ class data__accession extends ChadoField {
    * @see ChadoField::query()
    */
   public function query($query, $condition) {
-    $chado_table = $this->instance['settings']['chado_table'];
-    $base_table = $this->instance['settings']['base_table'];
-    $bschema = chado_get_schema($base_table);
-    $bpkey = $bschema['primary key'][0];
-    $alias = 'dbx_linker';
+    $alias = $this->field['field_name'];
     $operator = $condition['operator'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+    $field_term_id = $this->getFieldTermID();
+    $accession_term = tripal_get_chado_semweb_term($field_table, $field_column);
 
     // We don't offer any sub elements so the value coming in should
     // always be the field_name.
-    if ($condition['column'] == 'data__accession') {
+    if ($condition['column'] == $accession_term) {
       $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id");
       $query->condition("DBX.accession", $condition['value'], $operator);
+    }
+  }
+
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+    $field_term_id = $this->getFieldTermID();
+    $accession_term = tripal_get_chado_semweb_term($field_table, $field_column);
+
+    // We don't offer any sub elements so the value coming in should
+    // always be the field_name.
+    if ($order['column'] == $accession_term) {
+      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = base.dbxref_id", "LEFT OUTER");
+      $query->orderBy("DBX.accession", $order['direction']);
     }
   }
 
@@ -113,11 +127,8 @@ class data__accession extends ChadoField {
 
     // Get the field values.
     foreach ($items as $delta => $values) {
-      $fk_val = $values['chado-' . $field_table . '__' . $field_column];
       $db_id = $values['db_id'];
       $accession = $values['accession'];
-      $version = $values['version'];
-      $description = $values['description'];
 
       // Make sure that if a database ID is provided that an accession is also
       // provided.  Here we use the form_set_error function rather than the
@@ -138,7 +149,7 @@ class data__accession extends ChadoField {
           'error' => 'chado_base__dbxref',
         );
       }
-      if (!$db_id and !$accession and ($version or $description)) {
+      if (!$db_id and !$accession) {
         $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided for the primary cross reference."),
           'error' => 'chado_base__dbxref',

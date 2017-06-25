@@ -7,13 +7,6 @@ class data__sequence_length_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_length');
 
-  /**
-   *
-   * @see TripalFieldFormatter::settingsForm()
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-
-  }
 
   /**
    *

@@ -18,29 +18,23 @@ class data__accession_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Get the field defaults.
-    $fk_val = '';
+    $dbxref_id = '';
     $db_id = '';
     $accession = '';
-    $version = '';
-    $description = '';
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
-      $fk_val = $items[$delta]['chado-' . $field_table . '__' . $field_column];
+      $dbxref_id = $items[$delta]['chado-' . $field_table . '__' . $field_column];
       $db_id = $items[$delta]['db_id'];
       $accession = $items[$delta]['accession'];
-      $version = $items[$delta]['version'];
-      $description = $items[$delta]['description'];
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state)) {
-      $fk_val = isset($form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] : '';
+      $dbxref_id = isset($form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] : '';
       $db_id = isset($form_state['values'][$field_name]['und'][$delta]['db_id']) ? $form_state['values'][$field_name]['und'][$delta]['db_id'] : '';
       $accession = isset($form_state['values'][$field_name]['und'][$delta]['accession']) ? $form_state['values'][$field_name]['und'][$delta]['accession'] : '';
-      $version = isset($form_state['values'][$field_name]['und'][$delta]['version']) ? $form_state['values'][$field_name]['und'][$delta]['version'] : '';
-      $description = isset($form_state['values'][$field_name]['und'][$delta]['description']) ? $form_state['values'][$field_name]['und'][$delta]['description'] : '';
     }
 
     $schema = chado_get_schema('dbxref');
@@ -52,12 +46,12 @@ class data__accession_widget extends ChadoFieldWidget {
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
+      '#value' => $dbxref_id,
     );
 
     $widget['chado-' . $field_table . '__' . $field_column] = array(
       '#type' => 'value',
-      '#default_value' => $fk_val,
+      '#default_value' => $dbxref_id,
     );
 
     $widget['db_id'] = array(
@@ -82,32 +76,47 @@ class data__accession_widget extends ChadoFieldWidget {
       '#size' => 15,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
       '#ajax' => array(
-        'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
+        'callback' => "data__accession_widget_form_ajax_callback",
         'wrapper' => "$field_name-dbxref--db-id",
         'effect' => 'fade',
         'method' => 'replace'
       ),
       '#disabled' => $db_id ? FALSE : TRUE,
     );
-    $widget['version'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Version'),
-      '#default_value' => $version,
-      '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
-      '#size' => 5,
-      '#disabled' => $db_id ? FALSE : TRUE,
-    );
-    $widget['description'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Description'),
-      '#default_value' => $description,
-      '#size' => 20,
-      '#disabled' => $db_id ? FALSE : TRUE,
-    );
-    $widget['links'] = array(
-      '#type' => 'item',
-      '#markup' => l('Add a new database', 'admin/tripal/loaders/chado_db/add', array('attributes' => array('target' => '_blank')))
-    );
+  }
+
+  /**
+   * @see TripalFieldWidget::submit()
+   */
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+    $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
+    $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
+    $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
+
+    // If user did not select a database, we want to remove dbxref_id from the
+    // field. We use '__NULL__' because this field is part of the base table
+    // and this tells the Chado backend to insert a null rather than an empty
+    // string.
+    if (!$db_id) {
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = '__NULL__';
+    }
+    // If the dbxref_id does not match the db_id + accession then the user
+    // has selected a new dbxref record and we need to update the hidden
+    // value accordingly.
+    if ($db_id and $accession) {
+      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
+      }
+    }
   }
 
   /**
@@ -121,26 +130,21 @@ class data__accession_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    $fk_val = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $field_column] : '';
-    $db_id = isset($form_state['values'][$field_name][$langcode][$delta]['db_id']) ? $form_state['values'][$field_name][$langcode][$delta]['db_id'] : '';
-    $accession = isset($form_state['values'][$field_name][$langcode][$delta]['accession']) ? $form_state['values'][$field_name][$langcode][$delta]['accession'] : '';
-    if (!$accession) {
-      $accession = $form_state['values'][$field_name][$langcode][$delta]['value'];
-    }
-    $version = isset($form_state['values'][$field_name][$langcode][$delta]['version']) ? $form_state['values'][$field_name][$langcode][$delta]['version'] : '';
+    $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
+    $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
+    $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
 
-    // If user did not select a database, we want to remove dbxref_id from the
-    // field.
-    if (!$db_id) {
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] = '__NULL__';
-    }
-    // If the dbxref_id does not match the db_id + accession then the user
-    // has selected a new dbxref record and we need to update the hidden
-    // value accordingly.
+    // If the accession doesn't exist then add it.
     if ($db_id and $accession) {
       $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-      if ($dbxref and $dbxref->dbxref_id != $fk_val) {
-        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
+      if (!$dbxref) {
+        $values = array(
+          'db_id' => $db_id,
+          'accession' => $accession,
+        );
+        $dbxref = tripal_insert_dbxref($values);
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
       }
     }
   }
@@ -157,13 +161,6 @@ class data__accession_widget extends ChadoFieldWidget {
         <div class=\"primary-dbxref-widget-item\">" .
           drupal_render($element['accession']) . "
         </div>
-        <div class=\"primary-dbxref-widget-item\">" .
-          drupal_render($element['version']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-item\">" .
-          drupal_render($element['description']) . "
-        </div>
-        <div class=\"primary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
       </div>
     ";
 
@@ -172,7 +169,6 @@ class data__accession_widget extends ChadoFieldWidget {
       '#value' => '',
       '#description' => $element['#description'],
       '#children' => $layout,
-      //    '#attributes' => array('class' => $classes),
     );
 
     return theme('fieldset', array('element' => $fieldset));
@@ -186,23 +182,17 @@ function data__accession_widget_form_ajax_callback($form, $form_state) {
 
   $instance = $form['#instance'];
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $field = field_info_field($field_name);
-  $field_type = $field['type'];
-  $field_table = $instance['settings']['chado_table'];
-  $field_column = $instance['settings']['chado_column'];
-  $field_prefix = 'chado-' . $field_table . '__' . $field_column;
+  $dbxref_id = $form_state['input'][$field_name]['und'][0]['chado-' . $field_table . '__dbxref_id'];
+  $db_id = $form_state['input'][$field_name]['und'][0]['db_id'];
+  $accession = $form_state['input'][$field_name]['und'][0]['accession'];
 
-  //   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
-  //   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
+  // If we don't have a match then this must be new accession. Because
+  // this is a database defined access we will automatically add the
+  // accession.
   if ($db_id and $accession) {
-    $values = array(
-      'db_id' => $db_id,
-      'accession' => $accession,
-    );
-    $options = array('is_duplicate' => TRUE);
-    $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
-    if (!$has_duplicate) {
-      drupal_set_message('The selected cross reference is new and will be added for future auto completions.', 'warning');
+    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+    if (!$dbxref) {
+      drupal_set_message('The accession provided does not exist in the database and will be added.', 'warning');
     }
   }
 

@@ -43,6 +43,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
+//dpm($field_vals);
 
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
@@ -627,8 +628,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-//    dpm($cquery->__toString());
-//    dpm($cquery->getArguments());
+    dpm($cquery->__toString());
+    dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 

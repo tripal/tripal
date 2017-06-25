@@ -9,14 +9,6 @@ class taxrank__infraspecific_taxon_formatter extends ChadoFieldFormatter {
 
   /**
    *
-   * @see TripalFieldFormatter::settingsForm()
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-
-  }
-
-  /**
-   *
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {

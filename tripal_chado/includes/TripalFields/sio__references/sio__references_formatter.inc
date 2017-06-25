@@ -7,15 +7,6 @@ class sio__references_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sio__references');
 
-
-  /**
-   *
-   * @see TripalFieldFormatter::settingsForm()
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-
-  }
-
   /**
    *
    * @see TripalFieldFormatter::view()

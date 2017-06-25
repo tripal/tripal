@@ -84,6 +84,12 @@ class sbo__relationship extends ChadoField {
         'searchable' => FALSE,
         'type' => 'string',
         'elements' => array(
+          'SIO:000493' => array(
+            'searchable' => FALSE,
+            'label' => 'Relationship Clause',
+            'help' => 'An English phrase describing the relationships.',
+            'sortable' => FALSE,
+          ),
           'local:relationship_subject' => array(
             'searchable' => FALSE,
             'name' => 'relationship_subject',
@@ -92,7 +98,6 @@ class sbo__relationship extends ChadoField {
             'elements' => array(
               'rdfs:type' => array(
                 'searchable' => TRUE,
-                'name' => 'subject_type',
                 'label' => 'Relationship Subject Type',
                 'help' => 'The subject\'s data type in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -100,7 +105,6 @@ class sbo__relationship extends ChadoField {
               ),
               'schema:name' => array(
                 'searchable' => TRUE,
-                'name' => 'subject_name',
                 'label' => 'Relationship Subject Name',
                 'help' => 'The subject\'s name in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -269,20 +273,6 @@ class sbo__relationship extends ChadoField {
         'entity' => 'TripalEntity:' . $entity->id,
       )
     );
-
-    // Get the primary key for the subject and object.
-//     $subject_id = $relationship->$subject_id_key->$subject_pkey;
-//     $sentity_id = chado_get_record_entity_by_table($subject_fkey_table, $subject_id);
-//     if ($sentity_id) {
-//       $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $sentity_id;
-//     }
-
-//     // See if an entity exists for the object.
-//     $object_id = $relationship->$object_id_key->$object_pkey;
-//     $sentity_id = chado_get_record_entity_by_table($object_fkey_table, $object_id);
-//     if ($sentity_id) {
-//       $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $sentity_id;
-//     }
 
     // If the subject or object have a unqiuename then add that in for refernce.
     if (property_exists($relationship->$subject_id_key, 'uniquename')) {

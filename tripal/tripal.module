@@ -665,7 +665,7 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
         // If we have no widgets then here's not a form for this field so just
         // remove it.
         if ($total_widgets == 0) {
-          //unset($form[$child]);
+          unset($form[$child]);
         }
       }
     }
