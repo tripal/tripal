@@ -66,11 +66,11 @@ class taxrank__infraspecific_taxon extends ChadoField {
 
     return array(
       $field_term => array(
-        'sortable' => TRUE,
+        'sortable' => FALSE,
         'searchable' => TRUE,
         'elements' => array(
           $label_term => array(
-            'sortable' => TRUE,
+            'sortable' => FALSE,
             'searchable' => TRUE,
             'label' => 'Infraspecific Full Name',
             'help' => 'The full infraspecific name including the rank and name.',
@@ -120,7 +120,20 @@ class taxrank__infraspecific_taxon extends ChadoField {
    * @see ChadoField::queryOrder()
    */
   public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
 
+    $field_term_id = $this->getFieldTermID();
+    $label_term = $field_term_id . ',' . 'rdfs:label';
+    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+
+    if ($order['column'] == $infraspecific_name_term) {
+      $query->orderBy('base.infraspecific_name', $order['direction']);
+    }
+    if ($order['column'] == $infraspecific_type_term) {
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id", "LEFT OUTER");
+      $query->orderBy($alias . '_cvterm.name', $order['direction']);
+    }
   }
 
   /**

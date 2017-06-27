@@ -164,8 +164,19 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
  * An Ajax callback for the dbxref widget.
  */
 function sbo__database_cross_reference_widget_form_ajax_callback($form, $form_state) {
+  // Get the triggering element
+  $form_element_name = $form_state['triggering_element']['#name'];
+  preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
+  $field = $matches[1];
+  $lang = $matches[2];
+  $delta = $matches[3];
 
-  $field_name = $form_state['triggering_element']['#parents'][0];
-
-  return $form[$field_name]['und'][$delta];
+  // Return the widget that triggered the AJAX call
+  if (isset($form[$field][$lang][$delta])) {
+    return $form[$field][$lang][$delta];
+  }
+  // Alternatively, return the default value widget for the widget setting form
+  else {
+    return $form['instance']['default_value_widget'][$field];
+  }
 }
