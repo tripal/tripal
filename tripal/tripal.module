@@ -660,6 +660,12 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
             if (array_key_exists('value', $element) and $element['value']['#type'] == 'value') {
               $total_widgets--;
             }
+            // Some form elements don't have a 'value' and they don't have any
+            // widgets (i.e image field and description field. We don't
+            // want to loose those, so add one to the widget count.
+            if (!array_key_exists('value', $element)) {
+              $total_widgets++;
+            }
           }
         }
         // If we have no widgets then here's not a form for this field so just
