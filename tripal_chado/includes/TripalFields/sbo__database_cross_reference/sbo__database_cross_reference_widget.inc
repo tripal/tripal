@@ -44,7 +44,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($delta, $form_state['values'])) {
+        array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $fkey_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey];
       $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];

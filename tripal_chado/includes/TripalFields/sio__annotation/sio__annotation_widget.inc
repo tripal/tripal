@@ -69,27 +69,22 @@ class sio__annotation_widget extends ChadoFieldWidget {
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
-    if ((array_key_exists('values', $form_state) and array_key_exists($field_name, $form_state['values'])) or
-        (array_key_exists('input', $form_state) and array_key_exists($field_name, $form_state['input']))) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
 
-      $vtype = 'input';
-      if (array_key_exists('values', $form_state)) {
-        $vtype = 'values';
-      }
-
-      $record_id = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
-      $fk_value = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn];
-      $cvterm_id = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__cvterm_id'];
+      $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
+      $fk_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn];
+      $cvterm_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__cvterm_id'];
 
       if (array_key_exists('pub_id', $schema['fields'])) {
-        $pub_name = $form_state[$vtype][$field_name]['und'][$delta]['pub'];
-        $pub_id = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'];
+        $pub_name = $form_state['values'][$field_name]['und'][$delta]['pub'];
+        $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'];
       }
       if (array_key_exists('is_not', $schema['fields'])) {
-        $is_not = $form_state[$vtype][$field_name]['und'][$delta]['chado-' . $field_table . '__is_not'];
+        $is_not = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__is_not'];
       }
-      $cvterm_name = $form_state[$vtype][$field_name]['und'][$delta]['cvterm_name'];
-      $cv_id = $form_state[$vtype][$field_name]['und'][$delta]['cv_id'];
+      $cvterm_name = $form_state['values'][$field_name]['und'][$delta]['cvterm_name'];
+      $cv_id = $form_state['values'][$field_name]['und'][$delta]['cv_id'];
       $cvterm = chado_generate_var('cvterm', array(
         'cv_id' => $cv_id,
         'name' => $cvterm_name,
@@ -97,6 +92,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
       if (!$cvterm) {
         $cvterm_name = '';
       }
+      dpm($form_state['values']);
     }
 
     $widget['#prefix'] =  "<span id='$field_name-sio--annotation-$delta'>";
