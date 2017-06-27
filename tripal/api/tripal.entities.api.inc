@@ -1056,7 +1056,9 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
       // Note: there is a memory leak in field_get_items() so we can't use it
       // here or bulk publising will slowly erode memory.
       //$field_value = field_get_items('TripalEntity', $entity, $field_name);
-      $value = $entity->{$field_name}['und'][0]['value'];
+      if (array_key_exists(0, $entity->{$field_name}['und'])) {
+        $value = $entity->{$field_name}['und'][0]['value'];
+      }
       // TODO: deal with the value when it is not a scalar.
     }
     // The TripalBundle__bundle_id is a special token for substituting the
@@ -1076,8 +1078,13 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
       $value = $entity->id;
     }
 
-    // Perform the replacement of the token with the value.
-    $string = str_replace($token, $value, $string);
+    // We can't support tokens that have multiple elements (i.e. in an array).
+    if (is_array($value)) {
+      $string = str_replace($token, '', $string);
+    }
+    else {
+      $string = str_replace($token, $value, $string);
+    }
   }
 
   return $string;
