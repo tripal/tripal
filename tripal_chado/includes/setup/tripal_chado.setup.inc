@@ -136,7 +136,13 @@ function tripal_chado_load_ontologies() {
 /**
  * Prepares Chado for use by Tripal.
  */
-function tripal_chado_prepare_chado() {
+function tripal_chado_prepare_chado($job) {
+
+  // Retrieve the job arguement in order to report progress.
+  if (is_int($job)) {
+    $job = new TripalJob();
+    $job->load($job_id);
+  }
 
   try {
 
@@ -170,19 +176,27 @@ function tripal_chado_prepare_chado() {
       tripal_chado_fix_v1_3_custom_tables();
     }
 
+    $job->setProgress(5);
+
     // Import commonly used ontologies if needed.
     drush_print("Loading Ontologies...");
     tripal_chado_load_ontologies();
 
+    $job->setProgress(50);
+
     // Populate the semantic web associations for Chado tables/fields.
     drush_print("Making semantic connections for Chado tables/fields...");
     tripal_chado_populate_chado_semweb_table();
+
+    $job->setProgress(60);
 
     // Initialize the population of the chado_cvterm_mapping table.  This will
     // map existing data types already in Chado so that when users want to
     // add new content types it simplifies the form for them.
     drush_print("Map Chado Controlled vocabularies to Tripal Terms...");
     tripal_chado_map_cvterms();
+
+    $job->setProgress(70);
 
     drush_print("Creating common Tripal Content Types...");
 
@@ -203,6 +217,7 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    $job->setProgress(74);
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
@@ -221,6 +236,7 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    $job->setProgress(78);
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
@@ -239,6 +255,7 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    $job->setProgress(82);
 
     // Create the 'Map' entity type. This uses the local:project term.
     $error = '';
@@ -264,6 +281,7 @@ function tripal_chado_prepare_chado() {
     );
     $cvterm = tripal_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
+    $job->setProgress(86);
 
     // Import a publication so we get all of the properties before
     // creating the content type.
@@ -305,6 +323,7 @@ function tripal_chado_prepare_chado() {
     );
     $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
     chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+    $job->setProgress(90);
 
     // Create the 'Gene' entity type.
     $error = '';
@@ -324,6 +343,7 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    $job->setProgress(94);
 
     // Create the 'mRNA' entity type.
     $error = '';
@@ -343,6 +363,7 @@ function tripal_chado_prepare_chado() {
         throw new Exception($error['!message']);
       }
     }
+    $job->setProgress(98);
 
     // Add the supported loaders
     variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
@@ -351,6 +372,7 @@ function tripal_chado_prepare_chado() {
     variable_set('tripal_chado_is_prepared', TRUE);
   }
   catch (Exception $e) {
+    $job->logMessage($e);
     throw new Exception($e);
   }
 }
