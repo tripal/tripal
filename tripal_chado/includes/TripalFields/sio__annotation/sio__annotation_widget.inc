@@ -92,7 +92,6 @@ class sio__annotation_widget extends ChadoFieldWidget {
       if (!$cvterm) {
         $cvterm_name = '';
       }
-      dpm($form_state['values']);
     }
 
     $widget['#prefix'] =  "<span id='$field_name-sio--annotation-$delta'>";
