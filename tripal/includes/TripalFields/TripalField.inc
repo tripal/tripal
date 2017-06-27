@@ -343,7 +343,7 @@ class TripalField {
     if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
       $filter_handler = 'tripal_views_handler_filter_string';
       if (array_key_exists('type', $field_details) and $field_details['type'] == 'numeric') {
-        $filter_handler = 'tripal_views_handler_filter';
+        $filter_handler = 'tripal_views_handler_filter_numeric';
       }
       $data[$view_base_id][$field_name]['filter'] = array(
         'handler' => $filter_handler,
@@ -357,6 +357,7 @@ class TripalField {
         $this->_addViewsDataElement($data, $view_base_id, $field_name, $element_name, $element_details);
       }
     }
+
     return $data;
   }
 
@@ -406,7 +407,7 @@ class TripalField {
     if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
       $filter_handler = 'tripal_views_handler_filter_element_string';
       if (array_key_exists('type', $element_details) and $element_details['type'] == 'numeric') {
-        $filter_handler = 'tripal_views_handler_filter';
+        $filter_handler = 'tripal_views_handler_filter_numeric';
       }
       $data[$view_base_id][$field_name]['filter'] = array(
         'handler' => $filter_handler,

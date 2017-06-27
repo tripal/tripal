@@ -76,7 +76,6 @@ class chado_linker__contact extends ChadoField {
         'elements' => array(
           $type_term => array(
             'searchable' => TRUE,
-            'name' => 'type',
             'label' => 'Contact Type',
             'help' => 'The type of contact',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -84,7 +83,6 @@ class chado_linker__contact extends ChadoField {
           ),
           $name_term => array(
             'searchable' => TRUE,
-            'name' => 'name',
             'label' => 'Contact Name',
             'help' => 'The name of the contact.',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -92,7 +90,6 @@ class chado_linker__contact extends ChadoField {
           ),
           $description_term => array(
             'searchable' => TRUE,
-            'name' => 'description',
             'label' => 'Contact Description',
             'help' => 'A descriptoin of the contact.',
             'operations' => array('contains'),

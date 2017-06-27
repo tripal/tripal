@@ -108,6 +108,7 @@ function tripal_field_views_data($field) {
       $data += $tfield->viewsData($view_base_id);
     }
   }
+
   return $data;
 }
 

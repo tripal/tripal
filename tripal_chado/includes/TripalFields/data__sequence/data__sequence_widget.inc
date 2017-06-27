@@ -31,6 +31,11 @@ class data__sequence_widget extends ChadoFieldWidget {
     }
 
     $widget['value'] = array(
+      '#type' => 'value',
+      '#value' => $residues,
+    );
+
+    $widget['chado-' . $field_table . '__' . $field_column] = array(
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -46,14 +51,21 @@ class data__sequence_widget extends ChadoFieldWidget {
    *
    * @see TripalFieldWidget::submit()
    */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
     $field_name = $this->field['field_name'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
 
     // Remove any white spaces.
-    $residues = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
+    $residues = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column];
     if ($residues) {
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values'][$field_name][$langcode][$delta]['value'] = $residues;
+      $form_state['values'][$field_name]['und'][$delta]['value'] = $residues;
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] = $residues;
+    }
+    else {
+      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] = '';
     }
   }
 }

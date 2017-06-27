@@ -1,6 +1,6 @@
 <?php
 class tripal_views_handler_filter_string extends tripal_views_handler_filter {
-  // exposed filter options
+
   var $always_multiple = TRUE;
 
   function option_definition() {
@@ -223,14 +223,10 @@ class tripal_views_handler_filter_string extends tripal_views_handler_filter {
 
   /**
    * Add this filter to the query.
-   *
-   * Due to the nature of fapi, the value and the operator have an unintended
-   * level of indirection. You will find them in $this->operator
-   * and $this->value respectively.
    */
   function query() {
     $this->ensure_my_table();
-    $field = $this->real_field;
+    $field = "$this->table_alias.$this->real_field";
 
     $info = $this->operators();
     if (!empty($info[$this->operator]['method'])) {

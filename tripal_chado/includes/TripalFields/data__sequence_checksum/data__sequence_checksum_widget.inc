@@ -30,7 +30,7 @@ class data__sequence_checksum_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#value' => $md5checksum,
     );
-    $widget['chado-feature__md5checksum'] = array(
+    $widget['chado-' . $field_table . '__md5checksum'] = array(
       '#type' => 'value',
       '#value' => $md5checksum,
     );
@@ -40,8 +40,8 @@ class data__sequence_checksum_widget extends ChadoFieldWidget {
    *
    * @see TripalFieldWidget::submit()
    */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    $field = $this->field;
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
+  $field = $this->field;
     $settings = $field['settings'];
     $field_name = $field['field_name'];
     $field_type = $field['type'];
@@ -49,17 +49,17 @@ class data__sequence_checksum_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Get the residues so we can calculate the length.
-    $residues = isset($form_state['values']['data__sequence'][$langcode][0]['chado-feature__residues']) ? $form_state['values']['data__sequence'][$langcode][0]['chado-feature__residues'] : '';
-
-    if ($residues) {
+    if ($form_state['values']['data__sequence']['und'][0]['chado-feature__residues']){
       // Remove spaces and new lines from the residues string.
+      $residues =  $form_state['values']['data__sequence']['und'][0]['chado-feature__residues'];
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values']['data__sequence'][$langcode][0]['chado-feature__residues'] = $residues;
-      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__md5checksum'] = md5($residues);
+      $checksum = md5($residues);
+      $form_state['values'][$field_name]['und'][0]['chado-feature__md5checksum'] = $checksum;
+      $form_state['values'][$field_name]['und'][0]['value'] = $checksum;
     }
     else {
       // Otherwise, remove the md5 value
-      $form_state['values'][$field_name][$langcode][$delta]['chado-feature__md5checksum'] = '__NULL__';
+      $form_state['values'][$field_name]['und'][0]['chado-feature__md5checksum'] = '__NULL__';
     }
   }
 }

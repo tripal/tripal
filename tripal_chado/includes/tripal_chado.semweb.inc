@@ -1249,17 +1249,6 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
 
-  $term = tripal_insert_cvterm(array(
-    'id' => 'local:unknown_fmin',
-    'name' => ' minimal boundary',
-    'definition' => 'The leftmost, minimal boundary in the linear range ' .
-    'represented by the feature location. Sometimes this is called ' .
-    'start although this is confusing because it does not necessarily ' .
-    'represent the 5-prime coordinate.',
-    'cv_name' => 'local',
-  ));
-  tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
-
 
   //--------------
   // Analysis Terms

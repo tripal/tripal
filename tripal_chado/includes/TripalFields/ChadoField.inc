@@ -85,6 +85,27 @@ class ChadoField extends TripalField {
    */
   public function queryOrder($query, $order) {
 
+
+    // If we are here it is because the child class did not implement the
+    // queryOrder function.  So, we will do our best to make the query work.
+    $chado_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = 'dbx_linker';
+    $operator = $condition['operator'];
+
+    // If the chado_table and the base_table are the same then this is easy.
+    if ($chado_table == $base_table) {
+      // Get the base table column that is associated with the term
+      // passed as $condition['column'].
+      $base_field = tripal_get_chado_semweb_column($chado_table, $order['column']);
+      $query->orderBy('base.' . $base_field, $order['direction']);
+    }
+    else {
+      // If the two are not the same then we expect that the child class
+      // will implement a query() function.
+    }
   }
 
   /**

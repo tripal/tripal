@@ -43,16 +43,18 @@ class data__sequence_length_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    // Get the residues so we can calculate teh length.
-    $residues = $form_state['values']['data__sequence']['und'][0]['value'];
-    // Remove any white spaces.
-    if ($residues) {
+    // Get the residues so we can calculate the length.
+    if ($form_state['values']['data__sequence']['und'][0]['chado-feature__residues']){
+      $residues =  $form_state['values']['data__sequence']['und'][0]['chado-feature__residues'];
+      // Remove spaces and new lines from the residues string.
       $residues = preg_replace('/\s/', '', $residues);
-      $form_state['values']['data__sequence']['und'][0]['value'] = $residues;
-      $form_state['values']['data__sequence_length']['und'][0]['chado-feature__seqlen'] = strlen($residues);
+      $length = strlen($residues);
+      $form_state['values'][$field_name]['und'][0]['chado-feature__seqlen'] = $length;
+      $form_state['values'][$field_name]['und'][0]['value'] = $length;
     }
     else {
-      $form_state['values']['data__sequence_length']['und'][0]['chado-feature__seqlen'] = '__NULL__';
+      // Otherwise, remove the md5 value
+      $form_state['values'][$field_name]['und'][0]['chado-feature__seqlen'] = '__NULL__';
     }
   }
 }

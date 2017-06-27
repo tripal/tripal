@@ -3,35 +3,6 @@
 class tripal_views_query extends views_plugin_query {
 
   /**
-   * The EntityFieldQuery object used to perform the query
-   */
-  var $query;
-
-  /**
-   * The EntityFieldQuery object used to perform the count query.
-   * It will not include the order by and only fields that are used in
-   * filters.
-   */
-  var $cquery;
-
-  /**
-   * The fields that are to be included in the query.
-   */
-  var $fields;
-
-  /**
-   * The filters that are to be included in the query.
-   */
-  var $filters;
-
-  /**
-   * The sort item that are to be included in the query.
-   */
-  var $order;
-
-
-
-  /**
    * Ensure a table exists in the queue.
    *
    * This function overrides the views_plugin_query version of the function
@@ -116,14 +87,15 @@ class tripal_views_query extends views_plugin_query {
    *   here.
    */
   public function add_where($group, $field_name, $value = NULL, $operator = NULL) {
-    $this->filters[] = array(
-      'group' => $group,
-      'field_name' => $field_name,
-      'value' => $value,
-      'op' => $operator
-    );
 
     if ($value) {
+
+      $this->filters[] = array(
+        'group' => $group,
+        'field_name' => $field_name,
+        'value' => $value,
+        'op' => $operator
+      );
 
       // Handle the bundle properties separate from real fields.
       if ($field_name == 'entity_id' or $field_name == 'status') {
@@ -132,34 +104,32 @@ class tripal_views_query extends views_plugin_query {
         return;
       }
 
-      // If the field_name comes to us with a period in it then it means that
-      // we need to separate the field name from sub-element names.
-      $matches = array();
-      if (preg_match('/^(.+?)\.(.*)$/', $field_name, $matches)) {
-         $field_name = $matches[1];
-         $element_name = $matches[2];
-         $field = field_info_field($field_name);
-         $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
-         $field_class = $field['type'];
-         if (tripal_load_include_field_class($field_class)) {
+      // For Tripal create fields the name of the field is an encoded
+      // string that contains the bundle term, field name and any
+      // sub elements. We need to extract them.
+      $elements = explode('.', $field_name);
+      $bundle_term = array_shift($elements);
+      $field_name = array_shift($elements);
+      $element_name = implode(',', $elements);
 
-           $field_obj = new $field_class($field, $instance);
-           $element_name = $field_obj->getFieldTermID() . ',' . $element_name;
-           // Replace periods with commas.
-           $element_name = preg_replace('/\./', ',', $element_name);
-           $this->query->fieldCondition($field_name, $element_name, $value, $operator);
-           $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
-         }
-         else {
-           throw new Exception("Unkown element id: '$element_name'.");
-         }
+      // Get the field and instance.
+      $field = field_info_field($field_name);
+      $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+
+      // Construct the field term.
+      $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+
+      // Let's add add on the $field_term to the element_name and add the
+      // query condition.
+      if ($element_name) {
+        $element_name = $field_term . ',' . $element_name;
       }
       else {
-        $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
-        $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-        $this->query->fieldCondition($field_name, $field_term, $value, $operator);
-        $this->cquery->fieldCondition($field_name, $field_term, $value, $operator);
+        $element_name = $field_term;
       }
+
+      $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+      $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
     }
   }
 
@@ -167,12 +137,13 @@ class tripal_views_query extends views_plugin_query {
    * Overrides add_orderby().
    */
   public function add_orderby($table, $field_name = NULL, $order = 'ASC', $alias = '', $params = array()) {
-
     if ($field_name) {
-      // Make sure we don't put the orderby in more than once.
+      // If we already have an orderBy for this field then remove it so
+      // we can reset it.
       foreach ($this->order as $index => $order_details) {
         if ($order_details['field'] == $field_name) {
-          return;
+          $this->order[$index]['direction'] = $order;
+          unset($this->order[$index]);
         }
       }
       $this->order[] = array(
