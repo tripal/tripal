@@ -253,7 +253,7 @@ class TripalJob {
       $record->job_id = $this->job->job_id;
       $record->end_time = time();
       $record->error_msg = $this->job->error_msg;
-      $record->progress = $this->job->progress;
+      $record->progress = 100;
       $record->status = 'Completed';
       $record->pid = '';
 
