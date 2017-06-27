@@ -36,15 +36,28 @@ class local__source_data_widget extends ChadoFieldWidget {
     // submit).
     if (array_key_exists('values', $form_state) and
         array_key_exists($field_name, $form_state['values'])) {
-      $sourcename = $form_state['values'][$field_name][$langcode][$delta]['chado-analysis__sourcename'];
-      $sourceversion = $form_state['values'][$field_name][$langcode][$delta]['chado-analysis__sourceversion'];
-      $sourceuri = $form_state['values'][$field_name][$langcode][$delta]['chado-analysis__sourceuri'];
+      $sourcename = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourcename'];
+      $sourceversion = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceversion'];
+      $sourceuri = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri'];
     }
 
     $widget['value'] = array(
       '#type' => 'value',
       '#value' => $sourcename,
     );
+    $widget['chado-analysis__sourcename'] = array(
+      '#type' => 'value',
+      '#value' => $sourcename,
+    );
+    $widget['chado-analysis__sourceversion'] = array(
+      '#type' => 'value',
+      '#value' => $sourceversion,
+    );
+    $widget['chado-analysis__sourceuri'] = array(
+      '#type' => 'value',
+      '#value' => $sourceuri,
+    );
+
     $widget['source_data'] = array(
       '#type' => 'fieldset',
       '#title' => $this->instance['label'],
@@ -52,30 +65,29 @@ class local__source_data_widget extends ChadoFieldWidget {
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
     );
-    $widget['source_data']['chado-analysis__sourcename'] = array(
+    $widget['source_data']['sourcename'] = array(
       '#type' => 'textfield',
       '#title' => 'Data Source Name',
       '#description' => 'The name of the source where data was obtained for this analysis.',
       '#default_value' => $sourcename,
       '#required' => TRUE,
     );
-    $widget['source_data']['chado-analysis__sourceversion'] = array(
+    $widget['source_data']['sourceversion'] = array(
       '#type' => 'textfield',
       '#title' => 'Data Source Version',
       '#description' => 'The version number of the data source (if applicable).',
       '#default_value' => $sourceversion,
     );
-    $widget['source_data']['chado-analysis__sourceuri'] = array(
+    $widget['source_data']['sourceuri'] = array(
       '#type' => 'textfield',
       '#title' => 'Data Source URI',
       '#description' => 'The URI (e.g. web URL) where the source data can be retreived.',
       '#default_value' => $sourceuri,
     );
+
   }
-  /**
-   * @see TripalFieldWidget::submit()
-   */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $table_name = $this->instance['settings']['chado_table'];
@@ -83,10 +95,23 @@ class local__source_data_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    // Using a fieldset in our widget above throws off the structure
-    // of the values array.  So we need to reorganize it a bit:
-    $value = $form_state['values'][$field_name][$langcode][$delta]['value'];
-    $form_state['values'][$field_name][$langcode][$delta] = $form_state['values'][$field_name][$langcode][$delta]['source_data'];
-    $form_state['values'][$field_name][$langcode][$delta]['value'] = $value;
+    $source_name = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourcename'];
+    $sourceversion = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceversion'];
+    $sourceuri = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri'];
+
+    // Set the value so the form element won't be ignored.
+    $form_state['values'][$field_name]['und'][$delta]['value'] = $source_name;
+
+    if (!$sourceversion) {
+      $sourceversion = '__NULL__';
+    }
+    if (!$sourceuri) {
+      $sourceuri = '__NULL__';
+    }
+
+    // And set the values for our Chado insert/update
+    $form_state['values'][$field_name]['und'][$delta]['chado-analysis__sourcename'] = $source_name;
+    $form_state['values'][$field_name]['und'][$delta]['chado-analysis__sourceversion'] = $sourceversion;
+    $form_state['values'][$field_name]['und'][$delta]['chado-analysis__sourceuri'] = $sourceuri;
   }
 }

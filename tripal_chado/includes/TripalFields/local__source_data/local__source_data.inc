@@ -73,31 +73,62 @@ class local__source_data extends ChadoField {
         'elements' => array(
           $sourcename_term => array(
             'searchable' => TRUE,
-            'name' => 'sourcename',
             'label' => 'Data Source Name',
             'help' => 'The name of the data source used for the analysis.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),
           $sourceversion_term => array(
-            'searchable' => FALSE,
-            'name' => 'sourceversion',
+            'searchable' => TRUE,
             'label' => 'Data Source Version',
             'help' => 'If applicable, the version number of the source data used for the analysis.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => FALSE,
+            'sortable' => TRUE,
           ),
           $sourceuri_term => array(
             'searchable' => FALSE,
-            'name' => 'sourceuri',
             'label' => 'Data Source URI',
             'help' => 'If applicable, the universal resource indicator (e.g. URL) of the source data used for the analysis.',
-            'operations' => array(),
             'sortable' => FALSE,
           ),
         ),
       ),
     );
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $operator = $condition['operator'];
+
+    $field_term_id = $this->getFieldTermID();
+    $sourcename_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceuri');
+
+    if ($condition['column'] == $sourcename_term) {
+      $query->condition("base.sourcename", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $sourceversion_term) {
+      $query->condition("base.sourceversion", $condition['value'], $operator);
+    }
+  }
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $field_term_id = $this->getFieldTermID();
+    $sourcename_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceuri');
+
+    dpm($order);
+    dpm($sourceversion_term);
+    if ($order['column'] == $sourcename_term) {
+      $query->orderBy("base.sourcename", $order['direction']);
+    }
+    if ($order['column'] == $sourceversion_term) {
+      $query->orderBy("base.sourceversion", $order['direction']);
+    }
   }
 
   /**

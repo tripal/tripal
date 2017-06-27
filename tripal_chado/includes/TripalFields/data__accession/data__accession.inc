@@ -83,6 +83,7 @@ class data__accession extends ChadoField {
   public function query($query, $condition) {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
+
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
