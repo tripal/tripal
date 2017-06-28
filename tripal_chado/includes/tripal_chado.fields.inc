@@ -70,6 +70,13 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
+    // Skip the infraspecific type_id and name from the organism table as we
+    // have a special field for those.
+    if ($table_name == 'organism' and ($column_name == 'type_id' or
+        $column_name == 'infraspecific_name')) {
+      continue;
+    }
+
     // Skip the cvterm.is_relationshptype.
     if ($table_name == 'cvterm' and $column_name == 'is_relationshiptype') {
       continue;
@@ -342,21 +349,19 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   }
 
   // ORGANISM TYPE_ID
-//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-//     $field_name = 'taxarank__infraspecific_taxon';
-//     $field_type = 'taxarank__infraspecific_taxon';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'type' => $field_type,
-//       'cardinality' => 1,
-//       'locked' => FALSE,
-//       'storage' => array(
-//         'type' => 'field_chado_storage',
-//       ),
-//       'settings' => array(
-//       ),
-//     );
-//   }
+  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'taxrank__infraspecific_taxon';
+    $field_type = 'taxrank__infraspecific_taxon';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 
   // FEATUREMAP UNITTYPE_ID
   if ($table_name == 'featuremap') {
@@ -722,6 +727,13 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
         $column_name == 'sourceversion' or $column_name == 'sourcename')) {
       continue;
     }
+
+    // Skip the infraspecific type_id and name from the organism table as we
+    // have a special field for those.
+    if ($table_name == 'organism' and ($column_name == 'type_id' or
+        $column_name == 'infraspecific_name')) {
+          continue;
+        }
 
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_column) {
@@ -1267,36 +1279,36 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
   // ORGANISM TYPE_ID
-//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-//     $field_name = 'taxarank__infraspecific_taxon';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'entity_type' => $entity_type,
-//       'bundle' => $bundle->name,
-//       'label' => 'Infraspecific Taxon',
-//       'description' => 'The Infraspecific Taxon.',
-//       'required' => FALSE,
-//       'settings' => array(
-//         'auto_attach' => TRUE,
-//         'chado_table' => 'organism',
-//         'chado_column' => 'type_id',
-//         'base_table' => 'organism',
-//       ),
-//       'widget' => array(
-//         'type' => 'taxarank__infraspecific_taxon_widget',
-//         'settings' => array(
-//           'display_label' => 1,
-//         ),
-//       ),
-//       'display' => array(
-//         'default' => array(
-//           'label' => 'inline',
-//           'type' => 'taxarank__infraspecific_taxon_formatter',
-//           'settings' => array(),
-//         ),
-//       ),
-//     );
-//   }
+  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'taxrank__infraspecific_taxon';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Infraspecific Taxon',
+      'description' => 'The Infraspecific Taxon.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => 'organism',
+        'chado_column' => 'type_id',
+        'base_table' => 'organism',
+      ),
+      'widget' => array(
+        'type' => 'taxrank__infraspecific_taxon_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'taxrank__infraspecific_taxon_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
 
   // FEATURE SEQLEN

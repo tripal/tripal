@@ -1239,7 +1239,7 @@ function tripal_submit_obo_job($obo) {
   $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
 
   $includes = array(
-    module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader'),
+    drupal_get_path('module', 'tripal_chado') . '/includes/tripal_chado.cv.inc',
   );
 
   if ($obo['obo_id']) {
@@ -1248,18 +1248,24 @@ function tripal_submit_obo_job($obo) {
 
     $args = array($result->obo_id);
     return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
-       "tripal_chado_load_obo_v1_2_id", $args, $user->uid, 10, $includes);
+       "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
   }
   else {
     if ($obo['url']) {
-      $args = array($obo['name'], $obo['url']);
-      return tripal_add_job("Load OBO " . $obo['name'], 'tripal_chado',
-        "tripal_chado_load_obo_v1_2_url", $args, $user->uid, 10, $includes);
+      $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :url";
+      $result = db_query($sql, array(':url' => $obo['url']))->fetchObject();
+
+      $args = array($result->obo_id);
+      return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
+        "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
     elseif ($obo['file']) {
-      $args = array($obo['name'], $obo['file']);
-      return tripal_add_job("Load OBO " . $obo['name'], 'tripal_chado',
-        "tripal_chado_load_obo_v1_2_file", $args, $user->uid, 10, $includes);
+      $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :file";
+      $result = db_query($sql, array(':url' => $obo['file']))->fetchObject();
+
+      $args = array($result->obo_id);
+      return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
+        "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
   }
   return FALSE;
