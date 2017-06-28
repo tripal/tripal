@@ -6,13 +6,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
    * The human-readable label for this web service.
    */
   public static $label = 'Content Types';
+
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides acesss to the biological and ' .
-    'ancilliary data available on this site. Each content type represents ' .
-    'biological data that is defined in a controlled vocabulary (e.g. ' .
-    'Sequence Ontology term: gene (SO:0000704)).';
+  public static $description = 'Provides acesss to the biological and
+    ancilliary data available on this site. Each content type represents
+    biological data that is defined in a controlled vocabulary (e.g.
+    Sequence Ontology term: gene (SO:0000704)).';
+
   /**
    * A machine-readable type for this service. This name must be unique
    * among all Tripal web services and is used to form the URL to access
@@ -809,8 +811,14 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $this->resource->initPager($num_records, $limit, $page);
 
+    // Check to make sure there are results.
+    $entity_ids = array();
+    if (isset($results['TripalEntity']) AND is_array($results['TripalEntity'])) {
+      $entity_ids = $results['TripalEntity'];
+    }
+
     // Iterate through the entities and add them to the output list.
-    foreach ($results['TripalEntity'] as $entity_id => $stub) {
+    foreach ($entity_ids as $entity_id => $stub) {
       // We don't need all of the attached fields for an entity so, we'll
       // not use the entity_load() function.  Instead just pull it from the
       // database table.
