@@ -46,7 +46,8 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
-    if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
       $name = $form_state['values'][$field_name]['und'][$delta]['name'];
     }
 

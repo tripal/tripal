@@ -103,7 +103,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
-    if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];

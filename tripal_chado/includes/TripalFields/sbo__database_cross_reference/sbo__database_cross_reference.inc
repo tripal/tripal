@@ -70,24 +70,25 @@ class sbo__database_cross_reference extends ChadoField {
     return array(
       $field_term => array(
         'operations' => array(),
+        'label' => 'Cross Reference',
         'sortable' => FALSE,
         'searchable' => FALSE,
         'elements' => array(
           $dbname_term => array(
             'searchable' => TRUE,
-            'label' => 'Database Name',
+            'label' => 'Cross Reference Database Name',
             'help' => 'The name of the remote database that houses the cross reference.',
             'sortable' => TRUE,
           ),
           $accession_term => array(
             'searchable' => TRUE,
-            'label' => 'Database Accession',
+            'label' => 'Cross Reference Database Accession',
             'help' => 'The unique accession (identifier) in the database that houses the cross reference.',
             'sortable' => TRUE,
           ),
           $dburl_term => array(
             'searchable' => FALSE,
-            'label' => 'Database URL',
+            'label' => 'Cross Reference Database URL',
             'help' => 'The URL of the database that houses the cross reference.',
             'sortable' => FALSE,
           ),
@@ -182,11 +183,11 @@ class sbo__database_cross_reference extends ChadoField {
     $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id");
 
     if ($condition['column'] == $dbname_term) {
-      $this->queryJoinOnce($query, $alias . '_DB', $alias . "_DB.db_id = " . $alias . "_DBX.db_id");
+      $this->queryJoinOnce($query, 'db', $alias . '_DB', $alias . "_DB.db_id = " . $alias . "_DBX.db_id");
       $query->condition($alias . "_DB.name", $condition['value'], $operator);
     }
     if ($condition['column'] == $accession_term) {
-      $query->condition($alias . "_DBX.dbxref", $condition['value'], $operator);
+      $query->condition($alias . "_DBX.accession", $condition['value'], $operator);
     }
   }
 
@@ -194,7 +195,30 @@ class sbo__database_cross_reference extends ChadoField {
    * @see ChadoField::queryOrder()
    */
   public function queryOrder($query, $order) {
+    $dbxref_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
 
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+
+    $alias = $this->field['field_name'];
+
+    $field_term_id = $this->getFieldTermID();
+    $dbname_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
+    $dburl_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'url');
+
+    $this->queryJoinOnce($query, $field_table, $alias, "base.$bpkey = $alias.$bpkey", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id", "LEFT OUTER");
+
+    if ($order['column'] == $dbname_term) {
+      $this->queryJoinOnce($query, 'db', $alias . '_DB', $alias . "_DB.db_id = " . $alias . "_DBX.db_id", "LEFT OUTER");
+      $query->orderBy($alias . "_DB.name", $order['direction']);
+    }
+    if ($order['column'] == $accession_term) {
+      $query->orderBy($alias . "_DBX.accession", $order['direction']);
+    }
   }
 
   /**

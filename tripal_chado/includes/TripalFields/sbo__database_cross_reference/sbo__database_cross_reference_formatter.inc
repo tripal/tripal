@@ -12,8 +12,14 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $chado_table = $this->instance['settings']['chado_table'];
     $content = '';
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
+    $linker_table = $base_table . '_dbxref';
 
     $dbname_term = tripal_get_chado_semweb_term('db', 'name');
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
@@ -25,7 +31,7 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
       }
       $content = $item['value'][$dbname_term] . ':' . $item['value'][$accession_term];
       if ($item['value'][$dburl_term]) {
-        $dbxref = tripal_get_dbxref(array('dbxref_id' => $item['chado-feature_dbxref__dbxref_id']));
+        $dbxref = tripal_get_dbxref(array('dbxref_id' => $item['chado-' . $linker_table . '__dbxref_id']));
         $url = tripal_get_dbxref_url($dbxref);
         $content = l($content, $url, array('attributes' => array('target' => '_blank')));
       }

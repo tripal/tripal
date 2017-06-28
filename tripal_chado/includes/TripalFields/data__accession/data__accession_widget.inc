@@ -31,7 +31,8 @@ class data__accession_widget extends ChadoFieldWidget {
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
-    if (array_key_exists('values', $form_state)) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
       $dbxref_id = isset($form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column]) ? $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] : '';
       $db_id = isset($form_state['values'][$field_name]['und'][$delta]['db_id']) ? $form_state['values'][$field_name]['und'][$delta]['db_id'] : '';
       $accession = isset($form_state['values'][$field_name]['und'][$delta]['accession']) ? $form_state['values'][$field_name]['und'][$delta]['accession'] : '';

@@ -121,8 +121,6 @@ class local__source_data extends ChadoField {
     $sourceversion_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceversion');
     $sourceuri_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceuri');
 
-    dpm($order);
-    dpm($sourceversion_term);
     if ($order['column'] == $sourcename_term) {
       $query->orderBy("base.sourcename", $order['direction']);
     }
