@@ -278,7 +278,6 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
   $all_fields = array();
   $instances_for_field_groups = array();
   $disabled_instances = array();
-  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
   try {
     // Add Abstract, Citation, DB Cross Reference, Properties.
     $all_fields['tpub__abstract']= 'right';
@@ -293,15 +292,16 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     foreach ($instances as $key => $instance) {
       $instance_name = $instance['field_name'];
 
-      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation'
-        || $instance_name == 'sbo__database_cross_reference'
+      if($instance_name == 'sbo__database_cross_reference'
         || $instance_name == 'sio__references'){
         array_push($instances_for_field_groups, $instance);
         // Update the display settings so that the title is hidden.
         $instance['display']['default']['label'] = 'hidden';
         field_update_instance($instance);
       }
-      elseif($instance_name == 'schema__additional_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
+      elseif($instance_name == 'schema__additional_type' || $instance_name == 'tpub__doi'
+        || $instance_name == 'tpub__publication_date' || 'tpub__abstract' ||
+        $instance_name == 'tpub__citation') {
         array_push($properties, $instance_name);
       }
       else {
@@ -335,9 +335,9 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     //Properties table fields.
     if(!empty($properties)){
       _publication_prop_field_group_info($bundle_name, $properties);
-      array_unshift($properties, 'group_prop_tripalpane', 'group_prop_table');
+      array_unshift($properties, 'group_summary_tripalpane', 'group_summary_table');
       $region_right = array_merge($region_right, $properties);
-      $all_fields+= [ 'group_prop_tripalpane' => 'right', 'group_prop_table' => 'right' ];
+      $all_fields+= [ 'group_summary_tripalpane' => 'right', 'group_summary_table' => 'right' ];
     }
     if(!empty($all_fields)){
       foreach ($disabled_instances as $disabled_field) {
@@ -381,7 +381,6 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     drupal_write_record('ds_layout_settings', $record);
     // Clear the Drpual chace
     cache_clear_all();
-    watchdog('debug', '<pre>$record: '. print_r($record, TRUE) .'</pre>');
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);

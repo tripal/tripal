@@ -278,17 +278,17 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group_tripalpane = new stdClass();
   $field_group_tripalpane->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
   $field_group_tripalpane->api_version = 1;
-  $field_group_tripalpane->identifier = 'group_prop_tripalpane|TripalEntity|'.$bundle_name.'|default';
-  $field_group_tripalpane->group_name = 'group_prop_tripalpane';
+  $field_group_tripalpane->identifier = 'group_summary_tripalpane|TripalEntity|'.$bundle_name.'|default';
+  $field_group_tripalpane->group_name = 'group_summary_tripalpane';
   $field_group_tripalpane->entity_type = 'TripalEntity';
   $field_group_tripalpane->bundle = $bundle_name;
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Properties',
+    'label' => 'Summary',
     'weight' => '1',
     'children' => array(
-      0 => 'group_prop_table',
+      0 => 'group_summary_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
@@ -297,7 +297,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
         'id' => 'tripal_ds-fieldset-group_prop_tripalpane',
         'classes' => 'group-prop-tripalpane field-group-tripalpane',
         'description' => '',
-        'hide' => 1,
+        'hide' => 0,
       ),
     ),
   );
@@ -309,23 +309,25 @@ function _publication_prop_field_group_info($bundle_name, $fields){
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
   $field_group->api_version = 1;
-  $field_group->identifier = 'group_prop_table|TripalEntity|'.$bundle_name.'|default';
-  $field_group->group_name = 'group_prop_table';
+  $field_group->identifier = 'group_summary_table|TripalEntity|'.$bundle_name.'|default';
+  $field_group->group_name = 'group_summary_table';
   $field_group->entity_type = 'TripalEntity';
   $field_group->bundle = $bundle_name;
   $field_group->mode = 'default';
-  $field_group->parent_name = 'group_prop_tripalpane';
+  $field_group->parent_name = 'group_summary_tripalpane';
   $field_group->data = array(
-    'label' => 'Properties Table',
+    'label' => 'Summary Table',
     'weight' => '1',
     'children' =>  array(
       0 => 'tpub__doi',
       1 => 'tpub__publication_date',
       2 => 'schema__additional_type',
+      3 => 'tpub__abstract',
+      4 => 'tpub__citation'
     ),
     'format_type' => 'table',
     'format_settings' => array(
-      'label' => 'Properties Table',
+      'label' => 'Summary Table',
       'instance_settings' => array(
         'label_visibility' => '1',
         'desc' => '',
