@@ -278,13 +278,13 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
   $all_fields = array();
   $instances_for_field_groups = array();
   $disabled_instances = array();
-
+  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
   try {
     // Add Abstract, Citation, DB Cross Reference, Properties.
     $all_fields['tpub__abstract']= 'right';
     $all_fields['tpub__citation']= 'right';
     $all_fields['sbo__database_cross_reference']= 'right';
-    $all_fields['tpub__publication_type']= 'right';
+    $all_fields['schema__additional_type']= 'right';
     $all_fields['tpub__doi']= 'right';
     $all_fields['tpub__publication_date']= 'right';
     $all_fields['sio__references']= 'right';
@@ -293,13 +293,15 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     foreach ($instances as $key => $instance) {
       $instance_name = $instance['field_name'];
 
-      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation' || $instance_name == 'sbo__database_cross_reference' || $instance_name == 'sio__references'){
+      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation'
+        || $instance_name == 'sbo__database_cross_reference'
+        || $instance_name == 'sio__references'){
         array_push($instances_for_field_groups, $instance);
         // Update the display settings so that the title is hidden.
         $instance['display']['default']['label'] = 'hidden';
         field_update_instance($instance);
       }
-      elseif($instance_name == 'tpub__publication_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
+      elseif($instance_name == 'schema__additional_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
         array_push($properties, $instance_name);
       }
       else {
@@ -322,7 +324,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       $group_field_name = $group_field_name.rand(0, 99999);
 
       // Build the field group.
-      _additional_fields_field_group_info($bundle_name, $other_field['label'], $other_field['field_name'], $other_field['field_name']);
+      _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
 
       // Update arrays.
       array_push($temporary_field, $group_field_name, $other_field['field_name']);

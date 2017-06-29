@@ -261,6 +261,7 @@ function _additional_fields_field_group_info($bundle_name, $field_label, $group_
       ),
     ),
   );
+  watchdog('debug', '<pre>$field_group_fieldset: '. print_r($field_group_fieldset, TRUE) .'</pre>');
   drupal_write_record('field_group', $field_group_fieldset);
 }
 
@@ -287,7 +288,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
     'label' => 'Properties',
     'weight' => '1',
     'children' => array(
-      0 => 'group_prop',
+      0 => 'group_prop_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
@@ -320,7 +321,7 @@ function _publication_prop_field_group_info($bundle_name, $fields){
     'children' =>  array(
       0 => 'tpub__doi',
       1 => 'tpub__publication_date',
-      2 => 'tpub__publication_type',
+      2 => 'schema__additional_type',
     ),
     'format_type' => 'table',
     'format_settings' => array(
