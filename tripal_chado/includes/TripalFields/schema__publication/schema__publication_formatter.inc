@@ -17,26 +17,14 @@ class schema__publication_formatter extends ChadoFieldFormatter {
 
     foreach ($items as $delta => $item) {
 
-      if (empty($item['value'])) {
-        continue;
-      }
-      // Ignore the null publication.
-      if ($item['uniquename'] == 'null') {
-        continue;
-      }
-
       $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
       $citation = isset($item['value']['TPUB:0000003']) ? $item['value']['TPUB:0000003'] : '';
       $entity = array_key_exists('entity', $item['value']) ? $item['value']['entity'] : '';
       if ($entity) {
         list($entity_type, $entity_id) = explode(':', $entity);
         $new_title = l($title, 'bio_data/' . $entity_id);
-        // If a title has parenthesis we need to escape them for the
-        // regular expression to work.
-        $title = preg_replace('/\(/', '\(', $title);
-        $title = preg_replace('/\)/', '\)', $title);
-        // We also need to escape any forward slashes.
-        $title = preg_replace('/\//', '\/', $title);
+        // Escape anything that isn't alphanumeric
+        $title = preg_replace('/([^\w])/', '\\\\$1', $title);
         $citation = preg_replace("/$title/", $new_title, $citation);
       }
       $list_items[] = $citation;
