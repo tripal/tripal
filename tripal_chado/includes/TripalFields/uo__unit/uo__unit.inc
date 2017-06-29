@@ -34,7 +34,6 @@ class uo__unit extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'UO__unit_formatter';
 
-
   /**
    * @see TripalField::load()
    */
@@ -62,5 +61,32 @@ class uo__unit extends ChadoField {
       $entity->{$field_name}['und'][0]['chado-cvterm__cv_id'] = $record->unittype_id->cv_id->cv_id;
       $entity->{$field_name}['und'][0]['chado-cv__name'] = $record->unittype_id->cv_id->name;
     }
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $chado_table = $this->instance['settings']['chado_table']; // featuremap
+    $chado_field = $this->instance['settings']['chado_column']; // unittype_id
+
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $this->queryJoinOnce($query, 'cvterm', $alias, "base.$chado_field = $alias.cvterm_id");
+    $query->condition("$alias.name", $condition['value'], $operator);
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function queryOrder($query, $order) {
+    $chado_table = $this->instance['settings']['chado_table']; // featuremap
+    $chado_field = $this->instance['settings']['chado_column']; // unittype_id
+
+    $alias = $this->field['field_name'];
+
+    $this->queryJoinOnce($query, 'cvterm', $alias, "base.$chado_field = $alias.cvterm_id");
+    $query->orderBy("$alias.name", $order['direction']);
   }
 }
