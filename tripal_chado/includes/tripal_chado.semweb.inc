@@ -202,7 +202,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'URL of the item.',
   ));
-  tripal_associate_chado_semweb_term('db', 'URL', $term);
+  tripal_associate_chado_semweb_term('db', 'url', $term);
 
   // Typically the type_id field is used for distinguishing between records
   // but in the case that it isn't then we need to associate a term with it
@@ -890,6 +890,13 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:miniref',
+    'name' => 'Mini-ref',
+    'definition' => 'A small in-house unique identifier for a publication.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('pub', 'miniref', $term);
 
   //-----------------------------
   // Relationship Terms

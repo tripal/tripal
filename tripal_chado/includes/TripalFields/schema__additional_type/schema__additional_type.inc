@@ -35,6 +35,14 @@ class schema__additional_type extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // The name of the vocabulary that should be used to provide a list
+    // of terms to select form when providing the additional type.
+    // This should be the name of the controlled vocabulary from the cv table.
+    'vocabulary' => '',
+    // If the entire vocabulary is not to be used for the types and if the
+    // vocabulary is heirarchical then this will be the parent term.
+    // This should be of the format {db.name}:{dbxref.accession}
+    'parent_term' => '',
   );
 
   // The default widget for this field.
@@ -43,6 +51,37 @@ class schema__additional_type extends ChadoField {
   // The default formatter for this field.
   public static $default_formatter = 'schema__additional_type_formatter';
 
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+    $this->queryJoinOnce($query, 'cvterm', $alias, "base.$field_column = $alias.cvterm_id");
+    $query->condition($alias . '.name' , $condition['value'], $operator);
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function queryOrder($query, $order) {
+    dpm('hi');
+    $alias = $this->field['field_name'];
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+
+    $this->queryJoinOnce($query, 'cvterm', $alias, "base.$field_column = $alias.cvterm_id", "LEFT OUTER");
+    $query->orderBy($alias . '.name' , $order['direction']);
+  }
 
   /**
    *
@@ -56,7 +95,6 @@ class schema__additional_type extends ChadoField {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(

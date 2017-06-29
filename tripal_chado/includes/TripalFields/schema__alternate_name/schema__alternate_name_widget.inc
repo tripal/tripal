@@ -72,10 +72,9 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     // size of the name field to the proper size.
     $schema = chado_get_schema('synonym');
 
-    $widget['#table_name'] = $table_name;
-    $widget['#fkey_field'] = $fkey;
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
+    $widget['#table_name'] = $table_name;
 
     $widget['value'] = array(
       '#type' => 'value',
@@ -126,12 +125,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
     );
   }
-
-  /**
-   *
-   * @see TripalFieldWidget::submit()
-   */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $table_name = $this->instance['settings']['chado_table'];
@@ -143,14 +137,53 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
 
-    $record_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $pkey] : '';
-    $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] : '';
-    $synonym_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] : '';
-    $pub_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] : '';
-    $is_current = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] : '';
-    $is_internal = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] : '';
-    $syn_name = isset($form_state['values'][$field_name][$langcode][$delta]['name']) ? $form_state['values'][$field_name][$langcode][$delta]['name'] : '';
-    $syn_type = isset($form_state['values'][$field_name][$langcode][$delta]['type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['type_id'] : '';
+
+    $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
+    $syn_name = $form_state['values'][$field_name]['und'][$delta]['name'];
+    $syn_type = $form_state['values'][$field_name]['und'][$delta]['type_id'];
+
+    // If the user provided a $syn_name and a $syn_type then we want to set
+    // the foreign key value to be the chado_record_id.
+    if ($syn_name and $syn_type) {
+      // Set the synonym_id and FK value
+      $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+      if ($synonym) {
+        $form_state['values'][$field_name]['und']['value'] = $synonym->synonym_id;
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
+      }
+      else {
+        $form_state['values'][$field_name]['und']['value'] = $syn_name;
+      }
+      // If a publication is not provided then use the null pub.
+      if (!$pub_id) {
+        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+      }
+    }
+    // If no snynonym name is provided then we want to delete the record.
+    // To do this we have to set the value to something (here we just use
+    // the arbitrary 'delete_me', and set every other element to empty other
+    // than the pkey element.
+    else {
+      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__is_internal'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__is_current'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = '';
+    }
+  }
+
+  /**
+   *
+   * @see TripalFieldWidget::submit()
+   */
+  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $table_name = $this->instance['settings']['chado_table'];
+
+    $syn_name = $form_state['values'][$field_name]['und'][$delta]['name'];
+    $syn_type = $form_state['values'][$field_name]['und'][$delta]['type_id'];
 
     // If the user provided a $syn_name and a $syn_type then we want to set
     // the foreign key value to be the chado_record_id.
@@ -166,23 +199,8 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
           'synonym_sgml' => '',
         ));
         $synonym = (object) $synonym;
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
       }
-
-      // Set the synonym_id and FK value
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
-
-      if (!$pub_id) {
-        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
-      }
-    }
-    else {
-      // If the $syn_name is not set, then remove the linker FK value to the base table.
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__synonym_id'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_internal'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__is_current'] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = '';
     }
   }
 
@@ -194,7 +212,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     // These two fields were added to the widget to help identify the fields
     // for layout.
     $table_name = $element['#table_name'];
-    $fkey = $element['#fkey_field'];
 
     $layout = "
       <div class=\"synonym-widget\">

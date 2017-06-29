@@ -1160,3 +1160,29 @@ function tripal_chado_update_7311() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+/**
+ * Associates a local term with the pub.miniref column.
+ */
+function tripal_chado_update_7312() {
+  try {
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'local:miniref',
+      'name' => 'Mini-ref',
+      'definition' => 'A small in-house unique identifier for a publication.',
+      'cv_name' => 'local',
+    ));
+    tripal_associate_chado_semweb_term('pub', 'miniref', $term);
+    $term = tripal_insert_cvterm(array(
+      'id' => 'schema:url',
+      'name' => 'url',
+      'cv_name' => 'schema',
+      'definition' => 'URL of the item.',
+    ));
+    tripal_associate_chado_semweb_term('db', 'url', $term);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

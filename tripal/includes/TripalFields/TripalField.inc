@@ -375,6 +375,11 @@ class TripalField {
     if ($element_name == 'entity') {
       return;
     }
+
+    if (!preg_match('/:/', $element_name)) {
+      return;
+    }
+
     $field_name = $parent . '.' . $element_name;
     list($vocabulary, $accession) = explode(':', $element_name);
     $term = tripal_get_term_details($vocabulary, $accession);

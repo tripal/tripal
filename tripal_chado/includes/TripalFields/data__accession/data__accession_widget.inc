@@ -76,12 +76,6 @@ class data__accession_widget extends ChadoFieldWidget {
       '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
       '#size' => 15,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
-      '#ajax' => array(
-        'callback' => "data__accession_widget_form_ajax_callback",
-        'wrapper' => "$field_name-dbxref--db-id",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
       '#disabled' => $db_id ? FALSE : TRUE,
     );
   }

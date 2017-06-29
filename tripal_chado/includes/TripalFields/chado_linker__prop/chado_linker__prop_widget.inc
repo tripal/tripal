@@ -94,6 +94,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
       '#default_value' => $value,
       '#title' => $instance['label'],
       '#description' => $instance['description'],
+      '#rows' => 1,
     );
     $widget['chado-' . $field_table . '__type_id'] = array(
       '#type' => 'hidden',
