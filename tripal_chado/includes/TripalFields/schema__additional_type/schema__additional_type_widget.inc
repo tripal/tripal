@@ -40,6 +40,9 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       '#value' => $value,
     );
 
+    If ($field_table == 'pub' && empty($vocabulary)){
+      $vocabulary = 'tripal_pub';
+    };
     // If a parent_term is provided then use that to get the options
     $options = array();
     $options[] = 'Select a type';
