@@ -63,7 +63,9 @@ class data__sequence_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name]['und'][$delta]['value'] = $residues;
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] = $residues;
     }
-    else {
+    // If the residue information has been removed then we want to signal such.
+    // When it's removed the value != residues but if it was never set then they're both empty.
+    elseif (!empty($form_state['values'][$field_name]['und'][$delta]['value'])) {
       $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column] = '';
     }
