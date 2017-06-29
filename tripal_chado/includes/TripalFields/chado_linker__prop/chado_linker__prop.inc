@@ -41,6 +41,8 @@ class chado_linker__prop extends ChadoField {
     'chado_column' => '',
     // The base table.
     'base_table' => '',
+    // The number of default rows to show. The default is 1.
+    'rows' => 1,
   );
 
   // The default widget for this field.

@@ -25,15 +25,28 @@ class schema__publication_widget extends ChadoFieldWidget {
     $fkey = $fkeys[0];
 
     // Get the field defaults.
-    $fkey_value = (array_key_exists('#entity', $element) and is_object($element['#entity'])) ? $element['#entity']->chado_record_id : NULL;
+    $pkey_val = '';
+    $fkey_value = '';
     $pub_id = '';
-    $uname = '';
+    $title = '';
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
+      $pkey_val =  tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $pkey_val);
+      $fkey_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $fkey, $fkey_value);
       $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
-      $uname = tripal_get_field_item_keyval($items, $delta, 'uniquename', $uname);
+      if ($pub_id) {
+        $pub = tripal_get_publication(array('pub_id' => $pub_id));
+        $title =  $pub->title . ' [id:' . $pub->pub_id . ']';
+      }
+    }
+
+    // Check $form_state['values'] to see if an AJAX call set the values.
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
+      $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
+      $pub_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
     }
 
     $schema = chado_get_schema('pub');
@@ -50,7 +63,7 @@ class schema__publication_widget extends ChadoFieldWidget {
 
     $widget['chado-' . $table_name . '__' . $pkey] = array(
       '#type' => 'value',
-      '#default_value' => '',
+      '#default_value' => $pkey_val,
     );
     $widget['chado-' . $table_name . '__' . $fkey] = array(
       '#type' => 'value',
@@ -61,17 +74,11 @@ class schema__publication_widget extends ChadoFieldWidget {
       '#default_value' => $pub_id,
     );
 
-    $widget['uniquename'] = array(
+    $widget['pub_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Publication'),
-      '#default_value' => $uname,
+      '#default_value' => $title,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
-      '#ajax' => array(
-        'callback' => "schema__publication_widget_form_ajax_callback",
-        'wrapper' => "$table_name-$delta",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
       '#maxlength' => 100000,
     );
   }
@@ -81,7 +88,7 @@ class schema__publication_widget extends ChadoFieldWidget {
    *
    * @see TripalFieldWidget::submit()
    */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
     // Get the FK column that links to the base table.
     $table_name = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
@@ -92,31 +99,30 @@ class schema__publication_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
 
     // Get the field values.
-    $fkey_value = isset($form_state['values'][$field_name][$langcode][$delta]['value']) ? $form_state['values'][$field_name][$langcode][$delta]['value'] : '';
-    $pub_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] : '';
-    $uname = isset($form_state['values'][$field_name][$langcode][$delta]['uniquename']) ? $form_state['values'][$field_name][$langcode][$delta]['uniquename'] : '';
+    $fkey_value = $form_state['values'][$field_name]['und'][$delta]['value'];
+    $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
+    $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
 
-    // If the user provided a uniquename then we want to set the foreign key
+    // If the user provided a pub_title then we want to set the foreign key
     // value to be the chado_record_id
-    if ($uname and !$pub_id) {
-      $pub = chado_generate_var('pub', array('uniquename' => $uname));
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+    if ($title) {
+      $matches = array();
+      if (preg_match('/^.*\[id:(\d+)]$/', $title, $matches)) {
+        $pub_id = $matches[1];
+        $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $pub->pub_id;
+      }
     }
 
     // In the widgetFrom function we automatically add the foreign key
     // record.  But if the user did not provide a publication we want to take
     // it out so that the Chado field_storage infrastructure won't try to
     // write a record.
-    if (!$uname and !$pub_id) {
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
-    }
-
-    // If the user removed the publication from the pub_uniquename field
-    // then we want to clear out the rest of the hidden values.
-    // Leave the primary key so the record can be deleted.
-    if (!$uname and $pub_id) {
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__' . $fkey] = '';
-      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $table_name . '__pub_id'] = '';
+    if (!$title) {
+      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__' . $fkey] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = '';
     }
   }
 
@@ -128,7 +134,7 @@ class schema__publication_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"pub-widget\">
         <div class=\"pub-widget-item\">" .
-          drupal_render($element['uniquename']) . "
+          drupal_render($element['pub_title']) . "
         </div>
       </div>
     ";

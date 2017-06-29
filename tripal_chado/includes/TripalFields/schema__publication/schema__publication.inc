@@ -94,7 +94,6 @@ class schema__publication extends ChadoField {
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__' . 'pub_id' => '',
-      'uniquename' => '',
     );
 
     $linker_table = $base_table . '_pub';
@@ -112,7 +111,6 @@ class schema__publication extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub->pub_id;
-        $entity->{$field_name}['und'][$i]['uniquename'] =  $pub->uniquename;
 
         if (property_exists($pub, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;

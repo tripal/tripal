@@ -1186,3 +1186,19 @@ function tripal_chado_update_7312() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Run the cvtermpath for the Tripal Pub and Contact ontologies.
+ */
+function tripal_chado_update_7313() {
+  try {
+    $cv = tripal_get_cv(array('name' => 'tripal_pub'));
+    tripal_update_cvtermpath($cv->cv_id);
+    $cv = tripal_get_cv(array('name' => 'tripal_contact'));
+    tripal_update_cvtermpath($cv->cv_id);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

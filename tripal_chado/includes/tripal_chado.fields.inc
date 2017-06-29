@@ -1810,6 +1810,21 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
              ),
            ),
          );
+
+         // Make some customizations to some fields
+         if ($term->name == 'Citation' and $term->cv_id->name == 'tripal_pub') {
+           $info[$field_name]['required'] = TRUE;
+           $info[$field_name]['description'] = t('All publications must have a unique citation.
+            Please enter the full citation for this publication.  For PubMed style citations list
+            the last name of the author followed by initials. Each author should be separated by a comma. Next comes
+            the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.
+            Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations
+              suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>');
+           $info[$field_name]['settings']['rows'] = 3;
+         }
+         if ($term->name == 'Abstract' and $term->cv_id->name == 'tripal_pub') {
+           $info[$field_name]['settings']['rows'] = 5;
+         }
        }
      }
    }

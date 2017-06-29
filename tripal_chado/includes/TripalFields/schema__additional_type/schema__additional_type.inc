@@ -71,7 +71,6 @@ class schema__additional_type extends ChadoField {
    * @see ChadoField::query()
    */
   public function queryOrder($query, $order) {
-    dpm('hi');
     $alias = $this->field['field_name'];
 
     $field_name = $this->field['field_name'];
