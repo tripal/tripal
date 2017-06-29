@@ -296,9 +296,13 @@ class sbo__relationship extends ChadoField {
     // Add the clause to the values array.  The clause is a written version
     // of the relationships.
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+    // Remember the current entity could be either the subject or object!
+    // Example: The genetic_marker, MARKER1 , derives from the sequence_variant, VARIANT1.
+    // The above relationship will be shown both on marker and variant pages
+    // and as such both subject and object names need to be shown.
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = 'The ' . $subject_type . ', ' .
-      $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
-      $object_type . '.';
+      $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
+      $object_type . ', ' . $object_name . '.';
 
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
