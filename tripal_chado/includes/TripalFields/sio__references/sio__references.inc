@@ -66,36 +66,6 @@ class sio__references extends ChadoField {
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
-        'elements' => array(
-          'rdfs:type' => array(
-            'searchable' => TRUE,
-            'name' => 'type',
-            'label' => 'Reference Type',
-            'help' => 'The type of item referred to by the publication.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'schema:name' => array(
-            'searchable' => TRUE,
-            'name' => 'name',
-            'label' => 'Reference Name',
-            'help' => 'The name of the item referred to by the publication.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'data:0842'=> array(
-            'searchable' => TRUE,
-            'name' => 'identifier',
-            'label' => 'Reference Identifier',
-            'help' => 'The unique identifier of the item referred to by the publication.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'entity'=> array(
-            'searchable' => FALSE,
-            'sortable' => FALSE,
-          ),
-        ),
       ),
     );
   }

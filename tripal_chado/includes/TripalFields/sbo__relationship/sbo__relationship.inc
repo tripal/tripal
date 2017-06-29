@@ -84,6 +84,12 @@ class sbo__relationship extends ChadoField {
         'searchable' => FALSE,
         'type' => 'string',
         'elements' => array(
+          'SIO:000493' => array(
+            'searchable' => FALSE,
+            'label' => 'Relationship Clause',
+            'help' => 'An English phrase describing the relationships.',
+            'sortable' => FALSE,
+          ),
           'local:relationship_subject' => array(
             'searchable' => FALSE,
             'name' => 'relationship_subject',
@@ -92,7 +98,6 @@ class sbo__relationship extends ChadoField {
             'elements' => array(
               'rdfs:type' => array(
                 'searchable' => TRUE,
-                'name' => 'subject_type',
                 'label' => 'Relationship Subject Type',
                 'help' => 'The subject\'s data type in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -100,7 +105,6 @@ class sbo__relationship extends ChadoField {
               ),
               'schema:name' => array(
                 'searchable' => TRUE,
-                'name' => 'subject_name',
                 'label' => 'Relationship Subject Name',
                 'help' => 'The subject\'s name in a relationship clause',
                 'operations' => array('eq', 'ne', 'contains', 'starts'),
@@ -150,7 +154,169 @@ class sbo__relationship extends ChadoField {
       )
     );
   }
-  /**
+
+  private function loadRelationship($relationship, &$entity, $delta) {
+
+    $field_name = $this->field['field_name'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
+    $rel_type = $relationship->type_id->name;
+    $verb = $this->get_rel_verb($rel_type);
+
+    // Get the foreign keys for the subject and object tables
+    $subject_fkey_table = '';
+    $object_fkey_table = '';
+
+    $schema = chado_get_schema($field_table);
+    $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    // Not all tables have the columns named 'subject_id' and 'object_id'.
+    // some have variations on that name and we need to determine what they are.
+    $fkeys = $schema['foreign keys'];
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
+    foreach ($fkeys as $fktable => $details) {
+      foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
+        if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
+          $subject_fkey_table = $fktable;
+          $subject_id_key = $fkey_lcolumn;
+        }
+        if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
+          $object_fkey_table = $fktable;
+          $object_id_key = $fkey_lcolumn;
+        }
+      }
+    }
+
+    // Get the schemas for the subject and object table.  These should
+    // be the same as the base table but just to be safe we'll get them
+    // separately.
+    $subject_schema = chado_get_schema($subject_fkey_table);
+    $subject_pkey = $subject_schema['primary key'][0];
+    $object_schema = chado_get_schema($object_fkey_table);
+    $object_pkey = $object_schema['primary key'][0];
+
+    // Not all realtionshp tables have a name field (e.g. organism_relationship)
+    // threfore in some cases we need to dig a bit deeper to get the entity
+    // name and the entity type name.
+    $subject_name = '';
+    $subject_type = '';
+    $object_name = '';
+    $object_type = '';
+
+    // The linked to table of a relationship linker table may not always
+    // have a type_id or name field.  So we have to be a bit more
+    // specific about how we set some variables.
+    switch ($relationship->tablename) {
+      case 'acquisition_relationship':
+        $subject_type = 'acquisition';
+        $object_type = 'acquisition';
+        break;
+      case 'analysis_relationship':
+        $subject_type = 'analysis';
+        $object_type = 'analysis';
+        break;
+      case 'biomaterial_relationship':
+        $subject_type = 'biomaterial';
+        $object_type = 'biomaterial';
+        break;
+      case 'cell_line_relationship':
+        $subject_type = 'cell_line';
+        $object_type = 'cell_line';
+        break;
+      case 'element_relationship':
+        $subject_name = $relationship->$subject_id_key->feature_id->name;
+        $object_name = $relationship->$object_id_key->feature_id->name;
+        break;
+      case 'organism_relationship':
+        $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
+        $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
+        $subject_type = 'organism';
+        $object_type = 'organism';
+        break;
+      case 'project_relationship':
+        $subject_type = 'project';
+        $object_type = 'project';
+        break;
+      case 'phylonode_relationship':
+        $subject_name = $relationship->$subject_id_key->label;
+        $object_name = $relationship->$object_id_key->label;
+        break;
+      case 'pub_relationship':
+        $subject_name = $relationship->$subject_id_key->uniquename;
+        $object_name = $relationship->$object_id_key->uniquename;
+        break;
+      case 'quantification_relationship':
+        $subject_type = 'quantification';
+        $object_type = 'quantification';
+        break;
+      default:
+        $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
+        $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
+        $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
+        $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
+    }
+
+    $entity->{$field_name}['und'][$delta]['value'] = array(
+      'local:relationship_subject' => array(
+        'rdfs:type' => $subject_type,
+        'schema:name' => $subject_name,
+      ),
+      'local:relationship_type' => $relationship->type_id->name,
+      'local:relationship_object' => array(
+        'rdfs:type' => $object_type,
+        'schema:name' => $object_name,
+        'entity' => 'TripalEntity:' . $entity->id,
+      )
+    );
+
+    // If the subject or object have a unqiuename then add that in for refernce.
+    if (property_exists($relationship->$subject_id_key, 'uniquename')) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;;
+    }
+    if (property_exists($relationship->$object_id_key, 'uniquename')) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
+    }
+
+    // Add in the TripalEntity ids if these base records in the relationship
+    // are published.
+    if (property_exists($relationship->$subject_id_key, 'entity_id')) {
+      $entity_id = $relationship->$subject_id_key->entity_id;
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $entity_id;
+    }
+    if (property_exists($relationship->$object_id_key, 'entity_id')) {
+      $entity_id = $relationship->$object_id_key->entity_id;
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $entity_id;
+    }
+
+    // Add the clause to the values array.  The clause is a written version
+    // of the relationships.
+    $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+    $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = 'The ' . $subject_type . ', ' .
+      $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
+      $object_type . '.';
+
+    $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
+    $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
+    $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
+    $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
+
+    // For the widget to work properly we will preform values.
+    $entity->{$field_name}['und'][$delta]['type_name'] = $relationship->type_id->name;
+    $entity->{$field_name}['und'][$delta]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$subject_pkey . ']';
+    $entity->{$field_name}['und'][$delta]['object_name'] = $object_name  . ' [id: ' . $relationship->$object_id_key->$object_pkey . ']';
+    if (array_key_exists('value', $schema['fields'])) {
+      $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__value'] = $relationship->value;
+    }
+    if (array_key_exists('rank', $schema['fields'])) {
+      $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__rank'] = $relationship->rank;
+    }
+  }
+ /**
    *
    * @see TripalField::load()
    */
@@ -169,56 +335,28 @@ class sbo__relationship extends ChadoField {
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // Get the foreign keys for the subject and object tables
-    $subject_fkey_table = '';
-    $object_fkey_table = '';
+    // Not all tables have the columns named 'subject_id' and 'object_id'.
+    // some have variations on that name and we need to determine what they are.
     $fkeys = $schema['foreign keys'];
     $subject_id_key = 'subject_id';
     $object_id_key = 'object_id';
     foreach ($fkeys as $fktable => $details) {
       foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
         if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
-          $subject_fkey_table = $fktable;
           $subject_id_key = $fkey_lcolumn;
         }
         if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
-          $object_fkey_table = $fktable;
           $object_id_key = $fkey_lcolumn;
         }
       }
     }
-    $subject_schema = chado_get_schema($subject_fkey_table);
-    $object_schema = chado_get_schema($object_fkey_table);
-    $subject_pkey = $subject_schema['primary key'][0];
-    $object_pkey = $object_schema['primary key'][0];
-
-    // Get the FK that links to the base record.
-    $schema = chado_get_schema($field_table);
-    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-      /* The following shows what may be present in the value array
-        // Clause
-        'SIO:000493' => '',
-        'local:relationship_subject' => array(
-          // Identifier
-          'data:0842' => '',
-          'schema:name' => '',
-          'rdfs:type' => ''
-        ),
-        'local:relationship_object' => array(
-          // Identifier
-          'data:0842' => '',
-          'schema:name' => '',
-          'rdfs:type' => '',
-        ),
-        'local:relationship_type' => '',
-      */
-      ),
+      'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $subject_id_key => '',
       'chado-' . $field_table . '__' . $object_id_key => '',
@@ -269,244 +407,22 @@ class sbo__relationship extends ChadoField {
     if (!$record->$rel_table) {
       return;
     }
-    $srelationships = null;
-    $orelationships = null;
 
+    // Load the subject relationships
+    $i = 0;
     if (isset($record->$rel_table->$subject_id_key)) {
       $srelationships = $record->$rel_table->$subject_id_key;
-    }
-    if (isset($record->$rel_table->$object_id_key)) {
-      $orelationships = $record->$rel_table->$object_id_key;
-    }
-
-    $i = 0;
-    if ($orelationships) {
-      foreach ($orelationships as $relationship) {
-        $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
-        $rel_type = $relationship->type_id->name;
-        $verb = $this->get_rel_verb($rel_type);
-        $subject_id = $relationship->$subject_id_key->$subject_pkey;
-
-        // The linked to table of a relationship linker table may not always
-        // have a type_id or name field.  So we have to be a bit more
-        // specific about how we set some variables.
-        switch ($relationship->tablename) {
-          case 'acquisition_relationship':
-            $subject_type = 'acquisition';
-            $object_type = 'acquisition';
-            break;
-          case 'analysis_relationship':
-            $subject_type = 'analysis';
-            $object_type = 'analysis';
-            break;
-          case 'biomaterial_relationship':
-            $subject_type = 'biomaterial';
-            $object_type = 'biomaterial';
-            break;
-          case 'cell_line_relationship':
-            $subject_type = 'cell_line';
-            $object_type = 'cell_line';
-            break;
-          case 'element_relationship':
-            $subject_name = $relationship->$subject_id_key->feature_id->name;
-            $object_name = $relationship->$object_id_key->feature_id->name;
-            break;
-          case 'organism_relationship':
-            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
-            $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
-            $subject_type = 'organism';
-            $object_type = 'organism';
-            break;
-          case 'project_relationship':
-            $subject_type = 'project';
-            $object_type = 'project';
-            break;
-          case 'phylonode_relationship':
-            $subject_name = $relationship->$subject_id_key->label;
-            $object_name = $relationship->$object_id_key->label;
-            break;
-          case 'pub_relationship':
-            $subject_name = $relationship->$subject_id_key->uniquename;
-            $object_name = $relationship->$object_id_key->uniquename;
-            break;
-          case 'quantification_relationship':
-            $subject_type = 'quantification';
-            $object_type = 'quantification';
-            break;
-          default:
-            $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
-            $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
-            $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
-            $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
-        }
-
-        $entity->{$field_name}['und'][$i]['value'] = array(
-          'local:relationship_subject' => array(
-            'rdfs:type' => $subject_type,
-            'schema:name' => $subject_name,
-          ),
-          'local:relationship_type' => $relationship->type_id->name,
-          'local:relationship_object' => array(
-            'rdfs:type' => $object_type,
-            'schema:name' => $object_name,
-            'entity' => 'TripalEntity:' . $entity->id,
-          )
-        );
-
-        // See if an entity exists for the subject.
-        $data_table = preg_replace('/_relationship/', '', $relationship->tablename);
-        $sentity_id = chado_get_record_entity_by_table($data_table, $subject_id);
-        if ($sentity_id) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $sentity_id;
-        }
-
-        if (property_exists($relationship->$subject_id_key, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] =  $relationship->$subject_id_key->uniquename;;
-        }
-        if (property_exists($relationship->$object_id_key, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
-        }
-        if (property_exists($relationship->$subject_id_key, 'entity_id')) {
-          $entity_id = $relationship->$subject_id_key->entity_id;
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $entity_id;
-        }
-
-        // Add the clause to the values array.
-        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-        $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'The ' . $subject_type . ', ' .
-          $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
-          $object_type . '.';
-
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
-
-        $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $object_name  . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
-        if (array_key_exists('value', $schema['fields'])) {
-          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
-        }
-        if (array_key_exists('rank', $schema['fields'])) {
-          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $relationship->rank;
-        }
+      foreach ($srelationships as $relationship) {
+        $this->loadRelationship($relationship, $entity, $i);
         $i++;
       }
     }
 
-    if ($srelationships) {
-      foreach ($srelationships as $relationship) {
-        $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
-        $rel_type = $relationship->type_id->name;
-        $verb = $this->get_rel_verb($rel_type);
-        $object_id = $relationship->$object_id_key->$object_pkey;
-
-        // The linked to table of a relationship linker table may not always
-        // have a type_id or name field.  So we have to be a bit more
-        // specific about how we set some variables.
-        switch ($relationship->tablename) {
-          case 'acquisition_relationship':
-            $subject_type = 'acquisition';
-            $object_type = 'acquisition';
-            break;
-          case 'analysis_relationship':
-            $subject_type = 'analysis';
-            $object_type = 'analysis';
-            break;
-          case 'biomaterial_relationship':
-            $subject_type = 'biomaterial';
-            $object_type = 'biomaterial';
-            break;
-          case 'cell_line_relationship':
-            $subject_type = 'cell_line';
-            $object_type = 'cell_line';
-            break;
-          case 'element_relationship':
-            $subject_name = $relationship->$subject_id_key->feature_id->name;
-            $object_name = $relationship->$object_id_key->feature_id->name;
-            break;
-          case 'organism_relationship':
-            $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
-            $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
-            $subject_type = 'organism';
-            $object_type = 'organism';
-            break;
-          case 'project_relationship':
-            $subject_type = 'project';
-            $object_type = 'project';
-            break;
-          case 'phylonode_relationship':
-            $subject_name = $relationship->$subject_id_key->label;
-            $object_name = $relationship->$object_id_key->label;
-            break;
-          case 'pub_relationship':
-            $subject_name = $relationship->$subject_id_key->uniquename;
-            $object_name = $relationship->$object_id_key->uniquename;
-            break;
-          case 'quantification_relationship':
-            $subject_type = 'quantification';
-            $object_type = 'quantification';
-            break;
-          default:
-            $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
-            $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
-            $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
-            $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
-        }
-
-        $entity->{$field_name}['und'][$i]['value'] = array(
-          'local:relationship_subject' => array(
-            'rdfs:type' => $subject_type,
-            'schema:name' => $subject_name,
-            'entity' => 'TripalEntity:' . $entity->id,
-          ),
-          'local:relationship_type' => $relationship->type_id->name,
-          'local:relationship_object' => array(
-            'rdfs:type' =>  $object_type,
-            'schema:name' => $object_name,
-          )
-        );
-
-        // See if an entity exists for the object.
-        $data_table = preg_replace('/_relationship/', '', $relationship->tablename);
-        $oentity_id = chado_get_record_entity_by_table($data_table, $object_id);
-        if ($oentity_id) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $oentity_id;
-        }
-
-        if (property_exists($relationship->$subject_id_key, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;
-        }
-        if (property_exists($relationship->$object_id_key, 'uniquename')) {
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
-        }
-        if (property_exists($relationship->$object_id_key, 'entity_id')) {
-          $entity_id = $relationship->$object_id_key->entity_id;
-          $entity->{$field_name}['und'][$i]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $entity_id;
-        }
-
-        // Add the clause to the value array.
-        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-        $entity->{$field_name}['und'][$i]['value']['SIO:000493'] = 'This ' .
-          $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
-          $object_type . ' ' . $object_name . '.';
-
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $relationship->type_id->cvterm_id;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $object_id_key] = $relationship->$object_id_key->$object_pkey;
-
-        $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $object_name . ' [id: ' . $relationship->$object_id_key->$fkey_rcolumn . ']';
-
-        if (array_key_exists('value', $schema['fields'])) {
-          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__value'] = $relationship->value;
-        }
-        if (array_key_exists('rank', $schema['fields'])) {
-          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $relationship->rank;
-        }
+    // Load the object relationships
+    if (isset($record->$rel_table->$object_id_key)) {
+      $orelationships = $record->$rel_table->$object_id_key;
+      foreach ($orelationships as $relationship) {
+        $this->loadRelationship($relationship, $entity, $i);
         $i++;
       }
     }
@@ -743,123 +659,112 @@ class sbo__relationship extends ChadoField {
     $option3 = isset($settings['relationship_types']) && trim($settings['relationship_types']);
     if ($option1 && ($option2 || $option3) == 1 ||
         $option2 && ($option1 || $option3) == 1 ||
-        $option3 && ($option1 || $option2) == 1
-        ) {
-          form_set_error(
-              "instance][settings][relationships",
-              t("Only one option is allowed to limit the relationship types.")
-              );
-          return;
-        }
+        $option3 && ($option1 || $option2) == 1) {
+      form_set_error("instance][settings][relationships", t("Only one option is allowed to limit the relationship types."));
+      return;
+    }
 
-        // For option3, make sure the supplied types are valid cvterms
-        if ($option3) {
-          $rel_types = explode(PHP_EOL, $settings['relationship_types']);
-          foreach($rel_types AS $type) {
-            $type =  trim($type);
-            // Ignore empty lines
-            if ($type == '') {
-              continue;
-            }
-            // Find the matching cvterm
-            $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
-            $results = chado_query($sql, array(':name' => $type));
-            $terms = array();
-            while ($obj = $results->fetchObject()) {
-              $terms[] = $obj;
-            }
-            // Don't save the form  if a term can not be found or it matches more than one cvterm
-            $cv = '';
-            if (count($terms) == 0) {
-              // If a term can not be found, maybe the type contains '|', parse it as 'vocabulary|cvterm'
-              if (strpos($type, '|')) {
-                $tmp = explode('|', $type, 2);
-                $type = trim($tmp[1]);
-                $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-                if($cv) {
-                  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-                  $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
-                  while ($obj = $results->fetchObject()) {
-                    $terms[] = $obj;
-                  }
-                }
-                else {
-                  $cv = $tmp[0];
-                }
-              }
-              if (count($terms) != 1) {
-                $message = "The term '@type' can not be found.";
-                $token = array('@type' => $type);
-                if ($cv) {
-                  $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
-                  $token['@vocab'] = $cv;
-                }
-                form_set_error(
-                    "instance][settings][relationships][relationship_types",
-                    t($message, $token)
-                    );
+    // For option3, make sure the supplied types are valid cvterms
+    if ($option3) {
+      $rel_types = explode(PHP_EOL, $settings['relationship_types']);
+      foreach($rel_types AS $type) {
+        $type =  trim($type);
+        // Ignore empty lines
+        if ($type == '') {
+          continue;
+        }
+        // Find the matching cvterm
+        $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
+        $results = chado_query($sql, array(':name' => $type));
+        $terms = array();
+        while ($obj = $results->fetchObject()) {
+          $terms[] = $obj;
+        }
+        // Don't save the form  if a term can not be found or it matches more than one cvterm
+        $cv = '';
+        if (count($terms) == 0) {
+          // If a term can not be found, maybe the type contains '|', parse it as 'vocabulary|cvterm'
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
               }
             }
-            else if (count($terms) > 1) {
-              // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
-              if (strpos($type, '|')) {
-                $tmp = explode('|', $type, 2);
-                $type = trim($tmp[1]);
-                $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-                if ($cv) {
-                  $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-                  $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
-                  while ($obj = $results->fetchObject()) {
-                    $terms[] = $obj;
-                  }
-                }
-              }
-              if(count($terms) != 1) {
-                form_set_error(
-                    "instance][settings][relationships][relationship_types",
-                    t("The term '@type' matches more than one term. Please specify its vocabulary in
-                  the format of 'vocabulary|@type'.", array('@type' => $type))
-                    );
+            else {
+              $cv = $tmp[0];
+            }
+          }
+          if (count($terms) != 1) {
+            $message = "The term '@type' can not be found.";
+            $token = array('@type' => $type);
+            if ($cv) {
+              $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
+              $token['@vocab'] = $cv;
+            }
+            form_set_error("instance][settings][relationships][relationship_types",
+                t($message, $token));
+          }
+        }
+        else if (count($terms) > 1) {
+          // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
+          if (strpos($type, '|')) {
+            $tmp = explode('|', $type, 2);
+            $type = trim($tmp[1]);
+            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            if ($cv) {
+              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              while ($obj = $results->fetchObject()) {
+                $terms[] = $obj;
               }
             }
           }
+          if(count($terms) != 1) {
+            form_set_error("instance][settings][relationships][relationship_types",
+              t("The term '@type' matches more than one term. Please specify its vocabulary in the format of 'vocabulary|@type'.", array('@type' => $type)));
+          }
         }
+      }
+    }
 
-        // For option2: Make sure the parent term is a valid cvterm
-        if ($option2) {
-          $cv_id = $settings['option2_vocab'];
-          $supertype = $settings['option2_parent'];
-          $term = tripal_get_cvterm(array(
-            'name' => trim($supertype),
-            'cv_id' => $cv_id,
-          ));
-          // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
-          // a cvterm, try cvtermsynonym
-          if (!$term) {
-            $synonym = tripal_get_cvterm(
-                array(
-                  'synonym' => array(
-                    'name' => trim($supertype),
-                  )
-                )
-                );
-            if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
-              $term = $synonym;
-            }
-          }
-          if (!isset($term->cvterm_id)) {
-            form_set_error(
-                "instance][settings][relationships][option2_parent",
-                t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype))
-                );
-          }
+    // For option2: Make sure the parent term is a valid cvterm
+    if ($option2) {
+      $cv_id = $settings['option2_vocab'];
+      $supertype = $settings['option2_parent'];
+      $term = tripal_get_cvterm(array(
+        'name' => trim($supertype),
+        'cv_id' => $cv_id,
+      ));
+      // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
+      // a cvterm, try cvtermsynonym
+      if (!$term) {
+        $synonym = tripal_get_cvterm(
+            array(
+              'synonym' => array(
+                'name' => trim($supertype),
+              )
+            )
+            );
+        if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
+          $term = $synonym;
         }
+      }
+      if (!isset($term->cvterm_id)) {
+        form_set_error("instance][settings][relationships][option2_parent",
+            t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype)));
+      }
+    }
   }
 
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];

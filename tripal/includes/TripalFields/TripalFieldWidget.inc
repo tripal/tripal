@@ -113,7 +113,7 @@ class TripalFieldWidget {
   }
 
   /**
-   * Performs validation of the widgetForm.
+   * Performs validation of the widget form.
    *
    * Use this validate to ensure that form values are entered correctly.
    * The 'value' key of this field must be set in the $form_state['values']

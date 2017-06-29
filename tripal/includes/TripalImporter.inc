@@ -389,8 +389,16 @@ class TripalImporter {
         $file_remote = $this->arguments['file']['file_remote'];
         $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
 
+        // If this file is compressed then keepthe .gz extension so we can
+        // uncompress it.
+        $ext = '';
+        if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_remote'])) {
+          $ext = '.gz';
+        }
         // Create a temporary file.
-        $temp = tempnam("temporary://", 'import_');
+        $temp = tempnam("temporary://", 'import_') . $ext;
+        $this->logMessage("Saving as: !file", array('!file' => $temp));
+
         $url_fh = fopen($file_remote, "r");
         $tmp_fh = fopen($temp, "w");
         if (!$url_fh) {
@@ -402,10 +410,38 @@ class TripalImporter {
         while (!feof($url_fh)) {
           fwrite($tmp_fh, fread($url_fh, 255), 255);
         }
-
         // Set the path to the file for the importer to use.
         $this->arguments['file']['file_path'] = $temp;
         $this->is_prepared = TRUE;
+      }
+
+      // Is this file compressed?  If so, then uncompress it
+      $matches = array();
+      if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_path'], $matches)) {
+        $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['file']['file_path']));
+        $buffer_size = 4096;
+        $new_file_path = $matches[1];
+        $gzfile = gzopen($this->arguments['file']['file_path'], 'rb');
+        $out_file = fopen($new_file_path, 'wb');
+        if (!$out_file) {
+          throw new Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
+        }
+
+        // Keep repeating until the end of the input file
+        while (!gzeof($gzfile)) {
+          // Read buffer-size bytes
+          // Both fwrite and gzread and binary-safe
+          fwrite($out_file, gzread($gzfile, $buffer_size));
+        }
+
+        // Files are done, close files
+        fclose($out_file);
+        gzclose($gzfile);
+
+        // Now remove the .gz file and reset the file_path to the new
+        // uncompressed version.
+        unlink($this->arguments['file']['file_path']);
+        $this->arguments['file']['file_path'] = $new_file_path;
       }
     }
     catch (Exception $e){

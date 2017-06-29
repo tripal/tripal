@@ -506,10 +506,6 @@ function tripal_chado_defaultview_admin_cvs_listing() {
     'label-1' => 'Add Vocabulary',
     'path-1' => 'admin/tripal/loaders/chado_cv/add',
   );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
-    'label-2' => 'Load Ontology',
-    'path-2' => 'admin/tripal/vocab/obo_loader',
-  );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';

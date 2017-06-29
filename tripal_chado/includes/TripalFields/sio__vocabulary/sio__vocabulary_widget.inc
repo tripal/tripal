@@ -22,7 +22,34 @@ class sio__vocabulary_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    $cv_id = 0;
+    // If the items array is empty then we are creating a new entity.
+    // Since this is set when the entity type is created, we don't want to allow
+    // content managers to change it. Thus we need to look up the value for the
+    // entity type and use it here.
+    if (empty($items)) {
+      // Use the bundle to get the cv_id choosen for this cvterm-based entity.
+      // ASSUMPTION: the cv_id is saved as the "type_value" of the bundle.
+      $bundle = tripal_load_bundle_entity(array('name' => $widget['#bundle']));
+      $cv = tripal_get_cv(array('cv_id' => $bundle->type_value));
+
+      // Now populate the items array with defaults based on the cv.
+      if ($cv) {
+        $items[$delta] = array(
+          'value' => $cv->name,
+          'chado-' . $field_table . '__cv_id' => $cv->cv_id,
+        );
+      }
+      else {
+        tripal_report_error(
+          $field_name,
+          TRIPAL_ERROR,
+          'Unable to determine default vocabulary for :name Tripal Content Type',
+          array(':name' => $bundle->label)
+        );
+        drupal_set_message(t('Unable to determine default vocabulary for :name Tripal Content Type',
+          array(':name' => $bundle->label)), 'error');
+      }
+    }
 
     $widget['value'] = array(
       '#type' => 'value',
@@ -30,7 +57,7 @@ class sio__vocabulary_widget extends ChadoFieldWidget {
     );
     $widget['chado-' . $field_table . '__cv_id'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['chado-' . $field_table . '__cv_id'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['chado-' . $field_table . '__cv_id'] : '',
     );
     $widget['vocabulary_name'] = array(
       '#type' => 'item',

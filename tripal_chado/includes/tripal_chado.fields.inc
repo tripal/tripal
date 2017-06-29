@@ -70,6 +70,13 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
+    // Skip the infraspecific type_id and name from the organism table as we
+    // have a special field for those.
+    if ($table_name == 'organism' and ($column_name == 'type_id' or
+        $column_name == 'infraspecific_name')) {
+      continue;
+    }
+
     // Skip the cvterm.is_relationshptype.
     if ($table_name == 'cvterm' and $column_name == 'is_relationshiptype') {
       continue;
@@ -88,7 +95,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
         array('%table_name' => $table_name, '%column_name' => $column_name)), 'error');
       continue;
     }
-    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
+    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/[^\w]/', '_', $cvterm->name));
     $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.
@@ -96,9 +103,9 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
-    // Skip the type field that will always be custom
-    if (($table_name == $type_table and $column_name == $type_column) or
-         $column_name == 'type_id') {
+    // If the type_id defines the content type and it's part of the
+    // base table and this column is the type_id then skip it.
+    if (!$type_table and $type_column and $column_name == $type_column) {
       continue;
     }
 
@@ -165,7 +172,9 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
     //
     // PUB TABLE
     //
-    elseif ($table_name == 'pub' and $column_name == 'uniquename') {
+    if ($table_name == 'pub' and (
+        $column_name == 'uniquename' or $column_name == 'title' or
+        $column_name == 'volumetitle')) {
       $base_info['type'] = 'text';
       $base_info['settings']['text_processing'] = 0;
     }
@@ -187,12 +196,8 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   $schema = chado_get_schema($table_name);
 
-  // BASE TYPE_ID
-  // Exclude the type_id field on base tables where content types are mapped
-  // by the type_id field or on the organism table where the type_id is mean
-  // as an infraspecific name type.
-  if (array_key_exists('type_id', $schema['fields']) and
-      $table_name != 'organism' and $type_column != 'type_id') {
+  // An additional type for the publication
+  if ($table_name == 'pub') {
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -297,7 +302,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
-  // PROTEIN & CDS SEQUENCE
+  // PROTEIN & CDS
   if ($table_name == 'feature' and
       ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
     $field_name = 'data__protein_sequence';
@@ -325,38 +330,36 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 //     );
   }
 
-  // GENE TRANSCRIPTS
-  $rel_table = $table_name . '_relationship';
-  if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
-    $field_name = 'so__transcript';
-    $field_type = 'so__transcript';
+//   // GENE TRANSCRIPTS
+//   $rel_table = $table_name . '_relationship';
+//   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
+//     $field_name = 'so__transcript';
+//     $field_type = 'so__transcript';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//     );
+//   }
+
+  // ORGANISM TYPE_ID
+  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'taxrank__infraspecific_taxon';
+    $field_type = 'taxrank__infraspecific_taxon';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'cardinality' => 1,
       'locked' => FALSE,
       'storage' => array(
         'type' => 'field_chado_storage',
       ),
     );
   }
-
-  // ORGANISM TYPE_ID
-//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-//     $field_name = 'taxarank__infraspecific_taxon';
-//     $field_type = 'taxarank__infraspecific_taxon';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'type' => $field_type,
-//       'cardinality' => 1,
-//       'locked' => FALSE,
-//       'storage' => array(
-//         'type' => 'field_chado_storage',
-//       ),
-//       'settings' => array(
-//       ),
-//     );
-//   }
 
   // FEATUREMAP UNITTYPE_ID
   if ($table_name == 'featuremap') {
@@ -497,37 +500,37 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     );
   }
 
-  // GENOTYPE
-  $genotype_table = $table_name . '_genotype';
-  if (chado_table_exists($genotype_table)) {
-    $field_name = 'so__genotype';
-    $field_type = 'so__genotype';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-    );
-  }
+//   // GENOTYPE
+//   $genotype_table = $table_name . '_genotype';
+//   if (chado_table_exists($genotype_table)) {
+//     $field_name = 'so__genotype';
+//     $field_type = 'so__genotype';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//     );
+//   }
 
-  // PHENOTYPE
-  $phenotype_table = $table_name . '_phenotype';
-  if (chado_table_exists($phenotype_table)) {
-    $field_name = 'sbo__phenotype';
-    $field_type = 'sbo__phenotype';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-    );
-  }
+//   // PHENOTYPE
+//   $phenotype_table = $table_name . '_phenotype';
+//   if (chado_table_exists($phenotype_table)) {
+//     $field_name = 'sbo__phenotype';
+//     $field_type = 'sbo__phenotype';
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'type' => $field_type,
+//       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+//       'locked' => FALSE,
+//       'storage' => array(
+//         'type' => 'field_chado_storage',
+//       ),
+//     );
+//   }
 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
@@ -561,6 +564,27 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
         ),
       );
     }
+  }
+
+  // CVTERMS
+  $term_table = $table_name . '_cvterm';
+  if (chado_table_exists($term_table)) {
+    $schema = chado_get_schema($term_table);
+    $pkey = $schema['primary key'][0];
+    $lkey = key($schema['foreign keys'][$table_name]['columns']);
+    $rkey = $schema['foreign keys'][$table_name]['columns'][$lkey];
+
+    $field_name = 'sio__annotation';
+    $field_type = 'sio__annotation';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
   }
 
   // PUBLICATIONS
@@ -702,6 +726,13 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
 
+    // Skip the infraspecific type_id and name from the organism table as we
+    // have a special field for those.
+    if ($table_name == 'organism' and ($column_name == 'type_id' or
+        $column_name == 'infraspecific_name')) {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_column) {
       continue;
@@ -720,7 +751,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
 
-    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/ /', '_', $cvterm->name));
+    $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/[^\w]/', '_', $cvterm->name));
     $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.
@@ -728,8 +759,9 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
 
-    // Skip the type field.
-    if ($table_name == $type_table and $column_name == $type_column) {
+    // If the type_id defines the content type and it's part of the
+    // base table and this column is the type_id then skip it.
+    if (!$type_table and $type_column and $column_name == $type_column) {
       continue;
     }
 
@@ -823,46 +855,87 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
         unset($base_info['settings']['format']);
       }
     }
-    elseif ($base_info['label'] == 'Timeaccessioned') {
+    if ($base_info['label'] == 'Timeaccessioned') {
       $base_info['label'] = 'Time Accessioned';
       $base_info['description'] = 'Please enter the time that this record was first added to the database.';
     }
-    elseif ($base_info['label'] == 'Timelastmodified') {
+    if ($base_info['label'] == 'Timelastmodified') {
       $base_info['label'] = 'Time Last Modified';
       $base_info['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
     }
     //
     // ORGANISM TABLE
     //
-    elseif ($table_name == 'organism' and $column_name == 'comment') {
+    if ($table_name == 'organism' and $column_name == 'comment') {
       $base_info['label'] = 'Description';
     }
     //
     // PUB TABLE
     //
-    elseif ($table_name == 'pub' and $column_name == 'uniquename') {
-      $base_info['widget_type'] = 'text_textfield';
+    if ($table_name == 'pub') {
+      if ($column_name == 'title' or $column_name == 'type_id') {
+        $base_info['required'] = TRUE;
+      }
+      if($column_name == 'uniquename' or $column_name == 'title' or $column_name == 'volumetitle') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if($column_name == 'uniquename') {
+        $base_info['label'] = 'Unique Local Identifier';
+        $base_info['required'] = TRUE;
+        $base_info['description'] = 'This publication is housed in Chado whic requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.';
+      }
+      if($column_name == 'title') {
+        $base_info['description'] = 'The title of the published work.';
+      }
+      if($column_name == 'series_name') {
+        $base_info['description'] = 'The name media that produces a series of publications (e.g. journal, conference proceedings, etc.).';
+      }
+      if($column_name == 'issue') {
+        $base_info['description'] = 'The issue of the series (e.g. journal) where the publication was printed.';
+      }
+      if($column_name == 'volume') {
+        $base_info['description'] = 'The volume of the series (e.g. journal) where the publication was printed.';
+      }
+      if($column_name == 'pyear') {
+        $base_info['label'] = 'Publication Year';
+        $base_info['required'] = TRUE;
+      }
+      if($column_name == 'pages') {
+        $base_info['label'] = 'Page Numbers';
+      }
+      if($column_name == 'pubplace') {
+        $base_info['label'] = 'Publication Location';
+      }
+      if($column_name == 'volumetitle') {
+        $base_info['label'] = 'Volumn Title';
+        $base_info['label'] = 'The title of the volume (if applicable).';
+      }
+      if($column_name == 'miniref') {
+        $base_info['label'] = 'Mini Local identifier';
+        $base_info['description'] = 'Some sites use small identifiers for each publication. if your site uses this please provide the proper miniref for this publication.';
+      }
     }
 
     //
     // ANALYSIS TABLE
     //
-    elseif ($table_name == 'analysis' and $column_name == 'name') {
+    if ($table_name == 'analysis' and $column_name == 'name') {
       $base_info['required'] = TRUE;
     }
-    elseif ($table_name == 'analysis' and $column_name == 'program') {
+    if ($table_name == 'analysis' and $column_name == 'program') {
       $base_info['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
       $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
     }
-    elseif ($table_name == 'analysis' and $column_name == 'algorithm') {
+    if ($table_name == 'analysis' and $column_name == 'algorithm') {
       $base_info['label'] = 'Source Version';
       $base_info['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
     }
-    elseif ($table_name == 'analysis' and $column_name == 'programversion') {
+    if ($table_name == 'analysis' and $column_name == 'programversion') {
       $base_info['label'] = 'Program Version';
       $base_info['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
     }
-    elseif ($table_name == 'analysis' and $column_name == 'timeexecuted') {
+    if ($table_name == 'analysis' and $column_name == 'timeexecuted') {
       $base_info['label'] = 'Date Performed';
       $base_info['description'] = 'The date and time when the analysis was performed.';
     }
@@ -876,7 +949,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     //
     // PROJECT TABLE
     //
-    elseif ($table_name == 'project' and $column_name == 'description') {
+    if ($table_name == 'project' and $column_name == 'description') {
       $base_info['label'] = 'Short Description';
     }
     $info[$field_name] = $base_info;
@@ -901,12 +974,8 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   $type_value = $details['chado_type_value'];
   $schema = chado_get_schema($table_name);
 
-  // BASE TYPE_ID
-  // Exclude the type_id field on base tables where content types are mapped
-  // by the type_id field or on the organism table where the type_id is mean
-  // as an infraspecific name type.
-  if (array_key_exists('type_id', $schema['fields']) and
-      $table_name != 'organism' and $type_column != 'type_id') {
+  // An additional type for publications
+  if ($table_name == 'pub') {
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
@@ -917,14 +986,16 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Type',
-      'description' => 'Select a type for this record.',
+      'label' => 'Publication Type',
+      'description' => 'Select the publication type.',
       'required' => $is_required,
       'settings' => array(
         'auto_attach' => TRUE,
         'chado_table' => $table_name,
         'chado_column' => 'type_id',
         'base_table' => $table_name,
+        'vocabulary' => 'tripal_pub',
+        'parent_term' => 'TPUB:0000015',
       ),
       'widget' => array(
         'type' => 'schema__additional_type_widget',
@@ -1212,70 +1283,70 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
 
-  // GENE TRANSCRIPTS
-  $rel_table = $table_name . '_relationship';
-  if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
-    $field_name = 'so__transcript';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Transcripts',
-      'description' => 'Transcripts that are part of this gene.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'chado_table' => $rel_table,
-        'chado_column' => '',
-        'base_table' => $table_name,
-      ),
-      'widget' => array(
-        'type' => 'so__transcript_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'so__transcript_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
-
-  // ORGANISM TYPE_ID
-//   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-//     $field_name = 'taxarank__infraspecific_taxon';
+//   // GENE TRANSCRIPTS
+//   $rel_table = $table_name . '_relationship';
+//   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
+//     $field_name = 'so__transcript';
 //     $info[$field_name] = array(
 //       'field_name' => $field_name,
 //       'entity_type' => $entity_type,
 //       'bundle' => $bundle->name,
-//       'label' => 'Infraspecific Taxon',
-//       'description' => 'The Infraspecific Taxon.',
+//       'label' => 'Transcripts',
+//       'description' => 'Transcripts that are part of this gene.',
 //       'required' => FALSE,
 //       'settings' => array(
-//         'auto_attach' => TRUE,
-//         'chado_table' => 'organism',
-//         'chado_column' => 'type_id',
-//         'base_table' => 'organism',
+//         'auto_attach' => FALSE,
+//         'chado_table' => $rel_table,
+//         'chado_column' => '',
+//         'base_table' => $table_name,
 //       ),
 //       'widget' => array(
-//         'type' => 'taxarank__infraspecific_taxon_widget',
+//         'type' => 'so__transcript_widget',
 //         'settings' => array(
 //           'display_label' => 1,
 //         ),
 //       ),
 //       'display' => array(
 //         'default' => array(
-//           'label' => 'inline',
-//           'type' => 'taxarank__infraspecific_taxon_formatter',
+//           'label' => 'above',
+//           'type' => 'so__transcript_formatter',
 //           'settings' => array(),
 //         ),
 //       ),
 //     );
 //   }
+
+  // ORGANISM TYPE_ID
+  if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
+    $field_name = 'taxrank__infraspecific_taxon';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Infraspecific Taxon',
+      'description' => 'The Infraspecific Taxon.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => 'organism',
+        'chado_column' => 'type_id',
+        'base_table' => 'organism',
+      ),
+      'widget' => array(
+        'type' => 'taxrank__infraspecific_taxon_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'taxrank__infraspecific_taxon_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
 
   // FEATURE SEQLEN
@@ -1555,75 +1626,75 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
     );
   }
 
-  // GENOTYPE
-  $genotype_table = $table_name . '_genotype';
-  if (chado_table_exists($genotype_table)) {
-    $field_name = 'so__genotype';
-    $schema = chado_get_schema($genotype_table);
-    $pkey = $schema['primary key'][0];
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Genotype',
-      'description' => 'The genotypes associated with this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'chado_table' => $genotype_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
-      'widget' => array(
-        'type' => 'so__genotype_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'hidden',
-          'type' => 'so__genotype_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+//   // GENOTYPE
+//   $genotype_table = $table_name . '_genotype';
+//   if (chado_table_exists($genotype_table)) {
+//     $field_name = 'so__genotype';
+//     $schema = chado_get_schema($genotype_table);
+//     $pkey = $schema['primary key'][0];
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'entity_type' => $entity_type,
+//       'bundle' => $bundle->name,
+//       'label' => 'Genotype',
+//       'description' => 'The genotypes associated with this record.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => FALSE,
+//         'chado_table' => $genotype_table,
+//         'chado_column' => $pkey,
+//         'base_table' => $table_name,
+//       ),
+//       'widget' => array(
+//         'type' => 'so__genotype_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'hidden',
+//           'type' => 'so__genotype_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
 
-  // PHENOTYPE
-  $phenotype_table = $table_name . '_phenotype';
-  if (chado_table_exists($phenotype_table)) {
-    $field_name = 'sbo__phenotype';
-    $schema = chado_get_schema($phenotype_table);
-    $pkey = $schema['primary key'][0];
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Phenotype',
-      'description' => 'The phenotypes associated with this record.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'chado_table' => $phenotype_table,
-        'chado_column' => $pkey,
-        'base_table' => $table_name,
-      ),
-      'widget' => array(
-        'type' => 'sbo__phenotype_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'hidden',
-          'type' => 'sbo__phenotype_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
+//   // PHENOTYPE
+//   $phenotype_table = $table_name . '_phenotype';
+//   if (chado_table_exists($phenotype_table)) {
+//     $field_name = 'sbo__phenotype';
+//     $schema = chado_get_schema($phenotype_table);
+//     $pkey = $schema['primary key'][0];
+//     $info[$field_name] = array(
+//       'field_name' => $field_name,
+//       'entity_type' => $entity_type,
+//       'bundle' => $bundle->name,
+//       'label' => 'Phenotype',
+//       'description' => 'The phenotypes associated with this record.',
+//       'required' => FALSE,
+//       'settings' => array(
+//         'auto_attach' => FALSE,
+//         'chado_table' => $phenotype_table,
+//         'chado_column' => $pkey,
+//         'base_table' => $table_name,
+//       ),
+//       'widget' => array(
+//         'type' => 'sbo__phenotype_widget',
+//         'settings' => array(
+//           'display_label' => 1,
+//         ),
+//       ),
+//       'display' => array(
+//         'default' => array(
+//           'label' => 'hidden',
+//           'type' => 'sbo__phenotype_formatter',
+//           'settings' => array(),
+//         ),
+//       ),
+//     );
+//   }
 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
@@ -1695,6 +1766,13 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
        while ($prop = $props->fetchObject()) {
 
          $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+         $term = chado_expand_var($term, 'field', 'cvterm.definition');
+
+         // Skip the Publiation Type property for pubs as this is
+         // already handled by the pub.type_id field.
+         if ($term->name == 'Publication Type' and $term->cv_id->name == 'tripal_pub') {
+           continue;
+         }
 
          // The tripal_analysis_KEGG, tripal_analysis_blast, and
          // tripal_analysis_interpro modules store results in the analysisprop
@@ -1738,9 +1816,62 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
              ),
            ),
          );
+
+         // Make some customizations to some fields
+         if ($term->name == 'Citation' and $term->cv_id->name == 'tripal_pub') {
+           $info[$field_name]['required'] = TRUE;
+           $info[$field_name]['description'] = t('All publications must have a unique citation.
+            Please enter the full citation for this publication.  For PubMed style citations list
+            the last name of the author followed by initials. Each author should be separated by a comma. Next comes
+            the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.
+            Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations
+              suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>');
+           $info[$field_name]['settings']['rows'] = 3;
+         }
+         if ($term->name == 'Abstract' and $term->cv_id->name == 'tripal_pub') {
+           $info[$field_name]['settings']['rows'] = 5;
+         }
        }
      }
    }
+
+  // CVTERMS
+  $term_table = $table_name . '_cvterm';
+  if (chado_table_exists($term_table)) {
+    $schema = chado_get_schema($term_table);
+    $pkey = $schema['primary key'][0];
+    $lkey = key($schema['foreign keys'][$table_name]['columns']);
+    $rkey = $schema['foreign keys'][$table_name]['columns'][$lkey];
+
+    $field_name = 'sio__annotation';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Annotations',
+      'description' => 'Annotations that are associated with this record.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $term_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sio__annotation_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'sio__annotation_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
 
   // PUBLICATIONS

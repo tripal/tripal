@@ -49,13 +49,15 @@ class data__protein_sequence extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
+    $info = array(
       $field_term => array(
-        'operations' => array(),
+        'label' => 'Protein sequence',
+        'help' => 'The polypeptide sequence derived from mRNA',
         'sortable' => FALSE,
         'searchable' => FALSE,
       ),
     );
+    return $info;
   }
   /**
    * @see TripalField::load()
@@ -85,9 +87,14 @@ class data__protein_sequence extends ChadoField {
     ";
     $proteins = chado_query($sql, array(':feature_id' => $feature->feature_id));
     while ($protein = $proteins->fetchObject()) {
-      if ($protein->residues) {
-        $entity->{$field_name}['und'][$num_seqs++]['value'] = $protein->residues;
+      $entity->{$field_name}['und'][$num_seqs]['value'] = $protein->residues;
+      // Because we'll be saving a feature we need to maintain all of it's
+      // columns in the feature table. The following will add them all.
+      $columns = get_object_vars($protein);
+      foreach ($columns as $colname => $value) {
+        $entity->{$field_name}['und'][$num_seqs]['chado-feature__' . $colname] = $value;
       }
+      $num_seqs++;
     }
   }
 }

@@ -94,7 +94,6 @@ class schema__publication extends ChadoField {
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
       'chado-' . $field_table . '__' . 'pub_id' => '',
-      'uniquename' => '',
     );
 
     $linker_table = $base_table . '_pub';
@@ -112,7 +111,6 @@ class schema__publication extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub->pub_id;
-        $entity->{$field_name}['und'][$i]['uniquename'] =  $pub->uniquename;
 
         if (property_exists($pub, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
@@ -121,45 +119,4 @@ class schema__publication extends ChadoField {
       }
     }
   }
-
-  /**
-   * @see ChadoField::query()
-   */
-  public function query($query, $condition) {
-    $pub_linker = $this->instance['settings']['chado_table'];
-    $base_table = $this->instance['settings']['base_table'];
-    $bschema = chado_get_schema($base_table);
-    $bpkey = $bschema['primary key'][0];
-    $alias = 'pub_linker';
-    $operator = $condition['operator'];
-
-    if ($condition['column'] == 'publication.database_cross_reference') {
-      list($db_name, $accession) = explode(':', $condition['value']);
-
-      $this->queryJoinOnce($query, $pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'pub_dbxref', 'PDBX', "PDBX.pub_id = $alias.pub_id");
-      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = PDBX.dbxref_id");
-      $this->queryJoinOnce($query, 'db', 'DB', "DB.db_id = DBX.db_id");
-      $query->condition("DB.name", $db_name);
-      $query->condition("DBX.accession", $accession);
-    }
-
-    if ($condition['column'] == 'publication.title') {
-      $this->queryJoinOnce($query, $pub_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'pub', 'PUB', "PUB.pub_id = $alias.pub_id");
-      $query->condition('PUB.title', $condition['value'], $operator);
-    }
-
-    if ($condition['column'] == 'publication.citation') {
-
-    }
-
-    if ($condition['column'] == 'publication.authors') {
-
-    }
-    if ($condition['column'] == 'publication.abstract') {
-
-    }
-  }
-
 }

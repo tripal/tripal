@@ -27,6 +27,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_IAO();
   tripal_chado_populate_vocab_LOCAL();
   tripal_chado_populate_vocab_NCBITAXON();
+  tripal_chado_populate_vocab_OBCS();
   tripal_chado_populate_vocab_OBI();
   tripal_chado_populate_vocab_OGI();
   tripal_chado_populate_vocab_RDFS();
@@ -201,7 +202,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'URL of the item.',
   ));
-  tripal_associate_chado_semweb_term('db', 'URL', $term);
+  tripal_associate_chado_semweb_term('db', 'url', $term);
 
   // Typically the type_id field is used for distinguishing between records
   // but in the case that it isn't then we need to associate a term with it
@@ -270,6 +271,34 @@ function tripal_chado_populate_vocab_SIO() {
   ));
   tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:001166',
+    'name' => 'annotation',
+    'cv_name' => 'SIO',
+    'definition' => 'An annotation is a written explanatory or critical description, or other in-context information (e.g., pattern, motif, link), that has been associated with data or other types of information.',
+  ));
+  tripal_associate_chado_semweb_term('feature_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('analysis_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('cell_line_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('environment_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('expression_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('library_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('organism_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('phenotype_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('stock_cvterm', 'cvterm_id', $term);
+  tripal_associate_chado_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:000281',
+    'name' => 'negation',
+    'cv_name' => 'SIO',
+    'definition' => 'NOT is a logical operator in that has the value true if its operand is false.',
+  ));
+  tripal_associate_chado_semweb_term('feature_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('analysis_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('organism_cvterm', 'is_not', $term);
+  tripal_associate_chado_semweb_term('stock_cvterm', 'is_not', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'SIO:001080',
@@ -516,6 +545,29 @@ function tripal_chado_populate_vocab_ERO() {
 /**
  * Adds the Information Artifact Ontology database and terms.
  */
+function tripal_chado_populate_vocab_OBCS() {
+  tripal_insert_db(array(
+    'name' => 'OBCS',
+    'description' => 'Ontology of Biological and Clinical Statistics.',
+    'url' => 'https://github.com/obcs/obcs',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv(
+    'OBCS',
+    'Ontology of Biological and Clinical Statistics.'
+  );
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'OBCS:0000117',
+    'name' => 'rank order',
+    'cv_name' => 'OBCS',
+    'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'rank', $term);
+}
+/**
+ * Adds the Information Artifact Ontology database and terms.
+ */
 function tripal_chado_populate_vocab_OBI() {
   tripal_insert_db(array(
     'name' => 'OBI',
@@ -569,7 +621,7 @@ function tripal_chado_populate_vocab_IAO() {
     'name' => 'IAO',
     'description' => 'The Information Artifact Ontology (IAO).',
     'url' => 'https://github.com/information-artifact-ontology/IAO/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/IAO_',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
   ));
   tripal_insert_cv(
     'IAO',
@@ -838,6 +890,13 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:miniref',
+    'name' => 'Mini-ref',
+    'definition' => 'A small in-house unique identifier for a publication.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('pub', 'miniref', $term);
 
   //-----------------------------
   // Relationship Terms
@@ -1196,17 +1255,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
-
-  $term = tripal_insert_cvterm(array(
-    'id' => 'local:unknown_fmin',
-    'name' => ' minimal boundary',
-    'definition' => 'The leftmost, minimal boundary in the linear range ' .
-    'represented by the feature location. Sometimes this is called ' .
-    'start although this is confusing because it does not necessarily ' .
-    'represent the 5-prime coordinate.',
-    'cv_name' => 'local',
-  ));
-  tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
 
 
   //--------------

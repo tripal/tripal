@@ -7,13 +7,6 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_coordinates');
 
-  /**
-   *
-   * @see TripalFieldFormatter::settingsForm()
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-
-  }
 
   /**
    *
@@ -21,20 +14,20 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    $reference_term = 'data:3002';
+    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+
     $content = '';
     foreach ($items as $item) {
       if (!empty($item['value'])) {
-        $srcfeature = $item['value']['data:3002'];
-        $fmin = $item['value']['local:fmin'];
-        $fmax = $item['value']['local:fmax'];
-        $phase = $item['value']['data:2336'];
-        $strand = $item['value']['data:0853'];
-        if ($strand == 1) {
-          $strand = '+';
-        }
-        else {
-          $strand = '-';
-        }
+        $srcfeature = $item['value'][$reference_term];
+        $fmin = $item['value'][$fmin_term];
+        $fmax = $item['value'][$fmax_term];
+        $phase = $item['value'][$phase_term];
+        $strand = $item['value'][$strand_term];
         $content .= $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
       }
     }

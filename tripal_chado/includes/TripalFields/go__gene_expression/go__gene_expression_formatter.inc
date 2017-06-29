@@ -7,13 +7,6 @@ class go__gene_expression_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('go__gene_expression');
 
-  /**
-   *
-   * @see TripalFieldFormatter::settingsForm()
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-
-  }
 
   /**
    *

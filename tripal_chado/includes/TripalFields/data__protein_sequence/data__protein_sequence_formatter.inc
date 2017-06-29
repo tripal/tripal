@@ -7,15 +7,8 @@ class data__protein_sequence_formatter extends ChadoFieldFormatter {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__protein_sequence');
 
-
   /**
-   *
-   * @param unknown $element
-   * @param unknown $entity_type
-   * @param unknown $entity
-   * @param unknown $langcode
-   * @param unknown $items
-   * @param unknown $display
+   * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $content = 'There is no protein sequence.';

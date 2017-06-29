@@ -14,15 +14,9 @@ class data__protein_sequence_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
-    // TODO: add the form for setting a protein sequence.
-  }
-
-  /**
-   *
-   * @see TripalFieldWidget::submit()
-   */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
-    $field_name = $this->field['field_name'];
-
+    // TODO: before we can create a widget we must have a way to
+    // save another record whose table matches the same as the base base
+    // table with the chado_storage backend getting confused as to what value
+    // belongs to which feature record.
   }
 }

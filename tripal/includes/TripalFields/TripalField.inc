@@ -208,7 +208,7 @@ class TripalField {
   /**
    * Describes this field to Tripal web services.
    *
-   * The child class need not implement this function has all of the details
+   * The child class need not implement this function. It has all of the details
    * provided for elements by the elementInfo() function are used to generate
    * the details needed for Views.
    *
@@ -224,19 +224,28 @@ class TripalField {
     $field_details = $elements[$field_term];
 
     $searchable_keys = array();
+    $sortable_keys = array();
+
     if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
       $searchable_keys[$field_term_name] = $field_term;
+    }
+
+    if (array_key_exists('sortable', $field_details) and $field_details['sortable']) {
+      $sortable_keys[$field_term_name] = $field_term;
     }
 
     // Now add any entries for child elements.
     if (array_key_exists('elements', $field_details)) {
       $elements = $field_details['elements'];
       foreach ($elements as $element_name => $element_details) {
-        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+        $this->_addWebServiceElement($searchable_keys, $sortable_keys, $field_term_name, $field_term, $element_name, $element_details);
       }
     }
 
-    return $searchable_keys;
+    return array(
+      'searchable' => $searchable_keys,
+      'sortable' => $sortable_keys
+    );
   }
 
   /**
@@ -246,7 +255,9 @@ class TripalField {
    * @param $element_name
    * @param $element_details
    */
-  protected function _addWebServiceElement(&$searchable_keys, $parent_term_name, $parent_term, $element_name, $element_details) {
+  protected function _addWebServiceElement(&$searchable_keys, &$sortable_keys,
+      $parent_term_name, $parent_term, $element_name, $element_details) {
+
     // Skip the 'entity' element, as we'll never make this searchable or
     // viewable. It's meant for linking.
     if ($element_name == 'entity') {
@@ -262,12 +273,15 @@ class TripalField {
     if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
       $searchable_keys[$field_term_name] =  $field_term;
     }
+    if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
+      $sortable_keys[$field_term_name] =  $field_term;
+    }
 
     // Now add any entries for child elements.
     if (array_key_exists('elements', $element_details)) {
       $elements = $element_details['elements'];
       foreach ($elements as $element_name => $element_details) {
-        $this->_addWebServiceElement($searchable_keys, $field_term_name, $field_term, $element_name, $element_details);
+        $this->_addWebServiceElement($searchable_keys, $sortable_keys, $field_term_name, $field_term, $element_name, $element_details);
       }
     }
   }
@@ -329,7 +343,7 @@ class TripalField {
     if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
       $filter_handler = 'tripal_views_handler_filter_string';
       if (array_key_exists('type', $field_details) and $field_details['type'] == 'numeric') {
-        $filter_handler = 'tripal_views_handler_filter';
+        $filter_handler = 'tripal_views_handler_filter_numeric';
       }
       $data[$view_base_id][$field_name]['filter'] = array(
         'handler' => $filter_handler,
@@ -343,6 +357,7 @@ class TripalField {
         $this->_addViewsDataElement($data, $view_base_id, $field_name, $element_name, $element_details);
       }
     }
+
     return $data;
   }
 
@@ -360,6 +375,11 @@ class TripalField {
     if ($element_name == 'entity') {
       return;
     }
+
+    if (!preg_match('/:/', $element_name)) {
+      return;
+    }
+
     $field_name = $parent . '.' . $element_name;
     list($vocabulary, $accession) = explode(':', $element_name);
     $term = tripal_get_term_details($vocabulary, $accession);
@@ -392,7 +412,7 @@ class TripalField {
     if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
       $filter_handler = 'tripal_views_handler_filter_element_string';
       if (array_key_exists('type', $element_details) and $element_details['type'] == 'numeric') {
-        $filter_handler = 'tripal_views_handler_filter';
+        $filter_handler = 'tripal_views_handler_filter_numeric';
       }
       $data[$view_base_id][$field_name]['filter'] = array(
         'handler' => $filter_handler,
@@ -422,10 +442,6 @@ class TripalField {
    *    The type of $entity.
    *  @param $entity
    *    The entity for the operation.
-   *  @param $field
-   *    The field structure for the operation.
-   *  @param $instance
-   *    The instance structure for $field on $entity's bundle.
    *  @param $langcode
    *    The language associated with $items.
    *  @param $items
@@ -440,7 +456,7 @@ class TripalField {
    *      - message: The human readable message to be displayed.
    *
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
   }
 
@@ -658,7 +674,7 @@ class TripalField {
   }
 
   /**
-   * Afte a field instance is created the following function is run.
+   * After a field instance is created the following function is run.
    *
    * This function is equivalent to the hook_field_create_field() hook of
    * the Drupal Field API. This function is invoked after a new field

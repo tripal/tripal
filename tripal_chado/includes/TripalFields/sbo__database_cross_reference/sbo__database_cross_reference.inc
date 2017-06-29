@@ -62,36 +62,33 @@ class sbo__database_cross_reference extends ChadoField {
    */
   public function elementInfo() {
 
+    $field_term = $this->getFieldTermID();
     $dbname_term = tripal_get_chado_semweb_term('db', 'name');
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
+    $dburl_term = tripal_get_chado_semweb_term('db', 'url');
 
-    $field_term = $this->getFieldTermID();
     return array(
       $field_term => array(
         'operations' => array(),
+        'label' => 'Cross Reference',
         'sortable' => FALSE,
         'searchable' => FALSE,
         'elements' => array(
           $dbname_term => array(
             'searchable' => TRUE,
-            'name' => 'db_name',
-            'label' => 'Database Name',
+            'label' => 'Cross Reference Database Name',
             'help' => 'The name of the remote database that houses the cross reference.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),
           $accession_term => array(
             'searchable' => TRUE,
-            'name' => 'accession',
-            'label' => 'Database Accession',
+            'label' => 'Cross Reference Database Accession',
             'help' => 'The unique accession (identifier) in the database that houses the cross reference.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),
-          'schema:url' => array(
+          $dburl_term => array(
             'searchable' => FALSE,
-            'name' => 'URL',
-            'label' => 'Database URL',
+            'label' => 'Cross Reference Database URL',
             'help' => 'The URL of the database that houses the cross reference.',
             'sortable' => FALSE,
           ),
@@ -117,25 +114,18 @@ class sbo__database_cross_reference extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
+    $dbname_term = tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
+    $dburl_term = tripal_get_chado_semweb_term('db', 'url');
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        /* sub elements that may be present in the values array
-        // Database name
-        'data:1048' => '',
-        // Accession
-        'data:2091' => '',
-        'schema:url' => '',
-        */
-      ),
+      'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+      'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_rcolumn,
       'chado-' . $field_table . '__dbxref_id' => '',
-      'dbxref_id' => '',
       'db_id' => '',
       'accession' => '',
-      'version' => '',
-      'description' => '',
     );
 
     $linker_table = $base_table . '_dbxref';
@@ -155,18 +145,15 @@ class sbo__database_cross_reference extends ChadoField {
         $URL = tripal_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            'data:1048' => $dbxref->db_id->name,
-            'data:2091' => $dbxref->accession,
-            'schema:url' => $URL,
+            $dbname_term => $dbxref->db_id->name,
+            $accession_term => $dbxref->accession,
+            $dburl_term => $URL,
           ),
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
           'chado-' . $field_table . '__dbxref_id' => $dbxref->dbxref_id,
-          'dbxref_id' => $dbxref->dbxref_id,
           'db_id' => $dbxref->db_id->db_id,
           'accession' => $dbxref->accession,
-          'version' => $dbxref->version,
-          'description' => $dbxref->description,
         );
         $i++;
       }
@@ -179,21 +166,28 @@ class sbo__database_cross_reference extends ChadoField {
   public function query($query, $condition) {
     $dbxref_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
+
     $bschema = chado_get_schema($base_table);
     $bpkey = $bschema['primary key'][0];
-    $alias = 'dbx_linker';
+
+    $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    if ($condition['column'] == 'database_cross_reference.database_name') {
-      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
-      $this->queryJoinOnce($query, 'db', 'DB', "DB.db_id = DBX.db_id");
-      $query->condition("DB.name", $condition['value'], $operator);
+    $field_term_id = $this->getFieldTermID();
+    $dbname_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
+    $dburl_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'url');
+
+    $this->queryJoinOnce($query, $field_table, $alias, "base.$bpkey = $alias.$bpkey");
+    $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id");
+
+    if ($condition['column'] == $dbname_term) {
+      $this->queryJoinOnce($query, 'db', $alias . '_DB', $alias . "_DB.db_id = " . $alias . "_DBX.db_id");
+      $query->condition($alias . "_DB.name", $condition['value'], $operator);
     }
-    if ($condition['column'] == 'database_cross_reference.accession') {
-      $this->queryJoinOnce($query, $dbxref_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'dbxref', 'DBX', "DBX.dbxref_id = $alias.dbxref_id");
-      $query->condition("DBX.accession", $condition['value'], $operator);
+    if ($condition['column'] == $accession_term) {
+      $query->condition($alias . "_DBX.accession", $condition['value'], $operator);
     }
   }
 
@@ -201,13 +195,36 @@ class sbo__database_cross_reference extends ChadoField {
    * @see ChadoField::queryOrder()
    */
   public function queryOrder($query, $order) {
+    $dbxref_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+    $field_table = $this->instance['settings']['chado_table'];
 
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+
+    $alias = $this->field['field_name'];
+
+    $field_term_id = $this->getFieldTermID();
+    $dbname_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'name');
+    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
+    $dburl_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'url');
+
+    $this->queryJoinOnce($query, $field_table, $alias, "base.$bpkey = $alias.$bpkey", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id", "LEFT OUTER");
+
+    if ($order['column'] == $dbname_term) {
+      $this->queryJoinOnce($query, 'db', $alias . '_DB', $alias . "_DB.db_id = " . $alias . "_DBX.db_id", "LEFT OUTER");
+      $query->orderBy($alias . "_DB.name", $order['direction']);
+    }
+    if ($order['column'] == $accession_term) {
+      $query->orderBy($alias . "_DBX.accession", $order['direction']);
+    }
   }
 
   /**
    * @see TripalField::validate()
    */
-  public function validate($entity_type, $entity, $field, $items, &$errors) {
+  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -228,8 +245,6 @@ class sbo__database_cross_reference extends ChadoField {
       $dbxref_id = $values['chado-' . $field_table . '__dbxref_id'];
       $db_id = $values['db_id'];
       $accession = $values['accession'];
-      $version = $values['version'];
-      $description = $values['description'];
 
       // Make sure that if a database ID is provided that an accession is also
       // provided.  Here we use the form_set_error function rather than the
@@ -250,7 +265,7 @@ class sbo__database_cross_reference extends ChadoField {
           'error' => 'sbo__database_cross_reference',
         );
       }
-      if (!$db_id and !$accession and ($version or $description)) {
+      if (!$db_id and !$accession) {
         $errors[$field_name][$delta]['und'][] = array(
           'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',

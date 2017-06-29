@@ -43,7 +43,8 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-dpm($field_vals);
+//dpm($field_vals);
+
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
   // is an insert and we need to set the type_id if the table supports it.
@@ -387,7 +388,8 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
     $instance = field_info_instance('TripalEntity', $field['field_name'], $entity->bundle);
-    // Some fields (e.g. chado_linker_cvterm_adder) don't add data to
+
+    // Some fields don't add data to
     // Chado so they don't have a table, but they are still attached to the
     // entity. Just skip these.
     if (!array_key_exists('chado_table', $instance['settings'])) {
@@ -553,6 +555,12 @@ function tripal_chado_field_storage_query($query) {
   // Make sure we only get records of the correct entity type
   $cquery->condition('TE.bundle', $query->entityConditions['bundle']['value']);
 
+  // Iterate through all the property conditions. These will be filters
+  // on the tripal_entity table.
+  foreach ($query->propertyConditions as $index => $condition) {
+    $cquery->condition('TE.' . $condition['column'], $condition['value']);
+  }
+
   // Now set any ordering.
   foreach ($query->order as $index => $sort) {
     // Add in property ordering.
@@ -620,8 +628,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-  //dpm($cquery->__toString());
-  //dpm($cquery->getArguments());
+//        dpm($cquery->__toString());
+//        dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 

@@ -300,10 +300,10 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
         field_update_instance($instance);
       }
       elseif($instance_name == 'tpub__publication_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
-        array_push($properties, $instance);
+        array_push($properties, $instance_name);
       }
       else {
-        array_push($disabled_instances, $instance);
+        array_push($disabled_instances, $instance_name);
       }
 
     }
@@ -317,7 +317,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       // updating fields here to ensure name consistency.
       $group_field_name = substr($group_field_name, 0, 27);
 
-      // Add randomm numbers to ensure the field name is unique within the 32
+      // Add random numbers to ensure the field name is unique within the 32
       // character limit of the field.
       $group_field_name = $group_field_name.rand(0, 99999);
 
@@ -336,6 +336,11 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       array_unshift($properties, 'group_prop_tripalpane', 'group_prop_table');
       $region_right = array_merge($region_right, $properties);
       $all_fields+= [ 'group_prop_tripalpane' => 'right', 'group_prop_table' => 'right' ];
+    }
+    if(!empty($all_fields)){
+      foreach ($disabled_instances as $disabled_field) {
+        $all_fields += [$disabled_field => 'disabled'];
+      }
     }
 
     // Add blocks to $region_left and build the toc field that is placed within.
@@ -372,6 +377,9 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     );
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
+    // Clear the Drpual chace
+    cache_clear_all();
+    watchdog('debug', '<pre>$record: '. print_r($record, TRUE) .'</pre>');
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);

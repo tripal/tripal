@@ -79,7 +79,6 @@ function tripal_ds_disable(){
   $output .= '</ul>';
   if(!empty($entities_with_tripal_panes)){
     drupal_set_message($output, 'warning');
-
   }
 }
 

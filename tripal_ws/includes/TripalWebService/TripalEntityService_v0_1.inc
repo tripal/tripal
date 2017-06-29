@@ -6,13 +6,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
    * The human-readable label for this web service.
    */
   public static $label = 'Content Types';
+
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides acesss to the biological and ' .
-    'ancilliary data available on this site. Each content type represents ' .
-    'biological data that is defined in a controlled vocabulary (e.g. ' .
-    'Sequence Ontology term: gene (SO:0000704)).';
+  public static $description = 'Provides acesss to the biological and
+    ancilliary data available on this site. Each content type represents
+    biological data that is defined in a controlled vocabulary (e.g.
+    Sequence Ontology term: gene (SO:0000704)).';
+
   /**
    * A machine-readable type for this service. This name must be unique
    * among all Tripal web services and is used to form the URL to access
@@ -61,7 +63,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   private function doExpandedField($ctype, $entity_id, $expfield) {
     $service_path = $this->getServicePath() . '/' . urlencode($ctype) . '/' . $entity_id;
-    $this->resource = new TripalWebServiceResource($service_path);
+    $this->resource = new TripalWebServiceResource($service_path, $this->doc_path);
 
     // Get the TripalBundle, TripalTerm and TripalVocab for this type.
     $bundle = tripal_load_bundle_entity(array('label' => $ctype));
@@ -75,8 +77,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // If we couldn't match this field argument to a field and entity then return
     if (!$entity) {
-      throw new Exception("Cannot find this entity.");
+      throw new Exception("Cannot find this record.");
     }
+
+    // Check that the user has access to this entity.  If not then the
+    // function call will throw an error.
+    $this->checkAccess($entity);
 
     list($field, $instance, $term) = $this->findField($bundle, $expfield);
 
@@ -129,9 +135,18 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // Add the vocabulary to the context.
     $this->resource->addContextItem($term->name, $term->url);
 
-    // Get the TripalEntity
+    // Get the TripalEntity.
     $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
     $entity = reset($entity);
+
+    // If we couldn't match this field argument to a field and entity then return
+    if (!$entity) {
+      throw new Exception("Cannot find this record.");
+    }
+
+    // Check that the user has access to this entity.  If not then the
+    // function call will throw an error.
+    $this->checkAccess($entity);
 
     $itemPage = tripal_get_term_details('schema', 'ItemPage');
     $label = tripal_get_term_details('rdfs', 'label');
@@ -146,6 +161,29 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
 //    tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
 //    tripal_ws_services_v0_1_write_context($response, $ctype);
+  }
+
+  /**
+   * Ensures that user's only have access to content they should see.
+   *
+   * Denies access to an entity if it is unpublished or if the user does
+   * not have permission to see it.
+   *
+   * @param $entity
+   *   The full entity object.
+   *
+   * @throws Exception
+   */
+  private function checkAccess($entity) {
+    global $user;
+
+    if (!tripal_entity_access('view', $entity, $user, 'TripalEntity')) {
+      throw new Exception("Permission Denied.");
+    }
+    // Don't show entities that aren't published
+    if ($entity->status == 0) {
+      throw new Exception("This record is currently unavailable.");
+    }
   }
 
   /**
@@ -286,7 +324,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
       // If this is the expanded field page then we need to swap out
       // the resource for a collection.
-      $response = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield));
+      $response = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield), $this->params);
       $label = tripal_get_term_details('rdfs', 'label');
       $response->addContextItem('label', $label['url']);
       $response->addProperty('label', $instance['label']);
@@ -327,10 +365,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
     if (is_array($value)) {
       $temp = array();
       foreach ($value as $k => $v) {
+
         // exclude fields that have no values so we can hide them
-        if (empty($v) and $hide_fields == 'hide') {
+        if (!isset($v) and $hide_fields == 'hide') {
           continue;
         }
+
         $matches = array();
         if (preg_match('/^(.+):(.+)$/', $k, $matches)) {
           $vocabulary = $matches[1];
@@ -342,7 +382,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
             $temp[$key_adj] = $this->sanitizeFieldKeys($v, $bundle, $service_path);
           }
           else {
-            $temp[$key_adj] = $v !== "" ? $v : NULL;
+            $temp[$key_adj] = $v;
           }
           $this->resource->addContextItem($key_adj, $term['url']);
 
@@ -360,7 +400,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     }
     else {
-      $new_value = $value !== "" ? $value : NULL;
+      $new_value = $value;
     }
 
     return $new_value;
@@ -394,22 +434,16 @@ class TripalEntityService_v0_1 extends TripalWebService {
   }
 
   /**
-   * Creates a collection of resources for a given type.
+   * A helper function to make it easy to map between keys and their fields.
+   *
+   * @bundle
+   *   The bundle object.  Fields attached to this bundle will be included
+   *   in the mapping array.
+   * @return
+   *   An associative arrray that maps web servcies keys to fields and
+   *   fields to web services keys (reciprocol).
    */
-  private function doContentTypeList($ctype) {
-    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
-    $label = tripal_get_term_details('rdfs', 'label');
-    $this->resource = new TripalWebServiceCollection($service_path);
-    $this->resource->addContextItem('label', $label['url']);
-
-    // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
-    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
-    $term = reset($term);
-
-    // Set the label for this collection.
-    $this->resource->addProperty('label', $bundle->label . " collection");
-
+  private function getFieldMapping($bundle) {
     // Iterate through the fields and create a $field_mapping array that makes
     // it easier to determine which filter criteria belongs to which field. The
     // key is the label for the field and the value is the field name. This way
@@ -422,8 +456,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
           if ($bundle_name == $bundle->name) {
             $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
             if (array_key_exists('term_accession', $instance['settings'])){
-              $vocabulary = $instance['settings']['term_vocabulary'];
-              $accession = $instance['settings']['term_accession'];
+                $vocabulary = $instance['settings']['term_vocabulary'];
+                $accession = $instance['settings']['term_accession'];
               $fterm = tripal_get_term_details($vocabulary, $accession);
               $key = $fterm['name'];
               $key = strtolower(preg_replace('/ /', '_', $key));
@@ -434,45 +468,171 @@ class TripalEntityService_v0_1 extends TripalWebService {
         }
       }
     }
+    return $field_mapping;
+  }
 
-    // Convert the filters to their field names
-    $new_params = array();
-    $order = array();
-    $order_dir = array();
-    $URL_add = array();
+  /**
+   * Gets any order by statements provided by the user.
+   *
+   * @field_mapping
+   *   An array that maps WS keys to field names. As provided by the
+   *   getFieldMapping() function.
+   * @return
+   *   An array of fields for ordering.
+   *
+   * @throws Exception
+   */
+  private function getOrderBy($field_mapping,  $bundle) {
+    $order_by = array();
+
+    // Handle order separately.
+    if (array_key_exists('order', $this->params)) {
+      $order_params = $this->params['order'];
+      $dir = 'ASC';
+
+      // If the user provided more than one order statement then those are
+      // separated by a semicolong.
+      $items = explode(';', $order_params);
+      foreach ($items as $key) {
+
+        // The user can provide a direction by separating the field key and the
+        // direction with a '|' character.
+        $matches = array();
+        if (preg_match('/^(.*)\|(.*)$/', $key, $matches)) {
+          $key = $matches[1];
+          if ($matches[2] == 'ASC' or $matches[2] == 'DESC') {
+            $dir = $matches[2];
+          }
+          else {
+            throw new Exception('Please provide "ASC" or "DESC" for the ordering direction');
+          }
+        }
+
+        // Break apart any subkeys and pull the first one as this is the parent
+        // field.
+        $subkeys = explode(',', $key);
+        if (count($subkeys) > 0) {
+          $key = $subkeys[0];
+        }
+
+        if (array_key_exists($key, $field_mapping)) {
+          $key_field_name = $field_mapping[$key];
+          $key_field = field_info_field($key_field_name);
+          $key_instance = field_info_instance('TripalEntity', $key_field_name, $bundle->name);
+
+          // Complex fields provied by the TripalField class may have sub
+          // elements that support filtering.  We need to see if the user
+          // wants to filter on those.
+          $field_class = $key_field['type'];
+          if (tripal_load_include_field_class($field_class)) {
+            // To find out which fields are sortable we'll call the
+            // webServicesData() function.
+            $key_field = new $field_class($key_field, $key_instance);
+            $ws_data = $key_field->webServicesData();
+            $sortable_keys = $ws_data['sortable'];
+            $criteria = implode('.', $subkeys);
+            if (array_key_exists($criteria, $sortable_keys)) {
+              $order_by[$key_field_name][] = array(
+                'column' => $sortable_keys[$criteria],
+                'dir' => $dir,
+              );
+            }
+            else {
+              throw new Exception("The value, '$criteria', is not available for sorting.");
+            }
+          }
+          // If this field is not a TripalField then it should just have
+          // a simple value and we can query for that.
+          else {
+            $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
+
+            $order_by[$key_field_name][] = array(
+              'column' => $key_field_id,
+              'dir' => $dir,
+            );
+          }
+
+        }
+        else {
+          throw new Exception("The value, '$key', is not available for sorting.");
+        }
+      }
+    }
+
+    // If there is no ordering that is set then set a default order.
+    if (count(array_keys($order_by)) == 0) {
+      $key_field_names = array();
+      if (in_array('data__identifier', $field_mapping)) {
+        $key_field_names['data__identifier'][] = 'identifier';
+      }
+      else if (in_array('schema__name', $field_mapping)) {
+        $key_field_names['schema__name'][] = 'name';
+      }
+      else if (in_array('rdfs_label', $field_mapping)) {
+        $key_field_names['rdfs_label'][] = 'label';
+      }
+      else if (in_array('taxrank__genus', $field_mapping)) {
+        $key_field_names['taxrank__genus'][] = 'genus';
+        $key_field_names['taxrank__species'][] = 'species';
+      }
+      foreach ($key_field_names as $key_field_name => $criteria) {
+        $key_field = field_info_field($key_field_name);
+        $key_instance = field_info_instance('TripalEntity', $key_field_name, $bundle->name);
+        $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
+        $field_class = $key_field['type'];
+        if (tripal_load_include_field_class($field_class)) {
+          // To find out which fields are sortable we'll call the
+          // webServicesData() function.
+          $key_field = new $field_class($key_field, $key_instance);
+          $ws_data = $key_field->webServicesData();
+          $sortable_keys = $ws_data['sortable'];
+          if (array_key_exists($criteria, $sortable_keys)) {
+            $order_by[$key_field_name][] = array(
+              'column' => $sortable_keys[$criteria],
+              'dir' => $dir,
+            );
+          }
+        }
+       // If this field is not a TripalField then it should just have
+          // a simple value and we can query for that.
+        else {
+          $order_by[$key_field_name][] = array(
+            'column' => $key_field_id,
+            'dir' => 'ASC',
+          );
+        }
+      }
+    }
+
+    return $order_by;
+  }
+
+  /**
+   * Gets any filter by statements provided by the user.
+   *
+   * @field_mapping
+   *   An array that maps WS keys to field names. As provided by the
+   *   getFieldMapping() function.
+   *
+   * @return
+   *   An array of fields for filtering.
+   *
+   * @throws Exception
+   */
+  private function getFilters($field_mapping, $bundle) {
+    $filters = array();
+
+    // Iterate through the paramter list provided by user.
     foreach ($this->params as $param => $value) {
-      $URL_add[] = "$param=$value";
 
-      // Ignore non filter parameters
+      // Ignore non filter parameters.
       if ($param == 'page' or $param == 'limit') {
         continue;
       }
 
-      // Handle order separately
+      // Ignore the order parameter as that is handled by the getOrderBy()
+      // function
       if ($param == 'order') {
-        $temp = explode(',', $value);
-        foreach ($temp as $key) {
-          $matches = array();
-          $dir = 'ASC';
-          // The user can provide a direction by separating the field key and the
-          // direction with a '|' character.
-          if (preg_match('/^(.*)\|(.*)$/', $key, $matches)) {
-            $key = $matches[1];
-            if ($matches[2] == 'ASC' or $matches[2] == 'DESC') {
-              $dir = $matches[2];
-            }
-            else {
-              // TODO: handle error of providing an incorrect direction.
-            }
-          }
-          if (array_key_exists($key, $field_mapping)) {
-            $order[$field_mapping[$key]] = $key;
-            $order_dir[] = $dir;
-          }
-          else {
-            // TODO: handle error of providing a non existing field name.
-          }
-        }
         continue;
       }
 
@@ -501,16 +661,20 @@ class TripalEntityService_v0_1 extends TripalWebService {
         // Complex fields provied by the TripalField class may have sub
         // elements that support filtering.  We need to see if the user
         // wants to filter on those.
-        if (tripal_load_include_field_class($key_field_name)) {
+        $field_class = $key_field['type'];
+        if (tripal_load_include_field_class($field_class)) {
           // To find out which fields are searchable we'll call the wsData()
           // function.
-          $key_field = new $key_field_name($key_field, $key_instance);
-          $searchable_keys = $key_field->webServicesData();
+          $key_field = new $field_class($key_field, $key_instance);
+          $ws_data = $key_field->webServicesData();
+          $searchable_keys = $ws_data['searchable'];
           $criteria = implode('.', $subkeys);
           if (array_key_exists($criteria, $searchable_keys)) {
-            $new_params[$key_field_name]['value'] = $value;
-            $new_params[$key_field_name]['op'] = $op;
-            $new_params[$key_field_name]['column'] = $searchable_keys[$criteria];
+            $filters[$key_field_name][] = array(
+              'value' => $value,
+              'op' => $op,
+              'column' => $searchable_keys[$criteria]
+            );
           }
           else {
             throw new Exception("The filter term, '$criteria', is not available for use.");
@@ -521,9 +685,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
         else {
           $key_field_id = $key_instance['settings']['term_vocabulary'] . ':' . $key_instance['settings']['term_accession'];
 
-          $new_params[$key_field_name]['value'] = $value;
-          $new_params[$key_field_name]['op'] = $op;
-          $new_params[$key_field_name]['column'] = $key_field_id;
+          $filters[$key_field_name][] = array(
+            'value' => $value,
+            'op' => $op,
+            'column' => $key_field_id,
+          );
         }
       }
       else {
@@ -531,44 +697,93 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
     }
 
-    // Get the list of entities for this bundle.
+    // Now convert the operation for each filter to one that is compatible
+    // with TripalFieldQuery.
+    foreach ($filters as $key_field_name => $key_filters) {
+      foreach ($key_filters as $i => $filter) {
+        $op = '=';
+        switch ($filters[$key_field_name][$i]['op']) {
+          case 'eq':
+            $op = '=';
+            break;
+          case 'gt':
+            $op = '>';
+            break;
+          case 'gte':
+            $op = '>=';
+            break;
+          case 'lt':
+            $op = '<';
+            break;
+          case 'lte':
+            $op = '<=';
+            break;
+          case 'ne':
+            $op = '<>';
+            break;
+          case 'contains':
+            $op = 'CONTAINS';
+            break;
+          case 'starts':
+            $op = 'STARTS WITH';
+            break;
+          default:
+            $op = '=';
+        }
+        $filters[$key_field_name][$i]['op'] = $op;
+      }
+    }
+    return $filters;
+  }
+
+  /**
+   * Creates a collection of resources for a given type.
+   */
+  private function doContentTypeList($ctype) {
+    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $label = tripal_get_term_details('rdfs', 'label');
+    $this->resource = new TripalWebServiceCollection($service_path, $this->params);
+    $this->resource->addContextItem('label', $label['url']);
+
+    // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
+    $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+    $term = reset($term);
+
+    // Set the label for this collection.
+    $this->resource->addProperty('label', $bundle->label . " collection");
+
+    // For quick lookup, get the mapping of WS keys to their appropriate fields.
+    $field_mapping = $this->getFieldMapping($bundle);
+
+    // Get arrays for filters and order by statements.
+    $filters = $this->getFilters($field_mapping, $bundle);
+    $order_by = $this->getOrderBy($field_mapping, $bundle);
+
+    // Initialize the query to search for records for out bundle type
+    // that are published.
     $query = new TripalFieldQuery();
     $query->entityCondition('entity_type', 'TripalEntity');
     $query->entityCondition('bundle', $bundle->name);
-    foreach($new_params as $field_name => $details) {
-      $value = $details['value'];
-      $column_name = $details['column'];
-      switch ($details['op']) {
-        case 'eq':
-          $op = '=';
-          break;
-        case 'gt':
-          $op = '>';
-          break;
-        case 'gte':
-          $op = '>=';
-          break;
-        case 'lt':
-          $op = '<';
-          break;
-        case 'lte':
-          $op = '<=';
-          break;
-        case 'ne':
-          $op = '<>';
-          break;
-        case 'contains':
-          $op = 'CONTAINS';
-          break;
-        case 'starts':
-          $op = 'STARTS WITH';
-          break;
-        default:
-          $op = '=';
+    $query->propertyCondition('status', 1);
+
+    // Now iterate through the filters and add those.
+    foreach ($filters as $key_field_name => $key_filters) {
+      foreach ($key_filters as $i => $filter) {
+         $column_name = $filter['column'];
+         $value = $filter['value'];
+         $op = $filter['op'];
+        $query->fieldCondition($key_field_name, $column_name, $value, $op);
       }
-      // We pass in the $column_name as an identifier for any sub fields
-      // that are present for the fields.
-      $query->fieldCondition($field_name, $column_name, $value, $op);
+    }
+
+    // Now set the order by.
+    foreach ($order_by as $key_field_name => $key_order) {
+      foreach ($key_order as $i => $order) {
+        $column_name = $order['column'];
+        $dir = $order['dir'];
+        $query->fieldOrderBy($key_field_name, $column_name, $dir);
+      }
     }
 
     // Perform the query just as a count first to get the number of records.
@@ -587,12 +802,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $total_pages = ceil($num_records / $limit);
     $page = array_key_exists('page', $this->params) ? $this->params['page'] : 1;
 
-    // Set the query order
-    $order_keys = array_keys($order);
-    for($i = 0; $i < count($order_keys); $i++) {
-      $query->fieldOrderBy($order_keys[$i], $order[$order_keys[$i]], $order_dir[$i]);
-    }
-
     // Set the query range
     $start = ($page - 1) * $limit;
     $query->range($start, $limit);
@@ -602,8 +811,14 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $this->resource->initPager($num_records, $limit, $page);
 
-    // Iterate through the entities and add them to the list.
-    foreach ($results['TripalEntity'] as $entity_id => $stub) {
+    // Check to make sure there are results.
+    $entity_ids = array();
+    if (isset($results['TripalEntity']) AND is_array($results['TripalEntity'])) {
+      $entity_ids = $results['TripalEntity'];
+    }
+
+    // Iterate through the entities and add them to the output list.
+    foreach ($entity_ids as $entity_id => $stub) {
       // We don't need all of the attached fields for an entity so, we'll
       // not use the entity_load() function.  Instead just pull it from the
       // database table.
@@ -634,9 +849,62 @@ class TripalEntityService_v0_1 extends TripalWebService {
   private function doAllTypesList() {
     $service_path = $this->getServicePath();
     $label = tripal_get_term_details('rdfs', 'label');
-    $this->resource = new TripalWebServiceCollection($service_path);
+    $this->resource = new TripalWebServiceCollection($service_path, $this->params);
     $this->resource->addContextItem('label', $label['url']);
     $this->resource->addProperty('label', 'Content Types');
+
+    // Get the list of published terms (these are the bundle IDs)
+    $bundles = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->orderBy('tb.label', 'ASC')
+      ->execute();
+
+    // Iterate through the terms and add an entry in the collection.
+    $i = 0;
+    while ($bundle = $bundles->fetchObject()) {
+      $entity =  entity_load('TripalTerm', array('id' => $bundle->term_id));
+      $term = reset($entity);
+      $vocab = $term->vocab;
+
+      $member = new TripalWebServiceResource($service_path);
+      // If the term has no URL then we'll default to using thie site's
+      // term lookup service.
+      $url = $term->url;
+      if (!$url) {
+        $url = url('cv/lookup/' . $term->vocab->vocabulary . '/' . $term->accession , array('absolute' => TRUE));
+      }
+      $member->addContextItem($term->name, $url);
+      $member->addContextItem('label', $label['url']);
+      $member->addProperty('label', $bundle->label);
+      $member->addContextItem('description', 'hydra:description');
+      // Get the bundle description. If no description is provided then
+      // use the term definition
+      $description = tripal_get_bundle_variable('description', $bundle->id);
+      if (!$description) {
+        $description = $term->definition;
+      }
+      if (!$description) {
+        $description = '';
+      }
+      $member->addProperty('description', $description);
+      $member->setID(urlencode($bundle->label));
+      $member->setType($term->name);
+
+      $this->resource->addMember($member);
+
+    }
+  }
+
+  /**
+   * @see TripalWebService::getSupportedClasses()
+   */
+  public function getSupportedClasses() {
+
+    global $user;
+
+    // An array of TripalWebServiceResources containing a
+    // description of the supported classes.
+    $supported_classes = array();
 
     // Get the list of published terms (these are the bundle IDs)
     $bundles = db_select('tripal_bundle', 'tb')
@@ -657,16 +925,178 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if (!$description) {
         $description = $term->definition;
       }
-      $member = new TripalWebServiceResource($service_path);
-      $member->addContextItem($term->name, $term->url);
-      $member->addContextItem('label', $label['url']);
-      $member->addContextItem('description', 'hydra:description');
-      $member->setID(urlencode($bundle->label));
-      $member->setType($term->name);
-      $member->addProperty('label', $bundle->label);
-      $member->addProperty('description', $description);
-      $this->resource->addMember($member);
 
+      $supported = new TripalWebServiceResource($this->getServicePath());
+      $supported->addContextItem('supportedOperation', 'hydra:supportedOperation');
+      $supported->addContextItem('supportedProperty', 'hydra:supportedProperty');
+      $supported->setID(urlencode($bundle->label));
+      $supported->setType('hydra:Class');
+      $supported->addProperty('hydra:title', $bundle->label);
+      $supported->addProperty('hydra:description', $description);
+
+      // Add in the supported operations for this content type.
+      $operations = array();
+
+      // If the user can view this content type.
+      if (user_access('view ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $get_op = new TripalWebServiceResource($this->getServicePath());
+        $get_op->addContextItem('supportedOperation', 'hydra:supportedOperation');
+        $get_op->addContextItem('method', 'hydra:method');
+        $get_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $get_op->addContextItem('label', 'rdfs:label');
+        $get_op->addContextItem('description', 'rdfs:comment');
+        $get_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $get_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $get_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve');
+        $get_op->setType('hydra:Operation');
+        $get_op->addProperty('method', 'GET');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $get_op->addProperty('label', "Retrieves an " . $bundle->label . " entity.");
+        }
+        else {
+          $get_op->addProperty('label', "Retrieves a " . $bundle->label . " entity.");
+        }
+        $get_op->addProperty('description', NULL);
+        $get_op->addProperty('expects', NULL);
+        $get_op->addProperty('returns', $term->url);
+        $get_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be found using the provided ID.'
+          ),
+        ));
+        $operations[] = $get_op;
+      }
+
+      // If the user can create this content type.
+      if (user_access('create ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $create_op = new TripalWebServiceResource($this->getServicePath());
+        $create_op->addContextItem('method', 'hydra:method');
+        $create_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $create_op->addContextItem('label', 'rdfs:label');
+        $create_op->addContextItem('description', 'rdfs:comment');
+        $create_op->addContextItem('code', 'hydra:statusCode');
+        $create_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $create_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $create_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create');
+        $create_op->setType('http://schema.org/CreateAction');
+        $create_op->addProperty('method', 'POST');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $create_op->addProperty('label', "Creates an " . $bundle->label . " entity.");
+        }
+        else {
+          $create_op->addProperty('label', "Creates a " . $bundle->label . " entity.");
+        }
+        $create_op->addProperty('description', NULL);
+        $create_op->addProperty('expects', $term->url);
+        $create_op->addProperty('returns', $term->url);
+        $create_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be created.'
+          ),
+          array(
+            'code' => 409,
+            'description' => 'The ' . $bundle->label . ' already exists.'
+          ),
+        ));
+        $operations[] = $create_op;
+      }
+
+      // If the user can edit this content type.
+      if (user_access('edit ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $edit_op = new TripalWebServiceResource($this->getServicePath());
+        $edit_op->addContextItem('method', 'hydra:method');
+        $edit_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $edit_op->addContextItem('label', 'rdfs:label');
+        $edit_op->addContextItem('description', 'rdfs:comment');
+        $edit_op->addContextItem('code', 'hydra:statusCode');
+        $edit_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $edit_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $edit_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update');
+        $edit_op->setType('http://schema.org/UpdateAction');
+        $edit_op->addProperty('method', 'PUT');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $edit_op->addProperty('label', "Update and replace an " . $bundle->label . " entity.");
+        }
+        else {
+          $edit_op->addProperty('label', "Update and replace a " . $bundle->label . " entity.");
+        }
+        $edit_op->addProperty('description', NULL);
+        $edit_op->addProperty('expects', $term->url);
+        $edit_op->addProperty('returns', $term->url);
+        $edit_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be updated using the provided ID.'
+          ),
+        ));
+        $operations[] = $edit_op;
+      }
+
+      // If the user can edit this content type.
+      if (user_access('delete ' . $bundle->name)) {
+        // All content types allow GET (if the user has view permission).
+        $delete_op = new TripalWebServiceResource($this->getServicePath());
+        $delete_op->addContextItem('method', 'hydra:method');
+        $delete_op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $delete_op->addContextItem('label', 'rdfs:label');
+        $delete_op->addContextItem('description', 'rdfs:comment');
+        $delete_op->addContextItem('code', 'hydra:statusCode');
+        $delete_op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $delete_op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $delete_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete');
+        $delete_op->setType('http://schema.org/DeleteAction');
+        $delete_op->addProperty('method', 'DELETE');
+        if (preg_match('/^[aeiou]/i', $bundle->label)) {
+          $delete_op->addProperty('label', "Deletes an " . $bundle->label . " entity.");
+        }
+        else {
+          $delete_op->addProperty('label', "Deletes a " . $bundle->label . " entity.");
+        }
+        $delete_op->addProperty('description', NULL);
+        $delete_op->addProperty('expects', $term->url);
+        $delete_op->addProperty('returns', $term->url);
+        $delete_op->addProperty('statusCodes', array(
+          array(
+            'code' => 404,
+            'description' => 'The ' . $bundle->label . ' could not be deleted using the provided ID.'
+          ),
+        ));
+        $operations[] = $delete_op;
+      }
+
+      $supported->addProperty('supportedOperation', $operations);
+      $supported_classes[] = $supported;
     }
+
+    return $supported_classes;
   }
 }

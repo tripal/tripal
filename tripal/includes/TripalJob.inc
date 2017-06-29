@@ -115,8 +115,19 @@ class TripalJob {
     }
 
     $includes = $details['includes'];
-    foreach ($includes as $include) {
-      require_once($include);
+    foreach ($includes as $path) {
+      $full_path = $_SERVER['DOCUMENT_ROOT'] . base_path() . $path;
+      if (!empty($path)) {
+        if (file_exists($path)) {
+          require_once($path);
+        }
+        elseif (file_exists($full_path)) {
+          require_once($path);
+        }
+        elseif (!empty($path)) {
+          throw new Exception("Included files for Tripal Job must exist. This path ($full_path) doesn't exist.");
+        }
+      }
     }
     if (!function_exists($details['callback'])) {
       throw new Exception("Must provide a valid callback function to the tripal_add_job() function.");
@@ -253,7 +264,7 @@ class TripalJob {
       $record->job_id = $this->job->job_id;
       $record->end_time = time();
       $record->error_msg = $this->job->error_msg;
-      $record->progress = $this->job->progress;
+      $record->progress = 100;
       $record->status = 'Completed';
       $record->pid = '';
 

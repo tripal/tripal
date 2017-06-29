@@ -56,6 +56,11 @@ class uo__unit extends ChadoField {
 
     if ($record) {
       $entity->{$field_name}['und'][0]['value'] = $record->unittype_id->name;
+      $entity->{$field_name}['und'][0]['chado-' . $field_table . '__unittype_id'] = $record->unittype_id->cvterm_id;
+      $entity->{$field_name}['und'][0]['chado-cvterm__name'] = $record->unittype_id->name;
+      $entity->{$field_name}['und'][0]['chado-cvterm__definition'] = $record->unittype_id->definition;
+      $entity->{$field_name}['und'][0]['chado-cvterm__cv_id'] = $record->unittype_id->cv_id->cv_id;
+      $entity->{$field_name}['und'][0]['chado-cv__name'] = $record->unittype_id->cv_id->name;
     }
   }
 }

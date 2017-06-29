@@ -19,6 +19,7 @@ files[] = views_handlers/tripal_views_handler_field_image.inc
 files[] = views_handlers/tripal_views_handler_field_boolean.inc
 files[] = views_handlers/tripal_views_handler_filter.inc
 files[] = views_handlers/tripal_views_handler_filter_string.inc
+files[] = views_handlers/tripal_views_handler_filter_numeric.inc
 files[] = views_handlers/tripal_views_handler_filter_element_string.inc
 files[] = views_handlers/tripal_views_handler_filter_boolean_operator.inc
 files[] = views_handlers/tripal_views_handler_filter_entity_string.inc

@@ -59,13 +59,81 @@ class taxrank__infraspecific_taxon extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
+
+    $label_term = 'rdfs:label';
+    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+
     return array(
       $field_term => array(
-        'operations' => array(),
         'sortable' => FALSE,
-        'searchable' => FALSE,
+        'searchable' => TRUE,
+        'elements' => array(
+          $label_term => array(
+            'sortable' => FALSE,
+            'searchable' => TRUE,
+            'label' => 'Infraspecific Full Name',
+            'help' => 'The full infraspecific name including the rank and name.',
+          ),
+          $infraspecific_name_term => array(
+            'sortable' => TRUE,
+            'searchable' => TRUE,
+            'label' => 'Infrasepcies Name',
+            'help' => 'The infraspecific name of the organism below the rank of species.',
+          ),
+          $infraspecific_type_term => array(
+            'sortable' => TRUE,
+            'searchable' => TRUE,
+            'label' => 'Infraspecific Rank',
+            'help' => 'The infraspecific rank of the organism below the rank of species.',
+          ),
+        )
       ),
     );
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition){
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $field_term_id = $this->getFieldTermID();
+    $label_term = $field_term_id . ',' . 'rdfs:label';
+    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+
+    if ($condition['column'] == $label_term or $condition['column'] == $field_term_id) {
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id");
+      $query->where("CONCAT(" . $alias . "_cvterm.name, ' ', base.infraspecific_name) $operator :full_name",  array(':full_name' => $condition['value']));
+    }
+    if ($condition['column'] == $infraspecific_name_term) {
+      $query->condition('base.infraspecific_name', $condition['value'], $operator);
+    }
+    if ($condition['column'] == $infraspecific_type_term) {
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id");
+      $query->condition($alias . '_cvterm.name', $condition['value'], $operator);
+    }
+  }
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+
+    $field_term_id = $this->getFieldTermID();
+    $label_term = $field_term_id . ',' . 'rdfs:label';
+    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+
+    if ($order['column'] == $infraspecific_name_term) {
+      $query->orderBy('base.infraspecific_name', $order['direction']);
+    }
+    if ($order['column'] == $infraspecific_type_term) {
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id", "LEFT OUTER");
+      $query->orderBy($alias . '_cvterm.name', $order['direction']);
+    }
   }
 
   /**
@@ -81,15 +149,33 @@ class taxrank__infraspecific_taxon extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
+    $entity->{$field_name}['und'][0]['value'] = '';
+
+    if (chado_get_version() < 1.3) {
+      return;
+    }
+
+    $label_term = 'rdfs:label';
+    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => '',
-      'organism__type_id' => '',
+      'value' => array(),
+      'chado-organism__infraspecific_name' => '',
+      'chado-organism__type_id' => '',
     );
 
+    if ($record->infraspecific_name) {
+      $label = $record->type_id->name . ' ' . $record->infraspecific_name;
+      $entity->{$field_name}['und'][0]['value'][$label_term] = $label;
+      $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $record->infraspecific_name;
+      $entity->{$field_name}['und'][0]['chado-organism__infraspecific_name'] = $record->infraspecific_name;
+    }
+
     if ($record->type_id) {
-      $entity->{$field_name}['und'][0]['value'] = $record->type_id->name;
-      $entity->{$field_name}['und'][0]['organism__type_id'] = $record->type_id->cvterm_id;
+      $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $record->type_id->name;
+      $entity->{$field_name}['und'][0]['chado-organism__type_id'] = $record->type_id->cvterm_id;
     }
   }
 }

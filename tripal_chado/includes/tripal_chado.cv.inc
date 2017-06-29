@@ -1,4 +1,17 @@
 <?php
+
+/**
+ * Loads an OBO File using the new TripalImporter. Expected to be run by a Tripal Job.
+ */
+function tripal_cv_load_obo($obo_id) {
+
+  module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
+  $obo_importer = new OBOImporter();
+  $obo_importer->create(array('obo_id' => $obo_id));
+  $obo_importer->run();
+
+}
+
 /**
  * Provide landing page to the new admin pages
  *

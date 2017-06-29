@@ -393,6 +393,10 @@ function tripal_insert_db($values, $options = array()) {
  *    - version: (Optional) The version of the database reference
  *    - description: (Optional) A description of the database reference
  *
+ * @return
+ *   The newly inserted dbxref as an object, similar to that returned by
+ *   the chado_select_record() function.
+ *
  * @ingroup tripal_chado_api
  */
 function tripal_insert_dbxref($values) {

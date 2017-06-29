@@ -60,59 +60,134 @@ class data__sequence_coordinates extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
+
+    $reference_term = 'data:3002';
+    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+
     return array(
       $field_term => array(
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'label' => 'Location Coordinates',
+        'help' => 'The locations on other genomic sequences where this record has been aligned.',
         'elements' => array(
-          'data:3002' => array(
+          $reference_term => array(
             'searchable' => TRUE,
-            'name' => 'source_feature',
             'label' => 'Location Reference Name',
             'help' => 'The genomic feature on which this feature is localized.',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),
-          'local:fmin' => array(
+          $fmin_term => array(
             'searchable' => TRUE,
-            'name' => 'feature min',
             'label' => 'Location Start Position',
             'help' => 'The start position',
             'type' => 'numeric',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
           ),
-          'local:fmax' => array(
+          $fmax_term => array(
             'searchable' => TRUE,
-            'name' => 'feature max',
             'label' => 'Location End Position',
             'help' => 'The end position',
             'type' => 'numeric',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
           ),
-          'data:2336' => array(
+          $phase_term => array(
             'searchable' => TRUE,
-            'name' => 'phase',
             'type' => 'numeric',
             'label' => 'Location Phase',
             'help' => 'The phase of the feature (applicable only to coding sequences).',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
           ),
-          'data:0853' => array(
+          $strand_term => array(
             'searchable' => TRUE,
-            'name' => 'strand',
-            'type' => 'numeric',
             'label' => 'Location Strand',
             'help' => 'The orientation of this feature where it is localized',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
-            'sortable' => TRUE,
+            'sortable' => FALSE,
           ),
         ),
       ),
     );
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $field_term_id = $this->getFieldTermID();
+    $reference_term = $field_term_id . ',' . 'data:3002';
+    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    // Join to the organism table for this field.
+    $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id");
+    if ($condition['column'] == $reference_term) {
+      $salias = $alias . '_src';
+      $this->queryJoinOnce($query, 'feature', $salias, "$alias.srcfeature_id = $salias.feature_id");
+      $query->condition("$salias.name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $strand_term) {
+      $strand = '';
+      if ($condition['value'] == '-') {
+        $strand = -1;
+      }
+      if ($condition['value'] == '+') {
+        $strand = 1;
+      }
+      $query->condition("$alias.strand", $strand, $operator);
+    }
+    if ($condition['column'] == $fmin_term) {
+      $query->condition("$alias.fmin", $condition['value'] - 1, $operator);
+    }
+    if ($condition['column'] == $fmax_term) {
+      $query->condition("$alias.fmax", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $phase_term) {
+      $query->condition("$alias.phase", $condition['value'], $operator);
+    }
+  }
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+
+    $field_term_id = $this->getFieldTermID();
+    $reference_term = $field_term_id . ',' . 'data:3002';
+    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id", "LEFT OUTER");
+    if ($order['column'] == $reference_term) {
+      $salias = $alias . '_src';
+      $this->queryJoinOnce($query, 'feature', $salias, "$alias.srcfeature_id = $salias.feature_id", "LEFT OUTER");
+      $query->orderBy("$salias.name", $order['direction']);
+    }
+    if ($order['column'] == $fmin_term) {
+      $query->orderBy("$alias.fmin", $order['direction']);
+    }
+    if ($order['column'] == $fmax_term) {
+      $query->orderBy("$alias.fmax", $order['direction']);
+    }
+    if ($order['column'] == $phase_term) {
+      $query->orderBy("$alias.phase", $order['direction']);
+    }
   }
 
   /**
@@ -124,6 +199,12 @@ class data__sequence_coordinates extends ChadoField {
     $feature = $entity->chado_record;
     $num_seqs = 0;
 
+    $reference_term = 'data:3002';
+    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+
     $options = array(
       'return_array' => TRUE,
       'order_by' => array('rank' => 'ASC'),
@@ -132,19 +213,7 @@ class data__sequence_coordinates extends ChadoField {
 
     // Set some defauls for the empty record
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        /*
-        // Types of elements that will appear in the value array.
-        // Annotation track
-        'data:3002' => '',
-        'local:fmin' => '',
-        'local:fmax' => '',
-        // phase
-        'data:2336' => '',
-        // strand
-        'data:0853' => '',
-        */
-      ),
+      'value' => '',
     );
 
     // Get the featureloc records that this feature is aligned to.
@@ -152,13 +221,20 @@ class data__sequence_coordinates extends ChadoField {
     if ($aligned) {
       foreach ($aligned as $index => $featureloc) {
         $srcfeature = $featureloc->srcfeature_id->name;
+        $strand = '';
+        if ($featureloc->strand == 1) {
+          $strand = '+';
+        }
+        else {
+          $strand = '-';
+        }
         $entity->{$field_name}['und'][0] = array(
           'value' => array(
-            'data:3002' => $srcfeature,
-            'local:fmin' => $featureloc->fmin + 1,
-            'local:fmax' => $featureloc->fmax,
-            'data:2336' => $featureloc->phase,
-            'data:0853' => $featureloc->strand,
+            $reference_term => $srcfeature,
+            $fmin_term => $featureloc->fmin + 1,
+            $fmax_term => $featureloc->fmax,
+            $strand_term => $strand,
+            $phase_term => $featureloc->phase,
           ),
         );
         $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);

@@ -41,6 +41,8 @@ class chado_linker__prop extends ChadoField {
     'chado_column' => '',
     // The base table.
     'base_table' => '',
+    // The number of default rows to show. The default is 1.
+    'rows' => 1,
   );
 
   // The default widget for this field.
@@ -130,6 +132,7 @@ class chado_linker__prop extends ChadoField {
   public function query($query, $condition) {
     $prop_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
+
     $bschema = chado_get_schema($base_table);
     $bpkey = $bschema['primary key'][0];
     $alias = $this->field['field_name'];
@@ -144,5 +147,25 @@ class chado_linker__prop extends ChadoField {
     $query->condition("$alias.type_id", $cvterm->cvterm_id);
     $query->condition("$alias.value", $condition['value'], $operator);
 
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function queryOrder($query, $order) {
+    $prop_linker = $this->instance['settings']['chado_table'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    $bschema = chado_get_schema($base_table);
+    $bpkey = $bschema['primary key'][0];
+    $alias = $this->field['field_name'];
+
+    $vocab = $this->instance['settings']['term_vocabulary'];
+    $accession = $this->instance['settings']['term_accession'];
+
+    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+
+    $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey AND $alias.type_id = $cvterm->cvterm_id", "LEFT OUTER");
+    $query->orderBy("$alias.value", $order['direction']);
   }
 }

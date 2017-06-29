@@ -644,7 +644,7 @@ function tripal_chado_menu() {
     'title' => 'Edit a Database Reference',
     'description' => 'Edit existing Database References.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_db_edit_form',6),
+    'page arguments' => array('tripal_chado_db_edit_form', 5),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
     'file' => 'includes/tripal_chado.db.inc',

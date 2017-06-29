@@ -14,6 +14,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
+    // TODO: make this widget deal better with the various relationship
+    // tables. See the load function as it does a better job of this.
+    return;
+
     // Get the field settings.
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -99,7 +103,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
-    if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
+    if (array_key_exists('values', $form_state) and
+        array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
@@ -329,15 +334,16 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
   /**
    *
-   * @see TripalFieldWidget::submit()
+   * @see TripalFieldWidget::validate()
    */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+  public function validate($element, $form, &$form_state, $langcode, $delta) {
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    $chado_record_id = $entity->chado_record_id;
+    $chado_record_id = array_key_exists('#entity', $element)? $element['#entity']->chado_record_id : NULL;
 
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
