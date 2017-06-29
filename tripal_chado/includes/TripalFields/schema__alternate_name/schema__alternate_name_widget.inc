@@ -13,7 +13,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
-
     $field_name = $this->field['field_name'];
 
     // Get the FK column that links to the base table.
@@ -26,7 +25,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
 
     // Get the field defaults.
     $record_id = '';
-    $fkey_value = array_key_exists('#entity', $element) and $element['#entity'] ? $element['#entity']->chado_record_id : NULL;
+    $fkey_value = (array_key_exists('#entity', $element) and $element['#entity']) ? $element['#entity']->chado_record_id : NULL;
     $synonym_id = '';
     $pub_id = '';
     $is_current = TRUE;
@@ -49,7 +48,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
         array_key_exists($field_name, $form_state['values'])) {
-      $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__' . $pkey];
       $synonym_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'];
       $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
       $is_current = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__is_current'];
@@ -125,6 +123,9 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
     );
   }
+  /**
+   * @see TripalFieldWidget::validate()
+   */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -148,11 +149,11 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       // Set the synonym_id and FK value
       $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
       if ($synonym) {
-        $form_state['values'][$field_name]['und']['value'] = $synonym->synonym_id;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $synonym->name;
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
       }
       else {
-        $form_state['values'][$field_name]['und']['value'] = $syn_name;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $syn_name;
       }
       // If a publication is not provided then use the null pub.
       if (!$pub_id) {
@@ -199,6 +200,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
           'synonym_sgml' => '',
         ));
         $synonym = (object) $synonym;
+        $form_state['values'][$field_name]['und'][$delta]['value'] = $synonym->name;
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
       }
     }

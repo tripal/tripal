@@ -59,9 +59,6 @@ class schema__alternate_name extends ChadoField {
     // Get the PKey for this table
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
-
-    // Get the FK that links to the base record.
-    $schema = chado_get_schema($field_table);
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
@@ -106,18 +103,44 @@ class schema__alternate_name extends ChadoField {
    * @see ChadoField::query()
    */
   public function query($query, $condition) {
-    $syn_linker = $this->instance['settings']['chado_table'];
-    $base_table = $this->instance['settings']['base_table'];
-    $bschema = chado_get_schema($base_table);
-    $bpkey = $bschema['primary key'][0];
-    $alias = 'syn_linker';
+    $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
-    if ($condition['column'] == 'alternatename') {
-      $this->queryJoinOnce($query, $syn_linker, $alias, "base.$bpkey = $alias.$bpkey");
-      $this->queryJoinOnce($query, 'synonym', 'SYN', "SYN.synonym_id = $alias.synonym_id");
-      $query->condition("SYN.name", $condition['value']);
-    }
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    $schema = chado_get_schema($field_table);
+    $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    $this->queryJoinOnce($query, $field_table, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
+    $this->queryJoinOnce($query, 'synonym', $alias . '_SYN', $alias . "_SYN.synonym_id = $alias.synonym_id");
+    $query->condition($alias . "_SYN.name", $condition['value']);
   }
 
+  /**
+   * @see ChadoField::query()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    $schema = chado_get_schema($field_table);
+    $pkey = $schema['primary key'][0];
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    $this->queryJoinOnce($query, $field_table, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'synonym', $alias . '_SYN', $alias . "_SYN.synonym_id = $alias.synonym_id", "LEFT OUTER");
+    $query->orderBy($alias . "_SYN.name", $order['direction']);
+  }
 }

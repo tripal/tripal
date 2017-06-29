@@ -1768,6 +1768,12 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
          $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
          $term = chado_expand_var($term, 'field', 'cvterm.definition');
 
+         // Skip the Publiation Type property for pubs as this is
+         // already handled by the pub.type_id field.
+         if ($term->name == 'Publication Type' and $term->cv_id->name == 'tripal_pub') {
+           continue;
+         }
+
          // The tripal_analysis_KEGG, tripal_analysis_blast, and
          // tripal_analysis_interpro modules store results in the analysisprop
          // table which is probably not the best place, but we don't want to
