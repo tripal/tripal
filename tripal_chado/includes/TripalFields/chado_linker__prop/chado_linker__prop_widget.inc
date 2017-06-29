@@ -19,6 +19,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     $base_table = $this->instance['settings']['base_table'];
     $field_table = $this->instance['settings']['chado_table'];
     $chado_column = $this->instance['settings']['chado_column'];
+    $rows = array_key_exists('rows', $this->instance['settings']) ? $this->instance['settings']['rows'] : 1;
     $instance = $this->instance;
 
     // Get the name of the pkey field for this property table and the name
@@ -94,6 +95,8 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
       '#default_value' => $value,
       '#title' => $instance['label'],
       '#description' => $instance['description'],
+      '#rows' => $rows,
+      '#required' => $instance['required'],
     );
     $widget['chado-' . $field_table . '__type_id'] = array(
       '#type' => 'hidden',

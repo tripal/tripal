@@ -302,7 +302,8 @@ function tripal_autocomplete_pub($string = '') {
   ";
   $pubs = chado_query($sql, array(':str' => $string . '%'));
   while ($pub = $pubs->fetchObject()) {
-    $items[$pub->uniquename] = $pub->uniquename;
+    $val = $pub->title  . " [id:" . $pub->pub_id . "]";
+    $items[$val] = $pub->title;
   }
 
   drupal_json_output($items);
@@ -1025,21 +1026,6 @@ function tripal_get_minimal_pub_info($pub) {
   $pub = chado_expand_var($pub, 'field', 'pub.title');
   $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
 
-  // get the citation
-  $values = array(
-    'pub_id' => $pub->pub_id,
-    'type_id' => array(
-      'name' => 'Citation',
-    ),
-  );
-  $options = array(
-    'include_fk' => array(
-    ),
-  );
-  $citation = chado_generate_var('pubprop', $values, $options);
-  $citation = chado_expand_var($citation, 'field', 'pubprop.value');
-  $citation = $citation->value;
-
   // get the abstract
   $values = array(
     'pub_id' => $pub->pub_id,
@@ -1119,6 +1105,36 @@ function tripal_get_minimal_pub_info($pub) {
   $dbxrefs = array();
   foreach ($pub_dbxrefs as $pub_dbxref) {
     $dbxrefs[] = $pub_dbxref->dbxref_id->db_id->name . ':' . $pub_dbxref->dbxref_id->accession;
+  }
+
+  // get the citation
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Citation',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $citation = chado_generate_var('pubprop', $values, $options);
+  if ($citation) {
+    $citation = chado_expand_var($citation, 'field', 'pubprop.value');
+    $citation = $citation->value;
+  }
+  else {
+    $pub_info = array(
+      'Title' => $pub->title,
+      'Publication Type' => $pub->type_id->name,
+      'Authors' => $authors_list,
+      'Series Name' => $pub->series_name,
+      'Volume' => $pub->volume,
+      'Issue' => $pub->issue,
+      'Pages' => $pub->pages,
+      'Publication Date' => $pub->pyear,
+    );
+    $citation = tripal_pub_create_citation($pub_info);
   }
 
   return array(

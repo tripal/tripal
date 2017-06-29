@@ -65,8 +65,8 @@ class sbo__phenotype extends ChadoField {
     return array(
       $field_term => array(
         'operations' => array('eq', 'ne', 'contains', 'starts'),
-        'sortable' => TRUE,
-        'searchable' => TRUE,
+        'sortable' => FALSE,
+        'searchable' => FALSE,
       ),
     );
   }

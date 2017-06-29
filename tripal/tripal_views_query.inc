@@ -233,7 +233,7 @@ class tripal_views_query extends views_plugin_query {
 
         // Get the IDs
         $results = $query->execute();
-        $entity_ids = array_keys($results['TripalEntity']);
+        $entity_ids = (isset($results['TripalEntity']) AND is_array($results['TripalEntity'])) ? array_keys($results['TripalEntity']) : array();
 
         $this->pager->post_execute($view->result);
         if ($this->pager->use_count_query() || !empty($view->get_total_rows)) {

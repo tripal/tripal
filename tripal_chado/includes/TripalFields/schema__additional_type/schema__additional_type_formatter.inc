@@ -12,11 +12,14 @@ class schema__additional_type_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    foreach ($items as $delta => $item) {
-      $element[$delta] = array(
-        '#type' => 'markup',
-        '#markup' => $item['value'],
-      );
+    $content = '';
+    if (count($items) > 0) {
+      $content = $items[0]['value'];
     }
+
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }

@@ -2,8 +2,7 @@
 
 function tripal_chado_publish_form($form, &$form_state) {
 
-  global $language;
-  $langcode = $language->language;
+  $langcode = 'und';
 
   $bundle_name = '';
   if (array_key_exists('values', $form_state)) {
@@ -141,9 +140,8 @@ function tripal_chado_publish_form_validate($form, &$form_state) {
 function tripal_chado_publish_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'publish_btn') {
     global $user;
-    global $language;
 
-    $langcode = $language->language;
+    $langcode = 'und';
 
     $bundle_name = $form_state['values']['bundle_name'];
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));

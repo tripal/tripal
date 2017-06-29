@@ -95,23 +95,17 @@ class sio__annotation extends ChadoField {
           $vocabulary_term => array(
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'name' => 'vocabulary',
             'label' => 'Annotation Term Vocabulary',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
           ),
           $accession_term => array(
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'name' => 'accession',
             'label' => 'Annotation Term Accession',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
           ),
-          $definition_term = array(
+          $definition_term => array(
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'name' => 'description',
             'label' => 'Annotation Term Description',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
           ),
         ),
       ),
@@ -120,21 +114,17 @@ class sio__annotation extends ChadoField {
     if (array_key_exists('is_not', $schema['fields'])) {
       $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
       $info[$field_term]['elements'][$negation_term] = array(
-        'sortable' => TRUE,
-        'searchable' => TRUE,
-        'name' => 'negates',
+        'sortable' => FALSE,
+        'searchable' => FALSE,
         'label' => 'Annotation Term Negates',
-        'operations' => array('eq', 'ne'),
       );
     }
     if (array_key_exists('rank', $schema['fields'])) {
       $rank_term = tripal_get_chado_semweb_term($field_table, 'rank');
       $info[$field_term]['elements'][$rank_term] = array(
-        'sortable' => TRUE,
-        'searchable' => TRUE,
-        'name' => 'rank',
+        'sortable' => FALSE,
+        'searchable' => FALSE,
         'label' => 'Annotation Term Rank',
-        'operations' => array('eq', 'ne', 'lte', 'gte'),
         'type' => 'numeric'
       );
     }
@@ -183,21 +173,6 @@ class sio__annotation extends ChadoField {
       $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id");
       $query->condition($alias . '_cvterm.definition', $condition['value'], $operator);
     }
-
-    if (array_key_exists('is_not', $schema['fields'])) {
-      $negation_term = $field_term_id . ',' . tripal_get_chado_semweb_term($field_table, 'is_not');
-      if ($condition['column'] == $negation_term) {
-        $query->condition($alias . '.is_not', $condition['value'], $operator);
-      }
-    }
-    if (array_key_exists('rank', $schema['fields'])) {
-      $rank_term = $field_term_id . ',' . tripal_get_chado_semweb_term($field_table, 'rank');
-      if ($condition['column'] == $rank_term) {
-        $query->condition($alias . '.rank', $condition['value'], $operator);
-      }
-    }
-    if (array_key_exists('pub_id', $schema['fields'])) {
-    }
   }
 
   /**
@@ -224,35 +199,20 @@ class sio__annotation extends ChadoField {
     $this->queryJoinOnce($query, $field_table, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
 
     if ($order['column'] == $vocabulary_term) {
-      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id");
-      $this->queryJoinOnce($query, 'dbxref', $alias . '_dbxref', $alias . "_cvterm.dbxref_id = " . $alias . "_dbxref.dbxref_id");
-      $this->queryJoinOnce($query, 'db', $alias . '_db', $alias . "_db.db_id = " . $alias . "_dbxref.db_id");
-      $query->orderBy($alias . "_dbxref.name", $order['direction']);
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id", "LEFT OUTER");
+      $this->queryJoinOnce($query, 'dbxref', $alias . '_dbxref', $alias . "_cvterm.dbxref_id = " . $alias . "_dbxref.dbxref_id", "LEFT OUTER");
+      $this->queryJoinOnce($query, 'db', $alias . '_db', $alias . "_db.db_id = " . $alias . "_dbxref.db_id", "LEFT OUTER");
+      $query->orderBy($alias . "_db.name", $order['direction']);
     }
     if ($order['column'] == $accession_term) {
-      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id");
-      $this->queryJoinOnce($query, 'dbxref', $alias . '_dbxref', $alias . "_cvterm.dbxref_id = " . $alias . "_dbxref.dbxref_id");
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id", "LEFT OUTER");
+      $this->queryJoinOnce($query, 'dbxref', $alias . '_dbxref', $alias . "_cvterm.dbxref_id = " . $alias . "_dbxref.dbxref_id", "LEFT OUTER");
       $query->orderBy($alias . "_dbxref.accession", $order['direction']);
     }
     if ($order['column'] == $definition_term) {
       $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . ".cvterm_id = " . $alias . "_cvterm.cvterm_id");
       $query->orderBy($alias . "_cvterm.definition", $order['direction']);
     }
-    if (array_key_exists('is_not', $schema['fields'])) {
-      $negation_term = $field_term_id . ',' . tripal_get_chado_semweb_term($field_table, 'is_not');
-      if ($order['column'] == $negation_term) {
-        $query->orderBy("$alias.is_not", $order['direction']);
-      }
-    }
-    if (array_key_exists('rank', $schema['fields'])) {
-      $rank_term = $field_term_id . ',' . tripal_get_chado_semweb_term($field_table, 'rank');
-      if ($order['column'] == $rank_term) {
-        $query->orderBy("$alias.rank", $order['direction']);
-      }
-    }
-    if (array_key_exists('pub_id', $schema['fields'])) {
-    }
-
   }
   /**
    *
@@ -320,7 +280,7 @@ class sio__annotation extends ChadoField {
         'value' => array(
           $vocabulary => $cvterm->dbxref_id->db_id->name,
           $accession => $cvterm->dbxref_id->accession,
-          $definition => $cvterm->name
+          $definition => $cvterm->definition
         ),
         'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
         'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
