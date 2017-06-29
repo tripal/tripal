@@ -141,7 +141,7 @@ function tripal_chado_prepare_chado($job = NULL) {
   // Retrieve the job arguement in order to report progress.
   if (is_int($job)) {
     $job = new TripalJob();
-    $job->load($job_id);
+    $job->load($job);
   }
   $report_progress = TRUE;
   if (!is_object($job)) { $report_progress = FALSE; }
