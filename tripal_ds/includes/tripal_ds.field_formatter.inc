@@ -88,7 +88,9 @@ function tripal_ds_field_group_pre_render(&$element, $group, &$form) {
  * Updated the weight of field groups to reflect their order in the layout array.
  *
  * @param $field_name
+ *  Machine readable name of the field.
  * @param $bundle
+ *  Machine name of bundle, example bio_data_1
  * @param $weight
  */
 function tripal_ds_field_group_update_weight($field_name, $bundle, $weight) {
@@ -104,13 +106,14 @@ function tripal_ds_field_group_update_weight($field_name, $bundle, $weight) {
     $data = unserialize($result['data']);
     $data['weight'] = $weight;
     $data = serialize($data);
+
+    // Write the new weight to the field_group entry.
+    db_update('field_group')
+      ->fields(array(
+        'data' => $data
+      ))
+      ->condition('bundle', $bundle,'=')
+      ->condition('group_name', $field_name,'=')
+      ->execute();
   }
-  // Write the new weight to the field_group entry.
-  db_update('field_group')
-    ->fields(array(
-      'data' => $data
-    ))
-    ->condition('bundle', $bundle,'=')
-    ->condition('group_name', $field_name,'=')
-    ->execute();
 }

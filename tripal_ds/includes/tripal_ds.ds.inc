@@ -8,7 +8,7 @@
  *
  * @return \Closure
  */
-function sort_array($key) {
+function tripal_ds_sort_array($key) {
   return function ($a, $b) use ($key) {
     return strnatcmp($a[$key], $b[$key]);
   };
@@ -21,13 +21,20 @@ function sort_array($key) {
  *
  * @return \Closure
  */
-function sort_object($key) {
+function tripal_ds_sort_object($key) {
   return function ($a, $b) use ($key) {
     return strnatcmp($a->$key, $b->$key);
   };
 }
+
 /**
- * Implements hook_ds_layout_settings_info().
+ * Builds the tripal_ds layout for all content types other than Publications.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ * @param $instances
+ *
+ * @return bool
  */
 function _ds_layout_settings_info($bundle_name, $instances) {
   $region_right = array();
@@ -51,7 +58,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
       $all_fields[$i] = $instance;
       $i++;
     }
-    usort($all_fields, sort_array('label'));
+    usort($all_fields, tripal_ds_sort_array('label'));
 
     // Iterate through the fields of this bundle.
     foreach ($all_fields as $key => $instance){
@@ -142,37 +149,69 @@ function _ds_layout_settings_info($bundle_name, $instances) {
       foreach ($all_field_groups['default'] as $key => $field_name) {
         $right_fields[$key] = $field_name;
       }
-      usort($right_fields, sort_object('label'));
-      watchdog('debug', '<pre>$right_fields: '. print_r($right_fields, TRUE) .'</pre>');
+      usort($right_fields, tripal_ds_sort_object('label'));
+    }
+    elseif(empty($all_field_groups)) {
+      //Add the original instances that were passed and the field_groups that
+      //were created.
+      $field_group_fields = db_select('field_group', 'fg')
+        ->fields('fg', array('group_name', 'data'))
+        ->condition('bundle', $bundle_name, '=')
+        ->execute()
+        ->fetchAll();
 
+      $instance_names = array();
+      $field_group_names = array();
+      foreach ($all_fields as $key => $instance){
+        $instance_names[$key]['field_name'] = $instance['field_name'];
+        $instance_names[$key]['label'] = $instance['label'];
+
+      }
+      foreach ($field_group_fields as $key => $field_group_name){
+        $data = unserialize($field_group_name->data);
+        $field_group_names[$key]['field_name'] = $field_group_name->group_name;
+        $field_group_names[$key]['label'] = $data['format_settings']['label'];
+
+      }
+      $all_field_groups = array_merge($instance_names, $field_group_names);
+      usort($all_field_groups, tripal_ds_sort_array('label'));
     }
 
     // Now build the $region_right array and the fields array.
     $i = 0;
-    foreach ($right_fields as $index => $field) {
-      // Check if the child is already present which is a problem when groups
-      // are nested within groups.
-      if (in_array($field->group_name, $region_right)) {
-        // Still need to check for children and add them.
-        if (!empty($field->children)) {
-          foreach($field->children as $index => $child){
-            $region_right[$i] = $child;
-            $i++;
-          }
-        }
-      }
-      else {
-        $region_right[$i] = $field->group_name;
-        if (!empty($field->children)) {
-          foreach ($field->children as $index => $child) {
-            $i++;
-            $region_right[$i] = $child;
-          }
-        }
+    if(empty($right_fields)) {
+      foreach ($all_field_groups as $index => $field) {
+        $region_right[$i] = $field['field_name'];
         $i++;
+        tripal_ds_field_group_update_weight($field['field_name'], $bundle_name, $i);
       }
-      // Now update the weights of the field_groups.
-      tripal_ds_field_group_update_weight($field->group_name, $bundle_name, $i);
+    }
+    elseif (!empty($right_fields)) {
+      foreach ($right_fields as $index => $field) {
+        // Check if the child is already present which is a problem when groups
+        // are nested within groups.
+        if (in_array($field->group_name, $region_right)) {
+          // Still need to check for children and add them.
+          if (!empty($field->children)) {
+            foreach ($field->children as $index => $child) {
+              $region_right[$i] = $child;
+              $i++;
+            }
+          }
+        }
+        else {
+          $region_right[$i] = $field->group_name;
+          if (!empty($field->children)) {
+            foreach ($field->children as $index => $child) {
+              $i++;
+              $region_right[$i] = $child;
+            }
+          }
+          $i++;
+        }
+        // Now update the weights of the field_groups.
+        tripal_ds_field_group_update_weight($field->group_name, $bundle_name, $i);
+      }
     }
     foreach($region_right as $index => $field){
       $fields_with_regions[$field] = 'right';
@@ -181,8 +220,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     _ds_fields_info_write($bundle_name);
     $region_left = [ 'toc' ];
     $fields_with_regions += [ 'toc' => 'left' ];
-    watchdog('debug', '<pre>$fields_with_regions: '. print_r($fields_with_regions, TRUE) .'</pre>');
-    watchdog('debug', '<pre>$region_right: '. print_r($region_right, TRUE) .'</pre>');
 
     // Build the ds layout.
     $record = new stdClass;
@@ -214,7 +251,7 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     );
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
-    // Clear the Drpual chace
+    // Clear the Drupal cache.
     cache_clear_all();
   }
   catch (Exception $e) {
@@ -226,7 +263,13 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
 
 /**
- *  Implements hook_ds_layout_settings_info().
+ * Builds the tripal_ds layout for Publications.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ * @param $instances
+ *
+ * @return bool
  */
 function _ds_layout_pub_settings_info($bundle_name, $instances) {
   $region_right = array();
@@ -235,13 +278,13 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
   $all_fields = array();
   $instances_for_field_groups = array();
   $disabled_instances = array();
-
+  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
   try {
     // Add Abstract, Citation, DB Cross Reference, Properties.
     $all_fields['tpub__abstract']= 'right';
     $all_fields['tpub__citation']= 'right';
     $all_fields['sbo__database_cross_reference']= 'right';
-    $all_fields['tpub__publication_type']= 'right';
+    $all_fields['schema__additional_type']= 'right';
     $all_fields['tpub__doi']= 'right';
     $all_fields['tpub__publication_date']= 'right';
     $all_fields['sio__references']= 'right';
@@ -250,17 +293,19 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     foreach ($instances as $key => $instance) {
       $instance_name = $instance['field_name'];
 
-      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation' || $instance_name == 'sbo__database_cross_reference' || $instance_name == 'sio__references'){
+      if($instance_name == 'tpub__abstract' || $instance_name == 'tpub__citation'
+        || $instance_name == 'sbo__database_cross_reference'
+        || $instance_name == 'sio__references'){
         array_push($instances_for_field_groups, $instance);
         // Update the display settings so that the title is hidden.
         $instance['display']['default']['label'] = 'hidden';
         field_update_instance($instance);
       }
-      elseif($instance_name == 'tpub__publication_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
-        array_push($properties, $instance);
+      elseif($instance_name == 'schema__additional_type' || $instance_name == 'tpub__doi' || $instance_name == 'tpub__publication_date') {
+        array_push($properties, $instance_name);
       }
       else {
-        array_push($disabled_instances, $instance);
+        array_push($disabled_instances, $instance_name);
       }
 
     }
@@ -274,12 +319,12 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       // updating fields here to ensure name consistency.
       $group_field_name = substr($group_field_name, 0, 27);
 
-      // Add randomm numbers to ensure the field name is unique within the 32
+      // Add random numbers to ensure the field name is unique within the 32
       // character limit of the field.
       $group_field_name = $group_field_name.rand(0, 99999);
 
       // Build the field group.
-      _additional_fields_field_group_info($bundle_name, $other_field['label'], $other_field['field_name'], $other_field['field_name']);
+      _additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
 
       // Update arrays.
       array_push($temporary_field, $group_field_name, $other_field['field_name']);
@@ -293,6 +338,11 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       array_unshift($properties, 'group_prop_tripalpane', 'group_prop_table');
       $region_right = array_merge($region_right, $properties);
       $all_fields+= [ 'group_prop_tripalpane' => 'right', 'group_prop_table' => 'right' ];
+    }
+    if(!empty($all_fields)){
+      foreach ($disabled_instances as $disabled_field) {
+        $all_fields += [$disabled_field => 'disabled'];
+      }
     }
 
     // Add blocks to $region_left and build the toc field that is placed within.
@@ -329,6 +379,9 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     );
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
+    // Clear the Drpual chace
+    cache_clear_all();
+    watchdog('debug', '<pre>$record: '. print_r($record, TRUE) .'</pre>');
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);
@@ -339,6 +392,9 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
 
 /**
  * Implements hook_ds_fields_info().
+ * Creates the Table of Contents field.
+ *
+ * $param $entity_type
  */
 function tripal_ds_ds_fields_info($entity_type) {
   $fields = array();
@@ -352,9 +408,10 @@ function tripal_ds_ds_fields_info($entity_type) {
 }
 
 /**
+ * Adds the content the to Table of Contents block.
  *
  * @param $entity_type
- * @return
+ * @return Object
  */
 function tripal_ds_toc_block($entity_type) {
   $bundle_name = $entity_type['bundle'];
@@ -362,6 +419,12 @@ function tripal_ds_toc_block($entity_type) {
   return $toc;
 }
 
+/**
+ * Creates the field_group for the Table of Contents.
+ *
+ * @param $bundle_name
+ *  Machine name of bundle, example bio_data_1
+ */
 function _ds_fields_info_write($bundle_name) {
   $fields = new stdClass;
   $fields->id ='TripalEntity|' . $bundle_name . '|default';

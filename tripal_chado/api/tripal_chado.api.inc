@@ -18,6 +18,19 @@
  */
 function tripal_chado_publish_records($values, $job_id = NULL) {
 
+  // We want the job object in order to report progress.
+  if (is_object($job_id)) {
+    $job = $job_id;
+  }
+  if (is_numeric($job_id)) {
+    $job = new TripalJob();
+    $job->load($job_id);
+  }
+  $report_progress = FALSE;
+  if (is_object($job)) {
+    $report_progress = TRUE;
+  }
+
   // Make sure we have the required options: bundle_name.
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -153,7 +166,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $count = $result->fetchField();
 
   // calculate the interval for updates
-  $interval = intval($count / 1000);
+  $interval = intval($count / 50);
   if ($interval < 1) {
     $interval = 1;
   }
@@ -174,11 +187,12 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     while($record = $records->fetchObject()) {
 
       // update the job status every interval
-      //if ($jobid and $i % $interval == 0) {
+      if ($i % $interval == 0) {
         $complete = ($i / $count) * 33.33333333;
-        //tripal_set_job_progress($jobid, intval($complete + 33.33333333));
+        // Currently don't support setting job progress within a transaction.
+        // if ($report_progress) { $job->setProgress(intval($complete * 3)); }
         printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
-      //}
+      }
 
       // First save the tripal_entity record.
       $record_id = $record->record_id;
