@@ -40,6 +40,15 @@ class sio__vocabulary extends ChadoField {
    */
   public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
+    // If we don't have an entity then we don't want to validate.  The case
+    // where this could happen is when a user is editing the field settings
+    // and trying to set a default value. In that case there's no entity and
+    // we don't want to validate.  There will always be an entity for creation
+    // and update operations of a content type.
+    if (!$entity) {
+      return;
+    }
+
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
