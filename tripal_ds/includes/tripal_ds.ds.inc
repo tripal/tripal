@@ -46,6 +46,9 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $fields_with_regions = array();
   $i = 0;
   $all_fields = array();
+  watchdog('debug', '<pre>$bundle_name: '. print_r($bundle_name, TRUE) .'</pre>');
+
+  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
 
   try {
     // Get the bundle and term objects.
@@ -142,14 +145,17 @@ function _ds_layout_settings_info($bundle_name, $instances) {
     // order to display fields in label alpha order.
     $right_fields = array();
     $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
-    if (is_array($all_field_groups)) {
-      if (!isset($all_field_groups['default'])) {
-        $all_field_groups['default'] = array();
+
+    if(!empty($all_field_groups)){
+      if (is_array($all_field_groups)) {
+        if (!isset($all_field_groups['default'])) {
+          $all_field_groups['default'] = array();
+        }
+        foreach ($all_field_groups['default'] as $key => $field_name) {
+          $right_fields[$key] = $field_name;
+        }
+        usort($right_fields, tripal_ds_sort_object('label'));
       }
-      foreach ($all_field_groups['default'] as $key => $field_name) {
-        $right_fields[$key] = $field_name;
-      }
-      usort($right_fields, tripal_ds_sort_object('label'));
     }
     elseif(empty($all_field_groups)) {
       //Add the original instances that were passed and the field_groups that
@@ -250,9 +256,10 @@ function _ds_layout_settings_info($bundle_name, $instances) {
       'layout_disable_css' => 0,
     );
     $record->settings = $settings;
+
     drupal_write_record('ds_layout_settings', $record);
     // Clear the Drupal cache.
-    cache_clear_all();
+    drupal_flush_all_caches();
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);
@@ -380,7 +387,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
     $record->settings = $settings;
     drupal_write_record('ds_layout_settings', $record);
     // Clear the Drpual chace
-    cache_clear_all();
+    drupal_flush_all_caches();
   }
   catch (Exception $e) {
     watchdog_exception('tripal_ds', $e);
