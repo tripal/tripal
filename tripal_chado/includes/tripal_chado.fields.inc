@@ -934,7 +934,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
     }
     if ($table_name == 'analysis' and $column_name == 'algorithm') {
-      $base_info['label'] = 'Source Version';
+      $base_info['label'] = 'Algorithm';
       $base_info['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
     }
     if ($table_name == 'analysis' and $column_name == 'programversion') {

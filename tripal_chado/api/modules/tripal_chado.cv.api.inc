@@ -338,7 +338,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
+function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
   // TODO: need better error checking in this function
 
   // first get the controlled vocabulary name:
@@ -376,7 +376,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
  * @param $job_id
  */
-function tripal_update_cvtermpath_bak($cv_id, $job_id = NULL){
+function tripal_update_cvtermpath($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');
@@ -1654,5 +1654,4 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
     return FALSE;
   }
 }
-
 

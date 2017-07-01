@@ -213,8 +213,8 @@ function tripal_chado_populate_vocab_SCHEMA() {
   $term = tripal_insert_cvterm(array(
     'id' => 'schema:additionalType',
     'name' => 'additionalType',
-    'cv_name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
-    'definition' => 'URL of the item.',
+    'cv_name' => 'schema',
+    'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
   ));
   $tables = chado_get_table_names(TRUE);
   foreach ($tables as $table) {

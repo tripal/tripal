@@ -1222,3 +1222,21 @@ function tripal_chado_update_7314() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+/**
+ * Fixes a mistake with the schema:additionalType term.
+ */
+function tripal_chado_update_7315() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'id' => 'schema:additionalType',
+      'name' => 'additionalType',
+      'cv_name' => 'schema',
+      'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
+    ));
+    chado_delete_record('cv', array('name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

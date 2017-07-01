@@ -503,13 +503,11 @@ class OBOImporter extends TripalImporter {
     }
 
     // second, parse the OBO
-    $success = $this->loadOBO_v1_2($temp, $newcvs);
-    if ($success) {
+    $this->loadOBO_v1_2($temp, $newcvs);
 
-      // update the cvtermpath table
-      $this->load_cvtermpath($newcvs);
-      print "Done\n";
-    }
+    // update the cvtermpath table
+    $this->load_cvtermpath($newcvs);
+
     // now remove the temp file
     unlink($temp);
   }
