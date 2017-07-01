@@ -12,7 +12,7 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-
+dpm($items);
     $rows = array();
     $headers = array('Map', 'Position', 'Map Description');
     foreach ($items as $delta => $item) {

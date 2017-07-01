@@ -530,8 +530,8 @@ function tripal_chado_populate_vocab_ERO() {
     'urlprefix' => 'http://purl.bioontology.org/ontology/ERO/{db}:{accession}',
   ));
   tripal_insert_cv(
-      'ero',
-      'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
+    'ero',
+    'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
   );
 
   $term = tripal_insert_cvterm(array(
@@ -1231,6 +1231,24 @@ function tripal_chado_populate_vocab_LOCAL() {
     'is_relationship' => 0,
     'db_name' => 'local'
   ));
+
+  tripal_insert_cvterm(array(
+    'name' => 'Software',
+    'definition' => 'The software used to construct the map.',
+    'cv_name' => 'featuremap_property',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
+
+  $term = tripal_insert_cvterm(array(
+    'name' => 'Reference Feature',
+    'definition' => 'A genomic or genetic feature on which other features are mapped.',
+    'cv_name' => 'local',
+    'is_relationship' => 0,
+    'db_name' => 'local'
+  ));
+  tripal_associate_chado_semweb_term('featurepos', 'map_feature_id', $term);
+
 
   //--------------
   // Featureloc Terms

@@ -1202,3 +1202,23 @@ function tripal_chado_update_7313() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds a local term for the featuremap.feature_id column.
+ */
+function tripal_chado_update_7314() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'name' => 'Reference Feature',
+      'definition' => 'A genomic or genetic feature on which other features are mapped.',
+      'cv_name' => 'local',
+      'is_relationship' => 0,
+      'db_name' => 'local'
+    ));
+    tripal_associate_chado_semweb_term('featurepos', 'map_feature_id', $term);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

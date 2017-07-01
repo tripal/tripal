@@ -1000,7 +1000,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
+function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
+    $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
+
   // The max number of records either as nodes or linked records.
   $count = 0;
   // Will hold the number of nodes of this type.
@@ -1038,7 +1040,8 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table 
     $m = ceil($count / $nentries);
     for ($i = 0; $i < $m; $i++) {
       $offset = ($nentries * $i);
-      chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries, $offset, $linking_table, $node_type);
+      chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries, $offset,
+          $linking_table, $node_type);
     }
   }
   catch (Exception $e) {
