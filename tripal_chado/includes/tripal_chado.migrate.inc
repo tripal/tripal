@@ -740,7 +740,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_delete_selected_types($tv2_content_types = array()) {
+function tripal_chado_delete_selected_types($tv2_content_types = array(), $job_id) {
   foreach ($tv2_content_types AS $type) {
     $sql = "DELETE FROM $type";
     db_query($sql);
@@ -755,7 +755,7 @@ function tripal_chado_delete_selected_types($tv2_content_types = array()) {
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_unpublish_selected_types($tv2_content_types = array()) {
+function tripal_chado_unpublish_selected_types($tv2_content_types = array(), $job_id) {
   foreach ($tv2_content_types AS $type) {
     $sql = "UPDATE node SET status = 0 WHERE nid IN (SELECT nid FROM $type)";
     db_query($sql);
@@ -771,7 +771,7 @@ function tripal_chado_unpublish_selected_types($tv2_content_types = array()) {
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()) {
+function tripal_chado_copy_title_for_selected_types($tv2_content_types = array(), $job_id) {
   foreach ($tv2_content_types AS $type) {
     $chado_table = str_replace('chado_', '', $type);
     $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
@@ -799,7 +799,7 @@ function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = array()) {
+function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = array(), $job_id) {
   foreach ($tv2_content_types AS $type) {
     $chado_table = str_replace('chado_', '', $type);
     $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
