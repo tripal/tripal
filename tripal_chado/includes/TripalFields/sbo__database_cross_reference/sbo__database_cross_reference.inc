@@ -262,9 +262,9 @@ class sbo__database_cross_reference extends ChadoField {
       // clear to the user what field is required and which isn't. Therefore,
       // we borrow the code from the 'form_error' function and append the field
       // so that the proper field is highlighted on error.
-      if (!$db_id and $accession) {
+      if (!$db_id) {
         $errors[$field_name][$delta]['und'][] = array(
-          'message' => t("A database and the accession must both be provided."),
+          'message' => t("A database must be provided for the cross reference."),
           'error' => 'sbo__database_cross_reference',
         );
       }

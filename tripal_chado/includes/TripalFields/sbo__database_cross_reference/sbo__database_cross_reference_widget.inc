@@ -100,6 +100,9 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     );
   }
 
+  /**
+   * @see TripalFieldWidget::validate()
+   */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
 
     $field_name = $this->field['field_name'];

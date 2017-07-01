@@ -18,6 +18,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::settingsForm()
    */
   public function settingsForm($view_mode, $form, &$form_state) {
+
     $display = $this->instance['display'][$view_mode];
     $settings = $display['settings'];
     $element = array();
@@ -42,7 +43,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $display = $this->instance['display'][$view_mode];
     $settings = $display['settings'];
 
-    $summary = t('Title: @title<br>Empty: @empty', array('@title' => $settings['title'], '@empty' => $settings['empty']));
+    $summary = t('Title: @title<br>Empty: @empty',
+        array(
+          '@title' => $settings['title'],
+          '@empty' => $settings['empty'])
+        );
 
     return $summary;
   }

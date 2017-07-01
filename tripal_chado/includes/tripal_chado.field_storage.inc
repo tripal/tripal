@@ -146,6 +146,7 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
 
   // If the primary key column does not have a value then this is an insert.
   if (!array_key_exists($pkey, $values) or !$values[$pkey] or !isset($values[$pkey])) {
+
     // Before inserting, we want to make sure the record does not
     // already exist.  Using the unique constraint check for a matching record.
     $options = array('is_duplicate' => TRUE);

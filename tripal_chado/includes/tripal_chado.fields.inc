@@ -870,6 +870,12 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       $base_info['label'] = 'Description';
     }
     //
+    // FEATUREMAP TABLE
+    //
+    if ($table_name == 'featuremap' and $column_name == 'name') {
+      $base_info['required'] = TRUE;
+    }
+    //
     // PUB TABLE
     //
     if ($table_name == 'pub') {
@@ -1349,7 +1355,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
 
-  // FEATURE SEQLEN
+  // FEATURE MAP UNITS
   if ($table_name == 'featuremap') {
     $field_name = 'uo__unit';
     $info[$field_name] = array(

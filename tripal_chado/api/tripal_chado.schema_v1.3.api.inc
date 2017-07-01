@@ -7019,6 +7019,14 @@ function tripal_chado_chado_schema_v1_3_featuremap_dbxref() {
         'default' => 'true',
       ),
     ),
+    // TODO: this unique constraint is missing from the actual Chado schema.
+    // It should be included.
+    'unique keys' => array(
+      'feature_dbxref_c1' => array(
+        0 => 'featuremap_id',
+        1 => 'dbxref_id',
+      ),
+    ),
     'indexes' => array(
       'featuremap_dbxref_idx1' => array(
         0 => 'featuremap_id',
@@ -7242,6 +7250,14 @@ function tripal_chado_chado_schema_v1_3_featuremap_pub() {
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
+      ),
+    ),
+    // TODO: this unique constraint is missing from the actual Chado schema.
+    // It should be included.
+    'unique keys' => array(
+      'feature_pub_c1' => array(
+        0 => 'featuremap_id',
+        1 => 'pub_id',
       ),
     ),
     'indexes' => array(

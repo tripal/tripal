@@ -119,6 +119,7 @@ class ogi__location_on_map extends ChadoField {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
 
+    $map_term = 'data:1274';
     $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
     $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
     $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
@@ -148,18 +149,17 @@ class ogi__location_on_map extends ChadoField {
       foreach ($feature->featurepos->feature_id AS $featurepos) {
         // Get details about the map
         $featuremap = chado_generate_var('featuremap', array('featuremap_id' => $featurepos->featuremap_id));
-        $value = array (
+        $entity->{$field_name}['und'][$i]['value'] = array (
           // Map.
-          'data:1274' => array(
+          $map_term => array(
             $name_term => $featuremap->name,
             $description_term => $featuremap->description,
           ),
           $mappos_term => $featurepos->mappos
         );
         if (property_exists($featuremap, 'entity_id')) {
-          $value['data:1274']['entity'] = 'TripalEntity:' . $featuremap->entity_id;
+          $entity->{$field_name}['und'][$i]['value'][$map_term]['entity'] = 'TripalEntity:' . $featuremap->entity_id;
         }
-        $entity->{$field_name}['und'][$i]['value'] = $value;
         $i++;
       }
     }
