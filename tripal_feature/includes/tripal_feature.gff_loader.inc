@@ -1349,7 +1349,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
           'fmax' => $fmax,
           'strand' => $strand,
         );
-        if ($phase) {
+        if (isset($phase)) {
           $values['phase'] = $phase;
         }
         $result = chado_insert_record('tripal_gffcds_temp', $values);
