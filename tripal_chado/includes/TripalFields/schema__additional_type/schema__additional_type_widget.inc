@@ -88,6 +88,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
    * @see TripalFieldWidget::submit()
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];

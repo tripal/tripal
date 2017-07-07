@@ -20,7 +20,6 @@ require_once 'includes/tripal_cv.admin.inc';
 require_once 'includes/tripal_cv.cv_form.inc';
 require_once 'includes/tripal_cv.cv_defaults.inc';
 require_once 'includes/tripal_cv.cvterm_form.inc';
-require_once 'includes/tripal_cv.cvtermpath_form.inc';
 
 /**
  * Implements hook_init().
@@ -59,15 +58,6 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
-  );
-
-  $items['admin/tripal/legacy/vocab/cvtermpath'] = array(
-    'title' => 'Update Chado cvtermpath table',
-    'description' => 'The Chado cvtermpath table provides lineage for terms and is useful for quickly finding any ancestor parent of a term.  However, this table must be populated.  This page allows for populating of this table one vocabulary at a time',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvtermpath_form'),
-    'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/legacy/vocab/cv/edit/%'] = array(

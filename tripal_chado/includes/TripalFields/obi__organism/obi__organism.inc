@@ -42,6 +42,14 @@ class obi__organism extends ChadoField {
    */
   public function validate($entity_type, $entity, $langcode, $items, &$errors) {
 
+    // If we don't have an entity then we don't want to validate.  The case
+    // where this could happen is when a user is editing the field settings
+    // and trying to set a default value. In that case there's no entity and
+    // we don't want to validate.  There will always be an entity for creation
+    // and update operations of a content type.
+    if (!$entity) {
+      return;
+    }
     $settings = $this->field['settings'];
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -116,11 +124,10 @@ class obi__organism extends ChadoField {
   /**
    * @see TripalField::globalSettingsForm()
    */
-  public function settingsForm($has_data) {
-    $element = parent::globalSettingsForm($has_data);
+  public function instanceSettingsForm() {
+    $element = parent::instanceSettingsForm();
 
-    $settings = $this->field['settings'];
-
+    $settings = $this->instance['settings'];
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may rewrite the way this field is presented to the end-user.
@@ -172,10 +179,6 @@ class obi__organism extends ChadoField {
       '#type' => 'item',
       '#markup' => theme_table($table_vars),
     );
-
-    // Add in the semantic web fields.
-    $parent_elements = parent::settings_form($field, $instance, $has_data);
-    $element = array_merge($element, $parent_elements);
 
     return $element;
   }

@@ -731,7 +731,8 @@ function tripal_field_settings_form_validate($element, &$form_state, $form) {
  * Implements hook_field_formatter_settings_summary().
  */
 function tripal_field_formatter_settings_summary($field, $instance, $view_mode) {
-  $formatter_class = $field['type'] . '_formatter';
+
+  $formatter_class = $instance['display']['default']['type'];
   if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
     return $formatter->settingsSummary($view_mode);
@@ -743,8 +744,9 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
  */
 function tripal_field_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
-  if (tripal_load_include_field_class($formatter_class)) {
 
+  $formatter_class = $instance['display']['default']['type'];
+  if (tripal_load_include_field_class($formatter_class)) {
     $formatter = new $formatter_class($field, $instance);
     $elements = $formatter->settingsForm($view_mode, $form, $form_state);
   }

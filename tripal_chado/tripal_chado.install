@@ -1202,3 +1202,41 @@ function tripal_chado_update_7313() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds a local term for the featuremap.feature_id column.
+ */
+function tripal_chado_update_7314() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'name' => 'Reference Feature',
+      'definition' => 'A genomic or genetic feature on which other features are mapped.',
+      'cv_name' => 'local',
+      'is_relationship' => 0,
+      'db_name' => 'local'
+    ));
+    tripal_associate_chado_semweb_term('featurepos', 'map_feature_id', $term);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+/**
+ * Fixes a mistake with the schema:additionalType term.
+ */
+function tripal_chado_update_7315() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'id' => 'schema:additionalType',
+      'name' => 'additionalType',
+      'cv_name' => 'schema',
+      'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
+    ));
+    chado_delete_record('cv', array('name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

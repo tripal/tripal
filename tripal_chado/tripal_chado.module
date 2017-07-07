@@ -628,6 +628,16 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/tripal/storage/chado/cvtermpath'] = array(
+    'title' => 'Update Chado cvtermpath table',
+    'description' => 'The Chado cvtermpath table provides lineage for terms and is useful for quickly finding any ancestor parent of a term.  However, this table must be populated.  This page allows for populating of this table one vocabulary at a time',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvtermpath_form'),
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
   //////////////////////////////////////////////////////////////////////////////
   //                           Databases
   //////////////////////////////////////////////////////////////////////////////

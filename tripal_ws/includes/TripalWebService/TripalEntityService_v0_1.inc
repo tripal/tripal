@@ -63,7 +63,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   private function doExpandedField($ctype, $entity_id, $expfield) {
     $service_path = $this->getServicePath() . '/' . urlencode($ctype) . '/' . $entity_id;
-    $this->resource = new TripalWebServiceResource($service_path, $this->doc_path);
+    $this->resource = new TripalWebServiceResource($service_path);
 
     // Get the TripalBundle, TripalTerm and TripalVocab for this type.
     $bundle = tripal_load_bundle_entity(array('label' => $ctype));

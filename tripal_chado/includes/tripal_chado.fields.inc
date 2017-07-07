@@ -870,6 +870,12 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       $base_info['label'] = 'Description';
     }
     //
+    // FEATUREMAP TABLE
+    //
+    if ($table_name == 'featuremap' and $column_name == 'name') {
+      $base_info['required'] = TRUE;
+    }
+    //
     // PUB TABLE
     //
     if ($table_name == 'pub') {
@@ -928,7 +934,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       $base_info['label'] = 'Program, Pipeline, Workflow or Method Name';
     }
     if ($table_name == 'analysis' and $column_name == 'algorithm') {
-      $base_info['label'] = 'Source Version';
+      $base_info['label'] = 'Algorithm';
       $base_info['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
     }
     if ($table_name == 'analysis' and $column_name == 'programversion') {
@@ -1349,7 +1355,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
 
-  // FEATURE SEQLEN
+  // FEATURE MAP UNITS
   if ($table_name == 'featuremap') {
     $field_name = 'uo__unit';
     $info[$field_name] = array(

@@ -60,53 +60,171 @@ class ogi__location_on_map extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
+    $map_term = 'data:1274';
     $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
     $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
     $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
+    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = 'rdfs:type';
 
     return array(
       $field_term => array(
         'sortable' => FALSE,
         'searchable' => FALSE,
         'elements' => array(
-          'data:1274' => array(
-            'name' => 'Map',
+          $map_term => array(
             'searchable' => FALSE,
             'sortable' => FALSE,
             'elements' => array(
               $name_term => array(
-                'name' => 'map_name',
                 'label' => 'Map Name',
                 'help' => 'The name of the map.',
                 'searchable' => TRUE,
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
-                'sortable' => FALSE,
+                'sortable' => TRUE,
               ),
               $description_term => array(
-                'name' => 'map_description',
                 'label' => 'Map Description',
                 'help' => 'A description of the map.',
                 'searchable' => TRUE,
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'sortable' => FALSE,
+              ),
+              'entity' => array(
+                'searchable' => FALSE,
                 'sortable' => FALSE,
               ),
             ),
           ),
-          $mappos_term => array(
-            'name' => 'map_position_type',
-            'label' => 'Map Position Type',
-            'help' => 'Maps may use different coordinate systems. This indicates the type of coordinate.',
-            'searchable' => TRUE,
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => FALSE,
-          ),
-          'entity' => array(
+          $ref_feature_term => array(
             'searchable' => FALSE,
             'sortable' => FALSE,
+            'elements' => array(
+              $ref_feature_name => array(
+                'label' => 'Map Reference Feature Name',
+                'help' => 'The genomic or genetic feature Nameof the map on which this feature is mapped.',
+                'searchable' => TRUE,
+                'sortable' => TRUE,
+              ),
+              $ref_feature_id=> array(
+                'label' => 'Map Reference Feature Identifier',
+                'help' => 'The genomic or genetic feature of the map on which this feature is mapped.',
+                'searchable' => TRUE,
+                'sortable' => TRUE,
+              ),
+              $ref_feature_type=> array(
+                'label' => 'Map Reference Feature Type',
+                'help' => 'The type of genomic or genetic feature of the map on which this feature is mapped.',
+                'searchable' => TRUE,
+                'sortable' => TRUE,
+              ),
+            ),
+          ),
+          $mappos_term => array(
+            'label' => 'Map Reference Position',
+            'help' => 'Maps may use different coordinate systems. This indicates the type of coordinate.',
+            'searchable' => TRUE,
+            'sortable' => TRUE,
           ),
         ),
       ),
     );
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    // Map details.
+    $field_term_id = $this->getFieldTermID();
+    $map_term = 'data:1274';
+    $name_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'name');
+    $description_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'description');
+    $mappos_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featurepos', 'mappos');
+
+    // Reference sequence details.
+    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
+
+    $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id");
+
+    if ($condition['column'] == $name_term) {
+      $this->queryJoinOnce($query, 'featuremap', $alias . '_map', $alias . '_map.featuremap_id = ' . $alias . '.featuremap_id');
+      $query->condition($alias . '_map.name', $condition['value'], $operator);
+    }
+    if ($condition['column'] == $description_term) {
+      $this->queryJoinOnce($query, 'featuremap', $alias . '_map', $alias . '_map.featuremap_id = ' . $alias . '.featuremap_id');
+      $query->condition($alias . '_map.description', $condition['value'], $operator);
+    }
+    if ($condition['column'] == $mappos_term) {
+      $query->condition($alias . '.mappos', $condition['value'], $operator);
+    }
+
+    if ($condition['column'] == $ref_feature_name) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id');
+      $query->condition($alias . '_mapref.name', $condition['value'], $operator);
+    }
+    if ($condition['column'] == $ref_feature_id) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id');
+      $query->condition($alias . '_mapref.uniquename', $condition['value'], $operator);
+    }
+    if ($condition['column'] == $ref_feature_type) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id');
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_mapref_cvterm', $alias . '_mapref_cvterm.cvterm_id = ' . $alias . '_mapref.type_id');
+      $query->condition($alias . '_mapref_cvterm.name', $condition['value'], $operator);
+    }
+  }
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+
+    // Map details.
+    $field_term_id = $this->getFieldTermID();
+    $map_term = 'data:1274';
+    $name_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'name');
+    $description_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'description');
+    $mappos_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featurepos', 'mappos');
+
+    // Reference sequence details.
+    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
+
+    $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id", 'LEFT OUTER');
+
+    if ($order['column'] == $name_term) {
+      $this->queryJoinOnce($query, 'featuremap', $alias . '_map', $alias . '_map.featuremap_id = ' . $alias . '.featuremap_id', 'LEFT OUTER');
+      $query->orderBy($alias . '_map.name', $order['direction']);
+    }
+    if ($order['column'] == $description_term) {
+      $this->queryJoinOnce($query, 'featuremap', $alias . '_map', $alias . '_map.featuremap_id = ' . $alias . '.featuremap_id', 'LEFT OUTER');
+      $query->orderBy($alias . '_map.description', $order['direction']);
+    }
+    if ($order['column'] == $mappos_term) {
+      $query->orderBy($alias . '.mappos', $order['direction']);
+    }
+
+    if ($order['column'] == $ref_feature_name) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id', 'LEFT OUTER');
+      $query->orderBy($alias . '_mapref.name', $order['direction']);
+    }
+    if ($order['column'] == $ref_feature_id) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id', 'LEFT OUTER');
+      $query->orderBy($alias . '_mapref.uniquename', $order['direction']);
+    }
+    if ($order['column'] == $ref_feature_type) {
+      $this->queryJoinOnce($query, 'feature', $alias . '_mapref', $alias . '_mapref.feature_id = ' . $alias . '.map_feature_id', 'LEFT OUTER');
+      $this->queryJoinOnce($query, 'cvterm', $alias . '_mapref_cvterm', $alias . '_mapref_cvterm.cvterm_id = ' . $alias . '_mapref.type_id', 'LEFT OUTER');
+      $query->orderBy($alias . '_mapref_cvterm.name', $order['direction']);
+    }
   }
   /**
    *
@@ -119,9 +237,17 @@ class ogi__location_on_map extends ChadoField {
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
 
+    // Map details
+    $map_term = 'data:1274';
     $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
     $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
     $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
+
+    // Reference sequence details.
+    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = 'rdfs:type';
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
@@ -129,16 +255,15 @@ class ogi__location_on_map extends ChadoField {
     );
 
     // Add the featurepos records to our $record.
-    $options = array(
-      'return_array' => TRUE,
+    $options = array('return_array' => TRUE,
       'include_fk' => array(
-        'srcfeature_id' => array(
+        'map_feature_id' => array(
           'type_id' => 1,
         ),
         'feature_id' => array(
           'type_id' => 1
         ),
-      )
+      ),
     );
     $feature = chado_expand_var($record, 'table', 'featurepos', $options);
 
@@ -148,18 +273,25 @@ class ogi__location_on_map extends ChadoField {
       foreach ($feature->featurepos->feature_id AS $featurepos) {
         // Get details about the map
         $featuremap = chado_generate_var('featuremap', array('featuremap_id' => $featurepos->featuremap_id));
-        $value = array (
+        $entity->{$field_name}['und'][$i]['value'] = array (
           // Map.
-          'data:1274' => array(
+          $map_term => array(
             $name_term => $featuremap->name,
             $description_term => $featuremap->description,
+          ),
+          $ref_feature_term => array(
+            $ref_feature_name => $featurepos->map_feature_id->name,
+            $ref_feature_id => $featurepos->map_feature_id->uniquename,
+            $ref_feature_type => $featurepos->map_feature_id->type_id->name,
           ),
           $mappos_term => $featurepos->mappos
         );
         if (property_exists($featuremap, 'entity_id')) {
-          $value['data:1274']['entity'] = 'TripalEntity:' . $featuremap->entity_id;
+          $entity->{$field_name}['und'][$i]['value'][$map_term]['entity'] = 'TripalEntity:' . $featuremap->entity_id;
         }
-        $entity->{$field_name}['und'][$i]['value'] = $value;
+        if (property_exists($featurepos->map_feature_id, 'entity_id')) {
+          $entity->{$field_name}['und'][$i]['value'][$map_term]['entity'] = 'TripalEntity:' . $featurepos->map_feature_id->entity_id;
+        }
         $i++;
       }
     }

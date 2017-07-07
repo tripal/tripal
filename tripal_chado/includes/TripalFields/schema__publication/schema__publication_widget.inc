@@ -89,6 +89,7 @@ class schema__publication_widget extends ChadoFieldWidget {
    * @see TripalFieldWidget::submit()
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+
     // Get the FK column that links to the base table.
     $table_name = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];

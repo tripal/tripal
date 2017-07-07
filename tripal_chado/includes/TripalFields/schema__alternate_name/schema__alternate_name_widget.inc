@@ -127,6 +127,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
    * @see TripalFieldWidget::validate()
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $table_name = $this->instance['settings']['chado_table'];

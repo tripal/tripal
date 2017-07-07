@@ -202,7 +202,10 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *   The semantic web name for the term.
  */
 function tripal_format_chado_semweb_term($cvterm) {
-  return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+  if ($cvterm) {
+    return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+  }
+  return '';
 }
 /**
  * Retreive the column name in a Chado table that matches a given term.
