@@ -381,8 +381,7 @@ function tripal_get_chado_entity_id ($chado_table, $record_id) {
   // type_column, and type_id.
   $bundle_id = NULL;
   if ($type_column) {
-    $schema = chado_get_schema($chado_table);
-    $pkey = is_array($schema['primary key']) ? $schema['primary key'][0] : $schema['primary key'];
+    $pkey = $chado_table . "_id";
     $type_id = NULL;
     if (key_exists($type_column, $schema['fields'])) {
       $type_id =
