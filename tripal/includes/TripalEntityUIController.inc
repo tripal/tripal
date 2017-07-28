@@ -751,6 +751,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   * Submit callback for tripal_entity_delete_form
   */
  function tripal_entity_delete_form_submit($form, &$form_state) {
+   global $user;
    $entity = $form_state['entity'];
 
    if (!entity_access('delete', 'TripalEntity', $entity, $user)) {
