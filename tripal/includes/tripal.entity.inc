@@ -380,7 +380,7 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
           $curr_val = (boolean) $curr_val;
         }
       }
-      
+
       // Only add the current value if it's not empty.
       if (!empty(trim($curr_val))) {
         $values[$delta] = $curr_val;
@@ -420,6 +420,18 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
   if (!isset($account)) {
     $account = $user;
   }
+
+  if (!$entity_type) {
+    $entity_type = $entity->type;
+  }
+
+  // See if other modules want to adust permissions.
+  $results = module_invoke_all($entity_type . '_access', $entity, $op, $account);
+  drupal_debug($results);
+  if (in_array(TRUE, $results)) {
+    return TRUE;
+  }
+
   switch ($op) {
     case 'create':
       return user_access('create ' . $bundle_name, $account);
@@ -430,6 +442,7 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
     case 'delete':
       return user_access('delete ' . $bundle_name, $account);
   }
+
   return FALSE;
 }
 

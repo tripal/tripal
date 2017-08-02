@@ -533,7 +533,7 @@ class TripalImporter {
     $this->total_items = $total_items;
   }
   /**
-   * Adds to the count of the total number of items that have been handle.d
+   * Adds to the count of the total number of items that have been handled.
    * @param unknown $num_handled
    */
   protected function addItemsHandled($num_handled) {

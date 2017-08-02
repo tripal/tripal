@@ -1240,3 +1240,21 @@ function tripal_chado_update_7315() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds the email term for potential use with contact properties.
+ */
+function tripal_chado_update_7316() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'id' => 'SIO:001323',
+      'name' => 'email address',
+      'cv_name' => 'SIO',
+      'definition' => 'an email address is an identifier to send mail to particular electronic mailbox.',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

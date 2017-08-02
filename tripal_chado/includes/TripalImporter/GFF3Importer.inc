@@ -1341,7 +1341,9 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   * Load the cvterms for a feature. Assumes there is a dbxref.accession matching a cvterm.name
+   * Load the cvterms for a feature.
+   *
+   * Assumes there is a dbxref.accession matching a cvterm.name
    *
    * @param $feature
    * @param $dbxrefs

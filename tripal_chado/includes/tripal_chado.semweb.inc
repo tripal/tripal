@@ -307,6 +307,13 @@ function tripal_chado_populate_vocab_SIO() {
     'definition' => 'A vocabulary is a collection of terms.',
   ));
   tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SIO:001323',
+    'name' => 'email address',
+    'cv_name' => 'SIO',
+    'definition' => 'an email address is an identifier to send mail to particular electronic mailbox.',
+  ));
 }
 
 /**

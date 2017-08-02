@@ -216,6 +216,7 @@ function tripal_chado_ncbi_taxonomy_import($job_id) {
                   tripal_chado_taxonomy_add_organism_property($organism->organism_id, 'genbank_common_name', $name, $name_ranks[$type]);
                   break;
                 case 'Synonym':
+                case 'GenbankSynonym':
                   tripal_chado_taxonomy_add_organism_property($organism->organism_id, 'synonym', $name, $name_ranks[$type]);
                   break;
                 case 'CommonName':

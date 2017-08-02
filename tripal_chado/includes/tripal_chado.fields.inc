@@ -958,6 +958,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     if ($table_name == 'project' and $column_name == 'description') {
       $base_info['label'] = 'Short Description';
     }
+
     $info[$field_name] = $base_info;
   }
 }
