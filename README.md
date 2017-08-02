@@ -54,7 +54,8 @@ are available in Tripal v3.
     * [Views](http://drupal.org/project/views)
     * [Entity API](http://drupal.org/project/entity)
 * PostgreSQL
-* UNIX/Linux  
+* PHP 5.5+
+* UNIX/Linux
 
 
 # Installation

@@ -386,7 +386,7 @@ function tripal_get_chado_entity_id ($chado_table, $record_id) {
     $type_id = NULL;
     if (key_exists($type_column, $schema['fields'])) {
       $type_id =
-        chado_db_select($chado_table, 'C')
+        db_select("chado.$chado_table", 'C')
           ->fields('C', array($type_column))
           ->condition($pkey, $record_id)
           ->execute()

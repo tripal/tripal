@@ -25,9 +25,9 @@ class so__genotype_formatter extends ChadoFieldFormatter {
       }
 
       // Get the field values
-      $genotype_name = $genotype['name'];
-      $description = $genotype['description'];
-      $type = $genotype['type'];
+      $genotype_name = $genotype['schema:name'];
+      $description = $genotype['schema:description'];
+      $type = $genotype['rdfs:type'];
 
       // Add a link i there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {

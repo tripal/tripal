@@ -42,6 +42,7 @@ class sbo__phenotype_formatter extends ChadoFieldFormatter {
     }
     foreach ($items as $delta => $item) {
       $row = array();
+      $phenotype = $item['value'];
       if ($has_type) {
         $row[] = $phenotype['type'];
       }
