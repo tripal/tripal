@@ -291,7 +291,7 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
   );
   $element['html5_file_table'] = array(
     '#type' => 'item',
-    '#title' => $element['#title'],
+    '#title' => $element['#title'] ? $element['#title'] : 'File Upload',
     '#description' => $element['#description'],
     '#markup' => theme('table', $table_vars)
   );
@@ -335,10 +335,15 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
  */
 function tripal_html5_file_validate($element, &$form_state) {
   $is_required = $element['#required'];
-  $fid = $element['#value'];
+  $name = $element['#name'];
+  $name = preg_replace('/[^\w]/', '_', $name);
+  $fid = $element['#value'][$name];
+
+  // TODO: the fid should just be the $element['#value'] why isn't this
+  // working given the tripal_html5_file_value function below.
 
   if ($is_required and !$fid) {
-    form_error($element, t('A file must be uploaded.'));
+   form_error($element, t('A file must be provided.'));
   }
 }
 
