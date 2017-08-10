@@ -417,8 +417,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     $pub['Year'] = $pyear;
     $uniquename = tripal_pub_create_citation($pub);
     if (!$uniquename) {
-      form_set_error('uniquename', "Cannot automatically generate a citation '.
-          'for this publication type. Please add one manually.");
+      form_set_error('uniquename', "Cannot automatically generate a citation for this publication type. Please add one manually.");
     }
   }
 

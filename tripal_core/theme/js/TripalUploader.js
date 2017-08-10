@@ -259,7 +259,7 @@
     }
     
     /**
-     * Adds support for an upload table for a specific category.
+     * Initializes the loader for a given HTML table.
      * 
      * The TripalUploader supports two types of tables, a table for
      * uploading paired data (e.g. RNA-seq) and single files.  This function
@@ -297,6 +297,7 @@
       var target_id = options['target_id'];
       var cardinality = options['cardinality'];
       var module = options['module'];
+      var allowed_types = options['allowed_types'];
       
       // Save the table ID for this category
       if (!(tname in this.tables)) {
@@ -308,6 +309,7 @@
       this.tables[tname]['target_id'] = target_id;
       this.tables[tname]['cardinality'] = cardinality;
       this.tables[tname]['module'] = module;
+      this.tables[tname]['allowed_types'] = allowed_types;
       this.updateTable(categories[0]);
       this.enableSubmit(submit_id);
     }

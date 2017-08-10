@@ -260,7 +260,9 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
   $module = array_key_exists('#usage_module', $element) ? $element['#usage_module'] : 'tripal_core';
   $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
   $name = $element['#name'];
+  $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
   $name = preg_replace('/[^\w]/', '_', $name);
+  $allowed_types = array_key_exists('#allowed_types', $element) ? $element['#allowed_types'] : array();
 
   $headers = array(
     array('data' => 'File'),
@@ -311,6 +313,17 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
     )
   );
 
+  $uploader_settings = array(
+    'table_id' => '#tripal-html5-file-upload-table-' . $type,
+    'submit_id' => '#tripal-html5-file-upload-submit-' . $type,
+    'category' => array($element['#usage_id'] . '-' . $element['#usage_type']),
+    'cardinality' => 1,
+    'target_id' => 'tripal-html5-upload-fid-' . $type,
+    'module' => $module,
+    'allowed_types' => $allowed_types,
+  );
+
+  drupal_add_js(array($type_var_name => $uploader_settings), 'setting');
   drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/TripalUploader.js');
   drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/TripalUploadFile.js');
   drupal_add_js(drupal_get_path ('module', 'tripal_core') . '/theme/js/tripal.file.js');

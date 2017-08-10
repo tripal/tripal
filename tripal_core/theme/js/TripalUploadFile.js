@@ -106,7 +106,9 @@
       $.ajax({
         url : url,
         data : {
+          'module' : this.options['module'],
           'chunk_size' : this.chunk_size,
+          'file_size' : this.file_size,
         },
         success : function(data, textStatus, jqXHR) {
           if (data['status'] == 'failed') {
@@ -140,6 +142,7 @@
           url : url,
           data : {
             'module' : this.options['module'],
+            'file_size' : this.file_size,
           },
           success : function(data, textStatus, jqXHR) {
             if (data['status'] == 'completed') {
