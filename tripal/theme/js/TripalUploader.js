@@ -5,7 +5,7 @@
  * To use the TripalUploader Object the following must be performed:
  * 
  * 1) Add a Drupal form to your code that contains the following:
- *   * A Drupal-style table with 4 or 8 columns.  See the addUploadTable
+ *   * A Drupal-style table with 4 or 8 columns.  See the initialize
  *     function in this class for a description of the columns.
  *   * A button for submitting a file for upload.
  * 
@@ -259,7 +259,7 @@
     }
     
     /**
-     * Adds support for an upload table for a specific category.
+     * Initializes the loader for a given HTML table.
      * 
      * The TripalUploader supports two types of tables, a table for
      * uploading paired data (e.g. RNA-seq) and single files.  This function
@@ -288,7 +288,7 @@
      *     where the file ID will be written to this field. This only 
      *     works if cardinality is set to 1.
      *   allowed_types: (optional). An array of allowed file extensions (e.g.
-     *     fasta, fastq, fna, gff3, etc.). 
+     *     fasta, fastq, fna, gff3, etc.).
      */
     this.addUploadTable = function(tname, options) {
       var table_id = options['table_id'];
@@ -297,6 +297,7 @@
       var target_id = options['target_id'];
       var cardinality = options['cardinality'];
       var module = options['module'];
+      var allowed_types = options['allowed_types'];
       
       // Save the table ID for this category
       if (!(tname in this.tables)) {
@@ -308,6 +309,7 @@
       this.tables[tname]['target_id'] = target_id;
       this.tables[tname]['cardinality'] = cardinality;
       this.tables[tname]['module'] = module;
+      this.tables[tname]['allowed_types'] = allowed_types;
       this.updateTable(categories[0]);
       this.enableSubmit(submit_id);
     }

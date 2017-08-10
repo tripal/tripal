@@ -2,21 +2,23 @@
   Drupal.behaviors.TripalFile = {
     attach: function (context, settings) {
 
+      // Initialize the TripalUploader object.
       var tripal_files = new TripalUploader();
       
+      // All tables that belong to the html5-file form element should
+      // be enabled for uploading.
       $(".tripal-html5-file-upload-table-key").each(function(index) {
-        var id = $(this).val()
+        
+        // The settings for this uploader are provided in a custom variable
+        // specific to the table. We can get the variable name by piecing
+        // together parts of the table ID.
+        var id = $(this).val();
         var details = id.split("-");
-        var form_key = details[0] + '-' + details[1];
-        var module = details[2];
-        tripal_files.addUploadTable(form_key, {
-          'table_id' : '#tripal-html5-file-upload-table-' + id,
-          'submit_id': '#tripal-html5-file-upload-submit-' + id,
-          'category' : [form_key],
-          'cardinality' : 1,
-          'target_id' : 'tripal-html5-upload-fid-' + id,
-          'module' : module,
-        });
+        var settings_var_name = "Drupal.settings.uploader_" + details[0] + '_' + details[1] + "_" + details[2];
+        var settings = eval(settings_var_name);
+
+        // Initialize the table for uploads.
+        tripal_files.addUploadTable(details[0] + '-' + details[1], settings);
       });
     }
   }

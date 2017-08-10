@@ -3,6 +3,10 @@
 function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   global $user;
 
+  $module = array_key_exists('module', $_GET) ? $_GET['module'] : '';
+  $file_size = array_key_exists('file_size', $_GET) ? $_GET['file_size'] : '';
+  $chunk_size = array_key_exists('chunk_size', $_GET) ? $_GET['chunk_size'] : '';
+
   $user_dir = 'public://tripal/users/' . $user->uid;
 
   if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
@@ -16,20 +20,26 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
     return;
   }
 
-  // Check to see if this file is uploaded already. If it is
-  // we don't want to allow the file to be uploaded again.
-//   $merge_file = $user_dir . '/' . $filename;
-//   if (file_exists($merge_file)) {
-//     $message = 'This file aready exists on the server and will not be ' .
-//       'uploaded again.',
-//     watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-//     drupal_json_output(array(
-//       'status'  => 'failed',
-//       'message' => $message,
-//       'file_id' => '',
-//     ));
-//     return;
-//   }
+  // Allow the module that will own the file to make some checks. The module
+  // is allowed to stop the upload as needed.
+  $hook_name = $module . '_file_upload_check';
+  if (function_exists($hook_name)) {
+    $details = array(
+      'filename' => $filename,
+      'file_size' => $file_size,
+      'chunk_size' => $chunk_size,
+    );
+    $message = '';
+    $status = $hook_name($action, $details, $message);
+    if ($status === FALSE) {
+      drupal_json_output(array(
+        'status' => 'failed',
+        'message' => $message,
+        'file_id' => '',
+      ));
+      return;
+    }
+  }
 
   switch ($action) {
     // If the action is 'put' then the callee is sending a chunk of the file
@@ -155,7 +165,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
   ));
 }
 /**
- * Checks the size of a chunk to see if is fully uploded.
+ * Checks the size of a chunk to see if is fully uploaded.
  *
  * @return
  *   returns a JSON array with a status, message and the
@@ -187,7 +197,6 @@ function tripal_file_upload_check($filename, $chunk, $user_dir) {
       break;
     }
   }
-
 
   drupal_json_output(array(
     'status' => 'success',

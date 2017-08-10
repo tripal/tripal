@@ -314,7 +314,6 @@ function theme_tripal_phylogeny_admin_org_color_tables($variables){
  * @param $form_state
  */
 function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state) {
- // drupal_debug($form['tree_settings']['org_table']['num_orgs']);
 
   return $form['node_settings']['org_table'];
 }

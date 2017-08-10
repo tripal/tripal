@@ -126,7 +126,6 @@ function tripal_chado_load_form($form, $form_state) {
  * @param $form_state
  */
 function tripal_chado_load_form_ajax_callback($form, $form_state) {
-  // drupal_debug($form['tree_settings']['org_table']['num_orgs']);
 
   return $form;
 }

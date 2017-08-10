@@ -427,7 +427,6 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
 
   // See if other modules want to adust permissions.
   $results = module_invoke_all($entity_type . '_access', $entity, $op, $account);
-  drupal_debug($results);
   if (in_array(TRUE, $results)) {
     return TRUE;
   }
