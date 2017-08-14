@@ -82,6 +82,12 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       continue;
     }
 
+    // The biosourceprovider_id and taxon_id are handled by custom fields.
+    if ($table_name == 'biomaterial' and (
+        $column_name == 'biosourceprovider_id' or $column_name == 'taxon_id')) {
+      continue;
+    }
+
     // Don't create base fields for the primary key and the type_id field.
     if ($column_name == $pkey or $column_name == $type_column) {
       continue;
@@ -165,6 +171,13 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
         break;
     }
 
+    // Set some defaults for biomaterial table
+    if ($table_name == 'biomaterial' and $column_name == 'name') {
+      $base_info['type'] = 'text';
+      $base_info['settings']['max_length'] = '2048';
+      $base_info['settings']['text_processing'] = 0;
+    }
+
     // Set some default semantic web information
     if ($column_name == 'uniquename') {
       $base_info['settings']['text_processing'] = 0;
@@ -213,9 +226,24 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and
-      array_key_exists('organism_id', $schema['fields'])) {
+      (array_key_exists('organism_id', $schema['fields']) or
+       array_key_exists('taxon_id', $schema['fields']))) {
     $field_name = 'obi__organism';
     $field_type = 'obi__organism';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
+  if ($table_name == 'biomaterial') {
+    $field_name = 'biomaterial__provider_id';
+    $field_type = 'local__contact';
     $info[$field_name] = array(
       'field_name' => $field_name,
       'type' => $field_type,
@@ -751,6 +779,11 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
 
+    if ($table_name == 'biomaterial' and (
+        $column_name == 'biosourceprovider_id' or $column_name == 'taxon_id')) {
+      continue;
+    }
+
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/[^\w]/', '_', $cvterm->name));
     $field_name = substr($field_name, 0, 32);
 
@@ -868,6 +901,16 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     //
     if ($table_name == 'organism' and $column_name == 'comment') {
       $base_info['label'] = 'Description';
+    }
+    //
+    // BIOMATERIAL TABLE
+    //
+    if ($table_name == 'biomaterial' and $column_name == 'name') {
+      $base_info['widget'] = array();
+      $base_info['widget']['type'] = 'text_textfield';
+      unset($base_info['display']['default']['label']);
+      unset($base_info['settings']['text_processing']);
+      unset($base_info['settings']['format']);
     }
     //
     // FEATUREMAP TABLE
@@ -1021,11 +1064,19 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
   // BASE ORGANISM_ID
-  if ($table_name != 'organism' and array_key_exists('organism_id', $schema['fields'])) {
+    if ($table_name != 'organism' and
+      (array_key_exists('organism_id', $schema['fields']) or
+       array_key_exists('taxon_id', $schema['fields']))) {
+
     $field_name = 'obi__organism';
     $is_required = FALSE;
-    if (array_key_exists('not null', $schema['fields']['organism_id']) and
-        $schema['fields']['organism_id']['not null']) {
+    $table_column = 'organism_id';
+    if ($table_name == 'biomaterial') {
+      $is_required = FALSE;
+      $table_column = 'taxon_id';
+    }
+    elseif (array_key_exists('not null', $schema['fields']['organism_id']) and
+      $schema['fields']['organism_id']['not null']) {
       $is_required = TRUE;
     }
     $info[$field_name] =  array(
@@ -1038,7 +1089,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'settings' => array(
         'auto_attach' => TRUE,
         'chado_table' => $table_name,
-        'chado_column' => 'organism_id',
+        'chado_column' => $table_column,
         'base_table' => $table_name,
       ),
       'widget' => array(
@@ -1051,6 +1102,38 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => array(
           'label' => 'inline',
           'type' => 'obi__organism_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+  if ($table_name == 'biomaterial') {
+    $field_name = 'biomaterial__provider_id';
+    $field_type = 'local__contact';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Contact',
+      'description' => 'An indviddual or organization that serves as a contact for this record.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'biomaterial',
+        'chado_column' => 'biosourceprovider_id',
+        'base_table' => 'biomaterial',
+      ),
+      'widget' => array(
+        'type' => 'local__contact_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'local__contact_formatter',
           'settings' => array(),
         ),
       ),

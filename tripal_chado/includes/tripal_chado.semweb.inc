@@ -594,6 +594,7 @@ function tripal_chado_populate_vocab_OBI() {
     'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
+  tripal_associate_chado_semweb_term('biomaterial', 'taxon_id', $term);
 }
 
 /**
@@ -1348,7 +1349,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   //--------------
   // Terms for Content Types
   //--------------
-  tripal_insert_cvterm(array(
+  $term = tripal_insert_cvterm(array(
     'id' => 'local:contact',
     'name' => 'contact',
     'definition' => 'An entity (e.g. individual or organization) through ' .
@@ -1356,6 +1357,8 @@ function tripal_chado_populate_vocab_LOCAL() {
     'influential people, and the like.',
     'cv_name' => 'local',
   ));
+  tripal_associate_chado_semweb_term('biomaterial', 'biosourceprovider_id', $term);
+
 
   tripal_insert_cvterm(array(
     'id' => 'local:relationship',

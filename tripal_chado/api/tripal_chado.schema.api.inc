@@ -586,6 +586,12 @@ function chado_get_base_tables() {
   // whose foreign key constraints link to two or more base table.
   $final_list = array();
   foreach ($base_tables as $i => $tablename) {
+    // The biomaterial table breaks our rule and seems to look like a linking
+    // table, but we want to keep it as a base table.
+    if ($tablename == 'biomaterial') {
+      $final_list[] = $tablename;
+      continue;
+    }
     $num_links = 0;
     $schema = chado_get_schema($tablename);
     $fkeys = $schema['foreign keys'];

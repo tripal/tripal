@@ -22,9 +22,17 @@ class obi__organism_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
+    // Set the linker field appropriately.
+    if ($field_table == 'biomaterial') {
+      $linker_field = 'chado-biomaterial__taxon_id';
+    }
+    else {
+      $linker_field = 'chado-' . $field_table . '__organism_id';
+    }
+
     $organism_id = 0;
-    if (count($items) > 0 and array_key_exists('chado-' . $field_table . '__organism_id', $items[0])) {
-      $organism_id = $items[0]['chado-' . $field_table . '__organism_id'];
+    if (count($items) > 0 and array_key_exists($linker_field, $items[0])) {
+      $organism_id = $items[0][$linker_field];
     }
 
     $widget['value'] = array(
@@ -32,7 +40,7 @@ class obi__organism_widget extends ChadoFieldWidget {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $options = tripal_get_organism_select_options(FALSE);
-    $widget['chado-' . $field_table . '__organism_id'] = array(
+    $widget[$linker_field] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -52,8 +60,16 @@ class obi__organism_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
     $field_table = $this->instance['settings']['chado_table'];
 
+    // Set the linker field appropriately.
+    if ($field_table == 'biomaterial') {
+      $linker_field = 'chado-biomaterial__taxon_id';
+    }
+    else {
+      $linker_field = 'chado-' . $field_table . '__organism_id';
+    }
+
     // Make sure the value is set to the organism_id
-    $organism_id = $form_state['values'][$field_name]['und'][0]['chado-' . $field_table . '__organism_id'];
+    $organism_id = $form_state['values'][$field_name]['und'][0][$linker_field];
     $form_state['values'][$field_name]['und'][0]['value'] = $organism_id;
   }
 }

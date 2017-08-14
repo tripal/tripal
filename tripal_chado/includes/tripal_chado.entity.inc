@@ -157,6 +157,12 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
       );
     }
   }
+  if ($table == 'biomaterial') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5
+    );
+  }
   if ($table == 'analysis') {
     $format[] = array(
       'format' => '[schema__name]',

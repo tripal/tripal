@@ -56,11 +56,19 @@ class obi__organism extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
+    // Set the linker field appropriately.
+    if ($field_table == 'biomaterial') {
+      $linker_field = 'chado-biomaterial__taxon_id';
+    }
+    else {
+      $linker_field = 'chado-' . $field_table . '__organism_id';
+    }
+
     // Get the field values.
     foreach ($items as $delta => $values) {
 
       // Get the field values.
-      $organism_id = $values['chado-' . $field_table . '__organism_id'];
+      $organism_id = $values[$linker_field];
       if (!$organism_id or $organism_id == 0) {
         $errors[$field_name]['und'][0][] = array(
           'message' =>  t("Please specify an organism."),
@@ -90,13 +98,27 @@ class obi__organism extends ChadoField {
     $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
     $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
 
+
+    // Set the linker field appropriately.
+    if ($field_table == 'biomaterial') {
+      $linker_field = 'chado-biomaterial__taxon_id';
+    }
+    else {
+      $linker_field = 'chado-' . $field_table . '__organism_id';
+    }
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
     );
 
     if ($record) {
-      $organism = $record->organism_id;
+      if ($field_table == 'biomaterial') {
+        $organism = $record->taxon_id;
+      }
+      else {
+        $organism = $record->organism_id;
+      }
       $string = $settings['field_display_string'];
       $label = tripal_replace_chado_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
@@ -112,7 +134,7 @@ class obi__organism extends ChadoField {
           $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] =  $organism->type_id->name;
         }
       }
-      $entity->{$field_name}['und'][0]['chado-' . $field_table . '__organism_id'] = $organism->organism_id;
+      $entity->{$field_name}['und'][0][$linker_field] = $organism->organism_id;
 
       // Is there a published entity for this organism?
       if (property_exists($record->{$field_column}, 'entity_id')) {
