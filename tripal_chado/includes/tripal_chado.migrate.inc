@@ -207,6 +207,22 @@ function tripal_chado_migrate_form($form, &$form_state) {
           $no_data = FALSE;
         }
       }
+      else if ($table == 'biomaterial') {
+        $sql =
+        "SELECT count(*)
+           FROM {biomaterial} B
+           INNER JOIN [chado_biomaterial] CB ON B.biomaterial_id = CB.biomaterial_id
+          ";
+        $bm_count = chado_query($sql)->fetchField();
+        if ($bm_count > 0) {
+          $key = urlencode('tv3_content_type--local--biomaterial--biomaterial');
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Biomaterial (' . $bm_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
       else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
         // Get all Tripal v2 node types from the chad_* linking table
         $sql =
@@ -661,6 +677,16 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
       'vocabulary' => 'TPUB',
       'accession' => '0000002',
       'term_name' => 'Publication',
+      'storage_args' => array (
+        'data_table' => $table
+      )
+    ));
+  }
+  else if ($table == 'biomaterial') {
+    array_push($types, array(
+      'vocabulary' => 'local',
+      'accession' => 'biomaterial',
+      'term_name' => 'biomaterial',
       'storage_args' => array (
         'data_table' => $table
       )
