@@ -63,6 +63,23 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
 }
 
 /**
+ * Submit function for the tripal_chado_prepare_form().
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_chado_prepare_drush_submit() {
+  $args = array();
+  $includes = array(
+    module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
+  );
+  tripal_add_job('Prepare Chado', 'tripal_chado',
+    'tripal_chado_prepare_chado', $args,
+    1, 10, $includes);
+
+}
+
+/**
  *
  */
 function tripal_chado_load_ontologies() {

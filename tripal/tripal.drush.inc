@@ -19,32 +19,6 @@
  *
  * @ingroup tripal_drush
  */
-function tripal_drush_help($command) {
-  switch ($command) {
-
-    // TRIPAL JOBS
-    case 'trp-run-jobs':
-      return dt('Launches pending jobs waiting in the queue.');
-      break;
-    case 'trp-rerun-job':
-      return dt('Rerun a job in the queue.');
-      break;
-    case 'trp-get-currjob':
-      return dt('Returns details about the currently running tripal job including percent complete.');
-      break;
-    // Placeholders for unimplmeneted jobs
-    case 'trp-show-job':
-      break;
-    case 'trp-revert-jobs':
-      break;
-    case 'trp-cancel-job':
-      break;
-    case 'trp-list-jobs':
-      break;
-
-  }
-}
-
 /**
  * Registers a drush command and constructs the full help for that command.
  *
@@ -107,6 +81,27 @@ function tripal_drush_command() {
       'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is -1 (unlimited). Ignore if not running parallel jobs'),
       'single' => dt('Execute only one queued job'),
     ),
+  );
+  $items['install-prepare'] = array(
+    'description' => "Installs Chado and Prepares the Site.",
+    'arguments' => array(
+      'chado-version' => 'Which version of chado should be installed: 1.3, 1.2 or 1.11',
+    ),
+    'options' => array(
+      'version' => array(
+        'description' => 'The Chado version.',
+        'example-value' => '1.3',
+      ),
+      'username' => array(
+        'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+      ),
+    ),
+    'examples' => array(
+      'drush tripal-install --version=1.3' => 'Install Chado Version 1.3 and prepare your tripal site.',
+    ),
+    'aliases' => array('tripal-install'),
+    // No bootstrap at all.
+    'bootstrap' => DRUSH_BOOTSTRAP_NONE,
   );
 
   return $items;
@@ -254,13 +249,13 @@ function drush_tripal_trp_get_currjob() {
   foreach ($jobs as $job) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n" .
-        "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
-        "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
-        "Module: " . $job->modulename . "\n" .
-        "Callback: " . $job->callback . "\n" .
-        "Process ID: " . $job->pid . "\n" .
-        "Progress: " . $job->progress . "%\n".
-        "Current Date: " . date('Y-m-d H:i:s') . "\n";
+      "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
+      "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
+      "Module: " . $job->modulename . "\n" .
+      "Callback: " . $job->callback . "\n" .
+      "Process ID: " . $job->pid . "\n" .
+      "Progress: " . $job->progress . "%\n".
+      "Current Date: " . date('Y-m-d H:i:s') . "\n";
     drush_print(date('Y-m-d H:i:s'));
     drush_print($output);
   }
@@ -272,6 +267,37 @@ function drush_tripal_trp_get_currjob() {
   drush_log('Running tripal-current-job', 'ok');
 }
 
+function drush_tripal_install_prepare() {
+  $version = drush_get_option('version');
 
+  // Read options with drush_get_option. Note that the options _must_
+  // be documented in the $items structure for this command in the 'command'
+  // hook. See `drush topic docs-commands` for more information.
+  $args = array('field_group', 'field_group_table', 'field_formatter_class', 'field_formatter_settings');
+  $options = array();
+  drush_invoke_process('@self', 'dl', $args, $options);
 
+  $args = array('field_group', 'field_group_table', 'field_formatter_class', 'field_formatter_settings',
+    'views_ui', 'tripal_chado', 'tripal_ds', 'tripal_ws');
+  $options = array();
+  drush_invoke_process('@self', 'en', $args, $options);
 
+  if($version == '1.3'){
+    $version = 'Install Chado v1.3';
+  }
+  elseif($version == '1.2'){
+    $version = 'Install Chado v1.2';
+  }
+  elseif ($version == '1.11'){
+    $version = 'Install Chado v1.11';
+  }
+  module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install');
+  tripal_chado_load_drush_submit($version);
+
+  drush_tripal_trp_run_jobs();
+
+  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup');
+  tripal_chado_prepare_drush_submit();
+
+  drush_tripal_trp_run_jobs();
+}
