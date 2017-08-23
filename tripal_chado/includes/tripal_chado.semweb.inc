@@ -238,6 +238,24 @@ function tripal_chado_populate_vocab_SCHEMA() {
 }
 
 /**
+ * Adds the Sample processing and separation techniques database and terms.
+ */
+function tripal_chado_populate_vocab_SEP() {
+  tripal_insert_db(array(
+    'name' => 'sep',
+    'description' => 'Sample processing and separation techniques.',
+    'url' => 'http://psidev.info/index.php?q=node/312',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv('sep','A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
+  $term = tripal_insert_cvterm(array(
+    'id' => 'sep:00195',
+    'name' => 'biological sample',
+    'cv_name' => 'sep',
+    'definition' => 'A biological sample analysed by a particular technology.',
+  ));
+}
+/**
  * Adds the SemanticScience database and terms.
  */
 function tripal_chado_populate_vocab_SIO() {
