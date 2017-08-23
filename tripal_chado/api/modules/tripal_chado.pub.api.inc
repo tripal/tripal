@@ -1018,7 +1018,7 @@ function tripal_get_minimal_pub_info($pub) {
   }
 
   // Chado has a null pub as default.  We don't return anything for this.
-  if ($pub->uniquename == 'null') {
+  if (isset($pub->uniquename) && $pub->uniquename == 'null') {
     return array();
   }
 
