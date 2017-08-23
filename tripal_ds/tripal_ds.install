@@ -1,0 +1,101 @@
+<?php
+/**
+ * @file
+ * Fieldgroup module install file.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function tripal_ds_schema() {
+  $schema['tripal_ds'] = array(
+    'description' => t('Table that contains the Tripal Pane fieldsets.'),
+
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The primary identifier for a group',
+        'no export' => TRUE,
+      ),
+      'tripal_ds_field_label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The label of this Tripal Pane.',
+      ),
+      'tripal_ds_field_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of this Tripal Pane.',
+      ),
+      'bundle' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+
+/**
+ * Implements hook_disable().
+ */
+function tripal_ds_disable(){
+  //Check if any tripal panes currently exist.
+  //Grab all the bundles to cycle through them.
+  $entities_with_tripal_panes = array();
+  $bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute()
+    ->fetchAll();
+  foreach($bundles as $bundles => $bundle){
+    $field_groups = field_group_info_groups('TripalEntity', $bundle->name);
+    foreach($field_groups['default'] as $field_names => $field_name){
+      if($field_name->format_type == 'tripalpane'){
+        array_push($entities_with_tripal_panes, $bundle->label);
+        continue 2;
+      }
+    }
+  }
+
+  $output = 'You have disabled the Tripal DS module but Tripal Panes were found in the following Content Types: ';
+  $output .= '<ul>';
+  foreach ($entities_with_tripal_panes as $item) {
+    $output .= '<li> ' . $item . '</li>';
+  }
+  $output .= '</ul>';
+  if(!empty($entities_with_tripal_panes)){
+    drupal_set_message($output, 'warning');
+  }
+}
+
+/**
+ * Add a weight column to the tripal_ds table.
+ */
+function tripal_ds_update_7300() {
+  try {
+    db_add_field('tripal_ds', 'weight', array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 1,
+    ));
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

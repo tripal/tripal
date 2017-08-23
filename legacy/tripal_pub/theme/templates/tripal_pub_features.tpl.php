@@ -37,7 +37,7 @@ if(count($features) > 0){ ?>
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Feature Name', 'Uniquenaem', 'Type');
+  $headers = array('Feature Name', 'Uniquename', 'Type');
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
@@ -83,14 +83,19 @@ if(count($features) > 0){ ?>
   // here we add the paramter 'block' => 'features'. This is because
   // the pager is not on the default block that appears. When the user clicks a
   // page number we want the browser to re-appear with the page is loaded.
+  // We remove the 'pane' parameter from the original query parameters because
+  // Drupal won't reset the parameter if it already exists.
+  $get = $_GET;
+  unset($_GET['pane']);
   $pager = array(
     'tags' => array(),
     'element' => $element,
     'parameters' => array(
-      'block' => 'features'
+      'pane' => 'features'
     ),
     'quantity' => $num_per_page,
   );
   print theme_pager($pager);
+  $_GET = $get;
 }
 

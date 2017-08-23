@@ -4,15 +4,15 @@ $feature_positions = array();
 
 // expand the featuremap object to include the records from the featurepos table
 // specify the number of features to show by default and the unique pager ID
-$num_results_per_page = 25; 
+$num_results_per_page = 25;
 $featurepos_pager_id = 0;
 
 // get the features aligned on this map
-$options = array(  
+$options = array(
   'return_array' => 1,
   'order_by' => array('map_feature_id' => 'ASC'),
   'pager' => array(
-    'limit' => $num_results_per_page, 
+    'limit' => $num_results_per_page,
     'element' => $featurepos_pager_id
   ),
   'include_fk' => array(
@@ -38,30 +38,30 @@ $total_features = chado_pager_get_count($featurepos_pager_id);
 
 
 if(count($feature_positions) > 0){ ?>
-  <div class="tripal_featuremap-data-block-desc tripal-data-block-desc">This map contains <?php print number_format($total_features) ?> features:</div> <?php 
-  
+  <div class="tripal_featuremap-data-block-desc tripal-data-block-desc">This map contains <?php print number_format($total_features) ?> features:</div> <?php
+
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $headers = array('Landmark', 'Type', 'Organism', 'Feature Name', 'Type', 'Position');
-  
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
-  
+
   foreach ($feature_positions as $position){
     $map_feature = $position->map_feature_id;
-    $feature     = $position->feature_id;  
-    $organism    = $map_feature->organism_id; 
+    $feature     = $position->feature_id;
+    $organism    = $map_feature->organism_id;
 
     // check if there are any values in the featureposprop table for the start and stop
     $mappos = $position->mappos;
     $options = array(
       'return_array' => 1,
       'include_fk' => array(
-        'type_id' => 1,            
+        'type_id' => 1,
       ),
     );
     $position = chado_expand_var($position, 'table', 'featureposprop', $options);
@@ -76,18 +76,18 @@ if(count($feature_positions) > 0){ ?>
          if ($property->type_id->name == 'stop') {
            $stop = $property->value;
          }
-      }      
-    }  
+      }
+    }
     if ($start and $stop and $start != $stop) {
       $mappos = "$start-$stop";
     }
     if ($start and !$stop) {
       $mappos = $start;
-    } 
+    }
     if ($start and $stop and $start == $stop) {
       $mappos = $start;
     }
-    
+
     $mfname = $map_feature->name;
     if (property_exists($map_feature, 'nid')) {
       $mfname =  l($mfname, 'node/' . $map_feature->nid, array('attributes' => array('target' => '_blank')));
@@ -95,18 +95,18 @@ if(count($feature_positions) > 0){ ?>
     $orgname = $organism->genus ." " . $organism->species ." (" . $organism->common_name .")";
     if (property_exists($organism, 'nid')) {
       $orgname = l(
-        "<i>" . $organism->genus . " " . $organism->species . "</i> (" . $organism->common_name .")", 
-        "node/". $organism->nid, 
+        "<i>" . $organism->genus . " " . $organism->species . "</i> (" . $organism->common_name .")",
+        "node/". $organism->nid,
         array('html' => TRUE, 'attributes' => array('target' => '_blank'))
       );
     }
     $organism =  $organism->genus . ' ' . $organism->species;
-    
+
     $fname = $feature->name;
     if (property_exists($feature, 'nid')) {
       $fname = l($fname, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
     }
-      
+
     $rows[] = array(
       $mfname,
       $map_feature->type_id->name,
@@ -115,7 +115,7 @@ if(count($feature_positions) > 0){ ?>
       $feature->type_id->name,
       $mappos . ' ' . $position->featuremap_id->unittype_id->name
     );
-  } 
+  }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
@@ -132,7 +132,7 @@ if(count($feature_positions) > 0){ ?>
     'colgroups' => array(),
     'empty' => '',
   );
-  
+
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -143,14 +143,19 @@ if(count($feature_positions) > 0){ ?>
   // here we add the paramter 'block' => 'features'. This is because
   // the pager is not on the default block that appears. When the user clicks a
   // page number we want the browser to re-appear with the page is loaded.
+  // We remove the 'pane' parameter from the original query parameters because
+  // Drupal won't reset the parameter if it already exists.
+  $get = $_GET;
+  unset($_GET['pane']);
   $pager = array(
     'tags' => array(),
     'element' => $featurepos_pager_id,
     'parameters' => array(
-      'block' => 'featurepos'
+      'pane' => 'featurepos'
     ),
     'quantity' => $num_results_per_page,
   );
-  print theme_pager($pager); 
+  print theme_pager($pager);
+  $_GET = $get;
 }
 

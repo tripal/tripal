@@ -14,6 +14,17 @@ require_once('tripal_chado.pub_importer_PMID.inc');
  * @ingroup tripal_pub
  */
 function tripal_pub_importers_list() {
+
+  // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+  // warn the user that they should load it before continuing.
+  $pub_cv = chado_select_record('cv', array('cv_id'), array('name' => 'tripal_pub'));
+  if (count($pub_cv) == 0) {
+    drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
+        'This vocabulary is required to be loaded before importing of ' .
+        'publications.  <br>Please !import',
+        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+  }
+
   // clear out the session variable when we view the list.
   unset($_SESSION['tripal_pub_import']);
 
@@ -35,8 +46,8 @@ function tripal_pub_importers_list() {
 
     $rows[] = array(
       array(
-        'data' => l(t('Edit/Test'), "admin/tripal/storage/chado/loaders/pub/edit/$importer->pub_import_id") . '<br>' .
-                  l(t('Import Pubs'), "admin/tripal/storage/chado/loaders/pub/submit/$importer->pub_import_id"),
+        'data' => l(t('Edit/Test'), "admin/tripal/loaders/pub/edit/$importer->pub_import_id") . '<br>' .
+                  l(t('Import Pubs'), "admin/tripal/loaders/pub/submit/$importer->pub_import_id"),
         'nowrap' => 'nowrap'
       ),
       $importer->name,
@@ -44,13 +55,13 @@ function tripal_pub_importers_list() {
       $criteria_str,
       $importer->disabled ? 'Yes' : 'No',
       $importer->do_contact ? 'Yes' : 'No',
-      l(t('Delete'), "admin/tripal/storage/chado/loaders/pub/delete/$importer->pub_import_id"),
+      l(t('Delete'), "admin/tripal/loaders/pub/delete/$importer->pub_import_id"),
     );
   }
 
 
   $page  = "<ul class='action-links'>";
-  $page .= '  <li>' . l('New Importer', 'admin/tripal/storage/chado/loaders/pub/new') . '</li>';
+  $page .= '  <li>' . l('New Importer', 'admin/tripal/loaders/pub/new') . '</li>';
   $page .= '</ul>';
 
   $page .= '<p>' . t(
@@ -64,7 +75,7 @@ function tripal_pub_importers_list() {
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
           importer to run peridically by adding a cron job. See the " .
-     l("Pub Module help instructions", "admin/tripal/chado/tripal_pub/help") . " to learn how to
+     l("Pub Module help instructions", "admin/tripal/legacy/tripal_pub/help") . " to learn how to
      set the importers to run automatically.") . '</li>
      </ol><br>';
 
@@ -77,7 +88,7 @@ function tripal_pub_importers_list() {
     'caption' => '',
     'sticky' => TRUE,
     'colgroups' => array(),
-    'empty' => 'There are currently importers',
+    'empty' => 'There are no currently importers',
   );
 
   $page .= theme_table($table);
@@ -115,13 +126,13 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   }
 
   if(!extension_loaded ('yaz')){
-    drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Pub Module help page'), 'admin/tripal/chado/tripal_pub/help') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
+    drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Pub Module help page'), 'admin/tripal/legacy/tripal_pub/help') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
   }
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
 
-  $output = l("Return to publication importers list", "admin/tripal/storage/chado/loaders/pub");
+  $output = l("Return to publication importers list", "admin/tripal/loaders/pub");
   $output .= drupal_render($form);
 
   // retrieve any results
@@ -158,10 +169,10 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
       $i = $page * $limit + 1;
       if (count($pubs) > 0) {
         foreach ($pubs as $pub) {
-          $citation = htmlspecialchars($pub['Citation']);
+          $citation = array_key_exists('Citation', $pub) ? htmlspecialchars($pub['Citation']) : 'Unable to generate citation';
           $raw_link = '';
-          if($pub['Publication Dbxref']) {
-            $raw_link = l('raw', 'admin/tripal/storage/chado/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
+          if(array_key_exists('Publication Dbxref', $pub) and $pub['Publication Dbxref']) {
+            $raw_link = l('raw', 'admin/tripal/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
           }
           $rows[] = array(
             number_format($i),
@@ -707,7 +718,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       if(drupal_write_record('tripal_pub_import', $record, 'pub_import_id')){
         unset($_SESSION['tripal_pub_import']);
         drupal_set_message('Publication import settings updated.');
-        drupal_goto('admin/tripal/storage/chado/loaders/pub');
+        drupal_goto('admin/tripal/loaders/pub');
       }
       else {
         drupal_set_message('Could not update publication import settings.', 'error');
@@ -723,7 +734,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
         if ($form_state['values']['op'] == 'Save & Import Now') {
           tripal_execute_pub_importer($record['pub_import_id']);
         }
-        drupal_goto('admin/tripal/storage/chado/loaders/pub');
+        drupal_goto('admin/tripal/loaders/pub');
       }
       else {
         drupal_set_message('Could not save publication import settings.', 'error');
@@ -735,7 +746,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
     if ($success) {
       drupal_set_message('Publication importer deleted.');
-      drupal_goto('admin/tripal/storage/chado/loaders/pub');
+      drupal_goto('admin/tripal/loaders/pub');
     }
     else {
       drupal_set_message('Could not delete publication importer.', 'error');
@@ -832,7 +843,7 @@ function tripal_pub_importer_submit_job($import_id) {
   tripal_add_job("Import publications $import->name", 'tripal_chado',
     'tripal_execute_pub_importer', $args, $user->uid, 10, $includes);
 
-  drupal_goto('admin/tripal/storage/chado/loaders/pub');
+  drupal_goto('admin/tripal/loaders/pub');
 }
 /**
  * Deletes a publication importer.
@@ -846,7 +857,7 @@ function tripal_pub_importer_delete($import_id) {
 
   if ($success) {
     drupal_set_message('Publication importer deleted.');
-    drupal_goto('admin/tripal/storage/chado/loaders/pub');
+    drupal_goto('admin/tripal/loaders/pub');
   }
   else {
     drupal_set_message('Could not delete publication importer.', 'error');
@@ -1001,6 +1012,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $action = 'skipped';
     return FALSE;
   }
+  if(count($pub_ids) == 1 and $update_if_exists) {
+    $pub_id = $pub_ids[0];
+  }
 
   // get the publication type (use the first publication type)
   if (array_key_exists('Publication Type', $pub_details)) {
@@ -1044,11 +1058,11 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // build the values array for inserting or updating
   $values = array(
     'title'       => $pub_details['Title'],
-    'volume'      => $pub_details['Volume'],
+    'volume'      => (isset($pub_details['Volume'])) ? $pub_details['Volume'] : '',
     'series_name' => $series_name,
-    'issue'       => $pub_details['Issue'],
-    'pyear'       => $pub_details['Year'],
-    'pages'       => $pub_details['Pages'],
+    'issue'       => (isset($pub_details['Issue'])) ? $pub_details['Issue'] : '',
+    'pyear'       => (isset($pub_details['Year'])) ? $pub_details['Year'] : '',
+    'pages'       => (isset($pub_details['Pages'])) ? $pub_details['Pages'] : '',
     'uniquename'  => $pub_details['Citation'],
     'type_id'     => $pub_type->cvterm_id,
   );
@@ -1193,15 +1207,16 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
   $rank = 0;
 
-  // first remove any of the existing pubauthor entires
+  // First remove any of the existing pubauthor entires.
   $sql = "DELETE FROM {pubauthor} WHERE pub_id = :pub_id";
   chado_query($sql, array(':pub_id' => $pub_id));
 
-  // iterate through the authors and add them to the pubauthors and contact
-  // tables of chado, then link them through the custom pubauthors_contact table
+  // Iterate through the authors and add them to the pubauthors and contact
+  // tables of chado, then link them through the custom pubauthors_contact
+  // table.
   foreach ($authors as $author) {
-    // skip invalid author entires
-    if ($author['valid'] == 'N') {
+    // Skip invalid author entires.
+    if (isset($author['valid']) AND $author['valid'] == 'N') {
       continue;
     }
     // remove the 'valid' property as we don't have a CV term for it
@@ -1210,16 +1225,16 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // construct the contact.name field using the author information
     $name = '';
     $type = 'Person';
-    if ($author['Given Name']) {
+    if (isset($author['Given Name'])) {
       $name .= $author['Given Name'];
     }
-    if ($author['Surname']) {
+    if (isset($author['Surname'])) {
       $name .= ' ' . $author['Surname'];
     }
-    if ($author['Suffix']) {
+    if (isset($author['Suffix'])) {
       $name .= ' ' . $author['Suffix'];
     }
-    if ($author['Collective']) {
+    if (isset($author['Collective'])) {
       $name = $author['Collective'];
       $type = 'Collective';
     }

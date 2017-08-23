@@ -82,8 +82,8 @@ function tripal_feature_install() {
 function tripal_feature_uninstall() {
 
 }
-
-function tripal_feature_add_tripal_gff_temp_table() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gff_temp_table() {
   $schema = array(
     'table' => 'tripal_gff_temp',
     'fields' => array(
@@ -116,12 +116,13 @@ function tripal_feature_add_tripal_gff_temp_table() {
     ),
   );
   chado_create_custom_table('tripal_gff_temp', $schema, TRUE);
-}
+} */
 
 /**
  *
  */
-function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
   $schema = array(
     'table' => 'tripal_gffcds_temp',
     'fields' => array(
@@ -135,7 +136,7 @@ function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
       ),
       'phase' => array(
         'type' => 'int',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
       'strand' => array(
         'type' => 'int',
@@ -156,12 +157,13 @@ function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
     ),
   );
   chado_create_custom_table('tripal_gffcds_temp', $schema, $skip_recreate);
-}
+} */
 
 /**
  *
  */
-function tripal_feature_add_tripal_gffprotein_temp_table() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_feature_add_tripal_gffprotein_temp_table() {
   $schema = array(
     'table' => 'tripal_gffprotein_temp',
     'fields' => array(
@@ -191,7 +193,7 @@ function tripal_feature_add_tripal_gffprotein_temp_table() {
     ),
   );
   chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE);
-}
+} */
 
 /**
  * Implementation of hook_schema().
@@ -243,7 +245,8 @@ function tripal_feature_schema() {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_add_organism_count_mview() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_feature_add_organism_count_mview() {
   $view_name = 'organism_feature_count';
   $comment = 'Stores the type and number of features per organism';
 
@@ -252,6 +255,7 @@ function tripal_feature_add_organism_count_mview() {
     'table' => $view_name,
     'fields' => array(
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -275,6 +279,7 @@ function tripal_feature_add_organism_count_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -304,7 +309,7 @@ function tripal_feature_add_organism_count_mview() {
   ";
 
   tripal_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment);
-}
+} */
 /**
  * Add cvs related to publications
  *
@@ -334,198 +339,4 @@ function tripal_feature_add_cvs() {
     'sequence',
     'The Sequence Ontology'
   );
-}
-
-/**
- * This is the required update for tripal_feature when upgrading from Drupal core API 6.x.
- * This update may take some time to complete.
- */
-function tripal_feature_update_7200() {
-  // During the upgrade from D6 to D7 the vocabulary terms assigned to features were
-  // copied to the field_data_taxonomyextra table rather than to the correct
-  // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
-  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Feature Type'")->fetchField();
-  if ($vid) {
-    try {
-      // first move from the field_data_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_data_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_data_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_feature'";
-      db_query($sql);
-
-      // next move from the field_revision_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_revision_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_revision_taxonomyextra WHERE bundle = 'chado_feature'";
-      db_query($sql);
-    }
-    catch (\PDOException $e) {
-      $error = $e->getMessage();
-      throw new DrupalUpdateException('Could not move feature taxonomy terms: '. $error);
-    }
-  }
-
-  // set the default feature property vocabulary
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'featureprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-      ->execute();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to set feature_property vocabulary as default: '. $error);
-  }
-
-  // add the feature_relationshp CV
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_relationship'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'feature_relationship',
-        'definition' => 'Contains types of relationships between features.'
-      ))
-      ->execute();
-    }
-    // use the new feature_relationship CV we just added
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'feature_relationship',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add feature_relationship vocabulary: '. $error);
-  }
-
-  // set the feature_type as the 'sequence' ontology
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'sequence'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'sequence',
-        'definition' => 'The Sequence Ontology.'
-      ))
-      ->execute();
-    }
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'feature',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add sequence vocabulary which will be used for the sequence ontology: '. $error);
-  }
-
-
-}
-
-/**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
- */
-function tripal_feature_update_dependencies() {
-  $dependencies = array();
-
-  // the tripal_cv update 7200 must run prior to update 7200 of this module
-  $dependencies['tripal_feature'][7200] = array(
-    'tripal_cv' => 7200
-  );
-
-  return $dependencies;
-}
-
-/**
- * Fixes an error with the materialized view installation
- *
- */
-function tripal_feature_update_7201() {
-
-  try {
-    // there is a bug in the Tripal v2.0-alpha release that didn't add the
-    // materialized view schema to the mviews table.
-    // get the schema for the materialized view from the custom_tables table
-    // as there is a copy there, but only if the schema is missing from the
-    // materialized view table
-    $view_name = 'organism_feature_count';
-    $schema = db_select('tripal_mviews', 'tm')
-      ->fields('tm', array('mv_schema'))
-      ->condition('name', $view_name)
-      ->execute()
-      ->fetchField();
-    if (!$schema or $schema == 'Array') {
-      $schema = db_select('tripal_custom_tables', 'tct')
-        ->fields('tct', array('schema'))
-        ->condition('table_name', $view_name)
-        ->execute()
-        ->fetchField();
-      $schema_str = var_export(unserialize($schema), TRUE);
-      $schema_str = preg_replace('/=>\s+\n\s+array/', '=> array', $schema_str);
-      db_update('tripal_mviews')
-        ->fields(array(
-        'mv_schema' => $schema_str
-        ))
-        ->condition('name', $view_name)
-        ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to complete update' . $error);
-  }
-}
-
-/**
- * Adds the temporary tables used for loading GFF files.
- */
-function tripal_feature_update_7202() {
-  try {
-    tripal_feature_add_tripal_gff_temp_table();
-    tripal_feature_add_tripal_gffcds_temp_table();
-    tripal_feature_add_tripal_gffprotein_temp_table();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to complete update' . $error);
-  }
-}
-
-/**
- * Removes the unique constraint on the tripal_gffcds_temp table.
- */
-function tripal_feature_update_7203() {
-  try {
-    tripal_feature_add_tripal_gffcds_temp_table(FALSE);
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to complete update' . $error);
-  }
 }

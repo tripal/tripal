@@ -172,7 +172,7 @@ function chado_featuremap_validate($node, $form, &$form_state) {
   if ($node->unittype_id == 0) {
     form_set_error('unittype_id', 'Please provide a unit type for this map.');
   }
-  
+
   // trim white space from text fields
   $node->fmapname = property_exists($node, 'fmapname') ? trim($node->fmapname) : '';
 
@@ -221,7 +221,7 @@ function chado_featuremap_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_featuremap
  */
-function chado_featuremap_node_access($node, $op, $account) {
+function tripal_featuremap_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;

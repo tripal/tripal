@@ -180,7 +180,7 @@ function tripal_genetic_defaultviews_admin_genotypes() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_genetic/genotypes';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_genetic/genotypes';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Genotypes';
   $handler->display->display_options['menu']['description'] = 'A genotype is defined by a collection of features, mutations, etc.';

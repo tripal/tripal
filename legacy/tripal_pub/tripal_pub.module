@@ -4,7 +4,6 @@
  * Basic functionality of the pub module
  */
 
-require_once 'api/tripal_pub.api.inc';
 require_once 'api/tripal_pub.DEPRECATED.inc';
 
 require_once 'theme/tripal_pub.theme.inc';
@@ -12,7 +11,6 @@ require_once 'theme/tripal_pub.theme.inc';
 require_once 'includes/tripal_pub.admin.inc';
 require_once 'includes/tripal_pub.chado_node.inc';
 require_once 'includes/tripal_pub.pub_search.inc';
-require_once 'includes/tripal_pub.pub_citation.inc';
 
 /**
  * @defgroup tripal_pub Publication Module
@@ -70,7 +68,7 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/chado/tripal_pub']= array(
+  $items['admin/tripal/legacy/tripal_pub']= array(
     'title' => 'Publications',
     'description' => ('A documented provenance artefact - publications, documents, personal communication.'),
     'page callback' => 'tripal_pub_admin_pub_view',
@@ -78,7 +76,7 @@ function tripal_pub_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/tripal/chado/tripal_pub/help']= array(
+  $items['admin/tripal/legacy/tripal_pub/help']= array(
     'title' => 'Help',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
@@ -88,7 +86,7 @@ function tripal_pub_menu() {
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_pub/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_pub/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal publication module.',
     'page callback' => 'drupal_get_form',
@@ -98,7 +96,7 @@ function tripal_pub_menu() {
     'weight' => 5
   );
 
-  $items['admin/tripal/chado/tripal_pub/sync'] = array(
+  $items['admin/tripal/legacy/tripal_pub/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -108,7 +106,7 @@ function tripal_pub_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/chado/tripal_pub/chado_pub_toc'] = array(
+  $items['admin/tripal/legacy/tripal_pub/chado_pub_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for pub nodes.',
     'page callback' => 'drupal_get_form',
@@ -120,7 +118,7 @@ function tripal_pub_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_pub/citation'] = array(
+  $items['admin/tripal/legacy/tripal_pub/citation'] = array(
     'title' => 'Citations',
     'description' => 'Update publication citations',
     'page callback' => 'drupal_get_form',
@@ -289,8 +287,8 @@ function tripal_pub_permission() {
  * @ingroup tripal_pub
  */
 function tripal_pub_mail($key, &$message, $params) {
+  $site_name = variable_get('site_name');
   $language = $message['language'];
-  $variables = user_mail_tokens($params['account'], $language);
   switch($key) {
     case 'import_report':
       $headers = array(
@@ -298,13 +296,13 @@ function tripal_pub_mail($key, &$message, $params) {
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
         'Content-Transfer-Encoding' => '8Bit',
         'X-Mailer' => 'Drupal'
-        );
-        foreach ($headers as $key => $value) {
-          $message['headers'][$key] = $value;
-        }
-        $message['subject'] = t('Publication import from !site', $variables, $language->language);
-        $message['body'][] = $params['message'];
-        break;
+      );
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
+      $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
+      $message['body'][] = $params['message'];
+      break;
   }
 }
 
@@ -331,10 +329,10 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'edit') {
-      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
+      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
     }
     if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'new') {
-      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/new");
+      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/new");
     }
     */
   }

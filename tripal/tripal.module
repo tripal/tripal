@@ -7,6 +7,10 @@
 // Import the full Tripal API into scope.
 tripal_import_api();
 
+require_once "includes/tripal.field_storage.inc";
+require_once "includes/tripal.fields.inc";
+require_once "includes/tripal.entity.inc";
+
 require_once "includes/TripalVocab.inc";
 require_once "includes/TripalVocabController.inc";
 require_once "includes/TripalVocabViewsController.inc";
@@ -20,7 +24,13 @@ require_once "includes/TripalEntityViewsController.inc";
 require_once "includes/TripalBundle.inc";
 require_once "includes/TripalBundleController.inc";
 require_once "includes/TripalBundleUIController.inc";
-
+require_once "includes/TripalBundleViewsController.inc";
+require_once "includes/TripalFields/TripalField.inc";
+require_once "includes/TripalFields/TripalFieldWidget.inc";
+require_once "includes/TripalFields/TripalFieldFormatter.inc";
+require_once "includes/TripalFieldQuery.inc";
+require_once "includes/TripalJob.inc";
+require_once "includes/TripalImporter.inc";
 
 /**
  * @defgroup tripal Tripal Core Module
@@ -42,7 +52,6 @@ function tripal_views_api() {
 
 /**
  * Implements hook_init().
- * Used to set the search_path, create default content and set default variables.
  *
  * @ingroup tripal
  */
@@ -51,9 +60,11 @@ function tripal_init() {
 
   // add some variables for all javasript to use for building URLs
   $clean_urls = variable_get('clean_url', 0);
-  drupal_add_js(
-    "var baseurl  = '$base_url';" .
-    "var isClean  =  $clean_urls;",
+  $tripal_path = url(drupal_get_path('module', 'tripal'));
+  drupal_add_js("
+    var baseurl  = '$base_url';
+    var isClean  =  $clean_urls;
+    var tripal_path = '$tripal_path';",
     'inline', 'header');
 
   // make sure the date time settings are the way Tripal will insert them
@@ -63,6 +74,8 @@ function tripal_init() {
 
 }
 
+function tripal_menu_alter(&$items) {
+}
 /**
  * Implements hook_menu().
  * Defines all menu items needed by Tripal Core
@@ -83,25 +96,9 @@ function tripal_menu() {
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
-  $items['admin/tripal/tripal_jobs'] = array(
-    'title' => 'Jobs',
-    'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
-        cases, long-running tasks are too slow to complete within a single
-        browser session.  The Tripal jobs system allows long-running tasks
-        to be submitted to a queue that can be executed manually by the
-        site admin or automatically using a module such as the ') .
-        l('Tripal Daemon', 'https://www.drupal.org/project/tripal_daemon', array('attributes' => array('target' => '_blank'))) .
-        ' extension module.',
-    'page callback' => 'tripal_jobs_admin_view',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 0,
-    'file' => 'includes/tripal.jobs.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-  );
 
   $items['admin/tripal/storage'] = array(
-    'title' => 'Storage Backend',
+    'title' => 'Data Storage',
     'description' => t("Tripal is designed to access biological
         data in any data storage back-end.  A storage back-end must have a
         module that can be installed that interfaces with Tripal.  By default
@@ -112,30 +109,16 @@ function tripal_menu() {
     'access arguments' => array('administer tripal'),
   );
 
-  $items['admin/tripal/terms'] = array(
-    'title' => 'Vocabularies',
-    'description' => t("Vocabulary terms are essential to creating content
-        in Tripal. This allows data to be shared more easily with others
-        using technologies such as the semantic web and web services.
-        Before creating content you must have loaded vocabularies and their
-        terms."),
+  $items['admin/tripal/extension'] = array(
+    'title' => 'Extensions',
+    'description' => t("Configuration and management pages for Tripal extension modules."),
     'weight' => 8,
     'access arguments' => array('administer tripal'),
   );
-  $items['admin/tripal/terms/import'] = array(
-    'title' => 'Import Vocabulary',
-    'description' => t("Import vocabularies and terms in OBO format."),
-    'access arguments' => array('administer tripal'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_vocabulary_import_form'),
-    'file' => 'includes/tripal.admin.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-    'type' => MENU_NORMAL_ITEM,
-  );
 
   // Menu items for facilitating import of extension modules.
-  $items['admin/tripal/extension'] = array(
-    'title' => 'Extensions',
+  $items['admin/tripal/extension/available'] = array(
+    'title' => 'Available Extensions',
     'description' => t('Look for extensions to add new functionality to this
         site. Tripal can be extended with new functionality developed
         by other Tripal site developers. These include modules with new or
@@ -148,33 +131,36 @@ function tripal_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/tripal.extensions.inc',
     'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => 100
+    'weight' => -100
   );
-  $items['admin/tripal/extension/import'] = array(
-    'title' => 'Import Extensions',
-    'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_extensions_form'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' =>  'includes/tripal.extensions.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => -100,
-  );
-
-
-/*
-  $items['admin/tripal/setup/customize'] = array(
-    'title' => 'Customize Tripal',
-    'description' => t('Information on how to customize tripal'),
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_customize'),
-    'access arguments' => array('administer tripal'),
-    'weight' => 10
-  );
-*/
+//   $items['admin/tripal/extension/import'] = array(
+//     'title' => 'Import Extensions',
+//     'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_extensions_form'),
+//     'access arguments' => array('administer tripal'),
+//     'type' => MENU_NORMAL_ITEM,
+//     'file' =>  'includes/tripal.extensions.inc',
+//     'file path' => drupal_get_path('module', 'tripal'),
+//     'weight' => -100,
+//   );
 
   // Jobs Management
+  $items['admin/tripal/tripal_jobs'] = array(
+    'title' => 'Jobs',
+    'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
+        cases, long-running tasks are too slow to complete within a single
+        browser session.  The Tripal jobs system allows long-running tasks
+        to be submitted to a queue that can be executed manually by the
+        site admin or automatically using a module such as the ') .
+    l('Tripal Daemon', 'https://www.drupal.org/project/tripal_daemon', array('attributes' => array('target' => '_blank'))) .
+    ' extension module.',
+    'page callback' => 'tripal_jobs_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal.jobs.inc',
+  );
   $items['admin/tripal/tripal_jobs/help'] = array(
     'title' => 'Help',
     'description' => t('Help for the tripal job management system'),
@@ -191,6 +177,14 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'api/tripal.jobs.api.inc',
+  );
+  $items['admin/tripal/tripal_jobs/status/%'] = array(
+    'page callback' => 'tripal_jobs_status_view',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
@@ -199,6 +193,7 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/view/%'] = array(
     'title' => 'Jobs Details',
@@ -207,6 +202,7 @@ function tripal_menu() {
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
   );
   $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
     'title' => 'Enable Jobs Administrative View',
@@ -214,9 +210,124 @@ function tripal_menu() {
     'page arguments' => array('tripal_admin_jobs', 'admin/tripal/tripal_jobs'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.jobs.inc',
+  );
+  $items['admin/tripal/tripal_jobs/execute/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Execute an existing job'),
+    'page callback' => 'tripal_execute_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  /*
+   * AJAX Callbacks.
+   */
+  $items['bio_data/ajax/field_attach/%'] = array(
+    'page callback' => 'tripal_ajax_attach_field',
+    'page arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.entity.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  /*
+   * Dashboard Action Item callbacks.
+   */
+  $items['admin/disable/notification/%'] = array(
+    'page callback' => 'tripal_disable_admin_notification',
+    'page arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_blocks.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['admin/import/field/%/%/%/%'] = array(
+    'page callback' => 'tripal_admin_notification_import_field',
+    'page arguments' => array(3, 4, 5, 6),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_blocks.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  /*
+   * Term Lookup
+   */
+// TODO: finish this menu callback.
+//   $items['cv/lookup'] = array(
+//     'title' => 'Vocabulary Lookup',
+//     'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
+//     'access arguments' => array('access content'),
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_vocabulary_lookup_form'),
+//     'file' => 'includes/tripal.term_lookup.inc',
+//     'file path' => drupal_get_path('module', 'tripal'),
+//     'type' => MENU_NORMAL_ITEM,
+//   );
+
+  $items['cv/lookup/%'] = array(
+    'title' => 'Vocabulary Lookup',
+    'description' => t("Provides a tool to discover controlled vocabularies"),
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_page',
+    'page arguments' => array(2),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['cv/lookup/%/%'] = array(
+    'title' => 'Vocabulary Term Lookup',
+    'description' => t("Provides a tool to discover controlled vocabularies terms used by this site."),
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_term_page',
+    'page arguments' => array(2, 3),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Adds a +Check for new fields link on the 'Tripal Content Types' page.
+  $items['admin/structure/bio_data/manage/%/fields/check'] = array(
+    'title' => 'Check for new fields',
+    'description' => t('Check if new fields should be added to this content type.'),
+    'page callback' => 'tripal_check_new_fields',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'file' => 'api/tripal.entities.api.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  $items['tripal/upload'] = array(
+    'page callback' => 'tripal_file_upload',
+    'access arguments' => array('upload files'),
+    'file' => '/includes/tripal.upload.inc',
+    'type' => MENU_CALLBACK,
   );
 
 
+  // Add in the loaders
+  $importers = tripal_get_importers();
+  foreach ($importers as $class_name) {
+    tripal_load_include_importer_class($class_name);
+    if (class_exists($class_name)) {
+      $items['admin/tripal/loaders/' . $class_name::$machine_name] = array(
+        'title' => $class_name::$name,
+        'description' =>  $class_name::$description,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('tripal_get_importer_form', $class_name),
+        'access arguments' => array('administer tripal'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'includes/tripal.importer.inc',
+        'file path' => drupal_get_path('module', 'tripal'),
+      );
+    }
+  }
 
   return $items;
 }
@@ -225,10 +336,25 @@ function tripal_menu() {
  * Implements hook_permission().
  */
 function tripal_permission() {
-  return array(
+  $permissions = array(
     'administer tripal' => array(
       'title' => t('Administer Tripal'),
-      'description' => t('Allow the user to access administrative pages of Tripal.')
+      'description' => t('Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.'),
+      'restrict access' => TRUE,
+    ),
+    'access tripal content overview' => array(
+      'title' => t('Access the Tripal content overview page'),
+      'description' => t('Get an overview of all Tripal content'),
+      'restrict access' => TRUE,
+    ),
+    'manage tripal content types' => array(
+      'title' => t('Manage Tripal content types'),
+      'description' => t('Allows the user to create, update and delete Tripal content types.'),
+      'restrict access' => TRUE,
+    ),
+    'upload files' => array(
+      'title' => t('Upload Files'),
+      'description' => t('Allows the user to upload files using Tripal\'s HTML5 loader.'),
     ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
@@ -238,27 +364,32 @@ function tripal_permission() {
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
     ),
-    'administer tripal data types' => array(
-      'title' => t('Administer Tripal data types'),
-      'description' => t('Create and delete fields for Tripal data types, and set their permissions.'),
-    ),
-    'administer tripal data' => array(
-      'title' => t('Administer Tripal data'),
-      'description' => t('Edit and delete all tripal data'),
-    ),
-    'administer controlled vocabularies' => array(
-      'title' => t('Administer controlled vocabularies (CVs).'),
-      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
-    ),
   );
-}
 
-/**
- * Checks access permissions for a given entity.
- */
-function tripal_entity_access($entity) {
-  // TODO: need to implement this function.
-  return TRUE;
+  // Add permissions for each content type.
+  $bundles = tripal_get_content_types();
+  foreach ($bundles as $bundle) {
+    $permissions['view ' . $bundle->name] = array(
+      'title' => t('%label: View Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to view %label content', array('%label' => $bundle->label)),
+    );
+    $permissions['create ' . $bundle->name] = array(
+      'title' => t('%label: Create Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to create %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
+    );
+    $permissions['edit ' . $bundle->name] = array(
+      'title' => t('%label: Edit Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to edit %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
+    );
+    $permissions['delete ' . $bundle->name] = array(
+      'title' => t('%label: Delete Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to delete %label content', array('%label' => $bundle->label)),
+      'restrict access' => TRUE,
+    );
+  }
+  return $permissions;
 }
 
 /**
@@ -268,28 +399,7 @@ function tripal_entity_access($entity) {
  * @ingroup tripal
  */
 function tripal_theme($existing, $type, $theme, $path) {
-  return array(
-    'tripal_customize' => array(
-      'arguments' => array('job_id' => NULL),
-      'template' => 'tripal_customize',
-      'path' => "$path/theme/templates"
-    ),
-    'theme_file_upload_combo' => array(
-      'render element' => 'element',
-    ),
-    'theme_sequence_combo' => array(
-      'render element' => 'element',
-    ),
-    'tripal_jobs_help' => array(
-      'template' => 'tripal_jobs_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
-    'tripal_customtables_help' => array(
-      'template' => 'tripal_customtables_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
+  $themes = array(
     // Admin messages theme
     'tripal_admin_message' => array(
       'function' => 'theme_tripal_admin_message',
@@ -303,9 +413,15 @@ function tripal_theme($existing, $type, $theme, $path) {
     'tripal_add_list' => array(
       'variables' => array('content' => NULL),
     ),
+    // Themeing for all fields.
+    'tripal_field_default' => array(
+      'render element' => 'element',
+      'file' => 'includes/tripal.fields.inc',
+    ),
   );
-}
 
+  return $themes;
+}
 
 /**
  * Implements hook_coder_ignore().
@@ -349,10 +465,10 @@ function tripal_libraries_info() {
 function tripal_admin_paths() {
   if (variable_get('node_admin_theme')) {
     $paths = array(
-      'bio-data/*/edit' => TRUE,
-      'bio-data/*/delete' => TRUE,
-      'bio-data/add' => TRUE,
-      'bio-data/add/*' => TRUE,
+      'bio_data/*/edit' => TRUE,
+      'bio_data/*/delete' => TRUE,
+      'bio_data/add' => TRUE,
+      'bio_data/add/*' => TRUE,
     );
     return $paths;
   }
@@ -367,8 +483,8 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 
   // Add an "Add Tripal Content" action link to the Admin >> Content >>
   // Biological Content page.
-  if ($root_path == 'admin/content/bio-data') {
-    $item = menu_get_item('bio-data/add');
+  if ($root_path == 'admin/content/bio_data') {
+    $item = menu_get_item('bio_data/add');
     if ($item['access']) {
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
@@ -408,7 +524,7 @@ function tripal_shortcut_default_set($account) {
         'weight' => -35,
       ),
       array(
-        'link_path' => 'bio-data/add',
+        'link_path' => 'bio_data/add',
         'link_title' => 'Add Tripal Content',
         'weight' => -30,
       ),
@@ -418,7 +534,7 @@ function tripal_shortcut_default_set($account) {
         'weight' => -25,
       ),
       array(
-        'link_path' => 'admin/content/bio-data',
+        'link_path' => 'admin/content/bio_data',
         'link_title' => 'Find Tripal Content',
         'weight' => -20,
       ),
@@ -430,255 +546,6 @@ function tripal_shortcut_default_set($account) {
   foreach ($sets as $set) {
     if ($set->title == 'TripalDefault') {
       return $set->set_name;
-    }
-  }
-}
-// http://www.bluespark.com/blog/drupal-entities-part-3-programming-hello-drupal-entity
-// http://dikini.net/31.08.2010/entities_bundles_fields_and_field_instances
-/**
- * Implement hook_entity_info().
- */
-function tripal_entity_info() {
-  $entities = array();
-  //return $entities;
-  //
-  // The TripalVocab entity is meant to house vocabularies.  It is these
-  // vocabs that are used by the TripalTerm entities.  The storage backend
-  // is responsible for setting the values of this entity.
-  //
-  $entities['TripalVocab'] = array(
-    // A human readable label to identify our entity.
-    'label' => 'Controlled Vocabulary',
-    'plural label' => 'Controlled Vocabularies',
-
-    // The entity class and controller class extend the classes provided by the
-    // Entity API.
-    'entity class' => 'TripalVocab',
-    'controller class' => 'TripalVocabController',
-
-    // Adds Views integration for this entity.
-    'views controller class' => 'TripalVocabViewsController',
-
-    // The table for this entity defined in hook_schema()
-    'base table' => 'tripal_vocab',
-
-    // If fieldable == FALSE, we can't attach fields.
-    'fieldable' => TRUE,
-
-    // entity_keys tells the controller what database fields are used for key
-    // functions. It is not required if we don't have bundles or revisions.
-    // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
-      'id' => 'id',
-    ),
-
-    // Callback function for access to this entity.
-    'access callback' => 'tripal_entity_access',
-
-    // FALSE disables caching. Caching functionality is handled by Drupal core.
-    'static cache' => FALSE,
-
-    // This entity doesn't support bundles.
-    'bundles' => array (),
-
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      ),
-    ),
-  );
-
-  //
-  // The TripalTerm entity is meant to house vocabulary terms.  It is these
-  // terms that are used by the TripalEntity entities.  The storage backend
-  // is responsible for setting the values of this entity.
-  //
-  $entities['TripalTerm'] = array(
-    // A human readable label to identify our entity.
-    'label' => 'Controlled Vocabulary Term',
-    'plural label' => 'Controlled Vocabulary Terms',
-
-    // The entity class and controller class extend the classes provided by the
-    // Entity API.
-    'entity class' => 'TripalTerm',
-    'controller class' => 'TripalTermController',
-
-    // Adds Views integration for this entity.
-    'views controller class' => 'TripalTermViewsController',
-
-    // The table for this entity defined in hook_schema()
-    'base table' => 'tripal_term',
-
-    // If fieldable == FALSE, we can't attach fields.
-    'fieldable' => TRUE,
-
-    // entity_keys tells the controller what database fields are used for key
-    // functions. It is not required if we don't have bundles or revisions.
-    // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
-      'id' => 'id',
-    ),
-
-    // Callback function for access to this entity.
-    'access callback' => 'tripal_entity_access',
-
-    // FALSE disables caching. Caching functionality is handled by Drupal core.
-    'static cache' => FALSE,
-
-    // This entity doesn't support bundles.
-    'bundles' => array (),
-
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      ),
-    ),
-  );
-
-  //
-  // The TripalEntity is used for all data. It links data from a storage
-  // back-end to a TripalTerm entity.
-  //
-  $entities['TripalEntity'] = array (
-    // A human readable label to identify our entity.
-    'label' => 'Tripal Content',
-    'plural label' => 'Tripal Content',
-
-    // The entity class and controller class extend the classes provided by the
-    // Entity API.
-    'entity class' => 'TripalEntity',
-    'controller class' => 'TripalEntityController',
-
-    // Adds Views integration for this entity.
-    'views controller class' => 'TripalEntityViewsController',
-
-    // The table for this entity defined in hook_schema()
-    'base table' => 'tripal_entity',
-
-    // Returns the uri elements of an entity.
-    'uri callback' => 'tripal_vocbulary_term_uri',
-
-    // IF fieldable == FALSE, we can't attach fields.
-    'fieldable' => TRUE,
-
-    // entity_keys tells the controller what database fields are used for key
-    // functions. It is not required if we don't have bundles or revisions.
-    // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
-      'id' => 'id',
-      'bundle' => 'bundle'
-    ),
-    'bundle keys' => array (
-      'bundle' => 'name'
-    ),
-
-    // Callback function for access to this entity.
-    'access callback' => 'tripal_entity_access',
-
-    // FALSE disables caching. Caching functionality is handled by Drupal core.
-    'static cache' => FALSE,
-
-    // Bundles are added dynamically below.
-    'bundles' => array (),
-
-    'label callback' => 'tripal_entity_label',
-
-    // The information below is used by the TripalEntityUIController
-    // (which extends the EntityDefaultUIController). The admin_ui
-    // key here is mean to appear on the 'Find Content' page of the
-    // administrative menu.
-    'admin ui' => array (
-      'path' => 'admin/content/bio-data',
-      'controller class' => 'TripalEntityUIController',
-      'menu wildcard' => '%TripalEntity',
-      'file' => 'includes/TripalEntityUIController.inc'
-    ),
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      )
-    )
-  );
-
-  //
-  // The TripalBundle entity is used manage the bundle types.  The 'bundle of'
-  // attribute links this to the TripalEntity and allows the UI provided
-  // by the entity module to work for each TripalEntity bundle.
-  //
-  $entities['TripalBundle'] = array (
-    'label' => 'Tripal Content Type',
-    'entity class' => 'TripalBundle',
-    'controller class' => 'TripalBundleController',
-    'base table' => 'tripal_bundle',
-    'fieldable' => FALSE,
-    'bundle of' => 'TripalEntity',
-    'exportable' => FALSE,
-    'entity keys' => array (
-      'id' => 'id',
-      'name' => 'name',
-      'label' => 'label'
-    ),
-    'access callback' => 'tripal_bundle_access',
-    'module' => 'tripal',
-    // Enable the entity API's admin UI.
-    'admin ui' => array (
-      'path' => 'admin/structure/bio-data',
-      'controller class' => 'TripalBundleUIController',
-      'file' => 'includes/TripalBundleUIController.inc',
-      'menu wildcard' => '%TripalBundle',
-    )
-  );
-
-  return $entities;
-}
-
-/**
- * Implements hook_entities_info_alter().
- *
- * Add in the bundles (entity types) to the TripalEntity entity.
- */
-function tripal_entity_info_alter(&$entity_info){
-
-  if (array_key_exists('TripalEntity', $entity_info)) {
-    // Dynamically add in the bundles. Bundles are alternative groups of fields
-    // or configuration associated with an entity type .We want to dynamically
-    // add the bundles to the entity.
-    $bundles = db_select('tripal_bundle', 'tb')
-      ->fields('tb')
-      ->execute();
-    while ($bundle = $bundles->fetchObject()) {
-      $bundle_name = $bundle->name;
-      $term_id = $bundle->term_id;
-      $term = entity_load('TripalTerm', array('id' => $term_id));
-      $term = reset($term);
-      $label = preg_replace('/_/', ' ', ucwords($term->name));
-
-      $entity_info['TripalEntity']['bundles'][$bundle_name] = array (
-        'label' => $label,
-        'admin' => array (
-          'path' => 'admin/structure/bio-data/manage/%TripalBundle',
-          'real path' => 'admin/structure/bio-data/manage/' . $bundle_name,
-          'bundle argument' => 4,
-          'access arguments' => array (
-            'administer tripal data types'
-          )
-        )
-      );
     }
   }
 }
@@ -728,107 +595,9 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  * @see tripal_entity_load_multiple()
  */
 function TripalEntity_load($id, $reset = FALSE) {
-  $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  // $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
   return reset($entity);
-}
-
-/**
- *
- * Implements hook_form_FORM_ID_alter().
- *
- * The field_ui_field_edit_form is used for customizing the settings of
- * a field attached to an entity.
- *
- * This alter function disables some of the form widgets when the storage
- * backend indicates they are not appropriate.
- */
-function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-
-  // For entity fields added by Tripal Entities we don't want the
-  // the end-user to change the cardinality and the required fields
-  // such that record can't be saved in Chado.
-
-  // TODO: this shouldn't be hardcoded here.  These settings
-  // should be part of the field and handled by the tripal_entity module.
-  if ($form['#instance']['entity_type'] == 'TripalEntity') {
-    $form['field']['cardinality']['#access'] = FALSE;
-    $form['instance']['required']['#access'] = FALSE;
-  }
-
-  // TODO: don't the the maximum length be larger than the field size.
-}
-
-
-/**
- *
- * Implements hook_form_FORM_ID_alter().
- *
- * The field_ui_field_overview_form_ is used for adding and reordering the
- * fields attached to a bundle.  It also includes edit and delete links and
- * links for editing field types and widgets.
- *
- * This alter function is used to add a new 'Supported By' column to
- * the table to let the user know where fields are storing their data.
- */
-function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
-  // Add the 'Storage Location' to the table header.
-  $form['fields']['#header'][] = 'Supported By * ';
-
-  // Add the storage location as the final column for each field.
-  $storage_info = module_invoke_all('field_storage_info');
-  foreach (element_children($form['fields']) as $field_name) {
-    $field = field_info_field($field_name);
-    // For rows in the tables that aren't fields, just add an empty value
-    // for the storage column.
-    if (!$field) {
-      $form['fields'][$field_name][] = array(
-        '#markup' => '',
-      );
-      continue;
-    }
-    $storage_type = $field['storage']['type'];
-    $storage_label = array_key_exists('label', $storage_info[$storage_type]) ? $storage_info[$storage_type]['label'] : '';
-    if ($storage_type == 'field_sql_storage') {
-      $storage_label = 'Drupal';
-    }
-    if (array_key_exists('logo_url', $storage_info[$storage_type])) {
-      $logo_url = $storage_info[$storage_type]['logo_url'];
-      $form['fields'][$field_name][] = array(
-        '#markup' => '<img class="form-field-ui-field-overview-storage-logo" src="' . $logo_url . '">',
-      );
-    }
-    else {
-      $form['fields'][$field_name][] = array(
-        '#markup' => $storage_label,
-      );
-    }
-  }
-  $form['note'] = array(
-    '#markup' =>  '* Fields attached to this content type can use various
-      storage backends. Please be sure when you add new fields that the
-      storage backend is appropriate. For example, if you use Chado, and you
-      want all biological content to be stored in Chado, be sure that the
-      respective fields are "supported by" Chado.',
-  );
-}
-
-/**
- * Implements hook_menu_alter().
- */
-function tripal_menu_alter(&$items) {
-  // We don't want to allow deletion of fields added by the storage backend.
-  // TODO: this shouldn't be hardcoded here.  These settings
-  // should be part of the field and handled by the tripal_entity module.
-  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
-  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
-}
-
-/**
- * Simple provides a message indicating that the field cannot be deleted.
- */
-function tripal_field_no_delete() {
-  drupal_set_message('This field cannot be removed.', 'warning');
-  return '';
 }
 
 /**
@@ -848,209 +617,568 @@ function tripal_field_no_delete() {
  */
 function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
+  module_load_include('inc', 'tripal', 'api/tripal.fields.api');
+  module_load_include('inc', 'tripal', 'api/tripal.importer.api');
+  module_load_include('inc', 'tripal', 'api/tripal.terms.api');
   module_load_include('inc', 'tripal', 'api/tripal.entities.api');
   module_load_include('inc', 'tripal', 'api/tripal.files.api');
   module_load_include('inc', 'tripal', 'api/tripal.jobs.api');
   module_load_include('inc', 'tripal', 'api/tripal.notice.api');
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
+  module_load_include('inc', 'tripal', 'api/tripal.upload.api');
+  module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
 /**
- * Implements hook_field_storage_info().
- *
- * The Tripal module does not provide a storage back-end.  But it does provide
- * a placeholder when no storage backend is needed but a field
- * is still desired.  The 'tripal_no_storage' backend is used for the
- * content_type field which adds a type field to every entity.
+ * Implements hook_form_alter().
  */
-function tripal_field_storage_info() {
-  return array(
-    'tripal_no_storage' => array(
-      'label' => t('Tripal'),
-      'description' => t('The NULL storage is a placeholder for field values
-          that are not stored in any storage backend (e.g. entity types).'),
-      'settings' => array(),
-    ),
-  );
-}
-/**
- * Implements hook_field_info().
- */
-function tripal_field_info() {
-  $fields = array(
-    'content_type' => array(
-      'label' => t('Record Type'),
-      'description' => t('The content type.'),
-      'default_widget' => 'tripal_content_type_widget',
-      'default_formatter' => 'tripal_content_type_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'tripal_no_storage',
-        'module' => 'tripal',
-        'active' => TRUE
-      ),
-    ),
-  );
-  return $fields;
-}
-/**
- * Implements hook_field_widget_info();
- */
-function tripal_field_widget_info() {
-  return array(
-    'tripal_content_type_widget' => array(
-      'label' => t('Record Type'),
-      'field types' => array('content_type')
-    ),
-  );
-}
-
-/**
- * Implements hook_field_formatter_info().
- */
-function tripal_field_formatter_info() {
-  return array(
-    'tripal_content_type_formatter' => array(
-      'label' => t('Record Type'),
-      'field types' => array('content_type')
-    ),
-  );
-}
-/**
- * Implements hook_field_widget_form().
- */
-function tripal_field_widget_form(&$form, &$form_state, $field,
-    $instance, $langcode, $items, $delta, $element) {
-
-  $widget = $element;
-  switch ($instance['widget']['type']) {
-    case 'tripal_content_type_widget':
-      // There is no widget for this type.
-      break;
+function tripal_form_alter(&$form, $form_state, $form_id) {
+  // If this is the field_ui_field_edit_form (i.e. the form that appears
+  // when editing a field that is attached to an entity). Then we want
+  // to add term settings for any field attached to a TripalEntity
+  // content type.
+  if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
+    tripal_field_instance_settings_form_alter($form, $form_state);
   }
-}
-/**
- * Implements hook_field_formatter_view().
- */
-function tripal_field_formatter_view($entity_type, $entity, $field,
-    $instance, $langcode, $items, $display) {
 
-  $element = array();
-  switch ($display['type']) {
-    case 'tripal_content_type_formatter':
-      module_load_include('inc', 'tripal', 'includes/fields/content_type');
-      tripal_content_type_formatter($element, $entity_type, $entity, $field,
-          $instance, $langcode, $items, $display);
-      break;
-  }
-  return $element;
-}
-
-/**
- * Implemenation of hook_add_bundle_fields().
- *
- * In this function we add the type field.
- */
-function tripal_add_bundle_fields($entity_type, $bundle, $term) {
-  $field_name = 'content_type';
-  $bundle_name = $bundle->name;
-
-  // Create the field array.
-  $field_info = array(
-    'field_type' => 'content_type',
-    'widget_type' => 'tripal_content_type_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Record Type',
-    'is_required' => 0,
-    'storage' => 'tripal_no_storage',
-    'field_settings' => array(
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
-}
-
-/**
- * Implements hook_field_storage_query().
- *
- * Used by EntityFieldQuery to find the entities having certain entity
- * and field conditions and sort them in the given field order.
- *
- * NOTE: This function needs to exist or errors are triggered but so far it doesn't
- * appear to actually need to do anything...
- */
-function tripal_field_storage_query($query) { }
-
-/**
- * Implements hook_field_storage_load().
- *
- * Responsible for loading the fields from the Chado database and adding
- * their values to the entity.
- */
-function tripal_field_storage_load($entity_type, $entities, $age,
-    $fields, $options) {
-
-  $load_current = $age == FIELD_LOAD_CURRENT;
-  global $language;
-  $langcode = $language->language;
-
-  foreach ($entities as $id => $entity) {
-
-    // Iterate through the entity's fields so we can get the column names
-    // that need to be selected from each of the tables represented.
-    $tables = array();
-    foreach ($fields as $field_id => $ids) {
-
-      // By the time this hook runs, the relevant field definitions have been
-      // populated and cached in FieldInfo, so calling field_info_field_by_id()
-      // on each field individually is more efficient than loading all fields in
-      // memory upfront with field_info_field_by_ids().
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
-      $field_type = $field['type'];
-      $field_module = $field['module'];
-
-      // Allow the creating module to alter the value if desired.  The
-      // module should do this if the field has any other form elements
-      // that need populationg besides the default value.
-      $load_function = $field_module . '_' . $field_type . '_field_load';
-      module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
-      if (function_exists($load_function)) {
-        $load_function($field, $entity);
+  // Remove fields that have no form. It's just a bit too confusing to have
+  // widgets appear in the form but without and form elements inside them.
+  if ($form_id == 'tripal_entity_form') {
+    $children = element_children($form);
+    foreach ($children as $child) {
+      // count the number of form elements
+      if (array_key_exists('und', $form[$child])) {
+        $total_widgets = 0;
+        foreach ($form[$child]['und'] as $delta => $element) {
+          if (is_numeric($delta)) {
+            $total_widgets += count(element_children($element));
+            // Ignore the weight column
+            if (array_key_exists('_weight', $element)) {
+              $total_widgets--;
+            }
+            // Ignore a hidden value column
+            if (array_key_exists('value', $element) and $element['value']['#type'] == 'value') {
+              $total_widgets--;
+            }
+            // Some form elements don't have a 'value' and they don't have any
+            // widgets (i.e image field and description field. We don't
+            // want to loose those, so add one to the widget count.
+            if (!array_key_exists('value', $element)) {
+              $total_widgets++;
+            }
+          }
+        }
+        // If we have no widgets then here's not a form for this field so just
+        // remove it.
+        if ($total_widgets == 0) {
+          unset($form[$child]);
+        }
       }
-
-    } // end: foreach ($fields as $field_id => $ids) {
-  } // end: foreach ($entities as $id => $entity) {
-}
-
-/**
- * Implements hook_field_is_empty().
- */
-function tripal_field_is_empty($item, $field) {
-
-  // If there is no value field then the field is empty.
-  if (!array_key_exists('value', $item)) {
-    return TRUE;
-  }
-
-  // Iterate through all of the fields and if at least one has a value
-  // the field is not empty.
-  foreach ($item as $form_field_name => $value) {
-    if (isset($value) and $value != NULL and $value != '') {
-      return FALSE;
     }
   }
-
-  // Otherwise, the field is empty.
-  return TRUE;
 }
+
+function tripal_check_new_fields($bundle_name) {
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+
+  $added = tripal_create_bundle_fields($bundle, $term);
+  if (count($added) == 0) {
+    drupal_set_message('No new fields were added');
+  }
+  foreach ($added as $field_name) {
+    drupal_set_message('Added field: ' . $field_name);
+  }
+
+  drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function tripal_block_info() {
+  $blocks = array();
+  $admin_theme = 'seven';
+
+  $blocks['notifications_block'] = array(
+    'info' => t('Dashboard Notifications'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'admin/dashboard',
+    'status' => TRUE,
+    'theme' => $admin_theme,
+    'region' => 'dashboard_main',
+    'properties' => array(
+      'administrative' => TRUE,
+    ),
+  );
+  $blocks['content_type_barchart'] = array(
+    'info' => t('Published Tripal Content'),
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => 'admin/dashboard',
+    'status' => TRUE,
+    'theme' => $admin_theme,
+    'region' => 'dashboard_main',
+    'properties' => array(
+      'administrative' => TRUE,
+    ),
+  );
+  $blocks['powered_by_tripal'] = array(
+    'info' => t('Powered by Tripal'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function tripal_block_view($delta = ''){
+  global $base_path;
+  $block = array();
+
+  // The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+    case 'powered_by_tripal':
+      $size = variable_get('powered_by_tripal_size', 'small');
+      $type = variable_get('powered_by_tripal_type', 'bw');
+
+      $image = 'powered_by_tripal_bw_small.png';
+      if ($size == 'small' and $type == 'col') {
+        $image = 'powered_by_tripal_small.png';
+      }
+      if ($size == 'large' and $type == 'bw') {
+        $image = 'powered_by_tripal_bw.png';
+      }
+      if ($size == 'large' and $type == 'col') {
+        $image = 'powered_by_tripal.png';
+      }
+
+      $block['title'] = '';
+      $block['content'] = array(
+        '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $base_path . drupal_get_path('module', 'tripal') . '/theme/images/' . $image . '"></a>',
+      );
+      break;
+    case 'content_type_barchart':
+      // The number of content types
+      $entity_types = db_select('tripal_bundle', 'tb')
+        ->fields('tb')
+        ->execute()
+        ->fetchAll();
+
+      $entity_count_listing = array();
+
+      // The number of entities per content type.
+      foreach($entity_types as $entity_types => $entity_type){
+        $result = db_select('chado_' . $entity_type->name, 'et')
+          ->fields('et')
+          ->execute();
+        $number_of_entities = $result->rowCount();
+        $entity_count_listing[$entity_types] = array(
+          'name' => $entity_type->label,
+          'count' => $number_of_entities,
+        );
+      }
+      tripal_add_d3js();
+      drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal.dashboard.js');
+      drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal.dashboard.css');
+      drupal_add_library('system', 'drupal.collapse');
+      drupal_add_js("var entityCountListing = " . json_encode($entity_count_listing) . ";", array('type' => 'inline'));
+
+      $output = "<div id=\"tripal-entity-types\" class=\"tripal-entity-types-pane\">
+            <p>A list of the published Tripal content types and the number of each.</p>
+            <div id=\"tripal-entity-type-chart\"></div>
+          </div>";
+
+      $block['title'] = '';
+      $block['content'] = array(
+        '#markup' => $output,
+      );
+      break;
+
+    case 'notifications_block':
+      // Create your block content here
+      $block['content'] = '';
+
+      // Prepare table header
+      $header = array(
+        'title' => array('data' => t('Title')),
+        'details' => array('data' => t('Details')),
+        'type' => array('data' => t('Type'), 'field' => 'tan.type'),
+        'actions' => array('data' => t('Actions'))
+      );
+
+      $query = db_select('tripal_admin_notfications', 'tan')
+        ->extend('TableSort');
+
+      $results = $query->fields('tan')
+        ->condition('enabled', 1, '=')
+        ->orderByHeader($header)
+        ->execute()->fetchAll();
+      $rows = array();
+
+      foreach($results as $result){
+        $data['operation'] = ' | ';
+        $data['operation'] .= l(t('Dismiss Notification'), 'admin/disable/notification/' . $result->note_id);
+
+        $actions = unserialize($result->actions);
+        foreach($actions as $action){
+          $label = key($actions);
+          $link = $action;
+        }
+
+        $rows[] = array(
+          'Title' => $result->title,
+          'Details' => $result->details,
+          'Type' => $result->type,
+          'Actions' => l(t($label), $link) . $data['operation'],
+        );
+      }
+      if(!empty($rows)) {
+        //Number of records shown in per page
+        $per_page = 10;
+        $current_page = pager_default_initialize(count($rows), $per_page);
+        $chunks = array_chunk($rows, $per_page, TRUE);
+
+        // Output of table with the paging
+        $table = theme('table',
+          array(
+            "header" => $header,
+            "rows" => $chunks[ $current_page ],
+            "attributes" => array(),
+            "sticky" => TRUE,
+            "caption" => "",
+            "colgroups" => array(),
+            "empty" => t("No notifications.")
+          )
+        );
+        $table .= theme('pager', array('quantity', count($rows)));
+
+        $fieldset_table = array(
+          '#title' => t('Notifications'),
+          '#collapsed' => FALSE,
+          '#collapsible' => TRUE,
+          '#attributes' => array('class' => array('collapsible')),
+          '#children' => $table,
+        );
+
+        //return pager with limited number of records.
+        $block['content'] = theme('fieldset', array('element' => $fieldset_table));
+      }
+      else {
+        $block['content'] = 'There are no notifications at this time.';
+      }
+      $block['title'] = 'Tripal Administrative Notifications';
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function tripal_block_save($delta = '', $edit = array()) {
+
+  switch ($delta) {
+    case 'powered_by_tripal':
+      if (!empty($edit['logo_size'])) {
+        variable_set('powered_by_tripal_size', $edit['logo_size']);
+      }
+
+      if (!empty($edit['logo_type'])) {
+        variable_set('powered_by_tripal_type', $edit['logo_type']);
+      }
+  }
+}
+/**
+ * Implements hook_block_configure().
+ */
+function tripal_block_configure ($delta = '') {
+  $form = array();
+
+  switch ($delta) {
+    case 'powered_by_tripal':
+      $form['logo_size'] = array(
+        '#type' => 'radios',
+        '#title' => t('Logo Size'),
+        '#default_value' => variable_get('powered_by_tripal_size', 'small'),
+        '#options' => array(
+        'large' => t('Large'),
+        'small' => t('Small')
+      ),
+      '#description' => t('Select if you would like a small or large "Powered by Tripal" logo.'),
+      );
+      $form['logo_type'] = array(
+        '#type' => 'radios',
+        '#title' => t('Logo Type'),
+        '#default_value' => variable_get('powered_by_tripal_type', 'bw'),
+        '#options' => array(
+          'bw' => t('Gray scale'),
+          'col' => t('Colored')
+        ),
+        '#description' => t('Select if you would like a black and white or colored "Powered by Tripal" logo.'),
+      );
+  }
+
+
+  return $form;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function tripal_cron() {
+  if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
+    $modules = module_implements('tripal_cron_notification');
+    foreach ($modules as $module) {
+      $function = $module . '_tripal_cron_notification';
+      $function();
+    }
+    watchdog('tripal_cron', 'tripal_cron ran');
+  }
+}
+
+/**
+ * Implements hook_element_info().
+ *
+ * Used for creating new form API elements.
+ */
+function tripal_element_info() {
+
+  // Element for uploading large files.  This form element
+  // accepts the following keys when using in a form:
+  //   - #title:  The title that will appear above the element.
+  //   - #description:  The description that will appear below the element.
+  //   - #usage_type:  Required.  The type of file.  This will be stored in
+  //       the 'type' column of the file_usage table.
+  //   - #usage_id: Required. A unique numeric ID representing an entity, node
+  //       or some other record identifier.  This can be any identifier that
+  //       makes sense to the module that implements a form that uses this
+  //       element.
+  //    -#usage_module: The module that will be using the file. This will be
+  //       stored in the 'module' column of the file_usage table.
+  //    -#allowed_types:  An array of file extensions that are allowed for
+  //       to be uploaded.
+  $elements['html5_file'] = array(
+    '#input' => 'TRUE',
+    '#process' => array('tripal_html5_file_process'),
+    '#element_validate' => array('tripal_html5_file_validate'),
+    '#value_callback' => 'tripal_html5_file_value',
+  );
+  return $elements;
+}
+
+/**
+ *  The process function for the html5_file form element.
+ */
+function tripal_html5_file_process($element, $form_state, $complete_form) {
+
+  $module = array_key_exists('#usage_module', $element) ? $element['#usage_module'] : 'tripal';
+  $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
+  $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
+  $name = $element['#name'];
+  $name = preg_replace('/[^\w]/', '_', $name);
+  $allowed_types = array_key_exists('#allowed_types', $element) ? $element['#allowed_types'] : array();
+
+  $headers = array(
+    array('data' => 'File'),
+    array('data' => 'Size', 'width' => '10%'),
+    array('data' => 'Upload Progress', 'width' => '20%'),
+    array('data' => 'Action', 'width' => '10%')
+  );
+  $rows = array();
+  $table_vars = array(
+    'header'      => $headers,
+    'rows'        => $rows,
+    'attributes'  => array(
+      'class' => array('tripal-html5-file-upload-table'),
+      'id' => 'tripal-html5-file-upload-table-' . $type
+    ),
+    'sticky'      => TRUE,
+    'colgroups'   => array(),
+    'empty'       => t('There are currently no files.'),
+  );
+  $element['html5_file_table_key'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+    '#attributes' => array(
+      'class' => array('tripal-html5-file-upload-table-key')
+    )
+  );
+  $element['html5_file_table'] = array(
+    '#type' => 'item',
+    '#title' => $element['#title'] ? $element['#title'] : 'File Upload',
+    '#description' => $element['#description'],
+    '#markup' => theme('table', $table_vars)
+  );
+
+  $element[$name] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'tripal-html5-upload-fid-' . $type),
+    '#default_value' => $element['#value'],
+  );
+  $element['html5_file_submit'] = array(
+    '#type'     => 'submit',
+    '#value'    => 'Upload File',
+    '#name' => 'tripal_html5_file_upload_submit-' . $type,
+    // We don't want this button to submit as the file upload
+    // is handled by the JavaScript code.
+    '#attributes' => array(
+      'id' => 'tripal-html5-file-upload-submit-' . $type,
+      'onclick' => 'return (false);'
+    )
+  );
+
+  $uploader_settings = array(
+    'table_id' => '#tripal-html5-file-upload-table-' . $type,
+    'submit_id' => '#tripal-html5-file-upload-submit-' . $type,
+    'category' => array($element['#usage_id'] . '-' . $element['#usage_type']),
+    'cardinality' => 1,
+    'target_id' => 'tripal-html5-upload-fid-' . $type,
+    'module' => $module,
+    'allowed_types' => $allowed_types,
+  );
+
+
+  drupal_add_js(array($type_var_name => $uploader_settings), 'setting');
+  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/TripalUploader.js');
+  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/TripalUploadFile.js');
+  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal.file.js');
+
+  return $element;
+}
+/**
+ * Implements the validate hook for the html5_file form element.
+ */
+function tripal_html5_file_validate($element, &$form_state) {
+  $is_required = $element['#required'];
+  $name = $element['#name'];
+  $name = preg_replace('/[^\w]/', '_', $name);
+  $fid = $element['#value'][$name];
+
+  // TODO: the fid should just be the $element['#value'] why isn't this
+  // working given the tripal_html5_file_value function below.
+
+  if ($is_required and !$fid) {
+    form_error($element, t('A file must be provided.'));
+  }
+}
+/**
+ * Implements hook_value() for the html5_file form element.
+ */
+function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
+
+  if ($input) {
+    if (is_array($input)) {
+      $name = $element['#name'];
+      $name = preg_replace('/[^\w]/', '_', $name);
+      return $input[$name];
+    }
+    else {
+      return $input;
+    }
+  }
+}
+
+
+/**
+ * Implements hook_handle_uploaded_file().
+ */
+function tripal_handle_uploaded_file($filename, $filepath, $type) {
+
+  global $user;
+
+  // Split the type into a node ID and form_key
+  list($id, $form_key) = explode('-', $type);
+
+
+  // See if this file is already managed then add another entry fin the
+  // usage table.
+  $fid = db_select('file_managed', 'fm')
+    ->fields('fm', array('fid'))
+    ->condition('uri', $filepath)
+    ->execute()
+    ->fetchField();
+
+  // Create a file object.
+  if (!$fid) {
+    $file = new stdClass();
+    $file->uri = $filepath;
+    $file->filename = $filename;
+    $file->filemime = file_get_mimetype($filepath);
+    $file->uid = $user->uid;
+    $file->status = FILE_STATUS_PERMANENT;
+    $file = file_save($file);
+    $fid = $file->fid;
+  }
+
+  $file = file_load($fid);
+  file_usage_add($file, 'tripal', $form_key, $id);
+  return $fid;
+
+}
+
+/**
+ * Implements hook_field_display_alter().
+ *
+ * @param $display
+ * @param $context
+ */
+function tripal_field_display_TripalEntity_alter(&$display, $context){
+  $field_name = $context['field']['field_name'];
+  $bundle = $context['entity']->bundle;
+  $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+
+  // Hide fields that are empty, but only if the hide_empty_field variable
+  // is set to 'hide' for this bundel.
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
+  if($hide_variable == 'hide'){
+    $item = field_get_items('TripalEntity', $context['entity'], $field_name);
+    if($item) {
+      $field = field_info_field($field_name);
+      if(tripal_field_is_empty($item[0], $field)) {
+        // Stop the right rail element from rendering.
+        drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_group_table_rows_alter().
+ *
+ * This hook is used for hiding empty rows in a Field Group Table field group.
+ *
+ * @param $element
+ *   The field group object.
+ * @param $children
+ *   An array of field names that are contained in the field group.
+ */
+function tripal_field_group_table_rows_alter(&$element, &$children) {
+
+  // Iterate through the children of this table field group.
+  foreach ($children as $index => $child) {
+    if (is_array($element[$child])) {
+      $bundle = $element[$child]['#bundle'];
+      $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
+
+      // If the hide empty variable is turned on then remove fields from
+      // the field group.
+      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
+      if($hide_variable == 'hide'){
+        $items = $element[$child]['#items'];
+        // Case #1: there are no items.
+        if (count($items) == 0) {
+          unset($children[$index]);
+          unset($element[$child]);
+        }
+        // Case #2: there is one item but the value is empty.
+        if (count($items) == 1 and array_key_exists('value', $items[0]) and empty($items[0]['value'])) {
+          unset($children[$index]);
+          unset($element[$child]);
+        }
+      }
+    }
+  }
+}
+

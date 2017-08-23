@@ -128,7 +128,7 @@ function chado_library_form($node, &$form_state) {
   $lt_message = tripal_set_message("To add additional items to the library type drop down list,
      add a term to the " .
      l($lt_cv->name . " controlled vocabulary",
-       "admin/tripal/vocab/cv/" . $lt_cv->cv_id . "/cvterm/add",
+       "admin/tripal/loaders/chado_cv/" . $lt_cv->cv_id . "/cvterm/add",
        array('attributes' => array('target' => '_blank'))
       ),
      TRIPAL_INFO, array('return_html' => TRUE)
@@ -174,34 +174,44 @@ function chado_library_form($node, &$form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
-  $select_options = array();
   $prop_cv = tripal_get_default_cv('libraryprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  // if the default is the 'library_property' vocabulary then we want
-  // to exclude the 'Library Description' term since it has it's own form element above
+
+  $details = array(
+    // The name of the prop table.
+    'property_table' => 'libraryprop',
+    // The value of library_id for this record.
+    'chado_id' => $library_id,
+    // The cv.cv_id of the cv governing libraryprop.type_id.
+    'cv_id' => $cv_id,
+  );
+
+  // If the default is the 'library_property' vocabulary then we want
+  // to exclude the 'Library Description' term since it has it's own form
+  // element above
   if ($prop_cv->name == 'library_property') {
     // Generate our own select list so we can exclude the description element
+    $select_options = array();
     $cv_result = chado_select_record('cv', array('cv_id'), array('name' => 'library_property'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Library Description', $select_options);
     unset($select_options[$descrip_id]);
+    $details['select_options'] = $select_options;
   }
-  $details = array(
-    'property_table' => 'libraryprop',      // the name of the prop table
-    'chado_id' => $library_id,              // the value of library_id for this record
-    'cv_id' => $cv_id,                      // the cv.cv_id of the cv governing libraryprop.type_id
-    'select_options' => $select_options
-  );
+
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
-    'linking_table' => 'library_dbxref',  // the name of the _dbxref table
-    'base_foreign_key' => 'library_id',   // the name of the key in your base chado table
-    'base_key_value' => $library_id       // the value of library_id for this record
+    // The name of the _dbxref table.
+    'linking_table' => 'library_dbxref',
+    // The name of the key in your base chado table.
+    'base_foreign_key' => 'library_id',
+    // The value of library_id for this record.
+    'base_key_value' => $library_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_dbxrefs($form, $form_state, $details);
@@ -478,7 +488,7 @@ function chado_library_delete(&$node) {
  *
  * @ingroup tripal_library
  */
-function chado_library_node_access($node, $op, $account) {
+function tripal_library_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;

@@ -151,7 +151,7 @@ function chado_feature_form($node, &$form_state) {
    '#description' => t("Choose the feature type."),
    '#required'    => TRUE,
    '#default_value' => $feature_type,
-   '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv_id",
+   '#autocomplete_path' => "aadmin/tripal/storage/chado/auto_name/cvterm/$cv_id",
   );
 
   // get the list of organisms
@@ -370,7 +370,7 @@ function chado_feature_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_feature
  */
-function chado_feature_node_access($node, $op, $account) {
+function tripal_feature_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -772,10 +772,7 @@ function tripal_feature_node_presave($node) {
         $organism_id = $node->feature->organism_id;
         $name        = $node->feature->name;
         $uname       = $node->feature->uniquename;
-        $type_id     = $node->feature->type_id;
-        $values = array('cvterm_id' => $type_id);
-        $ftype = chado_select_record('cvterm', array('name'), $values);
-        $type = $ftype[0]->name;
+        $type        = $node->feature->cvtname;
       }
 
       $values = array('organism_id' => $organism_id);
@@ -842,6 +839,7 @@ function tripal_feature_node_update($node) {
  * @ingroup tripal_feature
  */
 function tripal_feature_node_view($node, $view_mode, $langcode) {
+
   switch ($node->type) {
     case 'chado_feature':
       // Show feature browser and counts

@@ -1,0 +1,315 @@
+<?php
+/**
+ * @file
+ * Basic Tripal Views functionality
+ */
+
+/**
+ * @defgroup tripal_chado_views Tripal Chado Views Module
+ * @ingroup tripal_modules
+ * @{
+ * Provides functions for integrating chado with Drupal Views.
+ * @}
+ */
+
+require_once 'api/tripal_chado_views.api.inc';
+//require_once 'api/tripal_chado_views.DEPRECATED.inc';
+
+require_once 'tripal_chado_views.views.inc';
+
+require_once 'includes/tripal_chado_views_integration.inc';
+require_once 'includes/tripal_chado_views_integration_UI.inc';
+require_once 'includes/tripal_chado_views_integration_port.inc';
+
+/**
+ * Implements hook_menu().
+ * This hook provides details about new menu items added by this module
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_menu() {
+  $items = array();
+
+//   $items['chado'] = array(
+//     'title' => 'Search Data',
+//     'description' => 'Listings of the various biological data available categorized by type.',
+//     'page callback' => 'theme',
+//     'page arguments' => array('tripal_chado_views_search_biological_content'),
+//     'access arguments' => array('access content'),
+//     'expanded' => TRUE,
+//     'type' => MENU_NORMAL_ITEM,
+//   );
+
+  // TODO: should the views integration be moved into the tripal_chado module?
+  $items['admin/tripal/storage/chado/views-integration'] = array(
+    'title' => 'Views Integration',
+    'description' => 'Integration of all the chado tables and fields with Drupal Views.',
+    'page callback' => 'tripal_chado_views_admin_integration_view',
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10
+  );
+
+  /**
+  $items['admin/tripal/storage/chado/views-integration/list'] = array(
+    'title' => 'List of Integrated Tables',
+    'description' => 'Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.',
+    'page callback' => 'tripal_chado_views_integration_setup_list',
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+  );
+  */
+
+  $items['admin/tripal/storage/chado/views-integration/new'] = array(
+    'title' => 'Integrate A Table',
+    'description' => 'Describe to Tripal Views how to integrate a new chado table or materialized view.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_views_integration_form'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+    'weight' => 1,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/edit/%'] = array(
+    'title' => 'Edit Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_views_integration_form', 4),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/delete/%'] = array(
+    'title' => 'Delete Views Integration',
+    'page callback' => 'tripal_chado_views_integration_delete',
+    'page arguments' => array(4),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/delete-all/confirm'] = array(
+    'title' => 'Delete ALL Views Integration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_views_integration_delete_all_form'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/import'] = array(
+    'title' => 'Import Views Integration',
+    'description' => 'Import a Chado Views Integration from another site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_views_integration_import_form'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+    'weight' => 2,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/export'] = array(
+    'title' => 'Export Views Integration',
+    'description' => 'Export a Chado Views Integration for use in another Tripal site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_views_integration_export_form', 4),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+    'weight' => 3,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/export/%'] = array(
+    'title' => 'Export Views Integration',
+    'description' => 'Export a Chado Views Integration for use in another Tripal site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_views_integration_export_form', 4),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/views-integration/help'] = array(
+    'title' => 'Help',
+    'description' => "A description of the Tripal Chado Views module including a short description of it's usage.",
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_chado_views_help'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/tripal/storage/chado/views-integrations/views/integrations/enable'] = array(
+    'title' => 'Enable Integrations Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_chado_views_admin_integrations', 'admin/tripal/storage/chado/views-integration'),
+    'access arguments' => array('manage tripal_views_integration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_init().
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_init() {
+return;
+  // Need to ensure that all chado tables are integrated w/out making
+  // the user go to views UI. It would be ideal to do this in a hook called only once
+  // directly after install/enabling of the module but such a hook doesn't
+  // exist in Drupal 6
+  $tripal_views = db_query("SELECT true as has_rows FROM {tripal_views}");
+  $tripal_views = $tripal_views->fetchObject();
+  if (isset($tripal_views)) {
+    if (!$tripal_views->has_rows) {
+      tripal_rebuild_views_integrations();
+    }
+  }
+}
+
+/**
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_views') {
+    return theme('tripal_views_help', array());
+  }
+}
+
+/**
+ * Implements hook_permissions().
+ *
+ * Set the permission types that the chado module uses.
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_permission() {
+  return array(
+    'manage tripal_views_integration' => array(
+      'title' => t('Administrate Tripal Chado Views Integration'),
+      'description' => t('Permission to manage Tripal Chado Views Integration.')
+    ),
+  );
+}
+
+/**
+ * Implements hook_views_api().
+ *
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_chado_views.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * This hook provides details about themable objects added by
+ *   this module
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_chado_views_integration_form' => array(
+      'template'  => 'tripal_chado_views_integration_fields_form',
+      'render element'=> 'form',
+    ),
+    'file_upload_combo' => array(
+      'variables' => array('element' => NULL)
+    ),
+    'sequence_combo' => array(
+      'variables' => array('element' => NULL)
+    ),
+    // instructions page for the views module
+    'tripal_chado_views_help' => array(
+      'template' => 'tripal_chado_views_help',
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_chado_views') . '/theme'
+    ),
+    // search biological content page
+    'tripal_chado_views_search_biological_content' => array(
+      'template' => 'tripal_chado_views_search_biological_content',
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_chado_views') . '/theme'
+    ),
+  );
+}
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_views.coder_ignores.txt) where ignore rules for coder are stored
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_views'),
+    'line prefix' => drupal_get_path('module', 'tripal_views'),
+  );
+}
+
+/**
+ * A landing page for all views of chado content. Simply lists all menu items that
+ * are children of it.
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_biological_data_page() {
+  $output = '';
+
+  $item = menu_get_item();
+  $content = system_admin_menu_block($item);
+
+  $output .= '<dl class="admin-list">';
+  foreach ($content as $item) {
+    $output .= '<dt>'. l($item['title'], $item['href'], $item['localized_options']) .'</dt>';
+    $output .= '<dd>'. $item['description'] .'</dd>';
+  }
+  $output .= '</dl>';
+
+  return $output;
+}
+
+/**
+ * Admin launchpad
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_admin_integration_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Data Storage', 'admin/tripal/storage');
+  $breadcrumb[] = l('Chado', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Views Integration', 'admin/tripal/storage/chado/views-integration');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_views_admin_integrations','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Chado Views Module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Tripal Views Admin', 'admin/tripal/storage/chado/views-integration/views/integrations/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}

@@ -5,24 +5,29 @@
  * Implements hook_entity_create().
  *
  * This hook is called when brand new entities are created, but
- * they are not loaded so the hook_entity_load() is not yet called.
+ * they are not loaded so the hook_entity_load() is not yet called. We
+ * can use this hook to add properties to the entity before saving.
  */
 function tripal_chado_entity_create(&$entity, $type) {
   if ($type == 'TripalEntity') {
 
     // Set some defaults on vars needed by this module.
-    $entity->chado_table = NULL;
-    $entity->chado_column = NULL;
-    $entity->chado_record = NULL;
-    $entity->chado_record_id = NULL;
+    if (!property_exists($entity, 'chado_table')) {
+      $entity->chado_table =  NULL;
+      $entity->chado_column = NULL;
+      $entity->chado_linker = NULL;
 
-    // Add in the Chado table information for this entity type.
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-    $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
-    if ($chado_table) {
-      $entity->chado_table = $chado_table;
-      $entity->chado_column = $chado_column;
+      // Add in the Chado table information for this entity type.
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      if ($bundle->data_table) {
+        $entity->chado_table = $bundle->data_table;
+        $entity->chado_column = $bundle->type_column;
+        $entity->chado_linker = $bundle->type_linker_table;
+      }
+    }
+    if (!property_exists($entity, 'chado_record')) {
+      $entity->chado_record = NULL;
+      $entity->chado_record_id = NULL;
     }
   }
 }
@@ -44,12 +49,31 @@ function tripal_chado_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
+
+  if ($type == 'TripalBundle') {
+    foreach ($entities as $bundle) {
+      // We want to add in the record ID to the entity.
+      if (property_exists($bundle, 'id')) {
+        $chado_bundle = db_select('chado_bundle', 'cb')
+          ->fields('cb')
+          ->condition('cb.bundle_id', $bundle->id)
+          ->execute()
+          ->fetchObject();
+        if ($chado_bundle) {
+          $bundle->data_table = $chado_bundle->data_table;
+          $bundle->type_linker_table = $chado_bundle->type_linker_table;
+          $bundle->type_column = $chado_bundle->type_column;
+          $bundle->type_id = $chado_bundle->type_id;
+          $bundle->type_value = $chado_bundle->type_value;
+        }
+      }
+    }
+  }
   if ($type == 'TripalEntity') {
     foreach ($entities as $entity) {
 
       // We want to add in the record ID to the entity.
       if (property_exists($entity, 'id')) {
-
         // Set some defaults on vars needed by this module.
         $entity->chado_table = NULL;
         $entity->chado_column = NULL;
@@ -58,139 +82,230 @@ function tripal_chado_entity_load($entities, $type) {
 
         // Add in the Chado table information for this entity type.
         $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-        $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-        $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
-        if ($chado_table) {
-          $entity->chado_table = $chado_table;
-          $entity->chado_column = $chado_column;
+        if (!$bundle) {
+          continue;
         }
+        // TODO: this may need fixing. The chado_column may not always
+        // be the type_id of the base table. Is it expected to be so here?
+        $entity->chado_table = $bundle->data_table;
+        $entity->chado_column = $bundle->type_column;
 
-        $chado_entity = db_select('chado_entity' ,'ce')
+        $chado_entity_table = chado_get_bundle_entity_table($bundle);
+        $chado_entity = db_select($chado_entity_table, 'ce')
           ->fields('ce')
           ->condition('ce.entity_id', $entity->id)
           ->execute()
           ->fetchObject();
-        $schema = chado_get_schema($chado_table);
-        $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
-        $entity->chado_record = $record;
-        $entity->chado_record_id = $chado_entity->record_id;
+        if ($chado_entity) {
+          $schema = chado_get_schema($entity->chado_table);
+          $record = chado_generate_var($entity->chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
+          $entity->chado_record = $record;
+          $entity->chado_record_id = $chado_entity->record_id;
+        }
       }
     }
   }
 }
 
 /**
- * Implements hook_field_attach_form().
- */
-function tripal_chado_field_attach_form($entity_type, $entity, &$form, &$form_state, $langcode) { }
-
-/**
  *
  * Implements hook_entity_insert().
  */
-function tripal_chado_entity_insert($entity, $type) { }
+function tripal_chado_entity_insert($entity, $type) {
+
+}
 
 /**
  *
  * Implements hook_entity_update().
  */
-function tripal_chado_entity_update($entity, $type) { }
+function tripal_chado_entity_update($entity, $type) {
+
+}
 
 /**
  *
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
-  $record = db_select('chado_entity', 'ce')
-    ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-    ->condition('entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
+  if ($type == 'TripalEntity') {
 
-  if ($record && property_exists($record, 'chado_entity_id')) {
-    // Delete the corresponding record in Chado
-    $table = $record->data_table;
-    $record_id = $record->record_id;
-    chado_delete_record($table, array($table . '_id' => $record_id));
-
-    //Delete the record in the public.chado_entity table
-    $sql = "DELETE FROM {chado_entity} WHERE chado_entity_id = :id";
-    db_query($sql, array(':id' => $record->chado_entity_id));
   }
-}
-
-/**
- * Determines whether the given user has access to a tripal data entity.
- *
- * TODO: I'm not sure this function should be at this level. I think all
- * access controls should be handled by the tripal_entity module and that
- * storage backends should just attach data as requested.
- *
- * @param $op
- *   The operation being performed. One of 'view', 'update', 'create', 'delete'
- *   or just 'edit' (being the same as 'create' or 'update').
- * @param $entity
- *   Optionally a tripal data entity or a tripal data type to check access for.
- *   If nothing is given, access for all types is determined.
- * @param $account
- *   The user to check for. Leave it to NULL to check for the global user.
- * @return boolean
- *   Whether access is allowed or not.
- */
-function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
-  if (user_access('administer tripal data', $account)) {
-    return TRUE;
-  }
-  if (isset($entity) && $type_name = $entity->type) {
-    $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $type_name data", $account)) {
-      return TRUE;
-    }
-  }
-  return FALSE;
 }
 
 /**
  * Implements hook_tripal_default_title_format().
+ *
+ * Overrides the default titles.
  */
-function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
+function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
   $format = array();
 
-  // Load the term associated with this Tripal Content type.
-  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
-  $term = reset($term);
+  $table = $bundle->data_table;
 
-  // Load the bundle
-  $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-  $bundle_id = $bundle->id;
-  $table = tripal_get_bundle_variable('chado_table', $bundle_id);
-  $column = tripal_get_bundle_variable('chado_column', $bundle_id);
-  $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
-
-  // For organism titles  we want the genus and species with no comma separation.
   if ($table == 'organism') {
+    if (chado_get_version() <= '1.2') {
+      $format[] = array(
+        'format' => '[taxrank__genus] [taxrank__species]',
+        'weight' => -5
+      );
+    }
+    else {
+      $format[] = array(
+        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecies]',
+        'weight' => -5
+      );
+    }
+  }
+  if ($table == 'biomaterial') {
     $format[] = array(
-      'format' => '[organism__genus] [organism__species]',
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
   if ($table == 'analysis') {
     $format[] = array(
-      'format' => '[analysis__name]',
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
   if ($table == 'feature') {
     $format[] = array(
-      'format' => '[feature__name]',
+      'format' => '[schema__name]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'featuremap') {
+    $format[] = array(
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
   if ($table == 'stock') {
     $format[] = array(
-      'format' => '[stock__name]',
+      'format' => '[schema__name]',
       'weight' => -5
     );
   }
+  if ($table == 'pub') {
+    $format[] = array(
+      'format' => '[tpub__title]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'cvterm') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'project') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'contact') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
   return $format;
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
+
+  // If this entity is a TripalEntity and is a full view, then
+  // we want to support the legacy view, but only if the legacy
+  // module is enabled (the functions exist).
+  if ($type =='TripalEntity') {
+    // Use the generic template to render the fields
+    if ($view_mode == 'full') {
+
+      // Get the Chado table for this data type.
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $chado_table = $bundle->data_table;
+      $chado_field = $bundle->type_column;
+
+      // Get the list of templates that should be used for entities and generatte
+      // the key in the array for this entity type (using the chado table the
+      // entity maps to).
+      $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+      $legacy_template = 'legacy_template--chado_' . $chado_table;
+
+      // If the site admin has indicated that thhis entity type should use
+      // a legacy tmplate then prepare the entity and content to fake a
+      // node.
+      if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+        // Remove the fields added by the chado_field_storage.
+        $fields = field_info_fields();
+        foreach($fields as $field) {
+          if ($field['storage']['type'] == 'field_chado_storage' or
+              $field['storage']['type'] == 'tripal_no_storage') {
+                $field_name = $field['field_name'];
+                if (property_exists($entity, $field_name)) {
+                  $entity->$field_name = NULL;
+                  unset($entity->content[$field_name]);
+                }
+              }
+        }
+
+        // Make the entity look like a node.
+        $entity->type = 'chado_' . $chado_table;
+        $entity->$chado_table = $entity->chado_record;
+
+        // Add any node specific fields to the entity to fake the node.
+        $node_schema = drupal_get_schema('node');
+        foreach ($node_schema['fields'] as $field_name => $details) {
+          if (!property_exists($entity, $field_name)) {
+            $entity->$field_name = '';
+            if (array_key_exists('default', $details)) {
+              $entity->$field_name = $details['default'];
+            }
+          }
+        }
+
+        // Now call the module's node_view hook to add additional
+        // content to our 'fake' entity node.
+        $modules = module_list();
+        foreach ($modules as $mname => $details) {
+          $function_name = $mname . '_node_view';
+          if (function_exists($function_name)) {
+            $function_name($entity, $view_mode, $langcode);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_view_alter().
+ *
+ * This function is used to support legacy Tripal v2 templates
+ * for use with Tripal v3 entities.
+ */
+function tripal_chado_entity_view_alter(&$build) {
+  // For the legacy support, we need to make sure the TOC
+  // is built.
+  if ($build['#entity_type'] == 'TripalEntity') {
+    $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+    $entity = $build['#entity'];
+    $legacy_template = 'legacy_template--' . $entity->type;
+    if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+      $build['#entity']->nid = NULL;
+      $build['#node'] = $build['#entity'];
+      $modules = module_list();
+      foreach ($modules as $mname => $details) {
+        $function_name = $mname . '_node_view_alter';
+        if (function_exists($function_name)) {
+          $function_name($build);
+        }
+      }
+    }
+  }
 }

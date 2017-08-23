@@ -10,14 +10,44 @@
  * @ingroup tripal
  */
 function tripal_install() {
-
-  // Add tripal bundle variables needed for storing additional settings for Tripal Bundles.
-  tripal_insert_variable('title_format', 'A pattern including tokens that can be used to generate tripal entity titles.');
-  tripal_insert_variable('url_format', 'A pattern including tokens that can be used to generate tripal entity url aliases.');
-  tripal_insert_variable('description', 'The description of a Tripal Entity type/bundle.');
-
+  // On upgrade from Tv2 to Tv3 we need to add a new field to the tripal_jobs
+  // table it's missing.
+  if (!db_field_exists('tripal_jobs', 'includes')) {
+    db_add_field('tripal_jobs', 'includes', array(
+      'type' => 'text',
+      'description' => 'A serialized array of file paths that should be included prior to executing the job.',
+      'not NULL' => FALSE,
+    ));
+  }
 }
 
+/**
+ * Adds variables for bundles.
+ */
+function tripal_add_variables() {
+  // Add tripal bundle variables needed for storing additional settings for
+  // Tripal Bundles.
+  tripal_insert_variable(
+      'title_format',
+      'A pattern including tokens that can be used to generate tripal entity titles.'
+  );
+  tripal_insert_variable(
+      'url_format',
+      'A pattern including tokens that can be used to generate tripal entity url aliases.'
+  );
+  tripal_insert_variable(
+      'description',
+      'The description of a Tripal Entity type/bundle.'
+  );
+  tripal_insert_variable(
+    'hide_empty_field',
+    'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
+  );
+}
+
+/**
+ *
+ */
 function tripal_uninstall() {
   /*
    // So somehow I was able to uninstall this module without deleting the bundles. This
@@ -50,12 +80,106 @@ function tripal_uninstall() {
    field_purge_batch(100);
    */
 }
+
+/**
+ *
+ */
+function tripal_enable() {
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_core and the
+  // installation will fail.  Therefore, in the install we renamed it. Now
+  // we want to move it back.
+  if (db_table_exists('tripal_jobs2')) {
+    $sql = "DROP TABLE tripal_jobs";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_jobs2 RENAME to tripal_jobs";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_id_idx2 RENAME TO tripal_jobs_job_id_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_name_idx2 RENAME TO tripal_jobs_job_name_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_pkey2 RENAME TO tripal_jobs_pkey";
+    db_query($sql);
+    // schema change
+    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_token_formats2')) {
+    $sql = "DROP TABLE tripal_token_formats";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_token_formats2 RENAME TO tripal_token_formats";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_pkey2 RENAME TO tripal_token_formats_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_type_application_key2 RENAME TO tripal_token_formats_type_application_key";
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_variables2')) {
+    $sql = "DROP TABLE tripal_variables";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_variables2 RENAME TO tripal_variables";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_pkey2 RENAME TO tripal_variables_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx2 RENAME TO tripal_variables_tripal_variable_names_idx1_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key2 RENAME TO tripal_variables_tripal_variables_c1_key";
+    db_query($sql);
+
+  }
+  tripal_add_variables();
+}
+
 /**
  * Implementation of hook_schema().
  *
  * @ingroup tripal
  */
 function tripal_schema() {
+
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_core and the
+  // installation will fail.  Therefore, we need to temporarily move those
+  // tables out of the way, let the module install and then move them back.
+  $migrated = variable_get ('tripal_v2_upgrade_v3_check', FALSE);
+  if (!$migrated) {
+    if (db_table_exists('tripal_jobs')) {
+      // Move the tripal_jobs table out of the way.
+      $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
+      db_query($sql);
+    }
+
+    if (db_table_exists('tripal_token_formats')) {
+      // Move the tripal_token_formats table out of the way.
+      $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
+      db_query($sql);
+    }
+
+    if (db_table_exists('tripal_variables')) {
+      // Move the tripal_variables table out of the way.
+      $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
+      db_query($sql);
+    }
+    variable_set ('tripal_v2_upgrade_v3_check', TRUE);
+  }
   $schema = array();
 
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
@@ -68,12 +192,17 @@ function tripal_schema() {
   $schema['tripal_term'] = tripal_tripal_term_schema();
   $schema['tripal_entity'] = tripal_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
+  $schema['tripal_import'] = tripal_tripal_import_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
-
+  // Adds a table for administrative notifications on the dashboard.
+  $schema['tripal_admin_notfications'] = tripal_tripal_admin_notifications_schema();
   return $schema;
 }
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
 function tripal_tripal_jobs_schema() {
   return array(
     'fields' => array(
@@ -180,6 +309,72 @@ function tripal_tripal_jobs_schema() {
   );
 }
 /**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
+function tripal_tripal_import_schema() {
+  return array(
+    'fields' => array(
+      'import_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The Drupal userid of the submitee.'
+      ),
+      'class' => array(
+        'type' => 'varchar',
+        'length' => 256,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'The file ID of the file to import. This only applies if the file was uploaded (i.e. not already on the server) and is mangaged by Drupal.'
+      ),
+      'arguments' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'Holds a serialized PHP array containing the key/value paris that are used for arguments of the job.'
+      ),
+      'submit_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'UNIX integer submit time'
+      ),
+    ),
+    'indexes' => array(
+      'class' => array('class'),
+    ),
+    'foreign keys' => array(
+      'tripal_jobs' => array(
+        'table' => 'tripal_jobs',
+        'columns' => array(
+          'job_id' => 'job_id',
+        ),
+      ),
+      'users' => array(
+        'table' => 'users',
+        'columns' => array(
+          'uid' => 'uid',
+        ),
+      ),
+      'file_managed' => array(
+        'table' => 'file_managed',
+        'columns' => array(
+          'fid' => 'fid',
+        ),
+      ),
+    ),
+    'primary key' => array('import_id'),
+  );
+}
+/**
  *
  * @return
  */
@@ -258,6 +453,7 @@ function tripal_tripal_variables_schema() {
  * Schema Definitions.
  */
 
+
 /**
  * The base table for Biological Data Entities.
  *
@@ -331,6 +527,7 @@ function tripal_tripal_entity_schema() {
       'entity_created' => array('created'),
       'type' => array('type'),
       'uid' => array('uid'),
+      'bundle' => array('bundle'),
     ),
     'unique keys' => array(),
     'primary key' => array('id'),
@@ -358,10 +555,10 @@ function tripal_tripal_vocab_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'namespace' => array(
-        'description' => 'The namespace for the vocabulary (e.g. SO, PATO, etc.).',
+      'vocabulary' => array(
+        'description' => 'The short name for the vocabulary (e.g. SO, PATO, etc.).',
         'type' => 'varchar',
-        'length' => 10,
+        'length' => 128,
         'not null' => TRUE,
       ),
       'created' => array(
@@ -378,11 +575,11 @@ function tripal_tripal_vocab_schema() {
       ),
     ),
     'indexes' => array(
-      'namespace' => array('namespace'),
+      'vocabulary' => array('vocabulary'),
       'entity_changed' => array('changed'),
       'entity_created' => array('created'),
     ),
-    'unique keys' => array('namespace' => array('namespace')),
+    'unique keys' => array('vocabulary' => array('vocabulary')),
     'primary key' => array('id'),
   );
   return $schema;
@@ -507,6 +704,7 @@ function tripal_tripal_bundle_schema() {
     'indexes' => array(
       'name' => array('name'),
       'term_id' => array('term_id'),
+      'label' => array('label'),
     ),
     'primary key' => array('id'),
     'unique keys' => array(
@@ -515,6 +713,7 @@ function tripal_tripal_bundle_schema() {
   );
   return $schema;
 }
+
 
 /**
  * Additional Tripal Bundle Information.
@@ -579,21 +778,143 @@ function tripal_tripal_bundle_variables_schema() {
 }
 
 /**
- * This is the required update for tripal_feature when upgrading from Drupal core API 6.x.
- * This update may take some time to complete.
+ * Additional Tripal Admin Notification Information.
+ *
+ * This table is used for information describing administrative
+ * notifications. For example, when new fields are available.
+ */
+function tripal_tripal_admin_notifications_schema() {
+
+  $schema = array(
+    'description' => 'This table is used for information describing administrative
+     notifications. For example, when new fields are available.',
+    'fields' => array (
+      'note_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'details' => array (
+        'description' => 'Description and additional information relating to the notification.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'title' => array (
+        'description' => 'Title of the notification.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'actions' => array (
+        'description' => 'Actions that can be performed on the notification, like disimissal or import.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'submitter_id' => array (
+        'description' => 'A unique id that should be specific to the notification to ensure notifications are not duplicated.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'enabled' => array (
+        'description' => 'Boolean indicating whether the notification is enabled or disabled (disabled will not be shown on the dashboard).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'type' => array (
+        'description' => 'Type of the notification, relating to what tripal function the notification belongs to, IE Fields, Jobs, Vocabulary.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'note_id',
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Change tripal_vocab.vocabulary to varchar(128)
  */
 function tripal_update_7300() {
   try {
-    if (!db_field_exists('tripal_jobs', 'includes')) {
-      db_add_field('tripal_jobs', 'includes', array(
-        'type' => 'text',
-        'description' => 'A serialized array of file paths that should be included prior to executing the job.',
-        'not NULL' => FALSE,
-      ));
-    }
+    $spec = array(
+      'description' => 'The short name for the vocabulary (e.g. SO, PATO, etc.).',
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE
+    );
+    db_change_field('tripal_vocab', 'vocabulary', 'vocabulary',$spec);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to complete update' . $error);
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Create new admin notifications table.
+ */
+function tripal_update_7301() {
+  $transaction = db_transaction();
+  try {
+    $schema['tripal_admin_notfications'] = tripal_tripal_admin_notifications_schema();
+    db_create_table('tripal_admin_notfications', $schema['tripal_admin_notfications']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Create new tripal import table.
+ */
+function tripal_update_7302() {
+  $transaction = db_transaction();
+  try {
+    $schema['tripal_import'] = tripal_tripal_import_schema();
+    db_create_table('tripal_import', $schema['tripal_import']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Remove the job_id from the tripal import table.
+ */
+function tripal_update_7303() {
+  $transaction = db_transaction();
+  try {
+    if (db_field_exists('tripal_import', 'job_id')) {
+      db_drop_field('tripal_import', 'job_id');
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adds a variable for the bundles to manage hiding of empty fields.
+ */
+function tripal_update_7304() {
+  $transaction = db_transaction();
+  try {
+    tripal_insert_variable(
+      'hide_empty_field',
+      'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
+    );
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

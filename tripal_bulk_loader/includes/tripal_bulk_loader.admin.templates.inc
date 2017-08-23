@@ -31,6 +31,11 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
   drupal_set_breadcrumb($breadcrumb);
 
+  // Add CSS
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'tripal_bulk_loader') . '/theme/tripal_bulk_loader.css',
+  );
+
    // get template id from path and rebuild form
   if (isset($form_state['build_info']['args'][1])) {
     $mode = 'edit';
@@ -198,7 +203,10 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   );
 
   $form['fields']['fields-data'] = array(
+    '#prefix' => '<div id="tripal-bulk-loader-template-fields">',
+    '#suffix' => '</div>',
     '#tree' => TRUE,
+    '#theme' => 'tripal_bulk_loader_modify_template_base_form_fields'
   );
 
   if (array_key_exists('template', $form_state['storage'])) {
@@ -373,7 +381,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
               '#type' => 'item',
-              '#markup' =>  $table_array['record_id'],
+              '#markup' =>  $table_array['record_id'] . '<br /><em>(' . ucwords($mode_value) . ')</em>',
               '#prefix' => "<a name=\"fields_$priority\"></a>",
             ),
             'view-record-link' => array(
@@ -937,7 +945,7 @@ function tripal_bulk_loader_edit_template_record_form($form, &$form_state) {
       $select_if_duplicate = $form_state['storage']['template_array'][$form_state['storage']['original_priority']]['select_if_duplicate'];
     }
     else {
-      $select_if_duplicate = 1;
+      $select_if_duplicate = 0;
     }
 
     // get default for the update if duplicate
@@ -1629,6 +1637,9 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   if (!isset($table)) {
     $table = reset($tables);
   }
+  if (!isset($record_name) and isset($form_state['storage']['template_array'][$record_id])) {
+    $record_name = $form_state['storage']['template_array'][$record_id]['record_id'];
+  }
 
   // Chado fields
   $chado_fields = array();
@@ -1688,7 +1699,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   $v['chado_field'] = $field;
   $v['chado_field_options'] = $chado_fields;
 
-  $v['record_name'] = (isset($form_state['values']['record_name'])) ? $form_state['values']['record_name'] : '';
+  $v['record_name'] = (isset($record_name)) ? $record_name : '';
   if (isset($form_state['values']['field_title'])) {
     $v['field_title'] =  $form_state['values']['field_title'];
   }
@@ -1860,13 +1871,62 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#suffix' => '</div>',
   );
 
-  $form['fields']['basic'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<div class="basic">',
-    '#suffix' => '</div>'
+  $form['fields']['record'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Record'
+  );
+  if (!empty($values['record_name'])) {
+    $form['fields']['record']['#title'] = 'Record: ' . $values['record_name'];
+    $form['fields']['record']['#collapsible'] = TRUE;
+    $form['fields']['record']['#collapsed'] = TRUE;
+  }
+  
+  $form['fields']['record']['field_group']  = array(
+    '#type' => 'select',
+    '#title' => 'Record',
+    '#description' => t(
+       'This is used to group a set of fields together allowing ' .
+       'multiple records to be inserted into the same table per line of the file'),
+    '#options' => $values['field_group_options'],
+    '#default_value' => $values['field_group'],
+    '#ajax' => array(
+      'callback' => 'tripal_bulk_loader_template_fields_ahah',
+      'wrapper' => 'tripal_bulk_loader_template-template_fields',
+      'effect' => 'fade'
+    ),
+    '#required' => TRUE,
   );
 
-  $form['fields']['basic']['field_type'] = array(
+  $form['fields']['record']['record_name'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Unique Record Name',
+    '#prefix' => '<div id="tripal_bulk_loader_template-add_record">',
+    '#suffix' => '</div>',
+    '#description' => 'A human-readable name for the record; it should be unique.',
+    '#disabled' => ($values['no_record_id']) ? FALSE : TRUE,
+    '#default_value' => $values['record_name'],
+  );
+
+  $form['fields']['record']['record_mode'] = array(
+    '#type' => 'radios',
+    '#title' => 'Record Type/Action',
+    '#options' => array(
+      'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
+      'select_once' => 'SELECT ONCE: Select the record only once for each constant set.',
+      'insert' => 'INSERT: Insert the record',
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for each constant set.',
+    ),
+    '#description' => 'This indicates the action to take when loading a record. There are many additional options available when editing a record such as "Select if Duplicate" which is very important on insert if the record might already exist.',
+    '#default_value' => 'insert',
+    '#disabled' => ($values['no_record_id']) ? FALSE : TRUE,
+  );
+  
+  $form['fields']['field'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Field',
+  );
+
+  $form['fields']['field']['field_type'] = array(
     '#type' => 'radios',
     '#title' => t('Type of Field'),
     '#options' => array(
@@ -1883,32 +1943,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     ),
   );
 
-  $form['fields']['basic']['field_group']  = array(
-    '#type' => 'select',
-    '#title' => 'Record',
-    '#description' => t(
-       'This is used to group a set of fields together allowing ' .
-       'multiple records to be inserted into the same table per line of the file'),
-    '#options' => $values['field_group_options'],
-    '#default_value' => $values['field_group'],
-    '#ajax' => array(
-      'callback' => 'tripal_bulk_loader_template_fields_ahah',
-      'wrapper' => 'tripal_bulk_loader_template-template_fields',
-      'effect' => 'fade'
-    ),
-    '#required' => TRUE,
-  );
-
-  $form['fields']['basic']['record_name'] = array(
-    '#type' => ($values['no_record_id']) ? 'textfield' : 'hidden',
-    '#title' => 'Unique Record Name',
-    '#prefix' => '<div id="tripal_bulk_loader_template-add_record">',
-    '#suffix' => '</div>',
-    '#description' => 'A human-readable name for the record; it should be unique.',
-    '#default_value' => $values['record_name'],
-  );
-
-  $form['fields']['basic']['field_title'] = array(
+  $form['fields']['field']['field_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Human-readable Title for Field'),
     '#default_value' => $values['field_title'],
@@ -1916,13 +1951,13 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
 
 
   // Chado Field
-  $form['fields']['chado'] = array(
+  $form['fields']['field']['chado'] = array(
     '#type' => 'fieldset',
     '#title' => t('Chado Field/Column Details'),
     '#description' => t('Specify the Table/Field in chado that this field maps to.'),
   );
 
-  $form['fields']['chado']['chado_table'] = array(
+  $form['fields']['field']['chado']['chado_table'] = array(
     '#type' => 'select',
     '#title' => t('Chado Table'),
     '#options' => $values['chado_table_options'],
@@ -1934,7 +1969,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
       ),
   );
 
-  $form['fields']['chado']['chado_field'] = array(
+  $form['fields']['field']['chado']['chado_field'] = array(
     '#type' => 'select',
     '#title' => t('Chado Field/Column'),
     '#options' => $values['chado_field_options'],
@@ -1947,14 +1982,14 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
   );
 
   // loading file data column
-  $form['fields']['columns'] = array(
+  $form['fields']['field']['columns'] = array(
     '#type' => 'fieldset',
     '#title' => t('Data File Column'),
     '#collapsible' => TRUE,
     '#collapsed' => ($values['field_type'] == 'table field')? FALSE : TRUE,
   );
 
-  $form['fields']['columns']['column_number'] = array(
+  $form['fields']['field']['columns']['column_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Column'),
     '#description' => t('Specify the column in the data that this field maps to where the first column is 1.'),
@@ -1962,14 +1997,14 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#default_value' => $values['column_number'],
   );
 
-  $form['fields']['columns']['column_exposed'] = array(
+  $form['fields']['field']['columns']['column_exposed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow Column to be set for each Bulk Loading Job'),
     '#description' => t('Adds a textbox field to the Bulk Loader Page to allow users to set this value.'),
     '#default_value' => $values['column_exposed'],
   );
 
-  $form['fields']['columns']['column_exposed_desc'] = array(
+  $form['fields']['field']['columns']['column_exposed_desc'] = array(
     '#type' => 'textfield',
     '#title' => t('Description for exposed field on bulk loading job'),
     '#description' => t('This description should tell the user what column should be entered here.'),
@@ -1977,28 +2012,28 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
   );
 
   // Global Value
-  $form['fields']['constant'] = array(
+  $form['fields']['field']['constant'] = array(
     '#type' => 'fieldset',
     '#title' => t('Constant'),
     '#collapsible' => TRUE,
     '#collapsed' => ($values['field_type'] == 'constant')? FALSE : TRUE,
   );
 
-  $form['fields']['constant']['constant_value'] = array(
+  $form['fields']['field']['constant']['constant_value'] = array(
     '#type' => 'textfield',
     '#title' => t('Constant Value'),
     '#description' => t('Specify the value you wish this field to have regardless of data file value.'),
     '#default_value' => $values['constant_value']
   );
 
-  $form['fields']['constant']['constant_exposed'] = array(
+  $form['fields']['field']['constant']['constant_exposed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow Constant to be set for each Bulk Loading Job'),
     '#description' => t('Adds a textbox field to the Create Bulk Loader Form to allow users to set this value.'),
     '#default_value' => $values['constant_exposed'],
   );
 
-  $form['fields']['constant']['constant_validate'] = array(
+  $form['fields']['field']['constant']['constant_validate'] = array(
     '#type' => 'checkbox',
     '#title' => t('Ensure value is in table'),
     '#description' => t('Checks the database when a bulk loading job is created to ensure the value entered already exists in the database.'),
@@ -2006,14 +2041,14 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
   );
 
   // Foreign Key / Referrer
-  $form['fields']['foreign_key'] = array(
+  $form['fields']['field']['foreign_key'] = array(
     '#type' => 'fieldset',
     '#title' => 'Record Referral',
     '#collapsible' => TRUE,
     '#collapsed' => ($values['field_type'] == 'foreign key')? FALSE : TRUE,
   );
 
-  $form['fields']['foreign_key']['show_all_records'] = array(
+  $form['fields']['field']['foreign_key']['show_all_records'] = array(
     '#type' => 'checkbox',
     '#title' => 'Refer to any record',
     '#description' => t('By default, the bulk loader will only allow referral to records in a foreign key relationship.  To allow referral to any previous record, check this box'),
@@ -2025,7 +2060,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     ),
   );
 
-  $form['fields']['foreign_key']['foreign_record'] = array(
+  $form['fields']['field']['foreign_key']['foreign_record'] = array(
     '#type' => 'select',
     '#title' => 'Record to refer to',
     '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
@@ -2038,7 +2073,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#default_value' => $values['foreign_record'],
   );
 
-  $form['fields']['foreign_key']['foreign_field'] = array(
+  $form['fields']['field']['foreign_key']['foreign_field'] = array(
     '#type' => 'select',
     '#title' => 'Field to refer to',
     '#descripion' => 'Select the record that this value should refer to. The record needs to already exist.',
@@ -2048,88 +2083,90 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
 
 
   $collapsed = TRUE;
-  if ($values['required'] OR $values['regex_are_set']) {
+  if ($values['required'] OR !empty($values['regex-pattern'])) {
     $collapsed = FALSE;
   }
-  $form['fields']['additional'] = array(
+  $form['fields']['field']['additional'] = array(
     '#type' => 'fieldset',
     '#title' => 'Additional Options',
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed
   );
 
-  $form['fields']['additional']['required'] = array(
+  $form['fields']['field']['additional']['required'] = array(
     '#type' => 'checkbox',
     '#title' => 'Make this field required',
     '#default_value' => $values['required'],
   );
 
-  $form['fields']['additional']['regex_transform'] = array(
+  $form['fields']['field']['additional']['regex_transform'] = array(
     '#type' => 'fieldset',
     '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
-    '#collapsed' => !$values['regex_are_set'],
+    '#collapsed' => (!empty($values['regex-pattern'])) ? FALSE : TRUE,
   );
 
-  $form['fields']['additional']['regex_transform']['regex_description'] = array(
+  $form['fields']['field']['additional']['regex_transform']['regex_description'] = array(
     '#type' => 'item',
     '#markup' => 'A transformation rule allows you to transform the original value '
       .'(usually from a user submitted data file) into the form you would like it stored '
-      .'in the chado database. Each rule consists of a match pattern (a php regular expression '
-      .'which determines which replacement patterns are applied and captures regions of the '
-      .'original value) and a replacement pattern (a string which may contain capture references '
-      .'that describes what the new value should be). Each rule is applied to the result of the '
-      .'previous rule.'
+      .'in the chado database. A rule consists of a match pattern (a php regular expression '
+      .'which captures regions of the original value) and a replacement pattern (a string which may contain capture references '
+      .'that describes what the new value should be).'
   );
-
-  $form['fields']['additional']['regex_transform']['regex-data'] = array(
-    '#tree' => TRUE,
-    '#theme' => 'tripal_bulk_loader_field_regex_fieldset'
-  );
-  foreach ($values['regex-pattern'] as $index => $pattern) {
-    $data_element = array(
-      'pattern' => array(
-        '#type' => 'item',
-        '#markup' => check_plain($pattern),
-      ),
-      'replace' => array(
-        '#type' => 'item',
-        '#markup' => check_plain($values['regex-replace'][$index]),
-      ),
-      'old_index' => array(
-        '#type' => 'hidden',
-        '#value' => $index,
-      ),
-      'new_index' => array(
-        '#type' => 'select',
-        '#options' => range(0, sizeof($values['regex-pattern'])-1),
-        '#default_value' => $index,
-        '#attributes' => array('class' => array('rank-weight')), // needed for table dragging
-      ),
-      'id' => array(
-        '#type' => 'hidden',
-        '#value' => $index,
-      ),
-      'submit-delete' => array(
-        '#type' => 'submit',
-        '#value' => 'Delete Transformation',
-        '#name' => $index,
-      ),
+  
+  $pattern_default = '';
+  $replace_default = '';
+  
+  // Check to see if there is more than one regex and if so warn them that 
+  // this feature is no longer supported. We don't want people to lose existing
+  // transformation rules just by tweaking the field so we will only set defaults
+  // if there is a single rule and summarize multiple rules statically.
+  if (sizeof($values['regex-pattern']) > 1) {
+    $msg = 'This field uses more than one transformation rule. The current rules are:';
+    
+    $table_vars['header'] = array('Match Pattern', 'Replacement Pattern');
+    $table_vars['rows'] = array();
+    foreach ($values['regex-pattern'] as $index => $pattern) {
+      $table_vars['rows'][] = array(
+        check_plain($pattern),
+        check_plain($values['regex-replace'][$index]),
+      );
+    }
+    $msg .= theme('table', $table_vars);
+    
+    $msg .= 'Unfortunatly adding multiple transformation rules is no longer supported '
+      . 'through the user interface. As long as you don\'t '
+      . 'enter new match/replacement patterns below, your current transformation rules will '
+      . 'be preserved and will be used during loading. However, if any changes need to be '
+      . 'made you will have to switch over to a single transformation rule by entering it below.';
+    
+    $form['fields']['additional']['regex_transform']['warning'] = array(
+      '#type' => 'markup',
+      '#markup' => '<div class="messages warning">' . $msg . '</div>',
     );
-    $form['fields']['additional']['regex_transform']['regex-data'][$index] = $data_element;
+    
+    // Also save the rules to ensure they are kept.
+    $form['fields']['field']['additional']['regex_transform']['old_rules'] = array(
+      '#type' => 'hidden',
+      '#value' => array(
+        'pattern' => $values['regex-pattern'],
+        'replace' => $values['regex-replace']
+      )
+    );
+    $form['fields']['field']['additional']['regex_transform']['old_rules']['#value'] = serialize($form['fields']['additional']['regex_transform']['old_rules']['#value']);
   }
+  else {
+  
+    // Get current pattern/replacement rule to use as defaults.
+    foreach ($values['regex-pattern'] as $index => $pattern) {
+      $pattern_default = $pattern;
+      $replace_default = $values['regex-replace'][$index];
+    }
 
-  $form['fields']['additional']['regex_transform']['submit-reorder_regex'] = array(
-    '#type' => ($values['regex_are_set']) ? 'submit' : 'hidden',
-    '#value' => 'Save Transformation Rule Order'
-  );
-
-  $form['fields']['additional']['regex_transform']['new_regex'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Add a new Transformation Rule',
-  );
-
-  $form['fields']['additional']['regex_transform']['new_regex']['pattern'] = array(
+  }
+  
+  $form['fields']['field']['additional']['regex_transform']['regex_pattern'] = array(
     '#type' => 'textfield',
     '#title' => 'Match Pattern',
     '#description' => 'You can use standard php regular expressions in this field to specify a '
@@ -2138,20 +2175,22 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
       .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
       .' To match and capture any value use <i>.*</i>',
+    '#default_value' => $pattern_default,
   );
 
-  $form['fields']['additional']['regex_transform']['new_regex']['replace'] = array(
+  $form['fields']['field']['additional']['regex_transform']['regex_replace'] = array(
     '#type' => 'textfield',
     '#title' => 'Replacement Pattern',
     '#description' => 'This pattern should contain the text you want to replace the match pattern '
-    .'mentioned above. It can include references of the form \n where n is the number of the '
-    .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
-    .'first set of round brackets.',
+      .'mentioned above. It can include references of the form \n where n is the number of the '
+      .'capture in the match pattern. For example, \1 will be replaced with the text matched in your '
+      .'first set of round brackets.',
+    '#default_value' => $replace_default,
   );
 
   if ($values['field_type'] == 'table field') {
     $tab = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
-    $form['fields']['additional']['regex_transform']['new_regex']['replace']['#description'] .= '<p>'
+    $form['fields']['field']['additional']['regex_transform']['regex_replace']['#description'] .= '<p>'
       .'The following references are also available for data file fields: <b><#column:<i>number</i>#></b>. '
       .'This allows you to substitute other data file values into the current field. For example, '
       .'if you had the following line:<br />'
@@ -2161,37 +2200,6 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
       .'unique. The Match Pattern is (.*) to select all the first column and the Replacement '
       .'Pattern could be \1_<#column:2#> which would insert SNP_15-Jan-2011 into the database.</p>';
   }
-
-  $form['fields']['additional']['regex_transform']['new_regex']['submit-add_transform'] = array(
-    '#type' => 'submit',
-    '#value' => 'Add Transformation',
-  );
-
-  $form['fields']['additional']['regex_transform']['test_regex'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Test Transformation Rules',
-  );
-
-  $form['fields']['additional']['regex_transform']['test_regex']['test_string'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Test Value',
-    '#description' => 'This should be a value that you expect the above transformation rules '
-      .'to be applied to.',
-    '#default_value' => $values['regex-test-string'],
-  );
-
-  $form['fields']['additional']['regex_transform']['test_regex']['test_result'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Test Result',
-    '#description' => 'This is the value that would be saved to the database after the above transformation '
-      .'riles were applied to the Test Value.',
-    '#default_value' => $values['regex-test-result'],
-  );
-
-  $form['fields']['additional']['regex_transform']['test_regex']['submit-test'] = array(
-    '#type' => 'submit',
-    '#value' => 'Test Transformation Rules'
-  );
 
   $form['submit-save'] = array(
       '#type' => 'submit',
@@ -2252,7 +2260,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
       $record2priority[$record_name] = $priority;
       $template[$priority]['table'] = $form_state['values']['chado_table'];
       $template[$priority]['record_id'] = $record_name;
-
+      $template[$priority]['mode'] = $form_state['values']['record_mode'];
     }
     else {
       $priority = $form_state['storage']['record_id'];
@@ -2295,24 +2303,35 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
       );
     }
 
-    // Deal with any additional options
-    if (isset($form_state['storage']['regex'])) {
-      $field['regex'] = $form_state['storage']['regex'];
+    // Save old transformation rules if they exist.
+    if (isset($form_state['values']['old_rules'])) {
+      $field['regex'] = unserialize($form_state['values']['old_rules']);
     }
+    // Deal with any additional options
+    if (!empty($form_state['values']['regex_pattern']) AND !empty($form_state['values']['regex_replace'])) {
+      if (!preg_match('/^\/.*\/$/', $form_state['values']['regex_pattern'])) {
+        $form_state['values']['regex_pattern'] = '/' . $form_state['values']['regex_pattern'] . '/';
+      }
+      $field['regex']['pattern'] = array($form_state['values']['regex_pattern']);
+      $field['regex']['replace'] = array($form_state['values']['regex_replace']);
+    }
+    
 
     // Save Template
     if ($form_state['storage']['mode'] == 'create') {
       $template[$priority]['fields'][] = $field;
+      $success_msg = 'Successfully Added Field to Template';
     }
     else {
       $template[$priority]['fields'][$form_state['storage']['field_index']] = $field;
+      $success_msg = 'Successfully Updated Field';
     }
     $form_state['storage']['template']->template_array = serialize($template);
     $form_state['storage']['template']->changed = time();
     $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
 
     if ($success) {
-      drupal_set_message(t('Successfully Added Field to Template'));
+      drupal_set_message(t($success_msg));
       drupal_set_message(t('Template Saved.'));
 
       $form_state['rebuild'] = FALSE;
@@ -2330,47 +2349,6 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
   elseif ($op ==  'Cancel') {
       $form_state['rebuild'] = FALSE;
       $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/edit';
-  }
-  elseif ($op == 'Add Transformation') {
-
-    // Add transformation rule to original field
-    $form_state['storage']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
-    $form_state['storage']['regex']['replace'][] = $form_state['values']['replace'];
-    $form_state['rebuild'] = TRUE;
-    drupal_set_message(t('Successfully Added Transformation Rule'));
-
-  }
-  elseif ($op == 'Save Transformation Rule Order') {
-
-    // Generate new regex array
-    $new_regex = array();
-    $old_regex = $form_state['storage']['regex'];
-    foreach ($form_state['values']['regex-data'] as $key => $element) {
-      $new_regex['pattern'][ $element['new_index'] ] = $old_regex['pattern'][ $element['old_index'] ];
-      $new_regex['replace'][ $element['new_index'] ] = $old_regex['replace'][ $element['old_index'] ];
-    }
-
-    // sort new regex arrays
-    ksort($new_regex['pattern']);
-    ksort($new_regex['replace']);
-
-    $form_state['storage']['regex'] = $new_regex;
-  }
-  elseif ($op == 'Delete Transformation') {
-
-    // Unset regex rule
-    $index = $form_state['clicked_button']['#name'];
-    unset($form_state['storage']['regex']['pattern'][$index]);
-    unset($form_state['storage']['regex']['replace'][$index]);
-
-  }
-  elseif ($op == 'Test Transformation Rules') {
-
-    $patterns = $form_state['storage']['regex']['pattern'];
-    $replaces = $form_state['storage']['regex']['replace'];
-    $test_string = $form_state['values']['test_string'];
-    $form_state['storage']['test_regex_result'] = preg_replace($patterns, $replaces, $test_string);
-    $form_state['storage']['test_regex_test'] = $test_string;
   }
 
 }

@@ -53,7 +53,7 @@
  *    the job. Use the module_load_include function to get a path for a given
  *    file.
  * @return
- *    The job_id of the registered job
+ *    The job_id of the registered job, or FALSE on failure.
  *
  * Example usage:
  *
@@ -80,41 +80,41 @@
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
     $priority = 10, $includes = array()) {
 
-  global $user;
+  $user = user_load($uid);
 
-  // convert the arguments into a string for storage in the database
-  $args = array();
-  if (is_array($arguments)) {
-    $args = serialize($arguments);
-  }
+  try {
+    $job = new TripalJob();
+    $job->create(array(
+      'job_name' => $job_name,
+      'modulename' => $modulename,
+      'callback' => $callback,
+      'arguments' => $arguments,
+      'uid' => $uid,
+      'priority' => $priority,
+      'includes' => $includes,
+    ));
 
-  $record = new stdClass();
-  $record->job_name = $job_name;
-  $record->modulename = $modulename;
-  $record->callback = $callback;
-  $record->status = 'Waiting';
-  $record->submit_date = REQUEST_TIME;
-  $record->uid = $uid;
-  $record->priority = $priority;  # the lower the number the higher the priority
-  $record->arguments = $args;
-  $record->includes = serialize($includes);
-
-  if (drupal_write_record('tripal_jobs', $record)) {
+    // If no exceptions were thrown then we know the creation worked.  So
+    // let the user know!
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
+
+    // If this is the Tripal admin user then give a bit more information
+    // about how to run the job.
     if (user_access('administer tripal')) {
       $jobs_url = url("admin/tripal/tripal_jobs");
       drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
-        array('!jobs_url' => $jobs_url)));
+          array('!jobs_url' => $jobs_url)));
       drupal_set_message(t("You can execute the job queue manually on the command line " .
-        "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
-        array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+          "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
+          array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
     }
+    return $job->getJobID();
   }
-  else {
-    drupal_set_message(t("Failed to add job %job_name.", array('%job_name' => $job_name)), 'error');
+  catch (Exception $e) {
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    drupal_set_message($e->getMessage(), 'error');
+    return FALSE;
   }
-
-  return $record->job_id;
 }
 
 /**
@@ -124,23 +124,33 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
  *   The unique identifier of the job
  *
  * @return
- *   An object describing the job
+ *   An object representing a record from the tripal_job table or FALSE on
+ *   failure.
  *
  * @ingroup tripal_jobs_api
  */
 function tripal_get_job($job_id) {
-
-  $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
-    ->fetchObject();
-
-  return $job;
+  try {
+    $job = new TripalJob();
+    $job->load($job_id);
+    return $job->getJob();
+  }
+  catch (Exception $e) {
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    drupal_set_message($e->getMessage(), 'error');
+    return FALSE;
+  }
 }
 
 /**
- * Returns a list of running tripal jobs
+ * Indicates if any jobs are running.
+ *
+ * This function will check the system to see if a job has a process ID
+ * and if that process ID is still running. It will update the job status
+ * accordingly before returning.
  *
  * @return
- *    and array of objects where each object describes a running job or FALSE if no jobs are running
+ *   Returns TRUE if any job is running or FALSE otherwise.
  *
  * @ingroup tripal_jobs_api
  */
@@ -154,7 +164,7 @@ function tripal_is_job_running() {
           "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
   $jobs = db_query($sql);
   foreach ($jobs as $job) {
-    $status = `ps -p $job->pid -o pid=`;
+    $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
     if ($job->pid && $status) {
       // the job is still running so let it go
       // we return 1 to indicate that a job is running
@@ -164,7 +174,7 @@ function tripal_is_job_running() {
       // the job is not running so terminate it
       $record = new stdClass();
       $record->job_id = $job->job_id;
-      $record->end_time = REQUEST_TIME;
+      $record->end_time = time();
       $record->status = 'Error';
       $record->error_msg = 'Job has terminated unexpectedly.';
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -176,54 +186,47 @@ function tripal_is_job_running() {
 }
 
 /**
- * Returns the start time for a given job
+ * Check for too many concurrent jobs.
  *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The start time of the job if it was already run and either "Cancelled" or "Not Yet Started" otherwise
+ * @param $max_jobs
+ *   The maximum number of concurrent jobs to allow; -1 = no limit
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_get_job_start($job) {
-
-  if ($job->start_time > 0) {
-    $start = format_date($job->start_time);
+function tripal_max_jobs_exceeded($max_jobs) {
+  if ($max_jobs < 0) {
+    // No limit on concurrent jobs
+    return FALSE;
   }
-  else {
-    if (strcmp($job->job_status, 'Cancelled')==0) {
-      $start = 'Cancelled';
+
+  $num_jobs_running = 0;
+
+  // Iterate through each job that has not ended and see if it is still running.
+  // If it is not running but does not have an end_time then set the end time
+  // and set the status to 'Error'
+  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
+          "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
+  $jobs = db_query($sql);
+  foreach ($jobs as $job) {
+    $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
+    if ($job->pid && $status) {
+      // the job is still running
+      $num_jobs_running++;
     }
     else {
-      $start = 'Not Yet Started';
+      // the job is not running so terminate it
+      $record = new stdClass();
+      $record->job_id = $job->job_id;
+      $record->end_time = time();
+      $record->status = 'Error';
+      $record->error_msg = 'Job has terminated unexpectedly.';
+      drupal_write_record('tripal_jobs', $record, 'job_id');
     }
   }
-  return $start;
+
+  return ($num_jobs_running >= $max_jobs);
 }
 
-/**
- * Returns the end time for a given job
- *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The end time of the job if it was already run and empty otherwise
- *
- * @ingroup tripal_jobs_api
- */
-function tripal_get_job_end($job) {
-
-  if ($job->end_time > 0) {
-    $end = format_date($job->end_time);
-  }
-  else {
-    $end = '';
-  }
-
-  return $end;
-}
 /**
  * Set a job to be re-ran (ie: add it back into the job queue)
  *
@@ -239,23 +242,47 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
 
   $user_id = $user->uid;
 
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
-  $results = db_query($sql, array(':job_id' => $job_id));
-  $job = $results->fetchObject();
-  // arguments for jobs used to be stored as plain string with a double colon
-  // separating them.  But as of Tripal v2.0 the arguments are stored as
-  // a serialized array.  To be backwards compatible, we should check for serialization
-  // and if not then we will use the old style
-  $args = unserialize($job->arguments);
-  if (!$args) {
-    $args = explode("::", $job->arguments);
-  }
-  $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user_id, $job->priority);
+  $job = new TripalJob();
+  $job->load($job_id);
 
-  if ($goto_jobs_page) {
-    drupal_goto("admin/tripal/tripal_jobs");
+  $arguments = $job->getArguments();
+  $includes = $job->getIncludes();
+
+  $newJob = new Tripaljob();
+  try {
+    $job->create(array(
+      'job_name' => $job->getJobName(),
+      'modulename' => $job->getModuleName(),
+      'callback' => $job->getCallback(),
+      'arguments' => $arguments,
+      'uid' => $user_id,
+      'priority' => $job->getPriority(),
+      'includes' => $includes
+    ));
+    // If no exceptions were thrown then we know the creation worked.  So
+    // let the user know!
+    drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job->getJobName())));
+
+    // If this is the Tripal admin user then give a bit more information
+    // about how to run the job.
+    if (user_access('administer tripal')) {
+      $jobs_url = url("admin/tripal/tripal_jobs");
+      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
+          array('!jobs_url' => $jobs_url)));
+      drupal_set_message(t("You can execute the job queue manually on the command line " .
+          "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
+          array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+    }
+    if ($goto_jobs_page) {
+      drupal_goto("admin/tripal/tripal_jobs");
+    }
   }
-  return $job_id;
+  catch (Exception $e){
+    drupal_set_message($e->getMessage(), 'error');
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+  }
+
+
 }
 
 /**
@@ -264,28 +291,33 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
  * @param $job_id
  *   The job_id of the job to be cancelled
  *
+ * @return
+ *   FALSE if the an error occured or the job could not be canceled, TRUE
+ *   otherwise.
+ *
  * @ingroup tripal_jobs_api
  */
 function tripal_cancel_job($job_id, $redirect = TRUE) {
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
-  $results = db_query($sql, array(':job_id' => $job_id));
-  $job = $results->fetchObject();
 
-  // set the end time for this job
-  if ($job->start_time == 0) {
-    $record = new stdClass();
-    $record->job_id = $job->job_id;
-    $record->end_time = REQUEST_TIME;
-    $record->status = 'Cancelled';
-    $record->progress = '0';
-    drupal_write_record('tripal_jobs', $record, 'job_id');
-    drupal_set_message(t("Job #%job_id cancelled", array('%job_id' => $job_id)));
+  if (!$job_id or !is_numeric($job_id)) {
+    watchdog('tripal', "Must provide a numeric \$job_id to the tripal_cancel_job() function.");
+    return FALSE;
   }
-  else {
-    drupal_set_message(t("Job %job_id cannot be cancelled. It is in progress or has finished.", array('%job_id' => $job_id)));
-  }
-  if ($redirect) {
+
+  try {
+    $job = new Tripaljob();
+    $job->load($job_id);
+    $job->cancel();
+
+    drupal_set_message('Job is now cancelled.');
     drupal_goto("admin/tripal/tripal_jobs");
+    return TRUE;
+  }
+  catch (Exception $e) {
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    drupal_set_message($e->getMessage(), 'error');
+    drupal_goto("admin/tripal/tripal_jobs");
+    return FALSE;
   }
 }
 
@@ -301,65 +333,69 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
  *   based on order and priority.  However there are times when a specific
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
+ * @param $max_jobs
+ *   The maximum number of jobs that should be run concurrently. If -1 then unlimited.
+ * @param $single
+ *   Ensures only a single job is run rather then the entire queue.
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
+function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $single = 0) {
 
-  // first check if any jobs are currently running
-  // if they are, don't continue, we don't want to have
-  // more than one job script running at a time
+  // First check if any jobs are currently running if they are, don't continue,
+  // we don't want to have more than one job script running at a time.
   if (!$do_parallel and tripal_is_job_running()) {
-    print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
+    print date('Y-m-d H:i:s') . ": Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
     return;
   }
 
-  // get all jobs that have not started and order them such that
-  // they are processed in a FIFO manner.
+  if ($do_parallel && tripal_max_jobs_exceeded($max_jobs)) {
+    print date('Y-m-d H:i:s') . ": More than $max_jobs jobs are still running. At least one of these jobs much complete before a new job can start.";
+    return;
+  }
+
+  // Get all jobs that have not started and order them such that they are
+  // processed in a FIFO manner.
   if ($job_id) {
-    $sql =  "SELECT * FROM {tripal_jobs} TJ " .
-            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL and TJ.job_id = :job_id " .
-            "ORDER BY priority ASC,job_id ASC";
-    $job_res = db_query($sql, array(':job_id' => $job_id));
+    $sql =  "
+      SELECT TJ.job_id
+      FROM {tripal_jobs} TJ
+      WHERE
+        TJ.start_time IS NULL AND
+        TJ.end_time IS NULL AND
+        TJ.job_id = :job_id
+      ORDER BY priority ASC, job_id ASC
+    ";
+    $jobs = db_query($sql, array(':job_id' => $job_id));
   }
   else {
-    $sql =  "SELECT * FROM {tripal_jobs} TJ " .
-            "WHERE TJ.start_time IS NULL and TJ.end_time IS NULL " .
-            "ORDER BY priority ASC,job_id ASC";
-    $job_res = db_query($sql);
+    $sql =  "
+      SELECT TJ.job_id
+      FROM {tripal_jobs} TJ
+      WHERE
+        TJ.start_time IS NULL AND
+        TJ.end_time IS NULL AND
+        NOT TJ.status = 'Cancelled'
+      ORDER BY priority ASC,job_id ASC
+    ";
+    $jobs = db_query($sql);
   }
-  foreach ($job_res as $job) {
+  if ($jobs) {
+    print date('Y-m-d H:i:s') . ": There are " . $jobs->rowCount() . " jobs queued.\n";
+  }
 
-    // Include the necessary files
-    foreach (unserialize($job->includes) as $path) {
-      require_once $path;
-    }
-    // set the start time for this job
-    $record = new stdClass();
-    $record->job_id = $job->job_id;
-    $record->start_time = REQUEST_TIME;
-    $record->status = 'Running';
-    $record->pid = getmypid();
-    drupal_write_record('tripal_jobs', $record, 'job_id');
+  foreach ($jobs as $jid) {
 
-    // call the function provided in the callback column.
-    // Add the job_id as the last item in the list of arguments. All
-    // callback functions should support this argument.
-    $callback = $job->callback;
+    $job_id = $jid->job_id;
 
-    // arguments for jobs used to be stored as plain string with a double colon
-    // separating them.  But as of Tripal v2.0 the arguments are stored as
-    // a serialized array.  To be backwards compatible, we should check for serialization
-    // and if not then we will use the old style
-    $args = unserialize($job->arguments);
-    if (!$args) {
-      $args = explode("::", $job->arguments);
-    }
-    $args[] = $job->job_id;
+    // Create the Tripoaljob object.
+    $job = new TripalJob();
+    $job->load($job_id);
 
     // We need to do some additional processing for printing since the switch
     // to serialized arrays now allows nested arrays which cause errors when
     // printed using implode alone.
+    $args = $job->getArguments();
     $string_args = array();
     foreach ($args as $k => $a) {
       if (is_array($a)) {
@@ -373,15 +409,26 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
       }
     }
 
-    print "Calling: $callback(" . implode(", ", $string_args) . ")\n";
-    call_user_func_array($callback, $args);
-    // set the end time for this job
-    $record->end_time = REQUEST_TIME;
-    $record->status = 'Completed';
-    $record->progress = '100';
-    drupal_write_record('tripal_jobs', $record, 'job_id');
+    // Run the job
+    $callback = $job->getCallback();
+    print date('Y-m-d H:i:s') .": Calling: $callback(" . implode(", ", $string_args) . ")\n";
+    try {
+      $job->run();
+    }
+    catch (Exception $e) {
+      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+      drupal_set_message($e->getMessage(), 'error');
+    }
 
-    // send an email to the user advising that the job has finished
+    if ($single) {
+      // Don't start any more jobs
+      break;
+    }
+    if (tripal_max_jobs_exceeded($max_jobs)) {
+      break;
+    }
+
+    // TODO: Send an email to the user advising that the job has finished
   }
 }
 
@@ -400,46 +447,115 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
  */
 function tripal_set_job_progress($job_id, $percentage) {
 
-  if (preg_match("/^(\d+|100)$/", $percentage)) {
-    $record = new stdClass();
-    $record->job_id = $job_id;
-    $record->progress = $percentage;
-    if (drupal_write_record('tripal_jobs', $record, 'job_id')) {
-      return TRUE;
-    }
+  try {
+    $job = new TripalJob();
+    $job->load($job_id);
+    $job->setProgress($percentage);
   }
+  catch (Exception $e) {
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    drupal_set_message($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
+}
 
-  return FALSE;
+/**
+ * Retrieves the current proress of a job.
+ *
+ * @param $job_id
+ *   The job_id to get the progress for
+ *
+ * @return
+ *   A value between 0 and 100 indicating the percentage complete of the job.
+ *   FALSE on failure.
+ */
+function tripal_get_job_progress($job_id) {
+
+  try {
+    $job = new TripalJob();
+    $job->load($job_id);
+    $progress = $job->getProgress();
+    return $progress;
+  }
+  catch (Exception $e) {
+    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    drupal_set_message($e->getMessage(), 'error');
+    return FALSE;
+  }
 }
 /**
- * Returns a list of jobs associated with the given module
+ * Returns a list of jobs that are active.
  *
  * @param $modulename
- *    The module to return a list of jobs for
+ *   Limit the list returned to those that were added by a specific module. If
+ *   no module name is provided then all active jobs are returned.
  *
  * @return
- *    An array of objects where each object describes a tripal job
+ *    An array of objects where each object describes a tripal job. If no
+ *    jobs were found then an empty array is returned.  Each object will have
+ *    the following members:
+ *    - job_id: The unique ID number for the job.
+ *    - uid: The ID of the user that submitted the job.
+ *    - job_name:  The human-readable name of the job.
+ *    - modulename: The name of the module that submitted the job.
+ *    - callback:  The callback function to be called when the job is run.
+ *    - arguments: An array of arguments to be passed to the callback function.
+ *    - progress: The percent progress of completion if the job is running.
+ *    - status: The status of the job: Waiting, Completed, Running or Cancelled.
+ *    - submit_date:  The UNIX timestamp when the job was submitted.
+ *    - start_time: The UNIX timestamp for when the job started running.
+ *    - end_time: The UNIX timestampe when the job completed running.
+ *    - error_msg: Any error message that occured during execution of the job.
+ *    - prirotiy: The execution priority of the job (value between 1 and 10)
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_get_active_jobs($modulename) {
-  $sql =  "SELECT * FROM {tripal_jobs} TJ " .
-           "WHERE TJ.end_time IS NULL and TJ.modulename = :modulename ";
-  $results = db_query($sql, array(':modulename' => $modulename));
-  return $results->fetchObject();
+function tripal_get_active_jobs($modulename = NULL) {
+  $query = db_select('tripal_jobs', 'TJ')
+    ->fields('TJ', array('job_id', 'uid', 'job_name', 'modulename', 'callback',
+      'arguments', 'progress', 'status', 'submit_date', 'start_time',
+      'end_time', 'error_msg', 'priority'));
+  if ($modulename) {
+    $query->where(
+      "TJ.modulename = :modulename and NOT (TJ.status = 'Completed' or TJ.status = 'Cancelled')",
+      array(':modulename' => $modulename)
+    );
+  }
+  $results = $query->execute();
+
+  $jobs = array();
+  while($job = $results->fetchobject()) {
+    $jobs->arguments = unserialize($job->arguments);
+    $jobs[] = $job;
+  }
+  return $jobs;
 }
 
+
 /**
- * Returns the date the job was added to the queue
+ * Execute a specific Tripal Job.
  *
- * @param $job
- *   An object describing the job
- *
- * @return
- *   The date teh job was submitted
- *
- * @ingroup tripal_jobs_api
+ * @param $job_id
+ *   The job id to be exeuted.
+ * @param bool $redirect [optional]
+ *   Whether to redirect to the job page or not.
  */
-function tripal_get_job_submit_date($job) {
-  return format_date($job->submit_date);
+function tripal_execute_job($job_id, $redirect = TRUE) {
+
+  $job = new TripalJob();
+  $job->load($job_id);
+
+  // Run the job.
+  if ($job->getStartTime() == 0 and $job->getEndTime() == 0) {
+    tripal_launch_job(1, $job_id);
+    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", array('%job_id' => $job_id)));
+  }
+  else {
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", array('%job_id' => $job_id)));
+  }
+
+  if ($redirect) {
+    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
+  }
 }

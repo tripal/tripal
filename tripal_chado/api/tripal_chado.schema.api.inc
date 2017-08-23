@@ -26,16 +26,21 @@
  */
 
 /**
- * Check that any given Chado table exists.  This function
- * is necessary because Drupa's db_table_exists will not
- * look in any other schema but the one were Drupal is installed
+ * Check that any given Chado table exists.
+ *
+ * This function is necessary because Drupal's db_table_exists() function will
+ * not look in any other schema but the one were Drupal is installed
+ *
+ * @param $table
+ *   The name of the chado table whose existence should be checked.
  *
  * @return
- *   TRUE/FALSE depending upon whether it exists
+ *   TRUE if the table exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
 function chado_table_exists($table) {
+
   global $databases;
 
   $default_db = $databases['default']['default']['database'];
@@ -45,17 +50,122 @@ function chado_table_exists($table) {
     FROM information_schema.tables
     WHERE
       table_name = :table_name AND
-      table_schema = 'chado' AND
-      table_catalog = '$default_db'
+      table_schema = :chado AND
+      table_catalog = :default_db
   ";
-  $results = db_query($sql, array(':table_name' => $table));
+  $args = array(
+    ':table_name' => $table,
+    ':chado' => tripal_get_schema_name('chado'),
+    ':default_db' => $default_db
+  );
+  $results = db_query($sql, $args);
   $exists = $results->fetchObject();
   if (!$exists) {
     return FALSE;
   }
   return TRUE;
 }
+/**
+ * Check that any given column in a Chado table exists.
+ *
+ * This function is necessary because Drupal's db_field_exists() will not
+ * look in any other schema but the one were Drupal is installed
+ *
+ * @param $table
+ *   The name of the chado table.
+ * @param $column
+ *   The name of the column in the chado table.
 
+ * @return
+ *   TRUE if the column exists for the table in the chado schema and
+ *   FALSE if it does not.
+ *
+ * @ingroup tripal_chado_schema_api
+ */
+function chado_column_exists($table, $column) {
+  global $databases;
+
+  $default_db = $databases['default']['default']['database'];
+  $cached_obj = cache_get('chado_table_columns', 'cache');
+  $cached_cols = $cached_obj->data;
+  if (is_array($cached_cols) and
+      array_key_exists($table, $cached_cols) and
+      array_key_Exists($column, $cached_cols[$table])) {
+    return $cached_cols[$table][$column]['exists'];
+  }
+  $sql = "
+    SELECT 1
+    FROM information_schema.columns
+    WHERE
+      table_name = :table_name AND
+      column_name = :column_name AND
+      table_schema = :chado AND
+      table_catalog = :default_db
+  ";
+  $args = array(
+    ':table_name' => $table,
+    ':column_name' => $column,
+    ':chado' => tripal_get_schema_name('chado'),
+    ':default_db' => $default_db
+  );
+  $results = db_query($sql, $args);
+  $exists = $results->fetchField();
+  if (!$exists) {
+    $cached_cols[$table][$column]['exists'] = FALSE;
+    cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
+    return FALSE;
+  }
+  $cached_cols[$table][$column]['exists'] = TRUE;
+  cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
+  return TRUE;
+}
+
+/**
+ * Check that any given column in a Chado table exists.
+ *
+ * This function is necessary because Drupal's db_field_exists() will not
+ * look in any other schema but the one were Drupal is installed
+ *
+ * @param sequence
+ *   The name of the sequence
+ * @return
+ *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
+ *
+ * @ingroup tripal_chado_schema_api
+ */
+function chado_sequence_exists($sequence) {
+  global $databases;
+
+  $default_db = $databases['default']['default']['database'];
+  $cached_obj = cache_get('chado_sequences', 'cache');
+  $cached_seqs = $cached_obj->data;
+  if (is_array($cached_seqs) and array_key_exists($sequence, $cached_seqs)) {
+    return $cached_seqs[$sequence]['exists'];
+  }
+  $sql = "
+    SELECT 1
+    FROM information_schema.sequences
+    WHERE
+      sequence_name = :sequence_name AND
+      sequence_schema = :sequence_schema AND
+      sequence_catalog = :sequence_catalog
+  ";
+  $args = array(
+    ':sequence_name' => $sequence,
+    ':sequence_schema' => tripal_get_schema_name('chado'),
+    ':sequence_catalog' => $default_db
+  );
+  $results = db_query($sql, $args);
+  $exists = $results->fetchField();
+  if (!$exists) {
+    $cached_seqs[$sequence]['exists'] = FALSE;
+    cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
+    return FALSE;
+  }
+  $cached_seqs[$sequence]['exists'] = FALSE;
+  cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
+  return TRUE;
+}
 /**
  * A Chado-aware replacement for the db_index_exists() function.
  *
@@ -71,7 +181,11 @@ function chado_index_exists($table, $name) {
 
   $default_db = $databases['default']['default']['database'];
 
-  $sql = "SELECT 1 as exists FROM pg_indexes WHERE indexname = :indexname";
+  $sql = "
+    SELECT 1 as exists
+    FROM pg_indexes
+    WHERE indexname = :indexname
+  ";
 
   $result = db_query($sql, array(':indexname' => $indexname));
   $exists = $result->fetchObject();
@@ -152,9 +266,9 @@ function chado_is_local() {
     FROM pg_namespace
     WHERE
       has_schema_privilege(nspname, 'USAGE') AND
-      nspname = 'chado'
+      nspname = :chado
   ";
-  $results = db_query($sql);
+  $results = db_query($sql, array(':chado' => tripal_get_schema_name('chado')));
   $name = $results->fetchObject();
   if ($name) {
     variable_set('chado_schema_exists', FALSE);
@@ -178,7 +292,7 @@ function chado_is_installed() {
   global $databases;
 
   // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists('chado', $databases)) {
+  if (array_key_exists(tripal_get_schema_name('chado'), $databases)) {
     return TRUE;
   }
 
@@ -220,19 +334,20 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (!$chado_exists) {
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php
-    if (!array_key_exists('chado', $databases)) {
+    if (!array_key_exists(tripal_get_schema_name('chado'), $databases)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';
     }
     $is_local = 0;
     $previous_db = chado_set_active('chado');
-    $prop_exists = db_table_exists('chadoprop');
+    $prop_exists = chado_table_exists('chadoprop');
     chado_set_active($previous_db);
   }
   else {
     $is_local = 1;
-    $prop_exists = db_table_exists('chado.chadoprop');
+    // @todo we need a chado aware db_table_exists.
+    $prop_exists = db_table_exists(tripal_get_schema_name('chado') . '.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know
@@ -289,7 +404,10 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (preg_match('/^1\.2\d+$/', $effective_version)) {
     $effective_version = "1.2";
   }
-  if ($warn_if_unsupported and ($effective_version != 1.11 and $effective_version != 1.2 and $effective_version != 'not installed')) {
+  else if (preg_match('/^1\.3\d+$/', $effective_version)) {
+    $effective_version = "1.3";
+  }
+  if ($warn_if_unsupported and ($effective_version  < 1.11 and $effective_version != 'not installed')) {
     drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."), 'warning');
   }
   // if the callee has requested the exact version then return it
@@ -318,9 +436,15 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 function chado_get_table_names($include_custom = NULL) {
 
   // first get the chado version that is installed
-  $v = $GLOBALS["chado_version"];
+  $v = array_key_exists('chado_version', $GLOBALS) ? $GLOBALS["chado_version"] : '';
 
   $tables = array();
+  if ($v == '1.3') {
+    $tables_v1_3 = tripal_chado_chado_get_v1_3_tables();
+    foreach ($tables_v1_3 as $table) {
+      $tables[$table] = $table;
+    }
+  }
   if ($v == '1.2') {
     $tables_v1_2 = tripal_chado_chado_get_v1_2_tables();
     foreach ($tables_v1_2 as $table) {
@@ -363,7 +487,7 @@ function chado_get_table_names($include_custom = NULL) {
 function chado_get_schema($table) {
 
   // first get the chado version that is installed
-  $v = $GLOBALS["chado_version"];
+  $v = array_key_exists("chado_version", $GLOBALS) ? $GLOBALS["chado_version"] : '';
 
   // get the table array from the proper chado schema
   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
@@ -412,4 +536,142 @@ function chado_get_custom_table_schema($table) {
   else {
     return unserialize($custom->schema);
   }
+}
+
+/**
+ *  Returns all chado base tables.
+ *
+ *  Base tables are those that contain the primary record for a data type. For
+ *  example, feature, organism, stock, are all base tables.  Other tables
+ *  include linker tables (which link two or more base tables), property tables,
+ *  and relationship tables.  These provide additional information about
+ *  primary data records and are therefore not base tables.  This function
+ *  retreives only the list of tables that are considered 'base' tables.
+ *
+ *  @return
+ *    An array of base table names.
+ *
+ *  @ingroup tripal_chado_schema_api
+ */
+function chado_get_base_tables() {
+
+  // Initialize the base tables with those tables that are missing a type.
+  // Ideally they should have a type, but that's for a future version of Chado.
+  $base_tables = array('organism', 'project', 'analysis', 'biomaterial');
+
+  // We'll use the cvterm table to guide which tables are base tables. Typically
+  // base tables (with a few exceptions) all have a type.  Iterate through the
+  // referring tables.
+  $schema = chado_get_schema('cvterm');
+  $referring = $schema['referring_tables'];
+  foreach ($referring as $tablename) {
+
+    // Ignore the cvterm tables, relationships, chadoprop tables.
+    if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
+        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+        preg_match('/_cvterm$/', $tablename) ||
+        // Ignore prop tables
+        preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
+        // Ignore nd_tables
+        preg_match('/^nd_/', $tablename)) {
+      continue;
+    }
+    else {
+      array_push($base_tables, $tablename);
+    }
+  }
+
+  // Remove any linker tables that have snuck in.  Linker tables are those
+  // whose foreign key constraints link to two or more base table.
+  $final_list = array();
+  foreach ($base_tables as $i => $tablename) {
+    // The biomaterial table breaks our rule and seems to look like a linking
+    // table, but we want to keep it as a base table.
+    if ($tablename == 'biomaterial') {
+      $final_list[] = $tablename;
+      continue;
+    }
+    $num_links = 0;
+    $schema = chado_get_schema($tablename);
+    $fkeys = $schema['foreign keys'];
+    foreach ($fkeys as $fkid => $details) {
+      $fktable = $details['table'];
+      if (in_array($fktable, $base_tables)) {
+        $num_links++;
+      }
+    }
+    if ($num_links < 2) {
+      $final_list[] = $tablename;
+    }
+  }
+
+  // Remove the phenotype table. It really shouldn't be a base table as
+  // it is meant to store individual phenotype measurements.
+  unset($final_list['phenotyp']);
+
+  // Now add in the cvterm table to the list.
+  $final_list[] = 'cvterm';
+
+  // Sort the tables and return the list.
+  sort($final_list);
+  return $final_list;
+}
+
+/**
+ * Get information about which Chado base table a cvterm is mapped to.
+ *
+ * Vocbulary terms that represent content types in Tripal must be mapped to
+ * Chado tables.  A cvterm can only be mapped to one base table in Chado.
+ * This function will return an object that contains the chado table and
+ * foreign key field to which the cvterm is mapped.  The 'chado_table' property
+ * of the returned object contains the name of the table, and the 'chado_field'
+ * property contains the name of the foreign key field (e.g. type_id), and the
+ * 'cvterm' property contains a cvterm object.
+ *
+ * @params
+ *   An associative array that contains the following keys:
+ *     - cvterm_id:  the cvterm ID value for the term.
+ *     - vocabulary: the short name for the vocabulary (e.g. SO, GO, PATO)
+ *     - accession:  the accession for the term.
+ *     - bundle_id:  the ID for the bundle to which a term is associated.
+ *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id' can
+ *   be used on it's own.
+ * @return
+ *   An object containing the chado_table and chado_field properties or NULL if
+ *   if no mapping was found for the term.
+ */
+function chado_get_cvterm_mapping($params) {
+  $cvterm_id = array_key_exists('cvterm_id', $params) ? $params['cvterm_id'] : NULL;
+  $vocabulary = array_key_exists('vocabulary', $params) ? $params['vocabulary'] : NULL;
+  $accession = array_key_exists('accession', $params) ? $params['accession'] : NULL;
+  $cvterm = NULL;
+
+  if ($cvterm_id) {
+    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+  }
+  else if ($vocabulary and $accession) {
+    $match = array(
+      'dbxref_id' => array(
+        'db_id' => array(
+          'name' => $vocabulary,
+        ),
+        'accession' => $accession,
+      ),
+    );
+    $cvterm = chado_generate_var('cvterm', $match);
+  }
+
+  if ($cvterm) {
+    $result = db_select('chado_cvterm_mapping', 'tcm')
+      ->fields('tcm')
+      ->condition('cvterm_id', $cvterm->cvterm_id)
+      ->execute();
+    $result = $result->fetchObject();
+    if ($result) {
+      $result->cvterm = $cvterm;
+    }
+    return $result;
+  }
+  return NULL;
 }

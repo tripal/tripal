@@ -171,7 +171,8 @@ function tripal_pub_schema() {
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_add_custom_tables() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_pub_add_custom_tables() {
   $schema = array (
     'table' => 'pubauthor_contact',
     'fields' => array (
@@ -213,49 +214,7 @@ function tripal_pub_add_custom_tables() {
     ),
   );
   chado_create_custom_table('pubauthor_contact', $schema, TRUE);
-}
-
-/**
- * Add cvs related to publications
- *
- * @ingroup tripal_pub
- */
-function tripal_pub_add_cvs() {
-
-
-  // Add the cv for pub properties
-  tripal_insert_cv(
-    'tripal_pub',
-    'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
-  );
-
-  // Add the cv for pub types
-  tripal_insert_cv(
-    'pub_type',
-    'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-  );
-
-  // Add the cv for pub properties
-  tripal_insert_cv(
-    'pub_property',
-    'Contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-  );
-
-  // Add cv for relationship types
-  tripal_insert_cv(
-    'pub_relationship',
-    'Contains types of relationships between publications.'
-  );
-}
-
-/**
- * Add cvterms related to publications
- *
- * @ingroup tripal_pub
- */
-function tripal_pub_add_cvterms() {
-
-}
+} */
 
 /**
  * This is the required update for tripal_pub when upgrading from Drupal core API 6.x.

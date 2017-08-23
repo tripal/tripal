@@ -17,8 +17,8 @@ function tripal_featuremap_admin_featuremaps_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Maps', 'admin/tripal/chado/tripal_featuremap');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Maps', 'admin/tripal/legacy/tripal_featuremap');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_featuremap_admin_featuremaps_listing() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Feature Map Admin', 'admin/tripal/chado/tripal_featuremap/views/featuremaps/enable').'</li>';
+      $output .= '<li>'.l('Feature Map Admin', 'admin/tripal/legacy/tripal_featuremap/views/featuremaps/enable').'</li>';
     $output .= '</ul>';
   }
 

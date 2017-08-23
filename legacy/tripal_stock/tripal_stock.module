@@ -4,7 +4,6 @@
  * Basic functionality for stocks
  */
 
-require_once 'api/tripal_stock.api.inc';
 require_once 'api/tripal_stock.DEPRECATED.inc';
 
 require_once 'theme/tripal_stock.theme.inc';
@@ -50,7 +49,8 @@ function tripal_stock_menu() {
   );
 
   //Administrative settings menu-----------------
-  $items['admin/tripal/chado/tripal_stock'] = array(
+
+  $items['admin/tripal/legacy/tripal_stock'] = array(
     'title' => 'Stocks',
     'description' => 'A stock is the physical entities of an organism, either living or preserved.',
     'page callback' => 'tripal_stock_admin_stock_view',
@@ -58,7 +58,7 @@ function tripal_stock_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/tripal/chado/tripal_stock/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_stock/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
@@ -68,7 +68,7 @@ function tripal_stock_menu() {
     'weight' => 5
   );
 
-  $items['admin/tripal/chado/tripal_stock/sync'] = array(
+  $items['admin/tripal/legacy/tripal_stock/sync'] = array(
     'title' => ' Sync',
     'description' => 'Sync stocks from Chado with Drupal',
     'page callback' => 'drupal_get_form',
@@ -79,7 +79,7 @@ function tripal_stock_menu() {
     'weight' => 0
   );
 
-  $items['admin/tripal/chado/tripal_stock/chado_stock_toc'] = array(
+  $items['admin/tripal/legacy/tripal_stock/chado_stock_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for stock nodes.',
     'page callback' => 'drupal_get_form',
@@ -91,7 +91,7 @@ function tripal_stock_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_stock/help'] = array(
+  $items['admin/tripal/legacy/tripal_stock/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Stock Module Functionality',
     'page callback' => 'theme',
@@ -100,7 +100,6 @@ function tripal_stock_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-
 
   return $items;
 }
@@ -159,6 +158,7 @@ function cs_node_load($nid) {
  */
 function tripal_stock_permission() {
   return array(
+    /*
     'access chado_stock content' => array(
       'title' => t('View Stocks'),
       'description' => t('Allow users to view stock pages.'),
@@ -179,55 +179,8 @@ function tripal_stock_permission() {
       'title' => t('Administer Stocks'),
       'description' => t('Allow users to administer all stocks.'),
     ),
+    */
   );
-}
-
-/**
- * Implement hook_node_access().
- *
- * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
- *
- *  @param $op
- *  The operation to be performed
- *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
- *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
- *
- * @ingroup tripal_stock
- */
-function chado_stock_node_access($node, $op, $account) {
-  if ($op == 'create') {
-    if (!user_access('create chado_stock content', $account)) {
-      return FALSE;
-    }
-    return TRUE;
-  }
-  if ($op == 'update') {
-    if (!user_access('edit chado_stock content', $account)) {
-      return FALSE;
-    }
-  }
-  if ($op == 'delete') {
-    if (!user_access('delete chado_stock content', $account)) {
-      return FALSE;
-    }
-  }
-  if ($op == 'view') {
-    if (!user_access('access chado_stock content', $account)) {
-      return FALSE;
-    }
-  }
-  return NULL;
 }
 
 /**
@@ -383,7 +336,7 @@ function tripal_stock_match_stocks_page($id) {
     FROM {stock} S
       INNER JOIN {organism} O on S.organism_id = O.organism_id
       INNER JOIN {cvterm} CVT on CVT.cvterm_id = S.type_id
-      INNER JOIN public.chado_stock CS on CS.stock_id = S.stock_id
+      INNER JOIN [chado_stock] CS on CS.stock_id = S.stock_id
     WHERE
       S.uniquename = :uname or S.name = :name
   ";

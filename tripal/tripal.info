@@ -3,14 +3,35 @@ description = Tripal is an toolkit to facilitate construction of online genomic,
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-3.0-alpha1
+version = 7.x-3.0-rc1
 configure = admin/tripal
 
 stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
+
+files[] = views_handlers/tripal_views_handler_field.inc
+files[] = views_handlers/tripal_views_handler_field_element.inc
+files[] = views_handlers/tripal_views_handler_field_entity.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link_edit.inc
+files[] = views_handlers/tripal_views_handler_field_entity_link_delete.inc
+files[] = views_handlers/tripal_views_handler_field_image.inc
+files[] = views_handlers/tripal_views_handler_field_boolean.inc
+files[] = views_handlers/tripal_views_handler_filter.inc
+files[] = views_handlers/tripal_views_handler_filter_string.inc
+files[] = views_handlers/tripal_views_handler_filter_numeric.inc
+files[] = views_handlers/tripal_views_handler_filter_element_string.inc
+files[] = views_handlers/tripal_views_handler_filter_boolean_operator.inc
+files[] = views_handlers/tripal_views_handler_filter_entity_string.inc
+files[] = views_handlers/tripal_views_handler_filter_string_selectbox.inc
+files[] = views_handlers/tripal_views_handler_sort.inc
+files[] = views_handlers/tripal_views_handler_sort_entity_string.inc
+
+files[] = tripal_views_query.inc
 
 dependencies[] = views
 dependencies[] = path
 dependencies[] = search
 dependencies[] = php
 dependencies[] = entity
+dependencies[] = redirect

@@ -171,7 +171,7 @@ function chado_analysis_form($node, &$form_state) {
   );
   $form['programversion']= array(
     '#type' => 'textfield',
-    '#title' => t('Program, Pipeline  or Method version'),
+    '#title' => t('Program, Pipeline  or Method Version'),
     '#required' => TRUE,
     '#default_value' => $programversion,
     '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available or applicable."),
@@ -267,7 +267,7 @@ function chado_analysis_form($node, &$form_state) {
 
   // Properties Form
   // ----------------------------------
-  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/vocab/cvterm/add") . ".");
+  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/loaders/chado_cv/cvterm/add") . ".");
   $prop_cv = tripal_get_default_cv('analysisprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
@@ -441,7 +441,7 @@ function chado_analysis_insert($node) {
     );
     $analysis = chado_insert_record('analysis', $values);
     if (!$analysis) {
-      drupal_set_message(t('Unable to add analysis.', 'warning'));
+      drupal_set_message(t('Unable to add analysis.'), 'warning');
       tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
         array('%values' => print_r($values, TRUE)));
       return;
@@ -618,7 +618,7 @@ function chado_analysis_load($nodes) {
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_node_access($node, $op, $account) {
+function tripal_analysis_node_access($node, $op, $account) {
 
   $node_type = $node;
   if (is_object($node)) {

@@ -1,20 +1,6 @@
 name = Tripal Views
-description = Integrates all Chado tables with Drupal Views and provides basic searching for administrators and site visitors and provides a range of flexibility for creating custom pages without the need for programming.
+description = Deprecated-- no longer provides any functionality. See Tripal Chado Views instead. Kept for backwards compatibility for Tripal v2 to v3 upgrade.
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.0-alpha1
-configure = admin/tripal/views-integration
-
-files[] = views/handlers/tripal_views_handler_filter_textarea.inc
-files[] = views/handlers/tripal_views_handler_filter_file_upload.inc
-files[] = views/handlers/tripal_views_handler_field_sequence.inc
-files[] = views/handlers/tripal_views_handler_filter_no_results.inc
-files[] = views/handlers/tripal_views_handler_filter_sequence.inc
-files[] = views/handlers/tripal_views_handler_filter_select_cvterm.inc
-files[] = views/handlers/tripal_views_handler_filter_select_id.inc
-files[] = views/handlers/tripal_views_handler_filter_select_string.inc
-files[] = views/handlers/tripal_views_handler_field_aggregate.inc
-
-dependencies[] = views
-dependencies[] = tripal
+version = 7.x-3.0-rc1

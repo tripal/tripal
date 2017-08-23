@@ -31,7 +31,7 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
   // if this feature has associated protein sequences (or others via relationships
   // then we want to make sure the relationships are added so that we can
   // show the protein sequences
-  if (!$feature->all_relationships) {
+  if (!property_exists($feature, 'all_relationships')) {
     $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
   }
 }
@@ -53,7 +53,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 
   // get the list of relationships (including any aggregators) and iterate
   // through each one to find information needed to color-code the reference sequence
-  $relationships = tripal_feature_get_aggregate_relationships($feature_id);
+  $relationships = _tripal_feature_get_aggregate_relationships($feature_id);
   if (!$relationships) {
     return array();
   }
@@ -243,7 +243,7 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   if ($aggregate and strcmp($side, 'as_parent')==0) {
     // get the relationships for this feature without substituting any children
     // for the parent. We want all relationships
-    $relationships = tripal_feature_get_aggregate_relationships($feature_id, 0);
+    $relationships = _tripal_feature_get_aggregate_relationships($feature_id, 0);
     foreach ($relationships as $rindex => $rel) {
       // get the featurelocs for each of the relationship features
       $rel_featurelocs = tripal_feature_load_featurelocs($rel->subject_id, 'as_child', 0);
@@ -272,91 +272,6 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
  */
 function tripal_feature_sort_locations($a, $b) {
   return strnatcmp($a->fmin, $b->fmin);
-}
-
-
-/**
- * Get features related to the current feature to a given depth. Recursive function.
- *
- * @param $feature_id
- * @param $substitute
- * @param $levels
- * @param $base_type_id
- * @param $depth
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
-    $levels=0, $base_type_id=NULL, $depth=0) {
-
-  // we only want to recurse to as many levels deep as indicated by the
-  // $levels variable, but only if this variable is > 0. If 0 then we
-  // recurse until we reach the end of the relationships tree.
-  if ($levels > 0 and $levels == $depth) {
-    return NULL;
-  }
-
-  // first get the relationships for this feature
-  return tripal_feature_load_relationships($feature_id, 'as_object');
-
-}
-/**
- * Get the relationships for a feature.
- *
- * @param $feature_id
- *   The feature to get relationships for
- * @param $side
- *   The side of the relationship this feature is (ie: 'as_subject' or 'as_object')
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
-  // get the relationships for this feature.  The query below is used for both
-  // querying the object and subject relationships
-  $sql = "
-    SELECT
-      FS.name as subject_name, FS.uniquename as subject_uniquename,
-      CVTS.name as subject_type, CVTS.cvterm_id as subject_type_id,
-      FR.subject_id, FR.type_id as relationship_type_id, FR.object_id, FR.rank,
-      CVT.name as rel_type,
-      FO.name as object_name, FO.uniquename as object_uniquename,
-      CVTO.name as object_type, CVTO.cvterm_id as object_type_id
-    FROM {feature_relationship} FR
-     INNER JOIN {cvterm} CVT  ON FR.type_id    = CVT.cvterm_id
-     INNER JOIN {feature} FS  ON FS.feature_id = FR.subject_id
-     INNER JOIN {feature} FO  ON FO.feature_id = FR.object_id
-     INNER JOIN {cvterm} CVTO ON FO.type_id    = CVTO.cvterm_id
-     INNER JOIN {cvterm} CVTS ON FS.type_id    = CVTS.cvterm_id
-  ";
-  if (strcmp($side, 'as_object')==0) {
-    $sql .= " WHERE FR.object_id = :feature_id";
-  }
-  if (strcmp($side, 'as_subject')==0) {
-    $sql .= " WHERE FR.subject_id = :feature_id";
-  }
-  $sql .= " ORDER BY FR.rank";
-
-  // get the relationships
-  $results = chado_query($sql, array(':feature_id' => $feature_id));
-
-
-  // iterate through the relationships, put these in an array and add
-  // in the Drupal node id if one exists
-  $i=0;
-  $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
-  $relationships = array();
-  while ($rel = $results->fetchObject()) {
-    $node = db_query($nodesql, array(':feature_id' => $rel->subject_id))->fetchObject();
-    if ($node) {
-      $rel->subject_nid = $node->nid;
-    }
-    $node = db_query($nodesql, array(':feature_id' => $rel->object_id))->fetchObject();
-    if ($node) {
-      $rel->object_nid = $node->nid;
-    }
-    $relationships[$i++] = $rel;
-  }
-  return $relationships;
 }
 
 /**
@@ -687,6 +602,11 @@ function tripal_feature_load_organism_feature_counts($organism) {
   $args = array();
   $order = array();
   $names = array();
+
+  // We should not assume this table is present since it is a materialized view.
+  if (!chado_table_exists('organism_feature_count')) {
+      return NULL;
+  }
 
   // build the where clause for the SQL statement if we have a custom term list
   // we'll also keep track of the names the admin provided (if any) and the

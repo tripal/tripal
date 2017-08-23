@@ -2,10 +2,20 @@
 
 .synonym-widget-item,
 .primary-dbxref-widget-item,
+.sio--annotation-item,
 .secondary-dbxref-widget-item,
-.kvproperty-adder-widget-item {
+.kvproperty-adder-widget-item,
+.chado-linker--relationship-widget-item,
+.chado-linker--relationship-instance-settings-option2-item,
+.annotation-cvterm-widget-item {
    float: left;
    margin-right: 10px;
+}
+
+.chado-linker--relationship-instance-settings-option2 {
+  float:left;
+  clear:both;
+  width:100%;
 }
 
 .primary-dbxref-widget-links,
@@ -13,14 +23,26 @@
    clear: both;
 }
 
+.protein-residues-formatter {
+  color: black;
+  height: 100px;
+  max-width: 500px;
+  overflow: scroll;
+  white-space: normal;
+  background-color: transparent;
+  margin: 0px;
+  padding: 0px;
+}
+
 .residues-formatter {
-   border: 1px solid #dddddd;
-   color: #000000;
-   height: 300px;
-   max-width: 500px;
-   overflow: scroll;
-   white-space: normal;
-   background-color: white;
+  color: black;
+  height: 300px;
+  max-width: 500px;
+  overflow: scroll;
+  white-space: normal;
+  background-color: transparent;
+  margin: 0px;
+  padding: 0px;
 }
 
 .form-field-ui-field-overview-storage-logo {
@@ -32,4 +54,12 @@
   white-space: normal;
   margin: 0;
   border-bottom: 0.5px solid #666666;
+}
+
+#autocomplete {
+  width: 600px !important;
+}
+
+.properties-field-list {
+  margin: 0px;
 }

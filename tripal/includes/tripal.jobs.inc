@@ -120,7 +120,7 @@ function tripal_jobs_report() {
 
   // run the following function which will
   // change the status of jobs that have errored out
-  tripal_is_job_running();
+  tripal_get_running_jobs();
 
   $job_status = '';
   $job_name = '';
@@ -174,8 +174,10 @@ function tripal_jobs_report() {
     $start = tripal_get_job_start($job);
     $end = tripal_get_job_end($job);
     $cancel_link = '';
+    $execute_link = '';
     if ($job->start_time == 0 and $job->end_time == 0) {
       $cancel_link = "<a href=\"" . url("admin/tripal/tripal_jobs/cancel/" . $job->job_id) . "\">Cancel</a><br />";
+      $execute_link = "<a href=\"" . url("admin/tripal/tripal_jobs/execute/" . $job->job_id) . "\">Execute</a><br />";
     }
     $rerun_link = "<a href=\"" . url("admin/tripal/tripal_jobs/rerun/" . $job->job_id) . "\">Re-run</a><br />";
     $view_link ="<a href=\"" . url("admin/tripal/tripal_jobs/view/" . $job->job_id) . "\">View</a>";
@@ -187,7 +189,7 @@ function tripal_jobs_report() {
       $job->priority,
       $job->progress . '%',
       $job->job_status,
-      "$cancel_link $rerun_link $view_link",
+      "$execute_link $cancel_link $rerun_link $view_link",
     );
   }
 
@@ -236,6 +238,7 @@ function tripal_jobs_report() {
  * @ingroup tripal_jobs
  */
 function tripal_jobs_view($job_id) {
+
   // get the job record
   $sql =
     "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
@@ -277,7 +280,10 @@ function tripal_jobs_view($job_id) {
   // generate the list of arguments for display
   $arguments = '';
   foreach ($job->arguments as $key => $value) {
-     $arguments .= "$key: $value<br>";
+    if (is_array($value)) {
+      $value = print_r($value,TRUE);
+    }
+    $arguments .= "$key: $value<br>";
   }
 
   // build the links
@@ -285,6 +291,7 @@ function tripal_jobs_view($job_id) {
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
+    $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
   }
 
   // make our start and end times more legible
@@ -324,3 +331,49 @@ function tripal_jobs_view($job_id) {
   $output .= theme_table($table);
   return $output;
 }
+
+/**
+ * Runs a Tripal job from within the request.
+ *
+ * @param $job_id
+ */
+function tripal_jobs_status_view($job_id) {
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Jobs', 'admin/tripal/tripal_jobs');
+  drupal_set_breadcrumb($breadcrumb);
+
+  $job = tripal_get_job($job_id);
+
+  drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal_jobs.css');
+  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_jobs.js');
+
+  $markup  = "<h2>Job Progress</h2>";
+  $markup .=  "<p>Job: " . $job->job_name . ' (' . $job->progress . '% Complete)';
+  $markup .= '<br>Status: ' . $job->status . '</p>';
+  $markup .= '<div id="tripal-jobs-progress-bar"><div></div></div>';
+  $markup .= '<p>' . l('Refresh Page', 'admin/tripal/tripal_jobs/status/' . $job_id) . '</p>';
+
+  drupal_add_js('var progress_percent = ' . $job->progress . ';', array('type' => 'inline'));
+
+  // Reload the page every 30 seconds.
+  $meta = array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'http-equiv' => 'refresh',
+      'content' =>  '30',
+    )
+  );
+  drupal_add_html_head($meta, 'tripal_job_status_page');
+
+  $page = array(
+    '#type' => 'markup',
+    '#markup' => $markup,
+  );
+
+  return $page;
+}
+

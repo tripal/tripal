@@ -40,7 +40,9 @@ function tripal_project_views_api() {
  * @ingroup tripal_project
  */
 function tripal_project_menu() {
-  $items[ 'admin/tripal/chado/tripal_project' ]= array(
+  $items = array();
+
+  $items[ 'admin/tripal/legacy/tripal_project' ]= array(
     'title' => 'Projects',
     'description' => ('A project. Can be used for grouping data such as with the natural diversity module data.'),
     'page callback' => 'tripal_project_admin_project_view',
@@ -48,7 +50,7 @@ function tripal_project_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/tripal/chado/tripal_project/help']= array(
+  $items['admin/tripal/legacy/tripal_project/help']= array(
     'title' => 'Help',
     'description' => ("Basic Description of Tripal Project Module Functionality."),
     'page callback' => 'theme',
@@ -58,7 +60,7 @@ function tripal_project_menu() {
     'weight' => 6
   );
 
-  $items['admin/tripal/chado/tripal_project/configuration']= array(
+  $items['admin/tripal/legacy/tripal_project/configuration']= array(
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_project_admin'),
@@ -67,7 +69,7 @@ function tripal_project_menu() {
     'weight' => 4
   );
 
-  $items['admin/tripal/chado/tripal_project/sync'] = array(
+  $items['admin/tripal/legacy/tripal_project/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for projects stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -76,8 +78,8 @@ function tripal_project_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-  
-  $items['admin/tripal/chado/tripal_project/chado_project_toc'] = array(
+
+  $items['admin/tripal/legacy/tripal_project/chado_project_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for project nodes.',
     'page callback' => 'drupal_get_form',
@@ -89,14 +91,13 @@ function tripal_project_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_project/views/projects/enable'] = array(
+  $items['admin/tripal/legacy/tripal_project/views/projects/enable'] = array(
     'title' => 'Enable Project Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/chado/tripal_project'),
+    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/legacy/tripal_project'),
     'access arguments' => array('administer tripal project'),
     'type' => MENU_CALLBACK,
   );
-
   return $items;
 }
 
@@ -138,6 +139,7 @@ function tripal_project_help ($path, $arg) {
  */
 function tripal_project_permission() {
   return array(
+    /*
     'access chado_project content' => array(
       'title' => t('View Projects'),
       'description' => t('Allow users to view project pages.'),
@@ -158,6 +160,7 @@ function tripal_project_permission() {
       'title' => t('Administer Projects'),
       'description' => t('Allow users to administer all projects.'),
     ),
+    */
   );
 }
 

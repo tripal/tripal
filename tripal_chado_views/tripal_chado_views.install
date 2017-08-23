@@ -1,0 +1,426 @@
+<?php
+/**
+ * @file
+ * Functions related to installing/uninstalling this module
+ */
+
+/**
+ * Implementation of hook_install().
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_install() {
+
+  // we want views to pick up our changes
+  views_invalidate_cache();
+
+}
+
+/**
+ * Implementation of hook_schema().
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_schema() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_core and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+  $migrated = variable_get('tripal_v2_upgrade_v3_check_chado_views', FALSE);
+  if (!$migrated) {
+    try {
+      tripal_chado_views_upgrade_v2_v3_pre_enable();
+      variable_set('tripal_v2_upgrade_v3_check_chado_views', TRUE);
+    }
+    catch(Exception $e) {
+      watchdog_exception('tripal_chado_views', $e);
+    }
+  }
+  $schema = tripal_chado_views_get_schemas();
+  return $schema;
+}
+
+/**
+ * This function simply defines all tables needed for the module to work
+ * correctly.  By putting the table definitions in a separate function we
+ * can easily provide the entire list for hook_install or individual
+ * tables for an update.
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_get_schemas() {
+  $schema = array();
+
+  $temp = tripal_chado_views_views_schema();
+  foreach ($temp as $table => $arr) {
+    $schema[$table] = $arr;
+  }
+
+  return $schema;
+}
+
+/**
+ *
+ */
+function tripal_chado_views_enable() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_view and the installation will fail.
+  // Therefore, the tables were temporarily moved out of the way to preserve
+  // the data. Now we'll move them back.
+  tripal_chado_views_upgrade_v2_v3_enable();
+}
+
+/**
+ * Describe the Tripal Views Schema
+ *
+ * Tables include:
+ *   - tripal_views: main table for views integration setups
+ *   - tripal_views_field: keeps track of all fields related to a given views integration setup
+ *   - tripal_views_join: keeps track of joins between the current views integration setup
+ *       and other tables.
+ *   - tripal_views_handlers: keeps track of which handlers to use for a given field
+ *
+ * @ingroup tripal_chado_views
+ */
+function tripal_chado_views_views_schema() {
+  $schema = array();
+  $schema['tripal_views'] = array(
+    'description' => 'contains the setups, their materialized view id and base table name that was used.',
+    'fields' => array(
+      'setup_id' => array(
+        'description' => 'the id of the setup',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'mview_id' => array(
+        'description' => 'the materialized view used for this setup',
+        'type' => 'int',
+        'unsigned' => TRUE,
+      ),
+      'base_table' => array(
+         'description' => 'either TRUE (1) or FALSE (0) depending on whether the current table should be a bast table of a View',
+         'type' => 'int',
+         'not null ' => TRUE,
+         'default' => 1
+      ),
+      'table_name' => array(
+        'description' => 'the table name being integrated.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'priority' => array(
+        'description' => 'when there are 2+ entries for the same table, the entry with the lightest (drupal-style) priority is used.',
+        'type' => 'int',
+      ),
+      'name' => array(
+        'description' => 'Human readable name of this setup',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'comment' => array(
+        'description' => 'add notes about this views setup',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'default' => '',
+      ),
+    ),
+    'unique_keys' => array(
+      'setup_id' => array('setup_id'),
+      'priority' => array('table_name', 'priority'),
+    ),
+    'indexes' => array(
+      'priority' => array('table_name', 'priority'),
+    ),
+    'primary key' => array('setup_id'),
+  );
+
+  $schema['tripal_views_field'] = array(
+    'description' => 'keep track of fields available for a given table',
+    'fields' => array(
+      'setup_id' => array(
+        'description' => 'the id of the setup',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'column_name' => array(
+        'description' => 'the name of the field in the database',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'the human-readable name of the field',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'description' => array(
+        'description' => 'A short description of the field -seen under the field in the views UI',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => 'the database type of this field (ie: int, varchar)',
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('setup_id', 'column_name')
+  );
+
+  $schema['tripal_views_join'] = array(
+    'description' => 'coordinate the joining of tables',
+    'fields' => array(
+      'view_join_id' => array(
+        'description' => 'the id of the join',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'setup_id' => array(
+        'description' => 'setup id from tripal_views table',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'base_table' => array(
+         'description' => 'the name of the base table',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        ),
+      'base_field' => array(
+        'description' => 'the name of the base table column that will be joined',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'left_table' => array(
+        'description' => 'the table on which to perform a left join',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'left_field' => array(
+        'description' => 'the column on which to perform a left join',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'handler' => array(
+        'description' => 'the name of the handler',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'relationship_handler' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => 'views_handler_relationship'
+      ),
+      'relationship_only' => array(
+        'type' => 'int',
+        'not null ' => TRUE,
+        'default' => 0
+      ),
+      'arguments' => array(
+        'description' => 'arguments that may get passed to the handler',
+        'type' => 'text',
+        'size' => 'normal',
+      ),
+    ),
+    'unique_keys' => array(
+      'setup_id' => array('view_join_id'),
+    ),
+    'primary key' => array('view_join_id'),
+  );
+
+  $schema['tripal_views_handlers'] = array(
+    'description' => 'in formation for views: column and views handler name',
+    'fields' => array(
+      'handler_id' => array(
+        'description' => 'the id of the handler',
+        'type' => 'serial',
+         'unsigned' => TRUE,
+         'not null' => TRUE,
+        ),
+      'setup_id' => array(
+        'description' => 'setup id from the tripal_views table',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'column_name' => array(
+        'description' => '',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'handler_type' => array(
+        'description' => 'identifies the type of hander (e.g. field, filter, sort, argument, relationship, etc.)',
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'handler_name' => array(
+        'description' => 'the name of the handler',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'arguments' => array(
+        'description' => 'arguments that may get passed to the handler',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'default' => '',
+      ),
+    ),
+    'unique_keys' => array(
+       'setup_id' => array('handler_id'),
+    ),
+    'primary key' => array('handler_id'),
+  );
+
+  return $schema;
+}
+
+
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_views_upgrade_v2_v3_pre_enable() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_views and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+
+  if (db_table_exists('tripal_views')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views RENAME TO tripal_views2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_pkey RENAME TO tripal_views_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_pkey2 ON tripal_views2 USING btree (setup_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_priority_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_priority_idx RENAME TO tripal_views_priority_idx2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_priority_idx2 ON tripal_views2 USING btree (table_name, priority)";
+    }
+    db_query($sql);
+  }
+
+
+  if (db_table_exists('tripal_views_field')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_field RENAME TO tripal_views_field2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_field_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_field_pkey RENAME TO tripal_views_field_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_field_pkey2 ON tripal_views_field2 USING btree (setup_id, column_name)";
+    }
+    db_query($sql);
+  }
+
+
+  if (db_table_exists('tripal_views_handlers')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_handlers RENAME TO tripal_views_handlers2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_handlers_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_handlers_pkey RENAME TO tripal_views_handlers_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_handlers_pkey2 ON tripal_views_handlers2 USING btree (handler_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_views_join')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_views_join RENAME TO tripal_views_join2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_views_join_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_views_join_pkey RENAME TO tripal_views_join_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_views_join_pkey2 ON tripal_views_join2 USING btree (view_join_id)";
+    }
+    db_query($sql);
+  }
+}
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_views_upgrade_v2_v3_enable() {
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_views and the
+  // installation will fail.  Therefore, in the install we renamed it. Now
+  // we want to move it back.
+  if (db_table_exists('tripal_views2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views2 RENAME to tripal_views";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_pkey2 RENAME TO tripal_views_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_priority_idx2 RENAME TO tripal_views_priority_idx";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_field2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_field";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_field2 RENAME to tripal_views_field";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_field_pkey2 RENAME TO tripal_views_field_pkey";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_handlers2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_handlers";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_handlers2 RENAME to tripal_views_handlers";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_handlers_pkey2 RENAME TO tripal_views_handlers_pkey";
+    db_query($sql);
+  }
+  if (db_table_exists('tripal_views_join2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_views_join";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_views_join2 RENAME to tripal_views_join";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_views_join_pkey2 RENAME TO tripal_views_join_pkey";
+    db_query($sql);
+  }
+}

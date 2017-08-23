@@ -49,10 +49,10 @@ function tripal_core_uninstall() {
 
   // drop the foreign key between tripal_custom_tables and tripal_mviews
   // so that Drupal can then drop the tables
-  db_query('
-    ALTER TABLE {tripal_custom_tables}
-    DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
-  ');
+//   db_query('
+//     ALTER TABLE {tripal_custom_tables}
+//     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
+//   ');
 }
 
 /**

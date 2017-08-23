@@ -293,7 +293,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_NOTICE,
@@ -306,7 +306,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,
@@ -325,15 +325,15 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   );
 
   // the fieldset of the property elements
-  $instructions = 'To add properties of the current %nodetype, select the type of 
-      information from the drop-down below and enter the information in the text box before 
-      clicking "Add". To remove incorrect information, click the "Remove" button. 
-      Note: you cannot edit previously added information but instead need to 
+  $instructions = 'To add properties of the current %nodetype, select the type of
+      information from the drop-down below and enter the information in the text box before
+      clicking "Add". To remove incorrect information, click the "Remove" button.
+      Note: you cannot edit previously added information but instead need to
       remove and re-add it.';
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('<p><strong>Additional information about a 
+    '#description' => t('<p><strong>Additional information about a
       %nodetype.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])) ,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
@@ -363,7 +363,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#type' => 'markup',
     '#prefix' => '<div id="property-save-warning" class="messages warning" style="display:none;">',
     '#suffix' => '</div>',
-    '#markup' => '* The changes to these properties will not be saved until the 
+    '#markup' => '* The changes to these properties will not be saved until the
       "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
     '#attached' => array(
       'js' => array(
@@ -649,7 +649,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
  * @ingroup tripal_core
  */
 function chado_add_node_form_properties_add_button_validate($form, &$form_state) {
-  
+
   // Ensure the type_id is supplied & Valid
   $cvterm = chado_select_record(
     'cvterm',

@@ -67,8 +67,8 @@ function tripal_library_permission() {
 function tripal_library_menu() {
   $items = array();
   // The administative settings menu
-  /*
-  $items['admin/tripal/chado/tripal_library'] = array(
+
+  $items['admin/tripal/legacy/tripal_library'] = array(
     'title' => 'Libraries',
     'description' => 'Any biological library. Examples of genomic libraries include BAC, cDNA, FOSMID, etc.',
     'page callback' => 'tripal_library_admin_libraries_listing',
@@ -76,7 +76,7 @@ function tripal_library_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_library/help'] = array(
+  $items['admin/tripal/legacy/tripal_library/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
@@ -86,7 +86,7 @@ function tripal_library_menu() {
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_library/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_library/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
@@ -95,7 +95,7 @@ function tripal_library_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
-  $items['admin/tripal/chado/tripal_library/sync'] = array(
+  $items['admin/tripal/legacy/tripal_library/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -104,8 +104,8 @@ function tripal_library_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  
-  $items['admin/tripal/chado/tripal_library/chado_library_toc'] = array(
+
+  $items['admin/tripal/legacy/tripal_library/chado_library_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for library nodes.',
     'page callback' => 'drupal_get_form',
@@ -117,14 +117,14 @@ function tripal_library_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_library/views/libraries/enable'] = array(
+  $items['admin/tripal/legacy/tripal_library/views/libraries/enable'] = array(
     'title' => 'Enable Library Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_library_admin_libraries', 'admin/tripal/chado/tripal_library'),
+    'page arguments' => array('tripal_library_admin_libraries', 'admin/tripal/legacy/tripal_library'),
     'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK,
   );
-  */
+  
   return $items;
 }
 

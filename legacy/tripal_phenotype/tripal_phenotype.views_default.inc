@@ -252,7 +252,7 @@ function tripal_phenotype_defaultview_admin_phenotypes() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_phenotype/phenotypes';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_phenotype/phenotypes';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Phenotypes';
   $handler->display->display_options['menu']['description'] = 'A controlled sentence describing observable effects of non-wild type function';

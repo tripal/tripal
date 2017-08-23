@@ -26,14 +26,17 @@ define('TRIPAL_NOTICE',5);
 define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
 
+
+
 /**
- * Provide better error notice for Tripal. If the environment variable
- * 'TRIPAL_DEBUG' is set to 1 then this function will add backtrace
- * information to the message.
+ * Provide better error notice for Tripal.
+ *
+ * If the environment variable 'TRIPAL_DEBUG' is set to 1 then this function
+ * will add backtrace information to the message.
  *
  * @param $type
- *   The catagory to which this message belongs. Can be any string, but the general
- *   practice is to use the name of the module.
+ *   The catagory to which this message belongs. Can be any string, but the
+ *   general practice is to use the name of the module.
  * @param $severity
  *   The severity of the message; one of the following values:
  *     - TRIPAL_CRITICAL: Critical conditions.
@@ -43,16 +46,18 @@ define('TRIPAL_DEBUG',7);
  *     - TRIPAL_INFO: Informational messages.
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $message
- *   The message to store in the log. Keep $message translatable by not concatenating
- *   dynamic values into it! Variables in the message should be added by using placeholder
- *   strings alongside the variables argument to declare the value of the placeholders.
- *   See t() for documentation on how $message and $variables interact.
+ *   The message to store in the log. Keep $message translatable by not
+ *   concatenating dynamic values into it! Variables in the message should be
+ *   added by using placeholder strings alongside the variables argument to
+ *   declare the value of the placeholders. See t() for documentation on how
+ *   $message and $variables interact.
  * @param $variables
- *   Array of variables to replace in the message on display or NULL if message is
- *   already translated or not possible to translate.
+ *   Array of variables to replace in the message on display or NULL if message
+ *   is already translated or not possible to translate.
  * @param $options
  *   An array of options. Some available options include:
- *     - print: prints the error message to the terminal screen. Useful when display is the command-line
+ *     - print: prints the error message to the terminal screen. Useful when
+ *       display is the command-line
  *
  * @ingroup tripal_api
  */
@@ -81,7 +86,13 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       break;
   }
 
-  // get the backtrace and include in the error message, but only if the
+  // If we are not set to return debugging information and the severity string
+  // is debug then don't report the error.
+  if (($severity == TRIPAL_DEBUG) AND (getenv('TRIPAL_DEBUG') != 1)) {
+      return FALSE;
+  }
+
+  // Get the backtrace and include in the error message, but only if the
   // TRIPAL_DEBUG environment variable is set.
   if (getenv('TRIPAL_DEBUG') == 1) {
     $backtrace = debug_backtrace();
@@ -93,7 +104,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     }
   }
 
-  // Send to watchdog
+  // Send to watchdog.
   try {
     watchdog($type, $message, $variables, $severity);
   }
@@ -102,7 +113,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $options['print'] = TRUE;
   }
 
-  // Format the message for printing (either to the screen, log or both)
+  // Format the message for printing (either to the screen, log or both).
   if (sizeof($variables) > 0) {
     $print_message = str_replace(array_keys($variables), $variables, $message);
   }
@@ -110,25 +121,30 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $print_message = $message;
   }
 
-  // If print option supplied then print directly to the screen
+  // If print option supplied then print directly to the screen.
   if (isset($options['print'])) {
     print $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n";
   }
 
-  // Print to the Tripal error log
-  tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
+  // Print to the Tripal error log but only if the severity is not info.
+  if (($severity != TRIPAL_INFO)) {
+    tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
+  }
 
 }
 
 /**
- * Display messages to tripal administrators. This can be used instead of
- * drupal_set_message when you want to target tripal administrators.
+ * Display messages to tripal administrators.
+ *
+ * This can be used instead of drupal_set_message when you want to target
+ * tripal administrators.
  *
  * @param $message
  *   The message to be displayed to the tripal administrators
  * @param $importance
- *   The level of importance for this message. In the future this will be used to allow
- *   administrators to filter some of these messages. It can be one of the following:
+ *   The level of importance for this message. In the future this will be used
+ *   to allow administrators to filter some of these messages. It can be one of
+ *   the following:
  *     - TRIPAL_CRITICAL: Critical conditions.
  *     - TRIPAL_ERROR: Error conditions.
  *     - TRIPAL_WARNING: Warning conditions.
@@ -137,9 +153,9 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $options
  *   Any options to apply to the current message. Supported options include:
- *     - return_html: return HTML instead of setting a drupal message. This can be
- *         used to place a tripal message in a particular place in the page.
- *         The default is FALSE.
+ *     - return_html: return HTML instead of setting a drupal message. This can
+ *       be used to place a tripal message in a particular place in the page.
+ *       The default is FALSE.
  */
 function tripal_set_message($message, $importance = TRIPAL_INFO, $options = array()) {
   global $user;
@@ -177,10 +193,10 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
 
   // Mark-up the Message
   $full_message =
-     '<div class="tripal-site-admin-message">'
-       . '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>'
-       . $message
-   . '</div>';
+     '<div class="tripal-site-admin-message">' .
+       '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>' .
+       $message .
+   '</div>';
 
   // Handle whether to return the HTML & let the caller deal with it
   // or to use drupal_set_message to put it near the top of the page  & let the theme deal with it
@@ -202,10 +218,11 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
- *     - first_progress_bar: this sohuld be used for the first log call for a progress bar
- *     - is_progress_bar: this option should be used for all but the first print of a
- *         progress bar to allow it all to be printed on the same line without intervening
- *         date prefixes
+ *     - first_progress_bar: this sohuld be used for the first log call for a
+ *       progress bar
+ *     - is_progress_bar: this option should be used for all but the first print
+ *       of a progress bar to allow it all to be printed on the same line
+ *       without intervening date prefixes
  * @return
  *   The number of bytes that were written to the file, or FALSE on failure
  */
@@ -224,3 +241,4 @@ function tripal_log($message, $type = 'error', $options = array()) {
   return error_log($message);
 
 }
+

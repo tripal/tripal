@@ -1,0 +1,247 @@
+<?php
+
+class data__sequence_coordinates extends ChadoField {
+
+
+  // --------------------------------------------------------------------------
+  //                     EDITABLE STATIC CONSTANTS
+  //
+  // The following constants SHOULD be set for each descendent class.  They are
+  // used by the static functions to provide information to Drupal about
+  // the field and it's default widget and formatter.
+  // --------------------------------------------------------------------------
+
+  // The default lable for this field.
+  public static $default_label = 'Sequence Coordinates';
+
+  // The default description for this field.
+  public static $description = 'Locations on reference sequences where the feature is located.';
+
+  // Provide a list of instance specific settings. These can be access within
+  // the instanceSettingsForm.  When the instanceSettingsForm is submitted
+  // then Drupal with automatically change these settings for the instnace.
+  // It is recommended to put settings at the instance level whenever possible.
+  // If you override this variable in a child class be sure to replicate the
+  // term_name, term_vocab, term_accession and term_fixed keys as these are
+  // required for all TripalFields.
+  public static $default_instance_settings  = array(
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    'term_vocabulary' => 'data',
+    // The name of the term.
+    'term_name' => 'sequence_coordinates',
+    // The unique ID (i.e. accession) of the term.
+    'term_accession' => '2012',
+    // Set to TRUE if the site admin is allowed to change the term
+    // type. This will create form elements when editing the field instance
+    // to allow the site admin to change the term settings above.
+    'term_fixed' => FALSE,
+  );
+
+  // The default widget for this field.
+  public static $default_widget = 'data__sequence_coordinates_widget';
+
+  // The default formatter for this field.
+  public static $default_formatter = 'data__sequence_coordinates_formatter';
+
+  // --------------------------------------------------------------------------
+  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
+  // --------------------------------------------------------------------------
+  // An array containing details about the field. The format of this array
+  // is the same as that returned by field_info_fields()
+  protected $field;
+  // An array containing details about an instance of the field. A field does
+  // not have to have an instance.  But if dealing with an instance (such as
+  // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
+  protected $instance;
+
+
+  /**
+   * @see TripalField::elementInfo()
+   */
+  public function elementInfo() {
+    $field_term = $this->getFieldTermID();
+
+    $reference_term = 'data:3002';
+    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    return array(
+      $field_term => array(
+        'operations' => array(),
+        'sortable' => FALSE,
+        'searchable' => FALSE,
+        'label' => 'Location Coordinates',
+        'help' => 'The locations on other genomic sequences where this record has been aligned.',
+        'elements' => array(
+          $reference_term => array(
+            'searchable' => TRUE,
+            'label' => 'Location Reference Name',
+            'help' => 'The genomic feature on which this feature is localized.',
+            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'sortable' => TRUE,
+          ),
+          $fmin_term => array(
+            'searchable' => TRUE,
+            'label' => 'Location Start Position',
+            'help' => 'The start position',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          $fmax_term => array(
+            'searchable' => TRUE,
+            'label' => 'Location End Position',
+            'help' => 'The end position',
+            'type' => 'numeric',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          $phase_term => array(
+            'searchable' => TRUE,
+            'type' => 'numeric',
+            'label' => 'Location Phase',
+            'help' => 'The phase of the feature (applicable only to coding sequences).',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => TRUE,
+          ),
+          $strand_term => array(
+            'searchable' => TRUE,
+            'label' => 'Location Strand',
+            'help' => 'The orientation of this feature where it is localized',
+            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'sortable' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /**
+   * @see ChadoField::query()
+   */
+  public function query($query, $condition) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+
+    $field_term_id = $this->getFieldTermID();
+    $reference_term = $field_term_id . ',' . 'data:3002';
+    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    // Join to the organism table for this field.
+    $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id");
+    if ($condition['column'] == $reference_term) {
+      $salias = $alias . '_src';
+      $this->queryJoinOnce($query, 'feature', $salias, "$alias.srcfeature_id = $salias.feature_id");
+      $query->condition("$salias.name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $strand_term) {
+      $strand = '';
+      if ($condition['value'] == '-') {
+        $strand = -1;
+      }
+      if ($condition['value'] == '+') {
+        $strand = 1;
+      }
+      $query->condition("$alias.strand", $strand, $operator);
+    }
+    if ($condition['column'] == $fmin_term) {
+      $query->condition("$alias.fmin", $condition['value'] - 1, $operator);
+    }
+    if ($condition['column'] == $fmax_term) {
+      $query->condition("$alias.fmax", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $phase_term) {
+      $query->condition("$alias.phase", $condition['value'], $operator);
+    }
+  }
+
+  /**
+   * @see ChadoField::queryOrder()
+   */
+  public function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+
+    $field_term_id = $this->getFieldTermID();
+    $reference_term = $field_term_id . ',' . 'data:3002';
+    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id", "LEFT OUTER");
+    if ($order['column'] == $reference_term) {
+      $salias = $alias . '_src';
+      $this->queryJoinOnce($query, 'feature', $salias, "$alias.srcfeature_id = $salias.feature_id", "LEFT OUTER");
+      $query->orderBy("$salias.name", $order['direction']);
+    }
+    if ($order['column'] == $fmin_term) {
+      $query->orderBy("$alias.fmin", $order['direction']);
+    }
+    if ($order['column'] == $fmax_term) {
+      $query->orderBy("$alias.fmax", $order['direction']);
+    }
+    if ($order['column'] == $phase_term) {
+      $query->orderBy("$alias.phase", $order['direction']);
+    }
+  }
+
+  /**
+   *
+   * @see TripalField::load()
+   */
+  public function load($entity) {
+    $field_name = $this->field['field_name'];
+    $feature = $entity->chado_record;
+    $num_seqs = 0;
+
+    $reference_term = 'data:3002';
+    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
+    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
+    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
+    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+
+    $options = array(
+      'return_array' => TRUE,
+      'order_by' => array('rank' => 'ASC'),
+    );
+    $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
+
+    // Set some defauls for the empty record
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+    );
+
+    // Get the featureloc records that this feature is aligned to.
+    $aligned = $feature->featureloc->feature_id;
+    if ($aligned) {
+      foreach ($aligned as $index => $featureloc) {
+        $srcfeature = $featureloc->srcfeature_id->name;
+        $strand = '';
+        if ($featureloc->strand == 1) {
+          $strand = '+';
+        }
+        else {
+          $strand = '-';
+        }
+        $entity->{$field_name}['und'][0] = array(
+          'value' => array(
+            $reference_term => $srcfeature,
+            $fmin_term => $featureloc->fmin + 1,
+            $fmax_term => $featureloc->fmax,
+            $strand_term => $strand,
+            $phase_term => $featureloc->phase,
+          ),
+        );
+        $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
+        if ($sentity_id) {
+          $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
+        }
+      }
+    }
+  }
+}

@@ -306,10 +306,15 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
     ),
 
     // form element themes
-    'tripal_bulk_loader_modify_template_base_form' => array(
-      'template' => 'tripal_bulk_loader_modify_template_base_form',
+    'tripal_bulk_loader_modify_template_base_form_records' => array(
+      'template' => 'tripal_bulk_loader_modify_template_base_form_records',
       'path' => "$path/theme/templates",
-      'render element' => 'form'
+      'render element' => 'element'
+    ),
+    'tripal_bulk_loader_modify_template_base_form_fields' => array(
+      'template' => 'tripal_bulk_loader_modify_template_base_form_fields',
+      'path' => "$path/theme/templates",
+      'render element' => 'element'
     ),
     'tripal_bulk_loader_field_regex_fieldset' => array(
       'file' => 'theme/tripal_bulk_loader.theme.inc',
@@ -399,8 +404,8 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
     return (object) array();
   }
 
-  $num_lines = trim(`wc --lines < $filename`);
-  $num_records = trim(`grep -o "." $filename | wc --lines`);
+  $num_lines = trim(shell_exec('wc --lines < ' . escapeshellarg($filename)));
+  $num_records = trim(shell_exec('grep -o "." ' . escapeshellarg($filename) . ' | wc --lines'));
 
   $job = db_query("SELECT j.*, b.file, b.file_has_header, c.num as num_constant_sets
                               FROM {tripal_jobs} j
@@ -418,7 +423,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
     if ($job->num_constant_sets != $num_constant_sets_loaded) {
 
       // total lines in input file
-      $total_lines = trim(`wc --lines < $job->file`);
+      $total_lines = trim(shell_exec('wc --lines < ' . escapeshellarg($job->file)));
       if ($job->file_has_header) {
         $total_lines--;
       }
@@ -455,7 +460,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
  * @params $callback
  *   The callback passed into tripal_add_job()
  * @param $args
- *   The arguements passed into tripal_add_job()
+ *   The arguments passed into tripal_add_job()
  * @return
  *   An array where keys are the human readable headers describing each arguement
  *   and the value is the aguement passed in after formatting

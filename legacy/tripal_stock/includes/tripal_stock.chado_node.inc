@@ -202,7 +202,7 @@ function chado_stock_form($node, $form_state) {
   $st_message = tripal_set_message("To add additional items to the stock type drop down list,
      add a term to the " .
     l($st_cv->name . " controlled vocabulary",
-      "admin/tripal/vocab/cv/" . $st_cv->cv_id . "/cvterm/add",
+      "admin/tripal/loaders/chado_cv/" . $st_cv->cv_id . "/cvterm/add",
       array('attributes' => array('target' => '_blank'))
     ),
     TRIPAL_INFO, array('return_html' => TRUE)
@@ -249,7 +249,7 @@ function chado_stock_form($node, $form_state) {
         about this stock, please provide the name of the database, the accession
         and an optional description using the fields below. If the database
         is not present in the list, then please ') .
-        l(t('add the database '), 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
+        l(t('add the database '), 'admin/tripal/legacy/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
         t('then refresh this page.'),
   );
 
@@ -925,4 +925,60 @@ function chado_stock_chado_node_default_title_format() {
  */
 function chado_stock_chado_node_default_url_format() {
   return '/stock/[stock.organism_id>organism.genus]/[stock.organism_id>organism.species]/[stock.type_id>cvterm.name]/[stock.uniquename]';
+}
+
+/**
+ * Implement hook_node_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always
+ *  return TRUE if the permission is set.
+ *
+ * @ingroup tripal_stock
+ */
+
+function tripal_stock_node_access($node, $op, $account) {
+  $node_type = $node;
+  if (is_object($node)) {
+    $node_type = $node->type;
+  }
+
+  if($node_type == 'chado_stock') {
+    if ($op == 'create') {
+      if (!user_access('create chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+      return NODE_ACCESS_ALLOW;
+    }
+    if ($op == 'update') {
+      if (!user_access('edit chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'delete') {
+      if (!user_access('delete chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'view') {
+      if (!user_access('access chado_stock content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    return NODE_ACCESS_IGNORE;
+  }
 }

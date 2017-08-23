@@ -262,7 +262,7 @@ function tripal_project_defaultview_admin_projects() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_project/projects';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_project/projects';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Projects';
   $handler->display->display_options['menu']['weight'] = '0';

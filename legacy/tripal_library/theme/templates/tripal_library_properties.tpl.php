@@ -4,6 +4,9 @@ $library = $variables['node']->library;
 $options = array('return_array' => 1);
 $library = chado_expand_var($library, 'table', 'libraryprop', $options);
 $props = $library->libraryprop;
+if (!$props) {
+  return;
+}
 
 // iterate through the properties and remove the 'library_description' as it is
 // already displayed on the base template.

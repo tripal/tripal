@@ -69,6 +69,10 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     // update the custom table record and run the create custom table function
     drupal_write_record('tripal_custom_tables', $record, 'table_id');
     $success = chado_create_custom_table ($table_name, $schema, $skip_if_exists);
+
+    // Re-add the custom table to the semantic web interface to pick up any
+    // changes in fields.
+    tripal_add_chado_semweb_table($table_name);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -118,10 +122,13 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_id = NULL) {
+function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mview_id = NULL) {
   global $databases;
   $created = 0;
   $recreated = 0;
+
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $chado_schema . '.';
 
   $transaction = db_transaction();
   try {
@@ -135,7 +142,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
 
     // if the table does not exist then create it
     if (!$exists) {
-      $ret = db_create_table('chado.' . $table, $schema);
+      $ret = db_create_table($chado_dot . $table, $schema);
       $created = 1;
     }
 
@@ -150,7 +157,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
       if (array_key_exists('referring_tables', $new_schema)) {
         unset($new_schema['referring_tables']);
       }
-      db_create_table('chado.' . $table, $new_schema);
+      db_create_table($chado_dot . $table, $new_schema);
       $recreated = 1;
     }
 
@@ -187,6 +194,9 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
         }
       }
     }
+
+    // Add the custom table to the semantic web interface
+    tripal_add_chado_semweb_table($table);
   }
   catch (Exception $e) {
     $transaction->rollback();

@@ -20,8 +20,8 @@ function tripal_contact_admin_contact_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Contacts', 'admin/tripal/chado/tripal_contact');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Contacts', 'admin/tripal/legacy/tripal_contact');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -35,7 +35,7 @@ function tripal_contact_admin_contact_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Contacts View', 'admin/tripal/chado/tripal_contact/views/contacts/enable').'</li>';
+      $output .= '<li>'.l('Contacts View', 'admin/tripal/legacy/tripal_contact/views/contacts/enable').'</li>';
     $output .= '</ul>';
   }
 

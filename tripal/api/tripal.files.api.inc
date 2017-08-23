@@ -89,7 +89,7 @@ function tripal_get_files_dir($module_name = FALSE) {
     $data_dir .= "/$module_name";
 
     // Make sure the directory exists.
-    tripal_create_files_dir($module_name, "/$module_name");
+    tripal_create_files_dir($module_name);
 
   }
 
@@ -120,7 +120,7 @@ function tripal_get_files_stream($module_name = FALSE) {
     $stream .= "/$module_name";
 
     // Make sure the directory exists.
-    tripal_create_files_dir($module_name, "/$module_name");
+    tripal_create_files_dir($module_name);
   }
 
   return $stream;

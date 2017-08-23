@@ -55,6 +55,7 @@ function tripal_featuremap_help($path, $arg) {
  */
 function tripal_featuremap_permission() {
   return array(
+    /*
     'access chado_featuremap content' => array(
       'title' => t('View Maps'),
       'description' => t('Allow users to view map pages.'),
@@ -75,6 +76,7 @@ function tripal_featuremap_permission() {
       'title' => t('Administer Maps'),
       'description' => t('Allow users to administer all maps.'),
     ),
+    */
   );
 }
 
@@ -91,7 +93,8 @@ function tripal_featuremap_menu() {
   $items = array();
 
   // The administative settings menu
-  $items['admin/tripal/chado/tripal_featuremap'] = array(
+
+  $items['admin/tripal/legacy/tripal_featuremap'] = array(
     'title' => 'Feature Maps',
     'description' => 'A map of features from the chado database (e.g. genetic map)',
     'page callback' => 'tripal_featuremap_admin_featuremaps_listing',
@@ -99,7 +102,7 @@ function tripal_featuremap_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/help'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Map Module Functionality',
     'page callback' => 'theme',
@@ -109,7 +112,7 @@ function tripal_featuremap_menu() {
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Manage integration of Chado maps including associated features.',
     'page callback' => 'drupal_get_form',
@@ -119,7 +122,7 @@ function tripal_featuremap_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/sync'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/sync'] = array(
     'title' => ' Sync',
     'description' => 'Sync featuremaps from Chado with Drupal',
     'page callback' => 'drupal_get_form',
@@ -129,7 +132,7 @@ function tripal_featuremap_menu() {
     'weight' => 0
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/chado_featuremap_toc'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/chado_featuremap_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature map nodes.',
     'page callback' => 'drupal_get_form',
@@ -141,14 +144,13 @@ function tripal_featuremap_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/views/featuremaps/enable'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/views/featuremaps/enable'] = array(
     'title' => 'Enable featuremap Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/chado/tripal_featuremap'),
+    'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/legacy/tripal_featuremap'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK,
   );
-
   return $items;
 }
 

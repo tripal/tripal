@@ -17,8 +17,8 @@ function tripal_stock_admin_stock_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Stocks', 'admin/tripal/chado/tripal_stock');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Stocks', 'admin/tripal/legacy/tripal_stock');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_stock_admin_stock_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Stocks View', 'admin/tripal/chado/tripal_stock/views/stocks/enable').'</li>';
+      $output .= '<li>'.l('Stocks View', 'admin/tripal/legacy/tripal_stock/views/stocks/enable').'</li>';
     $output .= '</ul>';
   }
 

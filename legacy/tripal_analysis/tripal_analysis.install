@@ -81,7 +81,8 @@ function tripal_analysis_uninstall() {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_create_analysisfeatureprop() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_analysis_create_analysisfeatureprop() {
 
   // Create analysisfeatureprop table in chado.  This is needed for Chado
   // version 1.11, the table exists in Chado 1.2.
@@ -100,7 +101,7 @@ function tripal_analysis_create_analysisfeatureprop() {
     ";
     chado_query($sql);
   }
-}
+} */
 
 /**
  * Add cvs related to analyses
@@ -148,7 +149,7 @@ function tripal_analysis_add_cvterms() {
         . 'abbreviation for the analysis.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
+      'db_name' => 'local'
     ),
     array('update_existing' => TRUE)
   );
@@ -162,7 +163,7 @@ function tripal_analysis_add_cvterms() {
       'definition' => 'The type of analysis that was performed.',
       'cv_name' => 'analysis_property',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
+      'db_name' => 'local'
     ),
     array('update_existing' => TRUE)
   );
@@ -236,7 +237,8 @@ function tripal_analysis_schema() {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_add_mview_analysis_organism() {
+// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
+/* function tripal_analysis_add_mview_analysis_organism() {
   $view_name = 'analysis_organism';
   $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
 
@@ -257,10 +259,12 @@ function tripal_analysis_add_mview_analysis_organism() {
     'description' => $comment,
     'fields' => array(
       'analysis_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -287,115 +291,4 @@ function tripal_analysis_add_mview_analysis_organism() {
 
   // add the view
   tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment);
-}
-
-/**
- * This is the required update for tripal_organism when upgrading from Drupal core API 6.x.
- *
- */
-function tripal_analysis_update_7200() {
-  // We cannot use the Tripal API calls in the 7200 update
-  // because during upgrade the tripal_core should also be disabled
-
-  // set the analysis_property as default
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'analysis_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'analysisprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add analysis_property vocabulary: '. $error);
-  }
-
-
-  // During the upgrade from D6 to D7 the vocabulary terms assigned to organisms were
-  // copied to the field_data_taxonomyextra table rather than to the correct
-  // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
-  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Analysis'")->fetchField();
-  if ($vid) {
-    try {
-      // first move from the field_data_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_data_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_data_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_analysis'";
-      db_query($sql);
-
-      // next move from the field_revision_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_revision_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_revision_taxonomyextra WHERE bundle = 'chado_analysis'";
-      db_query($sql);
-    }
-    catch (\PDOException $e) {
-      $error = $e->getMessage();
-      throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
-    }
-  }
-}
-
-/**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
- */
-function tripal_analysis_update_dependencies() {
-  $dependencies = array();
-
-  // the tripal_cv update 7200 must run prior to update 7200 of this module
-  $dependencies['tripal_analysis'][7200] = array(
-    'tripal_cv' => 7200
-  );
-
-  return $dependencies;
-}
-
-/**
- * Fixes an error with the materialized view installation
- *
- */
-function tripal_analysis_update_7201() {
-
-  // there is a bug in the Tripal v2.0-alpha release that didn't add the
-  // materialized view schema to the mviews table.
-  // get the schema for the materialized view from the custom_tables table
-  // as there is a copy there, but only if the schema is missing from the
-  // materialized view table
-  $view_name = 'analysis_organism';
-  $schema = db_select('tripal_mviews', 'tm')
-    ->fields('tm', array('mv_schema'))
-    ->condition('name', $view_name)
-    ->execute()
-    ->fetchField();
-  if (!$schema or $schema == 'Array') {
-    $schema = db_select('tripal_custom_tables', 'tct')
-      ->fields('tct', array('schema'))
-      ->condition('table_name', $view_name)
-      ->execute()
-      ->fetchField();
-    $schema_str = var_export(unserialize($schema), TRUE);
-    $schema_str = preg_replace('/=>\s+\n\s+array/', '=> array', $schema_str);
-    db_update('tripal_mviews')
-      ->fields(array(
-        'mv_schema' => $schema_str
-      ))
-      ->condition('name', $view_name)
-      ->execute();
-  }
-}
+} */

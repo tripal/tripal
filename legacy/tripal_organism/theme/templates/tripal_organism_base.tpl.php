@@ -1,4 +1,5 @@
 <?php
+$chado_version = chado_get_version(TRUE);
 
 $organism  = $variables['node']->organism;
 $organism = chado_expand_var($organism,'field','organism.comment'); ?>
@@ -25,12 +26,27 @@ $headers = array();
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 $rows = array();
 
+$infra = '';
+if ($chado_version > 1.2 and $organism->type_id) {
+  $infra = $organism->type_id->name . ' <i>' .  $organism->infraspecific_name . '</i>';
+}
+
+// full name row
+$rows[] = array(
+  array(
+    'data' => 'Full Name',
+    'header' => TRUE,
+    'width' => '30%',
+  ),
+  '<i>' . $organism->genus . ' ' . $organism->species . '</i> ' . $infra
+);
+
 // genus row
 $rows[] = array(
   array(
     'data' => 'Genus',
     'header' => TRUE,
-    'width' => '20%',
+    'width' => '30%',
   ),
   '<i>' . $organism->genus . '</i>'
 );
@@ -43,6 +59,26 @@ $rows[] = array(
   ),
   '<i>' . $organism->species . '</i>'
 );
+
+if ($chado_version > 1.2) {
+  $type_id = $organism->type_id ? $organism->type_id->name : '';
+  // type_id row
+  $rows[] = array(
+    array(
+      'data' => 'Infraspecific Rank',
+      'header' => TRUE
+    ),
+    $type_id
+  );
+  // infraspecific name row
+  $rows[] = array(
+    array(
+      'data' => 'Infraspecific Name',
+      'header' => TRUE
+    ),
+    '<i>' . $organism->infraspecific_name . '</i>'
+  );
+}
 
 // common name row
 $rows[] = array(

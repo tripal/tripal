@@ -12,15 +12,15 @@ if(property_exists($organism, 'feature_counts')) {
 
 // let admins know they can customize the terms that appear in the list
 print tripal_set_message("
-  Administrators, you can customize the types of terms that appear in this report by navigating to the " . 
-  l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration', array('attributes' => array('target' => '_blank'))) . "
+  Administrators, you can customize the types of terms that appear in this report by navigating to the " .
+  l('Tripal feature configuration page', 'admin/tripal/legacy/tripal_feature/configuration', array('attributes' => array('target' => '_blank'))) . "
   opening the section \"Feature Summary Report\" and adding the list of
   terms you want to appear in the list. You can rename terms as well. To refresh the data,re-populate the " .
-  l('organism_feature_count', 'admin/tripal/storage/chado/mviews', array('attributes' => array('target' => '_blank'))) . " 
+  l('organism_feature_count', 'admin/tripal/storage/legacy/mviews', array('attributes' => array('target' => '_blank'))) . "
   materialized view.",
   TRIPAL_INFO,
   array('return_html' => 1)
-); 
+);
 
 // the $headers array is an array of fields to use as the colum headers.
 // additional documentation can be found here
@@ -36,12 +36,12 @@ $rows = array();
 for ($j = 0; $j < count($types); $j++) {
   $type = $types[$j];
   $name = $names[$j];
-  
+
   $rows[] = array(
     "<span title=\"" . $type->definition . "\">$name</span>",
     number_format($type->num_features),
   );
-} 
+}
 // the $table array contains the headers and rows array as well as other
 // options for controlling the display of the table.  Additional
 // documentation can be found here:

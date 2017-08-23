@@ -1,0 +1,181 @@
+/**
+ * The Tripal generic node template (node--chado-generc.tpl.php)
+ * has an outer div box with class 'tripal-contents' and with an inner
+ * table with an id of 'tripal-contents-table'.  The table has a single
+ * row with two columns.  The smaller left column houses the table of
+ * contents (TOC) for the node data.  The larger right column houses the data:
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-contents                             |
+ * | |-------------------------------------------| |
+ * | | .tripal-contents-table                    | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | | TOC    |          Data                    | |
+ * | | column |          Column                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |-------------------------------------------| |
+ * |-----------------------------------------------|
+ *
+ * The tripal-contents box and the inner table are designed to fill the width
+ * of the contents section of any theme.  Customize the CSS below to change
+ * the look-and-feel.
+ *
+ */
+
+.tripal-contents {
+  width: 100%;
+}
+
+.tripal-contents-links {
+}
+
+.tripal-contents_table {
+  padding: 0px !important;
+  margin:  0px !important;
+}
+
+/**
+ * The table formatting must override the default theme.  This is because
+ * the table is meant for organizing the sidebar and contents so they don't
+ * slip and slide around as would happen with div boxes that were floated.
+ * Therefore, we use !important to keep the default theme from overrideing
+ * the table settings.
+ */
+
+.tripal-contents-table tbody {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-contents-table-tr {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-contents-table-td-toc {
+  border-right: 1px solid #CCCCCC !important;
+  margin:  0px !important;
+  padding: 0px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+.tripal-contents-table-td-data {
+  border: none !important;
+  margin:  0px !important;
+  padding: 0px 0px 0px 20px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+/**
+ * The table of contents is an unordered list. The following can are used
+ * to style the list
+ */
+.tripal_toc_list {
+
+}
+.tripal_toc_list_item  {
+  padding: 3px 20px 3px 0px !important;
+  margin: 2px 0 2px 0 !important;
+}
+
+/******************************************************************************
+ * The links that appear in the TOC section are added dynamically by
+ * JavaScript code found at the top of the node--chado-generc.tpl.php template.
+ * Each link in the TOC cooresponds to a "pane" of data added to the Data
+ * Column. Initially, the JavaScript hids all "panes" except for the "Details"
+ * pane.  There will be as many panes as there are TOC links.
+ *
+ * By default, all panes have the following layout that consists of a
+ * container div box with the class 'tripal-info-box', a div box to house the
+ * pane title with the class 'tripal-info-box-title', and a div box to
+ * house a brief description about the pane with the class
+ * 'tripal-info-box-desc'
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-data-pane                            |
+ * | |-------------------------------------------| |
+ * | | .tripal-data-pane-title                   | |
+ * | |-------------------------------------------| |
+ * | | .tripal-data-pane-desc                    | |
+ * | |-------------------------------------------| |
+ * |                                               |
+ * | (Block data goes here)                        |
+ * |                                               |
+ * |                                               |
+ * |                                               |
+ * |                                               |
+ * |-----------------------------------------------|
+ */
+.tripal-data-pane {
+   padding: 0;
+   margin:  0;
+   width: 100%;
+}
+.tripal-data-pane-title {
+  font-size: 1.5em;
+  padding-bottom: 5px;
+}
+
+.tripal-info-box-desc {
+  margin-bottom: 10px;
+}
+
+/**
+ * Within the pane data
+ */
+
+ .tripal-data-table {
+   margin-top: 0px;
+   margin-bottom: 10px;
+ }
+
+
+/******************************************************************************
+ * The teaser appears anywhere that a small snippet of the content is required.
+ * When any node in Drupal is published to the home page a teaser is used.
+ * Teasers can also be used in views to provide lists of content. The
+ * teaser template is similar to the pane but with the following sections and
+ * classes
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-teaser                               |
+ * | |-------------------------------------------| |
+ * | | .tripal-teaser-title                      | |
+ * | |-------------------------------------------| |
+ * | | .tripal-teaser-text                       | |
+ * | |                                           | |
+ * | |-------------------------------------------| |
+ * |-----------------------------------------------|
+ */
+.tripal-teaser {
+  clear: both;
+  margin-bottom: 10px;
+}
+.tripal-teaser-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.tripal-teaser-text {
+  text-align: justify;
+  text-justify:inter-word;
+}
+
+/**
+ * some nodes such as the organism node may have images. This class
+ * is used to format any image that appears in the teaser
+ */
+.tripal-teaser-img {
+  width: 100px;
+  float: left;
+  padding-right: 10px;
+  padding-bottom: 5px;
+}
+

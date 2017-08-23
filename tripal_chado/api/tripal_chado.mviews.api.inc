@@ -25,83 +25,6 @@
  *   The name of the materialized view.
  * @param $modulename
  *   The name of the module submitting the materialized view (e.g. 'tripal_library')
- * @param $mv_table
- *   The name of the table to add to chado. This is the table that can be queried.
- * @param $mv_specs
- *   The table definition
- * @param $indexed
- *   The columns that are to be indexed
- * @param $query
- *   The SQL query that loads the materialized view with data
- * @param $special_index
- *   currently not used
- * @param $comment
- *   A string containing a description of the materialized view
- *
- * @ingroup tripal_mviews_api
- *
-function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
-  $query, $special_index, $comment =OR NULL) {
-
-  // Create a new record
-  $record = new stdClass();
-  $record->name = $name;
-  $record->modulename = $modulename;
-  $record->mv_table = $mv_table;
-  $record->mv_specs = $mv_specs;
-  $record->indexed = $indexed;
-  $record->query = $query;
-  $record->special_index = $special_index;
-  $record->comment = $comment;
-
-  // add the record to the tripal_mviews table and if successful
-  // create the new materialized view in the chado schema
-  if (drupal_write_record('tripal_mviews', $record)) {
-
-    // drop the table from chado if it exists
-    if (chado_table_exists($mv_table)) {
-      $sql = "DROP TABLE {$mv_table}";
-      chado_query($sql);
-    }
-
-    // now construct the indexes
-    $index = '';
-    if ($indexed) {
-      // add to the array of values
-      $vals = preg_split("/[\n,]+/", $indexed);
-      $index = '';
-      foreach ($vals as $field) {
-        $field = trim($field);
-        $index .= "CREATE INDEX idx_${mv_table}_${field} ON $mv_table ($field);";
-      }
-    }
-  }
-
-  // add the table to the database
-  $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-  $previous_db = chado_set_active('chado');  // use chado database
-  $results = db_query($sql);
-  chado_set_active($previous_db);  // now use drupal database
-  if ($results) {
-    drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
-  }
-  else {
-    drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
-  }
-}
-*/
-
-/**
- * Add a materialized view to the chado database to help speed data access. This
- * function supports the older style where postgres column specifications
- * are provided using the $mv_table, $mv_specs and $indexed variables. It also
- * supports the newer preferred method where the materialized view is described
- * using the Drupal Schema API array.
- *
- * @param $name
- *   The name of the materialized view.
- * @param $modulename
- *   The name of the module submitting the materialized view (e.g. 'tripal_library')
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
  *   this variable should contain the array or a string representation of the
@@ -397,7 +320,7 @@ function tripal_delete_mview($mview_id) {
   db_query($sql);
 
   // does the table already exist?
-  $mview_exists = db_table_exists('chado.' . $mview->mv_table);
+  $mview_exists = chado_table_exists($mview->mv_table);
 
   // drop the table from chado if it exists
   if ($mview_exists) {
@@ -431,11 +354,10 @@ function tripal_populate_mview($mview_id) {
     // execute the query inside a transaction so that it doesn't destroy existing data
     // that may leave parts of the site unfunctional
     $transaction = db_transaction();
+    $previous_db = chado_set_active('chado');  // use chado database
     try {
-      $previous_db = chado_set_active('chado');  // use chado database
-      $success = db_query("DELETE FROM {" . $mview->mv_table . "}");
-      $success = db_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");
-      chado_set_active($previous_db);  // now use drupal database
+      $success = chado_query("DELETE FROM {" . $mview->mv_table . "}");
+      $success = chado_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");
       // if success get the number of results and update the table record
       if ($success) {
         $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";
@@ -443,7 +365,7 @@ function tripal_populate_mview($mview_id) {
         $count = $results->fetchObject();
         $record = new stdClass();
         $record->mview_id = $mview_id;
-        $record->last_update = REQUEST_TIME;
+        $record->last_update = time();
         $record->status = "Populated with " . number_format($count->cnt) . " rows";
         drupal_write_record('tripal_mviews', $record, 'mview_id');
       }
@@ -451,9 +373,11 @@ function tripal_populate_mview($mview_id) {
       else {
         throw new Exception("ERROR populating the materialized view ". $mview->mv_table . ". See Drupal's recent log entries for details.");
       }
+      chado_set_active($previous_db);
     }
     catch (Exception $e) {
       $transaction->rollback();
+      chado_set_active($previous_db);
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;

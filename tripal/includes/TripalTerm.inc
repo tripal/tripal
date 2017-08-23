@@ -13,7 +13,7 @@ class TripalTerm extends Entity {
 
     // Get the term description from the storage backend
     $this->definition = NULL;
-    $this->urlprefix = NULL;
+    $this->url = NULL;
 
     // TODO: we need some sort of administrative interface that lets the user
     // switch to the desired vocabulary type. For now, we'll just use the
@@ -24,11 +24,13 @@ class TripalTerm extends Entity {
       $module = $stores[$keys[0]]['module'];
       $function = $module . '_vocab_get_term';
       if (function_exists($function)) {
-        $term_details = $function($vocab->namespace, $this->accession);
-        $this->details = $term_details;
-        if ($term_details and $term_details['definition']) {
-          $this->definition = $term_details['definition'];
-          $this->urlprefix = $term_details['urlprefix'];
+        $term_details = $function($vocab->vocabulary, $this->accession);
+        if ($term_details) {
+//          $this->details = $term_details;
+          if ($term_details and $term_details['definition']) {
+            $this->definition = $term_details['definition'];
+            $this->url = $term_details['url'];
+          }
         }
       }
     }
@@ -43,9 +45,24 @@ class TripalTerm extends Entity {
     return array('path' => '/vocabulary/' . $vocab . '/term/' . $this->id);
   }
 
+  // Getters //
+  public function getName() {
+    return $this->name;
+  }
+  public function getAccession() {
+    return $this->name;
+  }
   public function getDefinition() {
-
-    return '';
+    return $this->definition;
+  }
+  public function getURL() {
+    return $this->url;
+  }
+  public function getVocab() {
+    return $this->vocab;
+  }
+  public function getID() {
+    return $this->id;
   }
 
 }

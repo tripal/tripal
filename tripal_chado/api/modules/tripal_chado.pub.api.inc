@@ -302,7 +302,8 @@ function tripal_autocomplete_pub($string = '') {
   ";
   $pubs = chado_query($sql, array(':str' => $string . '%'));
   while ($pub = $pubs->fetchObject()) {
-    $items[$pub->uniquename] = $pub->uniquename;
+    $val = $pub->title  . " [id:" . $pub->pub_id . "]";
+    $items[$val] = $pub->title;
   }
 
   drupal_json_output($items);
@@ -326,11 +327,14 @@ function tripal_autocomplete_pub($string = '') {
  *
  * @ingroup tripal_pub
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
+function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
   $num_pubs = 0;
+  $pub_id = NULL;
+
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
 
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -359,7 +363,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
       $pubs          = $results['pubs'];
       $search_str    = $results['search_str'];
       $total_records = $results['total_records'];
-      $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
+      tripal_pub_add_publications($pubs, $do_contact, $do_update);
     }
 
     // For backwards compatibility check to see if the legacy pub module
@@ -384,8 +388,6 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     print "FAILED: Rolling back database changes...\n";
     return;
   }
-
-  print "Done.\n";
 }
 
 /**
@@ -808,7 +810,7 @@ function tripal_pub_create_citation($pub) {
   //----------------------
   // Review
   //----------------------
-  if ($pub_type == 'Review') {
+  else if ($pub_type == 'Review') {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
@@ -995,4 +997,152 @@ function tripal_pub_create_citation($pub) {
   }
 
   return $citation;
+}
+
+/**
+ * Retrieves the minimal information to uniquely describe any publication.
+ *
+ * The returned array is an associative array where the keys are
+ * the controlled vocabulary terms in the form [vocab]:[accession]
+ *
+ * @param $pub
+ *   A publication object as created by chado_generate_var()
+ *
+ * @return
+ *   An array with the following keys:  'Citation', 'Abstract', 'Authors',
+ *   'URL'. All keys are term names in the Tripal Publication Ontology :TPUB.
+ */
+function tripal_get_minimal_pub_info($pub) {
+  if (!$pub) {
+    return array();
+  }
+
+  // Chado has a null pub as default.  We don't return anything for this.
+  if (isset($pub->uniquename) && $pub->uniquename == 'null') {
+    return array();
+  }
+
+  // expand the title
+  $pub = chado_expand_var($pub, 'field', 'pub.title');
+  $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+
+  // get the abstract
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Abstract',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $abstract = chado_generate_var('pubprop', $values, $options);
+  $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
+  $abstract_text = '';
+  if ($abstract) {
+    $abstract_text = htmlspecialchars($abstract->value);
+  }
+
+  // Get the author list.
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Authors',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $authors = chado_generate_var('pubprop', $values, $options);
+  $authors = chado_expand_var($authors, 'field', 'pubprop.value');
+  $authors_list = 'N/A';
+  if ($authors) {
+    $authors_list = $authors->value;
+  }
+
+  // get the first database cross-reference with a url.
+  $options = array('return_array' => 1);
+  $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
+  $dbxref = NULL;
+  if ($pub->pub_dbxref) {
+    foreach ($pub->pub_dbxref as $index => $pub_dbxref) {
+      if ($pub_dbxref->dbxref_id->db_id->urlprefix) {
+        $dbxref = $pub_dbxref->dbxref_id;
+      }
+    }
+  }
+
+  // get the URL.
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'URL',
+    ),
+  );
+  $options = array(
+    'return_array' => 1,
+    'include_fk' => array(),
+  );
+  $url = '';
+  $urls = chado_generate_var('pubprop', $values, $options);
+  if ($urls) {
+    $urls = chado_expand_var($urls, 'field', 'pubprop.value');
+    if (count($urls) > 0) {
+      $url = $urls[0]->value;
+    }
+  }
+
+  // Get the list of database cross references.
+  $values = array(
+    'pub_id' => $pub->pub_id,
+  );
+  $options = array(
+    'return_array' => 1,
+  );
+  $pub_dbxrefs = chado_generate_var('pub_dbxref', $values, $options);
+  $dbxrefs = array();
+  foreach ($pub_dbxrefs as $pub_dbxref) {
+    $dbxrefs[] = $pub_dbxref->dbxref_id->db_id->name . ':' . $pub_dbxref->dbxref_id->accession;
+  }
+
+  // get the citation
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Citation',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $citation = chado_generate_var('pubprop', $values, $options);
+  if ($citation) {
+    $citation = chado_expand_var($citation, 'field', 'pubprop.value');
+    $citation = $citation->value;
+  }
+  else {
+    $pub_info = array(
+      'Title' => $pub->title,
+      'Publication Type' => $pub->type_id->name,
+      'Authors' => $authors_list,
+      'Series Name' => $pub->series_name,
+      'Volume' => $pub->volume,
+      'Issue' => $pub->issue,
+      'Pages' => $pub->pages,
+      'Publication Date' => $pub->pyear,
+    );
+    $citation = tripal_pub_create_citation($pub_info);
+  }
+
+  return array(
+    'TPUB:0000039' => $pub->title,
+    'TPUB:0000003' => $citation,
+    'TPUB:0000050' => $abstract_text,
+    'TPUB:0000047' => $authors_list,
+    'TPUB:0000052' => $url,
+    'SBO:0000554' => $dbxrefs,
+  );
 }

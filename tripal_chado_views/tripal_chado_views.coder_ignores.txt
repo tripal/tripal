@@ -1,0 +1,11 @@
+; The file should be formatted this way :
+; file:line:warning-type
+; where warning-type is one of security, style, sql, i18n, comment, etc.
+
+; All variables are filtered
+tripal_chado_iews_integration.inc:814:security
+
+
+; SQL queries the pg_tables table to check if a table exists in chado; drupal
+; prefixing is not appropriate
+views/handlers/views_handler_field_chado_rel_by_type.inc:22:sql

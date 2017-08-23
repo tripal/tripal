@@ -12,6 +12,7 @@ require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
 require_once 'api/tripal_core.chado_nodes.relationships.api.inc';
 require_once 'api/tripal_core.tripal_variables.api.inc';
 require_once 'includes/tripal_core.form_elements.inc';
+require_once 'includes/tripal_core.search.inc';
 
 /**
  * @defgroup tripal_core Tripal Core Module
@@ -48,6 +49,17 @@ function tripal_core_init() {
  */
 function tripal_core_menu() {
   $items = array();
+
+  // Triapl setting groups
+  $items['admin/tripal/legacy'] = array(
+    'title' => 'Tripal Legacy',
+    'description' => t("Legacy functionality from Tripal v2.0."),
+    'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer tripal'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
 
   // Relationshi API autocomplete callback
   $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
@@ -158,7 +170,11 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     // Theme function for the extension admin page.
     'tripal_core_extensions_form_tables' => array(
       'render element' => 'element',
-    )
+    ),
+    'administer controlled vocabularies' => array(
+      'title' => t('Administer controlled vocabularies (CVs).'),
+      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
+    ),
   );
 }
 
@@ -212,11 +228,173 @@ function tripal_core_node_view($node, $view_mode, $langcode) {
   // the we want to add a table of contents to it's content list
   // this table of contents will be an empty
   if (preg_match('/^chado_/', $node->type)) {
-    // Show feature browser and counts
     if ($view_mode == 'full') {
       if (!isset($node->content['#tripal_generic_node_template'])) {
         $node->content['#tripal_generic_node_template'] = TRUE;
       }
     }
+  }
+}
+
+/**
+ * Adds support for tokens in the field_resource_links field.
+ *
+ * The field_resource_links field is a special field that can be manually
+ * added by the site admin for providing links on the Tripal TOC sidebar.
+ * Using tokens will allow for creation of custom links. This function
+ * will add a fieldset contiaining the list of appropriate tokens for the
+ * content type.
+ *
+ * @param unknown $element
+ * @param unknown $form_state
+ * @param unknown $context
+ */
+function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  // If the name of the field is 'field_resource_links' then we want to
+  // add a fieldset of tokens.
+  if (isset($element['#field_name']) AND $element['#field_name'] == 'field_resource_links') {
+
+    // Add the tokens fieldset to the last element.
+    $num_elements = count($context['items']);
+    if ($num_elements == $element['#delta']) {
+      $bundle = $element['#bundle'];
+      $base_table = preg_replace('/^chado_(.*)$/', '\1', $bundle);
+      $tokens = chado_node_generate_tokens($base_table);
+      $token_list = chado_node_format_tokens($tokens);
+      $element['tokens'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Available tokens',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => 100
+      );
+      $element['tokens']['tokens_table'] = array(
+        '#type' => 'item',
+        '#markup' => $token_list
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function tripal_core_block_info() {
+
+  $blocks['tripal_search'] = array(
+    'info' => t('Tripal Search Block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function tripal_core_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'tripal_search':
+      $block['title'] = 'Search';
+
+      $form_render_arr = drupal_get_form('tripal_core_search_block');
+      $block['content'] = array(
+        '#markup' => drupal_render($form_render_arr),
+      );
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * A simple search box form.
+ */
+function tripal_core_search_block($form, $form_state) {
+
+  $form['wrapper'] = array(
+    '#prefix' => '<div id="search-block-form" class="container-inline">',
+    '#suffix' => '</div>',
+  );
+
+  $form['wrapper']['title'] = array(
+    '#markup' => '<h2 class="element-invisible">Search form</h2>',
+  );
+
+  $form['wrapper']['search_block_form'] = array(
+    '#title' => 'Search',
+    '#title_display' => 'invisible',
+    '#type' => 'textfield',
+    '#size' => 15,
+    '#maxlength' => 128,
+    '#attributes' =>array('placeholder' => t(variable_get('tripal_search_placeholder', 'Keywords')))
+  );
+
+  $form['wrapper']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Search',
+    '#prefix' => '<div class="form-actions form-wrapper" id="edit-actions">',
+    '#suffix' => '</div>'
+  );
+
+  $form['search_placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Placeholder Text',
+    '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
+    '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit for tripal_core_search_block form.
+ */
+function tripal_core_search_block_submit($form, &$form_state) {
+
+  $form_state['redirect'] = array(
+    variable_get('tripal_search_block_url', 'search/data'),
+    array(
+      'query' => array(
+        'keywords' => $form_state['values']['search_block_form']
+      ),
+    ),
+  );
+
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function tripal_core_block_configure ($delta = '') {
+  $form = array();
+
+  $form['search_url'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Search Page URL',
+    '#description' => 'The URL for the page you would like to redirect to when the user
+        clicks "Search". It is expected that this page will be a view with an exposed
+        filter having a "Filter Identifier" (in "More" fieldset on the edit filter form)
+        of "keywords".',
+    '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function tripal_core_block_save($delta = '', $edit = array()) {
+
+  // We simply want to save this information in a Drupal variable for use in the form submit.
+  if (!empty($edit['search_url'])) {
+    variable_set('tripal_search_block_url', $edit['search_url']);
+  }
+  if (!empty($edit['search_placeholder'])) {
+    variable_set('tripal_search_placeholder', $edit['search_placeholder']);
   }
 }

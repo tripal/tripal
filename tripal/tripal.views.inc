@@ -5,17 +5,215 @@
  */
 
 /**
+ * Implements of hook_views_plugins().
+ */
+function tripal_views_plugins() {
+  return array(
+    'module' => 'tripal',
+    'query' => array(
+      'tripal_views_query' => array(
+        'title' => t('Tripal Entity Query'),
+        'help' => t('Query that allows you to search with Tripal entities.'),
+        'handler' => 'tripal_views_query',
+        'parent' => 'views_query',
+      ),
+    ),
+  );
+}
+
+/**
  * Describe various Tripal Core systems to Views
- *   for the creation of administrative views.
  *
  * @ingroup tripal
  */
 function tripal_views_data() {
   $data = array();
   // Job Management System
-  $data = tripal_views_data_jobs($data);
+  tripal_views_data_jobs($data);
+  tripal_views_data_tripal_entity($data);
+  tripal_views_data_fields($data);
 
   return $data;
+}
+
+/**
+ * Implements hook views_data_alter()
+ *
+ * Ensures that all fields attached to TripalEntities use the proper
+ * handlers.
+ */
+function tripal_views_data_alter(&$data) {
+
+  $fields = field_info_fields();
+  $tripal_fields = tripal_get_field_types();
+
+  // Iterate through all of the fields.
+  foreach ($fields as $field) {
+
+    // Skip fields that aren't attached to TripalEntity entities.
+    if (!array_key_exists('TripalEntity', $field['bundles'])) {
+      continue;
+    }
+
+    // Iterate through the bundles to which this field is attached and
+    // if it is a TripalField field then we'll call the viewsData function.
+    $bundles = $field['bundles']['TripalEntity'];
+    $result = array();
+    foreach ($bundles as $bundle_name) {
+      $field_name = $field['field_name'];
+
+      // Skip fields that aren't setup for views with this bundle.
+      // Fields should be associated with the bundle's term identifier
+      // (i.e. [vocab]__[accession].
+      $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+      $bundle_term_id = $term->vocab->vocabulary . '__' . $term->accession;
+      if (!array_key_exists($bundle_term_id, $data)) {
+        continue;
+      }
+
+      // Skip fields implemented using a TripalField class. These fields
+      // should already have the proper handlers because the class sets
+      // them up automatically.
+      if (in_array($field_name, $tripal_fields)) {
+        continue;
+      }
+
+      $data[$bundle_term_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
+    }
+  }
+}
+/**
+ * Integreates the Tripal fields with Views.
+ */
+function tripal_views_data_fields(&$data) {
+
+  // Iterate through the fields.
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+
+    // Skip fields that aren't attached to TripalEntity entities.
+    if (!array_key_exists('TripalEntity', $field['bundles'])) {
+      continue;
+    }
+
+    // TODO: do we really need this hook? Just substitute the code here
+    // for what that hook does... it's only called in one plac.e
+    // Call the hook_field_views_data() but only for the tripal module.
+    // Otherwise the other modules will expect that this is an SQL-based
+    // view.
+    $result = (array) module_invoke('tripal', 'field_views_data', $field);
+
+    // Set defaults for the field if no data array was returned.
+    if (empty($result)) {
+      // Iterate through the bundles to which this field is attached and
+      // if it is a TripalField field then we'll call the viewsData function.
+      $bundles = $field['bundles']['TripalEntity'];
+      $result = array();
+      foreach ($bundles as $bundle_name) {
+        $field_name = $field['field_name'];
+
+        // Fields should be associated with the bundle's term identifier
+        // (i.e. [vocab]__[accession].
+        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+        $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+        $view_base_id = $term->vocab->vocabulary . '__' . $term->accession;
+
+        $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+        $tfield = new TripalField($field, $instance);
+        $result += $tfield->viewsData($view_base_id);
+      }
+    }
+
+    drupal_alter('field_views_data', $result, $field, $module);
+
+    if (is_array($result)) {
+      $data = drupal_array_merge_deep($result, $data);
+    }
+  }
+}
+/**
+ * Integrates the TripalEntity entities with Drupal Views.
+ */
+function tripal_views_data_tripal_entity(&$data) {
+
+  // Get the list of all of the bundles (entity types) and add them
+  // as "base tables" for views.
+  $bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute();
+
+  // Iterate through the bundles.
+  while ($bundle = $bundles->fetchObject()) {
+
+    // This isn't really the table name, but because our bundle table
+    // names are unique on every Tripal site we must ust a more generic
+    // name.  Because we're using our own query class this should be fine.
+    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $table = $term->vocab->vocabulary . '__' . $term->accession;
+
+    // Each bundle gets it's own "table".
+    $data[$table]['table']['group'] = t($bundle->label);
+    $data[$table]['table']['base'] = array(
+      'query class' => 'tripal_views_query',
+      'title' => t($bundle->label),
+      'help' => t('Tripal ' . $bundle->label . ' pages'),
+    );
+    $data[$table]['entity_id'] = array(
+      'title' => t('Entity ID'),
+      'help' => t('The unique entity ID for this content type.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity',
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter',
+      ),
+      'sort' => array(
+        'handler' => 'tripal_views_handler_sort',
+      ),
+    );
+    $data[$table]['link'] = array(
+      'title' => t('Link'),
+      'help' => t('Provide a simple link to the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link',
+      ),
+    );
+    $data[$table]['edit_link'] = array(
+      'title' => t('Edit Link'),
+      'help' => t('Provide a simple link to edit the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link_edit',
+      ),
+    );
+    $data[$table]['delete_link'] = array(
+      'title' => t('Delete Link'),
+      'help' => t('Provide a simple link to delete the content.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_entity_link_delete',
+      ),
+    );
+    $data[$table]['status'] = array(
+      'title' => t('Published'),
+      'help' => t('Whether or not the content is published.'),
+      'field' => array(
+        'handler' => 'tripal_views_handler_field_boolean',
+        'click sortable' => TRUE,
+        'output formats' => array(
+          'published-notpublished' => array(t('Published'), t('Not published')),
+        ),
+      ),
+      'filter' => array(
+        'handler' => 'tripal_views_handler_filter_boolean_operator',
+        'label' => t('Published'),
+        'type' => 'yes-no',
+        'use equal' => TRUE, // Use status = 1 instead of status <> 0 in WHERE statment
+      ),
+      'sort' => array(
+        'handler' => 'tripal_views_handler_sort',
+      ),
+    );
+  }
 }
 
 /**
@@ -28,7 +226,7 @@ function tripal_views_data() {
  *
  * @ingroup tripal
  */
-function tripal_views_data_jobs($data) {
+function tripal_views_data_jobs(&$data) {
 
   $data['tripal_jobs']['table']['group'] = t('Tripal Jobs');
   $data['tripal_jobs']['table']['base'] = array(
@@ -128,7 +326,7 @@ function tripal_views_data_jobs($data) {
   // Arguments
   $data['tripal_jobs']['arguments'] = array(
     'title' => t('Arguements'),
-    'help' => t('Any arguements passed to the callback.'),
+    'help' => t('Any arguments passed to the callback.'),
     'field' => array(
       'handler' => 'views_handler_field',
       'click sortable' => TRUE, // This is use by the table display plugin.
@@ -277,7 +475,4 @@ function tripal_views_data_jobs($data) {
       'handler' => 'views_handler_sort',
     ),
   );
-
-  return $data;
 }
-

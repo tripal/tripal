@@ -10,23 +10,28 @@ class TripalVocabViewsController extends EntityDefaultViewsController {
   public function views_data() {
     $data = parent::views_data();
 
-    // Change handlers for Date Timestamps.
-    // Date Created.
-    $data['tripal_vocab']['created']['field']['handler'] = 'views_handler_field_date';
-    $data['tripal_vocab']['created']['sort']['handler'] = 'views_handler_sort_date';
-    $data['tripal_vocab']['created']['filter']['handler'] = 'views_handler_filter_date';
-    // Date Changed/Updated.
-    $data['tripal_vocab']['changed']['field']['handler'] = 'views_handler_field_date';
-    $data['tripal_vocab']['changed']['sort']['handler'] = 'views_handler_sort_date';
-    $data['tripal_vocab']['changed']['filter']['handler'] = 'views_handler_filter_date';
+    $data['tripal_vocab']['table']['group'] = 'Tripal Term Vocabulary';
 
-    // Join the term to it's vocabulary so we know it's namespace.
-    $data['tripal_vocab']['table']['join'] = array();
+    $data['tripal_vocab']['vocabulary']['title'] = 'Vocabulary';
+    $data['tripal_vocab']['vocabulary']['help'] = t('The short name of the vocabulary.');
+
+
+    // Join the term to it's entity type.
     $data['tripal_vocab']['table']['join']['tripal_term'] = array(
       'handler' => 'views_join',
       'left_field' => 'vocab_id',
       'field' => 'id',
     );
+
+    // It is not intended that the following fields will every be used by the
+    // end-user.
+    unset($data['tripal_vocab']['id']);
+    unset($data['tripal_vocab']['changed']);
+    unset($data['tripal_vocab']['created']);
+
+    // This should not be a base table. It's not useful to create a
+    // view of the tripal_term table.
+    unset($data['tripal_vocab']['table']['base']);
 
     return $data;
   }

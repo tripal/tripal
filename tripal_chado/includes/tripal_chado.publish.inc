@@ -2,29 +2,31 @@
 
 function tripal_chado_publish_form($form, &$form_state) {
 
-  $term_id = '';
+  $langcode = 'und';
+
+  $bundle_name = '';
   if (array_key_exists('values', $form_state)) {
-    $term_id = $form_state['values']['term_id'];
+    $bundle_name = $form_state['values']['bundle_name'];
   }
 
-
+  // Build the list of available TripalEntity content types.
   $bundles = db_select('tripal_bundle', 'tb')
     ->fields('tb')
     ->orderBy('label', 'ASC')
     ->execute();
-  $term_ids = array();
-  $term_ids[] = 'Select a Content Type';
+  $bundle_ids = array();
+  $bundle_ids[] = 'Select a Content Type';
   while ($bundle = $bundles->fetchObject()) {
-    $term_ids[$bundle->term_id] = $bundle->label;
+    $bundle_ids[$bundle->name] = $bundle->label;
   }
 
-  $form['term_id'] = array(
+  $form['bundle_name'] = array(
     '#type' => 'select',
     '#title' => 'Content Type',
     '#description' => t('Select a content type to publish.  Only data that
       is mapped to the selected vocabulary term will be published.'),
-    '#options' => $term_ids,
-    '#default_value' => $term_id,
+    '#options' => $bundle_ids,
+    '#default_value' => $bundle_name,
     '#ajax' => array(
       'callback' => "tripal_chado_publish_form_ajax_callback",
       'wrapper' => "tripal-chado-publish-form",
@@ -35,7 +37,7 @@ function tripal_chado_publish_form($form, &$form_state) {
 
   // If the user has selected a content type, then we need to
   // show some filters.
-  if ($term_id) {
+  if ($bundle_name) {
     $form['filters'] = array(
       '#type' => 'fieldset',
       '#title' => 'Filters',
@@ -47,6 +49,72 @@ function tripal_chado_publish_form($form, &$form_state) {
       '#collapsible' => TRUE,
     );
 
+    // Get the list of fields and their widgets
+    $fields = field_info_field_map();
+    foreach ($fields as $field_name => $details) {
+      if (array_key_exists('TripalEntity', $details['bundles']) and
+          in_array($bundle_name, $details['bundles']['TripalEntity'])) {
+        $field = field_info_field($field_name);
+        $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+
+        // Get the Chado mapping information.
+        $base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
+        $chado_table = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
+        $chado_field = array_key_exists('chado_field', $instance['settings']) ? $instance['settings']['chado_field'] : '';
+
+        // For now, only handle filtering by fields that are mapped directly
+        // to the base table.
+        if (!$base_table or $base_table != $chado_table) {
+          continue;
+        }
+
+        // Create a default element for this field.  This code
+        // is adapted from the field_multiple-value_form() function.
+        $title = check_plain($instance['label']);
+        $description = field_filter_xss($instance['description']);
+        $parents = array_key_exists('#parents', $form) ? $form['#parents'] : '';
+        $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+        $element = array(
+          '#entity_type' => $instance['entity_type'],
+          '#entity' => NULL,
+          '#bundle' => $instance['bundle'],
+          '#field_name' => $field_name,
+          '#language' => $langcode,
+          '#field_parents' => $parents,
+          '#columns' => array_keys($field['columns']),
+          '#title' =>  $title,
+          '#description' => $description,
+          '#required' => FALSE,
+          '#delta' => 0,
+        );
+
+        // Now call the widget callback function to let the module adjust the
+        // element as needed.
+        $function = $instance['widget']['module'] . '_field_widget_form';
+        $items = array();
+        $delta = 0;
+        $element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+
+        // None of these fields are required, so turn off that setting.
+        $element['#required'] = FALSE;
+
+        $form['filters'][$field_name] =  array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'field-type-' . drupal_html_class($field['type']),
+              'field-name-' . drupal_html_class($field_name),
+              'field-widget-' . drupal_html_class($instance['widget']['type']),
+            ),
+          ),
+          '#weight' => $instance['widget']['weight'],
+          '#tree' => TRUE,
+          $langcode => array(
+            0 => $element
+          )
+        );
+      }
+    }
     $form['publish_btn'] = array(
       '#type' => 'submit',
       '#name' => 'publish_btn',
@@ -54,30 +122,56 @@ function tripal_chado_publish_form($form, &$form_state) {
     );
   }
 
-
   $form['#prefix'] = '<div id="tripal-chado-publish-form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
 
+/**
+ * Validate handler for the tripal_chado_publish_form form.
+ */
 function tripal_chado_publish_form_validate($form, &$form_state) {
 
 }
 
+/**
+ * Submit handler for the tripal_chado_publish_form form.
+ */
 function tripal_chado_publish_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'publish_btn') {
     global $user;
 
-    $term_id = $form_state['values']['term_id'];
-    $bundle_name = 'bio-data_' . $term_id;
+    $langcode = 'und';
+
+    $bundle_name = $form_state['values']['bundle_name'];
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-    $args = array($bundle_name);
+
+    // Iterate through any filters and add those to the arguments
+    $filters = array();
+    $fields = field_info_field_map();
+    foreach ($fields as $field_name => $details) {
+      if (array_key_exists('TripalEntity', $details['bundles']) and
+          in_array($bundle_name, $details['bundles']['TripalEntity']) and
+          array_key_exists($field_name, $form_state['values']) and
+          array_key_exists('value', $form_state['values'][$field_name][$langcode][0])) {
+        $value = $form_state['values'][$field_name][$langcode][0]['value'];
+        if ($value) {
+          $filters[$field_name] = $value;
+        }
+      }
+    }
+    $args = array(
+      array(
+        'bundle_name' => $bundle_name,
+        'filters' => $filters,
+      ),
+    );
     $includes = array(
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
     );
     return tripal_add_job("Publish " . $bundle->label . " records.",
-      'tripal_chado', 'tripal_chado_publish_records', $args,
-      $user->uid, 10, $includes);
+       'tripal_chado', 'tripal_chado_publish_records', $args,
+       $user->uid, 10, $includes);
   }
 }
 /**
@@ -87,67 +181,3 @@ function tripal_chado_publish_form_ajax_callback($form, $form_state) {
   return $form;
 }
 
-/**
- *
- */
-function tripal_chado_publish_records($bundle_name, $job_id = NULL) {
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $bundle_id = $bundle->id;
-  $table = tripal_get_bundle_variable('chado_table', $bundle_id);
-  $column = tripal_get_bundle_variable('chado_column', $bundle_id);
-  $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
-
-  // Get the table information
-  $table_schema = chado_get_schema($table);
-  $pkey_field = $table_schema['primary key'][0];
-
-  $where = '';
-  if ($table != 'analysis' and $table != 'organism') {
-    $where .= "AND $column = $cvterm_id";
-  }
-
-  $sql = "
-    SELECT $pkey_field as record_id
-    FROM {" . $table . "} T
-    LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-    AND CE.data_table = '$table'
-    WHERE CE.record_id IS NUll $where
-  ";
-  $records = chado_query($sql);
-  $num_published = 0;
-  try {
-    while($record = $records->fetchObject()) {
-
-      $record_id = $record->record_id;
-      $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
-        'bundle' => $bundle_name,
-        'term_id' => $bundle->term_id,
-      ));
-      $entity->save();
-
-      $record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-        'data_table' => $table,
-        'type_table' => $table,
-        'field' => $column,
-      );
-      $success = drupal_write_record('chado_entity', $record);
-
-      $entity = entity_load('TripalEntity', array($entity->id));
-      $entity = reset($entity);
-      $title_format = tripal_get_title_format($bundle);
-      $title = tripal_replace_tokens($title_format, $entity, $bundle);
-      $ec->setTitle($entity, $title);
-      $num_published++;
-    }
-  }
-  catch (Exception $e) {
-    $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
-    drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
-    return FALSE;
-  }
-  drupal_set_message("Succesfully published $num_published " . $bundle->label . " record(s).");
-}

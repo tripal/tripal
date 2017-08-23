@@ -12,7 +12,7 @@ $property = array(
   'cv_name' => 'library_property'
 );
 $libprop = chado_get_property($record, $property);
-$description = $libprop->value; ?>
+$description = isset($libprop->value) ? $libprop->value : ''; ?>
 
 <div class="tripal_library-data-block-desc tripal-data-block-desc"></div> <?php 
 

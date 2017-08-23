@@ -1,0 +1,35 @@
+/**
+ * Tripal Daemon Status Block.
+ */
+#dashboard div.block.block-tripal-daemon div.content,
+  div.block-tripal-daemon div.content {
+    padding: 0;
+}
+div.block-tripal-daemon div.content div.inner {
+  padding: 15px; 
+}
+
+div.block-tripal-daemon .active {
+  background-color: #f8fff0; 
+  color: #234600;
+}
+div.block-tripal-daemon .dead {
+  background-color: #fef5f1;
+  color: #8c2e0b;
+}
+div.block-tripal-daemon .inactive {
+  background-color: #fef5f1;
+  color: #b3b3b3;
+}
+
+div.block-tripal-daemon .daemon-status {
+  font-weight: bolder;
+  font-size: 1.2em;
+  margin-bottom: 15px;
+}
+div.block-tripal-daemon .daemon-status img {
+  top: 6px;
+  position: relative;
+  padding-right: 5px;
+  border: 0;
+}

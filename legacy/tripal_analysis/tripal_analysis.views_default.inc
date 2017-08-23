@@ -263,7 +263,7 @@ function tripal_analysis_defaultvalue_admin_analysis() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_analysis/analysis';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_analysis/analysis';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Analyses';
   $handler->display->display_options['menu']['weight'] = '-10';

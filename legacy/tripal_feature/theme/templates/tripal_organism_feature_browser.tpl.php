@@ -67,7 +67,7 @@ if (count($so_terms) > 0) {
     print tripal_set_message("Administrators, you can specify the feature types ".
       "that should appear in this browser or remove it from the list of resources ".
       "by navigating to the ".
-      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
+      l("Tripal feature settings page", "admin/tripal/legacy/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
       TRIPAL_INFO,
       array('return_html' => 1)
     );
@@ -109,15 +109,20 @@ if (count($so_terms) > 0) {
     // here we add the paramter 'block' => 'feature_browser'. This is because
     // the pager is not on the default block that appears. When the user clicks a
     // page number we want the browser to re-appear with the page is loaded.
+    // We remove the 'pane' parameter from the original query parameters because
+    // Drupal won't reset the parameter if it already exists.
+    $get = $_GET;
+    unset($_GET['pane']);
     $pager = array(
       'tags' => array(),
       'element' => $element,
       'parameters' => array(
-        'block' => 'feature_browser'
+        'pane' => 'feature_browser'
       ),
       'quantity' => $num_per_page,
     );
     print theme_pager($pager);
+    $_GET = $get;
 
     print tripal_set_message("
       Administrators, please note that the feature browser will be retired in

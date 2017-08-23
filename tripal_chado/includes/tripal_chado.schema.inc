@@ -1,6 +1,17 @@
 <?php
 
 /**
+ * @file
+ * Adds to the tripal schema description.
+ *
+ * This file contains hooks for specifying the natural diversity tables
+ * when Chado v1.11 is installed.  This is only useful for some specific
+ * sites that required the ND tables before they were released.  These
+ * files should not be needed for most sites as the ND tables are now part
+ * of Chado v1.2. However these hooks remain here for backwards compatibility.
+ */
+
+/**
  * Implements hook_chado_schema_v1_11_analysisfeatureprop()
  * Purpose: To describe the structure of 'analysisfeatureprop' to tripal
  * @see chado_insert_record()
@@ -111,15 +122,47 @@ function tripal_chado_chado_schema_v1_2_tripal_obo_temp() {
 }
 
 /**
- * @file
- * Adds to the tripal schema description.
+ * Implements hook_chado_schema_v1_3_tripal_obo_temp()
+ * Purpose: To describe the structure of 'tripal_obo_temp' to tripal
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
- * This file contains hooks for specifying the natural diversity tables
- * when Chado v1.11 is installed.  This is only useful for some specific
- * sites that required the ND tables before they were released.  These
- * files should not be needed for most sites as the ND tables are now part
- * of Chado v1.2. However these hooks remain here for backwards compatibility.
+ * @return
+ *    An array describing the 'tripal_obo_temp' table
+ *
+ * @ingroup tripal_chado_v1.3_schema_api
  */
+function tripal_chado_chado_schema_v1_3_tripal_obo_temp() {
+  $schema = array(
+    'table' => 'tripal_obo_temp',
+    'fields' => array(
+      'id' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'stanza' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_obo_temp_idx0' => array('id'),
+      'tripal_obo_temp_idx0' => array('type'),
+    ),
+    'unique keys' => array(
+      'tripal_obo_temp_uq0' => array('id'),
+    ),
+  );
+  return $schema;
+}
+
 
 /**
  * Implements hook_chado_schema_v1_11_table()

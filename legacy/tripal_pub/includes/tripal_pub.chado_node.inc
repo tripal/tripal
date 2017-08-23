@@ -46,6 +46,16 @@ function tripal_pub_node_info() {
 function chado_pub_form($node, $form_state) {
   $form = array();
 
+  // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+  // warn the user that they should load it before continuing.
+  $pub_cv = chado_select_record('cv', array('cv_id'), array('name' => 'tripal_pub'));
+  if (count($pub_cv) == 0) {
+    drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
+        'This vocabulary is required to be loaded before adding ' .
+        'publications.  <br>Please !import',
+        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+  }
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing pub
@@ -190,7 +200,7 @@ function chado_pub_form($node, $form_state) {
   );
 
   $type_cv = tripal_get_default_cv('pub', 'type_id');
-  if ($type_cv->name == 'tripal_pub') {
+  if ($type_cv and $type_cv->name == 'tripal_pub') {
 
     // get the list of publication types.  In the Tripal publication
     // ontologies these are all grouped under the term 'Publication Type'
@@ -262,7 +272,7 @@ function chado_pub_form($node, $form_state) {
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options
   // for only a subset of the vocabulary
-  if ($prop_cv->name == 'tripal_pub') {
+  if ($prop_cv and $prop_cv->name == 'tripal_pub') {
     $select_options[] = 'Select a Property';
     $sql = "
       SELECT
@@ -541,7 +551,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
  *
  * @ingroup tripal_pub
  */
-function chado_pub_node_access($node, $op, $account) {
+function tripal_pub_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -549,23 +559,23 @@ function chado_pub_node_access($node, $op, $account) {
 
   if($node_type == 'chado_pub') {
     if ($op == 'create') {
-      if (!user_access('create chado_pub', $account)) {
+      if (!user_access('create chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_pub', $account)) {
+      if (!user_access('edit chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_pub', $account)) {
+      if (!user_access('delete chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_pub', $account)) {
+      if (!user_access('access chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
@@ -597,8 +607,10 @@ function chado_pub_insert($node) {
     // to automatically generate a citation if a uniquename doesn't already exist
     $pub_arr = array();
 
-    $properties = array(); // stores all of the properties we need to add
-    $cross_refs = array(); // stores any cross references for this publication
+    // Stores all of the properties we need to add.
+    $properties = array();
+    // Stores any cross references for this publication.
+    $cross_refs = array();
 
     // get the properties from the form
     $properties = chado_retrieve_node_form_properties($node);
@@ -641,46 +653,47 @@ function chado_pub_insert($node) {
     $miniref = '';
     $cross_refs = array();
     foreach ($properties as $type_id => $element) {
-      $value = trim($element[0]);
-      $name = $properties_list[$type_id];
+      foreach ($element as $index => $value) {
+        $name = $properties_list[$type_id];
 
-      // populate our $pub_array for building a citation
-      $pub_arr[$name] = $value;
+        // populate our $pub_array for building a citation
+        $pub_arr[$name] = $value;
 
-      // remove properties that are stored in the pub table
-      if ($name == "Volume") {
-        $volume = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Volume Title") {
-        $volumetitle = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Issue") {
-        $issue = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Pages") {
-        $pages = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Publisher") {
-        $publisher = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
-        $series_name = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Journal Country" or $name == "Published Location") {
-        $pubplace = $value;
-        // allow this property to go into the pubprop table so we don't loose info
-        // so don't unset it. But it will also go into the pub.pubplace field
-      }
-      elseif ($name == "Publication Dbxref") {
-        // we will add the cross-references to the pub_dbxref table
-        // but we also want to keep the property in the pubprop table so don't unset it
-        $cross_refs[] = $value;
+        // remove properties that are stored in the pub table
+        if ($name == "Volume") {
+          $volume = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Volume Title") {
+          $volumetitle = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Issue") {
+          $issue = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Pages") {
+          $pages = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Publisher") {
+          $publisher = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
+          $series_name = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Journal Country" or $name == "Published Location") {
+          $pubplace = $value;
+          // allow this property to go into the pubprop table so we don't loose info
+          // so don't unset it. But it will also go into the pub.pubplace field
+        }
+        elseif ($name == "Publication Dbxref") {
+          // we will add the cross-references to the pub_dbxref table
+          // but we also want to keep the property in the pubprop table so don't unset it
+          $cross_refs[] = $value;
+        }
       }
     }
     // generate a citation for this pub if one doesn't already exist
@@ -1175,7 +1188,7 @@ function tripal_pub_node_insert($node) {
 function tripal_pub_node_load($nodes, $types) {
   if (count(array_intersect(array('chado_pub'), $types))) {
     foreach ($nodes as $nid => $node) {
-      if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {
+      if ($node->type == 'chado_pub' and !drupal_lookup_path('alias', 'node/' . $nid)) {
         $pub_id = chado_get_id_from_nid('pub', $node->nid);
         $path = tripal_pub_set_pub_url($node, $pub_id);
       }

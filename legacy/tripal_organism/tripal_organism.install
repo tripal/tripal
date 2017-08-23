@@ -27,9 +27,6 @@ function tripal_organism_disable() {
  * @ingroup tripal_organism
  */
 function tripal_organism_install() {
-  // cvs & cvterms
-  tripal_organism_add_cvs();
-  tripal_organism_add_cvterms();
 
   // set the default vocabularies
   tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
@@ -101,25 +98,4 @@ function tripal_organism_requirements($phase) {
     }
   }
   return $requirements;
-}
-
-/**
- * Add cvterms related to organisms
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_add_cvs() {
-  tripal_insert_cv(
-    'organism_property',
-    'Contains properties for organisms'
-  );
-}
-
-/**
- * Add cvterms pertaining to organisms
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_add_cvterms() {
-
 }

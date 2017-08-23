@@ -317,7 +317,7 @@ function chado_contact_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_contact
  */
-function chado_contact_node_access($node, $op, $account ) {
+function tripal_contact_node_access($node, $op, $account ) {
 
   $node_type = $node;
   if (is_object($node)) {
@@ -611,12 +611,14 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
-        $node->content['tripal_contact_publications'] = array(
-          '#theme' => 'tripal_contact_publications',
-          '#node' => $node,
-          '#tripal_toc_id'    => 'publications',
-          '#tripal_toc_title' => 'Publications',
-        );
+        if (module_exists('tripal_pub')) {
+          $node->content['tripal_contact_publications'] = array(
+            '#theme' => 'tripal_contact_publications',
+            '#node' => $node,
+            '#tripal_toc_id'    => 'publications',
+            '#tripal_toc_title' => 'Publications',
+          );
+        }
         $node->content['tripal_contact_relationships'] = array(
           '#theme' => 'tripal_contact_relationships',
           '#node' => $node,

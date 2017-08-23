@@ -117,7 +117,6 @@ function tripal_chado_drush_command() {
     ),
   );
 
-
   return $items;
 }
 

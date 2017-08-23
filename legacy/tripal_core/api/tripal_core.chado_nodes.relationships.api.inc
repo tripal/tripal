@@ -254,7 +254,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/vocab/cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/'.$details['cv_id'].'/cvterm/add')
         )
       ),
       TRIPAL_WARNING,
@@ -267,7 +267,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,
@@ -1046,7 +1046,10 @@ function chado_add_node_form_relationships_name_to_id_callback($base_table, $nam
 
   $base_key = $base_table.'_id';
 
-  $query = db_select('chado.'.$base_table, 'b')
+  // determine the chado schema.
+  $chado = tripal_get_schema_name('chado');
+
+  $query = db_select($chado . '.' . $base_table, 'b')
     ->fields('b', array($base_key, $name_field))
     ->condition($name_field, '%' . db_like($string) . '%', 'LIKE');
 
