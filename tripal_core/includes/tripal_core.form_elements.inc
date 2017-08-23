@@ -39,6 +39,10 @@ function tripal_core_element_info() {
   //     or some other record identifier.  This can be any identifier that
   //     makes sense to the module that implements a form that uses this
   //     element.
+  //   -#allowed_types:  An array of file extensions that are allowed for
+  //     to be uploaded.
+  //   -#cardinality:  A numeric value indicating the number of files the
+  //     user can upload. Set to 0 for unlimited.
   $elements['html5_file'] = array(
     '#input' => 'TRUE',
     '#process' => array('tripal_html5_file_process'),
@@ -263,6 +267,7 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
   $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
   $name = preg_replace('/[^\w]/', '_', $name);
   $allowed_types = array_key_exists('#allowed_types', $element) ? $element['#allowed_types'] : array();
+  $cardinality = array_key_exists('#cardinality', $element) ? $element['#cardinality'] : 1;
 
   $headers = array(
     array('data' => 'File'),
@@ -317,7 +322,7 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
     'table_id' => '#tripal-html5-file-upload-table-' . $type,
     'submit_id' => '#tripal-html5-file-upload-submit-' . $type,
     'category' => array($element['#usage_id'] . '-' . $element['#usage_type']),
-    'cardinality' => 1,
+    'cardinality' => $cardinality,
     'target_id' => 'tripal-html5-upload-fid-' . $type,
     'module' => $module,
     'allowed_types' => $allowed_types,
