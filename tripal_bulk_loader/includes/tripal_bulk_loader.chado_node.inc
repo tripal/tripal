@@ -189,6 +189,9 @@ function tripal_bulk_loader_load($nodes) {
   );
   foreach ($result as $record) {
     $record->num_inserted = sizeof(preg_split('/,/', $record->ids_inserted));
+    if(!isset($nodes[$record->nid]->inserted_records)) {
+      $nodes[$record->nid]->inserted_records = new stdClass();
+    }
     $nodes[$record->nid]->inserted_records->{$record->table_inserted_into} = $record;
   }
 
