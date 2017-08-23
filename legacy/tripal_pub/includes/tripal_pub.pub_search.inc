@@ -67,8 +67,20 @@ function tripal_pub_search_page() {
       // if we have the citation then use it, otherwise, just use the title
       $title = htmlspecialchars($pub->title);
       $result = $title;
-      if ($pub->nid) {
-        $result = l($title ,'node/' . $pub->nid, array('attributes' => array('target' => '_blank')));
+      $link = NULL;
+      // tripal v2 link (node)
+      $nid = chado_get_nid_from_id ('pub', $pub->pub_id);
+      if ($nid) {
+        $link = "/node/$nid";
+      }
+      // try tripal v3 link (entity), if it exists, update the link to entity
+      $entity_id = tripal_get_chado_entity_id ('pub', $pub->pub_id);
+      if ($entity_id) {
+        $link = "/bio_data/$entity_id";
+      }
+      
+      if ($link) {
+        $result = l($title , $link, array('attributes' => array('target' => '_blank')));
       }
       if ($citation_rec->value) {
         $citation = htmlspecialchars($citation_rec->value);
