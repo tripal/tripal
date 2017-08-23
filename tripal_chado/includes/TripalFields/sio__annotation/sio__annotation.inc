@@ -292,7 +292,7 @@ class sio__annotation extends ChadoField {
         'value' => array(
           $vocabulary => $cvterm->dbxref_id->db_id->name,
           $accession => $cvterm->dbxref_id->accession,
-          $definition => $cvterm->definition
+          $definition => isset($cvterm->definition) ? $cvterm->definition : ''
         ),
         'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
         'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
