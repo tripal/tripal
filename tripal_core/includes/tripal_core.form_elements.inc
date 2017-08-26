@@ -342,7 +342,9 @@ function tripal_html5_file_validate($element, &$form_state) {
   $is_required = $element['#required'];
   $name = $element['#name'];
   $name = preg_replace('/[^\w]/', '_', $name);
-  $fid = $element['#value'][$name];
+  if (is_array($element['#value']) and $array_key_exists($name, $element['#value'])) {
+    $fid = $element['#value'][$name];
+  }
 
   // TODO: the fid should just be the $element['#value'] why isn't this
   // working given the tripal_html5_file_value function below.
