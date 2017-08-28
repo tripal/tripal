@@ -542,6 +542,13 @@ function tripal_chado_populate_vocab_EDAM() {
     'display in a genome browser. Synonym: Sequence annotation track.',
   ));
   tripal_associate_chado_semweb_term('featureloc', 'srcfeature_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'operation:2945',
+    'name' => 'Analysis',
+    'cv_name' => 'EDAM',
+    'definition' => 'Apply analytical methods to existing data of a specific type.',
+  ));
 }
 
 /**

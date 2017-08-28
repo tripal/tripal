@@ -1311,3 +1311,23 @@ function tripal_chado_update_7318() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+
+/**
+ * Adding new Analysis term.
+ */
+function tripal_chado_update_7319() {
+  try {
+    $term = tripal_insert_cvterm(array(
+      'id' => 'operation:2945',
+      'name' => 'Analysis',
+      'cv_name' => 'EDAM',
+      'definition' => 'Apply analytical methods to existing data of a specific type.',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+

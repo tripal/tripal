@@ -644,9 +644,9 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
     }
     else if ($table == 'analysis') {
       array_push($types, array(
-        'vocabulary' => 'local',
-        'accession' => 'analysis',
-        'term_name' => 'analysis',
+        'vocabulary' => 'operation',
+        'accession' => '2945',
+        'term_name' => 'Analysis',
         'storage_args' => array (
           'data_table' => $table
         )

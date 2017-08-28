@@ -236,14 +236,14 @@ function tripal_chado_prepare_chado($job = NULL) {
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
     $args = array(
-      'vocabulary' => 'local',
-      'accession' => 'analysis',
-      'term_name' => 'analysis',
+      'vocabulary' => 'operation',
+      'accession' => '2945',
+      'term_name' => 'Analysis',
       'storage_args' => array(
         'data_table' => 'analysis',
       )
     );
-    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'analysis'));
+    $term = tripal_load_term_entity(array('vocabulary' => 'operation', 'accession' => '2945'));
     $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
