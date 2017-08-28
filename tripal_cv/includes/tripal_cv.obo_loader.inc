@@ -1097,7 +1097,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         $options = array('return_record' => FALSE);
         $success = chado_insert_record('cvtermsynonym', $values, $options);
         if (!$success) {
-          tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
+          tripal_cv_obo_quiterror("Failed to insert the synonym for term: $cvtern->name ($def)");
         }
       }
 
@@ -1179,6 +1179,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
 
     //remove comments from end of lines
     $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);  // TODO: if the explamation is escaped
+    $type = '';
 
     // at the first stanza we're out of header
     if (preg_match('/^\s*\[/', $line)) {
