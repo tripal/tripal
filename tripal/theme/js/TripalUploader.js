@@ -438,11 +438,15 @@
       var target_id = this.tables[tname]['target_id'];
       var num_files = this.getNumFiles(category);
          
-      // If cardinality is 1 and this is a single file and we have a
-      // target, then we want to save the file id in the hidden field target 
-      // value
-      if (cardinality && cardinality == 1 && target_id && num_files == 1) {
-        $('#' + target_id).val(files[0].file_id);
+      if (target_id) {
+        // Always set the first file_id.
+        var fids = files[0].file_id;
+        // Iterate through any other files and add them with a '|' delemiter.
+        var i;
+        for (i = 1; i < num_files; i++) {
+          fids = fids + "|" + files[i].file_id;
+        } 
+        $('#' + target_id).val(fids);
       }
     }
 
