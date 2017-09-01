@@ -5,7 +5,7 @@
  * To use the TripalUploader Object the following must be performed:
  * 
  * 1) Add a Drupal form to your code that contains the following:
- *   * A Drupal-style table with 4 or 8 columns.  See the addUploadTable
+ *   * A Drupal-style table with 4 or 8 columns.  See the initialize
  *     function in this class for a description of the columns.
  *   * A button for submitting a file for upload.
  * 
@@ -147,12 +147,13 @@
     /**
      * 
      */
-    this.removeFile = function(category, i) {
+    this.removeFile = function(tname, category, i) {
       if (category in this.files) {
         if (i in this.files[category]) {
           delete this.files[category][i];
         }
       }
+      this.setTarget(tname);
     }
     /**
      * 
@@ -288,7 +289,7 @@
      *     where the file ID will be written to this field. This only 
      *     works if cardinality is set to 1.
      *   allowed_types: (optional). An array of allowed file extensions (e.g.
-     *     fasta, fastq, fna, gff3, etc.). 
+     *     fasta, fastq, fna, gff3, etc.).
      */
     this.addUploadTable = function(tname, options) {
       var table_id = options['table_id'];
@@ -432,21 +433,52 @@
      * @param $category
      *   The name of the category to which the file belongs.
      */
-    this.setTarget = function(file_id, tname, category) {
-      var files  = this.getCategoryFiles(category);
+    this.setTarget = function(tname) {
+      var categories = this.tables[tname]['category'];
+      var num_categories = categories.length;
       var cardinality = this.tables[tname]['cardinality'];
       var target_id = this.tables[tname]['target_id'];
-      var num_files = this.getNumFiles(category);
-         
+      
       if (target_id) {
-        // Always set the first file_id.
-        var fids = files[0].file_id;
-        // Iterate through any other files and add them with a '|' delemiter.
-        var i;
-        for (i = 1; i < num_files; i++) {
-          fids = fids + "|" + files[i].file_id;
-        } 
-        $('#' + target_id).val(fids);
+        var fids = '';
+        var c;
+
+        // Iterate through the file categories.
+        for (c = 0; c < num_categories; c++) {
+          var files  = this.getCategoryFiles(categories[c]);
+          var num_files = this.getNumFiles(categories[c]);
+          var i;
+          
+          // Deal with one category.
+          if (num_categories == 1) {
+            if (num_files > 0) {
+              // Always set the first file_id.
+              fids = files[0].file_id;
+            }
+          }
+          // Deal with multiple categories.
+          else {
+            // When we have more than one category then we need to 
+            // separate the categories with a comma. So, this must happen
+            // after every category except the first.
+            if (c == 0) {
+              if (num_files > 0) {
+                fids = fids + files[0].file_id;
+              }
+            }
+            else {
+              fids = fids + ',';
+              if (num_files > 0) {
+                fids = fids + files[0].file_id;
+              }
+            }
+          }
+          // Iterate through any other files and add them with a '|' delemiter.
+          for (i = 1; i < num_files; i++) {
+            fids = fids + "|" + files[i].file_id;
+          } 
+          $('#' + target_id).val(fids);
+        }
       }
     }
 
@@ -507,7 +539,7 @@
         // Create a new empty row of buttons if we have files.
         if (has_file) {
           // Only add a new row if we haven't reached our cardinality limit.
-          if (!cardinality || cardinality == 0 || cardinality < max_index) {
+          if (!cardinality || cardinality == 0 || cardinality < max_paired1) {
             button1 = this.getFileButton(tname, category1, i);
             button2 = this.getFileButton(tname, category2, i);
             paired_content += '<tr class="odd"><td colspan="4">' + button1['element'] + 
