@@ -82,27 +82,6 @@ function tripal_drush_command() {
       'single' => dt('Execute only one queued job'),
     ),
   );
-  $items['install-prepare'] = array(
-    'description' => "Installs Chado and Prepares the Site.",
-    'arguments' => array(
-      'chado-version' => 'Which version of chado should be installed: 1.3, 1.2 or 1.11',
-    ),
-    'options' => array(
-      'version' => array(
-        'description' => 'The Chado version.',
-        'example-value' => '1.3',
-      ),
-      'username' => array(
-        'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-      ),
-    ),
-    'examples' => array(
-      'drush tripal-install --version=1.3' => 'Install Chado Version 1.3 and prepare your tripal site.',
-    ),
-    'aliases' => array('tripal-install'),
-    // No bootstrap at all.
-    'bootstrap' => DRUSH_BOOTSTRAP_NONE,
-  );
 
   return $items;
 }
@@ -298,39 +277,4 @@ function drush_tripal_trp_get_currjob() {
   }
   //log to the command line with an OK status
   drush_log('Running tripal-current-job', 'ok');
-}
-
-function drush_tripal_install_prepare() {
-  $version = drush_get_option('version');
-
-  // Read options with drush_get_option. Note that the options _must_
-  // be documented in the $items structure for this command in the 'command'
-  // hook. See `drush topic docs-commands` for more information.
-  $args = array('field_group', 'field_group_table', 'field_formatter_class', 'field_formatter_settings');
-  $options = array();
-  drush_invoke_process('@self', 'dl', $args, $options);
-
-  $args = array('field_group', 'field_group_table', 'field_formatter_class', 'field_formatter_settings',
-    'views_ui', 'tripal_chado', 'tripal_ds', 'tripal_ws');
-  $options = array();
-  drush_invoke_process('@self', 'en', $args, $options);
-
-  if($version == '1.3'){
-    $version = 'Install Chado v1.3';
-  }
-  elseif($version == '1.2'){
-    $version = 'Install Chado v1.2';
-  }
-  elseif ($version == '1.11'){
-    $version = 'Install Chado v1.11';
-  }
-  module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install');
-  tripal_chado_load_drush_submit($version);
-
-  drush_tripal_trp_run_jobs();
-
-  module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup');
-  tripal_chado_prepare_drush_submit();
-
-  drush_tripal_trp_run_jobs();
 }
