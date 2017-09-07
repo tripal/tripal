@@ -25,10 +25,11 @@
           else {
             $(fs).hide('normal', function () {
               $(fs).addClass('hideTripalPane');
+              var id = $(fs).attr('id');
               var event = $.Event('tripal_ds_pane_collapsed', {
-                id: $(fs).attr('id')
+                id: id
               });
-              $(id).trigget(event);
+              $(id).trigger(event);
             });
           }
         });
@@ -54,7 +55,7 @@
             $(id).show(300, function () {
               // Trigger expansion event to allow the pane content
               // to react to the size change
-              $(id).trigget($.Event('tripal_ds_pane_expanded', {id: id}));
+              $(id).trigger($.Event('tripal_ds_pane_expanded', {id: id}));
             });
             return false;
         });
