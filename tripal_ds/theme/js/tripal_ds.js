@@ -1,8 +1,6 @@
 (function($) {
-
   Drupal.behaviors.tripal_ds = {
     attach: function (context, settings){
-
       // Add a close button for each pane except for the te_base
       $('div.tripal_pane').each(function (i) {
         $(this).prepend(
@@ -12,7 +10,6 @@
             '</div>' +
           '</div>'
         );
-        var id = '.tripal_pane-fieldset-' + $(this).attr('id');
       });
 
       // Hide the pane when the close button is clicked
@@ -21,11 +18,19 @@
           var fs = $(this).parents('div.tripal_pane');
           if($(fs).hasClass('showTripalPane'))  {
             $(fs).removeClass('showTripalPane');
-            $(fs).addClass('hideTripalPane');
+            $(fs).hide('normal', function () {
+              $(fs).addClass('hideTripalPane');
+            });
           }
           else {
-            $(fs).addClass('hideTripalPane');
-          } 
+            $(fs).hide('normal', function () {
+              $(fs).addClass('hideTripalPane');
+              var event = $.Event('tripal_ds_pane_collapsed', {
+                id: $(fs).attr('id')
+              });
+              $(id).trigget(event);
+            });
+          }
         });
       });
       // Move the tripal pane to the first position when its TOC item is clicked.
@@ -46,11 +51,14 @@
             $(id).hide();
             var obj = $(id).detach();
             $('.group-tripal-pane-content-top').after(obj);
-            $(id).show(300);
-          return false;
+            $(id).show(300, function () {
+              // Trigger expansion event to allow the pane content
+              // to react to the size change
+              $(id).trigget($.Event('tripal_ds_pane_expanded', {id: id}));
+            });
+            return false;
         });
       });
-    },
+    }
   };
-  
 })(jQuery);
