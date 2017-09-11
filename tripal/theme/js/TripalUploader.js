@@ -127,6 +127,28 @@
       var url = options['url'];
       var self = this;
       
+      // Make sure the file type is allowed
+      if (this.tables[tname]['allowed_types']) {
+        var allowed_types = this.tables[tname]['allowed_types'];
+        var matches = file.name.match(/^.*\.(.+)$/);
+        if (!matches) {
+          alert('Please provide a file with a valid extension.');
+          return null;
+        }
+        var type = matches[1];
+        var j;
+        var found = false;
+        for (j = 0; j < allowed_types.length; j++) {
+          if (allowed_types[j] == type) {
+            found = true;
+          }
+        }
+        if (!found) {
+          alert('Please provide a file with a valid extension. The following are allowed: ' + allowed_types.join(','));
+          return null;
+        }
+      }
+      
       if (!(category in this.files)) {
         this.files[category] = {}
       }      
@@ -140,6 +162,7 @@
         'links' : category + '-links-' + i,
         'module' : this.tables[tname]['module']
       }
+      
       var guf = new TripalUploadFile(file, options)
       this.files[category][i] = guf;
       return guf
@@ -147,12 +170,13 @@
     /**
      * 
      */
-    this.removeFile = function(category, i) {
+    this.removeFile = function(tname, category, i) {
       if (category in this.files) {
         if (i in this.files[category]) {
           delete this.files[category][i];
         }
       }
+      this.setTarget(tname);
     }
     /**
      * 
@@ -234,7 +258,14 @@
      */
     this.getFileButton = function(tname, category, i) {
       var button_name = tname + '--' + category + '-upload-' + i;
-      var element = '<input id="' + button_name + '" class="tripal-chunked-file-upload" type="file">';
+      // If the button is already in the DOM then we want to preserve the
+      // 'ready' attribute. If the button already has an onChange event then
+      // it is ready.
+      var ready = $('#' + button_name).attr('ready');
+      if (!ready) {
+        ready = 'false';
+      }
+      var element = '<input id="' + button_name + '" class="tripal-chunked-file-upload" type="file" ready="' + ready + '">';
       
       return {
         'name' : button_name,
@@ -432,21 +463,52 @@
      * @param $category
      *   The name of the category to which the file belongs.
      */
-    this.setTarget = function(file_id, tname, category) {
-      var files  = this.getCategoryFiles(category);
+    this.setTarget = function(tname) {
+      var categories = this.tables[tname]['category'];
+      var num_categories = categories.length;
       var cardinality = this.tables[tname]['cardinality'];
       var target_id = this.tables[tname]['target_id'];
-      var num_files = this.getNumFiles(category);
-         
+      
       if (target_id) {
-        // Always set the first file_id.
-        var fids = files[0].file_id;
-        // Iterate through any other files and add them with a '|' delemiter.
-        var i;
-        for (i = 1; i < num_files; i++) {
-          fids = fids + "|" + files[i].file_id;
-        } 
-        $('#' + target_id).val(fids);
+        var fids = '';
+        var c;
+
+        // Iterate through the file categories.
+        for (c = 0; c < num_categories; c++) {
+          var files  = this.getCategoryFiles(categories[c]);
+          var num_files = this.getNumFiles(categories[c]);
+          var i;
+          
+          // Deal with one category.
+          if (num_categories == 1) {
+            if (num_files > 0) {
+              // Always set the first file_id.
+              fids = files[0].file_id;
+            }
+          }
+          // Deal with multiple categories.
+          else {
+            // When we have more than one category then we need to 
+            // separate the categories with a comma. So, this must happen
+            // after every category except the first.
+            if (c == 0) {
+              if (num_files > 0) {
+                fids = fids + files[0].file_id;
+              }
+            }
+            else {
+              fids = fids + ',';
+              if (num_files > 0) {
+                fids = fids + files[0].file_id;
+              }
+            }
+          }
+          // Iterate through any other files and add them with a '|' delemiter.
+          for (i = 1; i < num_files; i++) {
+            fids = fids + "|" + files[i].file_id;
+          } 
+          $('#' + target_id).val(fids);
+        }
       }
     }
 
@@ -454,74 +516,74 @@
      * A table for paired data (e.g. RNA-seq).
      */
     this.updatePairedTable = function(tname, categories) {
-        var i = 0;
-        var table_id = this.tables[tname]['table_id'];
-        var cardinality = this.tables[tname]['cardinality'];
+      var i = 0;
+      var table_id = this.tables[tname]['table_id'];
+      var cardinality = this.tables[tname]['cardinality'];
 
-        var category1 = categories[0];
-        var category2 = categories[1];
+      var category1 = categories[0];
+      var category2 = categories[1];
 
-        var paired_content = '';   
-        var category1_files = this.getCategoryFiles(category1);
-        var category2_files = this.getCategoryFiles(category2);    
-        var max_paired1 = this.getMaxIndex(category1);
-        var max_paired2 = this.getMaxIndex(category2);
-        
-        var button1 = null;
-        var button2 = null;
+      var paired_content = '';   
+      var category1_files = this.getCategoryFiles(category1);
+      var category2_files = this.getCategoryFiles(category2);    
+      var max_paired1 = this.getMaxIndex(category1);
+      var max_paired2 = this.getMaxIndex(category2);
+      
+      var button1 = null;
+      var button2 = null;
 
-        // Bulid the rows for the paired sample files table.
-        var has_file = false;
-        for (i = 0; i <= Math.max(max_paired1, max_paired2); i++) {
+      // Build the rows for the paired sample files table.
+      var has_file = false;
+      for (i = 0; i <= Math.max(max_paired1, max_paired2); i++) {
+        button1 = this.getFileButton(tname, category1, i);
+        button2 = this.getFileButton(tname, category2, i);
+
+        var trclass = 'odd';
+        if (i % 2 == 0) {
+          trclass = 'even';
+        }
+        paired_content +=  '<tr class="' + trclass + '">';
+        if (i in category1_files) {
+          paired_content += '<td>' + category1_files[i].getFileName() + '</td>';
+          paired_content += '<td>' + category1_files[i].getFileSize(true)  + '</td>';
+          paired_content += '<td>' + category1_files[i].getProgressBar() + '</td>';
+          paired_content += '<td>' + category1_files[i].getLinks() + '</td>';
+          has_file = true;
+        }
+        else {
+          paired_content += '<td colspan="4">' + button1['element'] + '</td>';
+        }
+        if (i in category2_files) {
+          paired_content += '<td>' + category2_files[i].getFileName() + '</td>';
+          paired_content += '<td>' + category2_files[i].getFileSize(true) + '</td>';
+          paired_content += '<td>' + category2_files[i].getProgressBar() + '</td>';
+          paired_content += '<td nowrap>' + category2_files[i].getLinks() + '</td>';
+          has_file = true;
+        }
+        else {
+          paired_content += '<td colspan="4">' + button2['element'] + '</td>';
+        }
+        paired_content +=  '</tr>';
+      }
+
+      // Create a new empty row of buttons if we have files.
+      if (has_file) {
+        // Only add a new row if we haven't reached our cardinality limit.
+        if (!cardinality || cardinality == 0 || cardinality < max_paired1) {
           button1 = this.getFileButton(tname, category1, i);
           button2 = this.getFileButton(tname, category2, i);
+          paired_content += '<tr class="odd"><td colspan="4">' + button1['element'] + 
+            '</td><td colspan="4">' + button2['element'] + '</td></tr>'
+        }
+      }
 
-          var trclass = 'odd';
-          if (i % 2 == 0) {
-            trclass = 'even';
-          }
-          paired_content +=  '<tr class="' + trclass + '">';
-          if (i in category1_files) {
-            paired_content += '<td>' + category1_files[i].getFileName() + '</td>';
-            paired_content += '<td>' + category1_files[i].getFileSize(true)  + '</td>';
-            paired_content += '<td>' + category1_files[i].getProgressBar() + '</td>';
-            paired_content += '<td>' + category1_files[i].getLinks() + '</td>';
-            has_file = true;
-          }
-          else {
-            paired_content += '<td colspan="4">' + button1['element'] + '</td>';
-          }
-          if (i in category2_files) {
-            paired_content += '<td>' + category2_files[i].getFileName() + '</td>';
-            paired_content += '<td>' + category2_files[i].getFileSize(true) + '</td>';
-            paired_content += '<td>' + category2_files[i].getProgressBar() + '</td>';
-            paired_content += '<td nowrap>' + category2_files[i].getLinks() + '</td>';
-            has_file = true;
-          }
-          else {
-            paired_content += '<td colspan="4">' + button2['element'] + '</td>';
-          }
-          paired_content +=  '</tr>';
-        }
-
-        // Create a new empty row of buttons if we have files.
-        if (has_file) {
-          // Only add a new row if we haven't reached our cardinality limit.
-          if (!cardinality || cardinality == 0 || cardinality < max_index) {
-            button1 = this.getFileButton(tname, category1, i);
-            button2 = this.getFileButton(tname, category2, i);
-            paired_content += '<tr class="odd"><td colspan="4">' + button1['element'] + 
-              '</td><td colspan="4">' + button2['element'] + '</td></tr>'
-          }
-        }
-
-        $(table_id + ' > tbody').html(paired_content);
-        if (button1) {
-          this.enableFileButton(button1['name']);
-        }
-        if (button2) {
-          this.enableFileButton(button2['name']);
-        }
+      $(table_id + ' > tbody').html(paired_content);
+      if (button1) {
+        this.enableFileButton(button1['name']);
+      }
+      if (button2) {
+        this.enableFileButton(button2['name']);
+      }
     }
 
     /**
@@ -530,51 +592,56 @@
      * The button is added by the updateUploadTable
      */
     this.enableFileButton = function(button_name) {
-        // When the button provided by the TripalUploader class is clicked
-        // then we need to add the files to the object.  We must have this
-        // function so that we can set the proper URL
-        var self = this;
+     
+      // If the button already exists then it's already setup so just
+      // return.
+      if($('#' + button_name).attr('ready') == 'true') {
+        return;
+      }
 
-        var func_name = ($.isFunction($.fn.live)) ? 'live' : 'on';
-        $('#' + button_name)[func_name]('change', function(e) {
-          var id = this.id;
-          
-          // Get the HTML5 list of files to upload.
-          var hfiles = e.target.files;
 
-          // Let the TripalUploader object parse the button ID to give us
-          // the proper category name and index.
-          var button = self.parseButtonID(id);
-          var tname = button['tname'];
-          var category = button['category'];
-          var index = button['index'];
+      // When the button provided by the TripalUploader class is clicked
+      // then we need to add the files to the object.  We must have this
+      // function so that we can set the proper URL
+      var self = this;
 
-          // Add the file(s) to the uploader object.
-          for (var i = 0; i < hfiles.length; i++) {
-            var f = hfiles[i];
-//            if (!f.name.match('^.*\.fastq$')){
-//               alert('Only FastQ files are allowed.');
-//               continue;
-//            }
-            var options = {
-              // Files are managed by tables.
-              'tname' : tname,
-              // Files can be categorized to seprate them from other files.
-              'category': category,
-              // The index is the numeric index of the file. Files are ordered
-              // by their index. The file with an index of 0 is always ordered first.
-              'i': index,
-              // The URL at the remote server where the file will uploaded. 
-              'url' : baseurl + '/tripal/upload/' + category,
+      var func_name = ($.isFunction($.fn.live)) ? 'live' : 'on';
+      $('#' + button_name)[func_name]('change', function(e) {
+        var id = this.id;
+        
+        // Get the HTML5 list of files to upload.
+        var hfiles = e.target.files;
+
+        // Let the TripalUploader object parse the button ID to give us
+        // the proper category name and index.
+        var button = self.parseButtonID(id);
+        var tname = button['tname'];
+        var category = button['category'];
+        var index = button['index'];
+
+        // Add the file(s) to the uploader object.
+        for (var i = 0; i < hfiles.length; i++) {
+          var f = hfiles[i];
+          var options = {
+            // Files are managed by tables.
+            'tname' : tname,
+            // Files can be categorized to seprate them from other files.
+            'category': category,
+            // The index is the numeric index of the file. Files are ordered
+            // by their index. The file with an index of 0 is always ordered first.
+            'i': index,
+            // The URL at the remote server where the file will uploaded. 
+            'url' : baseurl + '/tripal/upload/' + category,
             };
             self.addFile(f, options);
-
+ 
             // We need to update the upload table and the progress. The
-            // information for which table to update is in the self.tables
-            // array.
-            self.updateTable(category);
-          }
-        });
+          // information for which table to update is in the self.tables
+          // array.
+          self.updateTable(category);
+        }
+      });
+      $('#' + button_name).attr('ready', 'true');
     }
   };
 
