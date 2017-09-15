@@ -534,6 +534,8 @@ function tripal_create_bundle_fields($bundle, $term) {
     // If the field already exists then skip it.
     $field = field_info_field($details['field_name']);
     if ($field) {
+      tripal_set_message(t("Could not create new field: %field because it already exists.",
+        array('%field' =>  $details['field_name'])), TRIPAL_WARNING);
       continue;
     }
 
