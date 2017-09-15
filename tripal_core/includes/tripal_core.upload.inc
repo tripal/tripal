@@ -48,7 +48,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
       tripal_file_upload_put($filename, $chunk, $user_dir);
       break;
     case 'check':
-      tripal_file_upload_check($filename, $chunk, $user_dir);
+      tripal_file_upload_verify($filename, $chunk, $user_dir);
       break;
     case 'merge':
       tripal_file_upload_merge($filename, $type, $user_dir);
@@ -173,7 +173,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
  *   returns a JSON array with a status, message and the
  *   current chunk.
  */
-function tripal_file_upload_check($filename, $chunk, $user_dir) {
+function tripal_file_upload_verify($filename, $chunk, $user_dir) {
 
   $chunk_size = $_GET['chunk_size'];
 
