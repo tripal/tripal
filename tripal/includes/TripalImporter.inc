@@ -97,6 +97,14 @@ class TripalImporter {
    */
   public static $argument_list = array();
 
+
+  /**
+   * Indicates how many files are allowed to be uploaded.  By default this is
+   * set to allow only one file.  Change to any positive number. A value of
+   * zero indicates an unlimited number of uploaded files are allowed.
+   */
+  public static $cardinality = 1;
+
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
   // --------------------------------------------------------------------------

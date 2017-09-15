@@ -36,6 +36,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
       '#usage_type' => 'tripal_importer',
       '#usage_id' => 0,
       '#allowed_types' => $class::$file_types,
+      '#cardinality' => $class::$cardinality,
     );
   }
 
