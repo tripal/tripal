@@ -43,6 +43,8 @@ class GFF3Importer extends TripalImporter {
    */
   public static $button_text = 'Import GFF3 file';
 
+  public static $cardinality = 0;
+
   /**
    * @see TripalImporter::form()
    */
@@ -297,7 +299,7 @@ class GFF3Importer extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['file']['file_path'];
+    $file_path = $this->arguments['files'][0]['file_path'];
 
     $organism_id = $arguments['organism_id'];
     $analysis_id = $arguments['analysis_id'];

@@ -267,32 +267,54 @@ class TripalImporter {
       // and the file.
       $arguments = array(
         'run_args' => $run_args,
-        'file' => array(
-          'file_path' => '',
-          'file_local' => '',
-          'file_remote' => '',
-          'fid' => NULL,
-        ),
+        'files' => array(),
       );
 
       // Get the file argument.
       $has_file = 0;
       if (array_key_exists('file_local', $file_details)) {
-        $arguments['file']['file_local'] = $file_details['file_local'];
-        $arguments['file']['file_path'] = $file_details['file_local'];
+        $arguments['files'][] = array(
+          'file_local' => $file_details['file_local'],
+          'file_path' => $file_details['file_local']
+        );
         $has_file++;
       }
       if (array_key_exists('file_remote', $file_details)) {
-        $arguments['file']['file_remote'] = $file_details['file_remote'];
+        $arguments['files'][] = array(
+          'file_remote' => $file_details['file_remote']
+        );
         $has_file++;
       }
       if (array_key_exists('fid', $file_details)) {
-        $fid = $file_details['fid'];
-        $file = file_load($fid);
-        $arguments['file']['file_path'] =  base_path() . drupal_realpath($file->uri);
-        $arguments['file']['fid'] = $fid;
-        $values['fid'] = $fid;
-        $has_file++;
+        $values['fid'] = $file_details['fid'];
+        // Handle multiple file uploads.
+        if (preg_match('/\|/', $file_details['fid'])) {
+          $fids = explode('|', $file_details['fid']);
+          foreach ($fids as $fid) {
+            $file = file_load($fid);
+            $arguments['files'][] = array(
+              'file_path' => base_path() . drupal_realpath($file->uri),
+              'fid' => $fid
+            );
+            $has_file++;
+          }
+        }
+        // Handle a single file.
+        else {
+          $fid = $file_details['fid'];
+          $file = file_load($fid);
+          $arguments['files'][] = array(
+            'file_path' => base_path() . drupal_realpath($file->uri),
+            'fid' => $fid
+          );
+          $has_file++;
+
+          // For backwards compatibility add the old 'file' element.
+          $arguments['file'] = array(
+            'file_path' => base_path() . drupal_realpath($file->uri),
+            'fid' => $fid
+          );
+        }
       }
 
       // Validate the $file_details argument.
@@ -383,7 +405,7 @@ class TripalImporter {
    * This function must be run prior to the run() function to ensure that
    * the import file is ready to go.
    */
-  public function prepareFile() {
+  public function prepareFiles() {
     $class = get_called_class();
 
     // If no file is required then just indicate that all is good to go.
@@ -393,63 +415,65 @@ class TripalImporter {
     }
 
     try {
-      if (!empty($this->arguments['file']['file_remote'])) {
-        $file_remote = $this->arguments['file']['file_remote'];
-        $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
+      for($i = 0; $i < count($this->arguments['file']); $i++) {
+        if (!empty($this->arguments['file'][$i]['file_remote'])) {
+          $file_remote = $this->arguments['file'][$i]['file_remote'];
+          $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
 
-        // If this file is compressed then keepthe .gz extension so we can
-        // uncompress it.
-        $ext = '';
-        if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_remote'])) {
-          $ext = '.gz';
-        }
-        // Create a temporary file.
-        $temp = tempnam("temporary://", 'import_') . $ext;
-        $this->logMessage("Saving as: !file", array('!file' => $temp));
+          // If this file is compressed then keepthe .gz extension so we can
+          // uncompress it.
+          $ext = '';
+          if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_remote'])) {
+            $ext = '.gz';
+          }
+          // Create a temporary file.
+          $temp = tempnam("temporary://", 'import_') . $ext;
+          $this->logMessage("Saving as: !file", array('!file' => $temp));
 
-        $url_fh = fopen($file_remote, "r");
-        $tmp_fh = fopen($temp, "w");
-        if (!$url_fh) {
-          throw new Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
-              array('%url', $file_remote)));
-        }
+          $url_fh = fopen($file_remote, "r");
+          $tmp_fh = fopen($temp, "w");
+          if (!$url_fh) {
+            throw new Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
+                array('%url', $file_remote)));
+          }
 
-        // Write the contents of the remote file to the temp file.
-        while (!feof($url_fh)) {
-          fwrite($tmp_fh, fread($url_fh, 255), 255);
-        }
-        // Set the path to the file for the importer to use.
-        $this->arguments['file']['file_path'] = $temp;
-        $this->is_prepared = TRUE;
-      }
-
-      // Is this file compressed?  If so, then uncompress it
-      $matches = array();
-      if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_path'], $matches)) {
-        $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['file']['file_path']));
-        $buffer_size = 4096;
-        $new_file_path = $matches[1];
-        $gzfile = gzopen($this->arguments['file']['file_path'], 'rb');
-        $out_file = fopen($new_file_path, 'wb');
-        if (!$out_file) {
-          throw new Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
+          // Write the contents of the remote file to the temp file.
+          while (!feof($url_fh)) {
+            fwrite($tmp_fh, fread($url_fh, 255), 255);
+          }
+          // Set the path to the file for the importer to use.
+          $this->arguments['file']['file_path'] = $temp;
+          $this->is_prepared = TRUE;
         }
 
-        // Keep repeating until the end of the input file
-        while (!gzeof($gzfile)) {
-          // Read buffer-size bytes
-          // Both fwrite and gzread and binary-safe
-          fwrite($out_file, gzread($gzfile, $buffer_size));
+        // Is this file compressed?  If so, then uncompress it
+        $matches = array();
+        if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_path'], $matches)) {
+          $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['file']['file_path']));
+          $buffer_size = 4096;
+          $new_file_path = $matches[1];
+          $gzfile = gzopen($this->arguments['file']['file_path'], 'rb');
+          $out_file = fopen($new_file_path, 'wb');
+          if (!$out_file) {
+            throw new Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
+          }
+
+          // Keep repeating until the end of the input file
+          while (!gzeof($gzfile)) {
+            // Read buffer-size bytes
+            // Both fwrite and gzread and binary-safe
+            fwrite($out_file, gzread($gzfile, $buffer_size));
+          }
+
+          // Files are done, close files
+          fclose($out_file);
+          gzclose($gzfile);
+
+          // Now remove the .gz file and reset the file_path to the new
+          // uncompressed version.
+          unlink($this->arguments['file'][$i]['file_path']);
+          $this->arguments['file'][$i]['file_path'] = $new_file_path;
         }
-
-        // Files are done, close files
-        fclose($out_file);
-        gzclose($gzfile);
-
-        // Now remove the .gz file and reset the file_path to the new
-        // uncompressed version.
-        unlink($this->arguments['file']['file_path']);
-        $this->arguments['file']['file_path'] = $new_file_path;
       }
     }
     catch (Exception $e){

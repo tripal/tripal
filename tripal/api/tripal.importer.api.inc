@@ -100,7 +100,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
     $loader = TripalImporter::byID($import_id);
     $loader->setJob($job);
-    $loader->prepareFile();
+    $loader->prepareFiles();
     $loader->run();
     $loader->cleanFile();
 
