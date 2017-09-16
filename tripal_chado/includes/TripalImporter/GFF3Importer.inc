@@ -43,8 +43,6 @@ class GFF3Importer extends TripalImporter {
    */
   public static $button_text = 'Import GFF3 file';
 
-  public static $cardinality = 0;
-
   /**
    * @see TripalImporter::form()
    */
