@@ -258,14 +258,7 @@
      */
     this.getFileButton = function(tname, category, i) {
       var button_name = tname + '--' + category + '-upload-' + i;
-      // If the button is already in the DOM then we want to preserve the
-      // 'ready' attribute. If the button already has an onChange event then
-      // it is ready.
-      var ready = $('#' + button_name).attr('ready');
-      if (!ready) {
-        ready = 'false';
-      }
-      var element = '<input id="' + button_name + '" class="tripal-chunked-file-upload" type="file" ready="' + ready + '">';
+      var element = '<input id="' + button_name + '" class="tripal-chunked-file-upload" type="file" ready="false">';
       
       return {
         'name' : button_name,
@@ -529,6 +522,7 @@
       var max_paired1 = this.getMaxIndex(category1);
       var max_paired2 = this.getMaxIndex(category2);
       
+      var buttons = []
       var button1 = null;
       var button2 = null;
 
@@ -552,6 +546,7 @@
         }
         else {
           paired_content += '<td colspan="4">' + button1['element'] + '</td>';
+          buttons.push(button1);
         }
         if (i in category2_files) {
           paired_content += '<td>' + category2_files[i].getFileName() + '</td>';
@@ -562,6 +557,7 @@
         }
         else {
           paired_content += '<td colspan="4">' + button2['element'] + '</td>';
+          buttons.push(button2);
         }
         paired_content +=  '</tr>';
       }
@@ -572,17 +568,16 @@
         if (!cardinality || cardinality == 0 || cardinality < max_paired1) {
           button1 = this.getFileButton(tname, category1, i);
           button2 = this.getFileButton(tname, category2, i);
+          buttons.push(button1);
+          buttons.push(button2);
           paired_content += '<tr class="odd"><td colspan="4">' + button1['element'] + 
             '</td><td colspan="4">' + button2['element'] + '</td></tr>'
         }
       }
 
       $(table_id + ' > tbody').html(paired_content);
-      if (button1) {
-        this.enableFileButton(button1['name']);
-      }
-      if (button2) {
-        this.enableFileButton(button2['name']);
+      for (i = 0; i < buttons.length; i++) {
+        this.enableFileButton(buttons[i]['name']);
       }
     }
 
