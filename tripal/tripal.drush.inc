@@ -19,32 +19,6 @@
  *
  * @ingroup tripal_drush
  */
-function tripal_drush_help($command) {
-  switch ($command) {
-
-    // TRIPAL JOBS
-    case 'trp-run-jobs':
-      return dt('Launches pending jobs waiting in the queue.');
-      break;
-    case 'trp-rerun-job':
-      return dt('Rerun a job in the queue.');
-      break;
-    case 'trp-get-currjob':
-      return dt('Returns details about the currently running tripal job including percent complete.');
-      break;
-    // Placeholders for unimplmeneted jobs
-    case 'trp-show-job':
-      break;
-    case 'trp-revert-jobs':
-      break;
-    case 'trp-cancel-job':
-      break;
-    case 'trp-list-jobs':
-      break;
-
-  }
-}
-
 /**
  * Registers a drush command and constructs the full help for that command.
  *
@@ -186,6 +160,39 @@ function drush_tripal_trp_run_jobs() {
   }
 }
 
+
+/**
+ * Executes jobs in the Tripal Jobs Queue.
+ *
+ * Executed when 'drush trp-run-job' is called.
+ *
+ * @ingroup tripal_drush
+ */
+function drush_tripal_trp_run_jobs_install($username) {
+  $parallel = drush_get_option('parallel');
+  $job_id   = drush_get_option('job_id');
+  $max_jobs = drush_get_option('max_jobs', -1);
+  $single   = drush_get_option('single', 0);
+
+  drush_tripal_set_user($username);
+
+  drush_print("\n" . date('Y-m-d H:i:s'));
+  if ($parallel) {
+    drush_print("Tripal Job Launcher (in parallel)");
+    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
+    tripal_launch_job($parallel, $job_id, $max_jobs, $single);
+  }
+  else {
+    drush_print("Tripal Job Launcher");
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
+    tripal_launch_job(0, $job_id, $max_jobs, $single);
+  }
+}
+
+
 /**
  * Executes jobs in the Tripal Jobs Queue.
  *
@@ -254,13 +261,13 @@ function drush_tripal_trp_get_currjob() {
   foreach ($jobs as $job) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n" .
-        "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
-        "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
-        "Module: " . $job->modulename . "\n" .
-        "Callback: " . $job->callback . "\n" .
-        "Process ID: " . $job->pid . "\n" .
-        "Progress: " . $job->progress . "%\n".
-        "Current Date: " . date('Y-m-d H:i:s') . "\n";
+      "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
+      "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
+      "Module: " . $job->modulename . "\n" .
+      "Callback: " . $job->callback . "\n" .
+      "Process ID: " . $job->pid . "\n" .
+      "Progress: " . $job->progress . "%\n".
+      "Current Date: " . date('Y-m-d H:i:s') . "\n";
     drush_print(date('Y-m-d H:i:s'));
     drush_print($output);
   }
@@ -271,7 +278,3 @@ function drush_tripal_trp_get_currjob() {
   //log to the command line with an OK status
   drush_log('Running tripal-current-job', 'ok');
 }
-
-
-
-

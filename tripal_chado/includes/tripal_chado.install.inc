@@ -187,6 +187,17 @@ function tripal_chado_load_form_submit($form, &$form_state) {
 }
 
 /**
+ * Submit Load Chado Schema Form
+ *
+ * @ingroup tripal_chado
+ */
+function tripal_chado_load_drush_submit($version) {
+  $args = array($version);
+  $includes = array(module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'));
+  tripal_add_job($version, 'tripal_chado',
+    'tripal_chado_install_chado', $args, 1, 10, $includes);
+}
+/**
  * Install Chado Schema
  *
  * @ingroup tripal_chado
