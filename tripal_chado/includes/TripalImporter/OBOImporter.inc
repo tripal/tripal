@@ -1076,7 +1076,7 @@ class OBOImporter extends TripalImporter {
           $options = array('return_record' => FALSE);
           $success = chado_insert_record('cvtermsynonym', $values, $options);
           if (!$success) {
-            throw new Exception("Failed to insert the synonym for term: $name ($def)");
+            throw new Exception("Failed to insert the synonym for term: $cvterm->name ($def)");
           }
         }
 
@@ -1145,6 +1145,7 @@ class OBOImporter extends TripalImporter {
 
       //remove comments from end of lines
       $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);  // TODO: if the explamation is escaped
+      $type = '';
 
       // at the first stanza we're out of header
       if (preg_match('/^\s*\[/', $line)) {

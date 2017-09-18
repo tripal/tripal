@@ -23,14 +23,14 @@ class GFF3Importer extends TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = array('gff3');
+  public static $file_types = array('gff', 'gff3');
 
 
   /**
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
    */
-  public static $upload_description = 'Please provide the GFF3 file. The file must have a .gff3 extension.';
+  public static $upload_description = 'Please provide the GFF3 file.';
 
   /**
    * The title that should appear above the upload button.
@@ -297,7 +297,7 @@ class GFF3Importer extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['file']['file_path'];
+    $file_path = $this->arguments['files'][0]['file_path'];
 
     $organism_id = $arguments['organism_id'];
     $analysis_id = $arguments['analysis_id'];

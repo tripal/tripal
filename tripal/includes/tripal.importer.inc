@@ -35,6 +35,8 @@ function tripal_get_importer_form($form, &$form_state, $class) {
         'then the status will quickly update to "Complete".',
       '#usage_type' => 'tripal_importer',
       '#usage_id' => 0,
+      '#allowed_types' => $class::$file_types,
+      '#cardinality' => $class::$cardinality,
     );
   }
 
@@ -76,7 +78,6 @@ function tripal_get_importer_form($form, &$form_state, $class) {
       '#options' => $analyses,
     );
   }
-
 
   $importer = new $class();
   $element = array();

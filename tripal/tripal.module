@@ -982,13 +982,28 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
   $name = preg_replace('/[^\w]/', '_', $name);
   $allowed_types = array_key_exists('#allowed_types', $element) ? $element['#allowed_types'] : array();
   $cardinality = array_key_exists('#cardinality', $element) ? $element['#cardinality'] : 1;
+  $paired = array_key_exists('#paired', $element) ? $element['#paired'] : FALSE;
 
-  $headers = array(
-    array('data' => 'File'),
-    array('data' => 'Size', 'width' => '10%'),
-    array('data' => 'Upload Progress', 'width' => '20%'),
-    array('data' => 'Action', 'width' => '10%')
-  );
+  if ($paired) {
+    $headers = array(
+      array('data' => 'File #1'),
+      array('data' => 'Size', 'width' => '10%'),
+      array('data' => 'Upload Progress', 'width' => '20%'),
+      array('data' => 'Action', 'width' => '10%'),
+      array('data' => 'File #2'),
+      array('data' => 'Size', 'width' => '10%'),
+      array('data' => 'Upload Progress', 'width' => '20%'),
+      array('data' => 'Action', 'width' => '10%')
+    );
+  }
+  else {
+    $headers = array(
+      array('data' => 'File'),
+      array('data' => 'Size', 'width' => '10%'),
+      array('data' => 'Upload Progress', 'width' => '20%'),
+      array('data' => 'Action', 'width' => '10%'),
+    );
+  }
   $rows = array();
   $table_vars = array(
     'header'      => $headers,
@@ -1032,10 +1047,19 @@ function tripal_html5_file_process($element, $form_state, $complete_form) {
     )
   );
 
+  if (!$paired) {
+    $categories = array($element['#usage_id'] . '-' . $element['#usage_type']);
+  }
+  else {
+    $categories = array(
+      $element['#usage_id'] . '-' . $element['#usage_type'] . '-f',
+      $element['#usage_id'] . '-' . $element['#usage_type'] . '-r',
+    );
+  }
   $uploader_settings = array(
     'table_id' => '#tripal-html5-file-upload-table-' . $type,
     'submit_id' => '#tripal-html5-file-upload-submit-' . $type,
-    'category' => array($element['#usage_id'] . '-' . $element['#usage_type']),
+    'category' => $categories,
     'cardinality' => $cardinality,
     'target_id' => 'tripal-html5-upload-fid-' . $type,
     'module' => $module,

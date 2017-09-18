@@ -331,10 +331,9 @@ function tripal_tripal_import_schema() {
         'not null' => TRUE,
       ),
       'fid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
+        'type' => 'text',
         'not null' => FALSE,
-        'description' => 'The file ID of the file to import. This only applies if the file was uploaded (i.e. not already on the server) and is mangaged by Drupal.'
+        'description' => 'The file IDs of the to import. This only applies if the file was uploaded (i.e. not already on the server) and is mangaged by Drupal. Multiple fids are separated using a | character.'
       ),
       'arguments' => array(
         'type' => 'text',
@@ -911,6 +910,25 @@ function tripal_update_7304() {
       'hide_empty_field',
       'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
     );
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adjusts the tripal_import table to support multiple file uploads.
+ */
+function tripal_update_7305() {
+  $transaction = db_transaction();
+  try {
+    db_change_field('tripal_import', 'fid', 'fid', array(
+      'type' => 'text',
+      'not null' => FALSE,
+      'description' => 'The file IDs of the to import. This only applies if the file was uploaded (i.e. not already on the server) and is mangaged by Drupal. Multiple fids are separated using a | character.'
+    ));
   }
   catch (\PDOException $e) {
     $transaction->rollback();
