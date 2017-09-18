@@ -173,6 +173,7 @@
       if (this.curr_chunk >= this.total_chunks) {
         this.updateStatus();
         this._onUploadComplete();
+
         return;
       }
 
