@@ -22,37 +22,33 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
 
   // Allow the module that will own the file to make some checks. The module
   // is allowed to stop the upload as needed.
-
-    if ($action == 'check' ) {
-        $hook_name = $module.'_file_upload_check';
-        if (function_exists($hook_name)) {
-            $details = [
-                'filename' => $filename,
-                'file_size' => $file_size,
-                'chunk_size' => $chunk_size,
-            ];
-            $message = '';
-            $status = $hook_name($action, $details, $message);
-            if ($status === false) {
-                drupal_json_output([
-                    'status' => 'failed',
-                    'message' => $message,
-                    'file_id' => '',
-                ]);
-
-                return;
-            }
-        }
+  $hook_name = $module . '_file_upload_check';
+  if (function_exists($hook_name)) {
+    $details = array(
+      'filename' => $filename,
+      'file_size' => $file_size,
+      'chunk_size' => $chunk_size,
+    );
+    $message = '';
+    $status = $hook_name($action, $details, $message);
+    if ($status === FALSE) {
+      drupal_json_output(array(
+        'status' => 'failed',
+        'message' => $message,
+        'file_id' => '',
+      ));
+      return;
     }
+  }
 
-    switch ($action) {
+  switch ($action) {
     // If the action is 'put' then the callee is sending a chunk of the file
     case 'save':
       tripal_file_upload_put($filename, $chunk, $user_dir);
       break;
-    //case 'check':
-    //  tripal_file_upload_check($filename, $chunk, $user_dir);
-    //  break;
+    case 'check':
+      tripal_file_upload_check($filename, $chunk, $user_dir);
+      break;
     case 'merge':
       tripal_file_upload_merge($filename, $type, $user_dir);
       break;
