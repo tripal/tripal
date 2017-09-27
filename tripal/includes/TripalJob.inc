@@ -5,12 +5,12 @@ class TripalJob {
   /**
    * The ID of the job.
    */
-  private $job_id = NULL;
+  protected $job_id = NULL;
 
   /**
    * Contains the job record for this job.
    */
-  private $job = NULL;
+  protected $job = NULL;
 
   /**
    * Instantiates a new TripalJob object.

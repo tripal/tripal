@@ -82,6 +82,28 @@ function tripal_get_field_types() {
       }
     }
   }
+
+  // If the libraries module is enabled then we want to look for a TripalFields
+  // library folder and see if our field exist there.
+  if (module_exists('libraries')) {
+    $library_path = libraries_get_path('TripalFields');
+    $fields_path = realpath(".") . '/' . $library_path;
+    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
+    foreach ($field_files as $file) {
+      // Ignore the formatter and widget classes for now.
+      if (preg_match('/_formatter|_widget/', $file->name)) {
+        continue;
+      }
+      $field_type = $file->name;
+      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $field_type . '.inc';
+      if (file_exists($file_path)) {
+        require_once($file_path);
+        if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
+          $types[] = $field_type;
+        }
+      }
+    }
+  }
   return $types;
 }
 /**
@@ -116,6 +138,25 @@ function tripal_get_field_widgets() {
       module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $widget_type);
       if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
         $widgets[] = $widget_type;
+      }
+    }
+  }
+
+  // If the libraries module is enabled then we want to look for a TripalFields
+  // library folder and see if our field exist there.
+  if (module_exists('libraries')) {
+    $library_path = libraries_get_path('TripalFields');
+    $fields_path = realpath(".") . '/' . $library_path;
+    $field_files = file_scan_directory($fields_path, '/.*_widget\.inc$/');
+    foreach ($field_files as $file) {
+      $widget_type = $file->name;
+      $field_type = preg_replace('/(^.*)_widget/', '$1', $widget_type);
+      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $widget_type . '.inc';
+      if (file_exists($file_path)) {
+        require_once($file_path);
+        if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
+          $widgets[] = $widget_type;
+        }
       }
     }
   }
@@ -156,6 +197,25 @@ function tripal_get_field_formatters() {
       }
     }
   }
+
+  // If the libraries module is enabled then we want to look for a TripalFields
+  // library folder and see if our field exist there.
+  if (module_exists('libraries')) {
+    $library_path = libraries_get_path('TripalFields');
+    $fields_path = realpath(".") . '/' . $library_path;
+    $field_files = file_scan_directory($fields_path, '/.*_formatter\.inc$/');
+    foreach ($field_files as $file) {
+      $formatter_type = $file->name;
+      $field_type = preg_replace('/(^.*)_formatter/', '$1', $formatter_type);
+      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $formatter_type . '.inc';
+      if (file_exists($file_path)) {
+        require_once($file_path);
+        if (class_exists($formatter_type) and is_subclass_of($formatter_type, 'TripalFieldFormatter')) {
+          $formatters[] = $formatter_type;
+        }
+      }
+    }
+  }
   return $formatters;
 }
 /**
@@ -181,6 +241,21 @@ function tripal_load_include_field_class($class) {
       }
     }
   }
+
+  // If the libraries module is enabled then we want to look for a TripalFields
+  // library folder and see if our field exist there.
+  if (module_exists('libraries')) {
+    $library_path = libraries_get_path('TripalFields');
+    $field_type = preg_replace('/(^.*)_(formatter|widget)/', '$1', $class);
+    $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $class . '.inc';
+    if (file_exists($file_path)) {
+      require_once($file_path);
+      if (class_exists($class)) {
+        return TRUE;
+      }
+    }
+  }
+
   return FALSE;
 }
 
