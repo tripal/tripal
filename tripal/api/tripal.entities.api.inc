@@ -1124,7 +1124,6 @@ function theme_token_list($tokens) {
  */
 
 function tripal_entity_label($entity) {
-  dpm($entity);
   if (property_exists($entity, 'title')) {
     return $entity->title;
   }
