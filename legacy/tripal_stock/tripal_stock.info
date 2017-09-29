@@ -3,7 +3,7 @@ description = Supports the stock tables of Chado by providing pages for viewing,
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 
 dependencies[] = tripal_core
 dependencies[] = tripal_chado_views
