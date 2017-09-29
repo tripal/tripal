@@ -60,13 +60,13 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   if ($op == FIELD_STORAGE_INSERT) {
     // Add the record to the proper chado entity table
     $chado_entity_table = chado_get_bundle_entity_table($bundle);
-    $mapping_id = db_insert($chado_entity_table)
+    $record_id = db_insert($chado_entity_table)
       ->fields(array(
         'entity_id' => $entity->id,
-        'record_id' => $record_id
+        'record_id' => $base_record_id
       ))
       ->execute();
-    if (!$mapping_id) {
+    if (!$record_id) {
       throw new Exception('Unable to insert new Chado entity.');
     }
   }
