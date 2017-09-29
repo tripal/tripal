@@ -252,6 +252,11 @@ function tripal_field_no_delete() {
  */
 function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
 
+  // If this isn't a TripalEntity content type then skip this form.
+  if ($form['#entity_type'] != 'TripalEntity') {
+    return;
+  }
+
   // Add the 'Storage Location' to the table header.
   $form['fields']['#header'][] = 'Term';
   $form['fields']['#header'][] = 'Supported By * ';

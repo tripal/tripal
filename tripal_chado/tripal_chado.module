@@ -164,7 +164,20 @@ function tripal_chado_menu() {
 
   // Adds a +Publish Chado Content link on the 'Tripal Content Types' page.
   $items['admin/structure/bio_data/publish'] = array(
-    'title' => 'Publish Chado Content',
+    'title' => 'Publish Tripal Content',
+    'description' => t('Publish data that is present in Chado but which does
+        not yet have a page on this site for viewing. In Tripal v2.0 or
+        earlier this was refered to as "syncing".'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_publish_form'),
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.publish.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 2
+  );
+  $items['admin/content/bio_data/publish'] = array(
+    'title' => 'Publish Tripal Content',
     'description' => t('Publish data that is present in Chado but which does
         not yet have a page on this site for viewing. In Tripal v2.0 or
         earlier this was refered to as "syncing".'),

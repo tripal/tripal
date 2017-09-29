@@ -164,14 +164,14 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group_tripalpane->mode = 'default';
   $field_group_tripalpane->parent_name = '';
   $field_group_tripalpane->data = array(
-    'label' => 'Data Sequences',
+    'label' => 'Sequences',
     'weight' => '1',
     'children' => array(
         0 => 'group_sequence_table',
     ),
     'format_type' => 'tripalpane',
     'format_settings' => array(
-      'label' => 'Data Sequences',
+      'label' => 'Sequences',
       'instance_settings' => array(
         'id' => 'tripal_ds-fieldset-group_sequence_tripalpane',
         'classes' => 'group-sequence-tripalpane field-group-tripalpane ',
@@ -195,12 +195,12 @@ function _data_sequence_field_group_info($bundle_name, $fields){
   $field_group->mode = 'default';
   $field_group->parent_name = 'group_sequence_tripalpane';
   $field_group->data = array(
-    'label' => 'Data Sequences Table',
+    'label' => 'Sequences Table',
     'weight' => '1',
     'children' => $fields,
     'format_type' => 'table',
     'format_settings' => array(
-      'label' => 'Data Sequences Table',
+      'label' => 'Sequences Table',
       'instance_settings' => array(
         'label_visibility' => '1',
         'desc' => '',

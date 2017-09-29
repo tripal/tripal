@@ -60,13 +60,13 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   if ($op == FIELD_STORAGE_INSERT) {
     // Add the record to the proper chado entity table
     $chado_entity_table = chado_get_bundle_entity_table($bundle);
-    $record_id = db_insert($chado_entity_table)
+    $mapping_id = db_insert($chado_entity_table)
       ->fields(array(
         'entity_id' => $entity->id,
-        'record_id' => $base_record_id
+        'record_id' => $record_id
       ))
       ->execute();
-    if (!$record_id) {
+    if (!$mapping_id) {
       throw new Exception('Unable to insert new Chado entity.');
     }
   }
@@ -107,7 +107,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  * @return
  *   The unique record ID.
  */
-function tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey = NULL, $base_record_id= NULL) {
+function tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey = NULL, $base_record_id = NULL) {
   $schema = chado_get_schema($table_name);
   $fkeys = $schema['foreign keys'];
   $pkey = $schema['primary key'][0];
