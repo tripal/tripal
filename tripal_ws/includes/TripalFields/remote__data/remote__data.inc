@@ -7,6 +7,7 @@
  * Assumptions:
  */
 class remote__data extends WebServicesField {
+
   // --------------------------------------------------------------------------
   //                     EDITABLE STATIC CONSTANTS
   //
@@ -16,8 +17,10 @@ class remote__data extends WebServicesField {
   // --------------------------------------------------------------------------
   // The default label for this field.
   public static $default_label = 'Remote Data';
+
   // The default description for this field.
   public static $default_description = 'remote data';
+
   // The default widget for this field.
   //public static $default_widget = '';
   // The default formatter for this field.
@@ -30,7 +33,7 @@ class remote__data extends WebServicesField {
   // Once instances exist for a field type then these settings cannot be
   // changed.
   public static $default_settings = array(
-    'storage' => 'tripal_no_storage',
+    'storage' => 'field_tripal_ws_storage',
     // It is expected that all fields set a 'value' in the load() function.
     // In many cases, the value may be an associative array of key/value pairs.
     // In order for Tripal to provide context for all data, the keys should
@@ -73,32 +76,9 @@ class remote__data extends WebServicesField {
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
- /**
-   * Loads the field values from the underlying data store.
-   *
-   * @param $entity
-   *
-   * @return
-   *   An array of the following format:
-   *     $entity->{$field_name}['und'][0]['value'] = $value;
-   *   where:
-   *     - $entity is the entity object to which this field is attached.
-   *     - $field_name is the name of this field
-   *     - 'und' is the language code (in this case 'und' == undefined)
-   *     - 0 is the cardinality.  Increment by 1 when more than one item is
-   *       available.
-   *     - 'value' is the key indicating the value of this field. It should
-   *       always be set.  The value of the 'value' key will be the contents
-   *       used for web services and for downloadable content.  The value
-   *       should be of the follow format types: 1) A single value (text,
-   *       numeric, etc.) 2) An array of key value pair. 3) If multiple entries
-   *       then cardinality should incremented and format types 1 and 2 should
-   *       be used for each item.
-   *   The array may contain as many other keys at the same level as 'value'
-   *   but those keys are for internal field use and are not considered the
-   *   value of the field.
-   *
-   *
+
+  /**
+   * @see WebServicesField::load()
    */
   public function load($entity) {
   }

@@ -1,6 +1,8 @@
 <?php
 
 require_once  "api/tripal_ws.api.inc";
+require_once  "includes/tripal_ws.field_storage.inc";
+require_once  "includes/tripal_ws.fields.inc";
 require_once  "includes/TripalWebService.inc";
 require_once  "includes/TripalWebServiceResource.inc";
 require_once  "includes/TripalWebServiceCollection.inc";
