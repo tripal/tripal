@@ -5,6 +5,10 @@ require_once  "includes/TripalWebService.inc";
 require_once  "includes/TripalWebServiceResource.inc";
 require_once  "includes/TripalWebServiceCollection.inc";
 
+// Web Services Fields
+require_once "includes/TripalFields/WebServicesField.inc";
+require_once "includes/TripalFields/WebServicesFieldWidget.inc";
+require_once "includes/TripalFields/WebServicesFieldFormatter.inc";
 
 /**
  * Implements hook_init()
