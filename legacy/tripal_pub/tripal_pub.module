@@ -10,7 +10,6 @@ require_once 'theme/tripal_pub.theme.inc';
 
 require_once 'includes/tripal_pub.admin.inc';
 require_once 'includes/tripal_pub.chado_node.inc';
-require_once 'includes/tripal_pub.pub_search.inc';
 
 /**
  * @defgroup tripal_pub Publication Module
@@ -53,20 +52,7 @@ function tripal_pub_menu() {
 
   // for backwards compatibility the same chado/publications is also found
   // at find/publications
-  $items['find/publications' ]= array(
-    'title' => 'Publication Search',
-    'description' => ('Search for publications'),
-    'page callback' => 'tripal_pub_search_page',
-    'access arguments' => array('access chado_pub content'),
-    'type' => MENU_CALLBACK
-  );
 
-  $items['find/publications/criteria/%/%'] = array(
-    'page callback' => 'tripal_pub_search_page_update_criteria',
-    'page arguments' => array(5, 6),
-    'access arguments' => array('access chado_pub content'),
-    'type ' => MENU_CALLBACK,
-  );
 
   $items['admin/tripal/legacy/tripal_pub']= array(
     'title' => 'Publications',

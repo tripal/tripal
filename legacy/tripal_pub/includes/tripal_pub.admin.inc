@@ -67,42 +67,6 @@ function tripal_pub_admin() {
   chado_add_admin_form_set_title($form, $form_state, $details);
 
   // -----------------------------------------
-  // add in the fields for selecting which fields are used when search for pubs
-  $form['searching'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Searching Options'),
-    '#description' => t("The list of checkboxes below indicate which fields a user
-      can search with when using the publication search tool.  Check the fields that you want
-      to allow users to search with.  Click the 'Save configuration' button below to save changes."),
-  );
-
-  // get publication properties list
-  $properties = array();
-  $properties[] = 'Any Field';
-  $sql = "
-    SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and
-      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and
-      NOT CVTS.is_obsolete = 1
-    ORDER BY CVTS.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    $properties[$prop->cvterm_id] = $prop->name;
-  }
-  $form['searching']['allowed_search_fields'] = array(
-    '#type'    => 'checkboxes',
-    '#options' => $properties,
-    '#prefix'  => '<div style="scroll: auto; border:1px solid #CCCCCC;">',
-    '#suffix'  => '</div>',
-    '#default_value' => variable_get('tripal_pub_allowed_search_fields', array()),
-  );
-
-  // -----------------------------------------
   // add the field set for syncing publications
   $form['import'] = array(
     '#type' => 'fieldset',
@@ -178,15 +142,6 @@ function tripal_pub_admin() {
 function tripal_pub_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info
   $job_args = array();
-
-  // set the allowed search fields
-  $allowed_fields = $form_state['values']['allowed_search_fields'];
-  foreach ($allowed_fields as $cvterm_id => $selected) {
-    if (!$selected) {
-      unset($allowed_fields[$cvterm_id]);
-    }
-  }
-  variable_set('tripal_pub_allowed_search_fields', $allowed_fields);
 
   $import_duplicate_check = $form_state['values']['import_duplicate_check'];
   variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
