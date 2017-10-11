@@ -31,6 +31,8 @@ require_once "includes/TripalFields/TripalFieldFormatter.inc";
 require_once "includes/TripalFieldQuery.inc";
 require_once "includes/TripalJob.inc";
 require_once "includes/TripalImporter.inc";
+require_once "includes/TripalEntityCollection.inc";
+require_once "includes/TripalFieldDownloaders/TripalFieldDownloader.inc";
 
 /**
  * @defgroup tripal Tripal Core Module
@@ -626,6 +628,7 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.notice.api');
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
   module_load_include('inc', 'tripal', 'api/tripal.upload.api');
+  module_load_include('inc', 'tripal', 'api/tripal.collections.api');
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 

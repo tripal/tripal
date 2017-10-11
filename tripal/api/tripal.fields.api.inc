@@ -162,6 +162,7 @@ function tripal_get_field_widgets() {
   }
   return $widgets;
 }
+
 /**
  * Retrieves a list of TripalFieldFormatters.
  *
@@ -248,6 +249,44 @@ function tripal_load_include_field_class($class) {
     $library_path = libraries_get_path('TripalFields');
     $field_type = preg_replace('/(^.*)_(formatter|widget)/', '$1', $class);
     $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $class . '.inc';
+    if (file_exists($file_path)) {
+      require_once($file_path);
+      if (class_exists($class)) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Loads the TripalEntityDownloader file into scope.
+ *
+ * @param $class
+ *   The name of the class to include.
+ *
+ * @return
+ *   TRUE if the downloader class file was found, FALSE otherwise.
+ */
+function tripal_load_include_downloader_class($class) {
+
+  $modules = module_list(TRUE);
+  foreach ($modules as $module) {
+    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalFieldDownloaders/' . $class . '.inc';
+    if (file_exists($file_path)) {
+      module_load_include('inc', $module, 'includes/TripalFieldDownloaders/' . $class);
+      if (class_exists($class)) {
+        return TRUE;
+      }
+    }
+  }
+
+  // If the libraries module is enabled then we want to look for a
+  // TripalFieldDownloader library folder and see if our field exist there.
+  if (module_exists('libraries')) {
+    $library_path = libraries_get_path('TripalFieldDownloaders');
+    $file_path = realpath(".") . '/' . $library_path .'/' . $class . '.inc';
     if (file_exists($file_path)) {
       require_once($file_path);
       if (class_exists($class)) {

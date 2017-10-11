@@ -18,7 +18,7 @@
  * @param $reset: Whether to reset the internal cache for the requested entity
  *   type. Defaults to FALSE.
  * @param $field_ids
- *   A list of numeric feild IDs that should be loaded.  The
+ *   A list of numeric field IDs that should be loaded.  The
  *   TripalField named 'content_type' is always automatically added.
  *
  * @return

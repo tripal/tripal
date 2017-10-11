@@ -50,11 +50,12 @@ class TripalField {
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
-    // Inidates if this field should be automatically attached to display
-    // or web services or if this field should be loaded separately. This
-    // is convenient for speed.  Fields that are slow should for loading
-    // should ahve auto_attach set to FALSE so tha their values can be
-    // attached asyncronously.
+    // Indicates the download formats for this field.  The list must be the
+    // name of a child class of the TripalFieldDownloader.
+    'download_formatters' => array(
+      'TripalTabDownloader',
+      'TripalCSVDownloader',
+    ),
   );
 
   // The default widget for this field.
@@ -77,6 +78,7 @@ class TripalField {
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
+
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE

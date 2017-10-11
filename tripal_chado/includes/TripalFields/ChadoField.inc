@@ -41,6 +41,12 @@ class ChadoField extends TripalField {
     'chado_column' => '',
     // The base table.
     'base_table' => '',
+    // Indicates the download formats for this field.  The list must be the
+    // name of a child class of the TripalFieldDownloader.
+    'download_formatters' => array(
+      'TripalTabDownloader',
+      'TripalCSVDownloader',
+    ),
   );
 
   // The module that manages this field.

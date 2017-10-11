@@ -16,7 +16,7 @@ function tripal_install() {
     db_add_field('tripal_jobs', 'includes', array(
       'type' => 'text',
       'description' => 'A serialized array of file paths that should be included prior to executing the job.',
-      'not NULL' => FALSE,
+      'not null' => FALSE,
     ));
   }
 }
@@ -193,6 +193,7 @@ function tripal_schema() {
   $schema['tripal_entity'] = tripal_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
   $schema['tripal_import'] = tripal_tripal_import_schema();
+  $schema['tripal_collection'] = tripal_tripal_collection_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
@@ -209,96 +210,96 @@ function tripal_tripal_jobs_schema() {
       'job_id' => array(
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not NULL' => TRUE,
+        'not null' => TRUE,
         'description' => 'The Drupal userid of the submitee'
       ),
       'job_name' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'modulename' => array(
         'type' => 'varchar',
         'length' => 50,
-        'not NULL' => TRUE,
+        'not null' => TRUE,
         'description' => 'The module name that provides the callback for this job'
       ),
       'callback' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'arguments' => array(
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
+        'not null' => FALSE
       ),
       'progress' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'default' => 0,
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'a value from 0 to 100 indicating percent complete'
       ),
       'status' => array(
         'type' => 'varchar',
         'length' => 50,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'submit_date' => array(
         'type' => 'int',
-        'not NULL' => TRUE,
+        'not null' => TRUE,
         'description' => 'UNIX integer submit time'
       ),
       'start_time' => array(
         'type' => 'int',
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'UNIX integer start time'
       ),
       'end_time' => array(
         'type' => 'int',
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'UNIX integer end time'
       ),
       'error_msg' => array(
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
+        'not null' => FALSE
       ),
       'pid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'The process id for the job'
       ),
       'priority' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not NULL' => TRUE,
+        'not null' => TRUE,
         'default' => '0',
         'description' => 'The job priority'
       ),
       'mlock' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'If set to 1 then all jobs for the module are held until this one finishes'
       ),
       'lock' => array(
         'type' => 'int',
         'unsigned' => TRUE,
-        'not NULL' => FALSE,
+        'not null' => FALSE,
         'description' => 'If set to 1 then all jobs are held until this one finishes'
       ),
       'includes' => array(
         'type' => 'text',
         'description' => 'A serialized array of file paths that should be included prior to executing the job.',
-        'not NULL' => FALSE,
+        'not null' => FALSE,
       )
     ),
     'indexes' => array(
@@ -306,6 +307,64 @@ function tripal_tripal_jobs_schema() {
       'job_name' => array('job_name')
     ),
     'primary key' => array('job_id'),
+  );
+}
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
+function tripal_tripal_collection_schema() {
+  return array(
+    'fields' => array(
+      'collection_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'collection_name' => array(
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => FALSE
+      ),
+      'bundle_name' => array(
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE
+      ),
+      'ids' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'An array of entity IDs.'
+      ),
+      'fields' => array(
+        'type' => 'text',
+        'size' => normal,
+        'not null' => TRUE,
+        'description' => 'An array of numeric field IDs.'
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The user Id of the person who created the collection.'
+      ),
+      'create_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'UNIX integer start time'
+      ),
+    ),
+    'indexes' => array(
+      'bundle_name' => array('bundle_name'),
+      'uid' => array('uid')
+    ),
+    'unique keys' => array(
+      'user_collection' => array('uid', 'collection_name'),
+    ),
+    'primary key' => array('collection_id'),
   );
 }
 /**
@@ -914,7 +973,7 @@ function tripal_update_7304() {
   catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -933,6 +992,23 @@ function tripal_update_7305() {
   catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
+}
+
+/**
+ * Adds the tripal_collection table.
+ */
+function tripal_update_7306() {
+  $transaction = db_transaction();
+  try {
+    $schema = array();
+    $schema['tripal_collection'] = tripal_tripal_collection_schema();
+    db_create_table('tripal_collection', $schema['tripal_collection']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
   }
 }

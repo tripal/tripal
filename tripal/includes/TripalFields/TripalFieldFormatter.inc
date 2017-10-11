@@ -16,11 +16,6 @@ class TripalFieldFormatter {
    */
   public static $default_settings = array();
 
-  /**
-   * An array of formatter classes supported by the field.
-   */
-  public static $download_formats = array();
-
 
   /**
    * Instantiates a new TripalFieldFormatter object.

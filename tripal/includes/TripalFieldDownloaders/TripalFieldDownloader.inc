@@ -1,11 +1,20 @@
 <?php
 
 
-class TripalFieldDownloader {
+abstract class TripalFieldDownloader {
+
+  /**
+   * Sets the label shown to the user describing this formatter.
+   */
+  static public $label = 'Generic';
+
+  /**
+   * Indicates the default extension for the outputfile.
+   */
+  static public $default_extension = 'txt';
 
   /**
    * The bundle name.
-   * @var string
    */
   protected $bundle_name = '';
 
@@ -29,20 +38,25 @@ class TripalFieldDownloader {
    * @param $bundle_name
    *   The name of the bundle to which the IDs in the $id argument belong.
    * @param $ids
-   *   An array of entity IDs
+   *   An array of entity IDs.  The order of the IDs will be the order that
+   *   output is generated.
    * @param $fields
    *   An array of numeric field IDs to use when constructing the download. If
    *   no fields are provided then all fields that are appropriate for the
    *   given type will be used.
    * @param $outfile_name
-   *   The name of the output file to create (minus any extension).
-   * @param $extension
-   *   The extension to add to the end of the output file.
+   *   The name of the output file to create. The name should not include
+   *   a path.
    */
   public function __construct($bundle_name, $ids, $fields = array(),
-      $outfile_name = '', $extension = 'txt') {
-    global $user;
+      $outfile_name = '', $uid) {
 
+    $user = user_load($uid);
+    if (!$user) {
+      throw new ErrorException(t("The provided user ID does not reference a real user: '@uid'.", array('@uid' => $uid)));
+    }
+
+    $this->bundle_name = $bundle_name;
     $this->entity_ids = $ids;
     $this->fields = $fields;
 
@@ -63,7 +77,7 @@ class TripalFieldDownloader {
       $outfile_name = unqiueid();
     }
 
-    $this->outfile = $user_dir. '/' . $outfile_name . '.' . $outfile_ext;
+    $this->outfile = $user_dir. '/' . $outfile_name;
   }
 
   /**
@@ -74,14 +88,27 @@ class TripalFieldDownloader {
   }
 
   /**
-   * Creates the download able file.
+   * Creates the downloadable file.
    */
-  public function create() {
-    $fh = fopen($this->outfile, "w");
+  public function write() {
+    $fh = fopen(drupal_realpath($this->outfile), "w");
+    if (!$fh) {
+      throw new Exception("Cannout open collection file: " . $this->outfile);
+    }
+
+    $headers = $this->getHeader();
+    foreach ($headers as $line) {
+      fwrite($fh, $line . "\r\n");
+    }
+
     foreach ($this->entity_ids as $entity_id) {
-      $entity = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
-      $content = $this->format($entity, $this->fields);
-      fwrite($fh, $content);
+      $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
+      reset($result);
+      $entity = $result[$entity_id];
+      $lines = $this->formatEntity($entity);
+      foreach ($lines as $line) {
+        fwrite($fh, $line . "\r\n");
+      }
     }
     fclose($fh);
   }
@@ -94,21 +121,26 @@ class TripalFieldDownloader {
   }
 
   /**
-   * Formats the output for a given entity.
+   * Formats the entity and the specified fields for utput.
    *
    * This function should be implemented by a child class. It should iterate
-   * over the fields for the entity and return the appropriate format.
+   * over the fields for the entity and return the appropriate format. It may
+   * return multiple lines of output if necessary.
    *
    * @param $entity
    *   The entity object.  The fields that should be formatted are already
    *   loaded.
-   * @param $fields
-   *   A list of field names that should be formatted.
    *
    * @return
-   *   A string containing the formatted output.
+   *   An array of strings (one per line of output.
    */
-  protected function format($entity, $fields) {
+  abstract protected function formatEntity($entity);
 
-  }
+  /**
+   *  Retreives header lines
+   *
+   *  This function should be implemented by a child class.  It should return
+   *  the header lines for an output file.
+   */
+  abstract protected function getHeader();
 }
