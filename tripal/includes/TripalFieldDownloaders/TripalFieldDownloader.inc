@@ -49,11 +49,14 @@ abstract class TripalFieldDownloader {
    *   a path.
    */
   public function __construct($bundle_name, $ids, $fields = array(),
-      $outfile_name = '', $uid) {
+      $outfile_name, $uid) {
 
     $user = user_load($uid);
     if (!$user) {
-      throw new ErrorException(t("The provided user ID does not reference a real user: '@uid'.", array('@uid' => $uid)));
+      throw new Exception(t("The provided user ID does not reference a real user: '@uid'.", array('@uid' => $uid)));
+    }
+    if (!$outfile_name) {
+      throw new Exception("Please provide an outputfilename");
     }
 
     $this->bundle_name = $bundle_name;
@@ -73,10 +76,6 @@ abstract class TripalFieldDownloader {
       return;
     }
 
-    if (!$outfile_name) {
-      $outfile_name = unqiueid();
-    }
-
     $this->outfile = $user_dir. '/' . $outfile_name;
   }
 
@@ -84,7 +83,16 @@ abstract class TripalFieldDownloader {
    * Retrieves the URL for the downloadable file.
    */
   public function getURL() {
-     return $this0>outfile;
+     return $this->outfile;
+  }
+
+  /**
+   * Removes the downloadable file.
+   */
+  public function delete() {
+    if (file_exists($this->outfile)) {
+      unlink($this->outfile);
+    }
   }
 
   /**
@@ -97,8 +105,10 @@ abstract class TripalFieldDownloader {
     }
 
     $headers = $this->getHeader();
-    foreach ($headers as $line) {
-      fwrite($fh, $line . "\r\n");
+    if ($headers) {
+      foreach ($headers as $line) {
+        fwrite($fh, $line . "\r\n");
+      }
     }
 
     foreach ($this->entity_ids as $entity_id) {

@@ -4,7 +4,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
   /**
    * Sets the label shown to the user describing this formatter.
    */
-  static public $label = 'CSV (comma separated)';
+  static public $label = 'CSV';
 
   /**
    * Indicates the default extension for the outputfile.
@@ -20,6 +20,10 @@ class TripalCSVDownloader extends TripalFieldDownloader {
       $field = field_info_field_by_id($field_id);
       $field_name = $field['field_name'];
 
+      if (!property_exists($entity, $field_name)) {
+        continue;
+      }
+
       // If we only have one element then this is good.
       if (count($entity->{$field_name}['und']) == 1) {
         $value = $entity->{$field_name}['und'][0]['value'];
@@ -28,7 +32,12 @@ class TripalCSVDownloader extends TripalFieldDownloader {
           $row[] = '"' . $value . '"';
         }
         else {
-          $row[] = '';
+          if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
+            $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+          }
+          else {
+            $row[] = '';
+          }
           // TODO: What to do with fields that are arrays?
         }
       }

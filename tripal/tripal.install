@@ -342,7 +342,7 @@ function tripal_tripal_collection_schema() {
       ),
       'fields' => array(
         'type' => 'text',
-        'size' => normal,
+        'size' => 'normal',
         'not null' => TRUE,
         'description' => 'An array of numeric field IDs.'
       ),

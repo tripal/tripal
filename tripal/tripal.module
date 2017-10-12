@@ -331,7 +331,52 @@ function tripal_menu() {
     }
   }
 
+  $items['user/%/data-collections'] = array (
+    'title' => 'Data Collections',
+    'description' => 'Your list of saved data collections',
+    'page callback' => 'tripal_user_collections_page',
+    'access callback' => 'tripal_access_user_data',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 10,
+  );
+
+  $items['user/%/data-collections/%/delete'] = array (
+    'title' => 'Delete a Collections',
+    'description' => 'Deletes a data collection.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_user_collections_delete_form', 1, 3),
+    'access callback' => 'tripal_access_user_data',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 10,
+  );
   return $items;
+}
+
+/**
+ * Access callback for accessing a user's Tripal-added private data.
+ *
+ * The User account being accessed must match the ID of the current user. This
+ * function can be used to check access for any type of user-specfic data
+ * added by any Tripal module.
+ *
+ * @param  $uid
+ *   The UID of the user's account to access.
+ * @return boolean
+ */
+function tripal_access_user_data($uid) {
+  global $user;
+
+  drupal_debug($uid);
+  if ($uid == $user->uid) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**

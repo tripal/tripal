@@ -48,9 +48,17 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
      save data.  You can place your search results into a data collection for
      download or use with other tools on this site that support data collections.'),
   );
-  $form['save_collection']['bundle_name'] = array(
+  $form['save_collection']['bundle'] = array(
     '#type' => 'value',
-    '#value' => $bundle->name,
+    '#value' => $bundle,
+  );
+  $form['save_collection']['view'] = array(
+    '#type' => 'value',
+    '#value' => unserialize(serialize($view))
+  );
+  $form['save_collection']['query'] = array(
+    '#type' => 'value',
+    '#value' => unserialize(serialize($query->query))
   );
   $form['save_collection']['summary'] = array(
    '#type' => 'item',
@@ -72,48 +80,70 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
   );
 
   // Get the list of fields in this view.
-  $fields = $view->field;
-  $field_ids = array();
-  foreach ($fields as $field_name => $handler) {
-    if ($field_name == 'entity_id') {
+  $fields = field_info_instances('TripalEntity', $bundle->name);
+  foreach ($fields as $field_name => $instance) {
+    if ($instance['field_name'] == 'entity_id') {
       continue;
     }
-    $field = field_info_field($field_name);
-    $instance = field_info_instance('TripalEntity', $field_name, $bundle->name);
-    $field_ids[$field['id']] = $instance['label'];
+    $field_ids[$instance['field_id']] = $instance['label'];
   }
   $form['save_collection']['field_ids'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Field Selection'),
-    '#description' => t('Please select the fields to include in this data collection. If you do not select any fields then all fields will be included.'),
+    '#description' => t('Please select the fields to include in this data
+      collection. Not all of these fields will appear in the search results
+      above but they are available for this content type. Also, not all will
+      be compatible with every download file format. If you do not select any
+      fields then all fields will be included.'),
     '#options' => $field_ids,
   );
 
   $form['save_collection']['button'] = array(
     '#type' => 'submit',
     '#value' => 'Save Data Collection',
-    '#name' => 'save_collection'
+    '#name' => 'save_collection',
+    '#ajax' => array(
+      'callback' => "tripal_views_handler_area_collections_form_ajax",
+      'wrapper' => 'tripal-views-handler-area-collections',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+      'prevent'  => 'click'
+    ),
   );
-
+  $form['#prefix'] = '<div id="tripal-views-handler-area-collections">';
+  $form['#suffix'] = '</div>';
   return $form;
 }
 
-
+/**
+ *
+ */
+function tripal_views_handler_area_collections_form_ajax($form, $form_state) {
+  return $form;
+}
 /**
  *
  */
 function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   global $user;
 
-  $bundle_name = $form_state['values']['bundle_name'];
+  $bundle = $form_state['values']['bundle'];
+  $view = $form_state['values']['view'];
+  $query = $form_state['values']['query'];
   $collection_name = $form_state['values']['collection_name'];
   $description = $form_state['values']['collection_desc'];
-  $field_ids = $form_state['values']['field_ids'];
+  $field_ids = array_key_exists('field_ids', $form_state['values']) ? $form_state['values']['field_ids'] : array();
   $uid = $user->uid;
+  $bundle_name = $bundle->name;
 
+  // Get the entity Ids that match results
+  $query->range['length'] = $view->total_rows;
+  $results = $query->execute();
   $entities = array();
-
-  tripal_create_collection(array(
+  foreach ($results['TripalEntity'] as $entity) {
+    $entities[] = $entity->id;
+  }
+  $collection = tripal_create_collection(array(
     'uid'  => $uid,
     'collection_name' => $collection_name,
     'bundle_name' => $bundle_name,

@@ -16,10 +16,27 @@
  *   An instance of a TripalEntityCollection class or FALSE on failure.
  */
 function tripal_create_collection($details) {
+  global $user;
+
   try {
     $collection = new TripalEntityCollection();
-    $collection_id = $collection->create($details);
-    drupal_set_message(t("Collection '%name' created.", array('%name' => $details['collection_name'])));
+    $collection->create($details);
+    $collection_id = $collection->getCollectionID();
+
+    // Add the job to write the collection download files.
+    $args = array($collection_id);
+    tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
+        'tripal_create_collection_files', $args, $user->uid, 10, array());
+
+
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s).  Downloadble files will be available shortly.  Check the !view for status and download links.",
+      array(
+        '%name' => $details['collection_name'],
+        '%num_recs' => count($details['ids']),
+        '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+      ))
+    );
+
   }
   catch (Exception $e) {
     drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), array('%name' =>  $details['collection_name'])), 'error');
@@ -80,4 +97,23 @@ function tripal_get_collection($values) {
     drupal_set_message(t("Failed to load the collection with id '%id': " . $e->getMessage(), array('%id' =>  $collection_id)), 'error');
     return FALSE;
   }
+}
+
+/**
+ * Generates the downloadable files for a Collection
+ *
+ * @param TripalEntityCollection $collection
+ */
+function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
+   if($job) {
+     $job->setProgress(0);
+   }
+
+   $collection = new TripalEntityCollection();
+   $collection->load($collection_id);
+   $collection->writeAll();
+
+   if ($job) {
+     $job->setProgress(100);
+   }
 }
