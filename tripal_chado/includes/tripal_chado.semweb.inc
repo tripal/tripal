@@ -33,6 +33,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_chado_populate_vocab_RDFS();
   tripal_chado_populate_vocab_SBO();
   tripal_chado_populate_vocab_SCHEMA();
+  tripal_chado_populate_vocab_SEP();
   tripal_chado_populate_vocab_SIO();
   tripal_chado_populate_vocab_SO();
   tripal_chado_populate_vocab_SWO();

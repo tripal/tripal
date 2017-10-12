@@ -107,7 +107,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  * @return
  *   The unique record ID.
  */
-function tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey = NULL, $base_record_id= NULL) {
+function tripal_chado_field_storage_write_table($table_name, $values, $base_table, $base_pkey = NULL, $base_record_id = NULL) {
   $schema = chado_get_schema($table_name);
   $fkeys = $schema['foreign keys'];
   $pkey = $schema['primary key'][0];

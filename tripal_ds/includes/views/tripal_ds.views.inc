@@ -58,7 +58,7 @@ function tripal_ds_views_data() {
 
   $data['tripal_ds']['tripal_ds_field_label'] = array(
    'title' => t('Field Label'),
-   'help' => t('The human readable name of the field, like "Data Sequences".'),
+   'help' => t('The human readable name of the field, like "Sequences".'),
    'field' => array(
         'handler' => 'views_handler_field',
         'click sortable' => TRUE, // This is use by the table display plugin.

@@ -661,7 +661,6 @@ class OBOImporter extends TripalImporter {
    *   The name of the default database.
    */
   private function processTerms($defaultcv, &$newcvs, $default_db) {
-
     $i = 0;
 
     // Iterate through each term from the OBO file and add it.
@@ -1117,6 +1116,7 @@ class OBOImporter extends TripalImporter {
     $default_db = '';
     $line_num = 0;
     $num_read = 0;
+    $type = '';
 
     $filesize = filesize($obo_file);
     $this->setTotalItems($filesize);
@@ -1145,7 +1145,6 @@ class OBOImporter extends TripalImporter {
 
       //remove comments from end of lines
       $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);  // TODO: if the explamation is escaped
-      $type = '';
 
       // at the first stanza we're out of header
       if (preg_match('/^\s*\[/', $line)) {
@@ -1172,6 +1171,7 @@ class OBOImporter extends TripalImporter {
         $stanza = array();
         continue;
       }
+
       // break apart the line into the tag and value but ignore any escaped colons
       preg_replace("/\\:/", "|-|-|", $line); // temporarily replace escaped colons
       $pair = explode(":", $line, 2);

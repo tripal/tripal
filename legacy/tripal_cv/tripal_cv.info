@@ -3,7 +3,7 @@ description = Supports the Controlled Vocabulary (CV) tables of Chado by providi
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 configure = admin/tripal/vocab
 
 dependencies[] = tripal_core

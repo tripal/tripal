@@ -3,7 +3,7 @@ description = Supports the database cross-reference tables of Chado by providing
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 configure = admin/tripal/legacy/tripal_db
 
 dependencies[] = tripal_core

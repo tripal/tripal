@@ -893,7 +893,7 @@ function tripal_block_save($delta = '', $edit = array()) {
 /**
  * Implements hook_block_configure().
  */
-function tripal_block_configure ($delta = '') {
+function tripal_block_configure($delta = '') {
   $form = array();
 
   switch ($delta) {
