@@ -19,7 +19,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
     foreach ($this->fields as $field_id) {
       $field = field_info_field_by_id($field_id);
       $field_name = $field['field_name'];
-      $value = $entity->{$field_name}['und'][0]['value'];
+
       // If we only have one element then this is good.
       if (count($entity->{$field_name}['und']) == 1) {
         $value = $entity->{$field_name}['und'][0]['value'];

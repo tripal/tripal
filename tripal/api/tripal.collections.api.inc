@@ -31,14 +31,46 @@ function tripal_create_collection($details) {
 /**
  * Retrieve a collection using the collection ID
  *
- * @param $collection_id
- *   The unique identifier for the collection.
+ * @param $values
+ *   An array of key/value pairs to uniquely identify a collection.  The
+ *   following keys can be used:
+ *   - collection_id:  The numeric value for the collection.
+ *   - uid: The ID of the user that owns the collection. This key must
+ *     always be used with the 'name' key.
+ *   - name:  The name of the collection.  This key must always be used
+ *     with the 'uid' key.
  *
  * @return
  *  An instance of a TripalEntityCollection class or FALSE on failure.
  *
  */
-function tripal_get_collection($collection_id) {
+function tripal_get_collection($values) {
+  $collection_id = array_key_exists('collection_id', $values) ? $values['collection_id'] : NULL;
+  $uid = array_key_exists('uid', $values) ? $values['uid'] : NULL;
+  $name = array_key_exists('name', $values) ? $values['name'] : NULL;
+
+  if ($uid and !$name) {
+    throw new Exception('tripal_get_collection: Missing the collection name when specifying the User ID.');
+  }
+  if (!$uid and $name) {
+    throw new Exception('tripal_get_collection: Missing the User ID when specifying the collection name.');
+  }
+  if (!$collection_id and !$uid and !$name) {
+    throw new Exception('tripal_get_collection: Missing a valid key.');
+  }
+
+  if ($name and $uid) {
+    $collection_id = db_select('tripal_collection', 'tc')
+      ->fields('tc', array('collection_id'))
+      ->condition('uid', $uid)
+      ->condition('collection_name', $name)
+      ->execute()
+      ->fetchField();
+    if (!$collection_id) {
+      throw new Exception('tripal_get_collection: The collection could not be found with the given uid and name.');
+    }
+  }
+
   try {
     $collection = new TripalEntityCollection();
     $collection->load($collection_id);
