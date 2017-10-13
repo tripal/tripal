@@ -71,6 +71,77 @@ class remote__data_formatter extends WebServicesFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
+    $field_name = $this->field['field_name'];
+
+    //Check that the load function returned content.
+    if (!empty($items[0]['value'])){
+      $list = array();
+      foreach ($items as $index => $item) {
+        $list[$index] = $item['value'];
+      }
+      // If more than one value has been found display all values in an unordered
+      // list.
+      if (count($list) > 1) {
+        $content = theme_item_list(array(
+          'items' => $list,
+          'title' => '',
+          'attributes' => array('class' => array($entity->bundle . '-remote-data-list', 'remote-data-field-list')),
+          'type' => 'ul'
+        ));
+      }
+      else {
+        $content = $list[0];
+      }
+
+      if(array_key_exists('members', $content)){
+        $header = array($items[0]['value']['label']);
+        $members = $content['members'];
+        $rows = array();
+        // Wrap each item in an array incase it is an array so that
+        // it works with the table_theme
+        foreach($members as $index => $member){
+          $rows[] = array('data' => array($index, $item));
+        }
+        //Remove the context information which is not needed.
+        unset($rows[0]);
+      }
+      else {
+        $header = array($items[0]['value']['label']);
+        $rows = array();
+        // Wrap each item in an array incase it is an array so that
+        // it works with the table_theme.
+        foreach($content as $index => $item){
+          $rows[] = array('data' => array($index, $item));
+        }
+        //Remove the context information which is not needed.
+        unset($rows[0]);
+      }
+
+
+      $table = array(
+        'header' => $header,
+        'rows' => $rows,
+        'attributes' => array(
+          'id' => 'tripal_table-remote-data-object',
+          'class' => 'tripal-data-table'
+        ),
+        'sticky' => FALSE,
+        'caption' => "",
+        'colgroups' => array(),
+        'empty' => 'There is no remote data available.',
+      );
+
+      $content = theme_table($table);
+
+      if (count($items) > 0) {
+        // once we have our table array structure defined, we call Drupal's theme_table()
+        // function to generate the table.
+        $element[0] = array(
+          '#type' => 'markup',
+          '#markup' => $content,
+        );
+      }
+    }
   }
   /**
    * Provides a summary of the formatter settings.

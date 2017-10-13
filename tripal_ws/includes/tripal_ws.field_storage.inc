@@ -41,12 +41,22 @@ function tripal_ws_field_storage_load($entity_type, $entities, $age,
       $field_type = $field['type'];
       $field_module = $field['module'];
 
+      // Get the instance for this field.  If no instance exists then skip
+      // loading of this field. This can happen when a field is deleted from
+      // a bundle using the user UI form.
+      // TODO: how to deal with deleted fields?
+      $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
+
+	  if (!$instance) {
+        continue;
+      }
+
       // Set an empty value by default, and let the hook function update it.
       $entity->{$field_name}['und'][0]['value'] = '';
       tripal_load_include_field_class($field_type);
       if (class_exists($field_type) && method_exists($field_type, 'load')) {
         $tfield = new $field_type($field, $instance);
-        $tfield->load($entity, array('record' => $record));
+        $tfield->load($entity);
       }
 
     } // end: foreach ($fields as $field_id => $ids) {

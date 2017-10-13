@@ -22,9 +22,9 @@ class remote__data extends WebServicesField {
   public static $default_description = 'remote data';
 
   // The default widget for this field.
-  //public static $default_widget = '';
+  public static $default_widget = 'remote__data_widget';
   // The default formatter for this field.
-  //public static $default_formatter = '';
+  public static $default_formatter = 'remote__data_formatter';
   // The module that manages this field.
   public static $module = 'tripal_ws';
   // A list of global settings. These can be accessed within the
@@ -42,6 +42,7 @@ class remote__data extends WebServicesField {
     // listed here.
     'searchable_keys' => array(),
   );
+
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instance.
@@ -55,7 +56,7 @@ class remote__data extends WebServicesField {
     // The name of the term.
     'term_name' => 'Thing',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'Thing',
+    'term_accession' => 'property',
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
@@ -65,6 +66,12 @@ class remote__data extends WebServicesField {
     // should have auto_attach set to FALSE so tha their values can be
     // attached asynchronously.
     'auto_attach' => FALSE,
+    // Settings to allow the site admin to set the remote data source info.
+			'data_info' => array(
+				'query' => '',
+				'remote_site' => '',
+				'description' => '',
+			),
   );
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -81,5 +88,182 @@ class remote__data extends WebServicesField {
    * @see WebServicesField::load()
    */
   public function load($entity) {
+    $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
+    $query = $this->instance['settings']['data_info']['query'];
+    $options = array();
+
+    // Check for tripal tokens and replace if present.
+    $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $query = tripal_replace_entity_tokens($query, $entity, $bundle_entity);
+
+     // Get the site url from the tripal_sites table.
+     $site_url_ws = db_select('tripal_sites', 's')
+       ->fields('s',array('url'))
+       ->condition('s.id', $site_id_ws, '=')
+       ->execute()->fetchAll();
+
+     $full_url = $site_url_ws[0]->url . '/web-services/content/v0.1/';
+
+     //Remove trailing slash if one is included.$_COOKIE
+     $full_url = trim($full_url, '/');
+     $full_url = $full_url . '/' . $query;
+
+     //Make the call and pull the data down.
+     $data = drupal_http_request($full_url, $options);
+
+     if($data){
+       $data = drupal_json_decode($data->data);
+       //Check the returned data is not an error.
+       if(array_key_exists('error', $data)){
+          watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
+          $data = '';
+       }
+       //Check the returned data isn't empty.
+       if(count($data['members']) >= 1){
+        //If multiple records, if single follow @id and pull down data
+        if(array_key_exists('value', $data)){
+          $members = $data['value'][0]['members'];
+          if($members){
+            if(count($members) > 1){
+                $field_name = $this->field['field_name'];
+                $entity->{$field_name}['und'][0]['value'] = $data;
+            }
+            else {
+              $single_record_url = $data['members'][0]['@id'];
+              $data = drupal_http_request($single_record_url, $options);
+              $data = drupal_json_decode($data->data);
+              if(array_key_exists('error', $data)){
+                watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
+                $data = '';
+             }
+            }
+          }
+        }
+        else {
+            $single_record_url = $data['members'][0]['@id'];
+            $data = drupal_http_request($single_record_url, $options);
+            $data = drupal_json_decode($data->data);
+            if(array_key_exists('error', $data)){
+              watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
+              $data = '';
+           }
+        }
+        $field_name = $this->field['field_name'];
+        $entity->{$field_name}['und'][0]['value'] = $data;
+      }
+    }
+   }
+   /**
+	 *
+	 * @see TripalField::settingsForm()
+   */
+	public function instanceSettingsForm() {
+		$element = parent::instanceSettingsForm();
+    // Get the setting for the option for how this widget.
+    $instance = $this->instance;
+    $settings = '';
+    $site_list = '';
+
+    $tokens = array();
+    // Get the form info from the bundle about to be saved.
+    $bundle_info = tripal_load_bundle_entity(array($instance['bundle']));
+    // Retrieve all available tokens.
+    $tokens = tripal_get_entity_tokens($bundle_info);
+
+    $element['data_info'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Remote Data Settings',
+      '#description' => 'Provide the site name, query and description for the remote data source.',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#prefix' => "<div id='set_titles-fieldset'>",
+      '#suffix' => '</div>',
+    );
+
+    // Get the site info from the tripal_sites table.
+    $sites = db_select('tripal_sites', 's')
+      ->fields('s')
+      ->execute()->fetchAll();
+
+    foreach ($sites as $site) {
+      $rows[$site->id] =$site->name;
+    }
+
+    $element['data_info']['remote_site'] = array(
+      '#type' => 'select',
+      '#title' => t('Site'),
+      '#options' => $rows,
+      '#default_value' => $this->instance['settings']['data_info']['remote_site'],
+    );
+
+    $element['data_info']['query'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Query',
+      '#description' => 'Build the query string that should be appended after the url. The tokens
+      listed below may be used in your query build.',
+      '#default_value' => $this->instance['settings']['data_info']['query'],
+      '#rows' => 5
+    );
+
+    $element['data_info']['token_display']['tokens'] = array(
+      '#type' => 'hidden',
+      '#value' => serialize($tokens)
+    );
+
+    $element['data_info']['token_display'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Available Tokens',
+      '#description' => 'Copy the token and paste it into the "Query" text field above.',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE
+    );
+
+    $element['data_info']['token_display']['content'] = array(
+      '#type' => 'item',
+      '#markup' => theme_token_list($tokens),
+    );
+
+    $element['data_info']['description'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Description',
+      '#description' => 'Describe the data being pulled in.',
+      '#default_value' =>  $this->instance['settings']['data_info']['description'],
+      '#rows' => 1
+    );
+    /*$element['test_button']['data'] = array(
+      '#prefix' => '<div class="returned-data">',
+      '#suffix' => '</div>',
+      '#type' => 'container',
+        //…
+    );
+
+    $element['test_button'] = array(
+      '#type' => 'button',
+      '#value' => t('Test Query'),
+      '#ajax' => array(
+        'wrapper' => 'data-id',
+        'callback' => 'tripal_ws_url_query_test',
+      ),
+        //…
+    );*/
+
+			return $element;
   }
+
+    /**
+     * Ajax callback.
+     */
+    function tripal_ws_url_query_test_ajax($form, $form_state) {
+      load();
+      return $element['test_button']['data'];
+    }
+ /**
+   *
+   * @param unknown $form
+   * @param unknown $form_state
+   */
+  public function instanceSettingsFormValidate($form, &$form_state) {
+  }
+
+
 }

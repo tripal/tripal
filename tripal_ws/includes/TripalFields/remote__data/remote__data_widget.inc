@@ -63,6 +63,95 @@ class remote__data_widget extends WebServicesFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
+    // Get the field settings.
+   /* $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+
+    // Get the setting for the option for how this widget.
+    $instance = $this->instance;
+    $settings = '';
+    $site_list = '';
+
+    $tokens = array();
+    // Get the form info from the bundle about to be saved.
+    $bundle_info = tripal_load_bundle_entity(array('name' => $form_state['build_info']['args']['0']['bundle']));
+    // Retrieve all available tokens.
+    $tokens = tripal_get_entity_tokens($bundle_info);
+    // If the field already has a value then it will come through the $items
+    // array.  This happens when editing an existing record.
+    dpm($items);
+    // FORM PROPER
+    $widget['#prefix'] =  "<span id='$field_name-remote_data-$delta'>";
+    $widget['#suffix'] =  "</span>";
+
+    $widget['value'] = array(
+      '#type' => 'value',
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
+    );
+
+    $widget['data_info'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Remote Data Settings',
+      '#description' => 'Provide the site name, query and description for the remote data source.',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#prefix' => "<div id='set_titles-fieldset'>",
+      '#suffix' => '</div>',
+    );
+
+    // Get the site info from the tripal_sites table.
+      // Get the field groups associated with this bundle.
+    $sites = db_select('tripal_sites', 's')
+      ->fields('s')
+      ->execute()->fetchAll();
+
+    foreach ($sites as $site) {
+      $rows[] = $site->name;
+    }
+
+    $widget['data_info']['site'] = array(
+      '#type' => 'select',
+      '#title' => t('Site'),
+      '#options' => $rows,
+      '#default_value' => $site_list,
+    );
+
+    $widget['data_info']['query'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Query',
+      '#description' => 'Build the query string that should be appended after the url. The tokens
+       listed below may be used in your query build.',
+      '#default_value' => $this->instance['settings']['data_info']['query'],
+      '#rows' => 5
+    );
+
+    $widget['set_titles']['token_display']['tokens'] = array(
+      '#type' => 'hidden',
+      '#value' => serialize($tokens)
+    );
+
+    $widget['data_info']['token_display'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Available Tokens',
+      '#description' => 'Copy the token and paste it into the "Query" text field above.',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE
+    );
+
+    $widget['data_info']['token_display']['content'] = array(
+      '#type' => 'item',
+      '#markup' => theme_token_list($tokens),
+    );
+
+    $widget['data_info']['description'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Description',
+      '#description' => 'Describe the data being pulled in.',
+      '#default_value' =>  $this->instance['settings']['data_info']['description'],
+      '#rows' => 1
+    );
+*/
+    //TODO Add test button to ensure query returns info.
   }
   /**
    * Performs validation of the widgetForm.
@@ -74,42 +163,7 @@ class remote__data_widget extends WebServicesFieldWidget {
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
-  }
-  /**
-   * Performs extra commands when the entity form is submitted.
-   *
-   * Drupal typically does not provide a submit hook for fields.  The
-   * TripalField provides one to allow for behind-the-scenes actions to
-   * occur.   This function should never be used for updates, deletes or
-   * inserts for the Chado table associated with the field.  Rather, the
-   * storage backend should be allowed to handle inserts, updates deletes.
-   * However, it is permissible to perform inserts, updates or deletions within
-   * Chado using this function.  Those operations can be performed if needed but
-   * on other tables not directly associated with the field.
-   *
-   * An example is the chado.feature_synonym table.  The chado_linker__synonym
-   * field allows the user to provide a brand new synonynm and it must add it
-   * to the chado.synonym table prior to the record in the
-   * chado.feature_synonym table.  This insert occurs in the widgetFormSubmit
-   * function.
-   *
-   *  @param $entity_type
-   *    The type of $entity.
-   *  @param $entity
-   *    The entity for the operation.
-   *  @param $field
-   *    The field structure for the operation.
-   *  @param $instance
-   *    The instance structure for $field on $entity's bundle.
-   *  @param $langcode
-   *    The language associated with $items.
-   *  @param $items
-   *    $entity->{$field['field_name']}[$langcode], or an empty array if unset.
-   *  @param $form
-   *    The submitted form array.
-   *  @param $form_state.
-   *    The form state array.
-   */
-  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    //TODO validate the tokens, site, and query. Test that query returns data.
+
   }
 }

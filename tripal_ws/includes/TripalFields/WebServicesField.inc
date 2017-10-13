@@ -37,7 +37,7 @@ class WebServicesField extends TripalField {
   // Once instances exist for a field type then these settings cannot be
   // changed.
   public static $default_settings = array(
-    'storage' => 'tripal_no_storage',
+    'storage' => 'field_tripal_ws_storage',
     // It is expected that all fields set a 'value' in the load() function.
     // In many cases, the value may be an associative array of key/value pairs.
     // In order for Tripal to provide context for all data, the keys should
