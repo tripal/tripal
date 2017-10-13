@@ -61,6 +61,11 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
           if (!$found_identifier) {
             $defline .= "Unknown feature identifier. Please add a name field to the data collection";
           }
+          if (property_exists($entity, 'data__sequence_coordinates')) {
+            $location = strip_tags(drupal_render(field_view_field('TripalEntity', $entity, 'data__sequence_coordinates'))) . '; ';
+            $location = preg_replace('/\&nbsp\;/', ' ', $location);
+            $defline .= $location;
+          }
           // Add to the defnition line values from any single valued fields.
           foreach ($available_fields as $fname => $instance) {
             if (count($entity->{$fname}['und']) == 1) {
