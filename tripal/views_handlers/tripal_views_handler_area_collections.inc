@@ -85,9 +85,21 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
    '#default_value' => $collection_name,
   );
 
+  // Get the list of fields used in the view.
+  $current_display = $view->current_display;
+  if (array_key_exists('fields', $view->display[$current_display]->display_options)) {
+    $view_fields = $view->display[$current_display]->display_options['fields'];
+  }
+  else {
+    $view_fields = $view->display['default']->display_options['fields'];
+  }
   // Get the list of fields in this view.
+  $field_ids = array();
+  $defaults = array();
   $fields = field_info_instances('TripalEntity', $bundle->name);
   foreach ($fields as $field_name => $instance) {
+    $field = field_info_field($field_name);
+    $field_type = $field['type'];
     if ($instance['field_name'] == 'entity_id') {
       continue;
     }
@@ -95,17 +107,55 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     if ($instance['display']['default']['type'] == 'hidden') {
       continue;
     }
-    $field_ids[$instance['field_id']] = $instance['label'];
+    $field_label = $instance['label'];
+
+    // Add in in any non CSV or Tab formatters to the label.
+    $formatters = array();
+    if (tripal_load_include_field_class($field_type)) {
+      $instance_settings = $field_type::$default_instance_settings;
+      if (array_key_exists('download_formatters', $instance_settings)) {
+        foreach ($instance_settings['download_formatters'] as $class_name) {
+          if ($class_name != 'TripalTabDownloader' and $class_name != 'TripalCSVDownloader') {
+            tripal_load_include_downloader_class($class_name);
+              $formatters[] = $class_name::$label;
+          }
+        }
+      }
+    }
+    if (count($formatters) > 0) {
+      $field_label .= ' (' . implode(',' , $formatters) . ')';
+    }
+
+    // Add the field to those supported.
+    $field_ids[$instance['field_id']] =  $field_label;
+
+    // Automatically check fields that are in the view and not excluded.
+    if (array_key_exists($field_name, $view_fields)) {
+      if (array_key_exists('exclude', $view_fields[$field_name]) and
+          $view_fields[$field_name]['exclude'] == TRUE) {
+        continue;
+      }
+      $defaults[] = $instance['field_id'];
+    }
   }
-  $form['save_collection']['field_ids'] = array(
+  $form['save_collection']['fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced field selection'),
+    '#description' => t('Please select the fields to include in this data
+      collection. Not all of these fields appear in the search results
+      above but they are available for this content type. By default,
+      tab-delimeted and comma-separated files are genearted for the
+      collection using only the fields selected. However, some fields when
+      selected will generate other downloadable file formats.  Fields that
+      generate other file formats are indicated. '),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['save_collection']['fields']['field_ids'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Field Selection'),
-    '#description' => t('Please select the fields to include in this data
-      collection. Not all of these fields will appear in the search results
-      above but they are available for this content type. Also, not all will
-      be compatible with every download file format. If you do not select any
-      fields then all fields will be included.'),
     '#options' => $field_ids,
+    '#default_value' => $defaults,
   );
 
   $form['save_collection']['button'] = array(
@@ -150,20 +200,6 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   foreach ($field_ids as $field_id => $is_selected) {
     if ($is_selected) {
       $selected_fids[] = $field_id;
-    }
-  }
-
-  if (count($selected_fids) == 0) {
-    $fields = field_info_instances('TripalEntity', $bundle->name);
-    foreach ($fields as $field_name => $instance) {
-      if ($instance['field_name'] == 'entity_id') {
-        continue;
-      }
-      // Skip hidden fields.
-      if ($instance['display']['default']['type'] == 'hidden') {
-        continue;
-      }
-      $selected_fids[] = $instance['field_id'];
     }
   }
 
