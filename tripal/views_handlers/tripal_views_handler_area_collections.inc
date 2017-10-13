@@ -91,6 +91,10 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     if ($instance['field_name'] == 'entity_id') {
       continue;
     }
+    // Skip hidden fields.
+    if ($instance['display']['default']['type'] == 'hidden') {
+      continue;
+    }
     $field_ids[$instance['field_id']] = $instance['label'];
   }
   $form['save_collection']['field_ids'] = array(
@@ -136,7 +140,7 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   $bundle = $form_state['values']['bundle'];
   $view = $form_state['values']['view'];
   $query = $form_state['values']['query'];
-  $collection_name = $form_state['values']['collection_name'];
+  $collection_name = trim($form_state['values']['collection_name']);
   $description = $form_state['values']['collection_desc'];
   $field_ids = array_key_exists('field_ids', $form_state['values']) ? $form_state['values']['field_ids'] : array();
   $uid = $user->uid;
@@ -153,6 +157,10 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
     $fields = field_info_instances('TripalEntity', $bundle->name);
     foreach ($fields as $field_name => $instance) {
       if ($instance['field_name'] == 'entity_id') {
+        continue;
+      }
+      // Skip hidden fields.
+      if ($instance['display']['default']['type'] == 'hidden') {
         continue;
       }
       $selected_fids[] = $instance['field_id'];

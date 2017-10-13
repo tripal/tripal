@@ -72,7 +72,10 @@ class TripalProteinFASTADownloader extends TripalFieldDownloader {
                 // Skip the identifier fields and the residues fields.
                 if (!in_array($fname, array('data__identifier',
                   'schema__name', 'data__sequence', $field_name))) {
-                  $defline .= $instance['label'] . ': ' . $entity->{$fname}['und'][0]['value'] . '; ';
+                  $fvalue = $entity->{$fname}['und'][0]['value'];
+                  if ($fvalue) {
+                    $defline .= $instance['label'] . ': ' . $fvalue . '; ';
+                  }
                 }
               }
               else {
