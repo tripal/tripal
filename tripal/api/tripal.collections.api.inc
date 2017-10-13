@@ -46,6 +46,56 @@ function tripal_create_collection($details) {
 }
 
 /**
+ * Retrieves an array of collections for a user.
+ *
+ * @param $uid
+ *   The User ID
+ * @return
+ *   An array of TripalEntityCollection objects.
+ */
+function tripal_get_user_collections($uid) {
+  if (!$uid) {
+    throw new Exception('tripal_get_user_collections: Missing the $uid argument.');
+  }
+  $user = user_load($uid);
+  if (!$user) {
+    throw new Exception('tripal_get_user_collections: Invalid $uid provided.');
+  }
+
+  $collections = array();
+  $results = db_select('tripal_collection', 'tc')
+    ->fields('tc', array('collection_id'))
+    ->condition('uid', $uid)
+    ->execute();
+  while ($collection_id = $results->fetchField()) {
+    $collection = new TripalEntityCollection();
+    $collection->load($collection_id);
+    $collections[] = $collection;
+  }
+  return $collections;
+}
+
+/**
+ * Deletes all collections that have surpassed their lifespan
+ */
+function tripal_expire_collections() {
+  $max_hours = variable_get('tripal_data_collections_lifespan', 7);
+  $ctime = time();
+
+  $query = db_select('tripal_collection', 'tc');
+  $query->fields('tc', array('collection_id'));
+  $query->where("(($ctime - create_date) / 60) / 60 >= $max_hours");
+  $results = $query->execute();
+  while ($collection_id = $results->fetchField()) {
+    $collection = new TripalEntityCollection();
+    $collection->load($collection_id);
+    $collections[] = $collection;
+    $collection->delete();
+  }
+  return $collections;
+}
+
+/**
  * Retrieve a collection using the collection ID
  *
  * @param $values

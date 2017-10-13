@@ -4,7 +4,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
   /**
    * Sets the label shown to the user describing this formatter.
    */
-  static public $label = 'CSV';
+  static public $label = 'CSV (comma separated)';
 
   /**
    * Indicates the default extension for the outputfile.

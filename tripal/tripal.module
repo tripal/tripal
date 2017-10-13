@@ -99,6 +99,9 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 
+  /**
+   * Tripal Extensions
+   */
   $items['admin/tripal/storage'] = array(
     'title' => 'Data Storage',
     'description' => t("Tripal is designed to access biological
@@ -147,7 +150,9 @@ function tripal_menu() {
 //     'weight' => -100,
 //   );
 
-  // Jobs Management
+  /**
+   * Jobs Management
+   */
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
     'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
@@ -331,16 +336,18 @@ function tripal_menu() {
     }
   }
 
+  /**
+   * Data Collections
+   */
   $items['user/%/data-collections'] = array (
     'title' => 'Data Collections',
     'description' => 'Your list of saved data collections',
     'page callback' => 'tripal_user_collections_page',
-    'access callback' => 'tripal_access_user_data',
+    'access callback' => 'tripal_accesss_user_collections',
     'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal.collections.inc',
     'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => 10,
   );
 
   $items['user/%/data-collections/%/delete'] = array (
@@ -348,14 +355,37 @@ function tripal_menu() {
     'description' => 'Deletes a data collection.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_user_collections_delete_form', 1, 3),
-    'access callback' => 'tripal_access_user_data',
+    'access callback' => 'tripal_accesss_user_collections',
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.collections.inc',
     'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => 10,
   );
+
+  $items['admin/tripal/data-collections'] = array(
+    'title' => 'Data Collections',
+    'description' => t('Site-wide settings for data collections'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_admin_data_collection_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
   return $items;
+}
+
+function tripal_accesss_user_collections($uid) {
+  if (!tripal_access_user_data($uid)) {
+    return FALSE;
+  }
+  $collections_enabled = variable_get('tripal_data_collections_enabled', 1);
+  if (!$collections_enabled) {
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
@@ -984,6 +1014,8 @@ function tripal_cron() {
     }
     watchdog('tripal_cron', 'tripal_cron ran');
   }
+
+  tripal_expire_collections();
 }
 
 /**

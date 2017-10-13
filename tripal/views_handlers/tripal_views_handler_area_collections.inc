@@ -11,6 +11,12 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
    */
   function render($empty = FALSE) {
 
+    // If collections are dispabled then don't show anything.
+    $collections_enabled = variable_get('tripal_data_collections_enabled', 1);
+    if (!$collections_enabled) {
+      return '';
+    }
+
     // This will only work with Tripal content types and the tripal_views_query
     // plugin. So don't show anything for others.
     if ($this->query->plugin_name != 'tripal_views_query') {
@@ -136,6 +142,23 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   $uid = $user->uid;
   $bundle_name = $bundle->name;
 
+  $selected_fids = array();
+  foreach ($field_ids as $field_id => $is_selected) {
+    if ($is_selected) {
+      $selected_fids[] = $field_id;
+    }
+  }
+
+  if (count($selected_fids) == 0) {
+    $fields = field_info_instances('TripalEntity', $bundle->name);
+    foreach ($fields as $field_name => $instance) {
+      if ($instance['field_name'] == 'entity_id') {
+        continue;
+      }
+      $selected_fids[] = $instance['field_id'];
+    }
+  }
+
   // Get the entity Ids that match results
   $query->range['length'] = $view->total_rows;
   $results = $query->execute();
@@ -148,7 +171,7 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
     'collection_name' => $collection_name,
     'bundle_name' => $bundle_name,
     'ids' => $entities,
-    'fields' => $field_ids,
+    'fields' => $selected_fids,
     'description'  => $description,
   ));
 }

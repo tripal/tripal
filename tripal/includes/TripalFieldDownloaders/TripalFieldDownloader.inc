@@ -90,15 +90,24 @@ abstract class TripalFieldDownloader {
    * Removes the downloadable file.
    */
   public function delete() {
-    if (file_exists($this->outfile)) {
-      unlink($this->outfile);
-    }
+    $fid = db_select('file_managed', 'fm')
+     ->fields('fm', array('fid'))
+     ->condition('uri', $this->outfile)
+     ->execute()
+     ->fetchField();
+     if ($fid) {
+       $file = file_load($fid);
+       file_usage_delete($file, 'tripal', 'data-collection');
+       file_delete($file, TRUE);
+     }
   }
 
   /**
    * Creates the downloadable file.
    */
   public function write() {
+    global $user;
+
     $fh = fopen(drupal_realpath($this->outfile), "w");
     if (!$fh) {
       throw new Exception("Cannout open collection file: " . $this->outfile);
@@ -121,6 +130,19 @@ abstract class TripalFieldDownloader {
       }
     }
     fclose($fh);
+
+    $file = new stdClass();
+    $file->uri = $this->outfile;
+    $file->filename = basename($this->outfile);
+    $file->filemime = file_get_mimetype($this->outfile);
+    $file->uid = $user->uid;
+    $file->status = FILE_STATUS_PERMANENT;
+    $file = file_save($file);
+    $fid = $file->fid;
+    $file = file_load($fid);
+    // We use the fid for the last argument because these files
+    // aren't really associated with any entity, but we need a value.
+    file_usage_add($file, 'tripal', 'data-collection', $fid);
   }
 
   /**
