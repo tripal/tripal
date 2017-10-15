@@ -69,7 +69,7 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
   $form['save_collection']['summary'] = array(
    '#type' => 'item',
    '#title' => 'Results Summary',
-   '#markup' => t('There are @total_rows record(s) that can be added to a container.', array('@total_rows' => $view->total_rows)),
+   '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
   );
   $form['save_collection']['collection_name'] = array(
    '#type' => 'textfield',

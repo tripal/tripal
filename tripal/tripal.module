@@ -1006,16 +1006,20 @@ function tripal_block_configure($delta = '') {
  * Implements hook_cron().
  */
 function tripal_cron() {
+
+  // Add jobs to the Tripal queue for commong tasks.
+  $args = array();
+
   if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      $function();
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal', $function, $args, 1);
     }
-    watchdog('tripal_cron', 'tripal_cron ran');
   }
 
-  tripal_expire_collections();
+  // Check for expired collections.
+  tripal_add_job('Cron: Checking expired collections', 'tripal', 'tripal_expire_collections', $args, 1);
 }
 
 /**
