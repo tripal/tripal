@@ -70,7 +70,8 @@ class remote__data extends WebServicesField {
 			'data_info' => array(
 				'query' => '',
 				'remote_site' => '',
-				'description' => '',
+        'description' => '',
+        'rd_field_name' => '',
 			),
   );
   // A boolean specifying that users should not be allowed to create
@@ -90,8 +91,9 @@ class remote__data extends WebServicesField {
   public function load($entity) {
     $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
     $query = $this->instance['settings']['data_info']['query'];
+    $rd_field_name = $this->instance['settings']['data_info']['rd_field_name'];
     $options = array();
-
+    $field_name = $this->field['field_name'];
     // Check for tripal tokens and replace if present.
     $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
     $query = tripal_replace_entity_tokens($query, $entity, $bundle_entity);
@@ -111,6 +113,11 @@ class remote__data extends WebServicesField {
      //Make the call and pull the data down.
      $data = drupal_http_request($full_url, $options);
 
+    //Check the returned data is not an error.
+    if(property_exists($data, 'error')){
+      watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data->error, TRUE) .'</pre>');
+      $data = '';
+    }
      if($data){
        $data = drupal_json_decode($data->data);
        //Check the returned data is not an error.
@@ -118,39 +125,99 @@ class remote__data extends WebServicesField {
           watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
           $data = '';
        }
-       //Check the returned data isn't empty.
-       if(count($data['members']) >= 1){
-        //If multiple records, if single follow @id and pull down data
-        if(array_key_exists('value', $data)){
-          $members = $data['value'][0]['members'];
-          if($members){
-            if(count($members) > 1){
-                $field_name = $this->field['field_name'];
-                $entity->{$field_name}['und'][0]['value'] = $data;
-            }
-            else {
-              $single_record_url = $data['members'][0]['@id'];
-              $data = drupal_http_request($single_record_url, $options);
-              $data = drupal_json_decode($data->data);
-              if(array_key_exists('error', $data)){
-                watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
-                $data = '';
-             }
+
+       // Check if the returned results are paged, if so iterate through all pages.
+       //$paged_data = array();
+       if(array_key_exists('next', $data['view'])){
+          //First page of results.
+          foreach($data['members'] as $member){
+            $value = tripal_ws_remote_data_single_field_pull($rd_field_name, $member['@id']);
+            $entity->{$field_name}['und'][$member['label']]['value'] = $value;
+            $entity->{$field_name}['und'][$member['label']]['remote_entity'] = $member;
+            //array_push($paged_data, $member);
+          }
+          //'next' pages.
+          $next_page = $data['view']['next'];
+            while(!empty($next_page)){
+              $data = drupal_http_request($next_page, $options);
+              if(!empty($data)){
+                $data = drupal_json_decode($data->data);
+                foreach($data['members'] as $member){
+                  $value = tripal_ws_remote_data_single_field_pull($rd_field_name, $member['@id']);
+                  $entity->{$field_name}['und'][$member['label']]['value'] = $value;
+                  $entity->{$field_name}['und'][$member['label']]['remote_entity'] = $member;
+                  //array_push($paged_data, $member);
+                }
+                if(array_key_exists('next', $data['view'])){
+                  $next_page = $data['view']['next'];
+                }
+                else {
+                  $next_page = NULL;
+                }
+              }
+          }
+          //'last' page.
+          $last_page = $data['view']['last'];
+          $data = drupal_http_request($last_page, $options);
+          if(!empty($data)){
+            $data = drupal_json_decode($data->data);
+            foreach($data['members'] as $member){
+              $value = tripal_ws_remote_data_single_field_pull($rd_field_name, $member['@id']);
+              $entity->{$field_name}['und'][$member['label']]['value'] = $value;
+              $entity->{$field_name}['und'][$member['label']]['remote_entity'] = $member;
+              //array_push($paged_data, $member);
             }
           }
+       }
+       else {
+        //Check the returned data isn't empty.
+        if(!empty($data['members'])){
+          //If multiple records, if single follow @id and pull down data
+          /*if(array_key_exists('value', $data)){
+            $members = $data['value'][0]['members'];
+            if($members){
+              if(count($members) > 1){
+                  $data = $data;
+              }
+              else {
+                $single_record_url = $data['members'][0]['@id'];
+                $data = drupal_http_request($single_record_url, $options);
+                if(!empty($data)){
+                  $data = drupal_json_decode($data->data);
+                  if(array_key_exists('error', $data)){
+                    watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
+                    $data = '';
+                  }
+                }
+              }
+            }
+          }
+          else */
+          if(count($data['members']) > 1) {
+            foreach($data['members'] as $member){
+              $value = tripal_ws_remote_data_single_field_pull($rd_field_name, $member['@id']);
+              $entity->{$field_name}['und'][$member['label']]['value'] = $value;
+              $entity->{$field_name}['und'][$member['label']]['remote_entity'] = $member;
+              //array_push($paged_data, $member);
+            }
+          }
+          else {
+              $member = $data['members'][0];
+              $single_record_url = $member['@id'];
+              $value = tripal_ws_remote_data_single_field_pull($rd_field_name, $single_record_url);
+              if(!empty($data)){
+                $entity->{$field_name}['und'][$member['label']]['value'] = $value;
+                $entity->{$field_name}['und'][$member['label']]['remote_entity'] = $member;
+                if(array_key_exists('error', $data)){
+                  watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
+                  $data = '';
+                }
+              }
+          }
         }
-        else {
-            $single_record_url = $data['members'][0]['@id'];
-            $data = drupal_http_request($single_record_url, $options);
-            $data = drupal_json_decode($data->data);
-            if(array_key_exists('error', $data)){
-              watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
-              $data = '';
-           }
-        }
-        $field_name = $this->field['field_name'];
-        $entity->{$field_name}['und'][0]['value'] = $data;
       }
+      $field_name = $this->field['field_name'];
+      $entity->{$field_name}['und'][0]['value'] = $data;
     }
    }
    /**
@@ -202,9 +269,16 @@ class remote__data extends WebServicesField {
       '#description' => 'Build the query string that should be appended after the url. The tokens
       listed below may be used in your query build.',
       '#default_value' => $this->instance['settings']['data_info']['query'],
-      '#rows' => 5
+      '#rows' => 5,
+      '#required' => TRUE
     );
-
+    $element['data_info']['rd_field_name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Field',
+      '#description' => 'Name of the field you would like to display.',
+      '#default_value' => $this->instance['settings']['data_info']['rd_field_name'],
+      '#required' => TRUE
+    );
     $element['data_info']['token_display']['tokens'] = array(
       '#type' => 'hidden',
       '#value' => serialize($tokens)
@@ -250,13 +324,6 @@ class remote__data extends WebServicesField {
 			return $element;
   }
 
-    /**
-     * Ajax callback.
-     */
-    function tripal_ws_url_query_test_ajax($form, $form_state) {
-      load();
-      return $element['test_button']['data'];
-    }
  /**
    *
    * @param unknown $form

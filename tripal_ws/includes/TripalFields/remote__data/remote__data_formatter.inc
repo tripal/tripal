@@ -73,8 +73,42 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
 
+    //Determine if single or multiple values returned.
+    $count = count($items[0]['value']['members']);
+
+    // Case #1: A single scalar value (string, number).
+    if ($count == 1) {
+      //Array key is based on the label, grab label to specify array in $items.
+      $array_key = $items[0]['value']['members'][0]['label'];
+      foreach($items[$array_key]['value'] as $index => $array_item){
+        //Ignore all the extra ws info coming through.
+        if($index == '@context' || $index == '@id' || $index == '@type'){
+          continue;
+        }
+        else {
+          $content = $array_item;
+        }
+
+      }
+      $element[$array_key] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
+    /*
+    * Case #2: An array of scalar values (1-level deep, e.g. the obi__organism
+    * field on the gene or mRNA content type).
+    * Case #3: An array of nested scalar values (2 or more levels deep.  e.g.
+    * the sbo__relationship field on all data types, but easily visible on mRNA content tpyes).
+    */
+    else if ($count > 1) {
+
+
+    }
+
+
     //Check that the load function returned content.
-    if (!empty($items[0]['value'])){
+    /*if (!empty($items[0]['value'])){
       $list = array();
       foreach ($items as $index => $item) {
         $list[$index] = $item['value'];
@@ -97,10 +131,18 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         $header = array($items[0]['value']['label']);
         $members = $content['members'];
         $rows = array();
-        // Wrap each item in an array incase it is an array so that
+        // Wrap each item in an array so that
         // it works with the table_theme
         foreach($members as $index => $member){
-          $rows[] = array('data' => array($index, $item));
+          if(is_array($member)){
+            $rows[] = array('data' => array($index, $member));
+            foreach($member as $array_index => $array_member_item){
+              $rows[] = array('data' => array($array_index, $array_member_item));
+            }
+          }
+          else{
+            $rows[] = array('data' => array($index, $member));
+          }
         }
         //Remove the context information which is not needed.
         unset($rows[0]);
@@ -108,7 +150,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       else {
         $header = array($items[0]['value']['label']);
         $rows = array();
-        // Wrap each item in an array incase it is an array so that
+        // Wrap each item in an array so that
         // it works with the table_theme.
         foreach($content as $index => $item){
           $rows[] = array('data' => array($index, $item));
@@ -141,7 +183,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
           '#markup' => $content,
         );
       }
-    }
+    }*/
   }
   /**
    * Provides a summary of the formatter settings.

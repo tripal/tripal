@@ -416,3 +416,22 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
   return $content;
 
 }
+
+function tripal_ws_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+      $form['field']['cardinality']['#access'] = FALSE;
+  }
+}
+
+/*
+* Returns the decoded json data for a specific field.
+*/
+function tripal_ws_remote_data_single_field_pull($field, $entity_url){
+  $options = array();
+  $full_url = $entity_url . '/' . $field;
+  $data = drupal_http_request($full_url, $options);
+  if(!empty($data)){
+    $data = drupal_json_decode($data->data);
+  }
+  return $data;
+}
