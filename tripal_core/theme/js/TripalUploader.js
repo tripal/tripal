@@ -128,7 +128,7 @@
       var self = this;
       
       // Make sure the file type is allowed
-      if (this.tables[tname]['allowed_types']) {
+      if (this.tables[tname]['allowed_types'] && this.tables[tname]['allowed_types'].length > 0) {
         var allowed_types = this.tables[tname]['allowed_types'];
         var matches = file.name.match(/^.*\.(.+)$/);
         if (!matches) {
