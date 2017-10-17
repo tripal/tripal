@@ -3,7 +3,7 @@ description = Provides a set of Chado-based fields for the Tripal Entities.
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 
 files[] = views_handlers/chado_views_handler_field.inc
 files[] = views_handlers/chado_views_handler_filter.inc

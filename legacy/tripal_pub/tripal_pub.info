@@ -3,7 +3,7 @@ description = Supports the pub (publication) tables of Chado by providing pages 
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 
 stylesheets[all][] = theme/css/tripal_pub.css
 

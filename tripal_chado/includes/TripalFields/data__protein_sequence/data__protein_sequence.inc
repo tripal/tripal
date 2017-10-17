@@ -35,6 +35,13 @@ class data__protein_sequence extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // Indicates the download formats for this field.  The list must be the
+    // name of a child class of the TripalFieldDownloader.
+    'download_formatters' => array(
+      'TripalTabDownloader',
+      'TripalCSVDownloader',
+      'TripalProteinFASTADownloader',
+    ),
   );
 
   // The default widget for this field.

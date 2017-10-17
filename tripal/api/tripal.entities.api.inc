@@ -18,7 +18,7 @@
  * @param $reset: Whether to reset the internal cache for the requested entity
  *   type. Defaults to FALSE.
  * @param $field_ids
- *   A list of numeric feild IDs that should be loaded.  The
+ *   A list of numeric field IDs that should be loaded.  The
  *   TripalField named 'content_type' is always automatically added.
  *
  * @return
@@ -534,8 +534,6 @@ function tripal_create_bundle_fields($bundle, $term) {
     // If the field already exists then skip it.
     $field = field_info_field($details['field_name']);
     if ($field) {
-      tripal_set_message(t("Could not create new field: %field because it already exists.",
-        array('%field' =>  $details['field_name'])), TRIPAL_WARNING);
       continue;
     }
 

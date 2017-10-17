@@ -74,7 +74,9 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
           'accession' => $accession,
         ),
       ));
-      $type_id = $cvterm->cvterm_id;
+      if ($cvterm) {
+        $type_id = $cvterm->cvterm_id;
+      }
     }
 
     $widget['value'] = array(

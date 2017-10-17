@@ -1,0 +1,169 @@
+<?php
+
+/**
+ * Creates a collection of entities for a given user.
+ *
+ * @param  $details
+ *   An association array containing the details for a collection. The
+ *   details must include the following key/value pairs:
+ *   - uid:  The ID of the user that owns the collection
+ *   - collection_name:  The name of the collection
+ *   - bundle_name:  The name of the TripalEntity content type.
+ *   - ids:  An array of the entity IDs that form the collection.
+ *   - fields: An array of the field IDs that the collection is limited to.
+ *   - description:  A user supplied description for the collection.
+ * @return TripalEntityCollection
+ *   An instance of a TripalEntityCollection class or FALSE on failure.
+ */
+function tripal_create_collection($details) {
+  global $user;
+
+  try {
+    $collection = new TripalEntityCollection();
+    $collection->create($details);
+    $collection_id = $collection->getCollectionID();
+
+    // Add the job to write the collection download files.
+    $args = array($collection_id);
+    tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
+        'tripal_create_collection_files', $args, $user->uid, 10, array());
+
+
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s).  Downloadble files will be available shortly.  Check the !view for status and download links.",
+      array(
+        '%name' => $details['collection_name'],
+        '%num_recs' => count($details['ids']),
+        '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+      ))
+    );
+
+  }
+  catch (Exception $e) {
+    drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), array('%name' =>  $details['collection_name'])), 'error');
+    return FALSE;
+  }
+  return $collection;
+}
+
+/**
+ * Retrieves an array of collections for a user.
+ *
+ * @param $uid
+ *   The User ID
+ * @return
+ *   An array of TripalEntityCollection objects.
+ */
+function tripal_get_user_collections($uid) {
+  if (!$uid) {
+    throw new Exception('tripal_get_user_collections: Missing the $uid argument.');
+  }
+  $user = user_load($uid);
+  if (!$user) {
+    throw new Exception('tripal_get_user_collections: Invalid $uid provided.');
+  }
+
+  $collections = array();
+  $results = db_select('tripal_collection', 'tc')
+    ->fields('tc', array('collection_id'))
+    ->condition('uid', $uid)
+    ->execute();
+  while ($collection_id = $results->fetchField()) {
+    $collection = new TripalEntityCollection();
+    $collection->load($collection_id);
+    $collections[] = $collection;
+  }
+  return $collections;
+}
+
+/**
+ * Deletes all collections that have surpassed their lifespan
+ */
+function tripal_expire_collections() {
+  $max_hours = variable_get('tripal_data_collections_lifespan', 7);
+  $ctime = time();
+
+  $query = db_select('tripal_collection', 'tc');
+  $query->fields('tc', array('collection_id'));
+  $query->where("(($ctime - create_date) / 60) / 60 >= $max_hours");
+  $results = $query->execute();
+  while ($collection_id = $results->fetchField()) {
+    $collection = new TripalEntityCollection();
+    $collection->load($collection_id);
+    $collections[] = $collection;
+    $collection->delete();
+  }
+  return $collections;
+}
+
+/**
+ * Retrieve a collection using the collection ID
+ *
+ * @param $values
+ *   An array of key/value pairs to uniquely identify a collection.  The
+ *   following keys can be used:
+ *   - collection_id:  The numeric value for the collection.
+ *   - uid: The ID of the user that owns the collection. This key must
+ *     always be used with the 'name' key.
+ *   - name:  The name of the collection.  This key must always be used
+ *     with the 'uid' key.
+ *
+ * @return
+ *  An instance of a TripalEntityCollection class or FALSE on failure.
+ *
+ */
+function tripal_get_collection($values) {
+  $collection_id = array_key_exists('collection_id', $values) ? $values['collection_id'] : NULL;
+  $uid = array_key_exists('uid', $values) ? $values['uid'] : NULL;
+  $name = array_key_exists('name', $values) ? $values['name'] : NULL;
+
+  if ($uid and !$name) {
+    throw new Exception('tripal_get_collection: Missing the collection name when specifying the User ID.');
+  }
+  if (!$uid and $name) {
+    throw new Exception('tripal_get_collection: Missing the User ID when specifying the collection name.');
+  }
+  if (!$collection_id and !$uid and !$name) {
+    throw new Exception('tripal_get_collection: Missing a valid key.');
+  }
+
+  if ($name and $uid) {
+    $collection_id = db_select('tripal_collection', 'tc')
+      ->fields('tc', array('collection_id'))
+      ->condition('uid', $uid)
+      ->condition('collection_name', $name)
+      ->execute()
+      ->fetchField();
+    if (!$collection_id) {
+      throw new Exception('tripal_get_collection: The collection could not be found with the given uid and name.');
+    }
+  }
+
+  try {
+    $collection = new TripalEntityCollection();
+    $collection->load($collection_id);
+    return $collection;
+  }
+  catch (Exception $e) {
+    drupal_set_message(t("Failed to load the collection with id '%id': " . $e->getMessage(), array('%id' =>  $collection_id)), 'error');
+    return FALSE;
+  }
+}
+
+/**
+ * Generates the downloadable files for a Collection
+ *
+ * @param TripalEntityCollection $collection
+ */
+function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
+   if($job) {
+     $job->setProgress(0);
+   }
+
+   $collection = new TripalEntityCollection();
+   $collection->load($collection_id);
+   $collection->writeAll();
+
+   if ($job) {
+     $job->setProgress(100);
+   }
+}

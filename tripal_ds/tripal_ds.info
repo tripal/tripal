@@ -3,7 +3,7 @@ description = Provides display options for Tripal Entities through extending Dis
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 
 stylesheets[all][] = theme/css/tripal_ds.css
 

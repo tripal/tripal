@@ -3,11 +3,14 @@
 /**
  * Loads an OBO File using the new TripalImporter. Expected to be run by a Tripal Job.
  */
-function tripal_cv_load_obo($obo_id) {
+function tripal_cv_load_obo($obo_id, $job = NULL) {
 
   module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
   $obo_importer = new OBOImporter();
   $obo_importer->create(array('obo_id' => $obo_id));
+  if ($job) {
+    $obo_importer->setJob($job);
+  }
   $obo_importer->run();
 
 }

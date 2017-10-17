@@ -3,12 +3,13 @@ description = Tripal is an toolkit to facilitate construction of online genomic,
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-3.0-rc1
+version = 7.x-3.0-rc2
 configure = admin/tripal
 
 stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
 
+files[] = views_handlers/tripal_views_handler_area_collections.inc
 files[] = views_handlers/tripal_views_handler_field.inc
 files[] = views_handlers/tripal_views_handler_field_element.inc
 files[] = views_handlers/tripal_views_handler_field_entity.inc

@@ -63,7 +63,7 @@ function tripal_bundle_default_views(&$views) {
     $handler->display->display_options['query']['type'] = 'views_query';
     $handler->display->display_options['exposed_form']['type'] = 'basic';
     $handler->display->display_options['pager']['type'] = 'full';
-    $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+    $handler->display->display_options['pager']['options']['items_per_page'] = '10';
     $handler->display->display_options['pager']['options']['offset'] = '0';
     $handler->display->display_options['pager']['options']['id'] = '0';
     $handler->display->display_options['pager']['options']['quantity'] = '9';
@@ -207,6 +207,11 @@ function tripal_bundle_default_views(&$views) {
       $handler->display->display_options['sorts']['priority']['table'] = $base_table;
       $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__species';
     }
+
+    /* Footer: Global: Tripal Content Data Collections */
+    $handler->display->display_options['footer']['tripal_area_collections']['id'] = 'tripal_area_collections';
+    $handler->display->display_options['footer']['tripal_area_collections']['table'] = 'views';
+    $handler->display->display_options['footer']['tripal_area_collections']['field'] = 'tripal_area_collections';
 
     // No results behavior: Global: Text area.
     $handler->display->display_options['empty']['text']['id'] = 'text';
