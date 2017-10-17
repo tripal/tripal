@@ -33,6 +33,13 @@ function tripal_views_data() {
   tripal_views_data_tripal_entity($data);
   tripal_views_data_fields($data);
 
+  $data['views']['tripal_area_collections'] = array(
+    'title' => t('Tripal Content Data Collections'),
+    'help' => t('Save Tripal content search results into a data collection for downloading or use with other tools.'),
+    'area' => array(
+      'handler' => 'tripal_views_handler_area_collections',
+    ),
+  );
   return $data;
 }
 

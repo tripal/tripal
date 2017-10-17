@@ -34,10 +34,10 @@ function tripal_field_info() {
  * Implements hook_info_alter().
  */
 function tripal_field_info_alter(&$info) {
-  // Make sure all fields have a term setting so we can map
-  // all fields to a vocabulary term for the semantic web.
   foreach ($info as $field_name => $details) {
-    if(array_key_exists('instance_settings', $details)) {
+    // Make sure all fields have a term setting so we can map
+    // all fields to a vocabulary term for the semantic web.
+    if (array_key_exists('instance_settings', $details)) {
       if (!array_key_exists('term_vocabulary', $details['instance_settings'])) {
         $info[$field_name]['instance_settings']['term_vocabulary'] = '';
       }
@@ -60,6 +60,15 @@ function tripal_field_info_alter(&$info) {
       $info[$field_name]['instance_settings']['term_accession'] = '';
       $info[$field_name]['instance_settings']['term_fixed'] = FALSE;
       $info[$field_name]['instance_settings']['auto_attach'] = TRUE;
+    }
+
+    // Make sure all fields have some sort of downloader support. The Tab
+    // delimited and CSV downloaders should support all types of fields.
+    if (!array_key_exists('download_formatters', $details)) {
+      $info[$field_name]['instance_settings']['download_formatters'] = array(
+        'TripalTabDownloader',
+        'TripalCSVDownloader',
+      );
     }
   }
 }

@@ -9,6 +9,7 @@ configure = admin/tripal
 stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
 
+files[] = views_handlers/tripal_views_handler_area_collections.inc
 files[] = views_handlers/tripal_views_handler_field.inc
 files[] = views_handlers/tripal_views_handler_field_element.inc
 files[] = views_handlers/tripal_views_handler_field_entity.inc

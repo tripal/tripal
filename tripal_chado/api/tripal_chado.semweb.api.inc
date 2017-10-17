@@ -225,6 +225,7 @@ function tripal_get_chado_semweb_column($chado_table, $term) {
     ->fields('CS')
     ->condition('chado_table', $chado_table)
     ->execute();
+
   while($column = $columns->fetchObject()) {
     $cvterm_id = $column->cvterm_id;
 

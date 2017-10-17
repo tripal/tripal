@@ -1,6 +1,71 @@
 <?php
 
 /**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_admin_data_collection_form($form, &$form_state) {
+  $form = array();
+
+  $options = array(0 => t('Disabled'), 1 => t('Enabled'));
+  $form['enabled'] = array(
+    '#type' => 'radios',
+    '#title' => t('Activate Data Collections'),
+    '#options' => $options,
+    '#description' => t('Data collections allow users to save results of search queries for later download or use by other tools.'),
+    '#default_value' => variable_get('tripal_data_collections_enabled', 1),
+    '#required' => TRUE,
+  );
+
+  $form['lifespan'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Collection Lifespan'),
+    '#description' => t('Enter the number of hours (e.g. 24 is 1 day, 720 is 30 days)
+       that data collections exist.  Collections will be automatically removed after the lifespan
+       period has passed.  Removal of data collections occurs when the
+       sites Drupal cron executes.'),
+    '#default_value' => variable_get('tripal_data_collections_lifespan', 7),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save changes'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate function for the tripal_admin_data_collection_form form.
+ */
+function tripal_admin_data_collection_form_validate($form, &$form_state) {
+  $enable = $form_state['values']['enabled'];
+  $lifespan = $form_state['values']['lifespan'];
+
+  if (!preg_match('/^\d+$/',  $lifespan)) {
+    form_set_error('filespan', 'Please provide a valid numeric value for the number of hours collections exist.');
+  }
+  else {
+    if ($lifespan == 0) {
+      form_set_error('filespan', 'Please provide a positive numeric value for the number of hours collections exist.');
+    }
+  }
+}
+/**
+ * Sumbit function for the tripal_admin_data_collection_form form.
+ */
+function tripal_admin_data_collection_form_submit($form, &$form_state) {
+  $enabled = $form_state['values']['enabled'];
+  $lifespan = $form_state['values']['lifespan'];
+  variable_set('tripal_data_collections_enabled', $enabled);
+  variable_set('tripal_data_collections_lifespan', $lifespan);
+  menu_cache_clear_all();
+  drupal_set_message('Settings saved.');
+}
+
+/**
  * Provides a form for importing vocabularies and their terms.
  *
  * Tripal allows for vocabularies to be stored separately from the biological

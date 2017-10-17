@@ -31,6 +31,8 @@ require_once "includes/TripalFields/TripalFieldFormatter.inc";
 require_once "includes/TripalFieldQuery.inc";
 require_once "includes/TripalJob.inc";
 require_once "includes/TripalImporter.inc";
+require_once "includes/TripalEntityCollection.inc";
+require_once "includes/TripalFieldDownloaders/TripalFieldDownloader.inc";
 
 /**
  * @defgroup tripal Tripal Core Module
@@ -97,6 +99,9 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 
+  /**
+   * Tripal Extensions
+   */
   $items['admin/tripal/storage'] = array(
     'title' => 'Data Storage',
     'description' => t("Tripal is designed to access biological
@@ -145,7 +150,9 @@ function tripal_menu() {
 //     'weight' => -100,
 //   );
 
-  // Jobs Management
+  /**
+   * Jobs Management
+   */
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
     'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
@@ -329,7 +336,77 @@ function tripal_menu() {
     }
   }
 
+  /**
+   * Data Collections
+   */
+  $items['user/%/data-collections'] = array (
+    'title' => 'Data Collections',
+    'description' => 'Your list of saved data collections',
+    'page callback' => 'tripal_user_collections_page',
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['user/%/data-collections/%/delete'] = array (
+    'title' => 'Delete a Collections',
+    'description' => 'Deletes a data collection.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_user_collections_delete_form', 1, 3),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['admin/tripal/data-collections'] = array(
+    'title' => 'Data Collections',
+    'description' => t('Site-wide settings for data collections'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_admin_data_collection_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
   return $items;
+}
+
+function tripal_accesss_user_collections($uid) {
+  if (!tripal_access_user_data($uid)) {
+    return FALSE;
+  }
+  $collections_enabled = variable_get('tripal_data_collections_enabled', 1);
+  if (!$collections_enabled) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Access callback for accessing a user's Tripal-added private data.
+ *
+ * The User account being accessed must match the ID of the current user. This
+ * function can be used to check access for any type of user-specfic data
+ * added by any Tripal module.
+ *
+ * @param  $uid
+ *   The UID of the user's account to access.
+ * @return boolean
+ */
+function tripal_access_user_data($uid) {
+  global $user;
+
+  drupal_debug($uid);
+  if ($uid == $user->uid) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
@@ -626,6 +703,7 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.notice.api');
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
   module_load_include('inc', 'tripal', 'api/tripal.upload.api');
+  module_load_include('inc', 'tripal', 'api/tripal.collections.api');
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
@@ -928,14 +1006,20 @@ function tripal_block_configure($delta = '') {
  * Implements hook_cron().
  */
 function tripal_cron() {
+
+  // Add jobs to the Tripal queue for commong tasks.
+  $args = array();
+
   if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      $function();
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal', $function, $args, 1);
     }
-    watchdog('tripal_cron', 'tripal_cron ran');
   }
+
+  // Check for expired collections.
+  tripal_add_job('Cron: Checking expired collections', 'tripal', 'tripal_expire_collections', $args, 1);
 }
 
 /**
