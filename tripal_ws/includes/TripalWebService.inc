@@ -296,7 +296,7 @@ class TripalWebService {
     // If the full naming is indicated in the service parameters then
     // set the full name of the keys to include the vocab short name.
     if (array_key_exists('full_keys', $this->params)) {
-      $key_adj = $vocab['short_name'] . ':' . $key_adj;
+      //$key_adj = $vocab['short_name'] . ':' . $key_adj;
     }
 
     $iri = $term['url'];
