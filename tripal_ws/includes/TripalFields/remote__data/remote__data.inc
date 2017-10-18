@@ -72,7 +72,7 @@ class remote__data extends WebServicesField {
         'remote_site' => '',
         'description' => '',
         'rd_field_name' => '',
-			),
+      ),
   );
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -88,10 +88,25 @@ class remote__data extends WebServicesField {
   // Holds an object describing the remote site that tihs field connects to.
   private $remote_site = NULL;
 
+  // Set to TRUE if this field is being loaded via web services. WE don't
+  // want remote fields loaded when a web-service call is made.
+  private $loaded_via_ws = FALSE;
+
   public function __construct($field, $instance) {
     parent::__construct($field, $instance);
 
-    //Get the site url from the tripal_sites table.
+    // This field should not do anything if it is loaded via web-services.
+    // We don't want remote content to be available in web services.  There
+    // is an if statement to not show this field in the web services but the
+    // entity_load function doesn't know this field shouldn't be loaded so
+    // we need to short-circuit that.
+    if (preg_match('/^web-services/', $_SERVER['REQUEST_URI'])) {
+      dpm('hi');
+      $this->loaded_via_ws = TRUE;
+      return;
+    }
+
+    // Get the site url from the tripal_sites table.
     $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
     $this->remote_site = db_select('tripal_sites', 'ts')
       ->fields('ts')
@@ -110,7 +125,15 @@ class remote__data extends WebServicesField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
+      'remote_entity' => array(),
     );
+
+    // If this field is being loaded via web services then just return.
+    dpm($this->loaded_via_ws);
+    return;
+    if ($this->loaded_via_ws) {
+      return;
+    }
 
     // Get the query set by the admin for this field and replace any tokesn
     $query_str = $this->instance['settings']['data_info']['query'];
@@ -120,7 +143,7 @@ class remote__data extends WebServicesField {
     // Make the request.
     $data = $this->makeRemoteRequest($query_str);
     if(!$data){
-     return;
+      return;
     }
 
     $total_items = $data['totalItems'];
@@ -156,11 +179,59 @@ class remote__data extends WebServicesField {
     }
    }
    /**
-	 *
-	 * @see TripalField::settingsForm()
+    * Makes a request to a remote Tripal web services site.
+    *
+    * @param $query
+    *   The query string. This string is added to the URL for the remote
+    *   website.
+    */
+   private function makeRemoteRequest($query) {
+
+     // Build the URL to the remote web services.
+     $ws_url = $this->remote_site->url;
+     $ws_url = trim($ws_url, '/');
+     $ws_url .= '/web-services/content/v0.1';
+
+     // Build the Query and make and substitions needed.
+     $query_url = $ws_url . '/' . $query;
+     $options = array('timeout' => 360);
+     $data = drupal_http_request($query_url, $options);
+
+     if (!$data) {
+       tripal_report_error('tripal_ws', TRIPAL_ERROR,
+           t('Could not connect to the remote web service.'));
+       return FALSE;
+     }
+
+     // If the data object has an error then this is some sort of
+     // connection error (not a Tripal web servcies error).
+     if (property_exists($data, 'error')) {
+       tripal_report_error('tripal_ws', TRIPAL_ERROR,
+           'Web Services error on remote site: %error.',
+           array('%error' => $data->error));
+       return FALSE;
+     }
+
+     // We got a response, so convert it to a PHP array.
+     $data = drupal_json_decode($data->data);
+
+     // Check if there was a Tripal Web Services error.
+     if (array_key_exists('error', $data)) {
+       $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
+       tripal_report_error('tripal_ws', TRIPAL_ERROR,
+           'Web Services error on remote site: %error.',
+           array('%error' => $error));
+       return FALSE;
+     }
+
+     return $data;
+   }
+   /**
+   *
+   * @see TripalField::settingsForm()
    */
-	public function instanceSettingsForm() {
-		$element = parent::instanceSettingsForm();
+  public function instanceSettingsForm() {
+    $element = parent::instanceSettingsForm();
     // Get the setting for the option for how this widget.
     $instance = $this->instance;
     $settings = '';

@@ -53,6 +53,7 @@ class TripalFieldFormatter {
       'label' => $class::$default_label,
       'field types' => $class::$field_types,
       'settings' => $class::$default_settings,
+      'TripalFieldFormatter' => TRUE,
     );
   }
 

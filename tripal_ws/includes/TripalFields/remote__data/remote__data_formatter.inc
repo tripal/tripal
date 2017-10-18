@@ -93,7 +93,6 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       $content = t('There is no data about this record from the !site database.',
           array('!site' => l($site->name, $site->url)));
     }
-    dpm($items);
     foreach ($items as $index => $item) {
       $value = $item['value'];
       if (is_array($value)) {

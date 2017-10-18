@@ -266,4 +266,112 @@ class TripalWebService {
      $supported_classes = array();
      return $supported_classes;
   }
+
+  /**
+   * Adds a term to the '@context' section for a given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $term
+   *   The term array.
+   * @return $key
+   *   The key (the term name but with spaces replaced with underscores).
+   */
+  public function addContextTerm($resource, $term) {
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addContextTerm: Please provide a $resource of type TripalWebServiceResource.');
+    }
+
+    // Make sure the vocab is present
+    $vocab = $term['vocabulary'];
+    $this->addContextVocab($resource, $vocab);
+
+    // Sanitize the term key
+    $key = $term['name'];
+    $key_adj = strtolower(preg_replace('/ /', '_', $term['name']));
+
+    // Create the compact IRI
+    $compact_iri = $vocab['short_name'] . ':' . $term['accession'];
+
+    // If the full naming is indicated in the service parameters then
+    // set the full name of the keys to include the vocab short name.
+    if (array_key_exists('full_keys', $this->params)) {
+      $key_adj = $vocab['short_name'] . ':' . $key_adj;
+    }
+
+    $iri = $term['url'];
+
+    $resource->addContextItem($key_adj, $compact_iri);
+    $resource->addContextItem($compact_iri, $iri);
+
+    return $key_adj;
+  }
+
+  /**
+   * Adds a vocabulary to the '@context' section for a given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $vocab
+   *   The vocabulary array.
+   */
+  public function addContextVocab($resource, $vocab) {
+
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addContextVocab: Please provide a $resource of type TripalWebServiceResource.');
+    }
+
+    $key = $vocab['short_name'];
+    // The URL here should be the URL prefix not the database home
+    // page.  But unfortunately, the URL prefix can't be guaranteed to be
+    // a true prefix. Not all databases place by the rules.  For this reason,
+    // we can never use JSON-LD compact IRIs. :-(
+    $iri = $vocab['url'];
+    $resource->addContextItem($key, $iri);
+  }
+
+  /**
+   * Adds a key/value property to the given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $term
+   *   The term array for the key.
+   * @param $value
+   *   The value to add.
+   *
+   * @return $key
+   *   The key (the term name but with spaces replaced with underscores).
+   */
+  public function addResourceProperty($resource, $term, $value) {
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');
+    }
+    // First add the term
+    $key = $this->addContextTerm($resource, $term);
+
+    // Then add the property.
+    $resource->addProperty($key, $value);
+  }
+  /**
+   * Sets the type for the given resource.
+   *
+   * The type exist in the context of the web service.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $type
+   *   The type
+   */
+  public function setResourceType($resource, $term) {
+
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');
+    }
+    // First add the term
+    $key = $this->addContextTerm($resource, $term);
+
+    // Then set the type
+    $resource->setType($key);
+  }
 }
