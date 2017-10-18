@@ -73,6 +73,19 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
 
+    // Get any subfields and the header label.  Shift the array because the
+    // results should already be the value of the fisrt entry.
+    $rd_field_name = $this->instance['settings']['data_info']['rd_field_name'];
+    $subfields = explode(',', $rd_field_name);
+    $header_label = $this->getHeaderLabel($subfields);
+    array_shift($subfields);
+
+    // Get the site logo if one is provided
+    $site_logo = $this->instance['settings']['data_info']['site_logo'];
+    if ($site_logo) {
+      $site_logo = file_load($site_logo);
+    }
+
     // Get the site name where the data came from.
     $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
     $site = db_select('tripal_sites', 'ts')
@@ -82,44 +95,127 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       ->fetchObject();
 
     $content = '';
-    if (count($items) > 0) {
+    if (array_key_exists('label', $items[0]['remote_entity'])) {
       $remote_entity_label = $items[0]['remote_entity']['label'];
       $remote_entity_page = $items[0]['remote_entity']['ItemPage'];
-      $content = t('The data below about !label was obtained from the !site database.',
-        array('!label' => l($remote_entity_label, $remote_entity_page),
-          '!site' => l($site->name, $site->url)));
+      $content = t('This content provided by !site.',
+        array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
+      if ($site_logo) {
+        $content .= '<br><img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '">';
+      }
+      $content .= '<br>' . t('View !data on %site',
+        array('!data' => l('this content', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
+               '%site' => $site->name));
     }
     else {
       $content = t('There is no data about this record from the !site database.',
-          array('!site' => l($site->name, $site->url)));
+          array('!site' => l($site->name, $site->uri)));
     }
+    $rows = array();
     foreach ($items as $index => $item) {
       $value = $item['value'];
+      if (!$value) {
+        continue;
+      }
       if (is_array($value)) {
         $headers = array('');
 
         // If this is a collection then handle it as a list of members.
         if (array_key_exists('members', $value)) {
           foreach ($value['members'] as $subvalue) {
-            $content .= $this->createTable($subvalue);
+            $subvalue = $this->refineSubValue($subvalue, $subfields, $header_label);
+            $rows[]= array($subvalue);
           }
         }
         else {
-          $content .= $this->createTable($subvalue);
+          $subvalue = $this->refineSubValue($value, $subfields, $header_label);
+          $rows[]= array($subvalue);
         }
       }
       else {
-        $content .= $this->createDL($value);
+        $rows[] = array($value);
+      }
+    }
+
+    $has_sub_tables = FALSE;
+    for ($i = 0; $i < count($rows); $i++) {
+      if (is_array($rows[$i][0])) {
+        $rows[$i][0] = $this->createTable($rows[$i]);
+        $has_sub_tables = TRUE;
+      }
+    }
+
+    // If we don't have  tables for each row then we'll put everything into
+    // a table.
+    if (!$has_sub_tables) {
+      $headers = array($header_label . '(s)');
+      $content .= theme_table(array(
+        'header' => $headers,
+        'rows' => $rows,
+        'attributes' => array(
+          'class' => 'tripal-remote--data-field-table',
+        ),
+        'sticky' => FALSE,
+        'caption' => "",
+        'colgroups' => array(),
+        'empty' => 'There are no results.',
+      ));
+    }
+    else {
+      for ($i = 0; $i < count($rows); $i++) {
+        if (count($rows) > 1) {
+          $content .= '<p class="tripal-remote--data-field-table-label">' . $header_label . ' ' . ($i + 1) . '</p>';
+        }
+        $content .= $rows[$i][0];
       }
     }
 
     // Return the content for this field.
     $element[0] = array(
       '#type' => 'markup',
-      '#markup' => $content,
+      '#markup' => '<div class="tripal-remote--data-field">' . $content . '</div>',
     );
   }
 
+
+  /**
+   * Retrieves the header label given the subfields criteria.
+   *
+   * @param $subfields
+   *   An array of the sequence of subfields.
+   */
+  private function getHeaderLabel($subfields) {
+     $subfield = array_shift($subfields);
+     $header_label = ucwords(preg_replace('/_/', ' ', $subfield));
+     if (count($subfields) > 0) {
+       $header_label .= ' ' . $this->getHeaderLabel($subfields);
+     }
+     return $header_label;
+  }
+  /**
+   * Adjusts the items array to contain only the section/subsection desired.
+   *
+   * The field settings can indicate a field with sub fields that should
+   * be displayed (e.g. organism,genus or relationship,clause).  We want
+   * to adjust the item to only include what the user requested.
+   *
+   * @param $values
+   * @param $subfields
+   */
+  private function refineSubValue($values, $subfields) {
+    $subfield = array_shift($subfields);
+    if (array_key_exists($subfield, $values)) {
+      if (is_array($values[$subfield]) and count($subfields) > 0) {
+        return $this->refineSubvalue($values[$subfield], $subfields);
+      }
+      else {
+        return $values[$subfield];
+      }
+    }
+    else {
+      return $values;
+    }
+  }
   /**
    * A recursive function for displaying an item in a table.
    *

@@ -40,6 +40,14 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $entity_id = (count($this->path) > 1) ? $this->path[1] : '';
     $expfield  = (count($this->path) > 2) ? $this->path[2] : '';
 
+    // is this a valid content type?
+    if ($ctype) {
+      $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+      if (!$bundle) {
+        throw new Exception('Invalid content type: ' . $ctype);
+      }
+    }
+
     // If we have a content type then list all of the entities that belong
     // to it.
     if ($ctype and !$entity_id and !$expfield) {
@@ -67,35 +75,37 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     // Get the TripalBundle, TripalTerm and TripalVocab for this type.
     $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-    $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
-    $term = reset($term);
-    $vocab = $term->vocab;
 
-    // Convert the term to a simple array
-    $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
+    // Find the field that matches the field name provided by the user.
+    list($field, $instance, $term) = $this->findField($bundle, $expfield);
+
+    if (!$field) {
+      throw new Exception("Could not find a matching field for the name: $expfield");
+    }
 
     // Get the TripalEntity
-    $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+    $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id), FALSE, array($field['id']));
     $entity = reset($entity);
 
-    // If we couldn't match this field argument to a field and entity then return
+    // If we couldn't find the entity then fail.
     if (!$entity) {
-      throw new Exception("Cannot find this record.");
+      throw new Exception("Cannot find the record with id $entity_id.");
     }
 
     // Check that the user has access to this entity.  If not then the
     // function call will throw an error.
     $this->checkAccess($entity);
 
-    list($field, $instance, $term) = $this->findField($bundle, $expfield);
 
     // Next add in the ID and Type for this resources.
     $this->setResourceType($this->resource, $term);
     $this->resource->setID(urlencode($term['name']));
 
-    // Attach the field and then add it's values to the response.
-    field_attach_load($entity->type, array($entity->id => $entity),
-        FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
+    if (!property_exists($entity, $field['field_name'])) {
+      // Attach the field and then add its values to the response.
+      field_attach_load($entity->type, array($entity->id => $entity),
+          FIELD_LOAD_CURRENT, array('field_id' => $field['id']));
+    }
 
     $this->addEntityField($term, $entity, $bundle, $field, $instance, $service_path, $expfield);
   }
@@ -110,6 +120,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
     foreach ($instances as $instance) {
       $field_name = $instance['field_name'];
       $field = field_info_field($field_name);
+      $field_type = $field['type'];
+      // Skip fields of remote data.
+      if ($field_type == 'remote__data') {
+        continue;
+      }
       $vocabulary = $instance['settings']['term_vocabulary'];
       $accession = $instance['settings']['term_accession'];
       $temp_term = tripal_get_term_details($vocabulary, $accession);
@@ -197,6 +212,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // in the order they were set for the display.
     $instances = field_info_instances('TripalEntity', $bundle->name);
 
+    // Sort the instances by their weight.
     uasort($instances, function($a, $b) {
       $a_weight = (is_array($a) && isset($a['widget']['weight'])) ? $a['widget']['weight'] : 0;
       $b_weight = (is_array($b) && isset($b['widget']['weight'])) ? $b['widget']['weight'] : 0;
@@ -246,11 +262,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
         // that information.
         $items = field_get_items('TripalEntity', $entity, $field_name);
         if ($items and count($items) > 0 and $items[0]['value']) {
-          $this->addResourceProperty($this->resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']));
+         $this->addResourceProperty($this->resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']), array('lowercase', 'spacing'));
         }
         else {
           if ($hide_fields == 'show') {
-            $this->addResourceProperty($this->resource, $term, NULL);
+            $this->addResourceProperty($this->resource, $term, NULL, array('lowercase', 'spacing'));
           }
         }
         continue;
@@ -308,17 +324,17 @@ class TripalEntityService_v0_1 extends TripalWebService {
           }
         }
         else {
-          $this->addResourceProperty($this->resource, $term, $values[0]);
+          $this->addResourceProperty($this->resource, $term, $values[0], array('lowercase', 'spacing'));
         }
       }
       // If the value is not an array it's a scalar so add it as is to the
       // response.
       else {
-        $this->addResourceProperty($this->resource, $term, $values[0]);
+        $this->addResourceProperty($this->resource, $term, $values[0], array('lowercase', 'spacing'));
       }
     }
 
-    // If the field cardinality is > 1
+    // If the field cardinality is > 1 or -1 (for unlimited)
     if ($field['cardinality'] != 1) {
 
       // If this is the expanded field page then we need to swap out
@@ -344,7 +360,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
         $this->resource = $response;
       }
       else {
-        $this->resource->addProperty($key, $response);
+        //$this->resource->addProperty($key, $response);
+        $this->addResourceProperty($this->resource, $term, $response, array('lowercase', 'spacing'));
       }
     }
   }
@@ -353,6 +370,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
    * Rewrites the keys of a field's items array for use with web services.
    */
   private function sanitizeFieldKeys($resource, $value, $bundle, $service_path) {
+
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
@@ -374,7 +392,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
           $vocabulary = $matches[1];
           $accession = $matches[2];
           $term = tripal_get_term_details($vocabulary, $accession);
-          $key = $this->addContextTerm($resource, $term);
+          $key = $this->addContextTerm($resource, $term, array('lowercase', 'spacing'));
 
           if (is_array($v)) {
             $temp[$key] = $this->sanitizeFieldKeys($resource, $v, $bundle, $service_path);
@@ -489,7 +507,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $dir = 'ASC';
 
       // If the user provided more than one order statement then those are
-      // separated by a semicolong.
+      // separated by a semicolon.
       $items = explode(';', $order_params);
       foreach ($items as $key) {
 
@@ -745,6 +763,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $bundle = tripal_load_bundle_entity(array('label' => $ctype));
     $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
     $term = reset($term);
+
+    // Convert term to a simple array
+    $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
 
     // Set the label for this collection.
     $label = tripal_get_term_details('rdfs', 'label');

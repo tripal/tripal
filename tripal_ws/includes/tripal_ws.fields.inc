@@ -93,18 +93,3 @@ function tripal_ws_bundle_create_user_field($new_field, $bundle) {
     ));
   }
 }
-/**
- * Implements hook_ws_field_formatter_info_alter()
- *
- * Adds the remote__data field to every formatter so that existing formatters
- * can be used for remote data (provided that remote data is compatible).
- *
- */
-function tripal_ws_field_formatter_info_alter(&$info) {
-  foreach ($info as $formatter_type => $details) {
-    if (array_key_exists('TripalFieldFormatter', $details)) {
-      $info[$formatter_type]['field types'][] = 'remote__data';
-    }
-  }
-  dpm($info);
-}
