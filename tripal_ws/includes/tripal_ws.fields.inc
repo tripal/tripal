@@ -72,7 +72,7 @@ function tripal_ws_bundle_create_user_field($new_field, $bundle) {
       'description' => '',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => TRUE,
+        'auto_attach' => FALSE,
         'term_vocabulary' => '',
         'term_accession' => '',
         'term_name' => ''

@@ -352,7 +352,6 @@ function tripal_chado_add_organism_feature_count_mview() {
 /**
  * Creates a view showing the link between an organism & it's analysis through associated features.
  *
- * @ingroup tripal_analysis
  */
 function tripal_chado_add_analysis_organism_mview() {
   $view_name = 'analysis_organism';

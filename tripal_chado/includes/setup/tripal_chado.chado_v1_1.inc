@@ -3,7 +3,6 @@
  * Create a legacy custom chado table (analysisfeatureprop) to store properties of
  * analysisfeature links.
  *
- * @ingroup tripal_analysis
  */
 function tripal_chado_add_analysisfeatureprop_table() {
 

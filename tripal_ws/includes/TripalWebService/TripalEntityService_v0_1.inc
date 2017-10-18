@@ -221,6 +221,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
       // Get the information about this field.
       $field = field_info_field($field_name);
 
+      // Skip the remote__data field that is provided by the tripal_Ws
+      // module.
+      if ($field['type'] == 'remote__data') {
+        continue;
+      }
+
       // By default, the label for the key in the output should be the
       // term from the vocabulary that the field is assigned. But in the
       // case that the field is not assigned a term, we must use the field name.
@@ -266,6 +272,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   private function addEntityField($key, $term, $entity, $bundle, $field, $instance,
       $service_path, $expfield = NULL) {
+
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.

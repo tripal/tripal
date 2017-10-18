@@ -73,75 +73,165 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
 
-    //Check that the load function returned content.
-    if (!empty($items[0]['value'])){
-      $list = array();
-      foreach ($items as $index => $item) {
-        $list[$index] = $item['value'];
-      }
-      // If more than one value has been found display all values in an unordered
-      // list.
-      if (count($list) > 1) {
-        $content = theme_item_list(array(
-          'items' => $list,
-          'title' => '',
-          'attributes' => array('class' => array($entity->bundle . '-remote-data-list', 'remote-data-field-list')),
-          'type' => 'ul'
-        ));
+    // Get the site name where the data came from.
+    $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
+    $site = db_select('tripal_sites', 'ts')
+      ->fields('ts', array('name', 'url'))
+      ->condition('ts.id', $site_id_ws)
+      ->execute()
+      ->fetchObject();
+
+    $content = '';
+    if (count($items) > 0) {
+      $remote_entity_label = $items[0]['remote_entity']['label'];
+      $remote_entity_page = $items[0]['remote_entity']['ItemPage'];
+      $content = t('The data below about !label was obtained from the !site database.',
+        array('!label' => l($remote_entity_label, $remote_entity_page),
+          '!site' => l($site->name, $site->url)));
+    }
+    else {
+      $content = t('There is no data about this record from the !site database.',
+          array('!site' => l($site->name, $site->url)));
+    }
+    dpm($items);
+    foreach ($items as $index => $item) {
+      $value = $item['value'];
+      if (is_array($value)) {
+        $headers = array('');
+
+        // If this is a collection then handle it as a list of members.
+        if (array_key_exists('members', $value)) {
+          foreach ($value['members'] as $subvalue) {
+            $content .= $this->createTable($subvalue);
+          }
+        }
+        else {
+          $content .= $this->createTable($subvalue);
+        }
       }
       else {
-        $content = $list[0];
+        $content .= $this->createDL($value);
       }
+    }
 
-      if(array_key_exists('members', $content)){
-        $header = array($items[0]['value']['label']);
-        $members = $content['members'];
-        $rows = array();
-        // Wrap each item in an array incase it is an array so that
-        // it works with the table_theme
-        foreach($members as $index => $member){
-          $rows[] = array('data' => array($index, $item));
-        }
-        //Remove the context information which is not needed.
-        unset($rows[0]);
+    // Return the content for this field.
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
+  }
+
+  /**
+   * A recursive function for displaying an item in a table.
+   *
+   * @param $item
+   *   An item from the $items array passed to the view() function.
+   * @return
+   *   An HTML formatted Table.
+   */
+  private function createTable($item, &$pkey = '', &$rows = array(), $depth = 0) {
+    foreach ($item as $key => $value) {
+      // Skip JSON-LD keys.
+      if (preg_match('/^\@/', $key)) {
+        continue;
+      }
+      $key = preg_replace('/_/', ' ', $key);
+      $key = ucwords($key);
+      if ($pkey) {
+        $key = $pkey . ' ' . $key;
+      }
+      if (is_array($value)) {
+        $this->createTable($value, $key, $rows, $depth + 1);
       }
       else {
-        $header = array($items[0]['value']['label']);
-        $rows = array();
-        // Wrap each item in an array incase it is an array so that
-        // it works with the table_theme.
-        foreach($content as $index => $item){
-          $rows[] = array('data' => array($index, $item));
-        }
-        //Remove the context information which is not needed.
-        unset($rows[0]);
+        $rows[] = array(
+          'data'=> array(
+            $key,
+            $value
+          ),
+          'no_striping' => TRUE,
+        );
       }
-
-
-      $table = array(
-        'header' => $header,
+    }
+    if ($depth == 0) {
+      $headers = array('Data Type', 'Value');
+      return theme_table(array(
+        'header' => $headers,
         'rows' => $rows,
         'attributes' => array(
-          'id' => 'tripal_table-remote-data-object',
-          'class' => 'tripal-data-table'
+          'class' => 'tripal-remote--data-field-table',
         ),
         'sticky' => FALSE,
         'caption' => "",
         'colgroups' => array(),
-        'empty' => 'There is no remote data available.',
-      );
+        'empty' => 'There are no results.',
+      ));
+    }
+  }
 
-      $content = theme_table($table);
+  /**
+   * A recursive function for creating an HTML dictionary list from
+   * the results for the item provided.
+   *
+   * @param $item
+   *   An item from the $items array passed to the view() function.
+   * @return
+   *   An HTML formatted DL.
+   */
+  private function createDL($item, &$pkey = '', &$content= '', $depth = 0) {
+    if ($depth == 0) {
+      $content = '<dl class="tripal-remote--data-field-dl">';
+    }
+    foreach ($item as $key => $value) {
+      // Skip JSON-LD keys.
+      if (preg_match('/^\@/', $key)) {
+        continue;
+      }
 
-      if (count($items) > 0) {
-        // once we have our table array structure defined, we call Drupal's theme_table()
-        // function to generate the table.
-        $element[0] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+      $key = preg_replace('/_/', ' ', $key);
+      $key = ucwords($key);
+      if ($pkey) {
+        $key = $pkey . ' ' . $key;
+      }
+      if (is_array($value)) {
+        $this->createDL($value, $key, $content, $depth + 1);
+      }
+      else {
+        $content .= '<dt>' . $key . '&nbsp;:&nbsp;</dt><dd>' . $value . '</dd>';
       }
     }
+    if ($depth == 0) {
+      $content .= '</dl>';
+      return $content;
+    }
+  }
+
+  /**
+   * A recursive function for creating an HTML dictionary list from
+   * the results for the item provided.
+   *
+   * @param $item
+   *   An item from the $items array passed to the view() function.
+   * @return
+   *   An HTML formatted DL.
+   */
+  private function createNestedDL($item) {
+    $content = '<dl>';
+    foreach ($item as $key => $value) {
+      // Skip JSON-LD keys.
+      if (preg_match('/^\@/', $key)) {
+        continue;
+      }
+
+      $key = preg_replace('/_/', ' ', $key);
+      $key = ucwords($key);
+      if (is_array($value)) {
+        $value = $this->createDL($value);
+      }
+      $content .= '<dt>' . $key . '</dt><dd>' . $value . '</dd>';
+    }
+    $content .= '</dl>';
+    return $content;
   }
   /**
    * Provides a summary of the formatter settings.

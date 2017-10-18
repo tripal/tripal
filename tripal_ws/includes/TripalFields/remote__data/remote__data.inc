@@ -16,10 +16,10 @@ class remote__data extends WebServicesField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
   // The default label for this field.
-  public static $default_label = 'Remote Data';
+  public static $default_label = 'Remote Tripal Site';
 
   // The default description for this field.
-  public static $default_description = 'remote data';
+  public static $default_description = 'Allows for inclusion of remote data from another Tripal site.';
 
   // The default widget for this field.
   public static $default_widget = 'remote__data_widget';
@@ -67,11 +67,11 @@ class remote__data extends WebServicesField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // Settings to allow the site admin to set the remote data source info.
-			'data_info' => array(
-				'query' => '',
-				'remote_site' => '',
-				'description' => '',
-			),
+      'data_info' => array(
+        'query' => '',
+        'remote_site' => '',
+        'description' => '',
+      ),
   );
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -84,81 +84,130 @@ class remote__data extends WebServicesField {
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
 
+  // Holds an object describing the remote site that tihs field connects to.
+  private $remote_site = NULL;
+
+  public function __construct($field, $instance) {
+    parent::__construct($field, $instance);
+
+    //Get the site url from the tripal_sites table.
+    $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
+    $this->remote_site = db_select('tripal_sites', 'ts')
+      ->fields('ts')
+      ->condition('ts.id', $site_id_ws)
+      ->execute()
+      ->fetchObject();
+  }
   /**
    * @see WebServicesField::load()
    */
   public function load($entity) {
-    $site_id_ws = $this->instance['settings']['data_info']['remote_site'];
-    $query = $this->instance['settings']['data_info']['query'];
-    $options = array();
 
-    // Check for tripal tokens and replace if present.
-    $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $query = tripal_replace_entity_tokens($query, $entity, $bundle_entity);
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
 
-     // Get the site url from the tripal_sites table.
-     $site_url_ws = db_select('tripal_sites', 's')
-       ->fields('s',array('url'))
-       ->condition('s.id', $site_id_ws, '=')
-       ->execute()->fetchAll();
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
 
-     $full_url = $site_url_ws[0]->url . '/web-services/content/v0.1/';
+    // Get the query set by the admin for this field and replace any tokesn
+    $query_str = $this->instance['settings']['data_info']['query'];
+    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $query_str = tripal_replace_entity_tokens($query_str, $entity, $bundle);
 
-     //Remove trailing slash if one is included.$_COOKIE
-     $full_url = trim($full_url, '/');
-     $full_url = $full_url . '/' . $query;
-
-     //Make the call and pull the data down.
-     $data = drupal_http_request($full_url, $options);
-
-     if($data){
-       $data = drupal_json_decode($data->data);
-       //Check the returned data is not an error.
-       if(array_key_exists('error', $data)){
-          watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
-          $data = '';
-       }
-       //Check the returned data isn't empty.
-       if(count($data['members']) >= 1){
-        //If multiple records, if single follow @id and pull down data
-        if(array_key_exists('value', $data)){
-          $members = $data['value'][0]['members'];
-          if($members){
-            if(count($members) > 1){
-                $field_name = $this->field['field_name'];
-                $entity->{$field_name}['und'][0]['value'] = $data;
-            }
-            else {
-              $single_record_url = $data['members'][0]['@id'];
-              $data = drupal_http_request($single_record_url, $options);
-              $data = drupal_json_decode($data->data);
-              if(array_key_exists('error', $data)){
-                watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
-                $data = '';
-             }
-            }
-          }
-        }
-        else {
-            $single_record_url = $data['members'][0]['@id'];
-            $data = drupal_http_request($single_record_url, $options);
-            $data = drupal_json_decode($data->data);
-            if(array_key_exists('error', $data)){
-              watchdog('Tripal WS', '<pre>Web Services data unavailable because site is returning error: '. print_r($data['error'], TRUE) .'</pre>');
-              $data = '';
-           }
-        }
-        $field_name = $this->field['field_name'];
-        $entity->{$field_name}['und'][0]['value'] = $data;
-      }
+    // Make the request.
+    $data = $this->makeRemoteRequest($query_str);
+    if(!$data){
+     return;
     }
-   }
-   /**
-	 *
-	 * @see TripalField::settingsForm()
+
+    $total_items = $data['totalItems'];
+
+    // Iterate through the members returned and save those for the field.
+    for ($i = 0; $i < count($data['members']); $i++) {
+      $member = $data['members'][$i];
+
+      // Get the cotent type and remote entity id
+      $content_type = $member['@type'];
+      $remote_entity_id = $member['@id'];
+      $remote_entity_id = preg_replace('/^.*\/(\d+)/', '$1', $remote_entity_id);
+
+      // Save the member information for use later.
+      $entity->{$field_name}['und'][$i]['remote_entity'] = $member;
+
+      // Next get the the details about this member.
+      $query_field = 'relationship';
+      $query_field_url =  $content_type . '/' . $remote_entity_id . '/' . $query_field;
+      $field_data = $this->makeRemoteRequest($query_field_url);
+      if(!$field_data){
+        // If we encounter any type of error, we'll reset the field and return.
+        $entity->{$field_name}['und'] = array();
+        $entity->{$field_name}['und'][0] = array(
+          'value' => array(),
+        );
+        return;
+      }
+
+      // Set the field data as the value.
+      $field_data_type = $field_data['@type'];
+      $entity->{$field_name}['und'][$i]['value'] = $field_data;
+    }
+  }
+  /**
+   * Makes a request to a remote Tripal web services site.
+   *
+   * @param $query
+   *   The query string. This string is added to the URL for the remote
+   *   website.
    */
-	public function instanceSettingsForm() {
-		$element = parent::instanceSettingsForm();
+  private function makeRemoteRequest($query) {
+
+    // Build the URL to the remote web services.
+    $ws_url = $this->remote_site->url;
+    $ws_url = trim($ws_url, '/');
+    $ws_url .= '/web-services/content/v0.1';
+
+    // Build the Query and make and substitions needed.
+    $query_url = $ws_url . '/' . $query;
+    $options = array('timeout' => 360);
+    $data = drupal_http_request($query_url, $options);
+
+    if (!$data) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR,
+          t('Could not connect to the remote web service.'));
+      return FALSE;
+    }
+
+    // If the data object has an error then this is some sort of
+    // connection error (not a Tripal web servcies error).
+    if (property_exists($data, 'error')) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR,
+          'Web Services error on remote site: %error.',
+          array('%error' => $data->error));
+      return FALSE;
+    }
+
+    // We got a response, so convert it to a PHP array.
+    $data = drupal_json_decode($data->data);
+
+    // Check if there was a Tripal Web Services error.
+    if (array_key_exists('error', $data)) {
+      $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
+      tripal_report_error('tripal_ws', TRIPAL_ERROR,
+        'Web Services error on remote site: %error.',
+        array('%error' => $error));
+      return FALSE;
+    }
+
+    return $data;
+  }
+  /**
+   *
+   * @see TripalField::settingsForm()
+   */
+  public function instanceSettingsForm() {
+    $element = parent::instanceSettingsForm();
     // Get the setting for the option for how this widget.
     $instance = $this->instance;
     $settings = '';
@@ -166,7 +215,8 @@ class remote__data extends WebServicesField {
 
     $tokens = array();
     // Get the form info from the bundle about to be saved.
-    $bundle_info = tripal_load_bundle_entity(array($instance['bundle']));
+    $bundle_info = tripal_load_bundle_entity(array('name' => $instance['bundle']));
+
     // Retrieve all available tokens.
     $tokens = tripal_get_entity_tokens($bundle_info);
 
@@ -247,7 +297,7 @@ class remote__data extends WebServicesField {
         //…
     );*/
 
-			return $element;
+      return $element;
   }
 
     /**

@@ -5,4 +5,6 @@ project = tripal
 package = Tripal
 version = 7.x-3.0-rc1
 
+stylesheets[all][] = theme/css/tripal_ws.css
+
 dependencies[] = tripal
