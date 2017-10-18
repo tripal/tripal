@@ -71,7 +71,8 @@ class remote__data extends WebServicesField {
         'query' => '',
         'remote_site' => '',
         'description' => '',
-      ),
+        'rd_field_name' => '',
+			),
   );
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -153,61 +154,13 @@ class remote__data extends WebServicesField {
       $field_data_type = $field_data['@type'];
       $entity->{$field_name}['und'][$i]['value'] = $field_data;
     }
-  }
-  /**
-   * Makes a request to a remote Tripal web services site.
-   *
-   * @param $query
-   *   The query string. This string is added to the URL for the remote
-   *   website.
+   }
+   /**
+	 *
+	 * @see TripalField::settingsForm()
    */
-  private function makeRemoteRequest($query) {
-
-    // Build the URL to the remote web services.
-    $ws_url = $this->remote_site->url;
-    $ws_url = trim($ws_url, '/');
-    $ws_url .= '/web-services/content/v0.1';
-
-    // Build the Query and make and substitions needed.
-    $query_url = $ws_url . '/' . $query;
-    $options = array('timeout' => 360);
-    $data = drupal_http_request($query_url, $options);
-
-    if (!$data) {
-      tripal_report_error('tripal_ws', TRIPAL_ERROR,
-          t('Could not connect to the remote web service.'));
-      return FALSE;
-    }
-
-    // If the data object has an error then this is some sort of
-    // connection error (not a Tripal web servcies error).
-    if (property_exists($data, 'error')) {
-      tripal_report_error('tripal_ws', TRIPAL_ERROR,
-          'Web Services error on remote site: %error.',
-          array('%error' => $data->error));
-      return FALSE;
-    }
-
-    // We got a response, so convert it to a PHP array.
-    $data = drupal_json_decode($data->data);
-
-    // Check if there was a Tripal Web Services error.
-    if (array_key_exists('error', $data)) {
-      $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
-      tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Web Services error on remote site: %error.',
-        array('%error' => $error));
-      return FALSE;
-    }
-
-    return $data;
-  }
-  /**
-   *
-   * @see TripalField::settingsForm()
-   */
-  public function instanceSettingsForm() {
-    $element = parent::instanceSettingsForm();
+	public function instanceSettingsForm() {
+		$element = parent::instanceSettingsForm();
     // Get the setting for the option for how this widget.
     $instance = $this->instance;
     $settings = '';
@@ -215,8 +168,7 @@ class remote__data extends WebServicesField {
 
     $tokens = array();
     // Get the form info from the bundle about to be saved.
-    $bundle_info = tripal_load_bundle_entity(array('name' => $instance['bundle']));
-
+    $bundle_info = tripal_load_bundle_entity(array($instance['bundle']));
     // Retrieve all available tokens.
     $tokens = tripal_get_entity_tokens($bundle_info);
 
@@ -252,9 +204,16 @@ class remote__data extends WebServicesField {
       '#description' => 'Build the query string that should be appended after the url. The tokens
       listed below may be used in your query build.',
       '#default_value' => $this->instance['settings']['data_info']['query'],
-      '#rows' => 5
+      '#rows' => 5,
+      '#required' => TRUE
     );
-
+    $element['data_info']['rd_field_name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Field',
+      '#description' => 'Name of the field you would like to display.',
+      '#default_value' => $this->instance['settings']['data_info']['rd_field_name'],
+      '#required' => TRUE
+    );
     $element['data_info']['token_display']['tokens'] = array(
       '#type' => 'hidden',
       '#value' => serialize($tokens)
@@ -300,13 +259,6 @@ class remote__data extends WebServicesField {
       return $element;
   }
 
-    /**
-     * Ajax callback.
-     */
-    function tripal_ws_url_query_test_ajax($form, $form_state) {
-      load();
-      return $element['test_button']['data'];
-    }
  /**
    *
    * @param unknown $form
