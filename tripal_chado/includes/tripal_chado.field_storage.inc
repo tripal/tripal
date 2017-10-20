@@ -561,10 +561,11 @@ function tripal_chado_field_storage_query($query) {
               break;
             case 'contains':
               $op = 'LIKE';
-              $key = '%' . $key;
+              $key = '%' . $key . '%';
               break;
             case 'starts':
               $op = 'LIKE';
+              $key = $key . '%';
               break;
             default:
               $op = '=';
