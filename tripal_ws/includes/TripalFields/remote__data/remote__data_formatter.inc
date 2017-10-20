@@ -78,7 +78,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $rd_field_name = $this->instance['settings']['data_info']['rd_field_name'];
     $subfields = explode(',', $rd_field_name);
     $header_label = $this->getHeaderLabel($subfields);
-    array_shift($subfields);
+    $flabel = array_shift($subfields);
 
     // Get the site logo if one is provided
     $site_logo = $this->instance['settings']['data_info']['site_logo'];
@@ -94,47 +94,49 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       ->execute()
       ->fetchObject();
 
-    $content = '';
-    if (array_key_exists('label', $items[0]['remote_entity'])) {
-      $remote_entity_label = $items[0]['remote_entity']['label'];
-      $remote_entity_page = $items[0]['remote_entity']['ItemPage'];
-      $content = t('This content provided by !site.',
+      $content = '<p>';
+    if (is_object($site_logo)) {
+      $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
+    }
+    $content .=  t('This content provided by !site.',
         array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
-      if ($site_logo) {
-        $content .= '<br><img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '">';
-      }
-      $content .= '<br>' . t('View !data on %site',
-        array('!data' => l('this content', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
-               '%site' => $site->name));
-    }
-    else {
-      $content = t('There is no data about this record from the !site database.',
-          array('!site' => l($site->name, $site->uri)));
-    }
+    $content .= '</p>';
     $rows = array();
     foreach ($items as $index => $item) {
+      $remote_entity_label = $item['remote_entity']['label'];
+      $remote_entity_page = $item['remote_entity']['ItemPage'];
+      $link = t('View !data on %site',
+          array('!data' => l('this content', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
+            '%site' => $site->name));
       $value = $item['value'];
       if (!$value) {
         continue;
       }
-      if (is_array($value)) {
-        $headers = array('');
+      $headers = array('');
 
-        // If this is a collection then handle it as a list of members.
-        if (array_key_exists('members', $value)) {
-          foreach ($value['members'] as $subvalue) {
-            $subvalue = $this->refineSubValue($subvalue, $subfields, $header_label);
-            $rows[]= array($subvalue);
-          }
-        }
-        else {
-          $subvalue = $this->refineSubValue($value, $subfields, $header_label);
-          $rows[]= array($subvalue);
+      // If this is a collection then handle it as a list of members.
+      if (array_key_exists('members', $value)) {
+        foreach ($value['members'] as $subvalue) {
+          $subvalue = $this->refineSubValue($subvalue, $subfields, $header_label);
+          $rows[] = array($subvalue);
         }
       }
       else {
-        $rows[] = array($value);
+        if (count($subfields) > 0) {
+          $subvalue = $this->refineSubValue($value, $subfields, $header_label);
+          $rows[] = array($subvalue);
+        }
+        else {
+          if (array_key_exists($flabel, $value)) {
+            $rows[] = array(l($value[$flabel], $remote_entity_page, array('attributes' => array('target' => '_blank'))));
+          }
+          else {
+            $value['Link'] = l('View content on ' . $site->name, $remote_entity_page, array('attributes' => array('target' => '_blank')));
+            $rows[] = array($value);
+          }
+        }
       }
+
     }
 
     $has_sub_tables = FALSE;
@@ -164,12 +166,11 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     else {
       for ($i = 0; $i < count($rows); $i++) {
         if (count($rows) > 1) {
-          $content .= '<p class="tripal-remote--data-field-table-label">' . $header_label . ' ' . ($i + 1) . '</p>';
+          $content .= '<span class="tripal-remote--data-field-table-label">' . $header_label . ' ' . ($i + 1) . '</span>';
         }
         $content .= $rows[$i][0];
       }
     }
-
     // Return the content for this field.
     $element[0] = array(
       '#type' => 'markup',
@@ -203,10 +204,17 @@ class remote__data_formatter extends WebServicesFieldFormatter {
    * @param $subfields
    */
   private function refineSubValue($values, $subfields) {
+
+    // Remove unwanted elements.
+    unset($values['@id']);
+    unset($values['@context']);
+    unset($values['@type']);
+    unset($values['remote_entity']);
+
     $subfield = array_shift($subfields);
     if (array_key_exists($subfield, $values)) {
       if (is_array($values[$subfield]) and count($subfields) > 0) {
-        return $this->refineSubvalue($values[$subfield], $subfields);
+        return  $this->refineSubvalue($values[$subfield], $subfields);
       }
       else {
         return $values[$subfield];

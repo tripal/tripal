@@ -199,17 +199,24 @@ class remote__data extends WebServicesField {
     *   website.
     */
    private function makeRemoteRequest($query) {
+     $ctype = $query;
+     $qdata = '';
+     if (preg_match('/\?/', $query)) {
+       list($ctype, $qdata) = explode('?', $query);
+     }
 
      // Build the URL to the remote web services.
+     $ws_version = $this->remote_site->version;
      $ws_url = $this->remote_site->url;
      $ws_url = trim($ws_url, '/');
-     $ws_url .= '/web-services/content/v0.1';
+     $ws_url .= '/web-services/content/' . $ws_version . '/' . $ctype;
 
      // Build the Query and make and substitions needed.
-     $query_url = $ws_url . '/' . $query;
-
-     $options = array();
-     $data = drupal_http_request($query_url, $options);
+     //dpm($ws_url . '?' . $query);
+     $options = array(
+       'data' => $qdata,
+     );
+     $data = drupal_http_request($ws_url, $options);
 
      if (!$data) {
        tripal_report_error('tripal_ws', TRIPAL_ERROR,

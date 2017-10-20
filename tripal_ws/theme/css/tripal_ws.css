@@ -1,6 +1,7 @@
 .tripal-remote--data-field {
   max-height: 400px;
-  overflow: scroll;
+  overflow: auto;
+  width: 100%;
 }
 .tripal-remote--data-field-logo {
   max-height: 100px;
@@ -11,6 +12,9 @@
   padding-right: 5px;
 }
 
+.tripal-remote--data-field-table  {
+  width: 100%;
+}
 .tripal-remote--data-field-table tr {
   background: none;
 }
