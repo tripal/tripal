@@ -519,7 +519,7 @@ function tripal_chado_field_storage_query($query) {
         $field_obj = new $field_type($field, $instance);
         $field_obj->query($cquery, $condition);
       }
-      // If there is no ChadoField class for this field then add the
+      // If there is not a ChadoField class for this field then add the
       // condition as is.
       else {
         $alias = $field['field_name'];
@@ -532,7 +532,44 @@ function tripal_chado_field_storage_query($query) {
           // Get the base table column that is associated with the term
           // passed as $condition['column'].
           $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
-          $cquery->condition('base.' . $base_field , $condition['value'], $condition['operator']);
+
+          $matches = array();
+          $key = $condition['value'];
+          $op = '=';
+          if (preg_match('/^(.+);(.+)$/', $key, $matches)) {
+            $key = $matches[1];
+            $op = $matches[2];
+          }
+          switch ($op) {
+            case 'eq':
+              $op = '=';
+              break;
+            case 'gt':
+              $op = '>';
+              break;
+            case 'gte':
+              $op = '>=';
+              break;
+            case 'lt':
+              $op = '<';
+              break;
+            case 'lte':
+              $op = '<=';
+              break;
+            case 'ne':
+              $op = '<>';
+              break;
+            case 'contains':
+              $op = 'LIKE';
+              $key = '%' . $key;
+              break;
+            case 'starts':
+              $op = 'LIKE';
+              break;
+            default:
+              $op = '=';
+          }
+          $cquery->condition('base.' . $base_field , $key, $op);
         }
         if ($chado_table != $base_table) {
           // TODO: I don't think we'll get here because linker fields will
