@@ -1295,4 +1295,3 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
     }
   }
 }
-

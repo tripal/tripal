@@ -643,10 +643,6 @@ function tripal_update_cvtermpath_loop_checker_traverse($origin, $child_id, $cv_
     $type_id, $depth, $increment_of_depth, $possible_start_of_loop, $array_of_possible_loop,
     $traverse_of_loop, $increment) {
 
-  //watchdog('debug', '<pre>$increment: '. print_r($increment, TRUE) .'</pre>');
-  /*if ($increment > 10) {
-    die();
-  }*/
   chado_set_active('chado');
   $query = db_select('cvterm_relationship', 'cvtr')
     ->fields('cvtr')
@@ -656,7 +652,6 @@ function tripal_update_cvtermpath_loop_checker_traverse($origin, $child_id, $cv_
 
   foreach ($cterm as $item) {
     if ($array_of_possible_loop === $traverse_of_loop) {
-      watchdog('debug', 'LOOP');
       //Report the loop.
       $loop_found = end($array_of_possible_loop);
       break;
@@ -1251,7 +1246,7 @@ function tripal_insert_cvterm($term, $options = array()) {
         INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
       WHERE DBX.accession = :accession and DB.name = :dbname and CVT.name = :term and CV.name = :cvname
     ";
-    $check = chado_query($checksql, array(':accession' => $dbxref->accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
+    $check = chado_query($checksql, array(':accession' => $accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
     if (!$check) {
 
       // check to see if the dbxref exists if not, add it.
@@ -1654,4 +1649,3 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
     return FALSE;
   }
 }
-
