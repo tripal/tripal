@@ -21,7 +21,7 @@ class FASTAImporter extends TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = array('fasta');
+  public static $file_types = array('fasta', 'fa');
 
 
   /**
