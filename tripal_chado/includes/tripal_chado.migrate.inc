@@ -215,7 +215,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
           ";
         $bm_count = chado_query($sql)->fetchField();
         if ($bm_count > 0) {
-          $key = urlencode('tv3_content_type--local--biomaterial--biomaterial');
+          $key = urlencode('tv3_content_type--sep--1095--biological sample');
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Biomaterial (' . $bm_count . ')',
