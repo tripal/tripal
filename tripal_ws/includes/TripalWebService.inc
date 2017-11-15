@@ -249,6 +249,7 @@ class TripalWebService {
     $this->resource = new TripalWebServiceResource($this->base_path);
     $this->resource->setID('error');
     $this->resource->addContextItem('error', 'rdfs:error');
+    $this->resource->setType('error');
     $this->resource->addProperty('error', $message);
   }
 
@@ -265,5 +266,146 @@ class TripalWebService {
   public function getSupportedClasses() {
      $supported_classes = array();
      return $supported_classes;
+  }
+
+  /**
+   * Adds a term to the '@context' section for a given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $term
+   *   The term array.
+   * @param $santize
+   *   An array of keywords indicating how to santize the key.  By default,
+   *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
+   *   where 'lowercase' converts the term name to all lowercase and
+   *   'spacing' replaces any spaces with underscores.
+   * @return $key
+   *   The key (the term name but with spaces replaced with underscores).
+   */
+  public function addContextTerm($resource, $term, $sanitize = array()) {
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addContextTerm: Please provide a $resource of type TripalWebServiceResource.');
+    }
+
+    if (!$term) {
+      $backtrace = debug_backtrace();
+      throw new Exception('addContextTerm: Please provide a non NUll or non empty $term.');
+
+    }
+    if (!$term['name']) {
+      throw new Exception('addContextTerm: The provided term does not have a name: ' . print_r($term, TRUE));
+    }
+
+    // Make sure the vocab is present
+    $vocab = $term['vocabulary'];
+    $this->addContextVocab($resource, $vocab);
+
+    // Sanitize the term key
+    $key = $term['name'];
+    $key_adj = $key;
+    if (in_array('spacing', $sanitize)) {
+      $key_adj = preg_replace('/ /', '_', $key_adj);
+    }
+    if (in_array('lowercase', $sanitize)) {
+      $key_adj = strtolower($key_adj);
+    }
+
+    // Create the compact IRI
+    $compact_iri = $vocab['short_name'] . ':' . $term['accession'];
+
+    // If the full naming is indicated in the service parameters then
+    // set the full name of the keys to include the vocab short name.
+    if (array_key_exists('full_keys', $this->params)) {
+      //$key_adj = $vocab['short_name'] . ':' . $key_adj;
+    }
+
+    $iri = $term['url'];
+
+    $resource->addContextItem($key_adj, $compact_iri);
+    $resource->addContextItem($compact_iri, $iri);
+
+    if ($key_adj == 'clause subject') {
+      //print_r(debug_backtrace()[2]['function']);
+    }
+    return $key_adj;
+  }
+
+  /**
+   * Adds a vocabulary to the '@context' section for a given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $vocab
+   *   The vocabulary array.
+   */
+  public function addContextVocab($resource, $vocab) {
+
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addContextVocab: Please provide a $resource of type TripalWebServiceResource.');
+    }
+
+    $key = $vocab['short_name'];
+    // The URL here should be the URL prefix not the database home
+    // page.  But unfortunately, the URL prefix can't be guaranteed to be
+    // a true prefix. Not all databases place by the rules.  For this reason,
+    // we can never use JSON-LD compact IRIs. :-(
+    $iri = $vocab['url'];
+    $resource->addContextItem($key, $iri);
+  }
+
+  /**
+   * Adds a key/value property to the given resource.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $term
+   *   The term array for the key.
+   * @param $value
+   *   The value to add.
+   * @param $santize
+   *   An array of keywords indicating how to santize the key.  By default,
+   *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
+   *   where 'lowercase' converts the term name to all lowercase and
+   *   'spacing' replaces any spaces with underscores.
+   * @return $key
+   *   The key (the term name but with spaces replaced with underscores).
+   */
+  public function addResourceProperty($resource, $term, $value, $sanitize = array()) {
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');
+    }
+
+    // First add the term
+    $key = $this->addContextTerm($resource, $term, $sanitize);
+
+    // Then add the property.
+    $resource->addProperty($key, $value);
+  }
+  /**
+   * Sets the type for the given resource.
+   *
+   * The type exist in the context of the web service.
+   *
+   * @param $resource
+   *   A TripalWebServiceResource instance.
+   * @param $type
+   *   The type
+   * @param $santize
+   *   An array of keywords indicating how to santize the key.  By default,
+   *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
+   *   where 'lowercase' converts the term name to all lowercase and
+   *   'spacing' replaces any spaces with underscores.
+   */
+  public function setResourceType($resource, $term, $sanitize = array('spacing')) {
+
+    if (!is_a($resource, 'TripalWebServiceResource')) {
+      throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');
+    }
+    // First add the term
+    $key = $this->addContextTerm($resource, $term, $sanitize);
+
+    // Then set the type
+    $resource->setType($key);
   }
 }

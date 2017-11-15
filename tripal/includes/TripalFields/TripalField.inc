@@ -109,7 +109,9 @@ class TripalField {
    *   An array containing the instance data as returned by field_instance_info().
    */
   public function __construct($field, $instance) {
-    $vocabulary = $term = NULL;
+    $term = NULL;
+    $vocabulary = NULL;
+    $accession = NULL;
     $this->field = $field;
     $this->instance = $instance;
 

@@ -29,7 +29,7 @@ have been added to Chado database.</p>
   </li>
   <li>
   <p><b>Configure the Search Behavior</b>: Before allowing site visitors
-  to search for publications visit the <?php print l('configuration page', 'admin/tripal/tripal_pub/configuration') ?>
+  to search for publications visit the <?php print l('configuration page', 'admin/tripal/storage/chado/pub-search-config') ?>
   to disable or enable fields for searching. Tripal uses its own ontology
   for storing publication information in Chado, and all child terms of
   the "Publication Details" are made available for searching. However,
@@ -48,7 +48,7 @@ have been added to Chado database.</p>
     <li>Install the PHP YAZ extension: sudo pecl install yaz</li>
     <li>Add the text 'extension=yaz.so' to the appropriate php.ini file
     (e.g. /etc/php5/apache2filter/php.ini). On Ubuntu you may need to
-    add it to the php.ini file specfic for the Apache webserver and 
+    add it to the php.ini file specfic for the Apache webserver and
     also to the php.ini specific for the command-line.</li>
     <li>Restart the webserver</li>
   </ol>

@@ -1113,4 +1113,20 @@ function theme_token_list($tokens) {
   return theme('table', array('header' => $header, 'rows' => $rows));
 }
 
+/**
+ * Define the entity label callback.  This will return the title.
+ *
+ * @param $entity
+ *
+ * @return mixed
+ */
+
+function tripal_entity_label($entity) {
+  if (property_exists($entity, 'title')) {
+    return $entity->title;
+  }
+  return NULL;
+}
+
+
 
