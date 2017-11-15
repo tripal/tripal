@@ -684,9 +684,9 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
   }
   else if ($table == 'biomaterial') {
     array_push($types, array(
-      'vocabulary' => 'local',
-      'accession' => 'biomaterial',
-      'term_name' => 'biomaterial',
+      'vocabulary' => 'sep',
+      'accession' => '1095',
+      'term_name' => 'biological sample',
       'storage_args' => array (
         'data_table' => $table
       )
