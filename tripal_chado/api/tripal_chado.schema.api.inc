@@ -87,12 +87,15 @@ function chado_column_exists($table, $column) {
 
   $default_db = $databases['default']['default']['database'];
   $cached_obj = cache_get('chado_table_columns', 'cache');
-  $cached_cols = $cached_obj->data;
-  if (is_array($cached_cols) and
-      array_key_exists($table, $cached_cols) and
-      array_key_Exists($column, $cached_cols[$table])) {
-    return $cached_cols[$table][$column]['exists'];
+  if ($cached_obj) {
+      $cached_cols = $cached_obj->data;
+      if (is_array($cached_cols) and
+          array_key_exists($table, $cached_cols) and
+          array_key_Exists($column, $cached_cols[$table])) {
+        return $cached_cols[$table][$column]['exists'];
+      }
   }
+
   $sql = "
     SELECT 1
     FROM information_schema.columns

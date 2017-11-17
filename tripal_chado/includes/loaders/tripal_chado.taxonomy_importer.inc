@@ -357,7 +357,7 @@ function tripal_chado_taxonomy_add_organism_property($organism_id, $term_name, $
   );
   $property = array(
     'type_name' => $term_name,
-    'cv_name' => organism_property,
+    'cv_name' => 'organism_property',
     'value' => $value
   );
   // Delete all properties of this type if the rank is zero.

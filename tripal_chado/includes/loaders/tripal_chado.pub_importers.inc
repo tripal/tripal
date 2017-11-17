@@ -1222,32 +1222,35 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // remove the 'valid' property as we don't have a CV term for it
     unset($author['valid']);
 
+    $values = array(
+      'pub_id' => $pub_id,
+      'rank' => $rank,
+    );
+
     // construct the contact.name field using the author information
     $name = '';
     $type = 'Person';
     if (isset($author['Given Name'])) {
       $name .= $author['Given Name'];
+      $values['givennames'] = $author['Given Name'];
     }
     if (isset($author['Surname'])) {
       $name .= ' ' . $author['Surname'];
+      $values['surname'] = substr($author['Surname'], 0, 100);
     }
     if (isset($author['Suffix'])) {
       $name .= ' ' . $author['Suffix'];
+      $values['suffix'] = $author['Suffix'];
     }
     if (isset($author['Collective'])) {
       $name = $author['Collective'];
       $type = 'Collective';
+      if (!isset($author['Surname']))
+        $values['surname'] = substr($author['Collective'], 0, 100);
     }
     $name = trim($name);
 
     // add an entry to the pubauthors table
-    $values = array(
-      'pub_id' => $pub_id,
-      'rank' => $rank,
-      'surname' => $author['Surname'] ? substr($author['Surname'], 0, 100) : substr($author['Collective'], 0, 100),
-      'givennames' => $author['Given Name'],
-      'suffix' => $author['Suffix'],
-    );
     $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
     $pubauthor = chado_insert_record('pubauthor', $values, $options);
 
@@ -1694,4 +1697,3 @@ function tripal_pub_citation_form_submit(&$form_state) {
   $options [0] = $form_state['options']['#value'];
   tripal_add_job("Create citations ($options[0])", 'tripal_pub', 'tripal_pub_create_citations', $options, $user->uid);
 }
-
