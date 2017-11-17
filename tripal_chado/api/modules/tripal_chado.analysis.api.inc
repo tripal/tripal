@@ -14,36 +14,6 @@
  * @}
  */
 
-/**
- * Register tripal_analysis_api sub-modules
- *
- * @param $modulename
- *  The name of the module to be registered as a tripal analysis submodule
- *
- * @ingroup tripal_analysis_api
- */
-function tripal_register_analysis_child($modulename) {
-  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
-  if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
-    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
-    db_query($sql, array(':modname' => $modulename));
-  }
-}
-
-/**
- * Un-register a tripal analysis sub-module
- *
- * @param $modulename
- *  The name of the module to un-register
- *
- * @ingroup tripal_analysis_api
- */
-function tripal_unregister_analysis_child($modulename) {
-  if (db_table_exists('tripal_analysis')) {
-      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
-      db_query($sql, array(':modname' => $modulename));
-  }
-}
 
 /**
  * Retrieves an chado analysis variable
@@ -165,7 +135,6 @@ function tripal_get_analysis($identifier, $options) {
  *   An array of analyses sync'd with Drupal where each value is the analysis scientific
  *   name and the keys are analysis_id's
  *
- * @ingroup tripal_analysis_api
  */
 function tripal_get_analysis_select_options($syncd_only = TRUE) {
   $analysis_list = array();

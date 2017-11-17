@@ -718,6 +718,39 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Publications
+  //////////////////////////////////////////////////////////////////////////////
+  $items['find/publications' ]= array(
+    'title' => 'Publication Search',
+    'description' => ('Search for publications'),
+    'page callback' => 'tripal_chado_pub_search_page',
+    'access arguments' => array('access chado_pub content'),
+    'file' =>  'includes/tripal_chado.pub_search.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK
+  );
+
+  $items['find/publications/criteria/%/%'] = array(
+    'page callback' => 'tripal_chado_pub_search_page_update_criteria',
+    'page arguments' => array(5, 6),
+    'access arguments' => array('access chado_pub content'),
+    'file' =>  'includes/tripal_chado.pub_search.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type ' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/storage/chado/pub-search-config'] = array(
+    'title' => 'Publication Search Settings',
+    'description' => 'Configure the settings for the publication search.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_pub_search_admin_form'),
+    'file' =>  'includes/tripal_chado.pub_search.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer tripal'),
+  );
+
   return $items;
 }
 
@@ -770,9 +803,9 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       'render element' => 'form',
       'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     ),
-    'tripal_pub_search_setup_form_elements' => array(
+    'tripal_chado_pub_search_setup_form_elements' => array(
       'render element' => 'form',
-      'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
+      'file' => 'includes/tripal_chado.pub_search.inc',
     ),
   );
 

@@ -65,13 +65,21 @@ class TripalWebServiceResource {
   /**
    * Adds a term to the '@context' section for this resource.
    *
+   * This function should not be called directory.  Rather, the
+   * addContextTerm() and addContextVocab() functions built
+   * into the TripalWebService class should be used as  these  will help
+   * ensure terms are added proper for the context of the web service.
+   *
    * @param $name
    *   The term name.
    * @param $iri
    *   The Internationalized Resource Identifiers or it's shortcut.
+   *
    */
   public function addContextItem($name, $iri) {
-    // TODO: make sure that if a shortcut is used that the parent is present.
+    if (array_key_exists($name, $this->context)) {
+      return;
+    }
     $this->context[$name] = $iri;
   }
 
