@@ -220,11 +220,6 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     return;
   }
 
-  // TODO: (Shawna) 1) Check the entity type (bundle) settings to see if empty fieleds
-  // should be ignored by default. 2)  Check the field itself to see if it
-  // overides the bundle default.  The idea being do not show fields when
-  // people don't want them shown.
-
   $element = array();
   $formatter_class = $display['type'];
   $is_loaded = tripal_load_include_field_class($formatter_class);

@@ -139,7 +139,7 @@ function tripal_entity_info() {
     'base table' => 'tripal_entity',
 
     // Returns the uri elements of an entity.
-    'uri callback' => 'tripal_vocbulary_term_uri',
+    'uri callback' => 'tripal_entity_uri',
 
     // IF fieldable == FALSE, we can't attach fields.
     'fieldable' => TRUE,
@@ -191,7 +191,20 @@ function tripal_entity_info() {
     )
   );
 
-  //
+  // Search integration
+  if (module_exists('search')) {
+    $entities['TripalEntity']['view modes'] += array(
+      'search_index' => array(
+        'label' => t('Search index'),
+        'custom settings' => FALSE,
+      ),
+      'search_result' => array(
+        'label' => t('Search result highlighting input'),
+        'custom settings' => FALSE,
+      ),
+    );
+  }
+
   // The TripalBundle entity is used manage the bundle types.  The 'bundle of'
   // attribute links this to the TripalEntity and allows the UI provided
   // by the entity module to work for each TripalEntity bundle.
@@ -222,6 +235,16 @@ function tripal_entity_info() {
   );
 
   return $entities;
+}
+
+/**
+ * Implements the Entity URI callback function.
+ */
+function tripal_entity_uri($entity) {
+  return array(
+    'path' => 'bio-data/' . $entity->id,
+    'options' => array(),
+  );
 }
 
 /**
