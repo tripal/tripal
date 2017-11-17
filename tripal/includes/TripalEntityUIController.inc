@@ -308,6 +308,14 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    if ($etype) {
      $query->entityCondition('bundle', $etype);
    }
+   if ($status) {
+     if ($status == 'status-1') {
+       $query->propertyCondition('status', 1);
+     }
+     if ($status == 'status-0') {
+       $query->propertyCondition('status', 0);
+     }
+   }
    //$query->propertyOrderBy('created', 'DESC');
 
    // Find out the total number of records and determine what page we're on, and
@@ -324,8 +332,9 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
 
    // For each entity retrieved add a row to the data listing.
-   //while ($entity = $entities->fetchObject()) {
-   if (!isset($results['TripalEntity'])) $results['TripalEntity'] = array();
+   if (!isset($results['TripalEntity'])) {
+     $results['TripalEntity'] = array();
+   }
    foreach ($results['TripalEntity'] as $entity_id => $stub) {
      $vocabulary = '';
      $term_name = '';

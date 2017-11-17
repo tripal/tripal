@@ -144,7 +144,6 @@ class TripalWebServiceResource {
 
       // If the vocabulary is not in the.
       if (!in_array($vocab, $keys)) {
-        dpm(debug_backtrace());
         throw new Exception("The key, '$key', has a vocabulary that has not yet been added to the " .
             "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.");
       }
@@ -152,7 +151,6 @@ class TripalWebServiceResource {
     else {
       // If the key is not in the context then throw an error.
       if (!in_array($key, $keys)) {
-        dpm(debug_backtrace());
         throw new Exception("The key, '$key', has not yet been added to the " .
             "context. Use the addContextItem() function to add this key prior to adding a value for it.");
       }
