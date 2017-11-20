@@ -239,6 +239,14 @@ function tripal_jobs_report() {
  */
 function tripal_jobs_view($job_id) {
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Jobs', 'admin/tripal/tripal_jobs');
+  drupal_set_breadcrumb($breadcrumb);
+
   // get the job record
   $sql =
     "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
@@ -313,7 +321,6 @@ function tripal_jobs_view($job_id) {
   $rows[] = array('Submit Date', $job->submit_date);
   $rows[] = array('Start time', $job->start_time);
   $rows[] = array('End time', $job->end_time);
-  $rows[] = array('Error Message', $job->error_msg);
   $rows[] = array('Priority', $job->priority);
   $rows[] = array('Submitting User', $job->username);
 
@@ -327,9 +334,53 @@ function tripal_jobs_view($job_id) {
     'empty' => '',
   );
 
-  $output = '<p>' . substr($links, 0, -2) . '</p>'; // remove trailing |
-  $output .= theme_table($table);
-  return $output;
+  $content['links'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . substr($links, 0, -2) . '</p>',
+  );
+  $content['job_title'] = array(
+    '#type' => 'item',
+    '#title' => t('Job Title'),
+    '#markup' => $job->job_name,
+  );
+  $content['job_status'] = array(
+    '#type' => 'item',
+    '#title' => t('Status'),
+    '#markup' => $job->job_status,
+  );
+  $content['details_fset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Job Details'),
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#attributes' => array(
+      'class' => array('collapsible', 'collapsed'),
+    ),
+    '#attached' => array(
+      'js' => array('misc/collapse.js', 'misc/form.js')
+    ),
+  );
+  $content['details_fset']['job_details'] = array(
+    '#type' => 'markup',
+    '#markup' => theme_table($table),
+  );
+  $content['log_fset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Job Logs'),
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#attributes' => array(
+      'class' => array('collapsible', 'collapsed'),
+    ),
+    '#attached' => array(
+      'js' => array('misc/collapse.js', 'misc/form.js')
+    ),
+  );
+  $content['log_fset']['job_logs'] = array(
+    '#type' => 'markup',
+    '#markup' => '<pre>' . $job->error_msg . '</pre>',
+  );
+  return $content;
 }
 
 /**

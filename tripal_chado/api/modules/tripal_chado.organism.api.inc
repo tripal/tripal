@@ -266,3 +266,44 @@ function tripal_autocomplete_organism($text) {
   }
   drupal_json_output($items);
 }
+
+/**
+ * A handy function to abbreviate the infraspecific rank.
+ *
+ * @param $rank
+ *   The rank below species.
+ * @return
+ *   The proper abbreviation for the rank.
+ */
+function tripal_abbreviate_infraspeicifc_rank($rank) {
+  $abb = '';
+  switch($rank) {
+    case 'no_rank':
+      $abb = '';
+      break;
+    case 'subspecies':
+      $abb = 'subsp.';
+      break;
+    case 'varietas':
+      $abb = 'var.';
+      break;
+    case 'variety':
+      $abb = 'var.';
+      break;
+    case 'subvarietas':
+      $abb = 'subvar.';
+      break;
+    case 'subvariety':
+      $abb = 'subvar.';
+      break;
+    case 'forma':
+      $abb = 'f.';
+      break;
+    case 'subforma':
+      $abb = 'subf.';
+      break;
+    default:
+      $abb = $rank;
+  }
+  return $abb;
+}

@@ -582,6 +582,8 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *
  * @param $tree
  *   The tree array.
+ * @param $phylotree.
+ *   The phylotree object (from Chado).
  * @param $options
  *   The options provide some direction for how the tree is imported.  The
  *   following keys can be used:
