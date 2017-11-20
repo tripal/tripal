@@ -17,7 +17,6 @@ require_once 'theme/tripal_phylogeny.theme.inc';
 require_once 'includes/tripal_phylogeny.admin.inc';
 require_once 'includes/tripal_phylogeny.chado_node.inc';
 require_once 'includes/tripal_phylogeny.import_tree.inc';
-require_once 'includes/tripal_phylogeny.taxonomy.inc';
 
 /**
  * Implements hook_permission().
@@ -114,15 +113,6 @@ function tripal_phylogeny_menu() {
     'access arguments' => array('administer tripal phylotree'),
     'type' => MENU_CALLBACK,
   );
-
-   $items['taxonomy_view'] = array(
-     'title' => 'Taxonomy',
-     'description' => 'Taxonomic view of the species available on this site.',
-     'page callback' => 'tripal_phylogeny_taxonomy_view',
-     'access arguments' => array('access taxonomy content'),
-     'file' => '/includes/tripal_phylogeny.taxonomy.inc',
-     'type' => MENU_NORMAL_ITEM,
-   );
 
    // create a route for viewing json of all phylonodes having this phylotree_id
    $items['ajax/chado_phylotree/%/json'] = array(

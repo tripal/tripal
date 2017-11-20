@@ -20,7 +20,7 @@ function tripal_phylogeny_taxonomy_view() {
         NCBI taxonomy loader to update the view</p>',
       array(
         '@menu' => url('admin/structure/menu/manage/navigation'),
-        '@taxloader' => url('admin/tripal/loaders/ncbi_taxonomy_loader'
+        '@taxloader' => url('admin/tripal/loaders/chado_taxonomy'
       ))
   );
   $admin_message = tripal_set_message($message, TRIPAL_INFO, array('return_html' => TRUE));
@@ -30,14 +30,16 @@ function tripal_phylogeny_taxonomy_view() {
     $node = new stdClass();
     $node->phylotree = $phylotree;
 
-    $html =  theme('tripal_phylogeny_taxonomic_tree', array('node' => $node)) .
+    $html = theme('tripal_phylogeny_taxonomic_tree', array('node' => $node)) .
       $admin_message;
     return $html;
   }
 
-  return array(
+  $content['admin_message'] = array(
     '#type' => 'markup',
     '#markup' => t('This site has not yet prepared the taxonomy for viewing.') . $admin_message,
   );
+
+  return $content;
 }
 

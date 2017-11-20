@@ -370,16 +370,6 @@ function tripal_chado_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
-  $items['admin/tripal/loaders/ncbi_taxonomy_loader'] = array(
-    'title' => 'Chado NCBI Taxonomy Loader',
-    'description' => 'Loads taxonomic details about installed organisms.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_taxonomy_load_form'),
-    'access arguments' => array('administer tripal'),
-    'file' => 'includes/loaders/tripal_chado.taxonomy_importer.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_NORMAL_ITEM,
-  );
 
   // Data Loaders
   $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
@@ -751,6 +741,20 @@ function tripal_chado_menu() {
     'access arguments' => array('administer tripal'),
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Phylogeny
+  //////////////////////////////////////////////////////////////////////////////
+  $items['taxonomy'] = array(
+    'title' => 'Taxonomy',
+    'description' => 'Taxonomic view of the species available on this site.',
+    'page callback' => 'tripal_phylogeny_taxonomy_view',
+    'access arguments' => array('access taxonomy content'),
+    'file' => '/includes/tripal_phylogeny.taxonomy.inc',
+    'type' => MENU_NORMAL_ITEM,
+    'file' =>  'includes/tripal_chado.taxonomy.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+
   return $items;
 }
 
@@ -807,6 +811,8 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       'render element' => 'form',
       'file' => 'includes/tripal_chado.pub_search.inc',
     ),
+
+
   );
 
   // Override the theme for each entity to use the legacy modules
