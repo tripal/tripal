@@ -672,5 +672,10 @@ class TripalImporter {
   public function run() {
   }
 
+  /**
+   * Performs the import.
+   */
+  public function postRun() {
+  }
 
 }

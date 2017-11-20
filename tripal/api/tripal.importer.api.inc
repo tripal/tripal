@@ -113,19 +113,6 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
       $loader->logMessage('Removing downloaded file...');
       unlink($temp);
     }
-
-    print "\nDone\n";
-
-
-    // Check for tables with new cvterms
-    tripal_chado_map_cvterms();
-
-    // Check for new fields and notify the user.
-    tripal_tripal_cron_notification();
-
-    // Clear the Drpual chace
-    cache_clear_all();
-
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -136,5 +123,30 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
       $loader->cleanFile();
     }
   }
+  unset($transaction);
+  try {
+    // the transaction
+    $transaction = db_transaction();
+    $loader->postRun();
+  } 
+  catch (Exception $e) {
+    $transaction->rollback();
+    if ($job) {
+      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+    }
+    if ($loader) {
+      $loader->cleanFile();
+    }
+  }
+  // Check for tables with new cvterms
+  tripal_chado_map_cvterms();
+  
+  // Check for new fields and notify the user.
+  tripal_tripal_cron_notification();
+  
+  // Clear the Drpual chace
+  cache_clear_all();
+
+  print "\nDone\n";
 }
 

@@ -83,6 +83,13 @@ class OBOImporter extends TripalImporter {
 
   public static $file_required = FALSE;
 
+  /**
+   * Keep track of vocabularies that have been added.
+   *
+   * @var array
+   */
+  private $newcvs = array();
+
 
   /**
    * @see TripalImporter::form()
@@ -384,7 +391,13 @@ class OBOImporter extends TripalImporter {
 
     $this->loadOBO_v1_2_id($obo);
   }
-
+  /**
+   * @see TripalImporter::postRun()
+   *
+   */
+  public function postRun() {
+    $this->load_cvtermpath($this->newcvs);
+  }
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
    * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
@@ -447,18 +460,11 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2_file($obo_name, $file, $is_new = TRUE) {
-    $newcvs = array();
-
     if ($is_new) {
       tripal_insert_obo($obo_name, $file);
     }
 
-    $success = $this->loadOBO_v1_2($file, $newcvs);
-    if ($success) {
-      // update the cvtermpath table
-      $this->load_cvtermpath($newcvs);
-      print "\nDone\n";
-    }
+    $success = $this->loadOBO_v1_2($file, $this->newcvs);
   }
 
   /**
