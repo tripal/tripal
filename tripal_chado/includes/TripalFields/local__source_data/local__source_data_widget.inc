@@ -70,7 +70,7 @@ class local__source_data_widget extends ChadoFieldWidget {
       '#title' => 'Data Source Name',
       '#description' => 'The name of the source where data was obtained for this analysis.',
       '#default_value' => $sourcename,
-      '#required' => TRUE,
+      '#required' => $element['#required'],
     );
     $widget['source_data']['sourceversion'] = array(
       '#type' => 'textfield',
