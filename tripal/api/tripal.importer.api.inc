@@ -91,18 +91,60 @@ function tripal_load_include_importer_class($class) {
 function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
   $loader = NULL;
+  $loader = TripalImporter::byID($import_id);
+  $loader->setJob($job);
+  $loader->prepareFiles();
+
+  print "\nNOTE: Loading of this OBO is performed using a database transaction. \n" .
+        "The transaction occurs in two parts. First the ontology is loaded. Second, \n" .
+        "the paths between all terms are loaded. If either of the parts fail \n" .
+        "or is terminated prematurely then only the part that failed will have all \n" .
+        "insertions and updates rolled back and will not be found in the database\n\n";
+
+  try {
+    // Run the loader
+    tripal_run_importer_run($loader, $job);
+
+    // Handle the post run.
+    tripal_run_importer_post_run($loader, $job);
+
+    // Check for tables with new cvterms
+    tripal_chado_map_cvterms();
+
+    // Check for new fields and notify the user.
+    tripal_tripal_cron_notification();
+
+    // Clear the Drpual chace
+    cache_clear_all();
+
+    print "\nDone\n";
+  }
+  catch (Exception $e) {
+    if ($job) {
+      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+    }
+    if ($loader) {
+      $loader->cleanFile();
+    }
+  }
+}
+
+/**
+ * First step of the tripal_run_importer.
+ *
+ * @param $loader
+ *   The TripalImporter object.
+ * @param $job
+ *   The TripalJob object.$this
+ * @throws Exception
+ */
+function tripal_run_importer_run($loader, $job) {
+
   try {
     // begin the transaction
     $transaction = db_transaction();
-    print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
-        "If the load fails or is terminated prematurely then the entire set of \n" .
-        "insertions/updates is rolled back and will not be found in the database\n\n";
 
-    $loader = TripalImporter::byID($import_id);
-    $loader->setJob($job);
-    $loader->prepareFiles();
     $loader->run();
-    $loader->cleanFile();
 
     if ($job) {
       $job->logMessage("Done");
@@ -115,38 +157,30 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     }
   }
   catch (Exception $e) {
+    // Rollback and re-throw the error.
     $transaction->rollback();
-    if ($job) {
-      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
-    }
-    if ($loader) {
-      $loader->cleanFile();
-    }
+    throw $e;
   }
-  unset($transaction);
+}
+/**
+ * Second step of the tripal_run_importer.
+ *
+ * @param $loader
+ *   The TripalImporter object.
+ * @param $job
+ *   The TripalJob object.
+ * @throws Exception
+ */
+function tripal_run_importer_post_run($loader, $job) {
   try {
     // the transaction
     $transaction = db_transaction();
     $loader->postRun();
-  } 
-  catch (Exception $e) {
-    $transaction->rollback();
-    if ($job) {
-      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
-    }
-    if ($loader) {
-      $loader->cleanFile();
-    }
   }
-  // Check for tables with new cvterms
-  tripal_chado_map_cvterms();
-  
-  // Check for new fields and notify the user.
-  tripal_tripal_cron_notification();
-  
-  // Clear the Drpual chace
-  cache_clear_all();
-
-  print "\nDone\n";
+  catch (Exception $e) {
+    // Rollback and re-throw the error.
+    $transaction->rollback();
+    throw $e;
+  }
 }
 
