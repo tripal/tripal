@@ -41,7 +41,7 @@
     var organism_color = Drupal.settings.tripal_chado.org_colors;
     var color = null;
     if (d.genus) {
-      color = organism_color[d.genus + ' ' + d.species];
+      color = organism_color[d.organism_id];
     }
     if (color) { 
       return color; 

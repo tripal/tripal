@@ -273,7 +273,7 @@ function tripal_autocomplete_organism($text) {
   $matches = array();
   $genus = $text;
   $species = '';
-  if (preg_match('/^(.*?) (.*)$/', $text, $matches)) {
+  if (preg_match('/^(.*?)\s+(.*)$/', $text, $matches)) {
     $genus = $matches[1];
     $species = $matches[2];
   }
@@ -289,7 +289,7 @@ function tripal_autocomplete_organism($text) {
   $results = chado_query($sql, $args);
   $items = array();
   foreach ($results as $organism) {
-    $name = $organism->genus . ' ' .$organism->species;
+    $name = tripal_get_organism_scientific_name($organism);
     $items["$name [id: $organism->organism_id]"] = $name;
   }
   drupal_json_output($items);

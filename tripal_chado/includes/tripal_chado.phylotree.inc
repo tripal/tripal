@@ -33,10 +33,11 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
   $color_defaults = variable_get("tripal_phylogeny_org_colors", array('1' => array('organism' => '', 'color' => '')));
   foreach ($color_defaults as $i => $details) {
     if ($details['organism']) {
-      $colors[$details['organism']] =  $details['color'];
+      // Strip the [id:xxx] from the name
+      $organism_id = preg_replace('/^.+\[id: (\d+)\].*$/', '\1', $details['organism']);
+      $colors[$organism_id] =  $details['color'];
     }
   }
-  $colors = json_encode($colors);
 
   drupal_add_js(array(
     'tripal_chado' => array(
@@ -377,7 +378,7 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     $form['node_settings']['org_table']['organism_' . $i] = array(
       '#type' => 'textfield',
       '#default_value' => array_key_exists($i, $color_defaults) ? $color_defaults[$i]['organism'] : '',
-      '#autocomplete_path' => "admin/tripal/legacy/tripal_organism/organism/auto_name",
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/organism",
       '#description' => t('Please enter the name of the organism.'),
       '#size' => 30,
     );

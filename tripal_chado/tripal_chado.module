@@ -834,7 +834,9 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       'render element' => 'form',
       'file' => 'includes/tripal_chado.pub_search.inc',
     ),
-
+    'tripal_phylogeny_admin_org_color_tables' => array(
+      'render element' => 'element',
+    )
 
   );
 
