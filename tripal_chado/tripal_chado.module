@@ -744,7 +744,7 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   //                           Phylogeny
   //////////////////////////////////////////////////////////////////////////////
-  $items['taxonomy'] = array(
+/*   $items['taxonomy'] = array(
     'title' => 'Taxonomy',
     'description' => 'Taxonomic view of the species available on this site.',
     'page callback' => 'tripal_phylogeny_taxonomy_view',
@@ -753,7 +753,7 @@ function tripal_chado_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' =>  'includes/tripal_chado.taxonomy.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
-  );
+  ); */
 
   // create a route for viewing json of all phylonodes having this phylotree_id
   $items['phylotree/%'] = array(
