@@ -755,6 +755,29 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
 
+  // create a route for viewing json of all phylonodes having this phylotree_id
+  $items['phylotree/%'] = array(
+    'page callback' => 'tripal_phylogeny_ajax_get_tree_json',
+    'page arguments' => array(1),
+    // allow all anonymous http clients
+    'access callback' => TRUE,
+    'file' =>  'includes/tripal_chado.phylotree.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+
+  $items['admin/tripal/storage/chado/phylogeny'] = array(
+    'title' => 'Phylogeny and Taxonomy',
+    'description' => 'Settings for display of phylogenetic and taxonomic trees.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_phylogeny_default_plots_form'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 2,
+    'file' =>  'includes/tripal_chado.phylotree.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+
+
   return $items;
 }
 

@@ -1619,6 +1619,8 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * @ingroup tripal_chado_query_api
  */
 function chado_query($sql, $args = array()) {
+  $results = NULL;
+
   $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
 
   // Args should be an array
@@ -1666,12 +1668,8 @@ function chado_query($sql, $args = array()) {
         chado_set_active($previous_db);
       }
       catch (Exception $e) {
-        try {
-          chado_set_active($previous_db);
-        }
-        catch (Exception $e2) {
-          throw new Exception($e->getMessage() . $e2->getMessage());
-        }
+        chado_set_active($previous_db);
+        throw $e;
       }
     }
     // for all other tables we should have everything in scope so just run the query

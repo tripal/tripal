@@ -20,43 +20,23 @@ function tripal_phylogeny_taxonomy_view() {
         NCBI taxonomy loader to update the view</p>',
       array(
         '@menu' => url('admin/structure/menu/manage/navigation'),
-        '@taxloader' => url('admin/tripal/loaders/chado_taxonomy'
-      ))
-  );
+        '@taxloader' => url('admin/tripal/loaders/ncbi_taxonomy_loader'
+            ))
+      );
   $admin_message = tripal_set_message($message, TRIPAL_INFO, array('return_html' => TRUE));
-
-  $content['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => t('This site has not yet prepared the taxonomy for viewing.') . $admin_message,
-  );
 
   $phylotree = chado_generate_var('phylotree', $values);
   if ($phylotree) {
     $node = new stdClass();
     $node->phylotree = $phylotree;
 
-    $phylotree = chado_expand_var($phylotree,'field','phylotree.comment');
-    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.phylotree');
-    tripal_phylogeny_prepare_tree_viewer($phylotree);
-
-    if ($phylotree->type_id->name == "taxonomy" and $phylotree->has_nodes) {
-      $content['comment'] = array(
-        '#type' => 'markup',
-        '#markup' =>$phylotree->comment
-      );
-      $ajax_loader = url(drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif');
-      $content['phylogram'] = array(
-        '#type' => 'markup',
-        '#markup' => '
-          <div id="phylogram">
-            <img src="' . $ajax_loader . '" class="phylogram-ajax-loader"/>
-          </div>
-        '
-      );
-    }
+    $html =  theme('tripal_phylogeny_taxonomic_tree', array('node' => $node)) .
+    $admin_message;
+    return $html;
   }
 
-  return $content;
+  return array(
+    '#type' => 'markup',
+    '#markup' => t('This site has not yet prepared the taxonomy for viewing.') . $admin_message,
+  );
 }
-
-
