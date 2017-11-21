@@ -581,10 +581,10 @@ class FASTAImporter extends TripalImporter {
           $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
           $match_type, $parentcvterm, $relcvterm, $seq['seq_start'],
           $seq['seq_end']);
-      $this->setItemsHandled($i);
+      $this->setItemsHandled($j);
     }
     fclose($fh);
-    $this->setItemsHandled($i);
+    $this->setItemsHandled($num_seqs);
   }
 
   /**
@@ -886,6 +886,7 @@ class FASTAImporter extends TripalImporter {
     // get a specific bytes read then append the sequence to the one in the
     // database.
     $partial_seq_size = 0;
+    $chunk_intv_read = 0;
     while ($line = fgets($fh)) {
       $num_read += strlen($line) + 1;
       $chunk_intv_read += strlen($line) + 1;
