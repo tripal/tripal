@@ -433,6 +433,21 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
+
+  // Add field for viewing the phylogenetic tree.
+  if ($table_name == 'phylotree') {
+    $field_name = 'operation__phylotree_vis';
+    $field_type = 'operation__phylotree_vis';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 }
 
 /**
@@ -1526,6 +1541,40 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
+
+  // Phylotree Viewer
+  if (chado_table_exists('phylotree')) {
+    $field_name = 'operation__phylotree_vis';
+    $schema = chado_get_schema('phylotree');
+    $pkey = $schema['primary key'][0];
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Tree View',
+      'description' => 'Rendering of a phylogenetic tree.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'phylotree',
+        'chado_column' => 'type_id',
+        'base_table' => 'phylotree',
+      ),
+      'widget' => array(
+        'type' => 'operation__phylotree_vis_widget',
+        'settings' => array(
+          'display_label' => 0,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'operation__phylotree_vis_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 }
 
 /**
@@ -2105,6 +2154,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
     );
   }
+
 }
 
 /**

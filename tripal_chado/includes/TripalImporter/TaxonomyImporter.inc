@@ -268,9 +268,8 @@ class TaxonomyImporter extends TripalImporter {
       // Add the taxonomic tree.
       $phylotree = array(
         'name' =>  $site_name . 'Taxonomy Tree',
-        'description' => 'The taxonomic tree of species present on this site. Click a species name for more details.',
+        'description' => 'A phylogenetic tree based on taxonomic rank.',
         'leaf_type' => 'taxonomy',
-        'analysis_id' => $analysis->analysis_id,
         'tree_file' => '/dev/null',
         'format' => 'taxonomy',
         'no_load' => TRUE,

@@ -102,6 +102,9 @@
       if (!d.feature_id && d.organism_nid) {
         window.location.replace(baseurl + '/node/' + d.organism_nid);
       }
+      if (!d.feature_id && d.organism_eid) {
+        window.location.replace(baseurl + '/bio_data/' + d.organism_eid);
+      }
       // leaf node
     }
   };

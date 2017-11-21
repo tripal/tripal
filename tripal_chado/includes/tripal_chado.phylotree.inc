@@ -24,18 +24,9 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
 
   // Don't show tick marks for the taxonomy tree.
   $skip_ticks = 0;
-  if ($phylotree->type_id->name == 'taxonomy') {
+  if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Speces tree') {
     $skip_ticks = 1;
   }
-
-  // Get the tree options as set by the administrator.
-  $options = json_encode(array(
-    'phylogram_width' => variable_get('tripal_phylogeny_default_phylogram_width', 350),
-    'root_node_size' => variable_get('tripal_phylogeny_default_root_node_size', 3),
-    'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 0),
-    'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
-    'skipTicks' => $skip_ticks,
-  ));
 
   // Get the node colors as set by the administrator.
   $colors = array();
@@ -51,7 +42,13 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
     'tripal_chado' => array(
       'phylotree_url' => url('phylotree/' . $phylotree->phylotree_id),
       'phylotree_theme_url' => url($module_path . '/theme'),
-      'tree_options' => $options,
+      'tree_options' => array(
+        'phylogram_width' => variable_get('tripal_phylogeny_default_phylogram_width', 350),
+        'root_node_size' => variable_get('tripal_phylogeny_default_root_node_size', 3),
+        'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 0),
+        'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
+        'skipTicks' => $skip_ticks,
+      ),
       'org_colors' => $colors,
     ),
   ), 'setting');
@@ -168,7 +165,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
       );
 
       // If the nodes are taxonomic then set an equal distance
-      if ($phylotree->type_id->name == 'taxonomy') {
+      if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Speces tree') {
         $node['length'] = 0.001;
       }
 
@@ -183,6 +180,10 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
         if (module_exists('tripal_phylogeny')) {
           $node['feature_nid'] = (int) $r->feature_nid;
         }
+        else {
+          $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
+          $node['feature_eid'] = (int) $entity_id;
+        }
       }
       // Add in the organism fields when they are available via the
       // phylonode_organism table.
@@ -194,6 +195,10 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
         $node['species'] = $r->species;
         if (module_exists('tripal_phylogeny')) {
           $node['organism_nid'] = (int) $r->organism_nid;
+        }
+        else {
+          $entity_id = chado_get_record_entity_by_table('organism', $r->organism_id);
+          $node['organism_eid'] = (int) $entity_id;
         }
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
@@ -211,6 +216,10 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
         $node['fo_species'] = $r->fo_species;
         if (module_exists('tripal_phylogeny')) {
           $node['fo_organism_nid'] = (int) $r->fo_organism_nid;
+        }
+        else {
+          $entity_id = chado_get_record_entity_by_table('organism', $r->fo_organism_id);
+          $node['fo_organism_eid'] = (int) $entity_id;
         }
       }
 

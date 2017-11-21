@@ -68,12 +68,15 @@ class data__accession extends ChadoField {
     if ($record->$field_column) {
       $dbxref = $record->$field_column;
       $value = $dbxref->db_id->name . ':' . $dbxref->accession;
-      $entity->{$field_name}['und'][0] = array(
-        'value' => $dbxref->accession,
-        'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
-        'db_id' => $dbxref->db_id->db_id,
-        'accession' => $dbxref->accession,
-      );
+      // Skip the local:null accession as it is just a placeholder.
+      if ($value != 'local:null') {
+        $entity->{$field_name}['und'][0] = array(
+          'value' => $dbxref->accession,
+          'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
+          'db_id' => $dbxref->db_id->db_id,
+          'accession' => $dbxref->accession,
+        );
+      }
     }
   }
 
