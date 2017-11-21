@@ -849,7 +849,5 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = array
   catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('tripal_phylogeny', $e);
-    print "\nFAILED: Rolling back database changes...\n";
   }
-  print "\nDone Importing Tree.\n";
 }

@@ -189,13 +189,13 @@ class TaxonomyImporter extends TripalImporter {
     $taxonomy_ids = $arguments['taxonomy_ids'];
     $import_existing = $arguments['import_existing'];
 
-
     // Get the list of all organisms as we'll need this to lookup existing
     // organisms.
     $sql = "
       SELECT O.*, CVT.name as type
       FROM {organism} O
        LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
+      ORDER BY O.genus, O.species
     ";
     $results = chado_query($sql);
     while ($item = $results->fetchObject()) {
@@ -244,7 +244,6 @@ class TaxonomyImporter extends TripalImporter {
       $this->logMessage('Updating Existing...');
       $this->updateExisting();
     }
-
     // Now import the tree.
     $options = array('taxonomy' => 1);
     tripal_phylogeny_import_tree($this->tree, $this->phylotree, $options);
@@ -321,7 +320,12 @@ class TaxonomyImporter extends TripalImporter {
       'branch_set' => array(),
     );
 
+    $total = count($this->all_orgs);
+    $j = 1;
     foreach ($this->all_orgs as $organism) {
+      $sci_name =  tripal_get_organism_scientific_name($organism);
+      //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
+
       // First get the phylonode record for this organism.
       $sql = "
         SELECT P.*
@@ -368,22 +372,23 @@ class TaxonomyImporter extends TripalImporter {
             'phylotree_id' => $this->phylotree->phylotree_id,
             'label' => $child,
           );
-          $options = array(
-            'include_fk' => array(
-              'type_id' => array(
-                'cv_id' => 1,
-                'dbxref_id' => 1,
-              ),
-            )
-          );
-          $phylonode = chado_generate_var('phylonode', $values, $options);
-          $lineage_nodes[$child] = $phylonode;
-          if (!$phylonode) {
+          $columns = array('*');
+          $phylonode = chado_select_record('phylonode', $columns, $values);
+          if (count($phylonode) == 0) {
+            $lineage_nodes[$child] = NULL;
             $lineage_good = FALSE;
             continue;
           }
-          $options = array('return_array' => TRUE);
-          $phylonode = chado_expand_var($phylonode, 'table', 'phylonodeprop', $options);
+          $phylonode = $phylonode[0];
+          $lineage_nodes[$child] = $phylonode;
+
+
+          $values = array(
+            'phylonode_id' => $phylonode->phylonode_id,
+            'type_id' => $rank_cvterm->cvterm_id,
+          );
+          $columns = array('*');
+          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values);
         }
         $name = $child;
         $node_rank = (string) $child->Rank;
@@ -399,7 +404,7 @@ class TaxonomyImporter extends TripalImporter {
           'branch_set' => array(),
           'parent' => $parent['name'],
           'properties' => array(
-            $phylonode->phylonodeprop[0]->type_id->cvterm_id => $phylonode->phylonodeprop[0]->value,
+            $rank_cvterm->cvterm_id => $phylonodeprop[0]->value,
           ),
         );
         $parent = $node;
@@ -414,17 +419,7 @@ class TaxonomyImporter extends TripalImporter {
       }
 
       // Now add in the leaf node
-      $sci_name = $organism->genus . ' ' . $organism->species;
-      if ($organism->type_id) {
-        if ($organism->type and $organism->type == 'no_rank') {
-          $sci_name .= ' ' . $organism->infraspecific_name;
-        }
-        else {
-          $type = tripal_abbreviate_infraspeicifc_rank($organism->type);
-          $sci_name .= ' ' . $type . ' ' . $organism->infraspecific_name;
-        }
-      }
-
+      $sci_name = tripal_get_organism_scientific_name($organism);
       $node = array(
         'name' => $sci_name,
         'depth' => $i,
@@ -464,16 +459,7 @@ class TaxonomyImporter extends TripalImporter {
       // if so we should use that instead of the scientific name.
 
       // Build the query string to get the information about this species.
-      $sci_name = $organism->genus . ' ' . $organism->species;
-      if ($organism->type_id) {
-        $type = tripal_abbreviate_infraspeicifc_rank($organism->type);
-        if ($type) {
-          $sci_name .= ' ' . $type . ' ' . $infraspecific_name;
-        }
-        else {
-          $sci_name .= ' ' . $infraspecific_name;
-        }
-      }
+      $sci_name = tripal_get_organism_scientific_name($organism);
       $sci_name = urlencode($sci_name);
       $search_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?".
           "db=taxonomy" .
@@ -561,36 +547,12 @@ class TaxonomyImporter extends TripalImporter {
     // Second, check if the full name includes the infraspecific name.
     if (!$organism) {
       foreach ($this->all_orgs as $item) {
-        if (!$item->type) {
-          if ($sci_name == trim($item->genus) . ' ' . trim($item->species)) {
-            $organism = $item;
-          }
-        }
-        else {
-          if ($item->type == 'no_rank') {
-            if ($sci_name == trim($item->genus) . ' ' . trim($item->species) . ' ' . trim($item->infraspecific_name)) {
-              $organism = $item;
-            }
-          }
-          else {
-            $valid_terms = array(
-              'subspecies' => 'subsp.',
-              'varietas' => 'var.',
-              'subvariety' => 'subvar.',
-              'forma' => 'forma',
-              'subforma' => 'subforma',
-              'strain' => 'strain',
-            );
-            if (array_key_exists($rank, $valid_terms)) {
-              if ($sci_name == trim($item->genus) . ' ' . trim($item->species) . ' ' . $valid_terms[$rank] . ' ' . trim($item->infraspecific_name)) {
-                $organism = $item;
-              }
-            }
-          }
+        $internal_sci_name = tripal_get_organism_scientific_name($item);
+        if ($sci_name == $internal_sci_name) {
+          $organism = $item;
         }
       }
     }
-
     return $organism;
   }
   /**
@@ -615,11 +577,19 @@ class TaxonomyImporter extends TripalImporter {
     if (preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
       $genus = $matches[1];
       $species = $matches[2];
+      $infra = $matches[3];
+
+      // Get the CV term for the rank.
       $type = tripal_get_cvterm(array(
         'name' => preg_replace('/ /','_', $rank),
         'cv_id' => array('name' => 'taxonomic_rank')
       ));
-      $infra = $matches[3];
+
+      // Remove the rank from the infraspecific name.
+      $abbrev = tripal_abbreviate_infraspeicifc_rank($rank);
+      $infra = preg_replace("/$abbrev/", "", $infra);
+      $infra = trim($infra);
+
       $values = array(
         'genus' => $genus,
         'species' => $species,
@@ -690,6 +660,7 @@ class TaxonomyImporter extends TripalImporter {
       $parent = (string) $taxon->ParentTaxId;
       $rank = (string) $taxon->Rank;
       $sci_name = (string) $taxon->ScientificName;
+      //$this->logMessage(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // If we don't have an organism record provided then see if there
       // is one provided by Chado, if not, the try to add one.

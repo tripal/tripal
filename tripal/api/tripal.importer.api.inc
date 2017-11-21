@@ -95,11 +95,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
   $loader->setJob($job);
   $loader->prepareFiles();
 
-  print "\nNOTE: Loading of this OBO is performed using a database transaction. \n" .
-        "The transaction occurs in two parts. First the ontology is loaded. Second, \n" .
-        "the paths between all terms are loaded. If either of the parts fail \n" .
-        "or is terminated prematurely then only the part that failed will have all \n" .
-        "insertions and updates rolled back and will not be found in the database\n\n";
+  print "\nNOTE: Loading of file is performed using a database transaction. \n" .
+        "If it fails or is terminated prematurely then all insertions and \n" .
+        "updates are rolled back and will not be found in the database\n\n";
 
   try {
     // Run the loader
