@@ -24,7 +24,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
 
   // Don't show tick marks for the taxonomy tree.
   $skip_ticks = 0;
-  if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Speces tree') {
+  if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Species tree') {
     $skip_ticks = 1;
   }
 
@@ -46,7 +46,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
       'tree_options' => array(
         'phylogram_width' => variable_get('tripal_phylogeny_default_phylogram_width', 350),
         'root_node_size' => variable_get('tripal_phylogeny_default_root_node_size', 3),
-        'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 0),
+        'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
         'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
         'skipTicks' => $skip_ticks,
       ),
