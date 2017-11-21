@@ -12,7 +12,19 @@ class operation__phylotree_vis_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    global $user;
     if (count($items) > 0) {
+
+      if (user_access('administrator')) {
+        $message = t('Site administrators:  You can customize the look of phylogenetic trees at the !menu page.',
+          array('!menu' => l('Phylogeny and Taxonomy', 'admin/tripal/storage/chado/phylogeny')));
+        $admin_message = tripal_set_message($message, TRIPAL_INFO, array('return_html' => TRUE));
+        $element[0]['admin_message'] = array(
+          '#type' => 'markup',
+          '#markup' => $admin_message,
+        );
+      }
+
       $phylotree = $entity->chado_record;
 
       $node = new stdClass();
