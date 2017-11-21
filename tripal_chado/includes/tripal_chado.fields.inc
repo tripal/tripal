@@ -1543,7 +1543,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   }
 
   // Phylotree Viewer
-  if (chado_table_exists('phylotree')) {
+  if ($table_name == 'phylotree') {
     $field_name = 'operation__phylotree_vis';
     $schema = chado_get_schema('phylotree');
     $pkey = $schema['primary key'][0];
