@@ -571,14 +571,15 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/loaders/chado_vocabs'] = array(
     'title' => 'Chado Vocabularies',
-    'description' => t('Tools facilitating import of controlled vocabularies and terms.'),
+    'description' => t('Tools facilitating management (including import) of controlled
+      vocabularies and their terms into Chado.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
   $items['admin/tripal/loaders/chado_vocabs/chado_cv'] = array(
     'title' => 'Manage Controlled Vocabularies',
-    'description' => 'Controlled Vocabularies control the terms available for various chado fields.',
+    'description' => 'View, edit and add controlled vocabularies used by this site.',
     'page callback' => 'tripal_cv_admin_cv_listing',
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
@@ -658,7 +659,10 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/loaders/chado_db'] = array(
     'title' => 'Chado Databases',
-    'description' => 'References to External Database sites such as NCBI',
+    'description' => 'View, edit and add external databases.  When data originates
+       from a remote online resource (or database) then that database must
+       be added in order to cross link records in this site to records in
+       the remote site.',
     'page callback' => 'tripal_chado_admin_db_listing',
     'access arguments' => array('administer db cross-references'),
     'file' => 'includes/tripal_chado.db.inc',
