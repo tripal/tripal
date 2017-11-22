@@ -22,7 +22,7 @@ function tripal_pub_importers_list() {
     drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
         'This vocabulary is required to be loaded before importing of ' .
         'publications.  <br>Please !import',
-        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+        array('!import' => l('load the Tripal Publication vocabulary', 'aadmin/tripal/loaders/chado_vocabs/obo_loader'))), 'warning');
   }
 
   // clear out the session variable when we view the list.
@@ -117,12 +117,12 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   $values = array('name' => 'tripal_pub');
   $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
-    drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+    drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
   $values = array('name' => 'tripal_contact');
   $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
-    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
 
   if(!extension_loaded ('yaz')){

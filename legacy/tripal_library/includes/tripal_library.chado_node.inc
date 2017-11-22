@@ -128,7 +128,7 @@ function chado_library_form($node, &$form_state) {
   $lt_message = tripal_set_message("To add additional items to the library type drop down list,
      add a term to the " .
      l($lt_cv->name . " controlled vocabulary",
-       "admin/tripal/loaders/chado_cv/" . $lt_cv->cv_id . "/cvterm/add",
+       "admin/tripal/loaders/chado_vocabs/chado_cv/" . $lt_cv->cv_id . "/cvterm/add",
        array('attributes' => array('target' => '_blank'))
       ),
      TRIPAL_INFO, array('return_html' => TRUE)

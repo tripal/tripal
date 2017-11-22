@@ -14,7 +14,7 @@ class OBOImporter extends TripalImporter {
    * The name of this loader.  This name will be presented to the site
    * user.
    */
-  public static $name = 'Chado OBO Loader';
+  public static $name = 'OBO Vocabulary Loader';
 
   /**
    * The machine name for this loader. This name will be used to construct
@@ -81,7 +81,16 @@ class OBOImporter extends TripalImporter {
     'file_remote' => FALSE,
   );
 
+  /**
+   * Be default, all loaders are automaticlly added to the Admin >
+   * Tripal > Data Laders menu.  However, if this loader should be
+   * made available via a different menu path, then set it here.  If the
+   * value is empty then the path will be the default.
+   */
+  public static $menu_path = 'admin/tripal/loaders/chado_vocabs/obo_loader';
+
   public static $file_required = FALSE;
+
 
   /**
    * Keep track of vocabularies that have been added.

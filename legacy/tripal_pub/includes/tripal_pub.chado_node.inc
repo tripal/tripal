@@ -53,7 +53,7 @@ function chado_pub_form($node, $form_state) {
     drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
         'This vocabulary is required to be loaded before adding ' .
         'publications.  <br>Please !import',
-        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/chado_vocabs/obo_loader'))), 'warning');
   }
 
   // Default values can come in the following ways:

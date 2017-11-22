@@ -254,7 +254,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_vocabs/chado_cv/'.$details['cv_id'].'/cvterm/add')
         )
       ),
       TRIPAL_WARNING,
@@ -267,7 +267,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/loaders/chado_cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/loaders/chado_vocabs/chado_cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,

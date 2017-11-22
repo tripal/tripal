@@ -15,7 +15,7 @@
    users access to view content and create a special role for creating, editing and other administrative tasks.</p></li>
 
       <li><p><b>Loading of Ontologies/Controlled Vocabularies</b>: You can access this loader at <?php
-        print l('Admin->Tripal Management->Tripal CV->Load Ontology With OBO File', 'admin/tripal/loaders/chado_obo_loader')
+        print l('Admin->Tripal Management->Tripal CV->Load Ontology With OBO File', 'admin/tripal/loaders/chado_vocabs/obo_loader')
         ?>. This loader allows you to choose from a list of common ontologies or
         enter the URL or location to an OBO file. Even the list of common
         ontologies is using a URL ensuring you get the most up to date ontology.</p>
