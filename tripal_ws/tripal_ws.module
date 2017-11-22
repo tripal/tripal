@@ -435,3 +435,21 @@ function tripal_ws_remote_data_single_field_pull($field, $entity_url){
   }
   return $data;
 }
+
+
+/**
+ * Implements hook_entity_info_alter()
+ *
+ * Add the web services display as a view mode.
+ */
+function tripal_ws_entity_info_alter(&$entity_info) {
+
+  // Set the controller class for nodes to an alternate implementation of the
+  // DrupalEntityController interface.
+  $entity_info['TripalEntity']['view modes']  += array(
+    'tripal_ws' => array(
+      'label' => t('Tripal Web Services'),
+      'custom settings' => FALSE,
+    ),
+  );
+}

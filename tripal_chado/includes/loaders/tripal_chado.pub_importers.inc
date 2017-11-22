@@ -22,7 +22,7 @@ function tripal_pub_importers_list() {
     drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
         'This vocabulary is required to be loaded before importing of ' .
         'publications.  <br>Please !import',
-        array('!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/obo_loader'))), 'warning');
+        array('!import' => l('load the Tripal Publication vocabulary', 'aadmin/tripal/loaders/chado_vocabs/obo_loader'))), 'warning');
   }
 
   // clear out the session variable when we view the list.
@@ -117,12 +117,12 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   $values = array('name' => 'tripal_pub');
   $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
-    drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+    drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
   $values = array('name' => 'tripal_contact');
   $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
-    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+    drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
 
   if(!extension_loaded ('yaz')){
@@ -1222,32 +1222,35 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // remove the 'valid' property as we don't have a CV term for it
     unset($author['valid']);
 
+    $values = array(
+      'pub_id' => $pub_id,
+      'rank' => $rank,
+    );
+
     // construct the contact.name field using the author information
     $name = '';
     $type = 'Person';
     if (isset($author['Given Name'])) {
       $name .= $author['Given Name'];
+      $values['givennames'] = $author['Given Name'];
     }
     if (isset($author['Surname'])) {
       $name .= ' ' . $author['Surname'];
+      $values['surname'] = substr($author['Surname'], 0, 100);
     }
     if (isset($author['Suffix'])) {
       $name .= ' ' . $author['Suffix'];
+      $values['suffix'] = $author['Suffix'];
     }
     if (isset($author['Collective'])) {
       $name = $author['Collective'];
       $type = 'Collective';
+      if (!isset($author['Surname']))
+        $values['surname'] = substr($author['Collective'], 0, 100);
     }
     $name = trim($name);
 
     // add an entry to the pubauthors table
-    $values = array(
-      'pub_id' => $pub_id,
-      'rank' => $rank,
-      'surname' => $author['Surname'] ? substr($author['Surname'], 0, 100) : substr($author['Collective'], 0, 100),
-      'givennames' => $author['Given Name'],
-      'suffix' => $author['Suffix'],
-    );
     $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
     $pubauthor = chado_insert_record('pubauthor', $values, $options);
 
@@ -1694,4 +1697,3 @@ function tripal_pub_citation_form_submit(&$form_state) {
   $options [0] = $form_state['options']['#value'];
   tripal_add_job("Create citations ($options[0])", 'tripal_pub', 'tripal_pub_create_citations', $options, $user->uid);
 }
-

@@ -550,6 +550,33 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'Apply analytical methods to existing data of a specific type.',
   ));
+  tripal_associate_chado_semweb_term('phylotree', 'analysis_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:0872',
+    'name' => 'Phylogenetic tree',
+    'cv_name' => 'EDAM',
+    'definition' => 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.',
+  ));
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:3272',
+    'name' => 'Species tree',
+    'cv_name' => 'EDAM',
+    'definition' => 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.',
+  ));
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:3271',
+    'name' => 'Gene tree',
+    'cv_name' => 'EDAM',
+    'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
+  ));
+  $term = tripal_insert_cvterm(array(
+    'id' => 'operation:0567',
+    'name' => 'Phylogenetic tree visualisation',
+    'cv_name' => 'EDAM',
+    'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
+  ));
+
 }
 
 /**
@@ -1043,6 +1070,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
 
   // Add the terms used to identify nodes in the tree.
+  // DEPRECATED: use EDAM's data 'Species tree' term instead.
   tripal_insert_cvterm(array(
     'name' => 'taxonomy',
     'definition' => 'A term used to indicate if a phylotree is a taxonomic tree',
@@ -1050,7 +1078,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'is_relationship' => 0,
     'db_name' => 'local'
   ));
-
 
   //--------------
   // Project Terms
@@ -1450,7 +1477,7 @@ function tripal_chado_populate_vocab_SWO() {
     'url' => 'http://theswo.sourceforge.net/',
     'urlprefix' => '',
   ));
-  tripal_insert_cv('swo','Software Ontology. An ontology representation of the NCBI organismal taxonomy.');
+  tripal_insert_cv('swo','Software Ontology.');
 
 
   $term = tripal_insert_cvterm(array(
@@ -1463,19 +1490,6 @@ function tripal_chado_populate_vocab_SWO() {
       'referred to as a language) that is interpretable by a given ' .
       'processor and that directs a computer\'s processor to perform ' .
       'specific operations.',
-  ));
-  tripal_associate_chado_semweb_term('analysis', 'program', $term);
-
-  $term = tripal_insert_cvterm(array(
-    'id' => 'SWO:0000001',
-    'name' => 'software',
-    'cv_name' => 'swo',
-    'definition' => 'Computer software, or generally just software, is any ' .
-    'set of machine-readable instructions (most often in the form of a ' .
-    'computer program) that conform to a given syntax (sometimes ' .
-    'referred to as a language) that is interpretable by a given ' .
-    'processor and that directs a computer\'s processor to perform ' .
-    'specific operations.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
 

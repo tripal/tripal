@@ -79,18 +79,18 @@ function tripal_cv_admin_set_defaults_form($form, &$form_state) {
     );
 
     // Actions
-    $view_terms = l('New Vocabulary', 'admin/tripal/loaders/chado_cv/add');
+    $view_terms = l('New Vocabulary', 'admin/tripal/loaders/chado_vocabs/chado_cv/add');
     $add_term = '';
     if (!empty($cv)) {
       $view_terms = l(
           'View Terms',
-          'admin/tripal/loaders/chado_cvterms',
+          'admin/tripal/loaders/chado_vocabs/chado_cvterms',
           array('query' => array('cv' => $cv->name))
       );
 
       $add_term = l(
           'Add Term',
-          'admin/tripal/loaders/chado_cv/' . $cv->cv_id . '/cvterm/add'
+          'admin/tripal/loaders/chado_vocabs/chado_cv/' . $cv->cv_id . '/cvterm/add'
       );
     }
     $form['settings']['existing'][$cv_default_id]["view-terms"] = array(

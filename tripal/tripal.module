@@ -323,7 +323,11 @@ function tripal_menu() {
   foreach ($importers as $class_name) {
     tripal_load_include_importer_class($class_name);
     if (class_exists($class_name)) {
-      $items['admin/tripal/loaders/' . $class_name::$machine_name] = array(
+      $menu_path = 'admin/tripal/loaders/' . $class_name::$machine_name;
+      if ($class_name::$menu_path) {
+        $menu_path = $class_name::$menu_path;
+      }
+      $items[$menu_path] = array(
         'title' => $class_name::$name,
         'description' =>  $class_name::$description,
         'page callback' => 'drupal_get_form',
@@ -1295,4 +1299,3 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
     }
   }
 }
-

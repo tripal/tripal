@@ -8,7 +8,7 @@
   * site administrator
   */
 
-div.messages.tripal-site-admin-only{
+div.messages.tripal-site-admin-only {
   background-image: url("../images/TripalLogo-sm.png");
   background-repeat: no-repeat;
   background-color: #cce3ff;
@@ -80,7 +80,7 @@ div.messages.tripal-site-admin-only{
 
 
  /******************************************************************************
-  * Format for tripal dashbaord chart
+  * Format for tripal dashboard chart
   *****************************************************************************/
  #tripal-entity-type-chart .bar text.value {
    fill: white;

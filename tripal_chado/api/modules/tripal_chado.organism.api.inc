@@ -127,6 +127,44 @@ function tripal_get_organism($identifiers, $options = array()) {
 }
 
 /**
+ * Returns the full scientific name of an organism.
+ *
+ * @param $organism
+ *   An organism object.
+ * @return
+ *   The full scientific name of the organism.
+ */
+function tripal_get_organism_scientific_name($organism) {
+  $name = $organism->genus . ' ' . $organism->species;
+
+  // For Chado v1.3 we have a type_id and infraspecific name.
+  if (property_exists($organism, 'type_id')) {
+    $rank = '';
+    // For organism objects crated using chado_generate_var
+    if (is_object($organism->type_id)) {
+      if ($organism->type_id) {
+        $rank = $orgasnism->type_id->name;
+      }
+    }
+    else {
+      $rank_term = tripal_get_cvterm(array('cvterm_id' => $organism->type_id));
+      if ($rank_term) {
+        $rank = $rank_term->name;
+      }
+    }
+
+    if ($rank) {
+      $rank = tripal_abbreviate_infraspeicifc_rank($rank);
+      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+    }
+    else if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
+    }
+  }
+  return $name;
+}
+
+/**
  * Returns a list of organisms that are currently synced with Drupal to use in select lists
  *
  * @param $syncd_only
@@ -245,7 +283,7 @@ function tripal_autocomplete_organism($text) {
   $matches = array();
   $genus = $text;
   $species = '';
-  if (preg_match('/^(.*?) (.*)$/', $text, $matches)) {
+  if (preg_match('/^(.*?)\s+(.*)$/', $text, $matches)) {
     $genus = $matches[1];
     $species = $matches[2];
   }
@@ -261,8 +299,49 @@ function tripal_autocomplete_organism($text) {
   $results = chado_query($sql, $args);
   $items = array();
   foreach ($results as $organism) {
-    $name = $organism->genus . ' ' .$organism->species;
+    $name = tripal_get_organism_scientific_name($organism);
     $items["$name [id: $organism->organism_id]"] = $name;
   }
   drupal_json_output($items);
+}
+
+/**
+ * A handy function to abbreviate the infraspecific rank.
+ *
+ * @param $rank
+ *   The rank below species.
+ * @return
+ *   The proper abbreviation for the rank.
+ */
+function tripal_abbreviate_infraspeicifc_rank($rank) {
+  $abb = '';
+  switch($rank) {
+    case 'no_rank':
+      $abb = '';
+      break;
+    case 'subspecies':
+      $abb = 'subsp.';
+      break;
+    case 'varietas':
+      $abb = 'var.';
+      break;
+    case 'variety':
+      $abb = 'var.';
+      break;
+    case 'subvarietas':
+      $abb = 'subvar.';
+      break;
+    case 'subvariety':
+      $abb = 'subvar.';
+      break;
+    case 'forma':
+      $abb = 'f.';
+      break;
+    case 'subforma':
+      $abb = 'subf.';
+      break;
+    default:
+      $abb = $rank;
+  }
+  return $abb;
 }

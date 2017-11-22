@@ -370,16 +370,6 @@ function tripal_chado_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
-  $items['admin/tripal/loaders/ncbi_taxonomy_loader'] = array(
-    'title' => 'Chado NCBI Taxonomy Loader',
-    'description' => 'Loads taxonomic details about installed organisms.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_taxonomy_load_form'),
-    'access arguments' => array('administer tripal'),
-    'file' => 'includes/loaders/tripal_chado.taxonomy_importer.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_NORMAL_ITEM,
-  );
 
   // Data Loaders
   $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
@@ -579,16 +569,24 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   //                          Controlled Vocabularies
   //////////////////////////////////////////////////////////////////////////////
-  $items['admin/tripal/loaders/chado_cv'] = array(
-    'title' => 'Chado Controlled Vocabularies',
-    'description' => 'Controlled Vocabularies control the terms available for various chado fields.',
+  $items['admin/tripal/loaders/chado_vocabs'] = array(
+    'title' => 'Chado Vocabularies',
+    'description' => t('Tools facilitating management (including import) of controlled
+      vocabularies and their terms into Chado.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv'] = array(
+    'title' => 'Manage Controlled Vocabularies',
+    'description' => 'View, edit and add controlled vocabularies used by this site.',
     'page callback' => 'tripal_cv_admin_cv_listing',
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/loaders/chado_cv/edit/%'] = array(
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/edit/%'] = array(
     'title' => 'Edit a Controlled Vocabulary',
     'description' => 'Edit the details such as name and description for an existing controlled vocabulary.',
     'page callback' => 'drupal_get_form',
@@ -599,7 +597,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/loaders/chado_cv/add'] = array(
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/add'] = array(
     'title' => 'Add a Controlled Vocabulary',
     'description' => 'Manually a new controlled vocabulary.',
     'page callback' => 'drupal_get_form',
@@ -610,7 +608,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/loaders/chado_cv/%/cvterm/add'] = array(
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/%/cvterm/add'] = array(
     'title' => 'Add a Controlled Vocabulary Term',
     'description' => 'Add a new controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
@@ -620,7 +618,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/loaders/chado_cv/cvterm/add'] = array(
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add'] = array(
     'title' => 'Add a Controlled Vocabulary Term',
     'description' => 'Add a new controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
@@ -630,7 +628,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/loaders/chado_cv/%/cvterm/edit/%'] = array(
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/%/cvterm/edit/%'] = array(
     'title' => 'Edit a Controlled Vocabulary Term',
     'description' => 'Edit an existing controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
@@ -641,9 +639,14 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/storage/chado/cvtermpath'] = array(
-    'title' => 'Update Chado cvtermpath table',
-    'description' => 'The Chado cvtermpath table provides lineage for terms and is useful for quickly finding any ancestor parent of a term.  However, this table must be populated.  This page allows for populating of this table one vocabulary at a time',
+  $items['admin/tripal/loaders/chado_vocabs/cvtermpath'] = array(
+    'title' => 'Update CV Term Paths',
+    'description' => 'The Chado cvtermpath table provides lineage for
+      controlled vocabulary terms and is useful for quickly finding any
+      ancestor parent of a term.  If controlled vocabularies are loaded
+      using the OBO Importer then the vocabulary is automatically added to
+      the cvtermpath table.  However, if it is needed, the addition of terms
+      to the cvtermpath table can be manually executed here.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_cvtermpath_form'),
     'access arguments' => array('administer controlled vocabularies'),
@@ -656,7 +659,10 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/loaders/chado_db'] = array(
     'title' => 'Chado Databases',
-    'description' => 'References to External Database sites such as NCBI',
+    'description' => 'View, edit and add external databases.  When data originates
+       from a remote online resource (or database) then that database must
+       be added in order to cross link records in this site to records in
+       the remote site.',
     'page callback' => 'tripal_chado_admin_db_listing',
     'access arguments' => array('administer db cross-references'),
     'file' => 'includes/tripal_chado.db.inc',
@@ -751,6 +757,43 @@ function tripal_chado_menu() {
     'access arguments' => array('administer tripal'),
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Phylogeny
+  //////////////////////////////////////////////////////////////////////////////
+/*   $items['taxonomy'] = array(
+    'title' => 'Taxonomy',
+    'description' => 'Taxonomic view of the species available on this site.',
+    'page callback' => 'tripal_phylogeny_taxonomy_view',
+    'access arguments' => array('access taxonomy content'),
+    'file' => '/includes/tripal_phylogeny.taxonomy.inc',
+    'type' => MENU_NORMAL_ITEM,
+    'file' =>  'includes/tripal_chado.taxonomy.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  ); */
+
+  // create a route for viewing json of all phylonodes having this phylotree_id
+  $items['phylotree/%'] = array(
+    'page callback' => 'tripal_phylogeny_ajax_get_tree_json',
+    'page arguments' => array(1),
+    // allow all anonymous http clients
+    'access callback' => TRUE,
+    'file' =>  'includes/tripal_chado.phylotree.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+
+  $items['admin/tripal/storage/chado/phylogeny'] = array(
+    'title' => 'Phylogeny and Taxonomy',
+    'description' => 'Settings for display of phylogenetic and taxonomic trees.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_phylogeny_default_plots_form'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 2,
+    'file' =>  'includes/tripal_chado.phylotree.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+
+
   return $items;
 }
 
@@ -807,6 +850,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
       'render element' => 'form',
       'file' => 'includes/tripal_chado.pub_search.inc',
     ),
+    'tripal_phylogeny_admin_org_color_tables' => array(
+      'render element' => 'element',
+    )
+
   );
 
   // Override the theme for each entity to use the legacy modules

@@ -91,31 +91,20 @@ function tripal_load_include_importer_class($class) {
 function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
   $loader = NULL;
+  $loader = TripalImporter::byID($import_id);
+  $loader->setJob($job);
+  $loader->prepareFiles();
+
+  print "\nNOTE: Loading of file is performed using a database transaction. \n" .
+        "If it fails or is terminated prematurely then all insertions and \n" .
+        "updates are rolled back and will not be found in the database\n\n";
+
   try {
-    // begin the transaction
-    $transaction = db_transaction();
-    print "\nNOTE: Loading of this file is performed using a database transaction. \n" .
-        "If the load fails or is terminated prematurely then the entire set of \n" .
-        "insertions/updates is rolled back and will not be found in the database\n\n";
+    // Run the loader
+    tripal_run_importer_run($loader, $job);
 
-    $loader = TripalImporter::byID($import_id);
-    $loader->setJob($job);
-    $loader->prepareFiles();
-    $loader->run();
-    $loader->cleanFile();
-
-    if ($job) {
-      $job->logMessage("Done");
-    }
-
-    // Remove the temp file
-    if (!empty($details->arguments['file_url'])) {
-      $loader->logMessage('Removing downloaded file...');
-      unlink($temp);
-    }
-
-    print "\nDone\n";
-
+    // Handle the post run.
+    tripal_run_importer_post_run($loader, $job);
 
     // Check for tables with new cvterms
     tripal_chado_map_cvterms();
@@ -126,15 +115,70 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     // Clear the Drpual chace
     cache_clear_all();
 
+    print "\nDone\n";
   }
   catch (Exception $e) {
-    $transaction->rollback();
     if ($job) {
       $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
     }
     if ($loader) {
       $loader->cleanFile();
     }
+  }
+}
+
+/**
+ * First step of the tripal_run_importer.
+ *
+ * @param $loader
+ *   The TripalImporter object.
+ * @param $job
+ *   The TripalJob object.$this
+ * @throws Exception
+ */
+function tripal_run_importer_run($loader, $job) {
+
+  try {
+    // begin the transaction
+    $transaction = db_transaction();
+
+    $loader->run();
+
+    if ($job) {
+      $job->logMessage("Done");
+    }
+
+    // Remove the temp file
+    if (!empty($details->arguments['file_url'])) {
+      $loader->logMessage('Removing downloaded file...');
+      unlink($temp);
+    }
+  }
+  catch (Exception $e) {
+    // Rollback and re-throw the error.
+    $transaction->rollback();
+    throw $e;
+  }
+}
+/**
+ * Second step of the tripal_run_importer.
+ *
+ * @param $loader
+ *   The TripalImporter object.
+ * @param $job
+ *   The TripalJob object.
+ * @throws Exception
+ */
+function tripal_run_importer_post_run($loader, $job) {
+  try {
+    // the transaction
+    $transaction = db_transaction();
+    $loader->postRun();
+  }
+  catch (Exception $e) {
+    // Rollback and re-throw the error.
+    $transaction->rollback();
+    throw $e;
   }
 }
 

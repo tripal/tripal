@@ -105,6 +105,15 @@ class TripalImporter {
    */
   public static $cardinality = 1;
 
+
+  /**
+   * Be default, all loaders are automaticlly added to the Admin >
+   * Tripal > Data Laders menu.  However, if this loader should be
+   * made available via a different menu path, then set it here.  If the
+   * value is empty then the path will be the default.
+   */
+  public static $menu_path = '';
+
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
   // --------------------------------------------------------------------------
@@ -566,7 +575,8 @@ class TripalImporter {
   }
   /**
    * Adds to the count of the total number of items that have been handled.
-   * @param unknown $num_handled
+   *
+   * @param $num_handled
    */
   protected function addItemsHandled($num_handled) {
     $items_handled = $this->num_handled = $this->num_handled + $num_handled;
@@ -672,5 +682,10 @@ class TripalImporter {
   public function run() {
   }
 
+  /**
+   * Performs the import.
+   */
+  public function postRun() {
+  }
 
 }

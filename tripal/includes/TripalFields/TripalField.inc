@@ -497,7 +497,7 @@ class TripalField {
   }
 
   /**
-   * Provides the list of elements returned by the 'value' of the field. \
+   * Provides the list of elements returned by the 'value' of the field.
    *
    * The elements provided by this function are used to integrate with
    * Drupal Views and Web services.  The return value is an associative array

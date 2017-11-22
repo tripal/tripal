@@ -46,9 +46,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $fields_with_regions = array();
   $i = 0;
   $all_fields = array();
-  watchdog('debug', '<pre>$bundle_name: '. print_r($bundle_name, TRUE) .'</pre>');
-
-  watchdog('debug', '<pre>$instances: '. print_r($instances, TRUE) .'</pre>');
 
   try {
     // Get the bundle and term objects.
