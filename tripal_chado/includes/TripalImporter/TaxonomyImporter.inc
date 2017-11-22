@@ -244,6 +244,7 @@ class TaxonomyImporter extends TripalImporter {
       $this->logMessage('Updating Existing...');
       $this->updateExisting();
     }
+
     // Now import the tree.
     $options = array('taxonomy' => 1);
     tripal_phylogeny_import_tree($this->tree, $this->phylotree, $options);
@@ -417,6 +418,11 @@ class TaxonomyImporter extends TripalImporter {
         continue;
       }
 
+      $rank_type = 'species';
+      if (property_exists($organism, 'type_id') and $organism->type_id) {
+        $rank_type = $organism->type;
+      }
+
       // Now add in the leaf node
       $sci_name = tripal_get_organism_scientific_name($organism);
       $node = array(
@@ -430,7 +436,7 @@ class TaxonomyImporter extends TripalImporter {
         'parent' => $parent['name'],
         'organism_id' => $organism->organism_id,
         'properties' => array(
-          $rank_cvterm->cvterm_id => $organism->type,
+          $rank_cvterm->cvterm_id => $rank_type,
         ),
       );
       $this->addTaxonomyNode($tree, $node, $lineage_depth);
@@ -673,6 +679,9 @@ class TaxonomyImporter extends TripalImporter {
         }
       }
 
+      // Associate the Dbxref with the organism.
+      $this->addDbxref($organism->organism_id, $taxid);
+
       // Get properties for this organism.
       $lineage = (string) $taxon->Lineage;
       $genetic_code = (string) $taxon->GeneticCode->GCId;
@@ -875,5 +884,25 @@ class TaxonomyImporter extends TripalImporter {
       chado_delete_property($record, $property);
     }
     chado_insert_property($record, $property);
+  }
+
+  /**
+   *
+   * @param unknown $organism_id
+   * @param unknown $taxId
+   */
+  private function addDbxref($organism_id, $taxId) {
+    $db = tripal_get_db(array('name' => 'NCBITaxon'));
+    $values = array(
+      'db_id' => $db->db_id,
+      'accession' => $taxId
+    );
+    $dbxref = tripal_insert_dbxref($values);
+
+    $values = array(
+      'dbxref_id' => $dbxref->dbxref_id,
+      'organism_id' => $organism_id,
+    );
+    chado_insert_record('organism_dbxref', $values);
   }
 }

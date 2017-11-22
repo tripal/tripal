@@ -138,18 +138,28 @@ function tripal_get_organism_scientific_name($organism) {
   $name = $organism->genus . ' ' . $organism->species;
 
   // For Chado v1.3 we have a type_id and infraspecific name.
-  if (property_exists($organism, type_id)) {
+  if (property_exists($organism, 'type_id')) {
     $rank = '';
     // For organism objects crated using chado_generate_var
     if (is_object($organism->type_id)) {
-      $rank = $orgasnism->type_id->name;
+      if ($organism->type_id) {
+        $rank = $orgasnism->type_id->name;
+      }
     }
     else {
       $rank_term = tripal_get_cvterm(array('cvterm_id' => $organism->type_id));
-      $rank = $rank_term->name;
+      if ($rank_term) {
+        $rank = $rank_term->name;
+      }
     }
-    $rank = tripal_abbreviate_infraspeicifc_rank($rank);
-    $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+
+    if ($rank) {
+      $rank = tripal_abbreviate_infraspeicifc_rank($rank);
+      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+    }
+    else if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
+    }
   }
   return $name;
 }
