@@ -109,6 +109,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     tripal_run_importer_post_run($loader, $job);
 
     // Check for tables with new cvterms
+    print "Remapping Chado Controlled vocabularies to Tripal Terms...";
     tripal_chado_map_cvterms();
 
     // Check for new fields and notify the user.
@@ -145,7 +146,7 @@ function tripal_run_importer_run($loader, $job) {
     $loader->run();
 
     if ($job) {
-      $job->logMessage("\nDone importing");
+      $job->logMessage("\nDone.\n");
     }
 
     // Remove the temp file
