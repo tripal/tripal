@@ -95,6 +95,8 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
   $loader->setJob($job);
   $loader->prepareFiles();
 
+  print "\nRunning '".$loader::$name."' importer";
+
   print "\nNOTE: Loading of file is performed using a database transaction. \n" .
         "If it fails or is terminated prematurely then all insertions and \n" .
         "updates are rolled back and will not be found in the database\n\n";
@@ -112,10 +114,8 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     // Check for new fields and notify the user.
     tripal_tripal_cron_notification();
 
-    // Clear the Drpual chace
+    // Clear the Drupal cache
     cache_clear_all();
-
-    print "\nDone\n";
   }
   catch (Exception $e) {
     if ($job) {
@@ -145,7 +145,7 @@ function tripal_run_importer_run($loader, $job) {
     $loader->run();
 
     if ($job) {
-      $job->logMessage("Done");
+      $job->logMessage("\nDone importing");
     }
 
     // Remove the temp file
@@ -181,4 +181,3 @@ function tripal_run_importer_post_run($loader, $job) {
     throw $e;
   }
 }
-

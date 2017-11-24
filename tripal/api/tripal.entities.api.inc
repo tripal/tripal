@@ -475,9 +475,6 @@ function tripal_tripal_cron_notification() {
         $num_created++;
       }
     }
-    if ($num_created == 0) {
-      watchdog('tripal_cron', '<pre>No new fields for '. print_r($bundle_name->name, TRUE) .'</pre>');
-    }
   }
 }
 
