@@ -67,7 +67,7 @@ function tripal_drush_command() {
     ),
   );
   $items['trp-run-jobs'] = array(
-    'description' => dt('Launches jobs waiting in the queue. Only one job can execute at a time unless the --parllel=1 option is provided.'),
+    'description' => dt('Launches jobs waiting in the queue. Only one job can execute at a time unless the --parallel=1 option is provided.'),
     'examples' => array(
       'Single Job' => 'drush trp-run-jobs --username=administrator',
       'Parallel Job' => 'drush trp-run-jobs --username=administrator --parallel=1',
@@ -169,7 +169,7 @@ function drush_tripal_trp_run_jobs() {
 
   // Unfortunately later versions of Drush use the '--user' argument which
   // makes it incompatible with how Tripal was using it.  For backwards
-  // compatabiliy we will accept --user with a non numeric value only. The
+  // compatibility we will accept --user with a non numeric value only. The
   // numeric value should be for Drush. Tripal will instead use the
   // --username argument for the fture.
   $user = drush_get_option('user');
@@ -354,9 +354,9 @@ function drush_tripal_trp_set_permissions() {
     $postgres_password = drush_prompt(dt('postgres password'));
     drush_print(dt(""));
     drush_print(dt(
-    "This is the information provided, please review and confirm it is correct: 
+    "This is the information provided, please review and confirm it is correct:
      Database host: $host
-     Database name: $database 
+     Database name: $database
      Database username: $postgres_username
      Database user password: $postgres_password
      "
