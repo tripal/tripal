@@ -218,7 +218,7 @@ function hook_tripal_cron_notification() {
  * @param $submitter_id
  *   A unique ID provided by the submitter for checking to make sure that the notification is not added more than once.
  */
-function tripal_add_notifcation($title, $details, $type, $actions, $submitter_id) {
+function tripal_add_notification($title, $details, $type, $actions, $submitter_id) {
   $transaction = db_transaction();
 
   // Check the notification isn't already in the admin notification table.
@@ -444,7 +444,7 @@ function tripal_tripal_cron_notification() {
         $type = 'Field';
         $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
 
-        tripal_add_notifcation($title, $detail_info, $type, $actions, $submitter_id);
+        tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
         $num_created++;
       }
     }
@@ -471,7 +471,7 @@ function tripal_tripal_cron_notification() {
         $type = 'Field';
         $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
 
-        tripal_add_notifcation($title, $detail_info, $type, $actions, $submitter_id);
+        tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
         $num_created++;
       }
     }
@@ -1127,6 +1127,3 @@ function tripal_entity_label($entity) {
   }
   return NULL;
 }
-
-
-
