@@ -242,9 +242,6 @@ function tripal_add_notification($title, $details, $type, $actions, $submitter_i
       $transaction->rollback();
       watchdog('tripal_cron', 'Could not write notification to database.');
     }
-    if ($success) {
-      watchdog('tripal_cron', 'New field notification created.');
-    }
   }
 }
 /**
