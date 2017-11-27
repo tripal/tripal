@@ -36,28 +36,34 @@
       });
       // Move the tripal pane to the first position when its TOC item is clicked.
       $('.tripal_pane-toc-list-item-link').each(function (i) {
+        var id = '.tripal_pane-fieldset-' + $(this).attr('id');
+        if ($(id).length === 0) {
+            $(this).parents('.views-row').first().remove();
+            return;
+        }
         $(this).click(function() {
-          var id = '.tripal_pane-fieldset-' + $(this).attr('id');
           var prevObj = $(id).prev().attr('class');
-
-            // Highlight the fieldset instead of moving if it's already at the top
-            if (prevObj.indexOf('group-tripal-pane-content-top') == 0) {
-              $(id).fadeTo(10, 0.3, function() {});
-              $(id).fadeTo(200, 1, function() {});
-            }
-            if ($(id).hasClass('hideTripalPane')) {
-              $(id).removeClass('hideTripalPane');
-              $(id).addClass('showTripalPane');
-            }
-            $(id).hide();
-            var obj = $(id).detach();
-            $('.group-tripal-pane-content-top').after(obj);
-            $(id).show(300, function () {
-              // Trigger expansion event to allow the pane content
-              // to react to the size change
-              $(id).trigger($.Event('tripal_ds_pane_expanded', {id: id}));
-            });
-            return false;
+          if(prevObj.length === 0) {
+            return;
+          }
+          // Highlight the fieldset instead of moving if it's already at the top
+          if (prevObj.indexOf('group-tripal-pane-content-top') == 0) {
+            $(id).fadeTo(10, 0.3, function() {});
+            $(id).fadeTo(200, 1, function() {});
+          }
+          if ($(id).hasClass('hideTripalPane')) {
+            $(id).removeClass('hideTripalPane');
+            $(id).addClass('showTripalPane');
+          }
+          $(id).hide();
+          var obj = $(id).detach();
+          $('.group-tripal-pane-content-top').after(obj);
+          $(id).show(300, function () {
+            // Trigger expansion event to allow the pane content
+            // to react to the size change
+            $(id).trigger($.Event('tripal_ds_pane_expanded', {id: id}));
+          });
+          return false;
         });
       });
     }
