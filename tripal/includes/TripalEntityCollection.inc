@@ -5,7 +5,7 @@ class TripalEntityCollection {
   /**
    * The name of the bundle (i.e. content type) to which the entities belong.
    */
-  protected $bundle_name = '';
+  protected $bundles = array();
 
   /**
    * The collection ID
@@ -75,16 +75,13 @@ class TripalEntityCollection {
 
       // Reset the class to defaults.
       $this->collection_id = NULL;
-      $this->bundle_name = '';
       $this->collection_name = '';
       $this->create_date = '';
       $this->description = '';
-      $this->fields = array();
-      $this->ids = array();
 
     }
     catch (Exception $e) {
-      throw new Exception('Cannot delete collection: ' .  $e->getMessage());
+      throw new Exception('Cannot delete collection: ' . $e->getMessage());
     }
   }
 
@@ -114,12 +111,9 @@ class TripalEntityCollection {
     }
 
     // Fix the date/time fields.
-    $this->bundle_name = $collection->bundle_name;
     $this->collection_name = $collection->collection_name;
     $this->create_date = $collection->create_date;
     $this->user = user_load($collection->uid);
-    $this->ids = unserialize($collection->ids);
-    $this->fields = unserialize($collection->fields);
     $this->description = $collection->description;
     $this->collection_id = $collection->collection_id;
 
@@ -178,22 +172,7 @@ class TripalEntityCollection {
     if (!$details['collection_name']) {
       throw new Exception("Must provide a 'collection_name' key to TripalEntityCollection::create().");
     }
-    if (!$details['bundle_name']) {
-      throw new Exception("Must provide a 'bundle_name' key to TripalEntityCollection::create().");
-    }
-    if (!$details['ids']) {
-      throw new Exception("Must provide a 'ids' key to TripalEntityCollection::create().");
-    }
-    if (!$details['fields']) {
-      throw new Exception("Must provide a 'fields' key to TripalEntityCollection::create().");
-    }
 
-    if (!is_array($details['ids'])) {
-      throw new Exception("The 'ids' key must be an array key to TripalEntityCollection::create().");
-    }
-    if (!is_array($details['fields'])) {
-      throw new Exception("The 'ids' key must be an array key to TripalEntityCollection::create().");
-    }
 
     // Before inserting the new collection make sure we don't violote the unique
     // constraint that a user can only have one collection of the give name.
@@ -211,9 +190,6 @@ class TripalEntityCollection {
       $collection_id = db_insert('tripal_collection')
         ->fields(array(
           'collection_name' => $details['collection_name'],
-          'bundle_name' => $details['bundle_name'],
-          'ids' => serialize($details['ids']),
-          'fields' => serialize($details['fields']),
           'create_date' => time(),
           'uid' => $details['uid'],
           'description' => array_key_exists('description', $details) ? $details['description'] : '',
@@ -223,8 +199,57 @@ class TripalEntityCollection {
       $this->load($collection_id);
     }
     catch (Exception $e) {
-      throw new Exception('Cannot create collection: ' .  $e->getMessage());
+      throw new Exception('Cannot create collection: ' . $e->getMessage());
     }
+  }
+
+  /**
+   * Creates a new tripal_collection_bundle entry.
+   *
+   * @param  $details
+   *   An association array containing the details for a collection. The
+   *   details must include the following key/value pairs:
+   *   - bundle_name:  The name of the TripalEntity content type.
+   *   - ids:  An array of the entity IDs that form the collection.
+   *   - fields: An array of the field IDs that the collection is limited to.
+   *
+   * @throws Exception
+   */
+  public function add($details) {
+    if (!$details['bundle_name']) {
+      throw new Exception("Must provide a 'bundle_name' key to TripalEntityCollection::add().");
+    }
+    if (!$details['ids']) {
+      throw new Exception("Must provide a 'ids' key to TripalEntityCollection::add().");
+    }
+    if (!$details['fields']) {
+      throw new Exception("Must provide a 'fields' key to TripalEntityCollection::add().");
+    }
+
+    try {
+      $collection_bundle_id = db_insert('tripal_collection_bundle')
+        ->fields(array(
+          'bundle_name' => $details['bundle_name'],
+          'ids' => $details['ids'],
+          'fields' => $details['fields'],
+        ))
+        ->execute();
+      // Now load the job into this object.
+      $this->load($collection_bundle_id);
+    }
+    catch (Exception $e) {
+      throw new Exception('Cannot create collection: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Retrieves the list of bundles associated with the collection.
+   *
+   * @return
+   *   An array of bundles.
+   */
+  public function getBundles() {
+    return $this->bundles;
   }
 
   /**
@@ -244,8 +269,17 @@ class TripalEntityCollection {
    * @return
    *   An array of numeric enity IDs.
    */
-  public function getEntityIDs(){
-    return $this->ids;
+  public function getEntityIDs($bundle_name) {
+    $collection_id = $this->collection_id;
+    // Return the bundles from the collection_bundle table.
+    $result = db_select('tripal_collection_bundle')
+      ->fields('tripal_collection_bundle', array('ids'))
+      ->condition('collection_id', $collection_id, '=')
+      ->condition('bundle_name', $bundle_name, '=')
+      ->execute()
+      ->fetchAll();
+
+    return $result;
   }
 
   /**
@@ -254,8 +288,17 @@ class TripalEntityCollection {
    * @return
    *   An array of numeric field IDs.
    */
-  public function getFields() {
-    return $this->fields;
+  public function getFields($bundle_name) {
+    $collection_id = $this->collection_id;
+    // Return the bundles from the collection_bundle table.
+    $result = db_select('tripal_collection_bundle')
+      ->fields('tripal_collection_bundle', array('fields'))
+      ->condition('collection_id', $collection_id, '=')
+      ->condition('bundle_name', $bundle_name, '=')
+      ->execute()
+      ->fetchAll();
+
+    return $result;
   }
 
   /**

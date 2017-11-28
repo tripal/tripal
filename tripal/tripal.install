@@ -194,6 +194,7 @@ function tripal_schema() {
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
+  $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
@@ -329,7 +330,39 @@ function tripal_tripal_collection_schema() {
         'type' => 'text',
         'not null' => FALSE
       ),
-      'bundle_name' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The user Id of the person who created the collection.'
+      ),
+      'create_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'UNIX integer start time'
+      ),
+    ),
+    'indexes' => array(
+      'uid' => array('uid')
+    ),
+    'unique keys' => array(
+      'user_collection' => array('uid', 'collection_name'),
+    ),
+    'primary key' => array('collection_id'),
+  );
+}
+
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
+function tripal_tripal_collection_bundle_schema() {
+  return array(
+    'fields' => array(
+      'collection_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+     'bundle_name' => array(
         'type' => 'varchar',
         'length' => 1024,
         'not null' => TRUE
@@ -346,16 +379,6 @@ function tripal_tripal_collection_schema() {
         'not null' => TRUE,
         'description' => 'An array of numeric field IDs.'
       ),
-      'uid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'The user Id of the person who created the collection.'
-      ),
-      'create_date' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'UNIX integer start time'
-      ),
     ),
     'indexes' => array(
       'bundle_name' => array('bundle_name'),
@@ -367,6 +390,7 @@ function tripal_tripal_collection_schema() {
     'primary key' => array('collection_id'),
   );
 }
+
 /**
  * Returns the Drupal Schema API array for the tripal_jobs table.
  */
@@ -1005,6 +1029,33 @@ function tripal_update_7306() {
     $schema = array();
     $schema['tripal_collection'] = tripal_tripal_collection_schema();
     db_create_table('tripal_collection', $schema['tripal_collection']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
+  }
+}
+
+/**
+ * Remove the bundle_name, ids, fields from the tripal collections table.
+ * And add the new tripal_tripal_collection_bundle_schema
+ */
+function tripal_update_7307() {
+  $transaction = db_transaction();
+  try {
+    if (db_field_exists('tripal_collection', 'bundle_name')) {
+      db_drop_field('tripal_collection', 'bundle_name');
+    }
+    if (db_field_exists('tripal_collection', 'ids')) {
+      db_drop_field('tripal_collection', 'ids');
+    }
+    if (db_field_exists('tripal_collection', 'fields')) {
+      db_drop_field('tripal_collection', 'fields');
+    }
+     $schema = array();
+    $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+    db_create_table('tripal_collection_bundle', $schema['tripal_collection_bundle']);
   }
   catch (\PDOException $e) {
     $transaction->rollback();
