@@ -68,11 +68,11 @@ abstract class TripalFieldDownloader {
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
       $message = 'Could not access the directory on the server for storing this file.';
       watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-      drupal_json_output(array(
+      /*drupal_json_output(array(
         'status'  => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));
+      ));*/
       return;
     }
 

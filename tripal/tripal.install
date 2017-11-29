@@ -381,11 +381,7 @@ function tripal_tripal_collection_bundle_schema() {
       ),
     ),
     'indexes' => array(
-      'bundle_name' => array('bundle_name'),
-      'uid' => array('uid')
-    ),
-    'unique keys' => array(
-      'user_collection' => array('uid', 'collection_name'),
+      'collection_id' => array('collection_id')
     ),
     'primary key' => array('collection_id'),
   );

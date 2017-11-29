@@ -7,7 +7,7 @@
 function tripal_user_collections_page() {
   global $user;
 
-  $headers = array('Name', 'Description', 'Create Date', 'Downloads Formats', 'Actions');
+  $headers = array('Name', 'Description', 'Create Date', 'Downloads Formats', 'Generate File', 'Delete');
   $rows = array();
 
   $collections = db_select('tripal_collection', 'tc')
@@ -45,8 +45,8 @@ function tripal_user_collections_page() {
         $collection->getDescription(),
         $collection->getCreateDate(),
         $download_list,
+        l('Generate File for Download', 'user/' . $user->uid . '/data-collections/generate/' . $collection_id),
         l('Delete', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/delete'),
-        l('Generate File for Download', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/generate'),
       ),
     );
   }
@@ -114,13 +114,12 @@ function tripal_user_collections_delete_form_submit($form, &$form_state) {
   drupal_goto('user/' . $user->uid . '/data-collections');
 }
 
-function tripal_user_collections_generate_file($form, &$form_state,  $uid, $collection_id) {
+function tripal_user_collections_generate_file_form($form, &$form_state,  $uid, $collection_id) {
   $form_state['collection_id'] = $collection_id;
-  $form['#submit'][] = 'tripal_user_collections_delete_form_submit';
+  $form['#submit'][] = 'tripal_user_collections_generate_file_form_submit';
 
   $collection  = new TripalEntityCollection();
   $collection->load($collection_id);
-
   $form = confirm_form($form,
       t('Click the button below to generate the collection filed: %title',
           array('%title' => $collection->getName())), 'user/' . $uid . '/data-collections',
@@ -134,16 +133,23 @@ function tripal_user_collections_generate_file($form, &$form_state,  $uid, $coll
  * @param $collection_id
  *   The ID of the collection to delete.
  */
-function tripal_user_collections_generate_file_submit($form, &$form_state) {
+function tripal_user_collections_generate_file_form_submit($form, &$form_state) {
   global $user;
   $collection_id = $form_state['collection_id'];
   $collection  = new TripalEntityCollection();
   $collection->load($collection_id);
 
-  // Add the job to write the collection download files.
-  $args = array($collection_id);
-  tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
+  if ($collection->getUserID() == $user->uid) {
+    try {
+      // Add the job to write the collection download files.
+      $args = array($collection_id);
+      tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
       'tripal_create_collection_files', $args, $user->uid, 10, array());
-      
+    }
+    catch (Exception $e) {
+      drupal_set_message('There was a problem creating the file for the data collection please contact the site to report the error.', 'error');
+    }
+  }
+
   drupal_goto('user/' . $user->uid . '/data-collections');
 }

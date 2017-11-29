@@ -120,47 +120,55 @@ class TripalEntityCollection {
     /* Add the IDs, Fields, Bundles for this collection from the
      * collection_bundle table.
      */
-    $this->bundles = getBundles();
+    $this->bundles = $this->getBundles();
     // If more than one bundle plop into associative array.
+    $bundle_name = "";
     if (count($this->bundles) > 1) {
       foreach ($this->bundles as $bundle) {
-        $ids[$bundle] = unserialize(getEntityIDs($this->bundle));
-        $fields[$bundle] = unserialize(getFields($this->bundle));
+        $bundle_name = $this->bundles[0]->bundle_name;
+        $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
+        $fields[$bundle_name] = $this->getFields($bundle_name);
       }
       $this->ids = $ids;
       $this->fields = $fields;
     }
     else {
-      $this->ids = unserialize(getEntityIDs($this->bundles));
-      $this->fields = unserialize(getFields($this->bundles));
+      if (!empty($this->bundles)) {
+        $bundle_name = $this->bundles[0]->bundle_name;
+        $this->ids = $this->getEntityIDs($bundle_name);
+        $this->fields = $this->getFields($bundle_name);
+      }
     }
 
     // Iterate through the fields and find out what download formats are
     // supported for this basket.
-    foreach ($this->fields as $field_id) {
-      $field = field_info_field_by_id($field_id);
-      if (!$field) {
-        continue;
-      }
-      $field_name = $field['field_name'];
-      $field_type = $field['type'];
-      $field_module = $field['module'];
-      $instance = field_info_instance('TripalEntity', $field_name, $this->bundles);
-      $downloaders = array();
+    foreach ($this->fields as $field_group) {
+      foreach ($field_group as $field_id) {
+        $field = field_info_field_by_id($field_id);
+        if (!$field) {
+          continue;
+        }
+        $field_name = $field['field_name'];
+        $field_type = $field['type'];
+        $field_module = $field['module'];
+        $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-      // All fields should support the Tab and CSV downloaders.
-      tripal_load_include_downloader_class('TripalTabDownloader');
-      $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-      tripal_load_include_downloader_class('TripalCSVDownloader');
-      $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+        $downloaders = array();
 
-      if (tripal_load_include_field_class($field_type)) {
-        $settings = $field_type::$default_instance_settings;
-        if (array_key_exists('download_formatters', $settings)) {
-          foreach ($settings['download_formatters'] as $class_name) {
-            if (!array_key_exists($class_name, $this->downloaders)) {
-              tripal_load_include_downloader_class($class_name);
-              $this->downloaders[$class_name] = $class_name::$label;
+        // All fields should support the Tab and CSV downloaders.
+        tripal_load_include_downloader_class('TripalTabDownloader');
+        $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
+        tripal_load_include_downloader_class('TripalCSVDownloader');
+        $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+
+        if (tripal_load_include_field_class($field_type)) {
+          $settings = $field_type::$default_instance_settings;
+          if (array_key_exists('download_formatters', $settings)) {
+            foreach ($settings['download_formatters'] as $class_name) {
+              if (!array_key_exists($class_name, $this->downloaders)) {
+                tripal_load_include_downloader_class($class_name);
+                $this->downloaders[$class_name] = $class_name::$label;
+              }
             }
           }
         }
@@ -213,6 +221,8 @@ class TripalEntityCollection {
           'description' => array_key_exists('description', $details) ? $details['description'] : '',
         ))
         ->execute();
+      // Now add the second table with bundle info.
+      $this->add($details, $collection_id);
       // Now load the job into this object.
       $this->load($collection_id);
     }
@@ -233,7 +243,7 @@ class TripalEntityCollection {
    *
    * @throws Exception
    */
-  public function add($details) {
+  public function add($details, $collection_id) {
     if (!$details['bundle_name']) {
       throw new Exception("Must provide a 'bundle_name' key to TripalEntityCollection::add().");
     }
@@ -248,12 +258,13 @@ class TripalEntityCollection {
       $collection_bundle_id = db_insert('tripal_collection_bundle')
         ->fields(array(
           'bundle_name' => $details['bundle_name'],
-          'ids' => $details['ids'],
-          'fields' => $details['fields'],
+          'ids' => serialize($details['ids']),
+          'fields' => serialize($details['fields']),
+          'collection_id' => $collection_id,
         ))
         ->execute();
       // Now load the job into this object.
-      $this->load($collection_bundle_id);
+      //$this->load($collection_bundle_id);
     }
     catch (Exception $e) {
       throw new Exception('Cannot create collection: ' . $e->getMessage());
@@ -270,7 +281,7 @@ class TripalEntityCollection {
     $collection_id = $this->collection_id;
     // Return the bundles from the collection_bundle table.
     $result = db_select('tripal_collection_bundle')
-      ->fields('tripal_collection_bundle', array('ids'))
+      ->fields('tripal_collection_bundle', array('bundle_name'))
       ->condition('collection_id', $collection_id, '=')
       ->execute()
       ->fetchAll();
@@ -305,7 +316,16 @@ class TripalEntityCollection {
       ->execute()
       ->fetchAll();
 
-    return $result;
+    // Unserialize the array of standard class objects.
+    $unserialized_result = [];
+    foreach ($result as $id_list) {
+      $unserialized_id_list = unserialize($id_list->ids);
+      foreach ($id_list as $item) {
+        $unserialized_result[] = $unserialized_id_list;
+      }
+    }
+
+    return $unserialized_result;
   }
 
   /**
@@ -324,7 +344,16 @@ class TripalEntityCollection {
       ->execute()
       ->fetchAll();
 
-    return $result;
+     // Unserialize the array of standard class objects.
+    $unserialized_result = [];
+    foreach ($result as $field_list) {
+      $unserialized_field_list = unserialize($field_list->fields);
+      foreach ($field_list as $item) {
+        $unserialized_result[] = $unserialized_field_list;
+      }
+    }
+ 
+    return $unserialized_result;
   }
 
   /**
@@ -495,8 +524,8 @@ class TripalEntityCollection {
    * @throws Exception
    */
   public function write($formatter) {
-
-    if(!$this->isFormatterCompatible($formatter)) {
+    dpm($formatter);
+    if (!$this->isFormatterCompatible($formatter)) {
       throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
 
     }
