@@ -21,11 +21,11 @@ function tripal_admin_data_collection_form($form, &$form_state) {
   $form['lifespan'] = array(
     '#type' => 'textfield',
     '#title' => t('Collection Lifespan'),
-    '#description' => t('Enter the number of hours (e.g. 24 is 1 day, 720 is 30 days)
-       that data collections exist.  Collections will be automatically removed after the lifespan
+    '#description' => t('Enter the number of days that data collections exist.  
+       Collections will be automatically removed after the lifespan
        period has passed.  Removal of data collections occurs when the
        sites Drupal cron executes.'),
-    '#default_value' => variable_get('tripal_data_collections_lifespan', 7),
+    '#default_value' => variable_get('tripal_data_collections_lifespan', 30),
     '#required' => TRUE,
   );
 

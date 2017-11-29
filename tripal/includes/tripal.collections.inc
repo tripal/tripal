@@ -46,6 +46,7 @@ function tripal_user_collections_page() {
         $collection->getCreateDate(),
         $download_list,
         l('Delete', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/delete'),
+        l('Generate File for Download', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/generate'),
       ),
     );
   }
@@ -110,5 +111,39 @@ function tripal_user_collections_delete_form_submit($form, &$form_state) {
       drupal_set_message('There was a problem deleting the data collection please contact the site to report the error.', 'error');
     }
   }
+  drupal_goto('user/' . $user->uid . '/data-collections');
+}
+
+function tripal_user_collections_generate_file($form, &$form_state,  $uid, $collection_id) {
+  $form_state['collection_id'] = $collection_id;
+  $form['#submit'][] = 'tripal_user_collections_delete_form_submit';
+
+  $collection  = new TripalEntityCollection();
+  $collection->load($collection_id);
+
+  $form = confirm_form($form,
+      t('Click the button below to generate the collection filed: %title',
+          array('%title' => $collection->getName())), 'user/' . $uid . '/data-collections',
+      '<p>' .t('This action cannot be undone.') .'</p>', t('Generate File'), t('Cancel'), 'confirm');
+
+  return $form;
+}
+/**
+ * Deletes a user's collection.
+ *
+ * @param $collection_id
+ *   The ID of the collection to delete.
+ */
+function tripal_user_collections_generate_file_submit($form, &$form_state) {
+  global $user;
+  $collection_id = $form_state['collection_id'];
+  $collection  = new TripalEntityCollection();
+  $collection->load($collection_id);
+
+  // Add the job to write the collection download files.
+  $args = array($collection_id);
+  tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
+      'tripal_create_collection_files', $args, $user->uid, 10, array());
+      
   drupal_goto('user/' . $user->uid . '/data-collections');
 }

@@ -3,7 +3,7 @@
 class TripalEntityCollection {
 
   /**
-   * The name of the bundle (i.e. content type) to which the entities belong.
+   * The name of the bundles (i.e. content type) to which the entities belong.
    */
   protected $bundles = array();
 
@@ -68,7 +68,7 @@ class TripalEntityCollection {
       foreach ($this->downloaders as $class_name => $label) {
         tripal_load_include_downloader_class($class_name);
         $outfile = $this->getOutfile($class_name);
-        $downloader = new $class_name($this->bundle_name, $this->ids, $this->fields,
+        $downloader = new $class_name($this->bundles, $this->ids, $this->fields,
             $outfile, $this->getUserID());
         $downloader->delete();
       }
@@ -117,6 +117,24 @@ class TripalEntityCollection {
     $this->description = $collection->description;
     $this->collection_id = $collection->collection_id;
 
+    /* Add the IDs, Fields, Bundles for this collection from the
+     * collection_bundle table.
+     */
+    $this->bundles = getBundles();
+    // If more than one bundle plop into associative array.
+    if (count($this->bundles) > 1) {
+      foreach ($this->bundles as $bundle) {
+        $ids[$bundle] = unserialize(getEntityIDs($this->bundle));
+        $fields[$bundle] = unserialize(getFields($this->bundle));
+      }
+      $this->ids = $ids;
+      $this->fields = $fields;
+    }
+    else {
+      $this->ids = unserialize(getEntityIDs($this->bundles));
+      $this->fields = unserialize(getFields($this->bundles));
+    }
+
     // Iterate through the fields and find out what download formats are
     // supported for this basket.
     foreach ($this->fields as $field_id) {
@@ -127,7 +145,7 @@ class TripalEntityCollection {
       $field_name = $field['field_name'];
       $field_type = $field['type'];
       $field_module = $field['module'];
-      $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
+      $instance = field_info_instance('TripalEntity', $field_name, $this->bundles);
       $downloaders = array();
 
       // All fields should support the Tab and CSV downloaders.
@@ -249,7 +267,15 @@ class TripalEntityCollection {
    *   An array of bundles.
    */
   public function getBundles() {
-    return $this->bundles;
+    $collection_id = $this->collection_id;
+    // Return the bundles from the collection_bundle table.
+    $result = db_select('tripal_collection_bundle')
+      ->fields('tripal_collection_bundle', array('ids'))
+      ->condition('collection_id', $collection_id, '=')
+      ->execute()
+      ->fetchAll();
+
+    return $result;
   }
 
   /**
@@ -454,7 +480,7 @@ class TripalEntityCollection {
 
     $outfile = $this->getOutfile($formatter);
 
-    $downloader = new $formatter($this->bundle_name, $this->ids, $this->fields, $outfile, $this->user->uid);
+    $downloader = new $formatter($this->bundles, $this->ids, $this->fields, $outfile, $this->user->uid);
 
     return $downloader->getURL();
   }
@@ -508,7 +534,7 @@ class TripalEntityCollection {
       }
     }
 
-    $downloader = new $formatter($this->bundle_name, $this->ids, $supported_fields, $outfile, $this->user->uid);
+    $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid);
     $downloader->write();
 
   }

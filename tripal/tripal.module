@@ -361,6 +361,17 @@ function tripal_menu() {
     'file' => 'includes/tripal.collections.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
+  $items['user/%/data-collections/%/generate'] = array (
+    'title' => 'Generate a file for download of a Collections',
+    'description' => 'Deletes a data collection.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_user_collections_generate_file', 1, 3),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
 
   $items['admin/tripal/data-collections'] = array(
     'title' => 'Data Collections',

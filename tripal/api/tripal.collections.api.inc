@@ -23,13 +23,7 @@ function tripal_create_collection($details) {
     $collection->create($details);
     $collection_id = $collection->getCollectionID();
 
-    // Add the job to write the collection download files.
-    $args = array($collection_id);
-    tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
-        'tripal_create_collection_files', $args, $user->uid, 10, array());
-
-
-    drupal_set_message(t("Collection '%name' created with %num_recs record(s).  Downloadble files will be available shortly.  Check the !view for status and download links.",
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view for generate file links.",
       array(
         '%name' => $details['collection_name'],
         '%num_recs' => count($details['ids']),
@@ -79,12 +73,12 @@ function tripal_get_user_collections($uid) {
  * Deletes all collections that have surpassed their lifespan
  */
 function tripal_expire_collections() {
-  $max_hours = variable_get('tripal_data_collections_lifespan', 7);
+  $max_days = variable_get('tripal_data_collections_lifespan', 30);
   $ctime = time();
 
   $query = db_select('tripal_collection', 'tc');
   $query->fields('tc', array('collection_id'));
-  $query->where("(($ctime - create_date) / 60) / 60 >= $max_hours");
+  $query->where("((($ctime - create_date) / 60) / 60) / 24 >= $max_days");
   $results = $query->execute();
   while ($collection_id = $results->fetchField()) {
     $collection = new TripalEntityCollection();
@@ -155,15 +149,15 @@ function tripal_get_collection($values) {
  * @param TripalEntityCollection $collection
  */
 function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
-   if($job) {
-     $job->setProgress(0);
-   }
+  if ($job) {
+    $job->setProgress(0);
+  }
 
-   $collection = new TripalEntityCollection();
-   $collection->load($collection_id);
-   $collection->writeAll();
+  $collection = new TripalEntityCollection();
+  $collection->load($collection_id);
+  $collection->writeAll();
 
-   if ($job) {
-     $job->setProgress(100);
-   }
+  if ($job) {
+    $job->setProgress(100);
+  }
 }
