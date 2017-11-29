@@ -1390,3 +1390,43 @@ function tripal_chado_update_7320() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ *Creates the Tripal_CV_defaults schema if it is missing
+ */
+
+function tripal_chado_update_7321() {
+  if (!db_table_exists('tripal_cv_defaults')) {
+    $spec = [
+      'fields' => [
+        'cv_default_id' => [
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE
+        ],
+        'table_name' => [
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+        ],
+        'field_name' => [
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+        ],
+        'cv_id' => [
+          'type' => 'int',
+          'not null' => TRUE,
+        ]
+      ],
+      'indexes' => [
+        'tripal_cv_defaults_idx1' => ['table_name', 'field_name'],
+      ],
+      'unique keys' => [
+        'tripal_cv_defaults_unq1' => ['table_name', 'field_name', 'cv_id'],
+      ],
+      'primary key' => ['cv_default_id']
+    ];
+  }
+  db_create_table('tripal_cv_defaults', $spec);
+}
