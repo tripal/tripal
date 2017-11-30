@@ -19,7 +19,7 @@ abstract class TripalFieldDownloader {
   protected $bundle_name = '';
 
   /**
-   * A set of entity IDs. The entities must all be of the same bundle type.
+   * A set of entity IDs. 
    */
   protected $entity_ids = array();
 
@@ -119,14 +119,24 @@ abstract class TripalFieldDownloader {
         fwrite($fh, $line . "\r\n");
       }
     }
-
     foreach ($this->entity_ids as $entity_id) {
-      $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
-      reset($result);
-      $entity = $result[$entity_id];
-      $lines = $this->formatEntity($entity);
-      foreach ($lines as $line) {
-        fwrite($fh, $line . "\r\n");
+      if (is_array($entity_id)) {
+        foreach ($entity_id as $single_entity) {
+          $result = tripal_load_entity('TripalEntity', array($single_entity), FALSE, $this->fields);
+          $entity = $result[$single_entity];
+          $lines = $this->formatEntity($entity);
+          foreach ($lines as $line) {
+            fwrite($fh, $line . "\r\n");
+          }
+        }
+      }
+      else {
+        $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
+        $entity = $result[$entity_id];
+        $lines = $this->formatEntity($entity);
+        foreach ($lines as $line) {
+          fwrite($fh, $line . "\r\n");
+        }
       }
     }
     fclose($fh);

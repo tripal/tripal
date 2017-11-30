@@ -54,11 +54,20 @@ class TripalTabDownloader extends TripalFieldDownloader {
    */
   protected function getHeader() {
     $row = array();
+
     foreach ($this->fields as $field_id) {
       $field = field_info_field_by_id($field_id);
       $field_name = $field['field_name'];
-      $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
-      $row[] = $instance['label'];
+      if (is_array($this->bundle_name)) {
+        foreach ($this->bundle_name as $bundle) {
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle->bundle_name);
+          $row[] = $instance['label'];
+        }
+      }
+      else {
+        $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
+        $row[] = $instance['label'];
+      }
     }
     return array(implode("\t", $row));
   }

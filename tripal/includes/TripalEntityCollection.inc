@@ -473,7 +473,7 @@ class TripalEntityCollection {
    * @throws Exception
    */
   public function writeAll() {
-    foreach ($this->downloaders as $class_name => $lable) {
+    foreach ($this->downloaders as $class_name => $label) {
       $this->write($class_name);
     }
   }
@@ -524,7 +524,6 @@ class TripalEntityCollection {
    * @throws Exception
    */
   public function write($formatter) {
-    dpm($formatter);
     if (!$this->isFormatterCompatible($formatter)) {
       throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
 
@@ -538,33 +537,37 @@ class TripalEntityCollection {
 
     // Filter out fields that aren't supported by the formatter.
     $supported_fields = array();
-    foreach ($this->fields as $field_id) {
-      // If the formatter is TripalTabDownloader or TripalCSVDownloader then
-      // we always want to support the field.
-      if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
-        if (!in_array($field_id, $supported_fields)) {
-          $supported_fields[] = $field_id;
-        }
-        continue;
-      }
-
-      // Otherwise, find out if the formatter specified is supporte by the
-      // field and if so then add it to our list of supported fields.
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
-      $field_type = $field['type'];
-      if (tripal_load_include_field_class($field_type)) {
-        $settings = $field_type::$default_instance_settings;
-        if (array_key_exists('download_formatters', $settings)) {
-          if (in_array($formatter, $settings['download_formatters'])) {
+    foreach ($this->fields as $field_group) {
+      foreach ($field_group as $field_id) {
+        // If the formatter is TripalTabDownloader or TripalCSVDownloader then
+        // we always want to support the field.
+        if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
+          if (!in_array($field_id, $supported_fields)) {
             $supported_fields[] = $field_id;
+          }
+          continue;
+        }
+
+        // Otherwise, find out if the formatter specified is supporte by the
+        // field and if so then add it to our list of supported fields.
+        $field = field_info_field_by_id($field_id);
+        $field_name = $field['field_name'];
+        $field_type = $field['type'];
+        if (tripal_load_include_field_class($field_type)) {
+          $settings = $field_type::$default_instance_settings;
+          if (array_key_exists('download_formatters', $settings)) {
+            if (in_array($formatter, $settings['download_formatters'])) {
+              $supported_fields[] = $field_id;
+            }
           }
         }
       }
     }
 
     $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid);
+    //print_r($downloader);
     $downloader->write();
 
   }
+
 }
