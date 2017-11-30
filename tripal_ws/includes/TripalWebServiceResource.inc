@@ -43,23 +43,42 @@ class TripalWebServiceResource {
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
     // web services should use these.
-    $this->addContextItem('rdf', "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-    $this->addContextItem('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
+    $vocab = tripal_get_vocabulary_details('rdf');
 
-    $this->addContextItem('hydra', "http://www.w3.org/ns/hydra/core#");
+    $this->addContextItem('rdf', $this->cleanVocabURL($vocab));
+
+    $vocab = tripal_get_vocabulary_details('rdfs');
+    $this->addContextItem('rdfs', $this->cleanVocabURL($vocab));
+
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $url = $this->cleanVocabURL($vocab);
+    // $remove the '#' from the end of the URL as the HydraConsole automatically
+    // wants to add it.
+    //$url = preg_replace('/#/', '', $url);
+    $this->addContextItem('hydra', $url);
 
     $vocab = tripal_get_vocabulary_details('dc');
-    $this->addContextItem('dc', $vocab['url']);
+    $this->addContextItem('dc', $this->cleanVocabURL($vocab));
 
     $vocab = tripal_get_vocabulary_details('schema');
-    $this->addContextItem('schema', $vocab['url']);
+    $this->addContextItem('schema', $this->cleanVocabURL($vocab));
 
     $vocab = tripal_get_vocabulary_details('local');
-    $this->addContextItem('local', url($vocab['url'], array('absolute' => TRUE)). '/');
+    $this->addContextItem('local', url($vocab['urlprefix'], array('absolute' => TRUE)). '/');
 
 
     $this->data['@id'] = $service_path;
     $this->data['@type'] = '';
+  }
+  /**
+   * A helper function to remove the {db} and {accession} from the URL prefix.
+   */
+  private function cleanVocabURL($vocab) {
+    $url = $vocab['urlprefix'];
+    $url = preg_replace('/{db}:{accession}/', '', $url);
+    $url = preg_replace('/{db}/', '', $url);
+    $url = preg_replace('/{accession}/', '', $url);
+    return $url;
   }
 
   /**
@@ -157,6 +176,35 @@ class TripalWebServiceResource {
     }
   }
 
+  /**
+   * Checks the value to make sure there are no problems with.
+   *
+   * Will also expand any TriaplWebServiceResource by adding their
+   * context to this resource and substitute their data in place of the
+   * value.
+   *
+   * @param $value
+   *
+   */
+  private function checkValue(&$value) {
+    if (is_array($value)) {
+      foreach ($value as $i => $v) {
+        $this->checkValue($value[$i]);
+      }
+    }
+    else {
+      // If this is a TripalWebServiceResource then get it's data and use that
+      // as the new value.  Also, add in the elements context to this resource.
+      if (is_a($value, 'TripalWebServiceResource') or is_subclass_of($value, 'TripalWebServiceResource')) {
+        $context = $value->getContext();
+        foreach ($context as $k => $v) {
+          $this->addContextItem($k, $v);
+        }
+        $value = $value->getData();
+      }
+    }
+  }
+
 
   /**
    * Set's the unique identifier for the resource.
@@ -241,8 +289,9 @@ class TripalWebServiceResource {
   public function addProperty($key, $value) {
 
     $this->checkKey($key);
+    $this->checkValue($value);
 
-    // If this is a numeric array then go through each element and add them.
+    // If this is a numeric keyed array then add each item.
     if (is_array($value) and count(array_filter(array_keys($value), 'is_int')) == count(array_keys($value))) {
       if (!array_key_exists($key, $this->data)) {
         $this->data[$key] = array();
@@ -251,17 +300,6 @@ class TripalWebServiceResource {
         $this->addProperty($key, $item);
       }
       return;
-    }
-
-    // If this is a TripalWebServiceResource then get it's data and use that
-    // as the new value.
-    if (is_a($value, 'TripalWebServiceResource') or is_subclass_of($value, 'TripalWebServiceResource')) {
-      // Add in the context items to this resource.
-      $context = $value->getContext();
-      foreach ($context as $k => $v) {
-        $this->addContextItem($k, $v);
-      }
-      $value = $value->getData();
     }
 
     // If this key doesn't exist then add the value directly to the key.
@@ -280,6 +318,20 @@ class TripalWebServiceResource {
       }
       $this->data[$key][] = $value;
     }
+  }
+
+  /**
+   * Retrieves the value of a property.
+   *
+   * @param $key
+   *   The name of the property.
+   *
+   * @param
+   *   The value of the property. This could be a scalar, array or
+   *   a TripalWebService object.
+   */
+  function getProperty($key) {
+    return $this->data[$key];
   }
 
   /**

@@ -1,5 +1,7 @@
 <?php
 
+use GraphAware\Bolt\Tests\Integration\ExceptionDispatchTest;
+
 class TripalEntityService_v0_1 extends TripalWebService {
 
   /**
@@ -10,10 +12,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides acesss to the biological and
-    ancilliary data available on this site. Each content type represents
-    biological data that is defined in a controlled vocabulary (e.g.
-    Sequence Ontology term: gene (SO:0000704)).';
+  public static $description = 'Provides acesss to the biological and ' .
+    'ancilliary data available on this site. Each content type represents ' .
+    'biological data that is defined in a controlled vocabulary (e.g. ' .
+    'Sequence Ontology term: gene (SO:0000704)).';
 
   /**
    * A machine-readable type for this service. This name must be unique
@@ -887,12 +889,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $member = new TripalWebServiceResource($service_path);
       $member->setID(urlencode($bundle->label));
 
-      // If the term has no URL then we'll default to using thie site's
-      // term lookup service.
+      // Make sure the term has a URL.
       $url = $term['url'];
       if (!$url) {
-        $url = url('cv/lookup/' . $term['vocabulary']['short_name'] . '/' . $term['accession'] , array('absolute' => TRUE));
-        $term['url'] = $url;
+        throw new Exception(t('Missing a URL for the term: @term.', array('@term' => $term['vocabulary']['short_name'] . ':' . $term['accession'])));
       }
       $this->setResourceType($member, $term);
       $this->addResourceProperty($member, $label, $bundle->label);
@@ -946,10 +946,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $supported = new TripalWebServiceResource($this->getServicePath());
       $supported->addContextItem('supportedOperation', 'hydra:supportedOperation');
       $supported->addContextItem('supportedProperty', 'hydra:supportedProperty');
-      $supported->setID(urlencode($bundle->label));
+      $supported->addContextItem('subClassOf', array(
+        "@id" => "rdfs:subClassOf",
+        "@type" => "@id"
+      ));
+      $supported->setID($this->getServicePath() . '/' . urlencode($bundle->label));
       $supported->setType('hydra:Class');
       $supported->addProperty('hydra:title', $bundle->label);
       $supported->addProperty('hydra:description', $description);
+      $supported->addProperty('subClassOf', 'hydra:Resource');
 
       // Add in the supported operations for this content type.
       $operations = array();
@@ -971,6 +976,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
           "@id" => "hydra:returns",
           "@type" => "@id"
         ));
+
         $get_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve');
         $get_op->setType('hydra:Operation');
         $get_op->addProperty('method', 'GET');
@@ -982,17 +988,12 @@ class TripalEntityService_v0_1 extends TripalWebService {
         }
         $get_op->addProperty('description', NULL);
         $get_op->addProperty('expects', NULL);
-        $get_op->addProperty('returns', $term->url);
-        $get_op->addProperty('statusCodes', array(
-          array(
-            'code' => 404,
-            'description' => 'The ' . $bundle->label . ' could not be found using the provided ID.'
-          ),
-        ));
+        $get_op->addProperty('returns', $this->getServicePath() . '/' . urlencode($bundle->label));
+        $get_op->addProperty('statusCodes', array());
         $operations[] = $get_op;
       }
 
-      // If the user can create this content type.
+      /* // If the user can create this content type.
       if (user_access('create ' . $bundle->name)) {
         // All content types allow GET (if the user has view permission).
         $create_op = new TripalWebServiceResource($this->getServicePath());
@@ -1108,9 +1109,13 @@ class TripalEntityService_v0_1 extends TripalWebService {
           ),
         ));
         $operations[] = $delete_op;
-      }
+      } */
 
       $supported->addProperty('supportedOperation', $operations);
+
+      // Add in the properties by examining the fields attached to the bundle.
+      $properties = array();
+      $supported->addProperty('supportedProperty', $properties);
       $supported_classes[] = $supported;
     }
 
