@@ -900,8 +900,8 @@ function tripal_chado_update_7305() {
     tripal_insert_db(array(
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
-      'url' => 'https://www.hydra-cg.com/spec/latest/core/',
-      'urlprefix' => 'https://www.hydra-cg.com/spec/latest/core/#{db}:{accession}',
+      'url' => 'http://www.w3.org/ns/hydra/core',
+      'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
     ));
     tripal_insert_cv(
       'hydra',
@@ -1384,6 +1384,46 @@ function tripal_chado_update_7320() {
         throw new Exception($error['!message']);
       }
     }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Updating details for local ontologies.
+ */
+function tripal_chado_update_7321() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'TPUB',
+      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => 'http://localhost/cv/lookup/TPUB',
+      'urlprefix' => 'http://localhost/cv/lookup/TPUB/{accession}',
+    ));
+    tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+
+    tripal_insert_db(array(
+      'name' => 'rdf',
+      'description' => 'Resource Description Framework',
+      'url' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns',
+      'urlprefix' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+    ));
+    tripal_insert_cv(
+      'rdf',
+      'Resource Description Framework'
+    );
+    tripal_insert_db(array(
+      'name' => 'hydra',
+      'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
+      'url' => 'http://www.w3.org/ns/hydra/core',
+      'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
+    ));
+    tripal_insert_cv(
+      'hydra',
+      'A Vocabulary for Hypermedia-Driven Web APIs.'
+    );
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

@@ -29,17 +29,20 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     return FALSE;
   }
   $sql = "
-     SELECT DB.name as name, CV.name as short_name, DB.description, DB.url
+     SELECT DB.name as short_name, CV.name as name, DB.description, DB.url, DB.urlprefix
      FROM {db} DB
-      INNER JOIN {dbxref} DBX on DBX.db_id = DB.db_id
-      INNER JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
-      INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+      LEFT JOIN {dbxref} DBX on DBX.db_id = DB.db_id
+      LEFT JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
+      LEFT JOIN {cv} CV on CV.cv_id = CVT.cv_id
      WHERE
       DB.name = :name
      LIMIT 1 OFFSET 0
   ";
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
+  if (!$result['name']) {
+    $result['name'] = $result['short_name'];
+  }
   return $result;
 }
 
@@ -75,7 +78,8 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
       'name' => $cvterm->cv_id->name,
       'short_name' => $cvterm->dbxref_id->db_id->name,
       'description' =>  $cvterm->dbxref_id->db_id->description,
-      'url' => $cvterm->dbxref_id->db_id->url
+      'url' => $cvterm->dbxref_id->db_id->url,
+      'urlprefix' => $cvterm->dbxref_id->db_id->urlprefix
     ),
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,

@@ -1,5 +1,7 @@
 <?php
 
+use GraphAware\Bolt\Tests\Integration\ExceptionDispatchTest;
+
 class TripalEntityService_v0_1 extends TripalWebService {
 
   /**
@@ -10,10 +12,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides acesss to the biological and
-    ancilliary data available on this site. Each content type represents
-    biological data that is defined in a controlled vocabulary (e.g.
-    Sequence Ontology term: gene (SO:0000704)).';
+  public static $description = 'Provides acesss to the biological and ' .
+    'ancilliary data available on this site. Each content type represents ' .
+    'biological data that is defined in a controlled vocabulary (e.g. ' .
+    'Sequence Ontology term: gene (SO:0000704)).';
 
   /**
    * A machine-readable type for this service. This name must be unique
@@ -887,12 +889,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $member = new TripalWebServiceResource($service_path);
       $member->setID(urlencode($bundle->label));
 
-      // If the term has no URL then we'll default to using thie site's
-      // term lookup service.
+      // Make sure the term has a URL.
       $url = $term['url'];
       if (!$url) {
-        $url = url('cv/lookup/' . $term['vocabulary']['short_name'] . '/' . $term['accession'] , array('absolute' => TRUE));
-        $term['url'] = $url;
+        throw new Exception(t('Missing a URL for the term: @term.', array('@term' => $term['vocabulary']['short_name'] . ':' . $term['accession'])));
       }
       $this->setResourceType($member, $term);
       $this->addResourceProperty($member, $label, $bundle->label);

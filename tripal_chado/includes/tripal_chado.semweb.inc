@@ -65,11 +65,13 @@ function tripal_chado_populate_vocab_FOAF() {
  */
 function tripal_chado_populate_vocab_HYDRA() {
 
+  // For the HydraConsole to work with webservices the URL must be set as
+  // http://www.w3.org/ns/hydra/core
   tripal_insert_db(array(
     'name' => 'hydra',
     'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
-    'url' => 'https://www.hydra-cg.com/spec/latest/core/',
-    'urlprefix' => 'https://www.hydra-cg.com/spec/latest/core/#{db}:{accession}',
+    'url' => 'http://www.w3.org/ns/hydra/core',
+    'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
   ));
   tripal_insert_cv(
     'hydra',
@@ -117,6 +119,18 @@ function tripal_chado_populate_vocab_HYDRA() {
  * Adds the RDFS database and terms.
  */
 function tripal_chado_populate_vocab_RDFS() {
+
+  tripal_insert_db(array(
+    'name' => 'rdf',
+    'description' => 'Resource Description Framework',
+    'url' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns',
+    'urlprefix' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+  ));
+  tripal_insert_cv(
+    'rdf',
+    'Resource Description Framework'
+  );
+
   tripal_insert_db(array(
     'name' => 'rdfs',
     'description' => 'Resource Description Framework Schema',
@@ -1506,7 +1520,13 @@ function tripal_chado_populate_vocab_TCONTACT() {
  */
 function tripal_chado_populate_vocab_TPUB() {
 
-  // No need to insert the TPUB cv/db those should already be added.
+  tripal_insert_db(array(
+    'name' => 'TPUB',
+    'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+    'url' => 'http://localhost/cv/lookup/TPUB',
+    'urlprefix' => 'http://localhost/cv/lookup/TPUB/{accession}',
+  ));
+  tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
   // make sure we have our supported databases
   tripal_insert_db(

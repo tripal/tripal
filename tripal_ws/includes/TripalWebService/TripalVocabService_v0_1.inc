@@ -17,6 +17,30 @@ class TripalVocabService_v0_1 extends TripalWebService {
    */
   public static $type = 'vocab';
 
+  /**
+   * The list of web services.
+   */
+  private $services;
+
+
+  /**
+   * Constructor for the TripalVocabService_v0_1 class.
+   */
+  public function __construct($base_path) {
+    parent::__construct($base_path);
+
+    // Get the list of services provided by this Tripal site.
+    $this->services = tripal_get_web_services();
+    foreach ($this->services as $sindex => $service_class) {
+      // Load the class code.
+      tripal_load_include_web_service_class($service_class);
+
+      // Remove this class from the list of services.
+      if ($service_class::$type == 'vocab') {
+        unset($this->services[$sindex]);
+      }
+    }
+  }
 
   /**
    * @see TripalWebService::handleRequest()
@@ -24,133 +48,208 @@ class TripalVocabService_v0_1 extends TripalWebService {
   public function handleRequest() {
     $this->resource->addContextItem('vocab', $this->getServicePath() . '#');
 
-    $this->resource->addContextItem('ApiDocumentation', 'hydra:ApiDocumentation');
+    $this->resource->addContextItem('apiDocumentation', 'hydra:apiDocumentation');
     $this->resource->addContextItem('supportedClass', 'hydra:supportedClass');
-    $this->resource->setType('ApiDocumentation');
+    $this->resource->setType('apiDocumentation');
     $this->resource->setID('vocab/' . $this->getVersion());
 
-    // We need to list the content types as properties of the EntryPoint.
-    $properties = array();
 
-
-    // Iterate through all of the web services and get their documentation
-    $services = tripal_get_web_services();
-    foreach ($services as $service_class) {
-      tripal_load_include_web_service_class($service_class);
+    // Iterate through all of the web services and build their documentation
+    foreach ($this->services as $service_class) {
       $service = new $service_class($this->base_path);
       $supported_classes = $service->getSupportedClasses();
       foreach ($supported_classes as $supported) {
         $this->resource->addProperty('supportedClass', $supported);
       }
-      if ($service_class::$type != 'vocab') {
-        $event_prop = new TripalWebServiceResource($this->getServicePath());
-        $event_prop->addProperty('hydra:title', $service_class::$type);
-        $event_prop->addProperty('hydra:description', $service_class::$description);
-        $event_prop->addContextItem('required', 'hydra:reqiured');
-        $event_prop->addProperty('required', NULL);
-        $event_prop->addContextItem('readonly', 'hydra:readonly');
-        $event_prop->addProperty('readonly', TRUE);
-        $event_prop->addContextItem('writeonly', 'hydra:writeonly');
-        $event_prop->addProperty('writeonly', FALSE);
-        $event_prop->addContextItem('property', array(
-          "@id" => "hydra:property",
-          "@type" => "@id"
-        ));
-        //$event_prop->setID('');
-        //$event_prop->setType('');
-        $prop = new TripalWebServiceResource($this->getServicePath());
-        $prop->setID('vocab:EntryPoint/' . $service_class::$type);
-        $prop->setType('hydra:Link');
-        $prop->addContextItem('label', 'rdfs:label');
-        $prop->addProperty('label', $service_class::$label);
-        $prop->addContextItem('description', 'rdfs:comment');
-        $prop->addProperty('description', $service_class::$description);
-        $prop->addContextItem('domain', array(
-          "@id" => "rdfs:domain",
-          "@type" => "@id"
-        ));
-        $prop->addProperty('domain', 'vocab:EntryPoint');
-        $prop->addContextItem('range', array(
-          "@id" => "rdfs:range",
-          "@type" => "@id"
-        ));
-        $prop->addProperty('range', 'hydra:Collection');
-
-        $prop_ops = array();
-        $prop_op = new TripalWebServiceResource($this->getServicePath());
-        $prop_op->setID('_:event_collectionretrieve');
-        $prop_op->setType('hydra:Operation');
-        $prop_op->addContextItem('method', 'hydra:method');
-        $prop_op->addProperty('method', 'GET');
-        $prop_op->addContextItem('label', 'rdfs:label');
-        $prop_op->addProperty('label', 'Retrieves all ' . $service_class::$label . ' entities.');
-        $prop_op->addContextItem('description', 'rdfs:comment');
-        $prop_op->addProperty('description', NULL);
-        $prop_op->addContextItem('expects', array(
-          "@id" => "hydra:expects",
-          "@type" => "@id"
-        ));
-        $prop_op->addProperty('expects', NULL);
-        $prop_op->addContextItem('returns', array(
-          "@id" => "hydra:returns",
-          "@type" => "@id"
-        ));
-        $prop_op->addProperty('returns', 'hydra:Collection');
-        $prop_op->addContextItem('statusCodes', 'hydra:statusCodes');
-        $prop_op->addProperty('statusCodes', array());
-        $prop_ops[] = $prop_op;
-
-        $prop->addContextItem('supportedOperation', 'hydra:supportedOperation');
-        $prop->addProperty('supportedOperation', $prop_ops);
-        $event_prop->addProperty('property', $prop);
-        $properties[] = $event_prop;
-      }
     }
 
-    // Add in the generic supported classes.
-    $entry_class = new TripalWebServiceResource($this->base_path);
-    $entry_class->addContextItem('label', 'rdfs:label');
-    $entry_class->setID($this->getServicePath() . '#EntryPoint');
-    $entry_class->setType('hydra:Class');
-    $entry_class->addProperty('label', 'EntryPoint');
-    $entry_class->addContextItem('description', 'rdfs:comment');
-    $entry_class->addProperty('description', 'The main entry point or homepage of the API');
-    $entry_class->addContextItem('subClassOf', array(
-      "@id" => "rdfs:subClassOf",
+    // Now add the EntryPoint class.
+    $entry_point = $this->getEntryPointClass();
+    $this->resource->addProperty('supportedClass', $entry_point);
+
+    // Add the Collection class.
+    $collection = new TripalWebServiceResource($this->getServicePath());
+    $collection->addContextItem('supportedOperation', 'hydra:supportedOperation');
+    $collection->addContextItem('supportedProperty', 'hydra:supportedProperty');
+    $collection->addContextItem('property', array(
+      "@id" => "hydra:property",
       "@type" => "@id"
     ));
-    $entry_class->addProperty('subClassOf', NULL);
-    $entry_class->addContextItem('supportedOperation', 'hydra:supportedOperation');
-    $entry_class->addContextItem('supportedProperty', 'hydra:supportedProperty');
+    $collection->setID('hydra:Collection');
+    $collection->setType('hydra:Class');
+    $collection->addProperty('hydra:title', 'Collection');
+    $collection->addProperty('hydra:description', '');
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
+    $collection->addProperty('supportedProperty', array(
+      "property" => $url,
+      "hydra:title" => "member",
+      "hydra:description" => "The members of this collection.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    ));
+    $collection->addProperty('supportedProperty', array(
+      "property" => $url,
+      "hydra:title" => "totalItems",
+      "hydra:description" => "The total number of items in the collection.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    ));
 
-
-    $operations = array();
-
-    $get_op = new TripalWebServiceResource($this->getServicePath());
-    $get_op->addContextItem('method', 'hydra:method');
-    $get_op->addProperty('method', 'GET');
-    $get_op->addContextItem('statusCodes', 'hydra:statusCodes');
-    $get_op->addProperty('statusCodes', array());
-    $get_op->addContextItem('label', 'rdfs:label');
-    $get_op->addProperty('label', "The APIs main entry point.");
-    $get_op->addContextItem('description', 'rdfs:comment');
-    $get_op->addProperty('description', NULL);
-    $get_op->addContextItem('expects', array(
+    $collection_ops = array();
+    $collection_op_get = new TripalWebServiceResource($this->base_path);
+    $collection_op_get->setID('_:collection_retrieve');
+    $collection_op_get->setType('hydra:Operation');
+    $collection_op_get->addContextItem('method', 'hydra:method');
+    $collection_op_get->addContextItem('label', 'rdfs:label');
+    $collection_op_get->addContextItem('description', 'rdfs:comment');
+    $collection_op_get->addContextItem('expects', array(
       "@id" => "hydra:expects",
       "@type" => "@id"
     ));
-    $get_op->addProperty('expects', NULL);
-    $get_op->addContextItem('returns', array(
+    $collection_op_get->addContextItem('returns', array(
       "@id" => "hydra:returns",
       "@type" => "@id"
     ));
-    $get_op->addProperty('returns', "vocab:EntryPoint");
-    $get_op->setID('_:entry_point');
-    $get_op->setType('hydra:Operation');
+    $collection_op_get->addContextItem('statusCodes', 'hydra:statusCodes');
+    $collection_op_get->addProperty('statusCodes', array());
+    $collection_op_get->addProperty('method', 'GET');
+    $collection_op_get->addProperty('label', 'Retrieves members of the collection.');
+    $collection_op_get->addProperty('description', null);
+    $collection_op_get->addProperty('expects', null);
+    $collection_op_get->addProperty('returns', 'vocab:Collection');
+    $collection_op_gets[] = $collection_op_get;
 
-    $operations[] = $get_op;
-    $entry_class->addProperty('supportedOperation', $operations);
-    $entry_class->addProperty('supportedProperty', $properties);
-    $this->resource->addProperty('supportedClass', $entry_class);
+    $collection->addProperty('supportedOperation', $collection_op_gets);
+
+    $this->resource->addProperty('supportedClass', $collection);
+  }
+
+  /**
+   * Generates the EntryPoint class for the API documents.
+   *
+   * @return TripalWebServiceResource
+   *
+   */
+  private function getEntryPointClass(){
+    // We need to list the content types as properties of the EntryPoint.
+    $entry_properties = array();
+
+    // Add the EntryPoint Class.
+    $entry_point = new TripalWebServiceResource($this->base_path);
+    $entry_point->setID('vocab:EntryPoint');
+    $entry_point->setType('hydra:Class');
+    $entry_point->addContextItem('supportedOperation', 'hydra:supportedOperation');
+    $entry_point->addContextItem('supportedProperty', 'hydra:supportedProperty');
+    $entry_point->addContextItem('label', 'rdfs:label');
+    $entry_point->addContextItem('description', 'rdfs:comment');
+    $entry_point->addContextItem('subClassOf', array(
+      "@id" => "rdfs:subClassOf",
+      "@type" => "@id"
+    ));
+    $entry_point->addProperty('label', 'EntryPoint');
+    $entry_point->addProperty('description', 'The main entry point or homepage of the API');
+    $entry_point->addProperty('subClassOf', NULL);
+
+    foreach ($this->services as $service_class) {
+      $service = new $service_class($this->base_path);
+
+      $service_prop_prop = new TripalWebServiceResource($this->getServicePath());
+      $service_prop_prop->setID('vocab:EntryPoint/' . $service::$type);
+      $service_prop_prop->setType('hydra:Link');
+      $service_prop_prop->addContextItem('label', 'rdfs:label');
+      $service_prop_prop->addContextItem('description', 'rdfs:comment');
+      $service_prop_prop->addContextItem('domain', array(
+        "@id" => "rdfs:domain",
+        "@type" => "@id"
+      ));
+      $service_prop_prop->addContextItem('range', array(
+        "@id" => "rdfs:range",
+        "@type" => "@id"
+      ));
+      $service_prop_prop->addContextItem('supportedOperation', 'hydra:supportedOperation');
+      $service_prop_prop->addContextItem('property', array(
+        "@id" => "hydra:property",
+        "@type" => "@id"
+      ));
+      $service_prop_prop->addProperty('label', $service_class::$label);
+      $service_prop_prop->addProperty('description', $service_class::$description);
+      $service_prop_prop->addProperty('domain', 'vocab:EntryPoint');
+      $service_prop_prop->addProperty('range', 'hydra:Collection');
+
+      // Add the GET operation to the property.
+      // TODO: this should be part of the class.
+      $service_prop_prop_ops = array();
+      $service_prop_prop_op_get = new TripalWebServiceResource($this->getServicePath());
+      $service_prop_prop_op_get->setID('_:collection_retrieve');
+      $service_prop_prop_op_get->setType('hydra:Operation');
+      $service_prop_prop_op_get->addContextItem('method', 'hydra:method');
+      $service_prop_prop_op_get->addContextItem('label', 'rdfs:label');
+      $service_prop_prop_op_get->addContextItem('description', 'rdfs:comment');
+      $service_prop_prop_op_get->addContextItem('expects', array(
+        "@id" => "hydra:expects",
+        "@type" => "@id"
+      ));
+      $service_prop_prop_op_get->addContextItem('returns', array(
+        "@id" => "hydra:returns",
+        "@type" => "@id"
+      ));
+      $service_prop_prop_op_get->addContextItem('statusCodes', 'hydra:statusCodes');
+      $service_prop_prop_op_get->addProperty('label', 'Retrieves all ' . $service_class::$label . ' entities.');
+      $service_prop_prop_op_get->addProperty('description', NULL);
+      $service_prop_prop_op_get->addProperty('method', 'GET');
+      $service_prop_prop_op_get->addProperty('expects', null);
+      $service_prop_prop_op_get->addProperty('returns', 'hydra:Collection');
+      $service_prop_prop_op_get->addProperty('statusCodes', array());
+      $service_prop_prop_ops[] = $service_prop_prop_op_get;
+
+      // Now add the supported operations to this property.
+      $service_prop_prop->addProperty('supportedOperation', $service_prop_prop_ops);
+
+      // Finally, create the property for the EntryPoint that corresponds
+      // to this service type.
+      $service_prop = array(
+        'property' => $service_prop_prop,
+        'hydra:title' => $service_class::$type,
+        'hydra:description' => $service_class::$description,
+        'required' => null,
+        'readonly' => TRUE,
+        'writeonly' => FALSE,
+      );
+      $entry_properties[] = $service_prop;
+    }
+
+    $entry_point->addProperty('supportedProperty', $entry_properties);
+
+
+    $service_ops = array();
+    $service_op_get = new TripalWebServiceResource($this->base_path);
+    $service_op_get->setID('_:entry_point');
+    $service_op_get->setType('hydra:Operation');
+    $service_op_get->addContextItem('method', 'hydra:method');
+    $service_op_get->addContextItem('label', 'rdfs:label');
+    $service_op_get->addContextItem('description', 'rdfs:comment');
+    $service_op_get->addContextItem('expects', array(
+      "@id" => "hydra:expects",
+      "@type" => "@id"
+    ));
+    $service_op_get->addContextItem('returns', array(
+      "@id" => "hydra:returns",
+      "@type" => "@id"
+    ));
+    $service_op_get->addContextItem('statusCodes', 'hydra:statusCodes');
+    $service_op_get->addProperty('statusCodes', array());
+    $service_op_get->addProperty('method', 'GET');
+    $service_op_get->addProperty('label', 'The APIs main entry point.');
+    $service_op_get->addProperty('description', null);
+    $service_op_get->addProperty('expects', null);
+    $service_op_get->addProperty('returns', 'vocab:EntryPoint');
+    $service_ops[] = $service_op_get;
+
+    $entry_point->addProperty('supportedOperation', $service_ops);
+
+    return $entry_point;
   }
 }
