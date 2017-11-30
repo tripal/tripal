@@ -103,3 +103,85 @@ function tripal_load_include_web_service_class($class) {
   }
   return FALSE;
 }
+
+/**
+ * Adds a new site to the web services table.
+ *
+ * @param $name
+ *   Name of site to be included.
+ * @param $url
+ *   URL of site to be added.
+ * @param $version
+ *   Version of the API being used. default to 1
+ * @param $description
+ *    A description of the site and any additional info that 
+ *    would be helpful for admins.
+ * 
+ * @return
+ *   TRUE if the site is successfully added, FALSE otherwise.
+ */
+function tripal_add_site($name, $url, $version, $description) {
+  $check_url = NULL;
+  $check_name = NULL;
+  $write_to_db = TRUE;
+  // When inserting a record.
+  $check_url =
+    db_select('tripal_sites', 'ts')
+      ->fields('ts', array('id'))
+      ->condition('url', $url)
+      ->condition('version', $version)
+      ->execute()
+      ->fetchField();
+
+  $check_name =
+    db_select('tripal_sites', 'ts')
+      ->fields('ts', array('id'))
+      ->condition('name', $name)
+      ->execute()
+      ->fetchField();
+
+  if ($check_url) {
+    drupal_set_message(t('The URL and version is used by another site.'), 'error');
+    $write_to_db = FALSE;
+  }
+
+  if ($check_name) {
+    drupal_set_message(t('The name is used by another site.'), 'error');
+    $write_to_db = FALSE;
+  }
+  if ($write_to_db === TRUE) {
+    db_insert('tripal_sites')
+    ->fields(array(
+        'name' => $name,
+        'url' => $url,
+        'version' => $version,
+        'description' => $description
+      ))
+      ->execute();
+    drupal_set_message(t('Tripal site \'' . $name . '\' has been added.'));
+    return $write_to_db;
+  }
+
+  return $write_to_db;
+}
+
+
+/**
+ * Remove a site from the web services table.
+ *
+ * @param $record_id
+ *   ID of the record to be deleted.
+ *
+ * @return
+ *   TRUE if the record was successfully deleted, FALSE otherwise.
+ */
+function tripal_remove_site($record_id) {
+  if ($record_id) {
+    db_delete('tripal_sites')
+      ->condition('id', $record_id)
+      ->execute();
+    drupal_set_message('The Tripal site \'' . $record_id . '\' has been removed.');
+    return TRUE;
+  }
+  return FALSE;
+}
