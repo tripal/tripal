@@ -161,6 +161,37 @@ function drush_tripal_set_user($username) {
  *
  * @ingroup tripal_drush
  */
+function drush_tripal_trp_run_jobs_install($username) {
+  $parallel = drush_get_option('parallel');
+  $job_id   = drush_get_option('job_id');
+  $max_jobs = drush_get_option('max_jobs', -1);
+  $single   = drush_get_option('single', 0);
+
+  drush_tripal_set_user($username);
+
+  drush_print("\n" . date('Y-m-d H:i:s'));
+  if ($parallel) {
+    drush_print("Tripal Job Launcher (in parallel)");
+    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
+    tripal_launch_job($parallel, $job_id, $max_jobs, $single);
+  }
+  else {
+    drush_print("Tripal Job Launcher");
+    drush_print("Running as user '$username'");
+    drush_print("-------------------");
+    tripal_launch_job(0, $job_id, $max_jobs, $single);
+  }
+}
+
+/**
+ * Executes jobs in the Tripal Jobs Queue.
+ *
+ * Executed when 'drush trp-run-job' is called.
+ *
+ * @ingroup tripal_drush
+ */
 function drush_tripal_trp_run_jobs() {
   $parallel = drush_get_option('parallel');
   $job_id   = drush_get_option('job_id');
