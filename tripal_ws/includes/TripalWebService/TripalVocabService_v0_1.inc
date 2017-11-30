@@ -63,10 +63,22 @@ class TripalVocabService_v0_1 extends TripalWebService {
       }
     }
 
-    // Now add the EntryPoint class.
+    // Add the EntryPoint class.
     $entry_point = $this->getEntryPointClass();
     $this->resource->addProperty('supportedClass', $entry_point);
 
+    // Add in the Collection class.
+    $collection = $this->getCollectionClass();
+    $this->resource->addProperty('supportedClass', $collection);
+  }
+
+  /**
+   * Generates the Collection class for the API documents.
+   *
+   * @return TripalWebServiceResource
+   *
+   */
+  private function getCollectionClass() {
     // Add the Collection class.
     $collection = new TripalWebServiceResource($this->getServicePath());
     $collection->addContextItem('supportedOperation', 'hydra:supportedOperation');
@@ -75,10 +87,11 @@ class TripalVocabService_v0_1 extends TripalWebService {
       "@id" => "hydra:property",
       "@type" => "@id"
     ));
-    $collection->setID('hydra:Collection');
+    $collection->setID('vocab:ContentCollection');
     $collection->setType('hydra:Class');
-    $collection->addProperty('hydra:title', 'Collection');
+    $collection->addProperty('hydra:title', 'Content Collection');
     $collection->addProperty('hydra:description', '');
+
     $vocab = tripal_get_vocabulary_details('hydra');
     $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
     $collection->addProperty('supportedProperty', array(
@@ -87,8 +100,10 @@ class TripalVocabService_v0_1 extends TripalWebService {
       "hydra:description" => "The members of this collection.",
       "required" => null,
       "readonly" => FALSE,
-      "writeonly" => FALSE
+      "writeonly" => FALSE,
     ));
+
+    $url = preg_replace('/{accession}/', 'totalItems', $vocab['urlprefix']);
     $collection->addProperty('supportedProperty', array(
       "property" => $url,
       "hydra:title" => "totalItems",
@@ -97,10 +112,19 @@ class TripalVocabService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE
     ));
+    $url = preg_replace('/{accession}/', 'label', $vocab['urlprefix']);
+    $collection->addProperty('supportedProperty', array(
+      "property" => $url,
+      "hydra:title" => "label",
+      "hydra:description" => "The type of entities within the collection.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    ));
 
     $collection_ops = array();
     $collection_op_get = new TripalWebServiceResource($this->base_path);
-    $collection_op_get->setID('_:collection_retrieve');
+    $collection_op_get->setID('_:content_collection_retrieve');
     $collection_op_get->setType('hydra:Operation');
     $collection_op_get->addContextItem('method', 'hydra:method');
     $collection_op_get->addContextItem('label', 'rdfs:label');
@@ -119,12 +143,12 @@ class TripalVocabService_v0_1 extends TripalWebService {
     $collection_op_get->addProperty('label', 'Retrieves members of the collection.');
     $collection_op_get->addProperty('description', null);
     $collection_op_get->addProperty('expects', null);
-    $collection_op_get->addProperty('returns', 'vocab:Collection');
+    $collection_op_get->addProperty('returns', 'vocab:ContentCollection');
     $collection_op_gets[] = $collection_op_get;
 
     $collection->addProperty('supportedOperation', $collection_op_gets);
 
-    $this->resource->addProperty('supportedClass', $collection);
+    return $collection;
   }
 
   /**
@@ -201,7 +225,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
       $service_prop_prop_op_get->addProperty('description', NULL);
       $service_prop_prop_op_get->addProperty('method', 'GET');
       $service_prop_prop_op_get->addProperty('expects', null);
-      $service_prop_prop_op_get->addProperty('returns', 'hydra:Collection');
+      $service_prop_prop_op_get->addProperty('returns', 'vocab:ContentCollection');
       $service_prop_prop_op_get->addProperty('statusCodes', array());
       $service_prop_prop_ops[] = $service_prop_prop_op_get;
 
