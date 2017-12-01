@@ -1,7 +1,5 @@
 <?php
 
-use GraphAware\Bolt\Tests\Integration\ExceptionDispatchTest;
-
 class TripalEntityService_v0_1 extends TripalWebService {
 
   /**
@@ -30,6 +28,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   public function __construct($base_path) {
     parent::__construct($base_path);
+
+    // Add the classes that this resource supports.
+    $this->addBundleClasses();
+    $this->addContentCollectionClass();
   }
 
   /**
@@ -866,6 +868,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
   private function doAllTypesList() {
     $service_path = $this->getServicePath();
     $this->resource = new TripalWebServiceCollection($service_path, $this->params);
+    $this->resource->addContextItem('vocab', 'http://localhost/web-services/vocab/v0.1/');
+    $this->resource->addContextItem('ContentCollection', 'http://localhost/web-services/vocab/v0.1#ContentCollection');
+    $this->resource->setType('ContentCollection');
 
     $label = tripal_get_term_details('rdfs', 'label');
     $this->addResourceProperty($this->resource, $label, 'Content Types');
@@ -913,15 +918,60 @@ class TripalEntityService_v0_1 extends TripalWebService {
   }
 
   /**
-   * @see TripalWebService::getSupportedClasses()
+   * Adds the content collection class.
    */
-  public function getSupportedClasses() {
+  private function addContentCollectionClass() {
+
+    $service_path = $this->getServicePath();
+    $details = array(
+      'id' => $service_path,
+      'title' => 'Content Collection',
+    );
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
+    $propeties = array();
+    $propeties[] = array(
+      'type' => $url,
+      'title' => 'member',
+      'description' => "The list of available content types.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE,
+    );
+    $url = preg_replace('/{accession}/', 'totalItems', $vocab['urlprefix']);
+    $propeties[] = array(
+      "type" => $url,
+      "title" => "totalItems",
+      "description" => "The total number of content types.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    );
+    $url = preg_replace('/{accession}/', 'label', $vocab['urlprefix']);
+    $propeties[] = array(
+      "type" => $url,
+      "title" => "label",
+      "description" => "The type content.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    );
+
+    $operations = array();
+    $operations['GET'] = array(
+      'label' => 'Retrieves a collection of content types available on this site.',
+      'expects' => NULL,
+      'returns' => $service_path,
+      'type' => '_:content_collection_retrieve'
+    );
+    $this->addClass($details,$operations, $propeties);
+  }
+  /**
+   * Adds classes for every content type.
+   */
+  private function addBundleClasses() {
 
     global $user;
-
-    // An array of TripalWebServiceResources containing a
-    // description of the supported classes.
-    $supported_classes = array();
 
     // Get the list of published terms (these are the bundle IDs)
     $bundles = db_select('tripal_bundle', 'tb')
@@ -929,7 +979,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       ->orderBy('tb.label', 'ASC')
       ->execute();
 
-    // Iterate through the terms and add an entry in the collection.
+    // Iterate through the content types and add a class for each one.
     $i = 0;
     while ($bundle = $bundles->fetchObject()) {
       $entity =  entity_load('TripalTerm', array('id' => $bundle->term_id));
@@ -943,182 +993,73 @@ class TripalEntityService_v0_1 extends TripalWebService {
         $description = $term->definition;
       }
 
-      $supported = new TripalWebServiceResource($this->getServicePath());
-      $supported->addContextItem('supportedOperation', 'hydra:supportedOperation');
-      $supported->addContextItem('supportedProperty', 'hydra:supportedProperty');
-      $supported->addContextItem('subClassOf', array(
-        "@id" => "rdfs:subClassOf",
-        "@type" => "@id"
-      ));
-      $supported->setID($this->getServicePath() . '/' . urlencode($bundle->label));
-      $supported->setType('hydra:Class');
-      $supported->addProperty('hydra:title', $bundle->label);
-      $supported->addProperty('hydra:description', $description);
-      $supported->addProperty('subClassOf', 'hydra:Resource');
+      $class_id = $this->getServicePath() . '/' . urlencode($bundle->label);
+      $details = array(
+        'id' => $class_id,
+        'title' => $bundle->label,
+        'description' => $description,
+      );
 
       // Add in the supported operations for this content type.
       $operations = array();
-
       // If the user can view this content type.
       if (user_access('view ' . $bundle->name)) {
-        // All content types allow GET (if the user has view permission).
-        $get_op = new TripalWebServiceResource($this->getServicePath());
-        $get_op->addContextItem('supportedOperation', 'hydra:supportedOperation');
-        $get_op->addContextItem('method', 'hydra:method');
-        $get_op->addContextItem('statusCodes', 'hydra:statusCodes');
-        $get_op->addContextItem('label', 'rdfs:label');
-        $get_op->addContextItem('description', 'rdfs:comment');
-        $get_op->addContextItem('expects', array(
-          "@id" => "hydra:expects",
-          "@type" => "@id"
-        ));
-        $get_op->addContextItem('returns', array(
-          "@id" => "hydra:returns",
-          "@type" => "@id"
-        ));
-
-        $get_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve');
-        $get_op->setType('hydra:Operation');
-        $get_op->addProperty('method', 'GET');
+        $label = "Retrieves a " . $bundle->label . " entity.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $get_op->addProperty('label', "Retrieves an " . $bundle->label . " entity.");
+          $label =  "Retrieves an " . $bundle->label . " entity.";
         }
-        else {
-          $get_op->addProperty('label', "Retrieves a " . $bundle->label . " entity.");
-        }
-        $get_op->addProperty('description', NULL);
-        $get_op->addProperty('expects', NULL);
-        $get_op->addProperty('returns', $this->getServicePath() . '/' . urlencode($bundle->label));
-        $get_op->addProperty('statusCodes', array());
-        $operations[] = $get_op;
+        $operations['GET'] = array(
+          'label' => $label,
+          'description' => NULL,
+          'returns' => $class_id,
+          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve',
+        );
       }
 
-      /* // If the user can create this content type.
+      // If the user can create this content type.
       if (user_access('create ' . $bundle->name)) {
-        // All content types allow GET (if the user has view permission).
-        $create_op = new TripalWebServiceResource($this->getServicePath());
-        $create_op->addContextItem('method', 'hydra:method');
-        $create_op->addContextItem('statusCodes', 'hydra:statusCodes');
-        $create_op->addContextItem('label', 'rdfs:label');
-        $create_op->addContextItem('description', 'rdfs:comment');
-        $create_op->addContextItem('code', 'hydra:statusCode');
-        $create_op->addContextItem('expects', array(
-          "@id" => "hydra:expects",
-          "@type" => "@id"
-        ));
-        $create_op->addContextItem('returns', array(
-          "@id" => "hydra:returns",
-          "@type" => "@id"
-        ));
-        $create_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create');
-        $create_op->setType('http://schema.org/CreateAction');
-        $create_op->addProperty('method', 'POST');
+        $label = "Creates a " . $bundle->label . " entity.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $create_op->addProperty('label', "Creates an " . $bundle->label . " entity.");
+          $label = "Creates an " . $bundle->label . " entity.";
         }
-        else {
-          $create_op->addProperty('label', "Creates a " . $bundle->label . " entity.");
-        }
-        $create_op->addProperty('description', NULL);
-        $create_op->addProperty('expects', $term->url);
-        $create_op->addProperty('returns', $term->url);
-        $create_op->addProperty('statusCodes', array(
-          array(
-            'code' => 404,
-            'description' => 'The ' . $bundle->label . ' could not be created.'
-          ),
-          array(
-            'code' => 409,
-            'description' => 'The ' . $bundle->label . ' already exists.'
-          ),
-        ));
-        $operations[] = $create_op;
+        $operations['POST'] = array(
+          'label' => $label,
+          'description' => NULL,
+          'returns' => $class_id,
+          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
+        );
       }
 
       // If the user can edit this content type.
       if (user_access('edit ' . $bundle->name)) {
-        // All content types allow GET (if the user has view permission).
-        $edit_op = new TripalWebServiceResource($this->getServicePath());
-        $edit_op->addContextItem('method', 'hydra:method');
-        $edit_op->addContextItem('statusCodes', 'hydra:statusCodes');
-        $edit_op->addContextItem('label', 'rdfs:label');
-        $edit_op->addContextItem('description', 'rdfs:comment');
-        $edit_op->addContextItem('code', 'hydra:statusCode');
-        $edit_op->addContextItem('expects', array(
-          "@id" => "hydra:expects",
-          "@type" => "@id"
-        ));
-        $edit_op->addContextItem('returns', array(
-          "@id" => "hydra:returns",
-          "@type" => "@id"
-        ));
-        $edit_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update');
-        $edit_op->setType('http://schema.org/UpdateAction');
-        $edit_op->addProperty('method', 'PUT');
+        $label = "Update and replace a " . $bundle->label . " entity.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $edit_op->addProperty('label', "Update and replace an " . $bundle->label . " entity.");
+          $label = "Update and replace an " . $bundle->label . " entity.";
         }
-        else {
-          $edit_op->addProperty('label', "Update and replace a " . $bundle->label . " entity.");
-        }
-        $edit_op->addProperty('description', NULL);
-        $edit_op->addProperty('expects', $term->url);
-        $edit_op->addProperty('returns', $term->url);
-        $edit_op->addProperty('statusCodes', array(
-          array(
-            'code' => 404,
-            'description' => 'The ' . $bundle->label . ' could not be updated using the provided ID.'
-          ),
-        ));
-        $operations[] = $edit_op;
+        $operations['PUT'] = array(
+          'label' => $label,
+          'description' => NULL,
+          'returns' => $class_id,
+          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update',
+        );
       }
 
       // If the user can edit this content type.
       if (user_access('delete ' . $bundle->name)) {
-        // All content types allow GET (if the user has view permission).
-        $delete_op = new TripalWebServiceResource($this->getServicePath());
-        $delete_op->addContextItem('method', 'hydra:method');
-        $delete_op->addContextItem('statusCodes', 'hydra:statusCodes');
-        $delete_op->addContextItem('label', 'rdfs:label');
-        $delete_op->addContextItem('description', 'rdfs:comment');
-        $delete_op->addContextItem('code', 'hydra:statusCode');
-        $delete_op->addContextItem('expects', array(
-          "@id" => "hydra:expects",
-          "@type" => "@id"
-        ));
-        $delete_op->addContextItem('returns', array(
-          "@id" => "hydra:returns",
-          "@type" => "@id"
-        ));
-        $delete_op->setID('_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete');
-        $delete_op->setType('http://schema.org/DeleteAction');
-        $delete_op->addProperty('method', 'DELETE');
+        $label =  "Deletes a " . $bundle->label . " entity.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $delete_op->addProperty('label', "Deletes an " . $bundle->label . " entity.");
+          $label =  "Deletes an " . $bundle->label . " entity.";
         }
-        else {
-          $delete_op->addProperty('label', "Deletes a " . $bundle->label . " entity.");
-        }
-        $delete_op->addProperty('description', NULL);
-        $delete_op->addProperty('expects', $term->url);
-        $delete_op->addProperty('returns', $term->url);
-        $delete_op->addProperty('statusCodes', array(
-          array(
-            'code' => 404,
-            'description' => 'The ' . $bundle->label . ' could not be deleted using the provided ID.'
-          ),
-        ));
-        $operations[] = $delete_op;
-      } */
-
-      $supported->addProperty('supportedOperation', $operations);
-
-      // Add in the properties by examining the fields attached to the bundle.
+        $operations['DELETE'] = array(
+          'label' => $label,
+          'description' => NULL,
+          'returns' => $class_id,
+          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete',
+        );
+      }
       $properties = array();
-      $supported->addProperty('supportedProperty', $properties);
-      $supported_classes[] = $supported;
-    }
 
-    return $supported_classes;
+      $this->addClass($details, $operations, $properties);
+    } // end while ($bundle = $bundles->fetchObject()) { ...
   }
 }

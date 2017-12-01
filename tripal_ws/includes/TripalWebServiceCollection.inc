@@ -102,7 +102,9 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    * @see TripalWebServiceResource::setType()
    */
   public function setType($type) {
-    throw new Exception("The type for a Collection can only be collection.");
+    // TODO: There should be a check to make sure that the type is a
+    // subclass of the hydra:Collection term.
+    parent::setType($type);
   }
 
   /**

@@ -163,15 +163,15 @@ class TripalWebServiceResource {
 
       // If the vocabulary is not in the.
       if (!in_array($vocab, $keys)) {
-        throw new Exception("The key, '$key', has a vocabulary that has not yet been added to the " .
-            "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.");
+        throw new Exception(t("The key, !key, has a vocabulary that has not yet been added to the " .
+            "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.", array('!key' => $key)));
       }
     }
     else {
       // If the key is not in the context then throw an error.
       if (!in_array($key, $keys)) {
-        throw new Exception("The key, '$key', has not yet been added to the " .
-            "context. Use the addContextItem() function to add this key prior to adding a value for it.");
+        throw new Exception(t("The key, !key, has not yet been added to the " .
+            "context. Use the addContextItem() function to add this key prior to adding a value for it.", array('!key' => $key)));
       }
     }
   }
@@ -188,8 +188,19 @@ class TripalWebServiceResource {
    */
   private function checkValue(&$value) {
     if (is_array($value)) {
-      foreach ($value as $i => $v) {
-        $this->checkValue($value[$i]);
+      foreach ($value as $k => $v) {
+        // If this is an integer then this is a numeric indexed array
+        // and we can just check the value.  If not, then make sure the
+        // key has been added to the context.
+        if (preg_match('/^\d+$/', $k)) {
+          $this->checkValue($value[$k]);
+        }
+        else {
+          if ($k != '@id' and $k != '@type') {
+            $this->checkKey($k);
+          }
+          $this->checkValue($value[$k]);
+        }
       }
     }
     else {

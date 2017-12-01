@@ -406,7 +406,6 @@ function tripal_accesss_user_collections($uid) {
 function tripal_access_user_data($uid) {
   global $user;
 
-  drupal_debug($uid);
   if ($uid == $user->uid) {
     return TRUE;
   }
