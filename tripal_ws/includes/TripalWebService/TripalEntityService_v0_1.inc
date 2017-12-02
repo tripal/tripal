@@ -963,7 +963,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $operations = array();
     $operations['GET'] = array(
-      'label' => 'Retrieves a collection of content types available on this site.',
+      'label' => 'Retrieves a collection (a list) of available content types.',
       'expects' => NULL,
       'returns' => $this->getServicePath(),
       'type' => '_:content_collection_retrieve'
@@ -997,9 +997,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
         $description = $term->definition;
       }
 
+      // Create the details array for the class.
       $class_id = $this->getServicePath() . '/' . urlencode($bundle->label);
       $details = array(
-        'id' => $class_id,
+        'id' => $term->url,
         'title' => $bundle->label,
         'description' => $description,
       );
@@ -1051,8 +1052,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
       $this->addDocClass($details, $operations, $properties);
 
-      // Now add the bundle collection class
+      // Now add the bundle collection class.
       $this->addDocBundleCollectionClass($bundle);
+
     } // end while ($bundle = $bundles->fetchObject()) { ...
   }
 

@@ -465,6 +465,9 @@ class TripalWebService {
     if (!array_key_exists('type', $op_details)) {
       throw new Exception(t('Please provide a type in the operations array passed to the TripalWebService::addClass() function: @details', array('@details' => print_r($op_details, TRUE))));
     }
+    if (!array_key_exists('label', $op_details)) {
+      throw new Exception(t('Please provide a label in the operations array passed to the TripalWebService::addClass() function: @details', array('@details' => print_r($op_details, TRUE))));
+    }
 
     $class_op = new TripalWebServiceResource($this->base_path);
     $class_op->setID($op_details['type']);
@@ -519,6 +522,40 @@ class TripalWebService {
   }
 
   /**
+   * Converts a term array into an value appropriate for an @id or @type.
+   *
+   * @param $term
+   *   The term array.
+   * @param $santize
+   *   An array of keywords indicating how to santize the key.  By default,
+   *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
+   *   where 'lowercase' converts the term name to all lowercase and
+   *   'spacing' replaces any spaces with underscores.
+   *
+   * @return
+   *   The id (the term name but with spaces replaced with underscores).
+   */
+  protected function getContextTerm($term, $sanitize = array()) {
+    if (!$term) {
+      $backtrace = debug_backtrace();
+      throw new Exception('getContextTerm: Please provide a non NUll or non empty $term.');
+
+    }
+    if (!$term['name']) {
+      throw new Exception('getContextTerm: The provided term does not have a name: ' . print_r($term, TRUE));
+    }
+
+    $key = $term['name'];
+    $key_adj = $key;
+    if (in_array('spacing', $sanitize)) {
+      $key_adj = preg_replace('/ /', '_', $key_adj);
+    }
+    if (in_array('lowercase', $sanitize)) {
+      $key_adj = strtolower($key_adj);
+    }
+    return $key_adj;
+  }
+  /**
    * Adds a term to the '@context' section for a given resource.
    *
    * @param $resource
@@ -530,10 +567,10 @@ class TripalWebService {
    *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
    *   where 'lowercase' converts the term name to all lowercase and
    *   'spacing' replaces any spaces with underscores.
-   * @return $key
-   *   The key (the term name but with spaces replaced with underscores).
+   * @return
+   *   The id (the term name but with spaces replaced with underscores).
    */
-  public function addContextTerm($resource, $term, $sanitize = array()) {
+  protected function addContextTerm($resource, $term, $sanitize = array()) {
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception('addContextTerm: Please provide a $resource of type TripalWebServiceResource.');
     }
@@ -552,14 +589,7 @@ class TripalWebService {
     $this->addContextVocab($resource, $vocab);
 
     // Sanitize the term key
-    $key = $term['name'];
-    $key_adj = $key;
-    if (in_array('spacing', $sanitize)) {
-      $key_adj = preg_replace('/ /', '_', $key_adj);
-    }
-    if (in_array('lowercase', $sanitize)) {
-      $key_adj = strtolower($key_adj);
-    }
+    $key_adj = $this->getContextTerm($term, $sanitize);
 
     // Create the compact IRI
     $compact_iri = $vocab['short_name'] . ':' . $term['accession'];
@@ -575,9 +605,6 @@ class TripalWebService {
     $resource->addContextItem($key_adj, $compact_iri);
     $resource->addContextItem($compact_iri, $iri);
 
-    if ($key_adj == 'clause subject') {
-      //print_r(debug_backtrace()[2]['function']);
-    }
     return $key_adj;
   }
 
@@ -589,7 +616,7 @@ class TripalWebService {
    * @param $vocab
    *   The vocabulary array.
    */
-  public function addContextVocab($resource, $vocab) {
+  protected function addContextVocab($resource, $vocab) {
 
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception('addContextVocab: Please provide a $resource of type TripalWebServiceResource.');
