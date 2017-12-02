@@ -135,7 +135,7 @@ function tripal_chado_populate_vocab_RDFS() {
     'name' => 'rdfs',
     'description' => 'Resource Description Framework Schema',
     'url' => 'https://www.w3.org/TR/rdf-schema/',
-    'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_{accession}',
+    'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
   ));
   tripal_insert_cv(
     'rdfs',

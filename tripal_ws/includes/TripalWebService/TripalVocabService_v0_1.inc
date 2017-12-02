@@ -56,14 +56,14 @@ class TripalVocabService_v0_1 extends TripalWebService {
 
     // Add the EntryPoint class.
     $this->addEntryPointClass();
-    foreach ($this->supported_classes as $supported) {
+    foreach ($this->documentation as $supported) {
       $this->resource->addProperty('supportedClass', $supported);
     }
 
     // Iterate through all of the web services and build their documentation
     foreach ($this->services as $service_class) {
       $service = new $service_class($this->base_path);
-      $supported_classes = $service->getSupportedClasses();
+      $supported_classes = $service->getDocumentation();
       foreach ($supported_classes as $supported) {
         $this->resource->addProperty('supportedClass', $supported);
       }
@@ -106,6 +106,8 @@ class TripalVocabService_v0_1 extends TripalWebService {
       $link->addContextItem('readable', 'hydra:readable');
       $link->addContextItem('writeable', 'hydra:writeable');
       $link->addContextItem('required', 'hydra:required');
+      $link->addContextItem('description', 'rdfs:comment');
+      $link->addContextItem('label', 'rdfs:label');
       $link->addProperty('hydra:title', $service_class::$label);
       $link->addProperty('hydra:description', $service_class::$description);
 //       $link->addProperty('domain', $service_path . '#EntryPoint');
@@ -158,6 +160,6 @@ class TripalVocabService_v0_1 extends TripalWebService {
     );
 
 
-    $this->addClass($details, $operations, $properties);
+    $this->addDocClass($details, $operations, $properties);
   }
 }

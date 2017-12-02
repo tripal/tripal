@@ -176,7 +176,6 @@ function tripal_ws_get_services() {
     if (!$service) {
       throw new Exception('The service type, "' . $service_type . '", is not available');
     }
-
     // Adjust the path to remove the service type and the version.
     $adj_path = $ws_path;
     array_shift($adj_path);

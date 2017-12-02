@@ -1415,6 +1415,12 @@ function tripal_chado_update_7321() {
       'Resource Description Framework'
     );
     tripal_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+    ));
+    tripal_insert_db(array(
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
       'url' => 'http://www.w3.org/ns/hydra/core',

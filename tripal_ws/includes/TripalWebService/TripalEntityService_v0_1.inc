@@ -30,8 +30,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
     parent::__construct($base_path);
 
     // Add the classes that this resource supports.
-    $this->addBundleClasses();
-    $this->addContentCollectionClass();
+    $this->addDocBundleClasses();
+    $this->addDocContentCollectionClass();
   }
 
   /**
@@ -768,6 +768,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
     $term = reset($term);
 
+    // The type of collection is provided by our API vocabulary service.
+    $vocab_service = new TripalVocabService_v0_1($this->base_path);
+    $this->resource->addContextItem('vocab', $vocab_service->getServicePath() . '#');
+    $this->resource->setType('vocab:' . urlencode($bundle->label) . 'Collection');
+
     // Convert term to a simple array
     $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
 
@@ -901,7 +906,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
       $this->setResourceType($member, $term);
       $this->addResourceProperty($member, $label, $bundle->label);
-      $member->addContextItem('description', 'hydra:description');
+      $member->addContextItem('description', 'rdfs:comment');
       // Get the bundle description. If no description is provided then
       // use the term definition
       $description = tripal_get_bundle_variable('description', $bundle->id);
@@ -917,14 +922,13 @@ class TripalEntityService_v0_1 extends TripalWebService {
     }
   }
 
-  /**
-   * Adds the content collection class.
-   */
-  private function addContentCollectionClass() {
 
-    $service_path = $this->getServicePath();
+  /**
+   * Adds the content collection class to the document for this service.
+   */
+  private function addDocContentCollectionClass() {
     $details = array(
-      'id' => $service_path,
+      'id' => 'vocab:ContentCollection',
       'title' => 'Content Collection',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
@@ -961,15 +965,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $operations['GET'] = array(
       'label' => 'Retrieves a collection of content types available on this site.',
       'expects' => NULL,
-      'returns' => $service_path,
+      'returns' => $this->getServicePath(),
       'type' => '_:content_collection_retrieve'
     );
-    $this->addClass($details,$operations, $propeties);
+    $this->addDocClass($details,$operations, $propeties);
   }
   /**
-   * Adds classes for every content type.
+   * Adds classes for every content type to the documentation for this service.
    */
-  private function addBundleClasses() {
+  private function addDocBundleClasses() {
 
     global $user;
 
@@ -1016,20 +1020,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
         );
       }
 
-      // If the user can create this content type.
-      if (user_access('create ' . $bundle->name)) {
-        $label = "Creates a " . $bundle->label . " entity.";
-        if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $label = "Creates an " . $bundle->label . " entity.";
-        }
-        $operations['POST'] = array(
-          'label' => $label,
-          'description' => NULL,
-          'returns' => $class_id,
-          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
-        );
-      }
-
       // If the user can edit this content type.
       if (user_access('edit ' . $bundle->name)) {
         $label = "Update and replace a " . $bundle->label . " entity.";
@@ -1059,7 +1049,85 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
       $properties = array();
 
-      $this->addClass($details, $operations, $properties);
+      $this->addDocClass($details, $operations, $properties);
+
+      // Now add the bundle collection class
+      $this->addDocBundleCollectionClass($bundle);
     } // end while ($bundle = $bundles->fetchObject()) { ...
   }
+
+  /**
+   * Every content type (bundle) needs a collection class in the documentation.
+   */
+  private function addDocBundleCollectionClass($bundle) {
+    $details = array(
+      'id' => 'vocab:' . urlencode($bundle->label) . 'Collection',
+      'title' => $bundle->label . ' Collection',
+      'subClassOf' => 'hydra:Collection',
+      'description' => 'A collection (or list) of ' . $bundle->label . ' resources.',
+    );
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
+    $propeties = array();
+    $propeties[] = array(
+      'type' => $url,
+      'title' => 'member',
+      'description' => "The list of available " . $bundle->label . '(s).',
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE,
+    );
+    $url = preg_replace('/{accession}/', 'totalItems', $vocab['urlprefix']);
+    $propeties[] = array(
+      "type" => $url,
+      "title" => "totalItems",
+      "description" => "The total number of resources.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    );
+    $url = preg_replace('/{accession}/', 'label', $vocab['urlprefix']);
+    $propeties[] = array(
+      "type" => $url,
+      "title" => "label",
+      "description" => "A label or name for the resource.",
+      "required" => null,
+      "readonly" => FALSE,
+      "writeonly" => FALSE
+    );
+
+    $class_id = $this->getServicePath() . '/' . urlencode($bundle->label);
+    $operations = array();
+    $operations['GET'] = array(
+      'label' => 'Retrieves a list of all ' . $bundle->label . ' resources.',
+      'description' => NULL,
+      'expects' => NULL,
+      'returns' => $class_id,
+      'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve',
+    );
+
+    // If the user can create this content type then we allow a POST on the
+    // collection type.
+    if (user_access('create ' . $bundle->name)) {
+      $label = "Creates a " . $bundle->label;
+      if (preg_match('/^[aeiou]/i', $bundle->label)) {
+        $label = "Creates an " . $bundle->label;
+      }
+      $operations['POST'] = array(
+        'label' => $label,
+        'description' => NULL,
+        'expects' => $class_id,
+        'returns' => $class_id,
+        'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
+        'statusCodes' => array(
+          array(
+            "code" => 201,
+            "description" => "If the " . $bundle->label . " was created successfully."
+          ),
+        ),
+      );
+    }
+    $this->addDocClass($details, $operations, $propeties);
+  }
+
 }

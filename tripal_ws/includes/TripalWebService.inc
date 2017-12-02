@@ -55,11 +55,11 @@ class TripalWebService {
   protected $base_path;
 
   /**
-   * The list of classes used by this service. For the web service
+   * The list of documented classes used by this service. For the web service
    * to be discoverable all of the entity classes and their collections
    * must be defined.
    */
-  protected $supported_classes;
+  protected $documentation;
 
   // --------------------------------------------------------------------------
   //                             CONSTRUCTORS
@@ -79,9 +79,9 @@ class TripalWebService {
     $this->path = array();
     $this->params = array();
     $this->base_path = $base_path;
-    $this->supported_classes = array();
+    $this->documentation = array();
 
-    $this->addClass(array(
+    $this->addDocClass(array(
       "id" => "http://www.w3.org/ns/hydra/core#Resource",
       "name" => 'resource',
       "title" => "Resource",
@@ -151,13 +151,13 @@ class TripalWebService {
    * are separated by an underscore.  This function identifies the version
    * from the class name and returns it here in a human-readable format.
    *
-   * @param $sanatize
+   * @param $sanitize
    *   Set to TRUE to convert the period to underscore.
    *
    * @return
    *   The version number for this web service.
    */
-  public function getVersion($sanatize = FALSE) {
+  public function getVersion($sanitize = FALSE) {
 
     $class = get_class($this);
     $major_version = '';
@@ -279,8 +279,8 @@ class TripalWebService {
    *   An array of TripalWebServiceResource objects that follow the Hydra
    *   documentation for documenting supported classes.
    */
-  public function getSupportedClasses() {
-    return $this->supported_classes;
+  public function getDocumentation() {
+    return $this->documentation;
   }
 
   /**
@@ -358,36 +358,45 @@ class TripalWebService {
    *      - domain: the @id of the rdfs:domain.
    *      - range:  the @id of the rdfs:range.
    */
-  protected function addClass($details = array(), $ops = array(), $props = array()) {
+  protected function addDocClass($details = array(), $ops = array(), $props = array()) {
     $supported_class = new TripalWebServiceResource($this->getServicePath());
 
     // Add the context which all classes will need
     $supported_class->addContextItem('description', 'rdfs:comment');
+    $supported_class->addContextItem('subClassOf', 'hydra:subClassOf');
+    $supported_class->addContextItem('description', 'rdfs:comment');
+    $supported_class->addContextItem('label', 'rdfs:label');
 
-    // Add in the Class details.
+    // Set the Class ID.
     $class_id = $details['id'];
     $supported_class->setID($class_id);
+
+    // Set the class Type.
     if (array_key_exists('type', $details)) {
       $supported_class->setType($details['type']);
     }
     else {
       $supported_class->setType('hydra:Class');
     }
+
+    // Set title and description.
     $supported_class->addProperty('hydra:title', $details['title']);
     $supported_class->addProperty('hydra:description', array_key_exists('description', $details) ? $details['description'] : NULL);
+
+    // Set the sub class.
     if (array_key_exists('subClassOf', $details)) {
       if ($details['subClassOf']) {
-        $supported_class->addProperty('hydra:subClassOf', $details['subClassOf']);
+        $supported_class->addProperty('subClassOf', $details['subClassOf']);
       }
     }
     else {
-      $supported_class->addProperty('hydra:subClassOf', 'hydra:Resource');
+      $supported_class->addProperty('subClassOf', 'hydra:Resource');
     }
 
     // Now add the supported operations.
     $class_ops = array();
     foreach ($ops as $op => $op_details) {
-      $class_ops[] = $this->generateClassOp($supported_class, $op, $op_details);
+      $class_ops[] = $this->generateDocClassOp($supported_class, $op, $op_details);
     }
     $supported_class->addContextItem('supportedOperation', 'hydra:supportedOperation');
     $supported_class->addProperty('supportedOperation', $class_ops);
@@ -395,18 +404,18 @@ class TripalWebService {
     // Now add in the supported proprerties.
     $class_props = array();
     foreach ($props as $prop) {
-      $class_props[] = $this->generateClassProp($supported_class, $prop);
+      $class_props[] = $this->generateDocClassProp($supported_class, $prop);
     }
     $supported_class->addContextItem('supportedProperty', 'hydra:supportedProperty');
     $supported_class->addProperty('supportedProperty', $class_props);
 
-    $this->supported_classes[] = $supported_class;
+    $this->documentation[] = $supported_class;
   }
 
   /**
    * A helper function for the addClass() function for generating a property.
    */
-  private function generateClassProp($supported_class, $prop) {
+  private function generateDocClassProp($supported_class, $prop) {
     $supported_class->addContextItem('property', array(
       "@id" => "hydra:property",
       "@type" => "@id"
@@ -447,7 +456,7 @@ class TripalWebService {
   /**
    * A helper function for the addClass() function for generating an operation.
    */
-  private function generateClassOp($supported_class, $op, $op_details) {
+  private function generateDocClassOp($supported_class, $op, $op_details) {
 
     if ($op != 'GET' and $op != 'PUT' and $op != 'DELETE' and $op != 'POST') {
       throw new Exception(t('The method, @method, provided to the TripalWebService::addClass function is not an oppropriate operations.', array('@method' => $op)));
@@ -459,7 +468,21 @@ class TripalWebService {
 
     $class_op = new TripalWebServiceResource($this->base_path);
     $class_op->setID($op_details['type']);
-    $class_op->setType('hydra:Operation');
+    switch($op) {
+      case 'GET':
+        $class_op->setType('hydra:Operation');
+        break;
+      case 'POST':
+        $class_op->setType('http://schema.org/AddAction');
+        break;
+      case 'DELETE':
+        $class_op->setType('http://schema.org/DeleteAction');
+        break;
+      case 'PUT':
+        $class_op->setType('http://schema.org/UpdateAction');
+        break;
+    }
+
     $class_op->addContextItem('method', 'hydra:method');
     $class_op->addContextItem('label', 'rdfs:label');
     $class_op->addContextItem('description', 'rdfs:comment');
@@ -472,6 +495,7 @@ class TripalWebService {
       "@type" => "@id"
     ));
     $class_op->addContextItem('statusCodes', 'hydra:statusCodes');
+    $class_op->addContextItem('code', 'hydra:statusCode');
 
     $class_op->addProperty('method', $op);
     $class_op->addProperty('label', array_key_exists('label', $op_details) ? $op_details['label'] : 'Retrieves an instance of this resource');
@@ -484,6 +508,9 @@ class TripalWebService {
       else {
         throw new Exception(t('The status code provided to TripalWebService::addClass function is improperly formatted @code.', array('@code' => print_r($code, TRUE))));
       }
+    }
+    if (count($status_codes) == 0) {
+      $class_op->addProperty('statusCodes', array());
     }
     $class_op->addProperty('expects', array_key_exists('expects', $op_details) ? $op_details['expects'] : NULL);
     $class_op->addProperty('returns', array_key_exists('returns', $op_details) ? $op_details['returns'] : ' "http://www.w3.org/2002/07/owl#Nothing",');
