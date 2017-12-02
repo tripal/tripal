@@ -131,10 +131,10 @@ class TripalVocabService_v0_1 extends TripalWebService {
       ));
       $op->addContextItem('statusCodes', 'hydra:statusCodes');
       $op->addProperty('method', "GET");
-      $op->addProperty('label', 'Retrieves ' . $service_class::$label . ' resources.');
+      $op->addProperty('label', 'Retrieves the ' . $service_class::$label . ' resource.');
       $op->addProperty('description', NULL);
       $op->addProperty('expects', NULL);
-      $op->addProperty('returns', $service->getServicePath());
+      $op->addProperty('returns', 'vocab:EntryPoint/' . $service::$type);
       $op->addProperty('statusCodes', array());
       $ops[] = $op;
       $link->addContextItem('supportedOperation', 'hydra:supportedOperation');

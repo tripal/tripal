@@ -381,7 +381,7 @@ class TripalWebServiceResource {
    */
   public function setContext($resource) {
     if (!is_a($resource, 'TripalWebServiceResource')) {
-      throw new Exception("The \$resource argument must be an instance of a TripalWebServiceResource.");
+      throw new Exception("The \$resource argument provided to the TripalWebServiceResource::setContext() function must be an instance of a TripalWebServiceResource.");
     }
     $this->context = $resource->getContext();
   }

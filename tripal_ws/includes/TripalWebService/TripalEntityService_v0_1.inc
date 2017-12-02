@@ -771,14 +771,15 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // The type of collection is provided by our API vocabulary service.
     $vocab_service = new TripalVocabService_v0_1($this->base_path);
     $this->resource->addContextItem('vocab', $vocab_service->getServicePath() . '#');
-    $this->resource->setType('vocab:' . urlencode($bundle->label) . 'Collection');
+    $this->resource->addContextItem(urlencode($bundle->label) . 'Collection', 'vocab:' . urlencode($bundle->label) . 'Collection');
+    $this->resource->setType(urlencode($bundle->label) . 'Collection');
 
     // Convert term to a simple array
     $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
 
     // Set the label for this collection.
     $label = tripal_get_term_details('rdfs', 'label');
-    $this->addResourceProperty($this->resource, $label, $bundle->label . " collection");
+    $this->addResourceProperty($this->resource, $label, $bundle->label . " Collection");
 
     // For quick lookup, get the mapping of WS keys to their appropriate fields.
     $field_mapping = $this->getFieldMapping($bundle);
@@ -899,24 +900,28 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $member = new TripalWebServiceResource($service_path);
       $member->setID(urlencode($bundle->label));
 
+      $vocab_service = new TripalVocabService_v0_1($this->base_path);
+      $member->addContextItem('vocab', $vocab_service->getServicePath() . '#');
+      $member->addContextItem(urlencode($bundle->label) . 'Collection', 'vocab:' . urlencode($bundle->label) . 'Collection');
+      $member->setType(urlencode($bundle->label) . 'Collection');
+
       // Make sure the term has a URL.
       $url = $term['url'];
       if (!$url) {
         throw new Exception(t('Missing a URL for the term: @term.', array('@term' => $term['vocabulary']['short_name'] . ':' . $term['accession'])));
       }
-      $this->setResourceType($member, $term);
-      $this->addResourceProperty($member, $label, $bundle->label);
+      $this->addResourceProperty($member, $label, $bundle->label . ' Collection');
       $member->addContextItem('description', 'rdfs:comment');
       // Get the bundle description. If no description is provided then
       // use the term definition
-      $description = tripal_get_bundle_variable('description', $bundle->id);
+      $description = trim(tripal_get_bundle_variable('description', $bundle->id));
       if (!$description) {
-        $description = $term->definition;
+        $description = $term['definition'];
       }
       if (!$description) {
         $description = '';
       }
-      $member->addProperty('description', $description);
+      $member->addProperty('description', 'A collection of ' . $bundle->label . ' resources: ' . lcfirst($description));
       $this->resource->addMember($member);
 
     }
@@ -964,9 +969,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
     $operations = array();
     $operations['GET'] = array(
       'label' => 'Retrieves a collection (a list) of available content types.',
+      'type' => '_:content_collection_retrieve',
       'expects' => NULL,
-      'returns' => $this->getServicePath(),
-      'type' => '_:content_collection_retrieve'
+      'returns' => 'vocab:ContentCollection',
     );
     $this->addDocClass($details,$operations, $propeties);
   }
@@ -1009,59 +1014,92 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $operations = array();
       // If the user can view this content type.
       if (user_access('view ' . $bundle->name)) {
-        $label = "Retrieves a " . $bundle->label . " entity.";
-        if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $label =  "Retrieves an " . $bundle->label . " entity.";
-        }
+        $label = "Retrieves the " . $bundle->label . " resource.";
         $operations['GET'] = array(
           'label' => $label,
           'description' => NULL,
-          'returns' => $class_id,
+          'returns' => $term->url,
           'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve',
         );
       }
 
       // If the user can edit this content type.
       if (user_access('edit ' . $bundle->name)) {
-        $label = "Update and replace a " . $bundle->label . " entity.";
+        $label = "Update and replace the " . $bundle->label . " resource.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $label = "Update and replace an " . $bundle->label . " entity.";
+          $label = "Update and replace an " . $bundle->label . " resource.";
         }
         $operations['PUT'] = array(
           'label' => $label,
           'description' => NULL,
-          'returns' => $class_id,
+          'returns' => $term->url,
           'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update',
         );
       }
 
       // If the user can edit this content type.
       if (user_access('delete ' . $bundle->name)) {
-        $label =  "Deletes a " . $bundle->label . " entity.";
+        $label =  "Deletes the " . $bundle->label . " resource.";
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
-          $label =  "Deletes an " . $bundle->label . " entity.";
+          $label =  "Deletes an " . $bundle->label . " resource.";
         }
         $operations['DELETE'] = array(
           'label' => $label,
           'description' => NULL,
-          'returns' => $class_id,
+          'returns' => $term->url,
           'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete',
         );
       }
-      $properties = array();
+      $properties = $this->buildDocBundleFieldProperties($bundle);
 
       $this->addDocClass($details, $operations, $properties);
 
       // Now add the bundle collection class.
-      $this->addDocBundleCollectionClass($bundle);
+      $this->addDocBundleCollectionClass($bundle, $term);
 
     } // end while ($bundle = $bundles->fetchObject()) { ...
   }
 
   /**
+   * Every content type (bundle) has fields that need to be set as properties.
+   */
+  private function buildDocBundleFieldProperties($bundle) {
+    $properties = array();
+
+    $instances = field_info_instances('TripalEntity', $bundle->name);
+    foreach ($instances as $instance) {
+      // Skip deleted fields.
+      if ($instance['deleted']) {
+        continue;
+      }
+      // Skip hidden fields.
+      if ($instance['display']['default']['type'] == 'hidden') {
+        continue;
+      }
+
+      $field_name = $instance['field_name'];
+      $field = field_info_field($field_name);
+      $field_type = $field['type'];
+      // Skip fields of remote data.
+      if ($field_type == 'remote__data') {
+        continue;
+      }
+      $property = array(
+        'type' => $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'],
+        'title' => $instance['label'],
+        'description' => $instance['description'],
+        "required" => $instance['required'] ? TRUE : FALSE,
+        "readonly" => FALSE,
+        "writeonly" => TRUE,
+      );
+      $properties[] = $property;
+    }
+    return $properties;
+  }
+  /**
    * Every content type (bundle) needs a collection class in the documentation.
    */
-  private function addDocBundleCollectionClass($bundle) {
+  private function addDocBundleCollectionClass($bundle, $term) {
     $details = array(
       'id' => 'vocab:' . urlencode($bundle->label) . 'Collection',
       'title' => $bundle->label . ' Collection',
@@ -1104,8 +1142,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'label' => 'Retrieves a list of all ' . $bundle->label . ' resources.',
       'description' => NULL,
       'expects' => NULL,
-      'returns' => $class_id,
-      'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_retrieve',
+      'returns' => $term->url,
+      'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_collection_retrieve',
     );
 
     // If the user can create this content type then we allow a POST on the
@@ -1118,8 +1156,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       $operations['POST'] = array(
         'label' => $label,
         'description' => NULL,
-        'expects' => $class_id,
-        'returns' => $class_id,
+        'expects' => $term->url,
+        'returns' => $term->url,
         'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
         'statusCodes' => array(
           array(
