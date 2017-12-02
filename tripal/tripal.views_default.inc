@@ -228,6 +228,9 @@ function tripal_bundle_default_views(&$views) {
     $handler->display->display_options['menu']['title'] = $bundle->label . ' Search';
     $handler->display->display_options['menu']['description'] = 'A search form for finding ' . $bundle->label . ' records';
     $handler->display->display_options['menu']['weight'] = '-10';
+    $handler->display->display_options['menu']['name'] = 'data_search';
+    $handler->display->display_options['menu']['context'] = 0;
+    $handler->display->display_options['menu']['context_only_inline'] = 0;
 
     $views[$view_name] = $view;
   }
