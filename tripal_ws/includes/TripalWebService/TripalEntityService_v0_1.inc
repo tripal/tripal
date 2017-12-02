@@ -1029,12 +1029,13 @@ class TripalEntityService_v0_1 extends TripalWebService {
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
           $label = "Update and replace an " . $bundle->label . " resource.";
         }
-        $operations['PUT'] = array(
-          'label' => $label,
-          'description' => NULL,
-          'returns' => $term->url,
-          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update',
-        );
+// TODO: add this back in when web services support this method.
+//         $operations['PUT'] = array(
+//           'label' => $label,
+//           'description' => NULL,
+//           'returns' => $term->url,
+//           'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_update',
+//         );
       }
 
       // If the user can edit this content type.
@@ -1043,13 +1044,16 @@ class TripalEntityService_v0_1 extends TripalWebService {
         if (preg_match('/^[aeiou]/i', $bundle->label)) {
           $label =  "Deletes an " . $bundle->label . " resource.";
         }
-        $operations['DELETE'] = array(
-          'label' => $label,
-          'description' => NULL,
-          'returns' => $term->url,
-          'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete',
-        );
+// TODO: add this back in when web services support this method.
+//         $operations['DELETE'] = array(
+//           'label' => $label,
+//           'description' => NULL,
+//           'returns' => $term->url,
+//           'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_delete',
+//         );
       }
+
+      // Add in the properties that correspond to fields in the data.
       $properties = $this->buildDocBundleFieldProperties($bundle);
 
       $this->addDocClass($details, $operations, $properties);
@@ -1153,19 +1157,20 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if (preg_match('/^[aeiou]/i', $bundle->label)) {
         $label = "Creates an " . $bundle->label;
       }
-      $operations['POST'] = array(
-        'label' => $label,
-        'description' => NULL,
-        'expects' => $term->url,
-        'returns' => $term->url,
-        'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
-        'statusCodes' => array(
-          array(
-            "code" => 201,
-            "description" => "If the " . $bundle->label . " was created successfully."
-          ),
-        ),
-      );
+// TODO: add this back in when web services support this method.
+//       $operations['POST'] = array(
+//         'label' => $label,
+//         'description' => NULL,
+//         'expects' => $term->url,
+//         'returns' => $term->url,
+//         'type' => '_:' . preg_replace('/[^\w]/', '_', strtolower($bundle->label)) . '_create',
+//         'statusCodes' => array(
+//           array(
+//             "code" => 201,
+//             "description" => "If the " . $bundle->label . " was created successfully."
+//           ),
+//         ),
+//       );
     }
     $this->addDocClass($details, $operations, $propeties);
   }
