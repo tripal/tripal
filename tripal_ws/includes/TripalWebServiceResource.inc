@@ -45,40 +45,26 @@ class TripalWebServiceResource {
     // web services should use these.
     $vocab = tripal_get_vocabulary_details('rdf');
 
-    $this->addContextItem('rdf', $this->cleanVocabURL($vocab));
+    $this->addContextItem('rdf', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('rdfs');
-    $this->addContextItem('rdfs', $this->cleanVocabURL($vocab));
+    $this->addContextItem('rdfs', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('hydra');
-    $url = $this->cleanVocabURL($vocab);
-    // $remove the '#' from the end of the URL as the HydraConsole automatically
-    // wants to add it.
-    //$url = preg_replace('/#/', '', $url);
-    $this->addContextItem('hydra', $url);
+    $this->addContextItem('hydra', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('dc');
-    $this->addContextItem('dc', $this->cleanVocabURL($vocab));
+    $this->addContextItem('dc', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('schema');
-    $this->addContextItem('schema', $this->cleanVocabURL($vocab));
+    $this->addContextItem('schema', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('local');
-    $this->addContextItem('local', url($vocab['urlprefix'], array('absolute' => TRUE)). '/');
+    $this->addContextItem('local', url($vocab['sw_url'], array('absolute' => TRUE)));
 
 
     $this->data['@id'] = $service_path;
     $this->data['@type'] = '';
-  }
-  /**
-   * A helper function to remove the {db} and {accession} from the URL prefix.
-   */
-  private function cleanVocabURL($vocab) {
-    $url = $vocab['urlprefix'];
-    $url = preg_replace('/{db}:{accession}/', '', $url);
-    $url = preg_replace('/{db}/', '', $url);
-    $url = preg_replace('/{accession}/', '', $url);
-    return $url;
   }
 
   /**

@@ -40,9 +40,16 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   ";
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
+
   if (!$result['name']) {
     $result['name'] = $result['short_name'];
   }
+  $sw_url = $result['urlprefix'];
+  $sw_url = preg_replace('/\{db\}/', $result['short_name'], $sw_url);
+  $sw_url = preg_replace('/\{accession\}/', '', $sw_url);
+  $sw_url = url($sw_url, array('absolute' => TRUE));
+  $result['sw_url'] = $sw_url;
+  unset($result['short_name']);
   return $result;
 }
 
@@ -73,13 +80,24 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
     return FALSE;
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
+
+  $url = $cvterm->dbxref_id->db_id->url;
+  $urlprefix = $cvterm->dbxref_id->db_id->urlprefix;
+
+  // Generate the URL that can be used for semantic web applications.
+  $sw_url = $urlprefix;
+  $sw_url = preg_replace('/{db}/', $cvterm->dbxref_id->db_id->name, $sw_url);
+  $sw_url = preg_replace('/{accession}/', '', $sw_url);
+  $sw_url = url($sw_url, array('absolute' => TRUE));
+
   $term = array(
     'vocabulary' => array(
       'name' => $cvterm->cv_id->name,
       'short_name' => $cvterm->dbxref_id->db_id->name,
       'description' =>  $cvterm->dbxref_id->db_id->description,
-      'url' => $cvterm->dbxref_id->db_id->url,
-      'urlprefix' => $cvterm->dbxref_id->db_id->urlprefix
+      'url' => $url,
+      'urlprefix' => $urlprefix,
+      'sw_url' => $sw_url,
     ),
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,

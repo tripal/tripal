@@ -270,15 +270,16 @@ function tripal_get_term_details($vocabulary, $accession) {
  *
  * @return
  *   An array with at least the following keys:
- *     - name : The full name of the vocabulary.
- *     - short_name : The short name abbreviation for the vocabulary.
- *     - description : A brief description of the vocabulary.
- *     - url : (optional) A URL for the online resources for the vocabulary.
- *     - urlprefix : (optional) A URL to which the short_name and term
+ *     - name: The full name of the vocabulary.
+ *     - short_name: The short name abbreviation for the vocabulary.
+ *     - description: A brief description of the vocabulary.
+ *     - url:  A URL for the online resources for the vocabulary.
+ *     - urlprefix: A URL to which the short_name and term
  *       accession can be appended to form a complete URL for a term.  If the
  *       prefix does not support appending then the exact location for the
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
+ *     - sw_url: The URL for mapping terms via the semantic web.
  */
 function tripal_get_vocabulary_details($vocabulary) {
   // TODO: we need some sort of administrative interface that lets the user

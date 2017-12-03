@@ -1513,6 +1513,13 @@ function tripal_chado_populate_vocab_SWO() {
  * Adds the contact table mapping.
  */
 function tripal_chado_populate_vocab_TCONTACT() {
+  tripal_insert_db(array(
+    'name' => 'TContact',
+    'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+    'url' => 'cv/lookup/TContact',
+    'urlprefix' => 'cv/lookup/TContact/{accession}',
+  ));
+  tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 }
 
 /**
@@ -1523,8 +1530,8 @@ function tripal_chado_populate_vocab_TPUB() {
   tripal_insert_db(array(
     'name' => 'TPUB',
     'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
-    'url' => 'http://localhost/cv/lookup/TPUB',
-    'urlprefix' => 'http://localhost/cv/lookup/TPUB/{accession}',
+    'url' => 'cv/lookup/TPUB',
+    'urlprefix' => 'cv/lookup/TPUB/{accession}',
   ));
   tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 

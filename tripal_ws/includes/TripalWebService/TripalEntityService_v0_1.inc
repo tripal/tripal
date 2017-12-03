@@ -28,10 +28,17 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   public function __construct($base_path) {
     parent::__construct($base_path);
+  }
 
+  /**
+   * @see TripalWebService::getDocumentation()
+   */
+  public function getDocumentation() {
     // Add the classes that this resource supports.
     $this->addDocBundleClasses();
     $this->addDocContentCollectionClass();
+
+    return parent::getDocumentation();
   }
 
   /**
@@ -873,9 +880,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   private function doAllTypesList() {
     $service_path = $this->getServicePath();
+    $service_vocab = new TripalVocabService_v0_1($this->base_path);
     $this->resource = new TripalWebServiceCollection($service_path, $this->params);
-    $this->resource->addContextItem('vocab', 'http://localhost/web-services/vocab/v0.1/');
-    $this->resource->addContextItem('ContentCollection', 'http://localhost/web-services/vocab/v0.1#ContentCollection');
+    $this->resource->addContextItem('vocab', $service_vocab->getServicePath());
+    $this->resource->addContextItem('ContentCollection', $service_vocab->getServicePath() . '#ContentCollection');
     $this->resource->setType('ContentCollection');
 
     $label = tripal_get_term_details('rdfs', 'label');
@@ -937,28 +945,25 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'title' => 'Content Collection',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
     $propeties = array();
     $propeties[] = array(
-      'type' => $url,
+      'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available content types.",
       "required" => null,
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $url = preg_replace('/{accession}/', 'totalItems', $vocab['urlprefix']);
     $propeties[] = array(
-      "type" => $url,
+      "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of content types.",
       "required" => null,
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $url = preg_replace('/{accession}/', 'label', $vocab['urlprefix']);
     $propeties[] = array(
-      "type" => $url,
+      "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "The type content.",
       "required" => null,
@@ -1111,28 +1116,25 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'description' => 'A collection (or list) of ' . $bundle->label . ' resources.',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $url = preg_replace('/{accession}/', 'member', $vocab['urlprefix']);
     $propeties = array();
     $propeties[] = array(
-      'type' => $url,
+      'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available " . $bundle->label . '(s).',
       "required" => null,
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $url = preg_replace('/{accession}/', 'totalItems', $vocab['urlprefix']);
     $propeties[] = array(
-      "type" => $url,
+      "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of resources.",
       "required" => null,
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $url = preg_replace('/{accession}/', 'label', $vocab['urlprefix']);
     $propeties[] = array(
-      "type" => $url,
+      "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "A label or name for the resource.",
       "required" => null,

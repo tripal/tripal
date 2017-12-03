@@ -1399,8 +1399,8 @@ function tripal_chado_update_7321() {
     tripal_insert_db(array(
       'name' => 'TPUB',
       'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
-      'url' => 'http://localhost/cv/lookup/TPUB',
-      'urlprefix' => 'http://localhost/cv/lookup/TPUB/{accession}',
+      'url' => '/cv/lookup/TPUB',
+      'urlprefix' => '/cv/lookup/TPUB/{accession}',
     ));
     tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
@@ -1430,6 +1430,30 @@ function tripal_chado_update_7321() {
       'hydra',
       'A Vocabulary for Hypermedia-Driven Web APIs.'
     );
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+/**
+ * Fixing the TPUB and TContact vocabulary URLs
+ */
+function tripal_chado_update_7322() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'TPUB',
+      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => 'cv/lookup/TPUB',
+      'urlprefix' => 'cv/lookup/TPUB/{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'TContact',
+      'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => 'cv/lookup/TContact',
+      'urlprefix' => 'cv/lookup/TContact/{accession}',
+    ));
+    tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

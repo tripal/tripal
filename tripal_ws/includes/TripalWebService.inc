@@ -627,7 +627,7 @@ class TripalWebService {
     // page.  But unfortunately, the URL prefix can't be guaranteed to be
     // a true prefix. Not all databases place by the rules.  For this reason,
     // we can never use JSON-LD compact IRIs. :-(
-    $iri = $vocab['url'];
+    $iri = $vocab['sw_url'];
     $resource->addContextItem($key, $iri);
   }
 
