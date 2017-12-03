@@ -156,7 +156,7 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_publish_form'),
     'type' => MENU_NORMAL_ITEM,
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('publish tripal content'),
     'file' => 'includes/tripal_chado.publish.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -99
@@ -170,7 +170,7 @@ function tripal_chado_menu() {
         earlier this was refered to as "syncing".'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_publish_form'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('publish tripal content'),
     'file' => 'includes/tripal_chado.publish.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_LOCAL_ACTION,
@@ -183,7 +183,7 @@ function tripal_chado_menu() {
         earlier this was refered to as "syncing".'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_publish_form'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('publish tripal content'),
     'file' => 'includes/tripal_chado.publish.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_LOCAL_ACTION,
@@ -198,7 +198,7 @@ function tripal_chado_menu() {
     'title' => 'Materialized Views',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mview_admin_view',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -209,7 +209,7 @@ function tripal_chado_menu() {
     'description' => t('Help for the materialized views management system'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_mviews_help'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -220,7 +220,7 @@ function tripal_chado_menu() {
     'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
     'page callback' => 'tripal_mview_report',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -230,7 +230,7 @@ function tripal_chado_menu() {
     'description' => t('Create a new materialized view.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -239,7 +239,7 @@ function tripal_chado_menu() {
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form', 6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -249,7 +249,7 @@ function tripal_chado_menu() {
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mviews_add_populate_job',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -259,7 +259,7 @@ function tripal_chado_menu() {
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_delete_form', 5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -271,7 +271,7 @@ function tripal_chado_menu() {
     'description' => 'Import a materialized view from another Tripal instance.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_import_form'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -281,7 +281,7 @@ function tripal_chado_menu() {
     'description' => 'Export a materialized view for use by another Tripal instance.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_export_form', 5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -294,7 +294,7 @@ function tripal_chado_menu() {
     'title' => 'Custom Tables',
     'description' => t('Creation of custom tables that are added to Chado database.'),
     'page callback' => 'tripal_custom_table_admin_view',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -305,7 +305,7 @@ function tripal_chado_menu() {
     'description' => t('Help for the tripal job management system'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_job_help'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -316,7 +316,7 @@ function tripal_chado_menu() {
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'tripal_custom_table_view',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -325,7 +325,7 @@ function tripal_chado_menu() {
     'title' => 'Create Custom Table',
     'description' => t('An interface for creating your own custom tables.'),
     'page callback' => 'tripal_custom_table_new_page',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -334,7 +334,7 @@ function tripal_chado_menu() {
     'title' => 'Edit Custom Table',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_form', 6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -344,7 +344,7 @@ function tripal_chado_menu() {
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_delete_form', 6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -353,7 +353,7 @@ function tripal_chado_menu() {
     'title' => 'Enable Custom Tables Administrative View',
     'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_admin_custom_table', 'admin/tripal/storage/chado/custom_tables'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado custom tables'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -363,13 +363,6 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   //                           Data Loaders
   //////////////////////////////////////////////////////////////////////////////
-  $items['admin/tripal/loaders'] = array(
-    'title' => 'Data Loaders',
-    'description' => t('Tools facilitating data import.'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 6
-  );
 
   // Data Loaders
   $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
@@ -377,7 +370,7 @@ function tripal_chado_menu() {
     'description' => 'Loads phylogenetic trees in Newic format.',
     'page callback' => 'drupal_goto',
     'page arguments' => array('node/add/chado-phylotree'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -385,7 +378,7 @@ function tripal_chado_menu() {
     'title' => t('Chado Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
@@ -396,7 +389,7 @@ function tripal_chado_menu() {
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
     'page callback' => 'tripal_pub_importer_setup_page',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -404,7 +397,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
     'page arguments' => array(5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -412,7 +405,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/raw/%'] = array(
     'page callback' => 'tripal_get_remote_pub_raw_page',
     'page arguments' => array(5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -421,7 +414,7 @@ function tripal_chado_menu() {
   // add a second link for the importer on the data loaders page
   $items['admin/tripal/loaders/pub/import'] = array(
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -430,7 +423,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/submit/%'] = array(
     'page callback' => 'tripal_pub_importer_submit_job',
     'page arguments' => array(5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -439,7 +432,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
     'page arguments' => array(5),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -447,7 +440,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/changedb'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
     'page arguments' => array(),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -456,7 +449,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
     'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -487,7 +480,7 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_semweb_form'),
     'type' => MENU_NORMAL_ITEM,
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado semantic web'),
     'file' => 'includes/tripal_chado.semweb.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => 10
@@ -498,7 +491,7 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_semweb_edit_form', 6, 7),
     'type' => MENU_CALLBACK,
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado semantic web'),
     'file' => 'includes/tripal_chado.semweb.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
@@ -508,7 +501,7 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_semweb_reset_form', 6, 7),
     'type' => MENU_CALLBACK,
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer chado semantic web'),
     'file' => 'includes/tripal_chado.semweb.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
@@ -573,7 +566,7 @@ function tripal_chado_menu() {
     'title' => 'Chado Vocabularies',
     'description' => t('Tools facilitating management (including import) of controlled
       vocabularies and their terms into Chado.'),
-    'access arguments' => array('administer tripal'),
+    'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
   );
@@ -710,7 +703,7 @@ function tripal_chado_menu() {
     'description' => 'Download a file of sequences',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_feature_seq_extract_form'),
-    'access arguments' => array('access chado_feature content'),
+    'access arguments' => array('access content'),
     'file' =>  'includes/tripal_chado.seq_extract.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -718,7 +711,7 @@ function tripal_chado_menu() {
 
   $items['find/sequences/download'] = array(
     'page callback' => 'tripal_chado_feature_seq_extract_download',
-    'access arguments' => array('access chado_feature content'),
+    'access arguments' => array('access content'),
     'file' =>  'includes/tripal_chado.seq_extract.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
@@ -731,7 +724,7 @@ function tripal_chado_menu() {
     'title' => 'Publication Search',
     'description' => ('Search for publications'),
     'page callback' => 'tripal_chado_pub_search_page',
-    'access arguments' => array('access chado_pub content'),
+    'access arguments' => array('access content'),
     'file' =>  'includes/tripal_chado.pub_search.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK
@@ -740,7 +733,7 @@ function tripal_chado_menu() {
   $items['find/publications/criteria/%/%'] = array(
     'page callback' => 'tripal_chado_pub_search_page_update_criteria',
     'page arguments' => array(5, 6),
-    'access arguments' => array('access chado_pub content'),
+    'access arguments' => array('access content'),
     'file' =>  'includes/tripal_chado.pub_search.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type ' => MENU_CALLBACK,
@@ -760,16 +753,6 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   //                           Phylogeny
   //////////////////////////////////////////////////////////////////////////////
-/*   $items['taxonomy'] = array(
-    'title' => 'Taxonomy',
-    'description' => 'Taxonomic view of the species available on this site.',
-    'page callback' => 'tripal_phylogeny_taxonomy_view',
-    'access arguments' => array('access taxonomy content'),
-    'file' => '/includes/tripal_phylogeny.taxonomy.inc',
-    'type' => MENU_NORMAL_ITEM,
-    'file' =>  'includes/tripal_chado.taxonomy.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-  ); */
 
   // create a route for viewing json of all phylonodes having this phylotree_id
   $items['phylotree/%'] = array(
@@ -786,7 +769,7 @@ function tripal_chado_menu() {
     'description' => 'Settings for display of phylogenetic and taxonomic trees.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_phylogeny_default_plots_form'),
-    'access arguments' => array('administer tripal phylotree'),
+    'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 2,
     'file' =>  'includes/tripal_chado.phylotree.inc',
@@ -822,7 +805,28 @@ function tripal_chado_permission() {
           be useful for site developers who might want these IDs when working
           with the underlying database.'),
       'restrict access' => TRUE,
-    )
+    ),
+    'administer chado mviews' => array(
+      'title' => t('Administer Chado Materialized Views'),
+      'description' => t('Allows the user to create, edit and populate materialized views in the Chado databse.'),
+    ),
+    'administer chado custom tables' => array(
+      'title' => t('Administer Chado Custom Tables'),
+      'description' => t('Allows the user to create, edit and delete custom tables in the Chado database.'),
+    ),
+    'administer db cross-references' => array(
+      'title' => t('Administer Chado Databases'),
+      'description' => t('Allows the user to create, edit and delete database records in the Chado database.')
+    ),
+    'administer controlled vocabularies' => array(
+      'title' => t('Administer Chado Controlled Vocabularies'),
+      'description' => t('Allows the user to create, edit and delete controlled vocabularies in the Chado database.')
+    ),
+    'administer chado semantic web' => array(
+      'title' => t('Administer Semantic Web and Chado Integration'),
+      'description' => t('Allows the user to assign controlled vocabulary terms to tables and table columns in Chado.')
+    ),
+
   );
 }
 
