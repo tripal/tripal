@@ -1437,7 +1437,7 @@ function tripal_chado_update_7321() {
   }
 }
 /**
- * Fixing the TPUB and TContact vocabulary URLs
+ * Fixing the SWO, TPUB and TContact vocabulary URLs
  */
 function tripal_chado_update_7322() {
   try {
@@ -1454,9 +1454,18 @@ function tripal_chado_update_7322() {
       'urlprefix' => 'cv/lookup/TContact/{accession}',
     ));
     tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+
+    tripal_insert_db(array(
+      'name' => 'SWO',
+      'description' => 'Software Ontology',
+      'url' => 'http://purl.obolibrary.org/obo/swo',
+      'urlprefix' => 'http://www.ebi.ac.uk/swo/',
+    ));
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+

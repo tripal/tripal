@@ -1488,11 +1488,10 @@ function tripal_chado_populate_vocab_SWO() {
   tripal_insert_db(array(
     'name' => 'SWO',
     'description' => 'Software Ontology',
-    'url' => 'http://theswo.sourceforge.net/',
-    'urlprefix' => '',
+    'url' => 'http://purl.obolibrary.org/obo/swo',
+    'urlprefix' => 'http://www.ebi.ac.uk/swo/',
   ));
   tripal_insert_cv('swo','Software Ontology.');
-
 
   $term = tripal_insert_cvterm(array(
     'id' => 'SWO:0000001',
@@ -1506,7 +1505,6 @@ function tripal_chado_populate_vocab_SWO() {
       'specific operations.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'program', $term);
-
 }
 
 /**

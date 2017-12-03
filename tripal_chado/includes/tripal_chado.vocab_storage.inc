@@ -45,9 +45,11 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     $result['name'] = $result['short_name'];
   }
   $sw_url = $result['urlprefix'];
-  $sw_url = preg_replace('/\{db\}/', $result['short_name'], $sw_url);
-  $sw_url = preg_replace('/\{accession\}/', '', $sw_url);
-  $sw_url = url($sw_url, array('absolute' => TRUE));
+  if ($sw_url) {
+    $sw_url = preg_replace('/\{db\}/', $result['short_name'], $sw_url);
+    $sw_url = preg_replace('/\{accession\}/', '', $sw_url);
+    $sw_url = url($sw_url, array('absolute' => TRUE));
+  }
   $result['sw_url'] = $sw_url;
   unset($result['short_name']);
   return $result;
@@ -86,9 +88,11 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
 
   // Generate the URL that can be used for semantic web applications.
   $sw_url = $urlprefix;
-  $sw_url = preg_replace('/{db}/', $cvterm->dbxref_id->db_id->name, $sw_url);
-  $sw_url = preg_replace('/{accession}/', '', $sw_url);
-  $sw_url = url($sw_url, array('absolute' => TRUE));
+  if ($sw_url) {
+    $sw_url = preg_replace('/{db}/', $cvterm->dbxref_id->db_id->name, $sw_url);
+    $sw_url = preg_replace('/{accession}/', '', $sw_url);
+    $sw_url = url($sw_url, array('absolute' => TRUE));
+  }
 
   $term = array(
     'vocabulary' => array(
