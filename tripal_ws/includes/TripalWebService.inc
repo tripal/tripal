@@ -166,6 +166,9 @@ class TripalWebService {
     if (preg_match('/v(\d+)_(\d+)$/', $class, $matches)) {
       $major_version = $matches[1];
       $minor_version = $matches[2];
+      if ($sanitize) {
+        return 'v' . $major_version . '_' . $minor_version;
+      }
       return 'v' . $major_version . '.' . $minor_version;
     }
     return '';
@@ -198,11 +201,55 @@ class TripalWebService {
    *   An associative array containing that can be converted to JSON.
    */
   public function getResponse() {
+    $class = get_called_class();
+
+    $context_filename = $class::$type . '.' . $this->getVersion(TRUE);
+    foreach ($this->path as $element) {
+      $context_filename .= '.' . $element;
+    }
+    $context_filename .= '.context.jsonld';
+    $context_filename = strtolower($context_filename);
+    $context_dir = 'public://tripal/ws/context';
+    $context_file_path = $context_dir . '/' . $context_filename;
+
+    // Make sure the user directory exists
+    if (!file_prepare_directory($context_dir, FILE_CREATE_DIRECTORY)) {
+      throw new Exception('Could not access the tripal/ws/context directory on the server for storing web services context files.');
+    }
 
     $context = $this->resource ? $this->resource->getContext() : array();
+    $context = array(
+      '@context' => $context
+    );
+    $cfh = fopen($context_file_path, "w");
+    if (flock($cfh, LOCK_EX)) {
+      fwrite($cfh, json_encode($context));
+      flock($context_file_path, LOCK_UN);
+      fclose($cfh);
+    }
+    else {
+      throw new Exception(t('Error locking file: @file.', array('@file' => $context_file_path)));
+    }
+
+    $fid = db_select('file_managed', 'fm')
+      ->fields('fm', array('fid'))
+      ->condition('uri', $context_file_path)
+      ->execute()
+      ->fetchField();
+
+    // Save the context file so Drupal can manage it and remove the file later.
+    if (!$fid) {
+      $context_file = new stdClass();
+      $context_file->uri = $context_file_path;
+      $context_file->filename = $context_filename;
+      $context_file->filemime = 'application/ld+json';
+      $context_file->uid = 0;
+      file_save($context_file);
+    }
+
     $type = $this->resource ? $this->resource->getType() : 'unknown';
     $json_ld = array(
-      '@context' => $context,
+      '@context' => file_create_url($context_file_path),
       '@id' => '',
       '@type' => $type,
     );
