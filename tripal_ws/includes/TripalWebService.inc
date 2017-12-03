@@ -207,7 +207,7 @@ class TripalWebService {
     foreach ($this->path as $element) {
       $context_filename .= '.' . $element;
     }
-    $context_filename .= '.context.jsonld';
+    $context_filename .= '.context.json';
     $context_filename = strtolower($context_filename);
     $context_dir = 'public://tripal/ws/context';
     $context_file_path = $context_dir . '/' . $context_filename;
