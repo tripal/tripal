@@ -160,7 +160,6 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   unset($run_args['op']);
   unset($run_args['button']);
 
-
   $file_local = NULL;
   $file_upload = NULL;
   $file_remote = NULL;
@@ -195,6 +194,11 @@ function tripal_get_importer_form_submit($form, &$form_state) {
     // Now allow the loader to do it's own submit if needed.
     $importer = new $class();
     $importer->formSubmit($form, $form_state);
+    // If the formSubmit made changes to the $form_state we need to update the
+    // $run_args info.
+    if ($run_args !== $form_state['values']) {
+      $run_args = $form_state['values'];
+    }
 
     // If the importer wants to rebuild the form for some reason then let's
     // not add a job.
