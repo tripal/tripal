@@ -364,8 +364,13 @@ function tripal_tripal_collection_schema() {
 function tripal_tripal_collection_bundle_schema() {
   return array(
     'fields' => array(
-      'collection_id' => array(
+      'collection_bundle_id' => array(
         'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'collection_id' => array(
+        'type' => 'varchar',
         'unsigned' => TRUE,
         'not null' => TRUE
       ),
@@ -390,7 +395,7 @@ function tripal_tripal_collection_bundle_schema() {
     'indexes' => array(
       'collection_id' => array('collection_id')
     ),
-    'primary key' => array('collection_id'),
+    'primary key' => array('collection_bundle_id'),
   );
 }
 
