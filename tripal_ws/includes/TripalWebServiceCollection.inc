@@ -54,12 +54,9 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
     $this->members = array();
 
     // Add some terms to the context.
-    $term = tripal_get_term_details('hydra', 'Collection');
-    $this->addContextItem('Collection', $term['url']);
-    $term = tripal_get_term_details('hydra', 'totalItems');
-    $this->addContextItem('totalItems', $term['url']);
-    $term = tripal_get_term_details('hydra', 'member');
-    $this->addContextItem('member', $term['url']);
+    $this->addContextItem('Collection', 'hydra:Collection');
+    $this->addContextItem('totalItems', 'hydra:totalItems');
+    $this->addContextItem('member', 'hydra:member');
     parent::setType('Collection');
 
     // If the totalItems is set to -1 then this means paging is turned off and
@@ -105,7 +102,9 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    * @see TripalWebServiceResource::setType()
    */
   public function setType($type) {
-    throw new Exception("The type for a Collection can only be collection.");
+    // TODO: There should be a check to make sure that the type is a
+    // subclass of the hydra:Collection term.
+    parent::setType($type);
   }
 
   /**
@@ -163,7 +162,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
     foreach ($this->members as $key => $member) {
       $member_data[] = $member->getData();
     }
-    $data['members'] = $member_data;
+    $data['member'] = $member_data;
 
     // If paging of this collection is enabled then add the pager control links.
 
@@ -194,3 +193,4 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
     return $context;
   }
 }
+

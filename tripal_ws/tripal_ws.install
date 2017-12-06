@@ -1,5 +1,8 @@
 <?php
 
+
+function tripal_ws_install() {
+}
 /**
  * Implementation of hook_schema().
  *
@@ -61,3 +64,4 @@ function tripal_ws_tripal_sites_schema() {
   );
   return $schema;
 }
+

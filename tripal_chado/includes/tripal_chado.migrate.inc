@@ -151,7 +151,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
          ";
         $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
-          $key = urlencode('tv3_content_type--local--analysis--analysis');
+          $key  = urlencode('tv3_content_type--operation--2945--analysis');
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Analysis (' . $ana_count . ')',
@@ -215,7 +215,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
           ";
         $bm_count = chado_query($sql)->fetchField();
         if ($bm_count > 0) {
-          $key = urlencode('tv3_content_type--local--biomaterial--biomaterial');
+          $key = urlencode('tv3_content_type--sep--1095--biological sample');
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Biomaterial (' . $bm_count . ')',
@@ -684,9 +684,9 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
   }
   else if ($table == 'biomaterial') {
     array_push($types, array(
-      'vocabulary' => 'local',
-      'accession' => 'biomaterial',
-      'term_name' => 'biomaterial',
+      'vocabulary' => 'sep',
+      'accession' => '1095',
+      'term_name' => 'biological sample',
       'storage_args' => array (
         'data_table' => $table
       )

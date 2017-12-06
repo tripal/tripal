@@ -21,8 +21,8 @@ function tripal_phylogeny_taxonomy_view() {
       array(
         '@menu' => url('admin/structure/menu/manage/navigation'),
         '@taxloader' => url('admin/tripal/loaders/ncbi_taxonomy_loader'
-      ))
-  );
+            ))
+      );
   $admin_message = tripal_set_message($message, TRIPAL_INFO, array('return_html' => TRUE));
 
   $phylotree = chado_generate_var('phylotree', $values);
@@ -31,7 +31,7 @@ function tripal_phylogeny_taxonomy_view() {
     $node->phylotree = $phylotree;
 
     $html =  theme('tripal_phylogeny_taxonomic_tree', array('node' => $node)) .
-      $admin_message;
+    $admin_message;
     return $html;
   }
 
@@ -40,4 +40,3 @@ function tripal_phylogeny_taxonomy_view() {
     '#markup' => t('This site has not yet prepared the taxonomy for viewing.') . $admin_message,
   );
 }
-

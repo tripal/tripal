@@ -105,6 +105,15 @@ class TripalImporter {
    */
   public static $cardinality = 1;
 
+
+  /**
+   * Be default, all loaders are automaticlly added to the Admin >
+   * Tripal > Data Laders menu.  However, if this loader should be
+   * made available via a different menu path, then set it here.  If the
+   * value is empty then the path will be the default.
+   */
+  public static $menu_path = '';
+
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
   // --------------------------------------------------------------------------
@@ -415,15 +424,15 @@ class TripalImporter {
     }
 
     try {
-      for($i = 0; $i < count($this->arguments['file']); $i++) {
-        if (!empty($this->arguments['file'][$i]['file_remote'])) {
-          $file_remote = $this->arguments['file'][$i]['file_remote'];
+      for($i = 0; $i < count($this->arguments['files']); $i++) {
+        if (!empty($this->arguments['files'][$i]['file_remote'])) {
+          $file_remote = $this->arguments['files'][$i]['file_remote'];
           $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
 
           // If this file is compressed then keepthe .gz extension so we can
           // uncompress it.
           $ext = '';
-          if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_remote'])) {
+          if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
             $ext = '.gz';
           }
           // Create a temporary file.
@@ -442,17 +451,17 @@ class TripalImporter {
             fwrite($tmp_fh, fread($url_fh, 255), 255);
           }
           // Set the path to the file for the importer to use.
-          $this->arguments['file']['file_path'] = $temp;
+          $this->arguments['files'][$i]['file_path'] = $temp;
           $this->is_prepared = TRUE;
         }
 
         // Is this file compressed?  If so, then uncompress it
         $matches = array();
-        if (preg_match('/^(.*?)\.gz$/', $this->arguments['file']['file_path'], $matches)) {
-          $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['file']['file_path']));
+        if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
+          $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['files'][$i]['file_path']));
           $buffer_size = 4096;
           $new_file_path = $matches[1];
-          $gzfile = gzopen($this->arguments['file']['file_path'], 'rb');
+          $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
           $out_file = fopen($new_file_path, 'wb');
           if (!$out_file) {
             throw new Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
@@ -471,8 +480,8 @@ class TripalImporter {
 
           // Now remove the .gz file and reset the file_path to the new
           // uncompressed version.
-          unlink($this->arguments['file'][$i]['file_path']);
-          $this->arguments['file'][$i]['file_path'] = $new_file_path;
+          unlink($this->arguments['files'][$i]['file_path']);
+          $this->arguments['files'][$i]['file_path'] = $new_file_path;
         }
       }
     }
@@ -490,11 +499,13 @@ class TripalImporter {
   public function cleanFile() {
     try {
       // If a remote file was downloaded then remove it.
-      if (!empty($this->arguments['file']['file_remote']) and
-          file_exists($this->arguments['file']['file_path'])) {
-        $this->logMessage('Removing downloaded file...');
-        unlink($this->arguments['file']['file_path']);
-        $this->is_prepared = FALSE;
+      for($i = 0; $i < count($this->arguments['files']); $i++) {
+          if (!empty($this->arguments['files'][$i]['file_remote']) and
+              file_exists($this->arguments['files'][$i]['file_path'])) {
+            $this->logMessage('Removing downloaded file...');
+            unlink($this->arguments['files'][$i]['file_path']);
+            $this->is_prepared = FALSE;
+          }
       }
     }
     catch (Exception $e){
@@ -566,7 +577,8 @@ class TripalImporter {
   }
   /**
    * Adds to the count of the total number of items that have been handled.
-   * @param unknown $num_handled
+   *
+   * @param $num_handled
    */
   protected function addItemsHandled($num_handled) {
     $items_handled = $this->num_handled = $this->num_handled + $num_handled;
@@ -672,5 +684,10 @@ class TripalImporter {
   public function run() {
   }
 
+  /**
+   * Performs the import.
+   */
+  public function postRun() {
+  }
 
 }

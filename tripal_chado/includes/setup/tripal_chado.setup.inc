@@ -240,7 +240,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -261,7 +263,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'operation', 'accession' => '2945'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -282,7 +286,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -303,7 +309,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -335,7 +343,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -376,7 +386,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -398,7 +410,9 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
@@ -419,7 +433,32 @@ function tripal_chado_prepare_chado($job = NULL) {
       )
     );
     $term = tripal_load_term_entity(array('vocabulary' => 'sep', 'accession' => '00195'));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    if ($term) {
+        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+    if ($report_progress) {
+      $job->setProgress(99);
+    }
+
+    // Create the 'Phylogenetic tree' entity type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'data',
+      'accession' => '0872',
+      'term_name' => 'Phylogenetic tree',
+      'storage_args' => array(
+        'data_table' => 'phylotree',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);

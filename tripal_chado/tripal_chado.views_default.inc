@@ -504,7 +504,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Vocabulary',
-    'path-1' => 'admin/tripal/loaders/chado_cv/add',
+    'path-1' => 'admin/tripal/loaders/chado_vocabs/chado_cv/add',
   );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
@@ -534,7 +534,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/loaders/chado_cv/edit/[cv_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cv/edit/[cv_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
@@ -543,7 +543,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'View Terms';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_cvterms?cv=[name]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvterms?cv=[name]';
   $handler->display->display_options['fields']['nothing']['hide_alter_empty'] = TRUE;
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_3']['id'] = 'nothing_3';
@@ -553,7 +553,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing_3']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_3']['alter']['text'] = 'Add Term';
   $handler->display->display_options['fields']['nothing_3']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/loaders/chado_cv/[cv_id]/cvterm/add';
+  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'aadmin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/add';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -609,7 +609,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/loaders/chado_cvs';
+  $handler->display->display_options['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvs';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Chado Controlled Vocabularies';
   $handler->display->display_options['menu']['description'] = 'A listing of all controlled vocabularies';
@@ -704,7 +704,7 @@ $handler->display->display_options['header']['action_links_area']['label'] = 'Ac
 $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
 $handler->display->display_options['header']['action_links_area']['link-1'] = array(
   'label-1' => 'Add Term',
-  'path-1' => 'admin/tripal/loaders/chado_cv/cvterm/add',
+  'path-1' => 'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add',
 );
 /* No results behavior: Global: Text area */
 $handler->display->display_options['empty']['text']['id'] = 'area';
@@ -724,7 +724,7 @@ $handler->display->display_options['fields']['name_1']['table'] = 'cv';
 $handler->display->display_options['fields']['name_1']['field'] = 'name';
 $handler->display->display_options['fields']['name_1']['label'] = 'Vocabulary';
 $handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
-$handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/loaders/chado_cvs?name=[name_1]';
+$handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvs?name=[name_1]';
 /* Field: Chado Cvterm: Cvterm Id */
 $handler->display->display_options['fields']['cvterm_id']['id'] = 'cvterm_id';
 $handler->display->display_options['fields']['cvterm_id']['table'] = 'cvterm';
@@ -773,7 +773,7 @@ $handler->display->display_options['fields']['nothing']['label'] = 'Edit Link';
 $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
 $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
 $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-$handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_cv/[cv_id]/cvterm/edit/[cvterm_id]';
+$handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/edit/[cvterm_id]';
 /* Field: Global: Custom text */
 $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
 $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -843,10 +843,10 @@ $handler->display->display_options['filters']['definition']['expose']['remember_
 
 /* Display: Page */
 $handler = $view->new_display('page', 'Page', 'page_1');
-$handler->display->display_options['path'] = 'admin/tripal/loaders/chado_cvterms';
+$handler->display->display_options['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvterms';
 $handler->display->display_options['menu']['type'] = 'normal';
-$handler->display->display_options['menu']['title'] = 'Chado CV Terms';
-$handler->display->display_options['menu']['description'] = 'A listing of a controlled vocabulary terms for a given vocabulary';
+$handler->display->display_options['menu']['title'] = 'Manage Chado CV Terms';
+$handler->display->display_options['menu']['description'] = 'View, edit and add controlled vocabulary terms.';
 $handler->display->display_options['menu']['weight'] = '-8';
 $handler->display->display_options['menu']['name'] = 'management';
 $handler->display->display_options['menu']['context'] = 0;

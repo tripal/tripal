@@ -43,19 +43,24 @@ class TripalWebServiceResource {
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
     // web services should use these.
-    $this->addContextItem('rdf', "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-    $this->addContextItem('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
+    $vocab = tripal_get_vocabulary_details('rdf');
 
-    $this->addContextItem('hydra', "http://www.w3.org/ns/hydra/core#");
+    $this->addContextItem('rdf', $vocab['sw_url']);
+
+    $vocab = tripal_get_vocabulary_details('rdfs');
+    $this->addContextItem('rdfs', $vocab['sw_url']);
+
+    $vocab = tripal_get_vocabulary_details('hydra');
+    $this->addContextItem('hydra', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('dc');
-    $this->addContextItem('dc', $vocab['url']);
+    $this->addContextItem('dc', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('schema');
-    $this->addContextItem('schema', $vocab['url']);
+    $this->addContextItem('schema', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('local');
-    $this->addContextItem('local', url($vocab['url'], array('absolute' => TRUE)). '/');
+    $this->addContextItem('local', url($vocab['sw_url'], array('absolute' => TRUE)));
 
 
     $this->data['@id'] = $service_path;
@@ -65,13 +70,21 @@ class TripalWebServiceResource {
   /**
    * Adds a term to the '@context' section for this resource.
    *
+   * This function should not be called directory.  Rather, the
+   * addContextTerm() and addContextVocab() functions built
+   * into the TripalWebService class should be used as  these  will help
+   * ensure terms are added proper for the context of the web service.
+   *
    * @param $name
    *   The term name.
    * @param $iri
    *   The Internationalized Resource Identifiers or it's shortcut.
+   *
    */
   public function addContextItem($name, $iri) {
-    // TODO: make sure that if a shortcut is used that the parent is present.
+    if (array_key_exists($name, $this->context)) {
+      return;
+    }
     $this->context[$name] = $iri;
   }
 
@@ -136,15 +149,55 @@ class TripalWebServiceResource {
 
       // If the vocabulary is not in the.
       if (!in_array($vocab, $keys)) {
-        throw new Exception("The key, '$key', has a vocabulary that has not yet been added to the " .
-            "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.");
+        throw new Exception(t("The key, !key, has a vocabulary that has not yet been added to the " .
+            "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.", array('!key' => $key)));
       }
     }
     else {
       // If the key is not in the context then throw an error.
       if (!in_array($key, $keys)) {
-        throw new Exception("The key, '$key', has not yet been added to the " .
-            "context. Use the addContextItem() function to add this key prior to adding a value for it.");
+        throw new Exception(t("The key, !key, has not yet been added to the " .
+            "context. Use the addContextItem() function to add this key prior to adding a value for it.", array('!key' => $key)));
+      }
+    }
+  }
+
+  /**
+   * Checks the value to make sure there are no problems with.
+   *
+   * Will also expand any TriaplWebServiceResource by adding their
+   * context to this resource and substitute their data in place of the
+   * value.
+   *
+   * @param $value
+   *
+   */
+  private function checkValue(&$value) {
+    if (is_array($value)) {
+      foreach ($value as $k => $v) {
+        // If this is an integer then this is a numeric indexed array
+        // and we can just check the value.  If not, then make sure the
+        // key has been added to the context.
+        if (preg_match('/^\d+$/', $k)) {
+          $this->checkValue($value[$k]);
+        }
+        else {
+          if ($k != '@id' and $k != '@type') {
+            $this->checkKey($k);
+          }
+          $this->checkValue($value[$k]);
+        }
+      }
+    }
+    else {
+      // If this is a TripalWebServiceResource then get it's data and use that
+      // as the new value.  Also, add in the elements context to this resource.
+      if (is_a($value, 'TripalWebServiceResource') or is_subclass_of($value, 'TripalWebServiceResource')) {
+        $context = $value->getContext();
+        foreach ($context as $k => $v) {
+          $this->addContextItem($k, $v);
+        }
+        $value = $value->getData();
       }
     }
   }
@@ -233,8 +286,9 @@ class TripalWebServiceResource {
   public function addProperty($key, $value) {
 
     $this->checkKey($key);
+    $this->checkValue($value);
 
-    // If this is a numeric array then go through each element and add them.
+    // If this is a numeric keyed array then add each item.
     if (is_array($value) and count(array_filter(array_keys($value), 'is_int')) == count(array_keys($value))) {
       if (!array_key_exists($key, $this->data)) {
         $this->data[$key] = array();
@@ -243,17 +297,6 @@ class TripalWebServiceResource {
         $this->addProperty($key, $item);
       }
       return;
-    }
-
-    // If this is a TripalWebServiceResource then get it's data and use that
-    // as the new value.
-    if (is_a($value, 'TripalWebServiceResource') or is_subclass_of($value, 'TripalWebServiceResource')) {
-      // Add in the context items to this resource.
-      $context = $value->getContext();
-      foreach ($context as $k => $v) {
-        $this->addContextItem($k, $v);
-      }
-      $value = $value->getData();
     }
 
     // If this key doesn't exist then add the value directly to the key.
@@ -272,6 +315,20 @@ class TripalWebServiceResource {
       }
       $this->data[$key][] = $value;
     }
+  }
+
+  /**
+   * Retrieves the value of a property.
+   *
+   * @param $key
+   *   The name of the property.
+   *
+   * @param
+   *   The value of the property. This could be a scalar, array or
+   *   a TripalWebService object.
+   */
+  function getProperty($key) {
+    return $this->data[$key];
   }
 
   /**
@@ -310,7 +367,7 @@ class TripalWebServiceResource {
    */
   public function setContext($resource) {
     if (!is_a($resource, 'TripalWebServiceResource')) {
-      throw new Exception("The \$resource argument must be an instance of a TripalWebServiceResource.");
+      throw new Exception("The \$resource argument provided to the TripalWebServiceResource::setContext() function must be an instance of a TripalWebServiceResource.");
     }
     $this->context = $resource->getContext();
   }

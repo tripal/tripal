@@ -199,7 +199,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $entity = $ec->create(array(
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
-        // Add in the Chaod details for when the hook_entity_create()
+        // Add in the Chado details for when the hook_entity_create()
         // is called and our tripal_cahdo_entity_create() implementation
         // can deal with it.
         'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),

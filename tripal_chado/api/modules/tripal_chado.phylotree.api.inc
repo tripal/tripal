@@ -146,9 +146,9 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     if ($options['leaf_type'] == 'taxonomy') {
       $values = array(
         'cv_id' => array(
-           'name' => 'tripal_phylogeny'
+           'name' => 'EDAM'
         ),
-        'name' => 'taxonomy'
+        'name' => 'Species tree'
       );
       $type = chado_select_record('cvterm', array('cvterm_id'), $values);
     }
@@ -238,7 +238,7 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *                   term 'polypeptide'.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
- *     'format':     The file format. Currently only 'newick is supported'
+ *     'format':     The file format. Currently only 'newick is supported'.
  *  Optional keys:
  *     'dbxref':     A database cross-reference of the form DB:ACCESSION.
  *                   Where DB is the database name, which is already present
@@ -582,6 +582,8 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *
  * @param $tree
  *   The tree array.
+ * @param $phylotree.
+ *   The phylotree object (from Chado).
  * @param $options
  *   The options provide some direction for how the tree is imported.  The
  *   following keys can be used:
@@ -847,7 +849,5 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = array
   catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('tripal_phylogeny', $e);
-    print "\nFAILED: Rolling back database changes...\n";
   }
-  print "\nDone Importing Tree.\n";
 }

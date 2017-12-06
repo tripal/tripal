@@ -50,17 +50,11 @@ function tripal_analysis_requirements($phase) {
  */
 function tripal_analysis_install() {
 
-  // we may need the analysisfeatureprop table if it doesn't already exist
-  tripal_analysis_create_analysisfeatureprop();
-
   // add vocabularies
   tripal_analysis_add_cvs();
 
   // add cvterms
   tripal_analysis_add_cvterms();
-
-  // add materialized views
-  tripal_analysis_add_mview_analysis_organism();
 
   // set the default vocabularies
   tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
@@ -75,33 +69,6 @@ function tripal_analysis_uninstall() {
 
 }
 
-/**
- * Create a legacy custom chado table (analysisfeatureprop) to store properties of
- * analysisfeature links.
- *
- * @ingroup tripal_analysis
- */
-// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
-/* function tripal_analysis_create_analysisfeatureprop() {
-
-  // Create analysisfeatureprop table in chado.  This is needed for Chado
-  // version 1.11, the table exists in Chado 1.2.
-  if (!db_table_exists('chado.analysisfeatureprop')) {
-    $sql = "
-      CREATE TABLE {analysisfeatureprop} (
-        analysisfeatureprop_id SERIAL PRIMARY KEY,
-        analysisfeature_id     INTEGER NOT NULL,
-        type_id                INTEGER NOT NULL,
-        value                  TEXT,
-        rank                   INTEGER NOT NULL,
-        CONSTRAINT analysisfeature_id_type_id_rank UNIQUE (analysisfeature_id, type_id, rank),
-        CONSTRAINT analysisfeatureprop_analysisfeature_id_fkey FOREIGN KEY (analysisfeature_id) REFERENCES {analysisfeature}(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-        CONSTRAINT analysisfeatureprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES {cvterm}(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-      )
-    ";
-    chado_query($sql);
-  }
-} */
 
 /**
  * Add cvs related to analyses
@@ -231,64 +198,3 @@ function tripal_analysis_schema() {
 
   return $schema;
 }
-
-/**
- * Creates a view showing the link between an organism & it's analysis through associated features.
- *
- * @ingroup tripal_analysis
- */
-// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
-/* function tripal_analysis_add_mview_analysis_organism() {
-  $view_name = 'analysis_organism';
-  $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
-
-  // this is the SQL used to identify the organism to which an analsysis
-  // has been used.  This is obtained though the analysisfeature -> feature -> organism
-  // joins
-  $sql = "
-    SELECT DISTINCT A.analysis_id, O.organism_id
-    FROM analysis A
-      INNER JOIN analysisfeature AF ON A.analysis_id = AF.analysis_id
-      INNER JOIN feature F          ON AF.feature_id = F.feature_id
-      INNER JOIN organism O         ON O.organism_id = F.organism_id
-  ";
-
-  // the schema array for describing this view
-  $schema = array(
-    'table' => $view_name,
-    'description' => $comment,
-    'fields' => array(
-      'analysis_id' => array(
-        'size' => 'big',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'organism_id' => array(
-        'size' => 'big',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'networkmod_qtl_indx0' => array('analysis_id'),
-      'networkmod_qtl_indx1' => array('organism_id'),
-    ),
-    'foreign keys' => array(
-      'analysis' => array(
-        'table' => 'analysis',
-        'columns' => array(
-          'analysis_id' => 'analysis_id',
-        ),
-      ),
-      'organism' => array(
-        'table' => 'organism',
-        'columns' => array(
-          'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
-
-  // add the view
-  tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment);
-} */

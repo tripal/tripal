@@ -19,6 +19,13 @@ function tripal_install() {
       'not null' => FALSE,
     ));
   }
+
+  $menu = array(
+    'menu_name' => 'data_search',
+    'title' => t('Data Search'),
+    'description' => 'The Data Search menu contains links to search tools for finding biological data.',
+  );
+  menu_save($menu);
 }
 
 /**
@@ -1034,10 +1041,25 @@ function tripal_update_7306() {
 }
 
 /**
+ * Adds a new Data search menu for the Tripal created search tools.  If you
+ * have customized any of the Tripal content search forms then those forms will
+ * remain unchanged. All other default search pages will be moved to the
+ * new Data Search menu item available at Admin > Stucture > Menu > Data Search.
+ */
+function tripal_update_7307() {
+  $menu = array(
+    'menu_name' => 'data_search',
+    'title' => t('Data Search'),
+    'description' => 'The Data Search menu contains links to search tools for finding biological data.',
+  );
+  menu_save($menu);
+}
+
+/**
  * Remove the bundle_name, ids, fields from the tripal collections table.
  * And add the new tripal_tripal_collection_bundle_schema
  */
-function tripal_update_7307() {
+function tripal_update_7308() {
   $transaction = db_transaction();
   try {
     if (db_field_exists('tripal_collection', 'bundle_name')) {

@@ -900,8 +900,8 @@ function tripal_chado_update_7305() {
     tripal_insert_db(array(
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
-      'url' => 'https://www.hydra-cg.com/spec/latest/core/',
-      'urlprefix' => 'https://www.hydra-cg.com/spec/latest/core/#{db}:{accession}',
+      'url' => 'http://www.w3.org/ns/hydra/core',
+      'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
     ));
     tripal_insert_cv(
       'hydra',
@@ -1330,4 +1330,142 @@ function tripal_chado_update_7319() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adding Phylogenetic Tree content type.
+ */
+function tripal_chado_update_7320() {
+    try {
+    // Associate the Analysis term with the analysis_id of the phylotree table.
+    $term = tripal_get_cvterm(array('id' => 'operation:2945'));
+    tripal_associate_chado_semweb_term('phylotree', 'analysis_id', $term);
+
+    $term = tripal_insert_cvterm(array(
+      'id' => 'data:0872',
+      'name' => 'Phylogenetic tree',
+      'cv_name' => 'EDAM',
+      'definition' => 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.',
+    ));
+    $term = tripal_insert_cvterm(array(
+      'id' => 'data:3272',
+      'name' => 'Species tree',
+      'cv_name' => 'EDAM',
+      'definition' => 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.',
+    ));
+    $term = tripal_insert_cvterm(array(
+      'id' => 'data:3271',
+      'name' => 'Gene tree',
+      'cv_name' => 'EDAM',
+      'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
+    ));
+    $term = tripal_insert_cvterm(array(
+      'id' => 'operation:0567',
+      'name' => 'Phylogenetic tree visualisation',
+      'cv_name' => 'EDAM',
+      'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
+    ));
+
+    // Create the 'Phylogenetic tree' content type.
+    $error = '';
+    $args = array(
+      'vocabulary' => 'data',
+      'accession' => '0872',
+      'term_name' => 'Phylogenetic tree',
+      'storage_args' => array(
+        'data_table' => 'phylotree',
+      )
+    );
+    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
+    if ($term) {
+      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    }
+    if (!$term or !$bundle) {
+      if (!tripal_create_bundle($args, $error)) {
+        throw new Exception($error['!message']);
+      }
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Updating details for local ontologies.
+ */
+function tripal_chado_update_7321() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'TPUB',
+      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => '/cv/lookup/TPUB',
+      'urlprefix' => '/cv/lookup/TPUB/{accession}',
+    ));
+    tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+
+    tripal_insert_db(array(
+      'name' => 'rdf',
+      'description' => 'Resource Description Framework',
+      'url' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns',
+      'urlprefix' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+    ));
+    tripal_insert_cv(
+      'rdf',
+      'Resource Description Framework'
+    );
+    tripal_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'hydra',
+      'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
+      'url' => 'http://www.w3.org/ns/hydra/core',
+      'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
+    ));
+    tripal_insert_cv(
+      'hydra',
+      'A Vocabulary for Hypermedia-Driven Web APIs.'
+    );
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+/**
+ * Fixing the SWO, TPUB and TContact vocabulary URLs
+ */
+function tripal_chado_update_7322() {
+  try {
+    tripal_insert_db(array(
+      'name' => 'TPUB',
+      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => 'cv/lookup/TPUB',
+      'urlprefix' => 'cv/lookup/TPUB/{accession}',
+    ));
+    tripal_insert_db(array(
+      'name' => 'TContact',
+      'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'url' => 'cv/lookup/TContact',
+      'urlprefix' => 'cv/lookup/TContact/{accession}',
+    ));
+    tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+
+    tripal_insert_db(array(
+      'name' => 'SWO',
+      'description' => 'Software Ontology',
+      'url' => 'http://purl.obolibrary.org/obo/swo',
+      'urlprefix' => 'http://www.ebi.ac.uk/swo/',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
 

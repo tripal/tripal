@@ -152,7 +152,7 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
     }
     else {
       $format[] = array(
-        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecies]',
+        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecific_taxon]',
         'weight' => -5
       );
     }
@@ -206,6 +206,18 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
     );
   }
   if ($table == 'contact') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'phylotree') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'library') {
     $format[] = array(
       'format' => '[schema__name]',
       'weight' => -5,

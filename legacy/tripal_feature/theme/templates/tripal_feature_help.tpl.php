@@ -11,7 +11,7 @@
 
    <li><p><b>Loading of Ontologies</b>:
      Before loading genomic features you must also have several vocabularies loaded as well. Using the
-     <?php print l('OGO loader','admin/tripal/tripal_cv/obo_loader')?> you should load the following
+     <?php print l('OGO loader','admin/tripal/loaders/chado_vocabs/obo_loader')?> you should load the following
      ontologies:</p>
      <ul>
         <li>Sequence Ontology</li>

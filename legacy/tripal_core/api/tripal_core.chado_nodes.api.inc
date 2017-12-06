@@ -881,7 +881,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   if ($where) {
     $query .= $where;
   }
-  $query .- " ORDER BY " . $base_table_id;
+  $query .= " ORDER BY " . $base_table_id;
 
   // If Maximum number to Sync is supplied
   if ($max_sync) {

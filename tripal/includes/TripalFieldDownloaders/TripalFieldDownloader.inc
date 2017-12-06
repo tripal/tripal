@@ -163,7 +163,7 @@ abstract class TripalFieldDownloader {
   }
 
   /**
-   * Formats the entity and the specified fields for utput.
+   * Formats the entity and the specified fields for output.
    *
    * This function should be implemented by a child class. It should iterate
    * over the fields for the entity and return the appropriate format. It may

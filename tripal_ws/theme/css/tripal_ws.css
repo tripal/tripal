@@ -1,0 +1,37 @@
+.tripal-remote--data-field {
+  max-height: 400px;
+  overflow: auto;
+  width: 100%;
+}
+.tripal-remote--data-field-logo {
+  max-height: 100px;
+}
+
+.tripal-remote--data-field-dl dt {
+  float: left;
+  padding-right: 5px;
+}
+
+.tripal-remote--data-field-table  {
+  width: 100%;
+}
+.tripal-remote--data-field-table tr {
+  background: none;
+}
+.tripal-remote--data-field-table td {
+  border-left: none;
+  border-right: none;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tripal-remote--data-field-table th{
+  border: none;
+}
+.tripal-remote--data-field-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tripal-remote--data-field-table-label {
+  font-weight: bold;
+}

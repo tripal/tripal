@@ -14,7 +14,7 @@ class OBOImporter extends TripalImporter {
    * The name of this loader.  This name will be presented to the site
    * user.
    */
-  public static $name = 'Chado OBO Loader';
+  public static $name = 'OBO Vocabulary Loader';
 
   /**
    * The machine name for this loader. This name will be used to construct
@@ -81,7 +81,23 @@ class OBOImporter extends TripalImporter {
     'file_remote' => FALSE,
   );
 
+  /**
+   * Be default, all loaders are automaticlly added to the Admin >
+   * Tripal > Data Laders menu.  However, if this loader should be
+   * made available via a different menu path, then set it here.  If the
+   * value is empty then the path will be the default.
+   */
+  public static $menu_path = 'admin/tripal/loaders/chado_vocabs/obo_loader';
+
   public static $file_required = FALSE;
+
+
+  /**
+   * Keep track of vocabularies that have been added.
+   *
+   * @var array
+   */
+  private $newcvs = array();
 
 
   /**
@@ -384,7 +400,19 @@ class OBOImporter extends TripalImporter {
 
     $this->loadOBO_v1_2_id($obo);
   }
+  /**
+   * @see TripalImporter::postRun()
+   *
+   */
+  public function postRun() {
 
+    // Upate the cvtermpath table for each newly added CV.
+    $this->logMessage("Updating cvtermpath table.  This may take a while...");
+    foreach ($this->newcvs as $namespace => $cvid) {
+      $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
+      tripal_update_cvtermpath($cvid);
+    }
+  }
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
    * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
@@ -447,18 +475,11 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2_file($obo_name, $file, $is_new = TRUE) {
-    $newcvs = array();
-
     if ($is_new) {
       tripal_insert_obo($obo_name, $file);
     }
 
-    $success = $this->loadOBO_v1_2($file, $newcvs);
-    if ($success) {
-      // update the cvtermpath table
-      $this->load_cvtermpath($newcvs);
-      print "\nDone\n";
-    }
+    $success = $this->loadOBO_v1_2($file);
   }
 
   /**
@@ -478,8 +499,6 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2_url($obo_name, $url, $is_new = TRUE) {
-
-    $newcvs = array();
 
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
@@ -503,32 +522,10 @@ class OBOImporter extends TripalImporter {
     }
 
     // second, parse the OBO
-    $this->loadOBO_v1_2($temp, $newcvs);
-
-    // update the cvtermpath table
-    $this->load_cvtermpath($newcvs);
+    $this->loadOBO_v1_2($temp);
 
     // now remove the temp file
     unlink($temp);
-  }
-
-  /**
-   * A function for executing the cvtermpath function of Chado.  This function
-   * populates the cvtermpath table of Chado for quick lookup of term
-   * relationships
-   *
-   * @param $newcvs
-   *   An associative array of controlled vocabularies to update.  The key must be
-   *   the name of the vocabulary and the value the cv_id from the cv table of chado.
-   *
-   * @ingroup tripal_obo_loader
-   */
-  private function load_cvtermpath($newcvs) {
-
-    print "\nUpdating cvtermpath table.  This may take a while...\n";
-    foreach ($newcvs as $namespace => $cvid) {
-      tripal_update_cvtermpath($cvid);
-    }
   }
 
   /**
@@ -540,15 +537,10 @@ class OBOImporter extends TripalImporter {
    *
    * @param $flie
    *   The full path to the OBO file on the file system
-   * @param $newcvs
-   *   An empty array passed by reference that upon return will contain the list
-   *   of newly added vocabularies.  The key will contain the CV name and the
-   *   value the new cv_id
-   *
    *
    * @ingroup tripal_obo_loader
    */
-  private function loadOBO_v1_2($file, &$newcvs) {
+  private function loadOBO_v1_2($file) {
 
     $header = array();
     $ret = array();
@@ -571,7 +563,7 @@ class OBOImporter extends TripalImporter {
       if (!$defaultcv) {
         throw new Exception('Cannot add namespace ' . $header['default-namespace'][0]);
       }
-      $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
+      $this->newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
     }
     // If the 'default-namespace' is missing.
     else {
@@ -583,7 +575,7 @@ class OBOImporter extends TripalImporter {
         if (!$defaultcv) {
           throw new Exception('Cannot add namespace ' . strtoupper($header['ontology'][0]));
         }
-        $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
+        $this->newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
       }
       else {
         throw new Exception("Could not find a namespace for this OBO file: $file");
@@ -595,11 +587,11 @@ class OBOImporter extends TripalImporter {
     }!
     // Add any typedefs to the vocabulary first.
     $this->logMessage("Step 2: Loading type defs...");
-    $this->loadTypeDefs($defaultcv, $newcvs, $default_db);
+    $this->loadTypeDefs($defaultcv, $default_db);
 
     // Next add terms to the vocabulary.
     $this->logMessage("Step 3: Loading terms...");
-    if (!$this->processTerms($defaultcv, $newcvs, $default_db)) {
+    if (!$this->processTerms($defaultcv, $default_db)) {
       throw new Exception('Cannot add terms from this ontology');
     }
 
@@ -612,15 +604,12 @@ class OBOImporter extends TripalImporter {
    * @param $defaultcv
    *   A database object containing a record from the cv table for the
    *   default controlled vocabulary
-   * @param $newcvs
-   *   An associative array of controlled vocabularies for this OBO.  The key must be
-   *   the name of the vocabulary and the value the cv_id from the cv table of chado.
    * @param $default_db
    *   The name of the default database.
    *
    * @ingroup tripal_obo_loader
    */
-  private function loadTypeDefs($defaultcv, $newcvs, $default_db) {
+  private function loadTypeDefs($defaultcv, $default_db) {
     $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
     $typedefs = chado_query($sql);
 
@@ -638,7 +627,7 @@ class OBOImporter extends TripalImporter {
     foreach ($typedefs as $typedef) {
       $this->setItemsHandled($i);
       $term = unserialize(base64_decode($typedef->stanza));
-      $this->processTerm($term, $defaultcv->name, 1, $newcvs, $default_db);
+      $this->processTerm($term, $defaultcv->name, 1, $default_db);
       $i++;
     }
 
@@ -654,13 +643,10 @@ class OBOImporter extends TripalImporter {
    * @param $defaultcv
    *   A database object containing a record from the cv table for the
    *   default controlled vocabulary
-   * @param $newcvs
-   *   An associative array of controlled vocabularies for this OBO.  The key must be
-   *   the name of the vocabulary and the value the cv_id from the cv table of chado.
    * @param $default_db
    *   The name of the default database.
    */
-  private function processTerms($defaultcv, &$newcvs, $default_db) {
+  private function processTerms($defaultcv, $default_db) {
     $i = 0;
 
     // Iterate through each term from the OBO file and add it.
@@ -687,7 +673,7 @@ class OBOImporter extends TripalImporter {
       $this->setItemsHandled($i);
 
       // Add/update this term.
-      if (!$this->processTerm($term, $defaultcv->name, 0, $newcvs, $default_db)) {
+      if (!$this->processTerm($term, $defaultcv->name, 0, $default_db)) {
         throw new Exception("Failed to process terms from the ontology");
       }
 
@@ -712,7 +698,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function processTerm($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
+  private function processTerm($term, $defaultcv, $is_relationship = 0, $default_db) {
 
     // make sure we have a namespace for this term
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
@@ -756,7 +742,7 @@ class OBOImporter extends TripalImporter {
     chado_query($sql, array(':cvterm_id' => $cvterm->cvterm_id));
 
     if (array_key_exists('namespace', $term)) {
-      $newcvs[$term['namespace'][0]] = $cvterm->cv_id;
+      $this->newcvs[$term['namespace'][0]] = $cvterm->cv_id;
     }
 
     // now handle other properites

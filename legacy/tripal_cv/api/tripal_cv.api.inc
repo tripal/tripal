@@ -97,7 +97,7 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
     if (count($options) == 0) {
       tripal_set_message('There are no ' . $field_desc . '. Please ' .
           l('add terms',
-              'admin/tripal/loaders/chado_cv/' .$default_cv->cv_id. '/cvterm/add',
+              'admin/tripal/loaders/chado_vocabs/chado_cv/' .$default_cv->cv_id. '/cvterm/add',
               array('attributes' => array('target' => '_blank'))) . ' to the ' .
           $default_cv->name .' vocabulary.',
           TRIPAL_WARNING);
