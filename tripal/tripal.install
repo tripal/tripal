@@ -370,7 +370,7 @@ function tripal_tripal_collection_bundle_schema() {
         'not null' => TRUE
       ),
       'collection_id' => array(
-        'type' => 'varchar',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE
       ),

@@ -60,10 +60,15 @@ class TripalEntityCollection {
     }
 
     try {
+      // Delete from the tripal collection table.
       db_delete('tripal_collection')
         ->condition('collection_id', $this->collection_id)
         ->execute();
-
+      // Delete the field groups from the tripal_bundle_collection table.
+      db_delete('tripal_bundle_collection')
+        ->condition('collection_id', $this->collection_id)
+        ->execute();
+        
       // Remove any files that may have been created
       foreach ($this->downloaders as $class_name => $label) {
         tripal_load_include_downloader_class($class_name);
@@ -177,16 +182,14 @@ class TripalEntityCollection {
   }
 
   /**
-   * Creates a new collection.
+   * Creates a new unique collection ID used as a look up against the
+   * tripal_collection_bundle to find fields, ids, and bundles.
    *
    * @param  $details
    *   An association array containing the details for a collection. The
    *   details must include the following key/value pairs:
    *   - uid:  The ID of the user that owns the collection
    *   - collection_name:  The name of the collection
-   *   - bundle_name:  The name of the TripalEntity content type.
-   *   - ids:  An array of the entity IDs that form the collection.
-   *   - fields: An array of the field IDs that the collection is limited to.
    *   - description:  A user supplied description for the collection.
    *
    * @throws Exception
@@ -222,7 +225,7 @@ class TripalEntityCollection {
         ))
         ->execute();
       // Now add the second table with bundle info.
-      $this->add($details, $collection_id);
+      $this->addFields($details, $collection_id);
       // Now load the job into this object.
       $this->load($collection_id);
     }
@@ -243,7 +246,7 @@ class TripalEntityCollection {
    *
    * @throws Exception
    */
-  public function add($details, $collection_id) {
+  public function addFields($details, $collection_id) {
     if (!$details['bundle_name']) {
       throw new Exception("Must provide a 'bundle_name' key to TripalEntityCollection::add().");
     }
