@@ -82,9 +82,6 @@ class sep__protocol_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
     $linker_field = 'chado-' . $field_table . '__protocol_id';
 
-    dpm($this->field);
-    dpm($this->instance);
-
     $protocols = [];
     //options are all protocols
     //It could be argued that options should only be protocols where protocol_type matches the bundle base table.
@@ -119,7 +116,6 @@ class sep__protocol_widget extends ChadoFieldWidget {
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
 
-    dpm($form_state);
   }
 
   /**

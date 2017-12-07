@@ -128,14 +128,16 @@ class sep__protocol extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $linker_field = 'chado-' . $field_table . '__protocol_id';
 
-    $protocol_id = $record->protocol_id;
-    $protocol_name = $record->name;
+    $protocol_id = $record->protocol_id->protocol_id;
+    $protocol_name = $record->protocol_id->name;
+
+    $entity_id = $record->entity_id;
 
     $entity->{$field_name}['und'][0]['value'] = array(
      "protocol_id" => $protocol_id,
       "protocol_name" => $protocol_name,
+      "entity_id" => $entity_id,
       "full_record" => $record,
-      "field" => $this->field,
       "instance" => $this->instance
     );
 
