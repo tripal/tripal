@@ -36,16 +36,16 @@ class sep__protocol extends ChadoField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'field_chado_storage',
-     // It is expected that all fields set a 'value' in the load() function.
-     // In many cases, the value may be an associative array of key/value pairs.
-     // In order for Tripal to provide context for all data, the keys should
-     // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
-     // function that are supported by the query() function should be
-     // listed here.
-     'searchable_keys' => array(),
-  );
+    // It is expected that all fields set a 'value' in the load() function.
+    // In many cases, the value may be an associative array of key/value pairs.
+    // In order for Tripal to provide context for all data, the keys should
+    // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
+    // function that are supported by the query() function should be
+    // listed here.
+    'searchable_keys' => [],
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -54,7 +54,7 @@ class sep__protocol extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The DATABASE name, as it appears in chado.db.  This also builds the link-out url.  In most cases this will simply be the CV name.  In some cases (EDAM) this will be the SUBONTOLOGY.
     'term_vocabulary' => 'sep',
     // The name of the term.
@@ -70,7 +70,7 @@ class sep__protocol extends ChadoField {
     // should have auto_attach set to FALSE so tha their values can be
     // attached asynchronously.
     'auto_attach' => FALSE,
-  );
+  ];
 
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -84,7 +84,7 @@ class sep__protocol extends ChadoField {
   // the user but otherwise provides no data.
   public static $no_data = FALSE;
 
- /**
+  /**
    * Loads the field values from the underlying data store.
    *
    * @param $entity
@@ -118,5 +118,23 @@ class sep__protocol extends ChadoField {
     // need to implement this function. However, if you need to add any
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
+
+
+    $record = $entity->chado_record;
+    $settings = $this->instance['settings'];
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $linker_field = 'chado-' . $field_table . '__organism_id';
+
+    $protocol_id = $record->protocol_id;
+
+    $entity->{$field_name}['und'][0]['value'] = array(
+     "protocol_id" => $protocol_id,
+
+    );
   }
+
 }

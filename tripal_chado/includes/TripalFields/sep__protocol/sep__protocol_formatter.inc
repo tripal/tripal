@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -12,12 +13,12 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
   public static $default_label = 'Protocol';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sep__protocol');
+  public static $field_types = ['sep__protocol'];
 
   // The list of default settings for this formatter.
-  public static $default_settings = array(
+  public static $default_settings = [
     'setting1' => 'default_value',
-  );
+  ];
 
   /**
    * Provides the field's setting form.
@@ -68,14 +69,14 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
    *  into a CSV file will always be identical.  The view need not show all
    *  of the data in the 'values' array.
    *
-   *  @param $element
-   *  @param $entity_type
-   *  @param $entity
-   *  @param $langcode
-   *  @param $items
-   *  @param $display
+   * @param $element
+   * @param $entity_type
+   * @param $entity
+   * @param $langcode
+   * @param $items
+   * @param $display
    *
-   *  @return
+   * @return
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
@@ -83,7 +84,15 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
+
+    $entity_id = "something";
+
+    if (count($items) > 0) {
+      $content = l("Protocol Name goes here", 'bio_data/' . $entity_id);
+    }
+
   }
+
 
   /**
    * Provides a summary of the formatter settings.

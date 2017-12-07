@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -13,7 +14,7 @@ class sep__protocol_widget extends ChadoFieldWidget {
   public static $default_label = 'Protocol';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sep__protocol');
+  public static $field_types = ['sep__protocol'];
 
   /**
    * Provides the form for editing of this field.
@@ -72,6 +73,37 @@ class sep__protocol_widget extends ChadoFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
+
+
+    $settings = $this->field['settings'];
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $linker_field = 'chado-' . $field_table . '__organism_id';
+
+    dpm($this->field);
+    dpm($this->instance);
+
+    $protocols = [];
+    //options are all Contacts
+    $sql = "SELECT * FROM {protocol}";
+    $results = chado_query($sql);
+    foreach ($results as $protocol) {
+      $protocols[$protocol->protocol_id] = $protocol->name;
+    }
+
+    $widget[$linker_field] = [
+      '#type' => 'select',
+      '#title' => $element['#title'],
+      '#description' => $element['#description'],
+      '#options' => $protocols,
+      '#empty_option' => '- Select a Protocol -',
+      '#required' => $element['#required'],
+      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+      '#delta' => $delta,
+    ];
+
   }
 
   /**
