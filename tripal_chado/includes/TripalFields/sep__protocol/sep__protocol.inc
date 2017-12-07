@@ -121,20 +121,28 @@ class sep__protocol extends ChadoField {
 
 
     $record = $entity->chado_record;
-    $settings = $this->instance['settings'];
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    $linker_field = 'chado-' . $field_table . '__organism_id';
+    $linker_field = 'chado-' . $field_table . '__protocol_id';
 
     $protocol_id = $record->protocol_id;
+    $protocol_name = $record->name;
 
     $entity->{$field_name}['und'][0]['value'] = array(
      "protocol_id" => $protocol_id,
-
+      "protocol_name" => $protocol_name,
+      "full_record" => $record,
+      "field" => $this->field,
+      "instance" => $this->instance
     );
+
+    // Is there a published entity for this organism?
+    if (property_exists($record->{$field_column}, 'entity_id')) {
+      $entity->{$field_name}['und'][0]['value']['entity_id'] = 'TripalEntity:' . $record->{$field_column}->entity_id;
+   }
   }
 
 }

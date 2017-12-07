@@ -80,20 +80,22 @@ class sep__protocol_widget extends ChadoFieldWidget {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    $linker_field = 'chado-' . $field_table . '__organism_id';
+    $linker_field = 'chado-' . $field_table . '__protocol_id';
 
     dpm($this->field);
     dpm($this->instance);
 
     $protocols = [];
-    //options are all Contacts
+    //options are all protocols
+    //It could be argued that options should only be protocols where protocol_type matches the bundle base table.
+
     $sql = "SELECT * FROM {protocol}";
     $results = chado_query($sql);
     foreach ($results as $protocol) {
       $protocols[$protocol->protocol_id] = $protocol->name;
     }
 
-    $widget[$linker_field] = [
+    $widget['value'] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -116,6 +118,8 @@ class sep__protocol_widget extends ChadoFieldWidget {
    * fields must be used to set the 'value' field.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
+
+    dpm($form_state);
   }
 
   /**

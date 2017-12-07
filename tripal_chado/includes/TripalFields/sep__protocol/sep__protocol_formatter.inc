@@ -82,15 +82,21 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    // Get the settings
-    $settings = $display['settings'];
+    dpm($items);
+    $protocol_id = $items[0]['value']["protocol_id"];
+    $protocol_name = $items[0]['value']["protocol_name"];
+    $entity_id = $items[0]['value']["entity_id"];
+    $content = $protocol_name;
 
-    $entity_id = "something";
-
-    if (count($items) > 0) {
-      $content = l("Protocol Name goes here", 'bio_data/' . $entity_id);
+    if ($entity_id) {
+      $content = l($protocol_name, 'bio_data/' . $entity_id);
     }
 
+
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 
 
