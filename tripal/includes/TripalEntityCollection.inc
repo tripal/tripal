@@ -130,7 +130,7 @@ class TripalEntityCollection {
     $bundle_name = "";
     if (count($this->bundles) > 1) {
       foreach ($this->bundles as $bundle) {
-        $bundle_name = $this->bundles[0]->bundle_name;
+        $bundle_name = $bundle->bundle_name;
         $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
         $fields[$bundle_name] = $this->getFields($bundle_name);
       }
@@ -149,30 +149,66 @@ class TripalEntityCollection {
     // supported for this basket.
     foreach ($this->fields as $field_group) {
       foreach ($field_group as $field_id) {
-        $field = field_info_field_by_id($field_id);
-        if (!$field) {
-          continue;
+        // Check is $field_groups is an array because if it is that means we
+        // nested arrays we need to deal with.
+        if (is_array($field_id)) {
+          foreach ($field_id as $field) {
+            $field_info = field_info_field_by_id($field);
+            if (!$field_info) {
+              continue;
+            }
+            $field_name = $field_info['field_name'];
+            $field_type = $field_info['type'];
+            $field_module = $field_info['module'];
+            $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+    
+            $downloaders = array();
+    
+            // All fields should support the Tab and CSV downloaders.
+            tripal_load_include_downloader_class('TripalTabDownloader');
+            $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
+            tripal_load_include_downloader_class('TripalCSVDownloader');
+            $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+    
+            if (tripal_load_include_field_class($field_type)) {
+              $settings = $field_type::$default_instance_settings;
+              if (array_key_exists('download_formatters', $settings)) {
+                foreach ($settings['download_formatters'] as $class_name) {
+                  if (!array_key_exists($class_name, $this->downloaders)) {
+                    tripal_load_include_downloader_class($class_name);
+                    $this->downloaders[$class_name] = $class_name::$label;
+                  }
+                }
+              }
+            }
+          }
         }
-        $field_name = $field['field_name'];
-        $field_type = $field['type'];
-        $field_module = $field['module'];
-        $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+        else {
+          $field = field_info_field_by_id($field_id);
+          if (!$field) {
+            continue;
+          }
+          $field_name = $field['field_name'];
+          $field_type = $field['type'];
+          $field_module = $field['module'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-        $downloaders = array();
+          $downloaders = array();
 
-        // All fields should support the Tab and CSV downloaders.
-        tripal_load_include_downloader_class('TripalTabDownloader');
-        $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-        tripal_load_include_downloader_class('TripalCSVDownloader');
-        $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+          // All fields should support the Tab and CSV downloaders.
+          tripal_load_include_downloader_class('TripalTabDownloader');
+          $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
+          tripal_load_include_downloader_class('TripalCSVDownloader');
+          $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
 
-        if (tripal_load_include_field_class($field_type)) {
-          $settings = $field_type::$default_instance_settings;
-          if (array_key_exists('download_formatters', $settings)) {
-            foreach ($settings['download_formatters'] as $class_name) {
-              if (!array_key_exists($class_name, $this->downloaders)) {
-                tripal_load_include_downloader_class($class_name);
-                $this->downloaders[$class_name] = $class_name::$label;
+          if (tripal_load_include_field_class($field_type)) {
+            $settings = $field_type::$default_instance_settings;
+            if (array_key_exists('download_formatters', $settings)) {
+              foreach ($settings['download_formatters'] as $class_name) {
+                if (!array_key_exists($class_name, $this->downloaders)) {
+                  tripal_load_include_downloader_class($class_name);
+                  $this->downloaders[$class_name] = $class_name::$label;
+                }
               }
             }
           }
@@ -449,7 +485,6 @@ class TripalEntityCollection {
     $extension = $formatter::$default_extension;
     $create_date = $this->getCreateDate(FALSE);
     $outfile = preg_replace('/[^\w]/', '_', ucwords($this->collection_name)) . '_collection' . '_' . $create_date . '.' . $extension;
-
     return $outfile;
   }
 
@@ -489,7 +524,6 @@ class TripalEntityCollection {
    */
   public function getOutfileURL($formatter) {
     $outfile = $this->getOutfilePath($formatter);
-    return file_create_url($outfile);
   }
 
   /**
@@ -511,10 +545,10 @@ class TripalEntityCollection {
     }
 
     $outfile = $this->getOutfile($formatter);
-
-    $downloader = new $formatter($this->bundles, $this->ids, $this->fields, $outfile, $this->user->uid);
-
-    return $downloader->getURL();
+    // Make sure the user directory exists
+    $user_dir = 'public://tripal/users/' . $this->user->uid;
+    $outfilePath = $user_dir. '/' . $outfile;
+    return $outfilePath;
   }
 
   /**
@@ -542,25 +576,55 @@ class TripalEntityCollection {
     $supported_fields = array();
     foreach ($this->fields as $field_group) {
       foreach ($field_group as $field_id) {
-        // If the formatter is TripalTabDownloader or TripalCSVDownloader then
-        // we always want to support the field.
-        if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
-          if (!in_array($field_id, $supported_fields)) {
-            $supported_fields[] = $field_id;
-          }
-          continue;
-        }
+        // Check is $field_id is an array because if it is that means we
+        // nested arrays we need to deal with.
+        if (is_array($field_id)) {
+          foreach ($field_id as $field) {
+            // If the formatter is TripalTabDownloader or TripalCSVDownloader then
+            // we always want to support the field.
+            if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
+              if (!in_array($field, $supported_fields)) {
+                $supported_fields[] = $field;
+              }
+              continue;
+            }
 
-        // Otherwise, find out if the formatter specified is supporte by the
-        // field and if so then add it to our list of supported fields.
-        $field = field_info_field_by_id($field_id);
-        $field_name = $field['field_name'];
-        $field_type = $field['type'];
-        if (tripal_load_include_field_class($field_type)) {
-          $settings = $field_type::$default_instance_settings;
-          if (array_key_exists('download_formatters', $settings)) {
-            if (in_array($formatter, $settings['download_formatters'])) {
+            // Otherwise, find out if the formatter specified is supporte by the
+            // field and if so then add it to our list of supported fields.
+            $field_info = field_info_field_by_id($field);
+            $field_name = $field_info['field_name'];
+            $field_type = $field_info['type'];
+            if (tripal_load_include_field_class($field_type)) {
+              $settings = $field_type::$default_instance_settings;
+              if (array_key_exists('download_formatters', $settings)) {
+                if (in_array($formatter, $settings['download_formatters'])) {
+                  $supported_fields[] = $field;
+                }
+              }
+            }
+          }
+        }
+        else {
+          // If the formatter is TripalTabDownloader or TripalCSVDownloader then
+          // we always want to support the field.
+          if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
+            if (!in_array($field_id, $supported_fields)) {
               $supported_fields[] = $field_id;
+            }
+            continue;
+          }
+
+          // Otherwise, find out if the formatter specified is supporte by the
+          // field and if so then add it to our list of supported fields.
+          $field = field_info_field_by_id($field_id);
+          $field_name = $field['field_name'];
+          $field_type = $field['type'];
+          if (tripal_load_include_field_class($field_type)) {
+            $settings = $field_type::$default_instance_settings;
+            if (array_key_exists('download_formatters', $settings)) {
+              if (in_array($formatter, $settings['download_formatters'])) {
+                $supported_fields[] = $field_id;
+              }
             }
           }
         }
@@ -568,7 +632,6 @@ class TripalEntityCollection {
     }
 
     $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid);
-    //print_r($downloader);
     $downloader->write();
 
   }
