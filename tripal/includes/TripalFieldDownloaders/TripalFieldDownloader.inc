@@ -132,7 +132,6 @@ abstract class TripalFieldDownloader {
         $headers = $this->getHeader();
         if ($headers) {
           foreach ($headers as $line) {
-            print_r($line);
             fwrite($fh, $line . "\r\n");
           }
         }
@@ -171,6 +170,8 @@ abstract class TripalFieldDownloader {
       }
     }
     else {
+      $bundle_id = $this->bundle_name[0]->bundle_name;
+      $this->bundle_name = $bundle_id;
       $headers = $this->getHeader();
       if ($headers) {
         foreach ($headers as $line) {
