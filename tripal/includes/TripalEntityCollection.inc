@@ -64,11 +64,12 @@ class TripalEntityCollection {
       db_delete('tripal_collection')
         ->condition('collection_id', $this->collection_id)
         ->execute();
+
       // Delete the field groups from the tripal_bundle_collection table.
-      db_delete('tripal_bundle_collection')
+      db_delete('tripal_collection_bundle')
         ->condition('collection_id', $this->collection_id)
         ->execute();
-        
+
       // Remove any files that may have been created
       foreach ($this->downloaders as $class_name => $label) {
         tripal_load_include_downloader_class($class_name);
