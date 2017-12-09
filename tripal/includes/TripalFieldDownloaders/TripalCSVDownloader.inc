@@ -32,6 +32,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
           $row[] = '"' . $value . '"';
         }
         else {
+
           if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
             $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
           }

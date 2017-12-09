@@ -22,10 +22,13 @@ function tripal_user_collections_page() {
 
     $downloads = array();
     $formatters = $collection->getDownloadFormatters();
+
     foreach ($formatters as $class_name => $label) {
+     
       $outfile = $collection->getOutfilePath($class_name);
-      $outfileURL = file_create_url($outfile);
+
       if (file_exists($outfile)) {
+        $outfileURL = file_create_url($outfile);
         $downloads[] = l($label, $outfileURL);
       }
       else {
