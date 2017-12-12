@@ -14,7 +14,6 @@ function tripal_chado_map_cvterms() {
 
     // Iterate through the referring tables to see what records are there.
     foreach ($base_tables as $tablename) {
-      print "Examining $tablename...\n";
       $ref_schema = chado_get_schema($tablename);
       $fkeys = $ref_schema['foreign keys'];
       if (!isset($fkeys['cvterm']['columns'])) {

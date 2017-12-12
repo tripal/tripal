@@ -318,6 +318,14 @@ function tripal_menu() {
   );
 
 
+  $items['admin/tripal/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating data import.'),
+    'access arguments' => array('load tripal data'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+
   // Add in the loaders
   $importers = tripal_get_importers();
   foreach ($importers as $class_name) {
@@ -332,7 +340,7 @@ function tripal_menu() {
         'description' =>  $class_name::$description,
         'page callback' => 'drupal_get_form',
         'page arguments' => array('tripal_get_importer_form', $class_name),
-        'access arguments' => array('administer tripal'),
+        'access arguments' => array('load tripal data'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'includes/tripal.importer.inc',
         'file path' => drupal_get_path('module', 'tripal'),
@@ -406,7 +414,6 @@ function tripal_accesss_user_collections($uid) {
 function tripal_access_user_data($uid) {
   global $user;
 
-  drupal_debug($uid);
   if ($uid == $user->uid) {
     return TRUE;
   }
@@ -432,6 +439,15 @@ function tripal_permission() {
       'title' => t('Manage Tripal content types'),
       'description' => t('Allows the user to create, update and delete Tripal content types.'),
       'restrict access' => TRUE,
+    ),
+    'publish tripal content' => array(
+      'title' => t('Publish Tripal content types'),
+      'description' => t('Allows the user to publish Tripal content for online access.'),
+      'restrict access' => TRUE,
+    ),
+    'load tripal data' => array(
+      'title' => t('Load data into the Tripal site'),
+      'description' => t('Allows the user to load data into the Tripal site using data loaders. Some data loaders may have their own specific permission as well.'),
     ),
     'upload files' => array(
       'title' => t('Upload Files'),

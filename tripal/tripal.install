@@ -19,6 +19,13 @@ function tripal_install() {
       'not null' => FALSE,
     ));
   }
+
+  $menu = array(
+    'menu_name' => 'data_search',
+    'title' => t('Data Search'),
+    'description' => 'The Data Search menu contains links to search tools for finding biological data.',
+  );
+  menu_save($menu);
 }
 
 /**
@@ -1011,4 +1018,18 @@ function tripal_update_7306() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
   }
+}
+/**
+ * Adds a new Data search menu for the Tripal created search tools.  If you
+ * have customized any of the Tripal content search forms then those forms will
+ * remain unchanged. All other default search pages will be moved to the
+ * new Data Search menu item available at Admin > Stucture > Menu > Data Search.
+ */
+function tripal_update_7307() {
+  $menu = array(
+    'menu_name' => 'data_search',
+    'title' => t('Data Search'),
+    'description' => 'The Data Search menu contains links to search tools for finding biological data.',
+  );
+  menu_save($menu);
 }

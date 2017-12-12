@@ -191,12 +191,21 @@ class TaxonomyImporter extends TripalImporter {
 
     // Get the list of all organisms as we'll need this to lookup existing
     // organisms.
-    $sql = "
-      SELECT O.*, CVT.name as type
-      FROM {organism} O
-       LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
-      ORDER BY O.genus, O.species
-    ";
+    if (chado_get_version() > 1.2) {
+      $sql = "
+        SELECT O.*, CVT.name as type
+        FROM {organism} O
+         LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
+        ORDER BY O.genus, O.species
+      ";
+    }
+    else {
+      $sql = "
+        SELECT O.*, '' as type
+        FROM {organism} O
+        ORDER BY O.genus, O.species
+      ";
+    }
     $results = chado_query($sql);
     while ($item = $results->fetchObject()) {
       $this->all_orgs[] = $item;

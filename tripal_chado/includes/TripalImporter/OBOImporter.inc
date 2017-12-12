@@ -267,7 +267,6 @@ class OBOImporter extends TripalImporter {
    * @see TripalImporter::formSubmit()
    */
   public function formSubmit($form, &$form_state) {
-
     $obo_id    = $form_state['values']['obo_id'];
     $obo_name  = trim($form_state['values']['obo_name']);
     $obo_url   = trim($form_state['values']['obo_url']);
@@ -301,8 +300,10 @@ class OBOImporter extends TripalImporter {
           'path' => $obo_url ? $obo_url : $obo_file,
         ))
         ->execute();
+
         // Add the obo_id to the form_state vaules.
         $form_state['values']['obo_id'] = $obo_id;
+
       if ($obo_id) {
         drupal_set_message(t("The vocabulary !vocab has been added.", array('!vocab' => $obo_name)));
       }
@@ -385,7 +386,6 @@ class OBOImporter extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-
     $obo_id = $arguments['obo_id'];
 
     // Make sure the $obo_id is valid

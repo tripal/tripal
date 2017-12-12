@@ -105,6 +105,11 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *       -name:  The short name for the vocabulary (e.g. SO, PATO, etc).
  *       -description: The description of this vocabulary.
  *       -url: The URL for the vocabulary.
+ *       -urlprefix : (optional) A URL to which the short_name and term
+ *        accession can be appended to form a complete URL for a term.  If the
+ *        prefix does not support appending then the exact location for the
+ *        position of the short_name and the term accession will be
+ *        specified with the {db} and {accession} tags respectively.
  *     -accession : The name unique ID of the term.
  *     -url : The URL for the term.
  *     -name : The name of the term.
@@ -132,6 +137,11 @@ function hook_vocab_get_term($vocabulary, $accession) {
  *     - short_name : The short name abbreviation for the vocabulary.
  *     - description : A brief description of the vocabulary.
  *     - url : (optional) A URL for the online resources for the vocabulary.
+ *     - urlprefix : (optional) A URL to which the short_name and term
+ *       accession can be appended to form a complete URL for a term.  If the
+ *       prefix does not support appending then the exact location for the
+ *       position of the short_name and the term accession will be
+ *       specified with the {db} and {accession} tags respectively.
  */
 function hook_vocab_get_vocabulary($vocabulary) {
   // See the tripal_chado_vocab_get_vocabulary() function for an example.
@@ -145,6 +155,11 @@ function hook_vocab_get_vocabulary($vocabulary) {
  *       -name:  The short name for the vocabulary (e.g. SO, PATO, etc).
  *       -description: The description of this vocabulary.
  *       -url: The URL for the vocabulary.
+ *       -urlprefix: (optional) A URL to which the short_name and term
+ *         accession can be appended to form a complete URL for a term.  If the
+ *         prefix does not support appending then the exact location for the
+ *         position of the short_name and the term accession will be
+ *         specified with the {db} and {accession} tags respectively.
  *     -accession : The name unique ID of the term.
  *     -url : The URL for the term.
  *     -name : The name of the term.
@@ -210,6 +225,11 @@ function tripal_add_term($details) {
  *       - short_name : The short name abbreviation for the vocabulary.
  *       - description : A brief description of the vocabulary.
  *       - url : (optional) A URL for the online resources for the vocabulary.
+ *       - urlprefix : (optional) A URL to which the short_name and term
+ *         accession can be appended to form a complete URL for a term.  If the
+ *         prefix does not support appending then the exact location for the
+ *         position of the short_name and the term accession will be
+ *         specified with the {db} and {accession} tags respectively.
  *     - accession : The name unique ID of the term.
  *     - url : The URL for the term.
  *     - name : The name of the term.
@@ -250,10 +270,16 @@ function tripal_get_term_details($vocabulary, $accession) {
  *
  * @return
  *   An array with at least the following keys:
- *     - name : The full name of the vocabulary.
- *     - short_name : The short name abbreviation for the vocabulary.
- *     - description : A brief description of the vocabulary.
- *     - url : (optional) A URL for the online resources for the vocabulary.
+ *     - name: The full name of the vocabulary.
+ *     - short_name: The short name abbreviation for the vocabulary.
+ *     - description: A brief description of the vocabulary.
+ *     - url:  A URL for the online resources for the vocabulary.
+ *     - urlprefix: A URL to which the short_name and term
+ *       accession can be appended to form a complete URL for a term.  If the
+ *       prefix does not support appending then the exact location for the
+ *       position of the short_name and the term accession will be
+ *       specified with the {db} and {accession} tags respectively.
+ *     - sw_url: The URL for mapping terms via the semantic web.
  */
 function tripal_get_vocabulary_details($vocabulary) {
   // TODO: we need some sort of administrative interface that lets the user

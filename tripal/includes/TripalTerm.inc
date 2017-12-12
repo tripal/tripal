@@ -15,23 +15,13 @@ class TripalTerm extends Entity {
     $this->definition = NULL;
     $this->url = NULL;
 
-    // TODO: we need some sort of administrative interface that lets the user
-    // switch to the desired vocabulary type. For now, we'll just use the
-    // first one in the list.
-    $stores = module_invoke_all('vocab_storage_info');
-    if (is_array($stores) and count($stores) > 0) {
-      $keys = array_keys($stores);
-      $module = $stores[$keys[0]]['module'];
-      $function = $module . '_vocab_get_term';
-      if (function_exists($function)) {
-        $term_details = $function($vocab->vocabulary, $this->accession);
-        if ($term_details) {
-//          $this->details = $term_details;
-          if ($term_details and $term_details['definition']) {
-            $this->definition = $term_details['definition'];
-            $this->url = $term_details['url'];
-          }
-        }
+    $term_details = tripal_get_term_details($vocab->vocabulary, $this->accession);
+    if ($term_details) {
+      if ($term_details and $term_details['definition']) {
+        $this->definition = $term_details['definition'];
+      }
+      if ($term_details and $term_details['url']) {
+        $this->url = $term_details['url'];
       }
     }
   }
