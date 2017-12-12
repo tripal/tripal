@@ -115,14 +115,14 @@ function tripal_drush_command() {
     'description' => dt('Prepares a new Tripal installation with content types, requires the username of an administrator to run.'),
     'arguments'   => array(),
     'examples' => array(
-      'Standard example' => 'drush trp-prepare-chado --username=administrator',
+      'Standard example' => 'drush trp-prepare-chado --user=administrator',
     ),
   );
   $items['trp-set-permissions'] = array(
     'description' => dt('Gives view, edit, delete, create priveleges to administrators for all tripal content types.'),
     'arguments'   => array(),
     'examples' => array(
-      'Standard example' => 'drush trp-set-permissions --username=administrator',
+      'Standard example' => 'drush trp-set-permissions --user=administrator',
     ),
   );
   return $items;
@@ -371,49 +371,16 @@ function drush_tripal_trp_set_permissions() {
   }
 
   drush_tripal_set_user($username);
-
-  $database_info = FALSE;
-  while (!$database_info) {
-    drush_print(dt(""));
-    drush_print(dt(
-      "To add permissions from the command line the database information is required, please have the database host (127.0.0.1 or localhost), database name, postgres username and postgres user password ready.\n"
-    ));
-    print_r("");
-    $host = drush_prompt(dt('host, like localhost or 127.0.0.1'));
-    $database = drush_prompt(dt('database name'));
-    $postgres_username = drush_prompt(dt('postgres username'));
-    $postgres_password = drush_prompt(dt('postgres password'));
-    drush_print(dt(""));
-    drush_print(dt(
-    "This is the information provided, please review and confirm it is correct:
-     Database host: $host
-     Database name: $database
-     Database username: $postgres_username
-     Database user password: $postgres_password
-     "
-    ));
-    $database_info = drush_confirm(dt('Is this information correct?'));
-  }
-  print_r("Adding permissions for the administrator to view, edit, create, and delete all the newly created content types.\n");
   $permissions = array();
-  $bundles = array();
-  $conn = pg_pconnect("host=$host dbname=$database user=$postgres_username password=$postgres_password");
-  if (!$conn) {
-    echo "An error occurred when attempting to perimssion the administrator. Please navigate to your new site and add permissions to your new content types here admin/people/permissions.\n";
-    exit;
-  }
-  $result = pg_query($conn, "SELECT name FROM tripal_bundle");
-  if (!$result) {
-    echo "An error occurred.\n";
-    exit;
-  }
-
-  while ($row = pg_fetch_row($result)) {
-    array_push($bundles, $row);
-  }
+  $bundles =
+  db_select('tripal_bundle', 'TB')
+    ->fields('TB', array('name'))
+    ->execute()
+    ->fetchAll();
+  print_r($bundles);
   foreach ($bundles as $bundles => $bundle) {
-    array_push($permissions, ' view ' . $bundle[0], ' create ' . $bundle[0],
-      ' edit ' . $bundle[0], ' delete ' . $bundle[0]);
+    array_push($permissions, ' view ' . $bundle->name, ' create ' . $bundle->name,
+      ' edit ' . $bundle->name, ' delete ' . $bundle->name);
   }
   $string_permissions = implode(",", $permissions);
   $args4 = array('administrator', $string_permissions);
