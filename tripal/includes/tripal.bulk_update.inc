@@ -27,7 +27,16 @@ function tripal_update_all($bundle_id, $update, $type) {
   $i = 0;
   // Pull items out one at a time.
   while ($entity = $queue->claimItem()) {
-    $arg = tripal_load_entity('TripalEntity', [$entity->data->entity_id], FALSE, $bundle_tokens);
+    $fields = array();
+    foreach ($bundle_tokens as $bundle_token) {
+      foreach ($bundle_token as $token) {
+        $string = str_replace(array('[', ']'), '', $token);
+        $field_array = field_info_field($string);
+        $fields[] = $field_array['id'];
+      }
+    }
+    $arg = tripal_load_entity('TripalEntity', [$entity->data->entity_id], FALSE, $fields);
+
     if ($type == 'alias') {
       if (!empty($arg)) {
         if (is_array($arg)) {
@@ -43,6 +52,7 @@ function tripal_update_all($bundle_id, $update, $type) {
         if (is_array($arg)) {
           $ent = reset($arg);
         }
+
         $ec = entity_get_controller('TripalEntity');
         $ec->setTitle($ent, $update);
       }
