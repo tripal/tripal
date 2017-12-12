@@ -10,32 +10,29 @@
 function tripal_update_all($bundle_id, $update, $type) {
   // Load all the entity_ids.
   $entity_table = 'chado_'.$bundle_id;
-  $entities = db_select($entity_table, 'e')
+  $result = db_select($entity_table, 'e')
     ->fields('e', array('entity_id'))
-    ->execute()->fetchAll();
-  $num_entities = count($entities);
+    ->execute();
+  $num_entities = $result->rowCount();
+  $entities = $result->fetchAll();
+
   // Parse the $update variable for tokens and load those tokens.
   preg_match_all("/\[[^\]]*\]/", $update, $bundle_tokens);
-  // Get the queue so we can add to it.  Use a
-  // descriptive name. It's ok if it doesn't exist yet.
-  $queue = DrupalQueue::get('entityQueue');
-  // Push all the items into the queue, one at a time.
-  // You can push any data in with (arrays, objects, etc).
-  foreach ($entities as $entity) {
-    $queue->createItem($entity);
-  }
-  $fields = array();
-  foreach ($bundle_tokens as $bundle_token) {
-    foreach ($bundle_token as $token) {
-      $string = str_replace(array('[', ']'), '', $token);
-      $field_array = field_info_field($string);
-      $fields[] = $field_array['id'];
+
+  // Get field ids for each token
+  $field_ids = [];
+  foreach ($bundle_tokens as $index => $token) {
+    // Ignore the first entry since it's just the matched string (subject)
+    if ($index > 0) {
+      $field = field_info_instance('TripalEntity', $bundle_tokens[1], $bundle_id);
+      $field_ids[] = $field['field_id'];
     }
   }
+
   $i = 0;
   // Pull items out one at a time.
-  while ($entity = $queue->claimItem()) {
-    $arg = tripal_load_entity('TripalEntity', [$entity->data->entity_id], FALSE, $fields);
+  foreach ($entities as $entity) {
+    $arg = tripal_load_entity('TripalEntity', [$entity->entity_id], FALSE, $field_ids);
     if ($type == 'alias') {
       if (!empty($arg)) {
         if (is_array($arg)) {
@@ -44,6 +41,7 @@ function tripal_update_all($bundle_id, $update, $type) {
         // Get the entity controller and clear the cache if requested (default).
         $ec = entity_get_controller('TripalEntity');
         $ec->setAlias($ent, $update);
+        $ec->resetCache();
       }
     }
     elseif ($type == 'title') {
@@ -54,14 +52,14 @@ function tripal_update_all($bundle_id, $update, $type) {
 
         $ec = entity_get_controller('TripalEntity');
         $ec->setTitle($ent, $update);
+        $ec->resetCache();
       }
     }
     $i++;
     // Check if 50 items have been updated, if so print message.
     if ($i < $num_entities) {
-      print $i . "/" . $num_entities . " entities have been updated.\r";
+      $mem = number_format(memory_get_usage());
+      print "$i/$num_entities entities have been updated. Memory usage: $mem Bytes\r";
     }
-    // Good, we succeeded.  Delete the item as it is no longer needed.
-    $queue->deleteItem($entity);
   }
 }
