@@ -53,6 +53,8 @@ class so__cds extends ChadoField {
       $field_term => array(
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:string',
+        'readonly' => TRUE,
       ),
     );
   }

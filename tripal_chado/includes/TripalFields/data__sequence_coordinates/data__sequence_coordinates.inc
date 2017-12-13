@@ -74,6 +74,8 @@ class data__sequence_coordinates extends ChadoField {
         'searchable' => FALSE,
         'label' => 'Location Coordinates',
         'help' => 'The locations on other genomic sequences where this record has been aligned.',
+        'type' => 'xs:complexType',
+        'readonly' => TRUE,
         'elements' => array(
           $reference_term => array(
             'searchable' => TRUE,
@@ -81,6 +83,9 @@ class data__sequence_coordinates extends ChadoField {
             'help' => 'The genomic feature on which this feature is localized.',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $fmin_term => array(
             'searchable' => TRUE,
@@ -89,6 +94,9 @@ class data__sequence_coordinates extends ChadoField {
             'type' => 'numeric',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
+            'type' => 'xs:integer',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $fmax_term => array(
             'searchable' => TRUE,
@@ -97,6 +105,9 @@ class data__sequence_coordinates extends ChadoField {
             'type' => 'numeric',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
+            'type' => 'xs:integer',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $phase_term => array(
             'searchable' => TRUE,
@@ -105,6 +116,9 @@ class data__sequence_coordinates extends ChadoField {
             'help' => 'The phase of the feature (applicable only to coding sequences).',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => TRUE,
+            'type' => 'xs:integer',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $strand_term => array(
             'searchable' => TRUE,
@@ -112,6 +126,9 @@ class data__sequence_coordinates extends ChadoField {
             'help' => 'The orientation of this feature where it is localized',
             'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
         ),
       ),
