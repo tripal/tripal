@@ -28,7 +28,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     $chado_table = $this->instance['settings']['chado_table'];
     foreach ($items as $delta => $item) {
 
-      if ($item['chado-' . $chado_table . '__cvterm_id']) {
+      if (!empty($item['chado-' . $chado_table . '__cvterm_id'])) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item['chado-' . $chado_table . '__cvterm_id']));
         $dbxref = $cvterm->dbxref_id;
 
