@@ -62,6 +62,8 @@ class data__protein_sequence extends ChadoField {
         'help' => 'The polypeptide sequence derived from mRNA',
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:string',
+        'readonly' => FALSE,
       ),
     );
     return $info;

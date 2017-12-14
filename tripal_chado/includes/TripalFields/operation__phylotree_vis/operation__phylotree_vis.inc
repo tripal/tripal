@@ -94,9 +94,14 @@ class operation__phylotree_vis extends ChadoField {
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'string',
+        'type' => 'xs:complexType',
+        'readonly' => TRUE,
         'elements' => array(
           'schema:url' => array(
             'searchabel' => FALSE,
+            'type' => 'xs:anyURI',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
         ),
       )

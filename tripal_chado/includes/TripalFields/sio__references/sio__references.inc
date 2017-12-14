@@ -66,6 +66,8 @@ class sio__references extends ChadoField {
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:string',
+        'readonly' => TRUE,
       ),
     );
   }

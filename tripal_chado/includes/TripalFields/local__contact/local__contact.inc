@@ -70,7 +70,8 @@ class local__contact extends ChadoField {
         'operations' => array('eq', 'contains', 'starts'),
         'sortable' => TRUE,
         'searchable' => TRUE,
-        'type' => 'string',
+        'type' => 'xs:complexType',
+        'readonly' => TRUE,
         'elements' => array(
           $type_term => array(
             'searchable' => TRUE,
@@ -78,6 +79,9 @@ class local__contact extends ChadoField {
             'help' => 'The type of contact',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'type' => 'xs:string',
+            'readonly' => FALSE,
+            'required' => TRUE,
           ),
           $name_term => array(
             'searchable' => TRUE,
@@ -85,6 +89,9 @@ class local__contact extends ChadoField {
             'help' => 'The name of the contact.',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'type' => 'xs:string',
+            'readonly' => FALSE,
+            'required' => TRUE,
           ),
           $description_term => array(
             'searchable' => TRUE,
@@ -92,6 +99,9 @@ class local__contact extends ChadoField {
             'help' => 'A descriptoin of the contact.',
             'operations' => array('contains'),
             'sortable' => TRUE,
+            'type' => 'xs:string',
+            'readonly' => FALSE,
+            'required' => FALSE,
           ),
           'entity' => array(
             'searchable' => FALSE,

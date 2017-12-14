@@ -64,6 +64,8 @@ class so__transcript extends ChadoField {
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:complexType',
+        'readonly' => TRUE,
         'elements' => array(
           'rdfs:type' => array(
             'name' => 'transcript_type',
@@ -72,6 +74,9 @@ class so__transcript extends ChadoField {
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'schema:name' => array(
             'name' => 'transcript_name',
@@ -80,6 +85,9 @@ class so__transcript extends ChadoField {
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'data:0842' => array(
             'name' => 'transcript_uniquename',
@@ -88,6 +96,9 @@ class so__transcript extends ChadoField {
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'SO:0000735' => array(
             'name' => 'loc',
@@ -96,6 +107,9 @@ class so__transcript extends ChadoField {
             'searchable' => FALSE,
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'entity' => array(
             'searchable' => FALSE,

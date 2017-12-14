@@ -64,6 +64,9 @@ class data__sequence_checksum extends ChadoField {
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:string',
+        'readonly' => TRUE,
+        'required' => FALSE,
       ),
     );
   }

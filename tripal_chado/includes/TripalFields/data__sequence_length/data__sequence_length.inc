@@ -65,7 +65,8 @@ class data__sequence_length extends ChadoField {
         'operations' => array('eq', 'gt', 'lt', 'gte', 'lte'),
         'sortable' => TRUE,
         'searchable' => TRUE,
-        'type' => 'numeric',
+        'type' => 'xs:integer',
+        'readonly' => TRUE,
       ),
     );
   }
