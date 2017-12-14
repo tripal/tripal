@@ -945,8 +945,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'title' => 'Content Collection',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $propeties = array();
-    $propeties[] = array(
+    $properties = array();
+    $properties[] = array(
       'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available content types.",
@@ -954,7 +954,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of content types.",
@@ -962,7 +962,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "The type content.",
@@ -978,7 +978,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'expects' => NULL,
       'returns' => 'vocab:ContentCollection',
     );
-    $this->addDocClass($details,$operations, $propeties);
+    $this->addDocClass($details,$operations, $properties);
   }
   /**
    * Adds classes for every content type to the documentation for this service.
@@ -1116,8 +1116,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'description' => 'A collection (or list) of ' . $bundle->label . ' resources.',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $propeties = array();
-    $propeties[] = array(
+    $properties = array();
+    $properties[] = array(
       'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available " . $bundle->label . '(s).',
@@ -1125,7 +1125,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of resources.",
@@ -1133,7 +1133,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "A label or name for the resource.",
@@ -1174,7 +1174,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 //         ),
 //       );
     }
-    $this->addDocClass($details, $operations, $propeties);
+    $this->addDocClass($details, $operations, $properties);
   }
 
 }

@@ -85,7 +85,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'name' => 'infraspecific_name',
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'label' => 'Infrasepcies Name',
+            'label' => 'Infraspecies Name',
             'help' => 'The infraspecific name of the organism below the rank of species.',
             'type' => 'xs:string',
             'readonly' => FALSE,

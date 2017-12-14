@@ -154,7 +154,7 @@ function tripal_get_organism_scientific_name($organism) {
     }
 
     if ($rank) {
-      $rank = tripal_abbreviate_infraspeicifc_rank($rank);
+      $rank = tripal_abbreviate_infraspecific_rank($rank);
       $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
     }
     else if ($organism->infraspecific_name) {
@@ -313,7 +313,7 @@ function tripal_autocomplete_organism($text) {
  * @return
  *   The proper abbreviation for the rank.
  */
-function tripal_abbreviate_infraspeicifc_rank($rank) {
+function tripal_abbreviate_infraspecific_rank($rank) {
   $abb = '';
   switch($rank) {
     case 'no_rank':

@@ -1048,7 +1048,7 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
     if (property_exists($entity, $field_name)) {
       // Note: there is a memory leak in field_get_items() so we can't use it
-      // here or bulk publising will slowly erode memory.
+      // here or bulk publishing will slowly erode memory.
       //$field_value = field_get_items('TripalEntity', $entity, $field_name);
       if (array_key_exists(0, $entity->{$field_name}['und'])) {
         $value = $entity->{$field_name}['und'][0]['value'];

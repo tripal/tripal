@@ -32,7 +32,7 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
     if (array_key_exists('values', $form_state) and
         array_key_exists($field_name, $form_state['values'])) {
       $type_id = $form_state['values'][$field_name][$langcode][$delta]['infraname']['specific_epithet'];
-      $infra_name = $form_state['values'][$field_name][$langcode][$delta]['infraname']['infrapsecific_epithet'];
+      $infra_name = $form_state['values'][$field_name][$langcode][$delta]['infraname']['infraspecific_epithet'];
     }
 
     $widget['value'] = array(
@@ -52,7 +52,7 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
     $terms = tripal_get_cvterm_select_options($cv->cv_id);
 
     // Unfortunately the taxonomic_rank vocabulary is not properly organized
-    // such that we an only include terms below 'species'. Therefore we will
+    // such that we only include terms below 'species'. Therefore we will
     // just list them here and hope we haven't missed one.
     $valid_terms = array('cultivar', 'subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
     $options = array();
@@ -77,9 +77,9 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
       '#options' => $options,
       '#default_value' => $type_id,
     );
-    $widget['infraname']['infrapsecific_epithet'] = array(
+    $widget['infraname']['infraspecific_epithet'] = array(
       '#type' => 'textfield',
-      '#title' => 'Infrapsecific Epithet',
+      '#title' => 'Infraspecific Epithet',
       '#description' => 'The name below species.',
       '#default_value' => $infra_name,
       '#required' => $element['#required'],
@@ -95,7 +95,7 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
 
     $type_id = $form_state['values'][$field_name]['und'][0]['infraname']['specific_epithet'];
-    $infra_name = $form_state['values'][$field_name]['und'][0]['infraname']['infrapsecific_epithet'];
+    $infra_name = $form_state['values'][$field_name]['und'][0]['infraname']['infraspecific_epithet'];
 
     if ($infra_name and $type_id) {
       $form_state['values'][$field_name]['und'][0]['value'] = $infra_name;
