@@ -228,7 +228,7 @@ class obi__organism extends ChadoField {
             'searchable' => TRUE,
             'name' => 'scientfic_name',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => FALSE),
+            'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
@@ -273,7 +273,7 @@ class obi__organism extends ChadoField {
             'searchable' => FALSE,
           ),
         ),
-      )
+      ),
     );
   }
 

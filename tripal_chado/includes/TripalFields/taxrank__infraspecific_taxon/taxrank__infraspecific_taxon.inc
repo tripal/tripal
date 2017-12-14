@@ -101,7 +101,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'readonly' => FALSE,
             'required' => TRUE,
           ),
-        )
+        ),
       ),
     );
   }
