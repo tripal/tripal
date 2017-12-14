@@ -1160,6 +1160,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
         $proptype = $link;
       }
 
+      $formatters = tripal_get_field_field_formatters($field);
+
       $property = array(
         'type' => $proptype,
         'title' => $instance['label'],
@@ -1167,6 +1169,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
         "required" => $instance['required'] ? TRUE : FALSE,
         "readonly" => FALSE,
         "writeonly" => TRUE,
+        "tripal_formatters" => $formatters,
       );
       $properties[] = $property;
     }

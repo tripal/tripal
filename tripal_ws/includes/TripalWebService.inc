@@ -478,6 +478,7 @@ class TripalWebService {
     $supported_class->addContextItem('readable', 'hydra:readable');
     $supported_class->addContextItem('writeable', 'hydra:writeable');
     $supported_class->addContextItem('required', 'hydra:required');
+    $supported_class->addContextItem('tripal_formatters', 'tripal:tripal_formatters');
     $class_prop = array(
       'property' => $prop['type'],
       'hydra:title' => $prop['title'],
@@ -497,6 +498,9 @@ class TripalWebService {
       foreach ($prop['operations'] as $op => $op_details) {
         $class_prop['supportedOperation'][] = $this->generateOp($supported_class, $op, $op_details);
       }
+    }
+    if (array_key_exists('tripal_formatters', $prop)) {
+      $class_prop['tripal_formatters'] = array_keys($prop['tripal_formatters']);
     }
     return $class_prop;
   }

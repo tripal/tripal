@@ -164,7 +164,38 @@ function tripal_get_field_widgets() {
 }
 
 /**
- * Retrieves a list of TripalFieldFormatters.
+ * Retrieves a list of field formatters compatible with a given field.
+ * @param unknown $field
+ */
+function tripal_get_field_field_formatters($field) {
+  $field_name = $field['field_name'];
+  $field_type = $field['type'];
+  $field_module = $field['module'];
+
+  $downloaders = array();
+
+  // All fields should support the Tab and CSV downloaders.
+  tripal_load_include_downloader_class('TripalTabDownloader');
+  $downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
+  tripal_load_include_downloader_class('TripalCSVDownloader');
+  $downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+
+  if (tripal_load_include_field_class($field_type)) {
+    $settings = $field_type::$default_instance_settings;
+    if (array_key_exists('download_formatters', $settings)) {
+      foreach ($settings['download_formatters'] as $class_name) {
+        if (!array_key_exists($class_name, $downloaders)) {
+          tripal_load_include_downloader_class($class_name);
+          $downloaders[$class_name] = $class_name::$label;
+        }
+      }
+    }
+  }
+
+  return $downloaders;
+}
+/**
+ * Retrieves a list of all the TripalFieldFormatters available on this site.
  *
  * The TripalFieldFormatter classes can be added by a site developer and should
  * be placed in the [module]/includes/TripalFields directory.  Tripal will

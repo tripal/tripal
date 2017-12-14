@@ -162,15 +162,17 @@ class TripalEntityCollection {
             $field_type = $field_info['type'];
             $field_module = $field_info['module'];
             $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-    
+
             $downloaders = array();
-    
+
+            // TODO: replace this code with the new tripal_get_field_field_formatters()
+            // API function
             // All fields should support the Tab and CSV downloaders.
             tripal_load_include_downloader_class('TripalTabDownloader');
             $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
             tripal_load_include_downloader_class('TripalCSVDownloader');
             $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
-    
+
             if (tripal_load_include_field_class($field_type)) {
               $settings = $field_type::$default_instance_settings;
               if (array_key_exists('download_formatters', $settings)) {
@@ -195,6 +197,9 @@ class TripalEntityCollection {
           $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
           $downloaders = array();
+
+          // TODO: replace this code with the new tripal_get_field_field_formatters()
+          // API function
 
           // All fields should support the Tab and CSV downloaders.
           tripal_load_include_downloader_class('TripalTabDownloader');
@@ -392,7 +397,7 @@ class TripalEntityCollection {
         $unserialized_result[] = $unserialized_field_list;
       }
     }
- 
+
     return $unserialized_result;
   }
 
