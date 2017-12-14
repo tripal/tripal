@@ -46,6 +46,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
    */
   public function handleRequest() {
 
+    // Redirect POST requests to dedicated function
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        return $this->handlePostRequest();
+    }
+
     // Get the content type.
     $ctype     = (count($this->path) > 0) ? $this->path[0] : '';
     $entity_id = (count($this->path) > 1) ? $this->path[1] : '';
@@ -75,6 +80,121 @@ class TripalEntityService_v0_1 extends TripalWebService {
     else {
       $this->doAllTypesList();
     }
+  }
+
+  /**
+   * Handle POST HTTP requests
+   */
+  public function handlePostRequest() {
+
+    global $user;
+
+    // Get the content type.
+    $ctype = (count($this->path) > 0) ? $this->path[0] : '';
+
+    // is this a valid content type?
+    if ($ctype) {
+      $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+      if (!$bundle) {
+        throw new Exception('Invalid content type: ' . $ctype);
+      }
+    }
+    else {
+        throw new Exception('Content type is required');
+    }
+
+    if (!user_access('create ' . $bundle->name, $user)) {
+      throw new Exception("Permission Denied.");
+    }
+
+    // Get the list of available fields
+    $field_mapping = array();
+    $fields = field_info_fields();
+    foreach ($fields as $field) {
+      if (array_key_exists('TripalEntity', $field['bundles'])) {
+        foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+          if ($bundle_name == $bundle->name) {
+            $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+            if (array_key_exists('term_accession', $instance['settings'])){
+              $vocabulary = $instance['settings']['term_vocabulary'];
+              $accession = $instance['settings']['term_accession'];
+              $term = tripal_get_term_details($vocabulary, $accession);
+              $key = $term['name'];
+              $key = strtolower(preg_replace('/ /', '_', $key));
+              $field_mapping[$key] = $field['field_name'];
+            }
+          }
+        }
+      }
+    }
+
+    $converted_params = array();
+    foreach ($this->params as $key => $value) {
+      if (!isset($field_mapping[$key])) {
+        throw new Exception("Invalid parameter: ".$key.".");
+      }
+      $converted_params[$field_mapping[$key]] = $value;
+    }
+
+    // Create the entity
+    $ec = entity_get_controller('TripalEntity');
+    $entity_data = array(
+      'bundle' => $bundle->name,
+      'term_id' => $bundle->term_id,
+    );
+
+    $entity = $ec->create($entity_data);
+    $instances = field_info_instances('TripalEntity', $bundle->name);
+
+    foreach ($instances as $field_name => $instance) {
+      if (isset($converted_params[$field_name])) {
+        $key_field = field_info_field($field_name);
+
+        $field_class = $key_field['type'];
+        if (tripal_load_include_field_class($field_class)) {
+          $key_field = new $field_class($key_field, $instance);
+          $elements = $key_field->elementInfo()[$key_field->getFieldTermID()];
+
+          $key_field->load($entity);
+          var_dump($entity);
+          var_dump($entity->{$field_name}['und'][0]);
+
+          if (isset($elements['elements'])) {
+            /*
+            FIXME Don't know how to get the 'chado-analysis__sourcename'
+            foreach ($elements['elements'] as $elem_key => $elem_value) {
+              $entity->{$field_name}['und'][0]['chado-analysis__sourcename'] = $converted_params[$field_name][$elem_key];
+            }*/
+
+            /*
+            FIXME this is probably useless, no effect when calling save()
+            $entity->{$field_name}['und'][0]['source_data']['sourcename'] = $converted_params[$field_name][$elem_key];
+            $entity->{$field_name}['und'][0]['source_data']['sourceversion'] = $converted_params[$field_name][$elem_key];
+            $entity->{$field_name}['und'][0]['source_data']['sourceuri'] = $converted_params[$field_name][$elem_key];*/
+
+            // FIXME hardcoded for analysis source data
+            $entity->{$field_name}['und'][0]['chado-analysis__sourcename'] = $converted_params[$field_name]['schema:name'];
+            $entity->{$field_name}['und'][0]['chado-analysis__sourceversion'] = $converted_params[$field_name]['IAO:0000129'];
+            $entity->{$field_name}['und'][0]['chado-analysis__sourceuri'] = $converted_params[$field_name]['data:1047'];
+          }
+        }
+        else {
+          $field_table = $instance['settings']['chado_table'];
+          $field_column = $instance['settings']['chado_column'];
+          //$entity->{$field_name}['und'][0]['value'] = $converted_params[$field_name]; // FIXME this is probably useless, no effect when calling save()
+          $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $converted_params[$field_name];
+        }
+      }
+    }
+
+    $entity = $entity->save();
+    if (!$entity) {
+      throw new Exception('Could not create entity.');
+    }
+
+    // Display the created entity
+    $new_entity_path = $this->getServicePath() . '/' . urlencode($ctype) . '/' . $entity->id;
+    drupal_goto($new_entity_path, array('external' => TRUE), 201);
   }
 
   /**
