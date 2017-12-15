@@ -188,10 +188,27 @@ function tripal_ws_get_services() {
     // Now call the service to handle the request.
     $service->setPath($adj_path);
     $service->setParams($args);
-    $service->handleRequest();
+
+    switch ($_SERVER['REQUEST_METHOD']) {
+      case 'GET':
+        $service->handleGET();
+        break;
+      case 'POST':
+        $service->handlePOST();
+        break;
+      case 'PATCH':
+        $service->handlePATCH();
+        break;
+      case 'DELETE':
+        $service->handleDELETE();
+        break;
+      case 'PUT':
+        $service->handlePUT();
+        break;
+    }
+
     $response = $service->getResponse();
     print drupal_json_encode($response);
-
   }
   catch (Exception $e) {
     $service = new TripalWebService($service_path);

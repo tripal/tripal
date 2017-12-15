@@ -42,14 +42,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
   }
 
   /**
-   * @see TripalWebService::handleRequest()
+   * @see TripalWebService::handleGET()
    */
-  public function handleRequest() {
-
-    // Redirect POST requests to dedicated function
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        return $this->handlePostRequest();
-    }
+  public function handleGET() {
 
     // Get the content type.
     $ctype     = (count($this->path) > 0) ? $this->path[0] : '';
@@ -83,9 +78,9 @@ class TripalEntityService_v0_1 extends TripalWebService {
   }
 
   /**
-   * Handle POST HTTP requests
+   * @see TripalWebService::handlePOST()
    */
-  public function handlePostRequest() {
+  public function handlePOST() {
 
     global $user;
 

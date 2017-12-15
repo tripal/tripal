@@ -96,15 +96,41 @@ class TripalWebService {
 
 
   /**
-   * Responds to the request argument provided to the service.
+   * Responds to the GET method for this service.
    *
    * This function should be implemented by a TripalWebService child class.
    *
    */
-  public function handleRequest() {
-    // TODO: make sure the $this->path and $this->params are set before
-    // continuing.
+  public function handleGET() {
   }
+  /**
+   * Responds to the POST (create) method for this service.
+   *
+   * This function should be implemented by a TripalWebService child class.
+   *
+   */
+  public function handlePOST() {
+
+  }
+  /**
+   * Responds to the PATCH (update) method for this service.
+   *
+   * This function should be implemented by a TripalWebService child class.
+   *
+   */
+  public function handlePATCH() {
+
+  }
+  /**
+   * Responds to the DELETE method for this service.
+   *
+   * This function should be implemented by a TripalWebService child class.
+   *
+   */
+  public function handleDELETE() {
+
+  }
+
 
   // --------------------------------------------------------------------------
   //                     CLASS FUNCTIONS -- DO NOT OVERRIDE

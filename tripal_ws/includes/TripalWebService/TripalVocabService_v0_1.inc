@@ -43,7 +43,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
   }
 
   /**
-   * @see TripalWebService::handleRequest()
+   * @see TripalWebService::handleGET()
    */
   public function handleRequest() {
 
