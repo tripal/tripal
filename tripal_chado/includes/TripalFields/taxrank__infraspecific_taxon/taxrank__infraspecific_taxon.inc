@@ -191,16 +191,18 @@ class taxrank__infraspecific_taxon extends ChadoField {
       'chado-organism__type_id' => '',
     );
 
-    if ($record->infraspecific_name) {
-      $label = $record->type_id->name . ' ' . $record->infraspecific_name;
-      $entity->{$field_name}['und'][0]['value'][$label_term] = $label;
-      $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $record->infraspecific_name;
-      $entity->{$field_name}['und'][0]['chado-organism__infraspecific_name'] = $record->infraspecific_name;
-    }
+    if ($record) {
+        if ($record->infraspecific_name) {
+          $label = $record->type_id->name . ' ' . $record->infraspecific_name;
+          $entity->{$field_name}['und'][0]['value'][$label_term] = $label;
+          $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $record->infraspecific_name;
+          $entity->{$field_name}['und'][0]['chado-organism__infraspecific_name'] = $record->infraspecific_name;
+        }
 
-    if ($record->type_id) {
-      $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $record->type_id->name;
-      $entity->{$field_name}['und'][0]['chado-organism__type_id'] = $record->type_id->cvterm_id;
+        if ($record->type_id) {
+          $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $record->type_id->name;
+          $entity->{$field_name}['und'][0]['chado-organism__type_id'] = $record->type_id->cvterm_id;
+        }
     }
   }
 }
