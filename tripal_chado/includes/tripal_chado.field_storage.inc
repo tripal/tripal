@@ -1328,4 +1328,3 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   }
 }
 
-
