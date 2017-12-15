@@ -1302,11 +1302,11 @@ function tripal_insert_entity($bundle_name, $values = array()){
     throw new Exception(t('Please provide a bundle name.'));
   }
 
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
   if (!user_access('create ' . $bundle->name, $user)) {
     throw new Exception("Permission Denied.");
   }
-
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
   // Create the entity.
   $ec = entity_get_controller('TripalEntity');
