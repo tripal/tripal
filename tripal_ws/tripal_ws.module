@@ -125,7 +125,12 @@ function tripal_ws_get_services() {
 
   try {
     $ws_path = func_get_args();
-    $args = $_GET;
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $args = $_GET;
+    }
+    else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $args = json_decode(file_get_contents('php://input'), true);
+    }
     unset($args['q']);
 
     // The web services should never be cached.
