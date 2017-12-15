@@ -1012,7 +1012,7 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
   // such that record can't be saved in Chado.
 
   // TODO: we shouldn't check for specific field types here
-  // (e.g. chaod_linker_prop). That should be done via the TripalField
+  // (e.g. chado_linker_prop). That should be done via the TripalField
   // functions.
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
     if ($form['#field']['storage']['type'] == 'field_chado_storage' and

@@ -191,7 +191,7 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   }
   try {
 
-    // Now allow the loader to do it's own submit if needed.
+    // Now allow the loader to do its own submit if needed.
     $importer = new $class();
     $importer->formSubmit($form, $form_state);
     // If the formSubmit made changes to the $form_state we need to update the

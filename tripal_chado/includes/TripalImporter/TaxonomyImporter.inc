@@ -131,7 +131,7 @@ class TaxonomyImporter extends TripalImporter {
     );
     $form['taxonomy_ids'] = array(
       '#type' => 'textarea',
-      '#title' => 'Taxonomy IDa',
+      '#title' => 'Taxonomy ID',
       '#description' => t('Please provide a list of NCBI taxonomy IDs separated
         by spaces, tabs or new lines.
         The information about these organisms will be downloaded and new organism
@@ -141,7 +141,7 @@ class TaxonomyImporter extends TripalImporter {
     $form['import_existing'] = array(
       '#type' => 'checkbox',
       '#title' => 'Import details for existing species.',
-      '#description' =>  t('The NCBI Taxonmic Importer examines the organisms
+      '#description' =>  t('The NCBI Taxonomic Importer examines the organisms
         currently present in the database and queries NCBI for the
         taxonomic details.  If the importer is able to match the
         genus and species with NCBI the species details will be imported,
@@ -600,7 +600,7 @@ class TaxonomyImporter extends TripalImporter {
       ));
 
       // Remove the rank from the infraspecific name.
-      $abbrev = tripal_abbreviate_infraspeicifc_rank($rank);
+      $abbrev = tripal_abbreviate_infraspecific_rank($rank);
       $infra = preg_replace("/$abbrev/", "", $infra);
       $infra = trim($infra);
 
