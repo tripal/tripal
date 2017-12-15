@@ -1256,7 +1256,40 @@ function _tripal_get_bundle_field_element_details($elements, &$field_details) {
  * @param $bundle_name
  *   The name of the bundle (e.g. bio_data_1)
  * @param $values
- *   An associative array containing the values for the insertion.
+ *   An associative array containing the values for the insertion.  Each
+ *   key/value pair is the machine readable field name and the its values.
+ *   You can identify which fields are required, and other field that are
+ *   available for a given content type by examining the array returned by
+ *   the tripal_get_bundle_details() function.  For fields that are complex
+ *   (i.e. they have a type of 'xs:complexType'), then the value portion can
+ *   be nested array, and the key/value pairs in that nested array should
+ *   follow the heirarchy as present in the array described by the
+ *   tripal_get_bundle_details field.
+ *
+ *   For example, to insert a new organism stored in the Chado database, the
+ *   following $values array can be provided:
+ *
+ *   @code
+ *     $entity = tripal_insert_entity('bio_data_1', array(
+ *       'taxrank__species' => 'Eucalyptus',
+ *       'taxrank__genus' => 'baueriana',
+ *       'local:abbreviation' => 'E. baueriana',
+ *       'common_name' => 'Werribee blue box',
+ *       'schema__description' => 'E. baueriana subsp. thalassina is a ' .
+ *         'subspecies of Eucalyptus baueriana that is endemic to Victoria. ' .
+ *         'It was first formally described by taxonomist Kevin Rule in ' .
+ *         'Muelleria in 2011',
+ *       'taxrank__infraspecific_taxon' => array(
+ *         'infraspecific_type' => 'subspecies,
+ *         'infraspecific_name' => 'thalassina',
+ *       ),
+ *       'local__lineage' => 'cellular organisms; Eukaryota; Viridiplantae; ' .
+ *         'Streptophyta; Streptophytina; Embryophyta; Tracheophyta; ' .
+ *         'Euphyllophyta; Spermatophyta; Magnoliophyta; Mesangiospermae; ' .
+ *         'eudicotyledons; Gunneridae; Pentapetalae; rosids; malvids; ' .
+ *         'Myrtales; Myrtaceae; Myrtoideae; Eucalypteae; Eucalyptus',
+ *     ));
+ *   @endcode
  * @throws Exception
  *
  * @return
