@@ -1230,7 +1230,7 @@ function _tripal_get_bundle_field_element_details($elements, &$field_details) {
      $term = tripal_get_term_details($term_vocab, $term_accession);
 
      $element_details = array(
-       'name' => $element_info['name'],
+       'name' => array_key_exists('name', $element_info) ? $element_info['name'] : strtolower(preg_replace('/_/', ' ', $term['name'])),
        'label' => array_key_exists('label', $element_info) ? $element_info['label'] : ucfirst(preg_replace('/_/', ' ', $term['name'])),
        'help' => array_key_exists('help', $element_info) ? $element_info['help'] : '',
        'term' => array(
