@@ -77,7 +77,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'searchable' => TRUE,
             'label' => 'Infraspecific Full Name',
             'help' => 'The full infraspecific name including the rank and name.',
-            'type' => 'xsstring',
+            'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
           ),
@@ -92,14 +92,15 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'required' => TRUE,
           ),
           $infraspecific_type_term => array(
-            'name' => 'infraspecific_rank',
+            'name' => 'infraspecific_type_term',
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'label' => 'Infraspecific Rank',
-            'help' => 'The infraspecific rank of the organism below the rank of species.',
+            'label' => 'Infraspecific Type Term',
+            'help' => 'The controlled vocabulary term indicating the infra-species type.',
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
+            'expects' => array('cultivar', 'subspecies', 'varietas', 'subvariety', 'forma', 'subforma'),
           ),
         ),
       ),
@@ -148,6 +149,16 @@ class taxrank__infraspecific_taxon extends ChadoField {
       $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id", "LEFT OUTER");
       $query->orderBy($alias . '_cvterm.name', $order['direction']);
     }
+  }
+
+  /**
+   * @see TripalField::prepValues()
+   */
+  public function prepValues(&$entity, $action) {
+    parent::prepValues($entity, $action);
+
+    $field_name = $this->field['field_name'];
+    $values = $entity->field_name;
   }
 
   /**

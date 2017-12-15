@@ -464,12 +464,39 @@ class TripalField {
 
   }
 
+  /**
+   * Prepares a values array for insertion or update.
+   *
+   * When a new entity is created and a field is newly added or updated then
+   * the callee can only provide the information detailed by the
+   * elementInfo() function. However, the field storage backend may need
+   * additional information to store the record.  For example, the Chado
+   * field storage system needs foreign key IDs to store a record that has
+   * foreign keys.  This function can be used to lookup those records
+   * and provide the FK IDs
+   *
+   * If no additional information is needed to perform an insert or an
+   * update then this field need not be implemented in the child class.
+   *
+   * @param $entity
+   *   The entity object. The values array will be adjusted as needed for
+   *   the operation.
+   * @param $action
+   *   Indicates if the desired action is an 'insert' or an 'update'.
+   */
+  public function prepValues(&$entity, $action) {
+    if ($action != 'insert' and $action != 'update') {
+      throw new Exception(t('TripalField::prepValues. Please provide an action of either insert or update.'));
+    }
+
+  }
+
 
   /**
    * Loads the field values from the underlying data store.
    *
    * @param $entity
-   *
+   *   The entity object.
    * @return
    *   An array of the following format:
    *     $entity->{$field_name}['und'][0]['value'] = $value;

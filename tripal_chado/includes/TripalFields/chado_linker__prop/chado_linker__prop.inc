@@ -57,8 +57,56 @@ class chado_linker__prop extends ChadoField {
   // and field_create_instance().
   public static $no_ui = FALSE;
 
+
   /**
-   *
+   * @see TripalField::prepValues()
+   */
+  public function prepValues(&$entity, $action) {
+    parent::prepValues($entity, $action);
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
+
+    // Get the FK that links to the base record.
+    $schema = chado_get_schema($field_table);
+    $pkey = $schema['primary key'][0];
+    if (!isset($schema['foreign keys'][$base_table]['columns'])) {
+      return;
+    }
+    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    // Get the type_id for the property.
+    $vocabulary = $this->instance['settings']['term_vocabulary'];
+    $accession = $this->instance['settings']['term_accession'];
+    $cvterm = tripal_get_cvterm(array(
+      'dbxref_id' => array(
+        'db_id' => array(
+          'name' => $vocabulary,
+        ),
+        'accession' => $accession,
+      ),
+    ));
+    $cvterm_id = $cvterm->cvterm_id;
+
+    if ($action == 'insert') {
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__' . $pkey] = '';
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__' . $fkey_lcolumn] = '';
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__rank'] = 0;
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__value'] = $entity->$field_name['und'][0]['value'];
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__type_id'] = $cvterm_id;
+      $entity->$field_name['und'][0]['chado-' . $field_table . '__rank'] = 0;
+    }
+    if ($action == 'update') {
+      // TODO: finish up the update code here.
+    }
+
+
+  }
+  /**
    * @see TripalField::load()
    */
   public function load($entity) {
@@ -68,6 +116,7 @@ class chado_linker__prop extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
+    // Get the type_id for the property.
     $vocabulary = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
     $cvterm = tripal_get_cvterm(array(

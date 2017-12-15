@@ -1122,8 +1122,23 @@ function tripal_entity_label($entity) {
   return NULL;
 }
 
+/**
+ * Retrieves an array describing the bundle and its fields.
+ *
+ * @param $bundle_name
+ *   The name of the bundle to retrieve.
+ *
+ * @throws Exception
+ *
+ * @return
+ *   An array describing the content type (bundle)
+ */
 function tripal_get_bundle_details($bundle_name) {
   global $user;
+
+  if (!$bundle_name) {
+    throw new Exception(t('Please provide a bundle name.'));
+  }
 
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
@@ -1152,11 +1167,11 @@ function tripal_get_bundle_details($bundle_name) {
 
     $field_name = $instance['field_name'];
     $field = field_info_field($field_name);
-
     $field_class = $field['type'];
     $term_vocab = $instance['settings']['term_vocabulary'];
     $term_accession = $instance['settings']['term_accession'];
     $field_term = tripal_get_term_details($term_vocab, $term_accession);
+
     $field_details = array(
       'name' => $field_name,
       'label' => $instance['label'],
@@ -1193,9 +1208,9 @@ function tripal_get_bundle_details($bundle_name) {
       if (array_key_exists('elements', $element_info) and is_array($element_info['elements'])) {
         _tripal_get_bundle_field_element_details($element_info['elements'], $field_details);
       }
-      $details['fields'][] = $field_details;
     }
 
+    $details['fields'][] = $field_details;
   }
   return $details;
 }
@@ -1235,54 +1250,122 @@ function _tripal_get_bundle_field_element_details($elements, &$field_details) {
    }
 }
 
-function tripal_insert_entity($bundle_name, $values){
+/**
+ * Inserts a new enitty.
+ *
+ * @param $bundle_name
+ *   The name of the bundle (e.g. bio_data_1)
+ * @param $values
+ *   An associative array containing the values for the insertion.
+ * @throws Exception
+ *
+ * @return
+ *   The newly created entity object.
+ */
+function tripal_insert_entity($bundle_name, $values = array()){
   global $user;
+
+  if (!$bundle_name) {
+    throw new Exception(t('Please provide a bundle name.'));
+  }
+
+  if (!user_access('create ' . $bundle->name, $user)) {
+    throw new Exception("Permission Denied.");
+  }
 
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-  // Get the fields associated with this content type.
-  $instances = field_info_instances('TripalEntity', $bundle->name);
-
-  foreach ($instances as $instance) {
-    $field_name = $instance['field_name'];
-    $field = field_info_field($field_name);
-    $field_type = $field['type'];
-    $field_settings = $field['settings'];
-    $instance_settings = $instance['settings'];
-    $field_name = $field['field_name'];
-    $vocabulary = $instance['settings']['term_vocabulary'];
-    $accession = $instance['settings']['term_accession'];
-    $field_accession = $vocabulary . ':' . $accession;
-    $field_term = tripal_get_term_details($vocabulary, $accession);
-    $field_key = $field_term['name'];
-    $field_key = strtolower(preg_replace('/ /', '_', $key));
-
-    // There are three ways that a field value can be specified. Those
-    // are as the controlled vocabulary accession (e.g. GO:0000134), sa
-    // the field name or as the field key which is the term name with
-    // spaces replaced with underscores.
-    // First make sure that required fields are present.
-    if ($instance['required'] == TRUE) {
-      if (!array_key_exists($field_key, $values) and
-          !array_key_exists($field_accession, $values) and
-          !array_key_exists($field_name, $values)) {
-        throw new Exception(t('Cannot insert the record. Missing the required field "%missing".',
-          array('%missing' => $field_name)));
-      }
-    }
-  }
-
-  // Make sure that all required fields are presnet
-
-  // TODO: make sure the user has permission to do this.
+  // Create the entity.
   $ec = entity_get_controller('TripalEntity');
   $entity = $ec->create(array(
     'bundle' => $bundle_name,
     'term_id' => $bundle->term_id,
   ));
+
+  // Iterate through each of the field instances for this bundle and build
+  // the values array for the entity.
+  $instances = field_info_instances('TripalEntity', $bundle->name);
+  foreach ($instances as $instance) {
+    $instance_settings = $instance['settings'];
+    $field_name = $instance['field_name'];
+    $field = field_info_field($field_name);
+    $field_type = $field['type'];
+    $field_settings = $field['settings'];
+    $vocabulary = $instance['settings']['term_vocabulary'];
+    $accession = $instance['settings']['term_accession'];
+    $field_term = tripal_get_term_details($vocabulary, $accession);
+
+    // There are three ways that a field value can be specified. Those
+    // are as the controlled vocabulary accession (e.g. GO:0000134), as
+    // the field name (e.g. obi__organism) or as the field key which
+    // is the term name with all characters lowercase and spaces replaced
+    // with underscores.
+    $field_key = $field_term['name'];
+    $field_key = strtolower(preg_replace('/ /', '_', $field_key));
+    $field_name = $field['field_name'];
+    $field_accession = $vocabulary . ':' . $accession;
+
+    // First make sure that required fields are present.
+    if ($instance['required'] == TRUE) {
+      if (!array_key_exists($field_key, $values) and
+          !array_key_exists($field_accession, $values) and
+          !array_key_exists($field_name, $values)) {
+        throw new Exception(t('Cannot insert the record. Missing the required field "!missing".',
+          array('!missing' => $field_name)));
+      }
+    }
+
+    // Get the values for this field from the array.
+    $field_values = '';
+    $has_value = FALSE;
+    if (array_key_exists($field_name, $values)) {
+      $field_values = $values[$field_name];
+      $has_value = TRUE;
+    }
+    if (array_key_exists($field_accession, $values)) {
+      $field_values = $values[$field_accession];
+      $has_value = TRUE;
+    }
+    if (array_key_exists($field_key, $values)) {
+      $field_values = $values[$field_key];
+      $has_value = TRUE;
+    }
+
+    // If the field instance is not in the $values array then just continue.
+    if (!$has_value) {
+      continue;
+    }
+
+    // TODO: If the field expects a certain set of values then make sure a
+    // valid one is provided.
+
+    // Add the values to the entity.
+    if (is_array($field_values)) {
+      for ($i = 0; $i < count($field_values); $i++) {
+        $entity->$field_name['und'][$i]['value'] = $field_values[$i];
+      }
+    }
+    else {
+      $entity->$field_name['und'][0]['value'] = $field_values;
+    }
+
+    // If this is a TripalField then we want to allow the field to
+    // adjust the values as needed. Otherwise, just set the value.
+    if (tripal_load_include_field_class($field_type)) {
+      $field_obj = new $field_type($field, $instance);
+      $field_obj->prepValues($entity, 'insert');
+    }
+  }
+
   $entity = $entity->save();
+  return $entity;
 }
 
+/**
+ *
+ * @param unknown $bundle_name
+ * @param unknown $values
+ */
 function tripal_update_entity($bundle_name, $values) {
 
 
