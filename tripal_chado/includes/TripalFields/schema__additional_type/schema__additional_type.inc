@@ -97,9 +97,87 @@ class schema__additional_type extends ChadoField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => $record->type_id->name,
-      'chado-' . $field_table . '__type_id' => $record->type_id->cvterm_id,
+      'value' => '',
+      'chado-' . $field_table . '__type_id' => '',
     );
+
+    if ($record->type_id) {
+      $entity->{$field_name}['und'][0] = array(
+        'value' => $record->type_id->name,
+        'chado-' . $field_table . '__type_id' => $record->type_id->cvterm_id,
+      );
+    }
   }
 
+  /**
+   * @see ChadoField::instanceSettingsForm()
+   */
+  public function instanceSettingsForm(){
+    $element = parent::instanceSettingsForm();
+    $settings = $this->instance['settings'];
+
+    $element['vocabulary']  = array(
+      '#title'  => t('Enforce Vocabulary'),
+      '#type' => 'textfield',
+      '#description' => t('Optional. Enter the name of the vocabulary that must be used when the user selects a term for the additional type. If no value is provided then the user can select from any term available on the site.') ,
+      '#default_value' => $settings['vocabulary'],
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cv",
+    );
+
+    $element['parent_term']  = array(
+      '#title'  => t('Enforce Parent Term'),
+      '#type' => 'textfield',
+      '#description' => t('Optional. If a vocabulary is heirarchical and if the user should be restricted to a set of terms below a given parent term, then enter the parent term here. The term should be in the form {db}:{accession} where {db} is the short name for the database (e.g. GO, SO, TPUB, TContact) and {accession} is the unique identifier for that term in the vocabulary (e.g. TContact:0000001).') ,
+      '#default_value' => $settings['parent_term'],
+    );
+
+    return $element;
+  }
+
+  /**
+   * @see TripalField::settingsFormValidate()
+   */
+  public function settingsFormValidate($form, &$form_state) {
+    $element = parent::settingsFormValidate($form, $form_state);
+
+    $values = $form_state['values']['instance']['settings'];
+
+    // Make sure te vocabulary and parent term exist
+    $vocabulary = $values['vocabulary'];
+    $parent_term = $values['parent_term'];
+
+    $good_vocab = FALSE;
+    if ($vocabulary) {
+      $sql = "SELECT cv_id FROM {cv} WHERE name = :name";
+      $results = chado_query($sql, array(':name' => $vocabulary));
+      $cv_id = $results->fetchField();
+      if (!$cv_id) {
+        form_set_error('instance][settings][vocabulary', 'Invalid vocabulary');
+      }
+      else {
+        $good_vocab =  TRUE;
+      }
+    }
+
+    if ($parent_term and $good_vocab) {
+      $matches = array();
+      if (preg_match('/^(.+):(.+)$/', $parent_term, $matches)) {
+        $db = $matches[1];
+        $accession = $matches[2];
+        $values = array(
+          'db_id' => array(
+            'name' => $db,
+          ),
+          'accession' => $accession,
+        );
+        $records = chado_select_record('dbxref', array('dbxref_id'), $values);
+        if (count($records) == 0) {
+          form_set_error('instance][settings][parent_term', 'The specified parent term does not exist on this site. Please check the entry.');
+        }
+      }
+      else {
+        form_set_error('instance][settings][parent_term', 'Please provide a parent term in the correct format.');
+      }
+    }
+  }
 }

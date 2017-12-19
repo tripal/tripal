@@ -147,7 +147,7 @@ function tripal_get_analysis_select_options($syncd_only = TRUE) {
         INNER JOIN {analysis} A ON A.analysis_id = CO.analysis_id
       ORDER BY A.name
     ";
-    $orgs = chado_query($sql);
+    $analyses = chado_query($sql);
 
     // iterate through the analyses and build an array of those that are synced
     foreach ($analyses as $analysis) {

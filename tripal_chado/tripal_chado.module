@@ -517,6 +517,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/cv/%'] = array(
+    'page callback' => 'tripal_autocomplete_cv',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.cv.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/storage/chado/auto_name/cvterm/%/%'] = array(
     'page callback' => 'tripal_autocomplete_cvterm',
     'page arguments' => array(6, 7),
