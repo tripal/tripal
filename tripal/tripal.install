@@ -391,6 +391,12 @@ function tripal_tripal_collection_bundle_schema() {
         'not null' => TRUE,
         'description' => 'An array of numeric field IDs.'
       ),
+      'site_id' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'The ID of the site from the Tripal Sites table.'
+      ),
     ),
     'indexes' => array(
       'collection_id' => array('collection_id')
@@ -1079,6 +1085,29 @@ function tripal_update_7308() {
      $schema = array();
     $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
     db_create_table('tripal_collection_bundle', $schema['tripal_collection_bundle']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
+  }
+}
+
+/**
+ * Add the site_id field to the tripal_collection_bundle table.
+ */
+function tripal_update_7309() {
+  $transaction = db_transaction();
+  try {
+    if (!db_field_exists('tripal_collection_bundle', 'site_id')) {
+       $field = array(
+        'type' => 'int',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'The ID of the site from the Tripal Sites table.',
+      );
+      db_add_field('tripal_collection_bundle', 'site_id', $field);
+    }
   }
   catch (\PDOException $e) {
     $transaction->rollback();

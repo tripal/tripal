@@ -131,6 +131,13 @@ class TripalEntityCollection {
     $bundle_name = "";
     if (count($this->bundles) > 1) {
       foreach ($this->bundles as $bundle) {
+        // If bundle name is not bio_data_# then it's an accession name from
+        // a remote site, so we need to handle it differently.
+        $bundle_name = $bundle->bundle_name;
+        if (strpos($bundle->bundle_name, 'bio_data_') !== 0) {
+          $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
+          $fields[$bundle_name] = $this->getFields($bundle_name);
+        }
         $bundle_name = $bundle->bundle_name;
         $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
         $fields[$bundle_name] = $this->getFields($bundle_name);
@@ -145,82 +152,9 @@ class TripalEntityCollection {
         $this->fields = $this->getFields($bundle_name);
       }
     }
-
     // Iterate through the fields and find out what download formats are
     // supported for this basket.
-    foreach ($this->fields as $field_group) {
-      foreach ($field_group as $field_id) {
-        // Check is $field_groups is an array because if it is that means we
-        // nested arrays we need to deal with.
-        if (is_array($field_id)) {
-          foreach ($field_id as $field) {
-            $field_info = field_info_field_by_id($field);
-            if (!$field_info) {
-              continue;
-            }
-            $field_name = $field_info['field_name'];
-            $field_type = $field_info['type'];
-            $field_module = $field_info['module'];
-            $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-
-            $downloaders = array();
-
-            // TODO: replace this code with the new tripal_get_field_field_formatters()
-            // API function
-            // All fields should support the Tab and CSV downloaders.
-            tripal_load_include_downloader_class('TripalTabDownloader');
-            $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-            tripal_load_include_downloader_class('TripalCSVDownloader');
-            $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
-
-            if (tripal_load_include_field_class($field_type)) {
-              $settings = $field_type::$default_instance_settings;
-              if (array_key_exists('download_formatters', $settings)) {
-                foreach ($settings['download_formatters'] as $class_name) {
-                  if (!array_key_exists($class_name, $this->downloaders)) {
-                    tripal_load_include_downloader_class($class_name);
-                    $this->downloaders[$class_name] = $class_name::$label;
-                  }
-                }
-              }
-            }
-          }
-        }
-        else {
-          $field = field_info_field_by_id($field_id);
-          if (!$field) {
-            continue;
-          }
-          $field_name = $field['field_name'];
-          $field_type = $field['type'];
-          $field_module = $field['module'];
-          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-
-          $downloaders = array();
-
-          // TODO: replace this code with the new tripal_get_field_field_formatters()
-          // API function
-
-          // All fields should support the Tab and CSV downloaders.
-          tripal_load_include_downloader_class('TripalTabDownloader');
-          $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-          tripal_load_include_downloader_class('TripalCSVDownloader');
-          $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
-
-          if (tripal_load_include_field_class($field_type)) {
-            $settings = $field_type::$default_instance_settings;
-            if (array_key_exists('download_formatters', $settings)) {
-              foreach ($settings['download_formatters'] as $class_name) {
-                if (!array_key_exists($class_name, $this->downloaders)) {
-                  tripal_load_include_downloader_class($class_name);
-                  $this->downloaders[$class_name] = $class_name::$label;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    $this->downloaders = $this->getDownloadFormattersList($this->fields);
   }
 
   /**
@@ -335,6 +269,116 @@ class TripalEntityCollection {
   }
 
   /**
+   * Retrieves the site id for this specific bundle fo the collection.
+   *
+   * @return
+   *   A single site id.
+   */
+  public function getSiteId($bundle_name) {
+    $collection_id = $this->collection_id;
+    // Return the bundles from the collection_bundle table.
+    $result = db_select('tripal_collection_bundle')
+      ->fields('tripal_collection_bundle', array('site_id'))
+      ->condition('collection_id', $collection_id, '=')
+      ->condition('bundle_name', $bundle_name, '=')
+      ->execute()
+      ->fetchAssoc();
+
+    return $result;
+  }
+
+  /**
+   * Retrieves the list of appropriate download formatters for the basket.
+   *
+   * @return
+   *   An associative array where the key is the TripalFieldDownloader class
+   *   name and the value is the human-readable lable for the formatter.
+   */
+  public function getDownloadFormattersList($fields) {
+    $downloaders = array();
+    // Iterate through the fields and find out what download formats are
+    // supported for this basket.
+    foreach ($fields as $bundle_name => $field_group) {
+      foreach ($field_group as $field_id) {
+        // Check is $field_groups is an array because if it is that means we
+        // nested arrays we need to deal with.
+        if (is_array($field_id)) {
+          foreach ($field_id as $field) {
+            // If the $field is numeric it's a field id from the local site but
+            // if it is not then it's a remote field that needs to be handled differently.
+            if (!is_numeric($field)) {
+              // Need the site ID from the tripal_collection_bundle table.
+              $site_id = $this->getSiteId($bundle_name);
+              // Use the webservices call to pull the available downloaders list.
+              // Need to pull the vocab doc of the web services to know the download formats.
+              // Use the api call to get the vocab for the site which will need to be parsed 
+              // to find the accession and the download types available.
+              $site_vocab = tripal_web_services_vocab_request($site_id);
+              foreach ($site_vocab as $item) {
+                if (is_array($item)) {
+                  foreach ($item as $vocab_term) {
+                    if (!empty($vocab_term['supportedProperty'])) {
+                      $vocab_supported_properties = $vocab_term['supportedProperty'];
+                      if (is_array($vocab_supported_properties)) {
+                        foreach ($vocab_supported_properties as $property) {
+                          if ($property['property'] === $field) {
+                            if (in_array('tripal_formatters', $property)) {
+                              $download_types = $property['tripal_formatters'];
+
+                              foreach ($download_types as $download_type) {
+                                $this->downloaders[$download_type] = $download_type;
+                                continue 7;
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else {
+                        if (in_array('tripal_formatters', $vocab_supported_properties)) {
+                          $download_types = $vocab_supported_properties['tripal_formatters'];
+                          foreach ($download_types as $download_type) {
+                            $this->downloaders[$download_type] = $download_type;
+                            continue 6;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            else {
+              $field_info = field_info_field_by_id($field);
+              if (!$field_info) {
+                continue;
+              }
+            }
+            $field_name = $field_info['field_name'];
+            $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+            // API function
+            // All fields should support the Tab and CSV downloaders.
+            $downloaders = array();
+            $this->downloaders += tripal_get_field_field_formatters($field);
+          }
+        }
+        else {
+          $field = field_info_field_by_id($field_id);
+          if (!$field) {
+            continue;
+          }
+          $field_name = $field['field_name'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+          // API function
+          $downloaders = array();
+          $this->downloaders += tripal_get_field_field_formatters($field);
+        }
+      }
+    }
+    return $this->downloaders;
+  }
+
+
+  /**
    * Retrieves the list of appropriate download formatters for the basket.
    *
    * @return
@@ -365,6 +409,7 @@ class TripalEntityCollection {
     $unserialized_result = [];
     foreach ($result as $id_list) {
       $unserialized_id_list = unserialize($id_list->ids);
+  
       foreach ($id_list as $item) {
         $unserialized_result[] = $unserialized_id_list;
       }
@@ -588,55 +633,119 @@ class TripalEntityCollection {
           foreach ($field_id as $field) {
             // If the formatter is TripalTabDownloader or TripalCSVDownloader then
             // we always want to support the field.
-            if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
+            if ($tripal_create_collection_files == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
               if (!in_array($field, $supported_fields)) {
                 $supported_fields[] = $field;
               }
               continue;
             }
 
-            // Otherwise, find out if the formatter specified is supporte by the
-            // field and if so then add it to our list of supported fields.
-            $field_info = field_info_field_by_id($field);
-            $field_name = $field_info['field_name'];
-            $field_type = $field_info['type'];
-            if (tripal_load_include_field_class($field_type)) {
-              $settings = $field_type::$default_instance_settings;
-              if (array_key_exists('download_formatters', $settings)) {
-                if (in_array($formatter, $settings['download_formatters'])) {
-                  $supported_fields[] = $field;
+            // If the $field is numeric it's a field id from the local site but
+            // if it is not then it's a remote field that needs to be handled differently.
+            if (!is_numeric($field)) {
+              // Need the site ID from the tripal_collection_bundle table.
+              $collection_id = $this->collection_id;
+              // Return the bundles from the collection_bundle table.
+              $collections = db_select('tripal_collection_bundle')
+                ->fields('tripal_collection_bundle')
+                ->condition('collection_id', $collection_id, '=')
+                ->execute()
+                ->fetchAll();
+
+              // Now that we have all possible bundles we need to find the right one.
+              foreach ($collections as $collection) {
+                $fields = unserialize($collection->fields);
+                if (in_array($field, $fields)) {
+                  $site_id = $collection->site_id;
+                }
+              }
+              // Use the webservices call to pull the available downloaders list.
+              // Need to pull the vocab doc of the web services to know the download formats.
+              // Use the api call to get the vocab for the site which will need to be parsed 
+              // to find the accession and the download types available.
+              if (!empty($site_id)) {
+                $site_vocab = tripal_web_services_vocab_request($site_id);
+                foreach ($site_vocab as $item) {
+                  if (is_array($item)) {
+                    foreach ($item as $vocab_term) {
+                      if (!empty($vocab_term['supportedProperty'])) {
+                        $vocab_supported_properties = $vocab_term['supportedProperty'];
+                        if (is_array($vocab_supported_properties)) {
+                          foreach ($vocab_supported_properties as $property) {
+                            if ($property['property'] === $field) {
+                              if (in_array('tripal_formatters', $property)) {
+                                $download_types = $property['tripal_formatters'];
+                                foreach ($download_types as $download_type) {
+                                  if ($formatter == $download_type) {
+                                    $supported_fields[] = $field;
+                                    continue 5;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        else {
+                          if (in_array('tripal_formatters', $vocab_supported_properties)) {
+                            $download_types = $vocab_supported_properties['tripal_formatters'];
+                            foreach ($download_types as $download_type) {
+                              if ($formatter == $download_type) {
+                                $supported_fields[] = $field;
+                                continue 3;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
-          }
-        }
-        else {
-          // If the formatter is TripalTabDownloader or TripalCSVDownloader then
-          // we always want to support the field.
-          if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
-            if (!in_array($field_id, $supported_fields)) {
-              $supported_fields[] = $field_id;
-            }
-            continue;
-          }
+            else {
+              // Otherwise, find out if the formatter specified is supported by the
+              // field and if so then add it to our list of supported fields.
+              $field_info = field_info_field_by_id($field);
+              $field_name = $field_info['field_name'];
+              $field_type = $field_info['type'];
+              if (tripal_load_include_field_class($field_type)) {
+                $settings = $field_type::$default_instance_settings;
+                if (array_key_exists('download_formatters', $settings)) {
+                  if (in_array($formatter, $settings['download_formatters'])) {
+                    $supported_fields[] = $field;
+                  }
+                }
+              }
+              else {
+                // If the formatter is TripalTabDownloader or TripalCSVDownloader then
+                // we always want to support the field.
+                if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
+                  if (!in_array($field_id, $supported_fields)) {
+                    $supported_fields[] = $field_id;
+                  }
+                  continue;
+                }
 
-          // Otherwise, find out if the formatter specified is supporte by the
-          // field and if so then add it to our list of supported fields.
-          $field = field_info_field_by_id($field_id);
-          $field_name = $field['field_name'];
-          $field_type = $field['type'];
-          if (tripal_load_include_field_class($field_type)) {
-            $settings = $field_type::$default_instance_settings;
-            if (array_key_exists('download_formatters', $settings)) {
-              if (in_array($formatter, $settings['download_formatters'])) {
-                $supported_fields[] = $field_id;
+                // Otherwise, find out if the formatter specified is supporte by the
+                // field and if so then add it to our list of supported fields.
+                $field = field_info_field_by_id($field_id);
+                $field_name = $field['field_name'];
+                $field_type = $field['type'];
+                if (tripal_load_include_field_class($field_type)) {
+                  $settings = $field_type::$default_instance_settings;
+                  if (array_key_exists('download_formatters', $settings)) {
+                    if (in_array($formatter, $settings['download_formatters'])) {
+                      $supported_fields[] = $field_id;
+                    }
+                  }
+                }
               }
             }
           }
         }
       }
     }
-
+    print_r($supported_fields);
     $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid);
     $downloader->write();
 

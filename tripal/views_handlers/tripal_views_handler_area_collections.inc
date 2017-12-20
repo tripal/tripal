@@ -46,13 +46,13 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
 
   $form = array();
   $form['save_collection'] = array(
-   '#type' => 'fieldset',
-   '#title' => t('Save Results'),
-   '#collapsible' => TRUE,
-   '#collapsed' => TRUE,
-   '#description' => t('A data collection is a virtual container into which you can
-     save data.  You can place your search results into a data collection for
-     download or use with other tools on this site that support data collections.'),
+    '#type' => 'fieldset',
+    '#title' => t('Save Results'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('A data collection is a virtual container into which you can
+      save data.  You can place your search results into a data collection for
+      download or use with other tools on this site that support data collections.'),
   );
   $form['save_collection']['bundle'] = array(
     '#type' => 'value',
@@ -67,22 +67,22 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     '#value' => unserialize(serialize($query->query))
   );
   $form['save_collection']['summary'] = array(
-   '#type' => 'item',
-   '#title' => 'Results Summary',
-   '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
+    '#type' => 'item',
+    '#title' => 'Results Summary',
+    '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
   );
   $form['save_collection']['collection_name'] = array(
-   '#type' => 'textfield',
-   '#title' => t('Collection Name'),
-   '#description' => t('Please name this collection for future reference.'),
-   '#default_value' => $collection_name,
-   '#required' => TRUE,
+    '#type' => 'textfield',
+    '#title' => t('Collection Name'),
+    '#description' => t('Please name this collection for future reference.'),
+    '#default_value' => $collection_name,
+    '#required' => TRUE,
   );
   $form['save_collection']['collection_desc'] = array(
-   '#type' => 'textarea',
-   '#title' => t('Description'),
-   '#description' => t('Please provide a description about this data collection.'),
-   '#default_value' => $collection_name,
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#description' => t('Please provide a description about this data collection.'),
+    '#default_value' => $collection_name,
   );
 
   // Get the list of fields used in the view.
@@ -117,7 +117,7 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
         foreach ($instance_settings['download_formatters'] as $class_name) {
           if ($class_name != 'TripalTabDownloader' and $class_name != 'TripalCSVDownloader') {
             tripal_load_include_downloader_class($class_name);
-              $formatters[] = $class_name::$label;
+            $formatters[] = $class_name::$label;
           }
         }
       }
@@ -127,7 +127,7 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     }
 
     // Add the field to those supported.
-    $field_ids[$instance['field_id']] =  $field_label;
+    $field_ids[$instance['field_id']] = $field_label;
 
     // Automatically check fields that are in the view and not excluded.
     if (array_key_exists($field_name, $view_fields)) {

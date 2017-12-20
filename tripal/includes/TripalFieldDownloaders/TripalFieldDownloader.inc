@@ -117,53 +117,60 @@ abstract class TripalFieldDownloader {
     // apart so that headers and content correspond.
     if (count($this->bundle_name) > 1) {
       foreach ($this->bundle_name as $bundle) {
-        $bundle_id = $bundle->bundle_name;
-        // Get the bundle display name so it makes sense to the end user.
-        $bundle_label = db_select('tripal_bundle', 'TB')
-          ->fields('TB', array('label'))
-          ->condition('TB.name', $bundle_id, '=')
-          ->execute()
-          ->fetchAssoc();
-        fwrite($fh, $bundle_label['label'] . "\r\n");
-
         // Set the single bundle name for getting the Header.
-        $this->bundle_name = $bundle_id;
-
+        $this->bundle_name = $bundle->bundle_name;
         $headers = $this->getHeader();
         if ($headers) {
           foreach ($headers as $line) {
             fwrite($fh, $line . "\r\n");
           }
         }
-        foreach ($this->entity_ids[$bundle_id] as $entity_id) {
-          if (is_array($entity_id)) {
-            foreach ($entity_id as $single_entity) {
-              if (is_array($single_entity)) {
-                foreach ($single_entity as $entity) {
-                  $result = tripal_load_entity('TripalEntity', array($entity), FALSE, $this->fields);
-                  $entity_info = $result[$entity];
-                  $lines = $this->formatEntity($entity_info);
+
+        // Determine if the entity is remote or local.
+        if (strpos($this->bundle_name, 'bio_data_') !== 0) {
+          // Because this is a remote field we need to construct a fake entity.
+          /*
+
+          $lines = $this->formatEntity($entity_info);
+          foreach ($lines as $line) {
+            fwrite($fh, $line . "\r\n");
+          }*/
+
+        }
+        else {
+          foreach ($this->entity_ids[$bundle_id] as $entity_id) {
+            if (is_array($entity_id)) {
+              foreach ($entity_id as $single_entity) {
+
+                if (is_array($single_entity)) {
+                  foreach ($single_entity as $entity) {
+                    // If the field is from a remote entity then we need to load the info through web services. 
+
+                    $result = tripal_load_entity('TripalEntity', array($entity), FALSE, $this->fields);
+                    $entity_info = $result[$entity];
+                    $lines = $this->formatEntity($entity_info);
+                    foreach ($lines as $line) {
+                      fwrite($fh, $line . "\r\n");
+                    }
+                  }
+                }
+                else {
+                  $result = tripal_load_entity('TripalEntity', array($single_entity), FALSE, $this->fields);
+                  $entity = $result[$single_entity];
+                  $lines = $this->formatEntity($entity);
                   foreach ($lines as $line) {
                     fwrite($fh, $line . "\r\n");
                   }
                 }
               }
-              else {
-                $result = tripal_load_entity('TripalEntity', array($single_entity), FALSE, $this->fields);
-                $entity = $result[$single_entity];
-                $lines = $this->formatEntity($entity);
-                foreach ($lines as $line) {
-                  fwrite($fh, $line . "\r\n");
-                }
-              }
             }
-          }
-          else {
-            $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
-            $entity = $result[$entity_id];
-            $lines = $this->formatEntity($entity);
-            foreach ($lines as $line) {
-              fwrite($fh, $line . "\r\n");
+            else {
+              $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
+              $entity = $result[$entity_id];
+              $lines = $this->formatEntity($entity);
+              foreach ($lines as $line) {
+                fwrite($fh, $line . "\r\n");
+              }
             }
           }
         }

@@ -15,6 +15,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
    * @see TripalFieldDownloader::format()
    */
   protected function formatEntity($entity) {
+    print_r($entity);
     $row = array();
     foreach ($this->fields as $field_id) {
       $field = field_info_field_by_id($field_id);
