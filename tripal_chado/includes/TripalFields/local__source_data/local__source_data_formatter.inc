@@ -21,13 +21,13 @@ class local__source_data_formatter extends ChadoFieldFormatter {
     if ($items[0]['value']) {
       $content = "<dl class=\"tripal-dl\">";
       if (!empty($items[0]['value'][$sourcename_term])) {
-        $content .= "<dt>Source Name</dt><dd>: " . $items[0]['value']['schema:name'] . " </dd>";
+        $content .= "<dt>Source Name</dt><dd>: " . $items[0]['value'][$sourcename_term] . " </dd>";
       }
       if (!empty($items[0]['value'][$sourceversion_term])) {
-        $content .= "<dt>Source Version</dt><dd>: " . $items[0]['value']['IAO:0000129'] . " </dd>";
+        $content .= "<dt>Source Version</dt><dd>: " . $items[0]['value'][$sourceversion_term] . " </dd>";
       }
       if (!empty($items[0]['value'][$sourceuri_term])) {
-        $content .= "<dt>Source URI</dt><dd>: " . l($items[0]['value']['data:1047'], $items[0]['value']['data:1047'], array('attributes' => array('target' => '_blank'))) . " </dd>";
+        $content .= "<dt>Source URI</dt><dd>: " . l($items[0]['value'][$sourceuri_term], $items[0]['value'][$sourceuri_term], array('attributes' => array('target' => '_blank'))) . " </dd>";
       }
       $content .= "</dl>";
     }

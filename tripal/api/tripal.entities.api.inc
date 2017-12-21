@@ -1048,7 +1048,7 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
     if (property_exists($entity, $field_name)) {
       // Note: there is a memory leak in field_get_items() so we can't use it
-      // here or bulk publising will slowly erode memory.
+      // here or bulk publishing will slowly erode memory.
       //$field_value = field_get_items('TripalEntity', $entity, $field_name);
       if (array_key_exists(0, $entity->{$field_name}['und'])) {
         $value = $entity->{$field_name}['und'][0]['value'];
@@ -1120,4 +1120,170 @@ function tripal_entity_label($entity) {
     return $entity->title;
   }
   return NULL;
+}
+
+function tripal_get_bundle_details($bundle_name) {
+  global $user;
+
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $vocab = $term->vocab;
+  $instances = field_info_instances('TripalEntity', $bundle->name);
+
+  $details = array(
+    'name' => $bundle->name,
+    'label' => $bundle->label,
+    'term' => array(
+      'accession' => $vocab->vocabulary . ':' . $term->accession,
+      'name' => $term->name,
+      'definition' => $term->definition,
+      'url' => $term->url
+    ),
+    'fields' => array(),
+  );
+
+  // Iterate through each feild and provide a discription of it and
+  // it's sub elements.
+  foreach ($instances as $instance) {
+    // Skip deleted fields.
+    if ($instance['deleted']) {
+      continue;
+    }
+
+    $field_name = $instance['field_name'];
+    $field = field_info_field($field_name);
+
+    $field_class = $field['type'];
+    $term_vocab = $instance['settings']['term_vocabulary'];
+    $term_accession = $instance['settings']['term_accession'];
+    $field_term = tripal_get_term_details($term_vocab, $term_accession);
+    $field_details = array(
+      'name' => $field_name,
+      'label' => $instance['label'],
+      'term' => array(
+        'accession' => $term_vocab . ":" . $term_accession,
+        'name' => $field_term['name'],
+        'definition' => $field_term['definition'],
+        'url' => $field_term['url'],
+      ),
+      // These items can be overridden by the element_info array that
+      // is present in a TripalField instance.  Here we set defaults.
+      'required' => $instance['required'] ? TRUE : FALSE,
+      'type' => 'xs:string',
+      'readonly' => TRUE,
+      // The cardinatlity value always comes from the field.
+      'cardinality' => $field['cardinality'],
+    );
+
+    if (tripal_load_include_field_class($field_class)) {
+      $field_obj = new $field_class($field, $instance);
+      $element_info = $field_obj->elementInfo();
+      $element_info = $element_info[$term_vocab . ':' . $term_accession];
+
+      // If the element info for this field sets required, type and readonly
+      // attributes then set those.
+      $field_details['required'] = array_key_exists('required', $element_info) ? $element_info['required'] : FALSE;
+      $field_details['type'] = array_key_exists('type', $element_info) ? $element_info['type'] : 'xs:string';
+      $field_details['readonly'] = array_key_exists('readonly', $element_info) ? $element_info['readonly'] : TRUE;
+      $field_details['label'] = array_key_exists('label', $element_info) ? $element_info['label'] : $field_details['label'];
+      $field_details['help'] = array_key_exists('help', $element_info) ? $element_info['help'] : '';
+
+      // If this field is an 'xs:complexType' then it will have sub elements.
+      // we need to add those as well.
+      if (array_key_exists('elements', $element_info) and is_array($element_info['elements'])) {
+        _tripal_get_bundle_field_element_details($element_info['elements'], $field_details);
+      }
+      $details['fields'][] = $field_details;
+    }
+
+  }
+  return $details;
+}
+/**
+ * A recursive helper function for the tripal_get_bundle_details.
+ *
+ * @param $elementInfo
+ */
+function _tripal_get_bundle_field_element_details($elements, &$field_details) {
+   $field_details['elements'] = array();
+   foreach ($elements as $element_key => $element_info) {
+     // Handle the entity element differnetly.
+     if ($element_key == 'entity') {
+       continue;
+     }
+     list($term_vocab, $term_accession) = explode(':', $element_key);
+     $term = tripal_get_term_details($term_vocab, $term_accession);
+
+     $element_details = array(
+       'name' => $element_info['name'],
+       'label' => array_key_exists('label', $element_info) ? $element_info['label'] : ucfirst(preg_replace('/_/', ' ', $term['name'])),
+       'help' => array_key_exists('help', $element_info) ? $element_info['help'] : '',
+       'term' => array(
+         'accession' => $term_vocab . ':' . $term_accession,
+         'name' => $term['name'],
+         'definition' => $term['definition'],
+         'url' => $term['url'],
+       ),
+       'required' => array_key_exists('required', $element_info) ? $element_info['required'] : FALSE,
+       'type' => array_key_exists('type', $element_info) ? $element_info['type'] : 'xs:string',
+       'readonly' => array_key_exists('readonly', $element_info) ? $element_info['readonly'] : TRUE,
+     );
+     if (array_key_exists('elements', $element_info) and is_array($element_info['elements'])) {
+       _tripal_get_bundle_field_element_details($element_info['elements'], $element_details);
+     }
+     $field_details['elements'][] = $element_details;
+   }
+}
+
+function tripal_insert_entity($bundle_name, $values){
+  global $user;
+
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
+  // Get the fields associated with this content type.
+  $instances = field_info_instances('TripalEntity', $bundle->name);
+
+  foreach ($instances as $instance) {
+    $field_name = $instance['field_name'];
+    $field = field_info_field($field_name);
+    $field_type = $field['type'];
+    $field_settings = $field['settings'];
+    $instance_settings = $instance['settings'];
+    $field_name = $field['field_name'];
+    $vocabulary = $instance['settings']['term_vocabulary'];
+    $accession = $instance['settings']['term_accession'];
+    $field_accession = $vocabulary . ':' . $accession;
+    $field_term = tripal_get_term_details($vocabulary, $accession);
+    $field_key = $field_term['name'];
+    $field_key = strtolower(preg_replace('/ /', '_', $key));
+
+    // There are three ways that a field value can be specified. Those
+    // are as the controlled vocabulary accession (e.g. GO:0000134), sa
+    // the field name or as the field key which is the term name with
+    // spaces replaced with underscores.
+    // First make sure that required fields are present.
+    if ($instance['required'] == TRUE) {
+      if (!array_key_exists($field_key, $values) and
+          !array_key_exists($field_accession, $values) and
+          !array_key_exists($field_name, $values)) {
+        throw new Exception(t('Cannot insert the record. Missing the required field "%missing".',
+          array('%missing' => $field_name)));
+      }
+    }
+  }
+
+  // Make sure that all required fields are presnet
+
+  // TODO: make sure the user has permission to do this.
+  $ec = entity_get_controller('TripalEntity');
+  $entity = $ec->create(array(
+    'bundle' => $bundle_name,
+    'term_id' => $bundle->term_id,
+  ));
+  $entity = $entity->save();
+}
+
+function tripal_update_entity($bundle_name, $values) {
+
+
 }

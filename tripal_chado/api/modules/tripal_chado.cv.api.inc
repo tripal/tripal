@@ -419,7 +419,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
  */
 function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
-  
+
   // Get's the cvterm record for this "root".
   $ttype = db_select('cvterm', 'cv')
           ->fields('cv', array('cvterm_id'));
@@ -485,13 +485,13 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
  * @param $possible_loop
  *    A boolean flag.
  * @param $matched_row
- *    An array of rows that are currently in the cvtermpath table that match the 
+ *    An array of rows that are currently in the cvtermpath table that match the
  *    build_id of the current term trying to be written to the table
  * @param $possible_start_of_ loop
- *    The array of the possible loop item between the current child and the origin. 
+ *    The array of the possible loop item between the current child and the origin.
  *    Each element in the array is an associative array with the keys:
  *     - cvid : $cv_id
- *     - subject_id: 
+ *     - subject_id:
  *     - child_id : $child_id,
  *     - type_id : $type_id,
  *     - depth : $depth,
@@ -529,7 +529,7 @@ function tripal_update_cvtermpath_loop(
         array(':cvtermpath_id' => $cvtermpath_id)
       );
       $next_row = $next_row->fetchObject();
-      
+
       // If the next row matches the values passed we can't rule out a loop.
       if (($next_row->type_id === $type_id) &&
           ($next_row->subject_id === $child_id) &&
@@ -641,13 +641,13 @@ function tripal_update_cvtermpath_loop(
  * @param $possible_loop
  *    A boolean flag.
  * @param $matched_row
- *    An array of rows that are currently in the cvtermpath table that match the 
+ *    An array of rows that are currently in the cvtermpath table that match the
  *    build_id of the current term trying to be written to the table
  * @param $possible_start_of_ loop
- *    The array of the possible loop item between the current child and the origin. 
+ *    The array of the possible loop item between the current child and the origin.
  *    Each element in the array is an associative array with the keys:
  *     - cvid : $cv_id
- *     - subject_id: 
+ *     - subject_id:
  *     - child_id : $child_id,
  *     - type_id : $type_id,
  *     - depth : $depth,
@@ -730,7 +730,7 @@ function tripal_update_cvtermpath_loop_increment(
           }
         }
       }
-    
+
       $query = db_insert('cvtermpath')
         ->fields([
           'object_id' => $origin,
@@ -1373,7 +1373,35 @@ function tripal_get_obo($values) {
   }
   return $query->execute()->fetchObject();
 }
+/**
+ * This function is intended to be used in autocomplete forms.
+ *
+ * This function searches for a matching controlled vobulary name.
+ *
+ * @param $string
+ * The string to search for
+ *
+ * @return
+ * A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_autocomplete_cv($string = '') {
+  $sql = "
+    SELECT CV.cv_id, CV.name
+    FROM {cv} CV
+    WHERE lower(CV.name) like lower(:name)
+    ORDER by CV.name
+    LIMIT 25 OFFSET 0
+  ";
+  $results = chado_query($sql, array(':name' => $string . '%'));
+  $items = array();
+  foreach ($results as $cv) {
+    $items[$cv->name] = $cv->name;
+  }
 
+  drupal_json_output($items);
+}
 /**
  * This function is intended to be used in autocomplete forms
  * for searching for CV terms that begin with the provided string

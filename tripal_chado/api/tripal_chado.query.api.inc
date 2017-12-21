@@ -1923,7 +1923,7 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
        key referrs to (<foreign table>) and then implement
        hook_chado_chado_schema_v<version>_<foreign table>(). See
        tripal_chado_chado_v1_2_schema_feature for an example. Chado version: $version");
-    tripal_report_error('tripal_chado', $message);
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, $message);
     drupal_set_message(check_plain($message), 'error');
   }
 

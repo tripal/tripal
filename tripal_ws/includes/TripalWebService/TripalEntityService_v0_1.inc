@@ -272,6 +272,11 @@ class TripalEntityService_v0_1 extends TripalWebService {
         // don't add a URL which would make the end-user think they can get
         // that information.
         $items = field_get_items('TripalEntity', $entity, $field_name);
+        $term_key = $this->getContextTerm($term, array('lowercase', 'spacing'));
+        $this->resource->addContextItem($term_key, array(
+          '@id' => $term['url'],
+          '@type' => '@id'
+        ));
         if ($items and count($items) > 0 and $items[0]['value']) {
          $this->addResourceProperty($this->resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']), array('lowercase', 'spacing'));
         }
@@ -945,8 +950,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'title' => 'Content Collection',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $propeties = array();
-    $propeties[] = array(
+    $properties = array();
+    $properties[] = array(
       'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available content types.",
@@ -954,7 +959,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of content types.",
@@ -962,7 +967,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "The type content.",
@@ -978,7 +983,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'expects' => NULL,
       'returns' => 'vocab:ContentCollection',
     );
-    $this->addDocClass($details,$operations, $propeties);
+    $this->addDocClass($details,$operations, $properties);
   }
   /**
    * Adds classes for every content type to the documentation for this service.
@@ -996,7 +1001,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
     // Iterate through the content types and add a class for each one.
     $i = 0;
     while ($bundle = $bundles->fetchObject()) {
-      $entity =  entity_load('TripalTerm', array('id' => $bundle->term_id));
+      $entity = entity_load('TripalTerm', array('id' => $bundle->term_id));
       $term = reset($entity);
       $vocab = $term->vocab;
 
@@ -1059,7 +1064,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       }
 
       // Add in the properties that correspond to fields in the data.
-      $properties = $this->buildDocBundleFieldProperties($bundle);
+      $properties = $this->addDocBundleFieldProperties($bundle, $term);
 
       $this->addDocClass($details, $operations, $properties);
 
@@ -1072,8 +1077,10 @@ class TripalEntityService_v0_1 extends TripalWebService {
   /**
    * Every content type (bundle) has fields that need to be set as properties.
    */
-  private function buildDocBundleFieldProperties($bundle) {
+  private function addDocBundleFieldProperties($bundle, $bundle_term) {
     $properties = array();
+
+    $content_type_accession = $bundle_term->vocab->vocabulary . ':' . $bundle_term->accession;
 
     $instances = field_info_instances('TripalEntity', $bundle->name);
     foreach ($instances as $instance) {
@@ -1086,6 +1093,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
         continue;
       }
 
+      $accession = $instance['settings']['term_vocabulary'] . ":" . $instance['settings']['term_accession'];
+
       $field_name = $instance['field_name'];
       $field = field_info_field($field_name);
       $field_type = $field['type'];
@@ -1093,8 +1102,66 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if ($field_type == 'remote__data') {
         continue;
       }
+
+      // Check if this field is an auto attach. If not, then we have alink and
+      // we need to indicate that the link has operations.
+      $proptype = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+      if ($instance['settings']['auto_attach'] == FALSE) {
+
+        // Create a WebServiceResource for the hydra:Link type.
+        $id = $content_type_accession . '/' . $accession;
+        $link = new TripalWebServiceResource($this->base_path);
+        $link->setID($accession);
+        $link->setType('hydra:Link');
+        $link->addContextItem('domain', array(
+          "@id" => "rdfs:domain",
+          "@type" => "@id"
+        ));
+        $link->addContextItem('range', array(
+          "@id" => "rdfs:range",
+          "@type" => "@id"
+        ));
+        $link->addContextItem('readable', 'hydra:readable');
+        $link->addContextItem('writeable', 'hydra:writeable');
+        $link->addContextItem('required', 'hydra:required');
+        $link->addContextItem('description', 'rdfs:comment');
+        $link->addContextItem('label', 'rdfs:label');
+        $link->addProperty('hydra:title', $instance['label']);
+        $link->addProperty('hydra:description', $instance['description']);
+        //       $link->addProperty('domain', $service_path . '#EntryPoint');
+        //       $link->addProperty('range', $service_class::$label);
+
+        $ops = array();
+        $op = new TripalWebServiceResource($this->base_path);
+
+        $op->setID('_:' . $field_name . '_retrieve');
+        $op->setType('hydra:Operation');
+        $op->addContextItem('method', 'hydra:method');
+        $op->addContextItem('label', 'rdfs:label');
+        $op->addContextItem('description', 'rdfs:comment');
+        $op->addContextItem('expects', array(
+          "@id" => "hydra:expects",
+          "@type" => "@id"
+        ));
+        $op->addContextItem('returns', array(
+          "@id" => "hydra:returns",
+          "@type" => "@id"
+        ));
+        $op->addContextItem('statusCodes', 'hydra:statusCodes');
+        $op->addProperty('method', "GET");
+        $op->addProperty('label', 'Retrieves the ' . $instance['label'] . ' resource.');
+        $op->addProperty('description', $instance['description']);
+        $op->addProperty('expects', NULL);
+        $op->addProperty('returns', $accession);
+        $op->addProperty('statusCodes', array());
+        $ops[] = $op;
+        $link->addContextItem('supportedOperation', 'hydra:supportedOperation');
+        $link->addProperty('supportedOperation', $ops);
+        $proptype = $link;
+      }
+
       $property = array(
-        'type' => $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'],
+        'type' => $proptype,
         'title' => $instance['label'],
         'description' => $instance['description'],
         "required" => $instance['required'] ? TRUE : FALSE,
@@ -1116,8 +1183,8 @@ class TripalEntityService_v0_1 extends TripalWebService {
       'description' => 'A collection (or list) of ' . $bundle->label . ' resources.',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
-    $propeties = array();
-    $propeties[] = array(
+    $properties = array();
+    $properties[] = array(
       'type' => $vocab['sw_url'],
       'title' => 'member',
       'description' => "The list of available " . $bundle->label . '(s).',
@@ -1125,7 +1192,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE,
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "totalItems",
       "description" => "The total number of resources.",
@@ -1133,7 +1200,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
       "readonly" => FALSE,
       "writeonly" => FALSE
     );
-    $propeties[] = array(
+    $properties[] = array(
       "type" => $vocab['sw_url'],
       "title" => "label",
       "description" => "A label or name for the resource.",
@@ -1174,7 +1241,7 @@ class TripalEntityService_v0_1 extends TripalWebService {
 //         ),
 //       );
     }
-    $this->addDocClass($details, $operations, $propeties);
+    $this->addDocClass($details, $operations, $properties);
   }
 
 }

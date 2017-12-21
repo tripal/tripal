@@ -126,7 +126,7 @@ class obi__organism extends ChadoField {
         $genus_term => $organism->genus,
         $species_term => $organism->species,
       );
-      // The infraspecific fiels were introdcued in Chado v1.3.
+      // The infraspecific fields were introduced in Chado v1.3.
       if (property_exists($organism, 'infraspecific_name')) {
         $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = NULL;
         $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $organism->infraspecific_name;
@@ -221,43 +221,59 @@ class obi__organism extends ChadoField {
         'operations' => array('eq', 'contains', 'starts'),
         'sortable' => TRUE,
         'searchable' => TRUE,
-        'type' => 'string',
+        'readonly' => FALSE,
+        'type' => 'xs:complexType',
         'elements' => array(
           'rdfs:label' => array(
             'searchable' => TRUE,
             'name' => 'scientfic_name',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $genus_term => array(
             'searchable' => TRUE,
             'name' => 'genus',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'readonly' => FALSE,
+            'type' => 'xs:string',
+            'required' => TRUE,
           ),
           $species_term => array(
             'searchable' => TRUE,
             'name' => 'species',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'readonly' => FALSE,
+            'type' => 'xs:string',
+            'required' => TRUE,
           ),
           $infraspecific_name_term => array(
             'searchable' => TRUE,
             'name' => 'infraspecies',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'readonly' => FALSE,
+            'type' => 'xs:string',
+            'required' => FALSE,
           ),
           $infraspecific_type_term => array(
             'searchable' => TRUE,
             'name' => 'infraspecific_type',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
+            'readonly' => FALSE,
+            'type' => 'xs:integer',
+            'required' => FALSE,
           ),
           'entity' => array(
             'searchable' => FALSE,
           ),
         ),
-      )
+      ),
     );
   }
 

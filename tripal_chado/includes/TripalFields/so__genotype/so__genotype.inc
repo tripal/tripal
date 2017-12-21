@@ -65,24 +65,35 @@ class so__genotype extends ChadoField {
       $field_term => array(
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:complexType',
+        'readonly' => TRUE,
         'elements' => array(
           'rdfs:type' => array(
             'searchable' => FALSE,
             'label' => 'Genotype Type',
             'help' => 'The type of genotype.',
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'schema:name' => array(
             'label' => 'Genotype Name',
             'help' => 'The name of the genotype.',
             'searchable' => FALSE,
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           'schema:description' => array(
             'label' => 'Genotype Description',
             'help' => 'A description of the genotype.',
             'searchable' => FALSE,
             'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
         )
       ),

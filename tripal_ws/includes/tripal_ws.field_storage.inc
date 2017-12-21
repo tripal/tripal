@@ -7,7 +7,7 @@ function tripal_ws_field_storage_info() {
   return array(
     'field_tripal_ws_storage' => array(
       'label' => t('Tripal Web Services'),
-      'description' => t('Retreives fields data from a remote site using Tripal web services.'),
+      'description' => t('Retrieves fields data from a remote site using Tripal web services.'),
       'settings' => array(),
     ),
   );

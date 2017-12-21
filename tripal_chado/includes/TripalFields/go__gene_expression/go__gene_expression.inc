@@ -70,6 +70,8 @@ class go__gene_expression extends ChadoField {
         'operations' => array(),
         'sortable' => FALSE,
         'searchable' => FALSE,
+        'type' => 'xs:string',
+        'readonly' => TRUE,
       ),
     );
   }

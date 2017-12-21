@@ -68,26 +68,40 @@ class taxrank__infraspecific_taxon extends ChadoField {
       $field_term => array(
         'sortable' => FALSE,
         'searchable' => TRUE,
+        'readonly' => FALSE,
+        'type' => 'xs:complexType',
         'elements' => array(
           $label_term => array(
+            'name' => 'label',
             'sortable' => FALSE,
             'searchable' => TRUE,
             'label' => 'Infraspecific Full Name',
             'help' => 'The full infraspecific name including the rank and name.',
+            'type' => 'xsstring',
+            'readonly' => TRUE,
+            'required' => FALSE,
           ),
           $infraspecific_name_term => array(
+            'name' => 'infraspecific_name',
             'sortable' => TRUE,
             'searchable' => TRUE,
-            'label' => 'Infrasepcies Name',
+            'label' => 'Infraspecies Name',
             'help' => 'The infraspecific name of the organism below the rank of species.',
+            'type' => 'xs:string',
+            'readonly' => FALSE,
+            'required' => TRUE,
           ),
           $infraspecific_type_term => array(
+            'name' => 'infraspecific_rank',
             'sortable' => TRUE,
             'searchable' => TRUE,
             'label' => 'Infraspecific Rank',
             'help' => 'The infraspecific rank of the organism below the rank of species.',
+            'type' => 'xs:string',
+            'readonly' => FALSE,
+            'required' => TRUE,
           ),
-        )
+        ),
       ),
     );
   }

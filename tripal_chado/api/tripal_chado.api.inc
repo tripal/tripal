@@ -180,9 +180,9 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "is rolled back with no changes to the database\n\n";
 
+  $i = 0;
   printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
   try {
-    $i = 0;
     while($record = $records->fetchObject()) {
 
       // update the job status every interval
@@ -199,8 +199,8 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $entity = $ec->create(array(
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
-        // Add in the Chaod details for when the hook_entity_create()
-        // is called and our tripal_cahdo_entity_create() implementation
+        // Add in the Chado details for when the hook_entity_create()
+        // is called and our tripal_chado_entity_create() implementation
         // can deal with it.
         'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
         'chado_record_id' => $record_id,

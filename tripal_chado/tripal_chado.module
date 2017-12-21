@@ -517,6 +517,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/cv/%'] = array(
+    'page callback' => 'tripal_autocomplete_cv',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.cv.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/storage/chado/auto_name/cvterm/%/%'] = array(
     'page callback' => 'tripal_autocomplete_cvterm',
     'page arguments' => array(6, 7),
@@ -1012,7 +1020,7 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
   // such that record can't be saved in Chado.
 
   // TODO: we shouldn't check for specific field types here
-  // (e.g. chaod_linker_prop). That should be done via the TripalField
+  // (e.g. chado_linker_prop). That should be done via the TripalField
   // functions.
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
     if ($form['#field']['storage']['type'] == 'field_chado_storage' and
