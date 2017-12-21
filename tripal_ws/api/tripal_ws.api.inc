@@ -247,11 +247,19 @@ function tripal_web_services_vocab_request($site_id) {
  *   The query string. This string is added to the URL for the remote
  *   website.
  */
-function tripal_web_services_remote_request($remote_site, $query) {
+function tripal_web_services_remote_request($site_id, $query) {
   $ctype = $query;
   $qdata = '';
   if (preg_match('/\?/', $query)) {
     list($ctype, $qdata) = explode('?', $query);
+  }
+
+  if ($site_id) {
+    $remote_site = db_select('tripal_sites', 'ts')
+      ->fields('ts')
+      ->condition('ts.id', $site_id)
+      ->execute()
+      ->fetchObject();
   }
 
   // Build the URL to the remote web services.
@@ -259,7 +267,6 @@ function tripal_web_services_remote_request($remote_site, $query) {
   $ws_url = $remote_site->url;
   $ws_url = trim($ws_url, '/');
   $ws_url .= '/web-services/content/' . $ws_version . '/' . $ctype;
-
   // Build the Query and make and substitions needed.
   //dpm($ws_url . '?' . $query);
   $options = array(

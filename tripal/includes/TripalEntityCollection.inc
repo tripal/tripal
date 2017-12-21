@@ -314,31 +314,40 @@ class TripalEntityCollection {
               // Use the api call to get the vocab for the site which will need to be parsed 
               // to find the accession and the download types available.
               $site_vocab = tripal_web_services_vocab_request($site_id);
-              foreach ($site_vocab as $item) {
-                if (is_array($item)) {
-                  foreach ($item as $vocab_term) {
-                    if (!empty($vocab_term['supportedProperty'])) {
-                      $vocab_supported_properties = $vocab_term['supportedProperty'];
-                      if (is_array($vocab_supported_properties)) {
-                        foreach ($vocab_supported_properties as $property) {
-                          if ($property['property'] === $field) {
-                            if (in_array('tripal_formatters', $property)) {
-                              $download_types = $property['tripal_formatters'];
+              if (!empty($site_vocab)) {
+                // Because there are multiple sites available we need to differentiate the
+                // different cached vocab structures. 
+                $cache_name = 'tripal_web_services_vocab_' . $site_id['site_id'];
+                // Put it in the cache so we don't need to make repeated calls to it.                
+                cache_set($cache_name, $site_vocab);
 
-                              foreach ($download_types as $download_type) {
-                                $this->downloaders[$download_type] = $download_type;
-                                continue 7;
+                // Now find the tripal formatters in the json data returned.
+                foreach ($site_vocab as $item) {
+                  if (is_array($item)) {
+                    foreach ($item as $vocab_term) {
+                      if (!empty($vocab_term['supportedProperty'])) {
+                        $vocab_supported_properties = $vocab_term['supportedProperty'];
+                        if (is_array($vocab_supported_properties)) {
+                          foreach ($vocab_supported_properties as $property) {
+                            if ($property['property'] === $field) {
+                              if (in_array('tripal_formatters', $property)) {
+                                $download_types = $property['tripal_formatters'];
+
+                                foreach ($download_types as $download_type) {
+                                  $this->downloaders[$download_type] = $download_type;
+                                  continue 7;
+                                }
                               }
                             }
                           }
                         }
-                      }
-                      else {
-                        if (in_array('tripal_formatters', $vocab_supported_properties)) {
-                          $download_types = $vocab_supported_properties['tripal_formatters'];
-                          foreach ($download_types as $download_type) {
-                            $this->downloaders[$download_type] = $download_type;
-                            continue 6;
+                        else {
+                          if (in_array('tripal_formatters', $vocab_supported_properties)) {
+                            $download_types = $vocab_supported_properties['tripal_formatters'];
+                            foreach ($download_types as $download_type) {
+                              $this->downloaders[$download_type] = $download_type;
+                              continue 6;
+                            }
                           }
                         }
                       }
@@ -348,17 +357,19 @@ class TripalEntityCollection {
               }
             }
             else {
-              $field_info = field_info_field_by_id($field);
-              if (!$field_info) {
-                continue;
+              foreach ($field_id as $field) {
+                $field_info = field_info_field_by_id($field);
+                if (!$field_info) {
+                  continue;
+                }
               }
+              $field_name = $field_info['field_name'];
+              $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+              // API function
+              // All fields should support the Tab and CSV downloaders.
+              $downloaders = array();
+              $this->downloaders += tripal_get_field_field_formatters($field);
             }
-            $field_name = $field_info['field_name'];
-            $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-            // API function
-            // All fields should support the Tab and CSV downloaders.
-            $downloaders = array();
-            $this->downloaders += tripal_get_field_field_formatters($field);
           }
         }
         else {
@@ -664,7 +675,16 @@ class TripalEntityCollection {
               // Use the api call to get the vocab for the site which will need to be parsed 
               // to find the accession and the download types available.
               if (!empty($site_id)) {
-                $site_vocab = tripal_web_services_vocab_request($site_id);
+                $cache_name = 'tripal_web_services_vocab_' . $site_id;
+                if ($cache = cache_get($cache_name)) {
+                  $site_vocab = $cache->data;
+                }
+                else {
+                  $site_vocab = tripal_web_services_vocab_request($site_id);
+                  if (!empty($site_vocab)){
+                    cache_set('tripal_web_services_vocab', $site_vocab);
+                  }
+                }
                 foreach ($site_vocab as $item) {
                   if (is_array($item)) {
                     foreach ($item as $vocab_term) {
@@ -745,8 +765,7 @@ class TripalEntityCollection {
         }
       }
     }
-    print_r($supported_fields);
-    $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid);
+    $downloader = new $formatter($this->bundles, $this->ids, $supported_fields, $outfile, $this->user->uid, $this->collection_id);
     $downloader->write();
 
   }
