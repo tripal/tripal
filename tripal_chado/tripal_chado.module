@@ -633,7 +633,7 @@ function tripal_chado_menu() {
     'title' => 'Edit a Controlled Vocabulary Term',
     'description' => 'Edit an existing controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_edit_form', 4, 7),
+    'page arguments' => array('tripal_cv_cvterm_edit_form', 5, 8),
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
