@@ -49,27 +49,28 @@ class chado_linker__contact_formatter extends ChadoFieldFormatter {
       }
       $rows[] = array($contact_name, $description, $type);
     }
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_linker-table-contact-object',
-        'class' => 'tripal-data-table'
-      ),
-      'sticky' => FALSE,
-      'caption' => "",
-      'colgroups' => array(),
-      'empty' => 'There are no contacts available.',
-    );
-    $content = theme_table($table);
 
+    $content = '';
     if (count($items) > 0) {
-      // once we have our table array structure defined, we call Drupal's theme_table()
-      // function to generate the table.
-      $element[0] = array(
-        '#type' => 'markup',
-        '#markup' => $content,
+      $table = array(
+        'header' => $headers,
+        'rows' => $rows,
+        'attributes' => array(
+          'id' => 'tripal_linker-table-contact-object',
+          'class' => 'tripal-data-table'
+        ),
+        'sticky' => FALSE,
+        'caption' => "",
+        'colgroups' => array(),
+        'empty' => 'There are no contacts available.',
       );
+      $content = theme_table($table);
     }
+
+    $element[0] = array(
+      // We create a render array to produce the desired markup,
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }
