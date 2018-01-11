@@ -849,7 +849,7 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
  * Migrate images for all chado_organism
  *
  */
-function tripal_chado_migrate_organism_images () {
+function tripal_chado_migrate_organism_images ($bundle_name) {
   // Get all organism entities
   $bio_data_table = array_pop(tripal_chado_migrate_get_biodata_tables('organism'));
   $results =
@@ -902,13 +902,13 @@ function tripal_chado_migrate_organism_images () {
           }
         }
         if($file){
-          tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id);
+            tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id, $bundle_name);
         }
       }
     }
     else {
       // If there is an image, add it to the organism entity
-      tripal_chado_migrate_organism_image_add_file ($fid, $entity_id);
+        tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle_name);
     }
 
   }
@@ -920,15 +920,16 @@ function tripal_chado_migrate_organism_images () {
  *
  * @param unknown $fid
  */
-function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id) {
+function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle_name) {
   if ($fid && $entity_id) {
     $file = file_load($fid);
     // Add a record to the file_usage table
     file_usage_add($file, 'file', 'TripalEntity', $entity_id);
+    $image_file = (array) $file;
     // Attached it to the entity
+    /* 
     $entities = entity_load('TripalEntity', array($entity_id));
     $entity = $entities[$entity_id];
-    $image_file = (array) $file;
     $image = array(
       'und' => array(
         0 =>$image_file
@@ -937,8 +938,18 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id) {
     $entity->data__image = $image;
     field_attach_update('TripalEntity', $entity);
     entity_get_controller('TripalEntity')->resetCache(array($entity_id));
+    */
     // Add a record to the field_data_data__image table
-
+    $values = array(
+        'entity_type' => 'TripalEntity',
+        'bundle' => $bundle_name,
+        'entity_id' => $entity_id,
+        'revision_id' => $entity_id,
+        'language' => 'und',
+        'delta' => 0,
+        'data__image_fid' => $fid,
+    );
+    drupal_write_record('field_data_data__image', $values);
   }
 }
 
