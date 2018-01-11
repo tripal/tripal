@@ -1,13 +1,13 @@
 <?php
 
 /**
- * Updates all existing url aliases for an entity.
+ * Updates all existing url aliases and titles for an entity.
  *
  * @param $bundle_id
  * @param $update
  * @param $type
  */
-function tripal_update_all_urls($bundle_id, $update, $type) {
+function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
   // Load all the entity_ids.
   $entity_table = 'chado_'.$bundle_id;
   $entities = db_select($entity_table, 'e')
