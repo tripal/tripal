@@ -646,70 +646,52 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
   $accession       = array_key_exists('accession', $form_state['values'])       ? trim($form_state['values']['accession']) : '';
   $op              = array_key_exists('op', $form_state['values'])              ? trim($form_state['values']['op']) : '';
 
+  if ($op == 'Update') {
+    // get the original cvterm_id
+    $values = array('name' => $name, 'cv_id' => $cv_id);
+    $results = chado_select_record('cvterm', array('cvterm_id'), $values);
+    $cvterm = $results[0];
 
-  $step = $form_state['storage']['step'];
+    // get the cv
+    $values = array('cv_id' => $cv_id);
+    $results = chado_select_record('cv', array('name'), $values);
+    $cv = $results[0];
 
-  switch ($step) {
-    case 0:  // a cvterm name has been selected
-      $cv_id = array_key_exists('cv_id', $form_state['values']) ? trim($form_state['values']['cv_id']) : '';
-      $name  = array_key_exists('name', $form_state['values'])  ? trim($form_state['values']['name'])  : '';
+    // get the db
+    $values = array('db_id' => $db_id);
+    $results = chado_select_record('db', array('name'), $values);
+    $db = $results[0];
 
-      // get the original cvterm_id
-      $values = array('name' => $name, 'cv_id' => $cv_id);
-      $results = chado_select_record('cvterm', array('cvterm_id'), $values);
-      $cvterm = $results[0];
+    // now add the term
+    $term = array(
+      'name' => $name,
+      'namespace' => $cv->name,
+      'id' => $accession,
+      'definition' => $definition,
+      'is_obsolete' => $is_obsolete,
+      'cv_name' => $cv->name,
+      'is_relationship' => $is_relationship,
+      'db_name' => $db->name
+    );
 
-      $form_state['storage']['cv_id'] = $cv_id;
-      $form_state['storage']['name'] = $name;
-      $form_state['storage']['step'] = 1;
-      $form_state['storage']['cvterm_id'] = $cvterm->cvterm_id;
-      $form_state['rebuild'] = TRUE;
-      break;
-
-    case 1:  // update/delete button has been clicked
-
-      if ($op == 'Update') {
-        // get the cv
-        $values = array('cv_id' => $cv_id);
-        $results = chado_select_record('cv', array('name'), $values);
-        $cv = $results[0];
-
-        // get the db
-        $values = array('db_id' => $db_id);
-        $results = chado_select_record('db', array('name'), $values);
-        $db = $results[0];
-
-        // now add the term
-        $term = array(
-          'name' => $name,
-          'namespace' => $cv->name,
-          'id' => $accession,
-          'definition' => $definition,
-          'is_obsolete' => $is_obsolete,
-          'cv_name' => $cv->name,
-          'is_relationship' => $is_relationship,
-          'db_name' => $db_name
-        );
-
-        $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
-        if ($cvterm) {
-          drupal_set_message('Term updated successfully.');
-        }
-        else {
-          drupal_set_message('Could not add term. Check Drupal recent logs for error messages.', 'error');
-        }
-      }
-      if ($op == 'Delete') {
-        $values = array('cvterm_id' => $cvterm_id);
-        $success = chado_delete_record('cvterm', $values);
-        if ($success) {
-          drupal_set_message('Term deleted successfully.');
-        }
-        else {
-          drupal_set_message('Could not delete term term. Check Drupal recent logs for error messages.', 'error');
-        }
-      }
-      break;
+    $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+    if ($cvterm) {
+      drupal_set_message('Term updated successfully.');
+      drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvterms');
+    }
+    else {
+      drupal_set_message('Could not add term. Check Drupal recent logs for error messages.', 'error');
+    }
+  }
+  if ($op == 'Delete') {
+    $values = array('cvterm_id' => $cvterm_id);
+    $success = chado_delete_record('cvterm', $values);
+    if ($success) {
+      drupal_set_message('Term deleted successfully.');
+    }
+    else {
+      drupal_set_message('Could not delete term term. Check Drupal recent logs for error messages.', 'error');
+    }
   }
 }
 
