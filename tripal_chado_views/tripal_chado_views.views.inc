@@ -183,6 +183,9 @@ function tripal_chado_views_views_data() {
           $legacy_mview = TRUE;
         }
       }
+      else {
+        continue;
+      }
     }
 
     if ($legacy_mview) {
