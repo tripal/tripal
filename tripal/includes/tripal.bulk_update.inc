@@ -7,7 +7,7 @@
  * @param $update
  * @param $type
  */
-function tripal_update_all($bundle_id, $update, $type) {
+function tripal_update_all_urls($bundle_id, $update, $type) {
   // Load all the entity_ids.
   $entity_table = 'chado_'.$bundle_id;
   $entities = db_select($entity_table, 'e')
