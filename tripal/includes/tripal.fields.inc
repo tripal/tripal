@@ -338,6 +338,7 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
       $type = $form_values['_add_new_field']['type'];
       if (tripal_load_include_field_class($type)) {
         $module = $type::$module;
+        dpm($module);
         $function = $module . '_bundle_create_user_field';
         $bundle = tripal_load_bundle_entity(array('name' => $form['#bundle']));
         $field_name = $form_values['_add_new_field']['field_name'];
