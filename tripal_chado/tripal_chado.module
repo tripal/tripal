@@ -364,16 +364,6 @@ function tripal_chado_menu() {
   //                           Data Loaders
   //////////////////////////////////////////////////////////////////////////////
 
-  // Data Loaders
-  $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
-    'title' => 'Chado Phylogenetic Trees (Newic format)',
-    'description' => 'Loads phylogenetic trees in Newic format.',
-    'page callback' => 'drupal_goto',
-    'page arguments' => array('node/add/chado-phylotree'),
-    'access arguments' => array('load tripal data'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   $items['admin/tripal/loaders/pub'] = array(
     'title' => t('Chado Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
