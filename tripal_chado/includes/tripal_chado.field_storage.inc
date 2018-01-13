@@ -124,9 +124,6 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
     }
   }
   if ($num_empty == count(array_keys($values))) {
-    print "we quit here\n\n";
-
-
     return '';
   }
 
@@ -144,10 +141,6 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
       if (!chado_delete_record($table_name, $new_vals)) {
         throw new Exception('Could not delete record from table: "' . $table_name . '".');
       }
-      print "we quit here instead\n\n";
-
-      print(var_dump($values));
-
       return '';
     }
   }
