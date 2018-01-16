@@ -4,7 +4,6 @@
  * @class
  * Purpose:
  *
- * Allowing edit?
  * Data:
  * Assumptions:
  */

@@ -81,20 +81,21 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-
-    $protocol_id = $items[0]['value']["protocol_id"];
-    $protocol_name = $items[0]['value']["protocol_name"];
-    $content = $protocol_name;
-    list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity_id']);
-    if ($entity_id) {
-      $content = l($protocol_name, 'bio_data/' . $entity_id);
+    if (count($items) > 0) {
+      $protocol_id = $items[0]['value']["protocol_id"];
+      $protocol_name = $items[0]['value']["protocol_name"];
+      $content = $protocol_name;
+      list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity_id']);
+      if ($entity_id) {
+        $content = l($protocol_name, 'bio_data/' . $entity_id);
+      }
     }
 
-
-    $element[0] = array(
+    //cardinality for this field is 1
+    $element[0] = [
       '#type' => 'markup',
       '#markup' => $content,
-    );
+    ];
   }
 
 

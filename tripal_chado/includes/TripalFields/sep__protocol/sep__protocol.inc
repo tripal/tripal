@@ -1,20 +1,14 @@
 <?php
+
 /**
  * @class
- * Purpose:
+ * Purpose: Provide a field for Protocol (typically the protocol_id column of a
+ *   Chado table).
  *
  * Data:
  * Assumptions:
  */
 class sep__protocol extends ChadoField {
-
-  // --------------------------------------------------------------------------
-  //                     EDITABLE STATIC CONSTANTS
-  //
-  // The following constants SHOULD be set for each descendant class.  They are
-  // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
-  // --------------------------------------------------------------------------
 
   // The default label for this field.
   public static $default_label = 'Protocol';
@@ -113,14 +107,12 @@ class sep__protocol extends ChadoField {
    */
   public function load($entity) {
 
-    // ChadoFields automatically load the chado column specified in the
-    // default settings above. If that is all you need then you don't even
-    // need to implement this function. However, if you need to add any
-    // additional data to be used in the display, you should add it here.
     parent::load($entity);
 
 
     $record = $entity->chado_record;
+    $settings = $this->instance['settings'];
+
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -128,23 +120,30 @@ class sep__protocol extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $linker_field = 'chado-' . $field_table . '__protocol_id';
 
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
+
+    if (!$record->protocol_id->protocol_id) {
+      return;
+    }
+
     $protocol_id = $record->protocol_id->protocol_id;
     $protocol_name = $record->protocol_id->name;
 
     $entity_id = $record->entity_id;
 
-    $entity->{$field_name}['und'][0]['value'] = array(
-     "protocol_id" => $protocol_id,
+    $entity->{$field_name}['und'][0]['value'] = [
+      "protocol_id" => $protocol_id,
       "protocol_name" => $protocol_name,
       "entity_id" => $entity_id,
-      "full_record" => $record,
-      "instance" => $this->instance
-    );
+    ];
 
-    // Is there a published entity for this organism?
+    // Is there a published entity for this protocol?
     if (property_exists($record->{$field_column}, 'entity_id')) {
       $entity->{$field_name}['und'][0]['value']['entity_id'] = 'TripalEntity:' . $record->{$field_column}->entity_id;
-   }
+    }
   }
 
 }
