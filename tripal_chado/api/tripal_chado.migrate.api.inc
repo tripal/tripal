@@ -9,7 +9,7 @@
  * @param $type
  *   A type array specifying the vocabular, accession, term_name, and chado data_table
  *   e.g.
- *     $types = array(
+ *     $type = array(
  *       'vocabulary' => 'OBI',
  *       'accession' => '0100026',
  *       'term_name' => 'organism',
