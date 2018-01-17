@@ -66,7 +66,6 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
       $errors['description'] = t('Please provide a description for this tree.');
       return FALSE;
     }
-
     if (!array_key_exists('tree_file', $options)) {
       $errors['tree_file'] = t('Please provide either the full path to the tree_file or a Drupal managed file ID number.');
       return FALSE;

@@ -452,6 +452,22 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
+
+  //protocol
+  if ($table_name == 'protocol' and array_key_exists('protocol_id', $schema['fields'])) {
+    $field_name = 'sep__protocol';
+    $field_type = 'sep__protocol';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+
 }
 
 /**
@@ -1611,6 +1627,51 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
+
+
+  // PROTOCOL FIELD
+  if ($table_name != 'protocol' and
+    (array_key_exists('protocol_id', $schema['fields']))) {
+
+    $field_name = 'sep__protocol';
+    $is_required = FALSE;
+    $table_column = 'protocol_id';
+    if  (array_key_exists('not null', $schema['fields']['protocol_id']) and
+      $schema['fields']['protocol_id']['not null']) {
+      $is_required = TRUE;
+    }
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Protocol',
+      'description' => 'The parameterizable description of a process',
+      'required' => $is_required,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => $table_column,
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'sep__protocol_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'sep__protocol_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+
+
+
 }
 
 /**

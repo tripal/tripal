@@ -202,7 +202,8 @@ function chado_generate_var($table, $values, $base_options = array()) {
   foreach ($fields_to_remove as $field_name => $criteria) {
 
     //replace <field_name> with the current field name
-    $criteria = preg_replace('/<field_name> /', addslashes($field_name), $criteria);
+    $field_name_safe = preg_replace("/\'\"\\\/", '\\1', $field_name);
+    $criteria = preg_replace('/<field_name> /', $field_name_safe, $criteria);
     // if field_value needed we can't deal with this field yet
     if (preg_match('/<field_value> /', $criteria)) {
       break;
@@ -255,7 +256,8 @@ function chado_generate_var($table, $values, $base_options = array()) {
 
       // Do any processing needed on the php criteria
       //replace <field_name>  with the current field name
-      $criteria = preg_replace('/<field_name> /', addslashes($field_name), $criteria);
+      $field_name_safe = preg_replace('/\'|"|\\\/', '\\1', $field_name);
+      $criteria = preg_replace('/<field_name> /', $field_name_safe, $criteria);
       foreach ($field_types[$field_type] as $field_name) {
         // if field_value needed we can't deal with this field yet
         if (preg_match('/<field_value>/', $criteria)) {
@@ -333,7 +335,8 @@ function chado_generate_var($table, $values, $base_options = array()) {
         }
 
         // replace <field_value> with the actual value of the field from the query
-        $criteria = preg_replace('/<field_value>/', addslashes($object->{$field_name}), $criteria);
+        $field_name_safe = preg_replace('/\'|"|\\\/', '\\1', $object->{$field_name});
+        $criteria = preg_replace('/<field_value>/', $field_name_safe, $criteria);
 
         // evaluate the criteria, if TRUE is returned then exclude the field
         // excluded fields can be expanded later by calling
