@@ -170,7 +170,6 @@ function tripal_get_field_widgets() {
 function tripal_get_field_field_formatters($field) {
   $field_name = $field['field_name'];
   $field_type = $field['type'];
-  $field_module = $field['module'];
 
   $downloaders = array();
 
@@ -191,7 +190,6 @@ function tripal_get_field_field_formatters($field) {
       }
     }
   }
-
   return $downloaders;
 }
 /**
