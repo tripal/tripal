@@ -474,7 +474,7 @@ class TripalField {
    *   An array of the following format:
    *     $entity->{$field_name}['und'][0]['value'] = $value;
    *   where:
-   *     - $entity is the enity object to which this field is attached.
+   *     - $entity is the entity object to which this field is attached.
    *     - $field_name is the name of this field
    *     - 'und' is the language code (in this case 'und' == undefined)
    *     - 0 is the cardinality.  Increment by 1 when more than one item is
@@ -549,7 +549,7 @@ class TripalField {
         'elements' => array(
           'rdfs:label' => array(
             'searchable' => TRUE,
-            'name' => 'scientfic_name',
+            'name' => 'scientific_name',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => TRUE,
           ),

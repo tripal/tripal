@@ -439,7 +439,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       $includes = array(
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
       );
-      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all', $args,
+      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all_urls_and_titles', $args,
         $user->uid, 10, $includes);
     }
     elseif ($trigger == 'Bulk update all aliases'){
@@ -453,7 +453,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       $includes = array(
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
       );
-      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all', $args,
+      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all_urls_and_titles', $args,
         $user->uid, 10, $includes);
     }
 

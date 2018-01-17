@@ -17,6 +17,7 @@ require_once 'api/tripal_chado.schema_v1.3.api.inc';
 require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
 require_once 'api/tripal_chado.semweb.api.inc';
+require_once 'api/tripal_chado.migrate.api.inc';
 
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';
@@ -364,16 +365,6 @@ function tripal_chado_menu() {
   //                           Data Loaders
   //////////////////////////////////////////////////////////////////////////////
 
-  // Data Loaders
-  $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
-    'title' => 'Chado Phylogenetic Trees (Newic format)',
-    'description' => 'Loads phylogenetic trees in Newic format.',
-    'page callback' => 'drupal_goto',
-    'page arguments' => array('node/add/chado-phylotree'),
-    'access arguments' => array('load tripal data'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   $items['admin/tripal/loaders/pub'] = array(
     'title' => t('Chado Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
@@ -517,6 +508,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/cv/%'] = array(
+    'page callback' => 'tripal_autocomplete_cv',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.cv.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/storage/chado/auto_name/cvterm/%/%'] = array(
     'page callback' => 'tripal_autocomplete_cvterm',
     'page arguments' => array(6, 7),
@@ -583,7 +582,7 @@ function tripal_chado_menu() {
     'title' => 'Edit a Controlled Vocabulary',
     'description' => 'Edit the details such as name and description for an existing controlled vocabulary.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cv_edit_form', 5),
+    'page arguments' => array('tripal_cv_cv_edit_form', 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
@@ -605,7 +604,7 @@ function tripal_chado_menu() {
     'title' => 'Add a Controlled Vocabulary Term',
     'description' => 'Add a new controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_add_form', 4),
+    'page arguments' => array('tripal_cv_cvterm_add_form', 5),
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -625,7 +624,7 @@ function tripal_chado_menu() {
     'title' => 'Edit a Controlled Vocabulary Term',
     'description' => 'Edit an existing controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_edit_form', 4, 7),
+    'page arguments' => array('tripal_cv_cvterm_edit_form', 5, 8),
     'access arguments' => array('administer controlled vocabularies'),
     'file' => 'includes/tripal_chado.cv.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -1012,7 +1011,7 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
   // such that record can't be saved in Chado.
 
   // TODO: we shouldn't check for specific field types here
-  // (e.g. chaod_linker_prop). That should be done via the TripalField
+  // (e.g. chado_linker_prop). That should be done via the TripalField
   // functions.
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
     if ($form['#field']['storage']['type'] == 'field_chado_storage' and

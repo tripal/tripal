@@ -8,7 +8,7 @@ class ChadoField extends TripalField {
   // The default description for this field.
   public static $default_description = 'The generic base class for all Chado fields. Replace this text as appropriate for the child implementation.';
 
-  // A list of global settings. These can be accessed witihn the
+  // A list of global settings. These can be accessed within the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be

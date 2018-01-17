@@ -560,7 +560,7 @@ function chado_get_base_tables() {
 
   // Initialize the base tables with those tables that are missing a type.
   // Ideally they should have a type, but that's for a future version of Chado.
-  $base_tables = array('organism', 'project', 'analysis', 'biomaterial');
+  $base_tables = array('organism', 'project', 'analysis', 'biomaterial', 'eimage');
 
   // We'll use the cvterm table to guide which tables are base tables. Typically
   // base tables (with a few exceptions) all have a type.  Iterate through the

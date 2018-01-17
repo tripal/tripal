@@ -3,7 +3,7 @@
  * Retreive the entity_id assigned to a given record_id and bundle.
  *
  * @param $bundle
- *   A bundle object (as retreieved from tripal_load_bundle_entity().
+ *   A bundle object (as retrieved from tripal_load_bundle_entity().
  * @param $record_id
  *   The ID of the record in the Chado table. The record must belong to
  *   the table to which the bundle is associated in chado.

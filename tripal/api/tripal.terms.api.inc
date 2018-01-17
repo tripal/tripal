@@ -295,3 +295,205 @@ function tripal_get_vocabulary_details($vocabulary) {
     }
   }
 }
+
+
+/**
+ * Provides a term lookup form.
+ *
+ * It may be necessary at times for a form to provide to the user the ability
+ * to lookup and use a controlled vocabulary term.  However, a simple text box
+ * or auto-lookup is not sufficient because a term name may be identical in
+ * multiple vocabularies and the user would need to select the proper term.
+ *
+ * This function will add the form elements necessary to provide a lookup form.
+ * The form elements should work with a flat fortm (no #tree set for the form)
+ * or with a form in a TripalField.
+ *
+ * Use the tripal_get_term_lookup_form_result() function to retreive the
+ * result in a form submit or validate.
+ *
+ * @param $form
+ *   The form (or $widget form).
+ * @param $form_state
+ *   The form state.
+ * @param $title
+ *   The title to give to the field set.
+ * @param $description
+ *   A description for the lookup field element.
+ * @param $is_required
+ *   Indicates if this form element is required.
+ * @param $field_name
+ *   The name of the field, if this form is being added to a field widget.
+ * @param  $delta
+ *   The delta value for the field if this form is being added to a field
+ *   widget.
+ */
+function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
+    $title = 'Vocabulary Term', $description = '', $is_required,
+    $field_name = '', $delta = 0 ) {
+
+  $term_name = $default_name;
+  if (array_key_exists('values', $form_state)) {
+    $term_name = $form_state['values']['term_name'];
+  }
+  if ($field_name and array_key_exists('input', $form_state) and array_key_exists($field_name, $form_state['input'])) {
+    $term_name = $form_state['input'][$field_name]['und'][$delta]['term_match']['term_name'];
+  }
+
+  if (!$description) {
+    $description = t('Enter the name of the term that specifies the type. ' .
+      'The type must be the name of a term in a controlled vocabulary and ' .
+      'the controlled vocabulary should already be loaded into this site.');
+  }
+
+  $form_state['storage']['term_match_field'] = $field_name;
+  $form_state['storage']['term_match_delta'] = $delta;
+
+  $form['term_match'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#title' => t($title),
+    '#prefix' => '<div id = "tripal-vocab-select-form">',
+    '#suffix' => '</div>',
+  );
+  $form['term_match']['term_name'] = array(
+    '#title'  => t('Type'),
+    '#type' => 'textfield',
+    '#description' => $description,
+    '#required' => $is_required,
+    '#default_value' => $term_name,
+    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+  );
+  $form['term_match']['select_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Lookup Term'),
+    '#name' => 'select_cvterm',
+    '#validate' => array(),
+    '#limit_validation_errors' => array(),
+    '#ajax' => array(
+      'callback' => "tripal_get_term_lookup_form_ajax_callback",
+      'wrapper' => "tripal-vocab-select-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+  );
+
+  // If the term has been provided by the user then we want to search for
+  // matching terms in the database and let them select among any matches.
+  if ($term_name) {
+    $submit_disabled = TRUE;
+    $form['term_match']['terms_list'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Matching Terms'),
+      '#description' => t('Please select the term the best matches the
+          content type you want to create. If the same term exists in
+          multiple vocabularies you will see more than one option below.')
+    );
+    $match = array(
+      'name' => $term_name,
+    );
+    // TODO: this should not call the chado functions because we're in the
+    // tripal module.
+    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    $num_terms = 0;
+    $selected_term = '';
+
+    // Let the user select from any matching terms. Sometimes there may be
+    // more than one that match.
+    foreach ($terms as $term) {
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
+      $term_element_name = 'term-' . $term->cvterm_id;
+      $form['term_match']['terms_list'][$term_element_name] = array(
+        '#type' => 'checkbox',
+        '#title' =>  $term->name,
+        '#default_value' => $default,
+        '#attributes' => $attrs,
+        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $term->definition,
+        '#ajax' => array(
+          'callback' => "tripal_get_term_lookup_form_ajax_callback",
+          'wrapper' => "tripal-vocab-select-form",
+          'effect' => 'fade',
+          'method' => 'replace'
+        ),
+      );
+
+      if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
+          $form_state['values'][$term_element_name] == 1) {
+        $selected_term = $term;
+      }
+      $num_terms++;
+    }
+    if ($num_terms == 0) {
+      $form['term_match']['terms_list']['none'] = array(
+        '#type' => 'item',
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
+      );
+    }
+  }
+}
+
+/**
+ * Returns the terms selected from the tripal_get_term_lookup_form.
+ *
+ * @param $form
+ *   The form (or $widget form).
+ * @param $form_state
+ *   The form state.
+ * @param $field_name
+ *   The name of the field, if this form is being added to a field widget.
+ * @param  $delta
+ *   The delta value for the field if this form is being added to a field
+ *   widget.
+ *
+ * @return
+ *   An array of term objects for each of the user selected terms.
+ */
+function tripal_get_term_lookup_form_result($form, $form_state, $field_name = '', $delta = 0) {
+  $values = array();
+  $selected = array();
+  if ($field_name) {
+    if (array_key_exists('term_match', $form_state['values'][$field_name]['und'][$delta])) {
+      $values = $form_state['values'][$field_name]['und'][$delta]['term_match']['terms_list'];
+    }
+  }
+  else {
+    $values = $form_state['values'];
+  }
+
+  foreach ($values as $key => $value) {
+    $matches = array();
+    if (preg_match("/^term-(\d+)$/", $key, $matches) and $values['term-' . $matches[1]]) {
+      $cvterm_id = $matches[1];
+      $selected[] = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+    }
+  }
+  return $selected;
+}
+
+/**
+ * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
+ */
+function tripal_get_term_lookup_form_ajax_callback($form, $form_state) {
+  $field_name = $form_state['storage']['term_match_field'];
+  $delta = $form_state['storage']['term_match_delta'];
+
+  // If this form is in a field then we need to dig a bit deeper to return
+  // the form elements.
+  if ($field_name) {
+    return $form[$field_name]['und'][$delta]['term_match'];
+  }
+  else {
+    return $form['term_match'];
+  }
+}

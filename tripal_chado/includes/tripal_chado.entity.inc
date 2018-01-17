@@ -249,7 +249,7 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
       $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
       $legacy_template = 'legacy_template--chado_' . $chado_table;
 
-      // If the site admin has indicated that thhis entity type should use
+      // If the site admin has indicated that this entity type should use
       // a legacy tmplate then prepare the entity and content to fake a
       // node.
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {

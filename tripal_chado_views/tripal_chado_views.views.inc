@@ -176,10 +176,15 @@ function tripal_chado_views_views_data() {
       $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = :id";
       $mview_table = db_query($sql, array(':id' => $mview_id));
       $mview_table = $mview_table->fetchObject();
-      $base_table = $mview_table->name;
+      if ($mview_table) {
+        $base_table = $mview_table->name;
 
-      if (!empty($mview_table->mv_specs)) {
-        $legacy_mview = TRUE;
+        if (!empty($mview_table->mv_specs)) {
+          $legacy_mview = TRUE;
+        }
+      }
+      else {
+        continue;
       }
     }
 

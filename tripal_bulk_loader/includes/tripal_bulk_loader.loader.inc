@@ -194,7 +194,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $tables[$record_array['table']] = $record_array['table'];
     }
 
-    // iterate through each of the fiels for the current record and
+    // iterate through each of the fields for the current record and
     // set the default_data array
     foreach ($record_array['fields'] as $field_index => $field_array) {
 

@@ -126,7 +126,7 @@ class obi__organism extends ChadoField {
         $genus_term => $organism->genus,
         $species_term => $organism->species,
       );
-      // The infraspecific fiels were introdcued in Chado v1.3.
+      // The infraspecific fields were introduced in Chado v1.3.
       if (property_exists($organism, 'infraspecific_name')) {
         $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = NULL;
         $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $organism->infraspecific_name;

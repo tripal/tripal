@@ -13,7 +13,7 @@
     this.file = file;
     this.options = options;
     this.file_size = file.size;
-    this.chunk_size = (1024 * 2000); // 2024MB
+    this.chunk_size = (1024 * 2000); 
     this.total_chunks = ((this.file.size % this.chunk_size == 0) ? Math.floor(this.file.size / this.chunk_size) : Math.floor(this.file.size / this.chunk_size) + 1); 
     this.curr_chunk = 0;
     this.status = 'pending';

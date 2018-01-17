@@ -224,7 +224,7 @@ class TripalWebService {
     $cfh = fopen($context_file_path, "w");
     if (flock($cfh, LOCK_EX)) {
       fwrite($cfh, json_encode($context));
-      flock($context_file_path, LOCK_UN);
+      flock($cfh, LOCK_UN);
       fclose($cfh);
     }
     else {
