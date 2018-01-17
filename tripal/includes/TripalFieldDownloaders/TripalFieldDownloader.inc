@@ -40,6 +40,11 @@ abstract class TripalFieldDownloader {
   protected $outfile = '';
 
   /**
+   * The remote site json data returned for the entity
+   */
+  protected $remote_entity = '';
+
+  /**
    * Constructs a new instance of the TripalFieldDownloader class.
    * @param $bundle_name
    *   The name of the bundle to which the IDs in the $id argument belong.
@@ -133,7 +138,7 @@ abstract class TripalFieldDownloader {
             fwrite($fh, $line . "\r\n");
           }
         }*/
-        print_r($this->bundle_name);
+        //print_r($this->bundle_name);
         // Determine if the entity is remote or local.
         if (strpos($this->bundle_name, 'bio_data_') !== 0) {
           // Get all fields for that remote site/bundle name pairing, put them all in a fake entity
@@ -191,7 +196,31 @@ abstract class TripalFieldDownloader {
                           //print_r("\n \n");
                           // This entity needs to be pulled down and data grabbed.
                           $query = $entity_type . '/' . $single_id;
-                          $remote_entity = tripal_web_services_remote_request($site_id, $query);
+                          $this->remote_entity = tripal_web_services_remote_request($site_id, $query);
+                          /**
+                           * remote_entity looks like this:
+                           *  [@context] => http://demo.tripal.info/3.x/sites/default/files/tripal/ws/context/content.v0_1.gene.296.json
+                           *  [@id] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296
+                           *  [@type] => gene
+                           *  [label] => td01_000348m.g
+                           *  [ItemPage] => http://demo.tripal.info/3.x/bio_data/296
+                           *  [type] => Gene
+                           *  [organism] => Array
+                           *     (
+                           *         [label] => <i>Tripalus databasica</i>
+                           *          [genus] => Tripalus
+                           *          [species] => databasica
+                           *      )
+                           *
+                           *  [name] => td01_000348m.g
+                           *  [identifier] => td01_000348m.g
+                           *  [sequence_checksum] => d41d8cd98f00b204e9800998ecf8427e
+                           *  [time_accessioned] => 2011-06-30 17:00:58.050856
+                           *  [time_last_modified] => 2011-06-30 17:00:58.050856
+                           *  [sequence_coordinates] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/Sequence+coordinates
+                           *  [relationship] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/relationship
+                           */
+                          print_r($this->remote_entity);
                         }
                       }
                       
@@ -230,7 +259,7 @@ abstract class TripalFieldDownloader {
                     //print_r($entity_info);
                     // This entity needs to be pulled down and data grabbed.
                     $query = $entity_type . '/' . $entity_id;
-                    $remote_entity = tripal_web_services_remote_request($site_id, $query);
+                    $this->remote_entity = tripal_web_services_remote_request($site_id, $query);
                   }
                 }
               }
@@ -240,33 +269,29 @@ abstract class TripalFieldDownloader {
             // Need the label of the field so we can pull the data from the json.
             $fields = [];
             $fields = $this->fields;
+            print_r($fields);
+            print_r($site_vocab);
+            /**
+             * $site_vocab will look like this:
+             * [3] => Array(
+             *  [property] => data:0842
+             *  [hydra:title] => Identifier
+             *  [hydra:description] => 
+             *  [required] => 1
+             *  [readable] => 
+             *  [writeable] => 1
+             *  [tripal_formatters] => Array
+             *    (
+             *      [0] => TripalTabDownloader
+             *      [1] => TripalCSVDownloader
+             *    )
+             *  )
+             */
             foreach ($fields as $field) {
-              foreach ($site_vocab as $item) {
-                if (is_array($item)) {
-                  foreach ($item as $vocab_term) {
-                    if (!empty($vocab_term) && is_array($vocab_term)) {
-                      foreach ($vocab_term as $key => $term) {
-                        if (is_array($$key)) {
-                          print_r($key);
-                          if ($key['property'] === $field) {
-                            if (in_array('hydra:title', $key)) {
-                              $fields[] = $key['hydra:title'];
-                            }
-                          }
-                        
-                        } 
-                        else {
-
-                          if ($term['property'] === $field) {
-                            if (in_array('hydra:title', $term)) {
-                              $fields[] = $$term['hydra:title'];
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+              $returned_array = $this->vocabSearch($site_vocab, $field, array());
+              if (in_array('hydra:title', $returned_array)) {
+                print_r($returned_array['hydra:title']);
+                $fields[] = $returned_array['hydra:title'];
               }
             }
 
@@ -285,8 +310,7 @@ abstract class TripalFieldDownloader {
                   ],
                 ],
               ];
-            }
-            //print_r($fake_tripal_entity);
+            };
             $lines = $this->formatEntity($fake_tripal_entity);
             foreach ($lines as $line) {
               fwrite($fh, $line . "\r\n");
@@ -397,6 +421,28 @@ abstract class TripalFieldDownloader {
   }
 
   /**
+   * Recursive function to walk down the array looking for the passed value.
+   * 
+   * Returns the array of the field with title included.
+   */
+  public function vocabSearch($haystack, $needle, &$current_array) {
+    if (is_array($haystack)) {
+      foreach ($array as $item) {
+        if (is_array($item)) {
+          $current_array = $item;
+          vocabSearch($item, $needle, $current_array);
+        }
+        else {
+          print($item);
+          if (strtolower($item) == strtolower($needle)) {
+            return $current_array;
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Formats the entity and the specified fields for output.
    *
    * This function should be implemented by a child class. It should iterate
@@ -419,4 +465,5 @@ abstract class TripalFieldDownloader {
    *  the header lines for an output file.
    */
   abstract protected function getHeader();
+
 }

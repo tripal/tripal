@@ -15,8 +15,55 @@ class TripalTabDownloader extends TripalFieldDownloader {
    * @see TripalFieldDownloader::format()
    */
   protected function formatEntity($entity) {
-    print_r($entity);
+   //print_r($entity);
     $row = array();
+     // If more than one bundle is supplied we need to break the headers and entities
+    // apart so that headers and content correspond.
+    if (count($this->bundle_name) > 1) {
+      foreach ($this->bundle_name as $bundle) {
+        // Set the single bundle name for getting the Header.
+        $this->bundle_name = $bundle->bundle_name;
+        // Determine if the entity is remote or local.
+        if (strpos($this->bundle_name, 'bio_data_') !== 0) {
+          $this->remote_entity;
+        }
+        else {
+          foreach ($this->fields as $field_id) {
+            $field = field_info_field_by_id($field_id);
+            $field_name = $field['field_name'];
+      
+            if (!property_exists($entity, $field_name)) {
+              continue;
+            }
+      
+            // If we only have one element then this is good.
+            if (count($entity->{$field_name}['und']) == 1) {
+              $value = $entity->{$field_name}['und'][0]['value'];
+              // If the single element is not an array then this is good.
+              if (!is_array($value)) {
+                $row[] = $value;
+              }
+              else {
+                if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
+                  $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+                }
+                else {
+                  $row[] = '';
+                }
+                // TODO: What to do with fields that are arrays?
+              }
+            }
+            else {
+              $row[] = '';
+              // TODO: What to do with fields that have multiple values?
+            }
+          }
+        }
+      }
+    }
+    else {
+      //Do it for one bundle
+    }
     foreach ($this->fields as $field_id) {
       $field = field_info_field_by_id($field_id);
       $field_name = $field['field_name'];
