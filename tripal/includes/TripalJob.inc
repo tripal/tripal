@@ -89,9 +89,19 @@ class TripalJob {
    *   - includes: An array of paths to files that should be included in order
    *     to execute the job. Use the module_load_include function to get a path
    *     for a given file.
+   *   - ignore_duplicate: (Optional). Set to TRUE to ignore a job if it has
+   *     the same name as another job which has not yet run. If TRUE and a job
+   *     already exists then this object will reference the job already in the
+   *     queue rather than a new submission.  The default is TRUE.
    *
    * @throws Exception
    *   On failure an exception is thrown.
+   *
+   * @return
+   *   Returns TRUE if the job was succesfully created. Returns FALSE otherwise.
+   *   A return of FALSE does not mean the job creation failed. If the
+   *   ignore_duplicate is set to false and the job already is present in the
+   *   queue then the return value will be FALSE.
    */
   public function create($details) {
 
@@ -102,16 +112,22 @@ class TripalJob {
     if (!array_key_exists('includes', $details)) {
       $details['includes'] = array();
     }
+    if (!array_key_exists('ignore_duplicate', $details)) {
+      $details['ignore_duplicate'] = TRUE;
+    }
 
     // Make sure the arguments are correct.
     if (!$details['job_name']) {
-      throw new Exception("Must provide a \$job_name argument to the tripal_add_job() function.");
+      throw new Exception("Must provide a 'job_name' to create a job.");
     }
     if (!$details['modulename']) {
-      throw new Exception("Must provide a \$modulename argument to the tripal_add_job() function.");
+      throw new Exception("Must provide a 'modulename' to create a job.");
     }
     if (!$details['callback']) {
-      throw new Exception("Must provide a \$callback argument to the tripal_add_job() function.");
+      throw new Exception("Must provide a 'callback' to create a job.");
+    }
+    if ($details['ignore_duplicate'] !== FALSE and $details['ignore_duplicate'] !== TRUE) {
+      throw new Exception("Must provide either TRUE or FALSE for the ignore_duplicate option when creating a job.");
     }
 
     $includes = $details['includes'];
@@ -151,6 +167,20 @@ class TripalJob {
     }
 
     try {
+      // Before inserting a new record, and if ignore_duplicates is TRUE then
+      // check to see if the job already exists.
+      if ($details['ignore_duplicate'] === TRUE) {
+        $query = db_select('tripal_jobs', 'tj');
+        $query->fields('tj', array('job_id'));
+        $query->condition('job_name', $details['job_name']);
+        $query->isNull('start_time');
+        $job_id = $query->execute()->fetchField();
+        if ($job_id) {
+          $this->load($job_id);
+          return FALSE;
+        }
+      }
+
       $job_id = db_insert('tripal_jobs')
         ->fields(array(
           'job_name' => $details['job_name'],
@@ -166,6 +196,8 @@ class TripalJob {
         ->execute();
       // Now load the job into this object.
       $this->load($job_id);
+
+      return TRUE;
     }
     catch (Exception $e) {
       throw new Exception('Cannot create job: ' .  $e->getMessage());

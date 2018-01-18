@@ -84,7 +84,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
 
   try {
     $job = new TripalJob();
-    $job->create(array(
+    $is_created = $job->create(array(
       'job_name' => $job_name,
       'modulename' => $modulename,
       'callback' => $callback,
@@ -94,19 +94,24 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       'includes' => $includes,
     ));
 
-    // If no exceptions were thrown then we know the creation worked.  So
-    // let the user know!
-    drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
+    if ($is_created) {
+      // If no exceptions were thrown then we know the creation worked.  So
+      // let the user know!
+      drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
 
-    // If this is the Tripal admin user then give a bit more information
-    // about how to run the job.
-    if (user_access('administer tripal')) {
-      $jobs_url = url("admin/tripal/tripal_jobs");
-      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
-          array('!jobs_url' => $jobs_url)));
-      drupal_set_message(t("You can execute the job queue manually on the command line " .
-          "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
-          array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+      // If this is the Tripal admin user then give a bit more information
+      // about how to run the job.
+      if (user_access('administer tripal')) {
+        $jobs_url = url("admin/tripal/tripal_jobs");
+        drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
+            array('!jobs_url' => $jobs_url)));
+        drupal_set_message(t("You can execute the job queue manually on the command line " .
+            "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
+            array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+      }
+    }
+    else {
+      drupal_set_message(t("Job '%job_name' already exists in the queue and was not re-submitted.", array('%job_name' => $job_name)), 'warning');
     }
     return $job->getJobID();
   }
