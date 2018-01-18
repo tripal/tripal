@@ -167,7 +167,7 @@ class TripalJob {
     }
 
     try {
-      // Before inserting a new record, and if ignore_duplicates is TRUE then
+      // Before inserting a new record, and if ignore_duplicate is TRUE then
       // check to see if the job already exists.
       if ($details['ignore_duplicate'] === TRUE) {
         $query = db_select('tripal_jobs', 'tj');

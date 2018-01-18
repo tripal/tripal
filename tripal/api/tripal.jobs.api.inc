@@ -45,6 +45,10 @@
  *    An array of paths to files that should be included in order to execute
  *    the job. Use the module_load_include function to get a path for a given
  *    file.
+ * @param $ignore_duplicate.
+ *   Set to TRUE to not add the job if it has
+ *   the same name as another job which has not yet run. The default is TRUE.
+ *
  * @return
  *    The job_id of the registered job, or FALSE on failure.
  *
@@ -71,7 +75,7 @@
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
-    $priority = 10, $includes = array()) {
+    $priority = 10, $includes = array(), $ignore_duplicate = TRUE) {
 
   $user = user_load($uid);
 
@@ -85,6 +89,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       'uid' => $uid,
       'priority' => $priority,
       'includes' => $includes,
+      'ignore_duplicate' => $ignore_duplicate,
     ));
 
     if ($is_created) {
