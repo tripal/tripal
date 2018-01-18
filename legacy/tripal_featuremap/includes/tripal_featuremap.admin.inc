@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_admin_featuremaps_listing() {
   $output = '';
@@ -42,7 +42,7 @@ function tripal_featuremap_admin_featuremaps_listing() {
 /**
  * Administrative settings form
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_admin() {
   $form = array();

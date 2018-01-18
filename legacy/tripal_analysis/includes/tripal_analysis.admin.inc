@@ -4,13 +4,13 @@
  * @file
  * Contains functions displaying administrative pages and forms.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
 /**
  * Landing page for administration. Ensures Views are enabled & if not provides links to do so.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_admin_analysis_view() {
   $output = '';
@@ -48,7 +48,7 @@ function tripal_analysis_admin_analysis_view() {
  * @return
  *  A form API array describing an administrative form
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_admin() {
   // Create a new administrative form. We'll add main functions to the form
@@ -101,7 +101,7 @@ function tripal_analysis_admin() {
  * @form_state
  *   The user submitted values
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_admin_validate($form, &$form_state) {
 

@@ -8,7 +8,7 @@
 /**
  * A form for indicating the analyses to delete
 *
-* @ingroup tripal_analysis
+* @ingroup tripal_legacy_analysis
 */
 function tripal_analysis_delete_form() {
   // get the list of analyses
@@ -43,7 +43,7 @@ function tripal_analysis_delete_form() {
 /**
  * Submit for the delete features form
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_delete_form_submit($form, &$form_state) {
   global $user;
@@ -77,7 +77,7 @@ function tripal_analysis_delete_form_submit($form, &$form_state) {
  * @param $job
  *   The tripal_job id
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_delete_analyses($analyses, $job = NULL) {
 

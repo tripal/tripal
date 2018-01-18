@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup tripal_mviews_api Tripal Materalized Views API
+ * @defgroup tripal_mviews_api Chado Materalized Views
  * @ingroup tripal_chado_api
  * @{
  * Provides an application programming interface (API) to manage materialized views in Chado.

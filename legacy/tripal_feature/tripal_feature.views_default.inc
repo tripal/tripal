@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_feature_views_default_views() {
 /**
  * Defines the feature user search default view.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_defaultvalue_user_features() {
 
@@ -264,7 +264,7 @@ function tripal_feature_defaultvalue_user_features() {
 /**
  * The default feature administration view
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_defaultview_admin_features() {
 

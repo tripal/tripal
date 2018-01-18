@@ -4,12 +4,9 @@
  * General functions for the db module
  */
 
-//require_once 'api/tripal_db.api.inc';
-require_once 'api/tripal_db.DEPRECATED.inc';
-
 /**
- * @defgroup tripal_db Database Reference Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_db Legacy Database Reference Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Provides functions for managing chado database references which link chado content, such
  * as features and stocks, to records/pages in external databases/websites. For example,
@@ -19,10 +16,13 @@ require_once 'api/tripal_db.DEPRECATED.inc';
  * @}
  */
 
+require_once 'api/tripal_db.DEPRECATED.inc';
+
+
 /**
  * Implements hook_menu().
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_menu() {
   $items = array();
@@ -69,7 +69,7 @@ function tripal_db_help ($path, $arg) {
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_permission() {
   return array(
@@ -87,7 +87,7 @@ function tripal_db_permission() {
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_views_api() {
   return array('api' => 3.0);
@@ -100,7 +100,7 @@ function tripal_db_views_api() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_theme($existing, $type, $theme, $path) {
 
@@ -127,7 +127,7 @@ function tripal_db_theme($existing, $type, $theme, $path) {
  * @return
  *   A json array of terms that begin with the provided string
  *
- * @ingroup tripal_db_api
+ * @ingroup tripal_legacy_db_api
  */
 function tripal_db_dbxref_accession_autocomplete($db_id, $string = '') {
   if (!$db_id) {

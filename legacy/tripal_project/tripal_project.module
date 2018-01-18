@@ -4,20 +4,20 @@
  * Integrates the Chado Project tables with Drupal Nodes & Views
  */
 
-require_once 'api/tripal_project.DEPRECATED.inc';
-
-require_once 'theme/tripal_project.theme.inc';
-
-require_once 'includes/tripal_project.admin.inc';
-require_once 'includes/tripal_project.chado_node.inc';
-
 /**
- * @defgroup tripal_project Project Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_project Legacy Project Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Integrates the Chado Project tables with Drupal Nodes & Views
  * @}
  */
+
+
+require_once 'api/tripal_project.DEPRECATED.inc';
+require_once 'theme/tripal_project.theme.inc';
+require_once 'includes/tripal_project.admin.inc';
+require_once 'includes/tripal_project.chado_node.inc';
+
 
 /**
  * Implements hook_views_api().
@@ -26,7 +26,7 @@ require_once 'includes/tripal_project.chado_node.inc';
  *  for this module which then includes tripal_project.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_views_api() {
   return array(
@@ -37,7 +37,7 @@ function tripal_project_views_api() {
 /**
  * Implements hook_menu().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_menu() {
   $items = array();
@@ -121,7 +121,7 @@ function tripal_project_search_biological_data_views() {
  * Implements hook_help().
  * Adds a help page to the module list
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_help ($path, $arg) {
   if ($path == 'admin/help#tripal_project') {
@@ -135,7 +135,7 @@ function tripal_project_help ($path, $arg) {
  *  This function sets the permission for the user to access the information in the database.
  *  This includes creating, inserting, deleting and updating of information in the database
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_permission() {
   return array(
@@ -171,7 +171,7 @@ function tripal_project_permission() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -229,7 +229,7 @@ function tripal_project_theme($existing, $type, $theme, $path) {
  * @param $form_state
  * @param $form_id
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_form_alter(&$form, &$form_state, $form_id) {
 

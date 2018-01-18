@@ -4,16 +4,9 @@
  * Basic functionality for stocks
  */
 
-require_once 'api/tripal_stock.DEPRECATED.inc';
-
-require_once 'theme/tripal_stock.theme.inc';
-
-require_once 'includes/tripal_stock.admin.inc';
-require_once 'includes/tripal_stock.chado_node.inc';
-
 /**
- * @defgroup tripal_stock Stock Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_stock Legacy Stock Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Integrates the Chado Stock module with Drupal Nodes & Views
  *
@@ -28,6 +21,11 @@ require_once 'includes/tripal_stock.chado_node.inc';
  * @}
  */
 
+require_once 'api/tripal_stock.DEPRECATED.inc';
+require_once 'theme/tripal_stock.theme.inc';
+require_once 'includes/tripal_stock.admin.inc';
+require_once 'includes/tripal_stock.chado_node.inc';
+
 /**
  * Implements hook_menu().
  * Adds menu items for the tripal_stock
@@ -35,7 +33,7 @@ require_once 'includes/tripal_stock.chado_node.inc';
  * @return
  *   Menu definitions for the tripal_stock
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_menu() {
   $items = array();
@@ -134,7 +132,7 @@ function tripal_stock_search_biological_data_views() {
  * @return
  *   The node object with the passed in nid
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function cs_node_load($nid) {
   if (is_numeric($nid)) {
@@ -154,7 +152,7 @@ function cs_node_load($nid) {
  * @return
  *   Listing of the possible permission catagories
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_permission() {
   return array(
@@ -193,7 +191,7 @@ function tripal_stock_permission() {
  * @return
  *   An array with fields important for views integration
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_views_api() {
   return array(
@@ -208,7 +206,7 @@ function tripal_stock_views_api() {
  * @return
  *   An array of themeing functions to register
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -298,7 +296,7 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
  * Implements hook_help().
  * Adds a help page to the module list
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_help ($path, $arg) {
   if ($path == 'admin/help#tripal_stock') {
@@ -311,7 +309,7 @@ function tripal_stock_help ($path, $arg) {
  * stock it will redirect to that stock page, otherwise, a list of matching
  * stocks is shown.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_match_stocks_page($id) {
 
@@ -383,7 +381,7 @@ function tripal_stock_match_stocks_page($id) {
  * @param $form_state
  * @param $form_id
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
@@ -401,7 +399,7 @@ function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
  * @param $organism
  *  The organism of interest
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_load_organism_stock_counts($organism) {
 

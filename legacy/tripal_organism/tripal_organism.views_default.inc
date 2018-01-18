@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_organism_views_default_views() {
 /**
  * Defines the organism user search default view.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_defaultvalue_user_organisms() {
 
@@ -202,7 +202,7 @@ function tripal_organism_defaultvalue_user_organisms() {
 /**
  * Describe the organism administration view.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_admin_defaultview_organisms() {
 

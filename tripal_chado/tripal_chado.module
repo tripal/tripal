@@ -1,8 +1,26 @@
 <?php
+/**
+ * @file
+ * The Tripal Chado module.
+ */
 
-//
-// APPLICATION PROGRAMMER INTERFACE
-//
+/**
+ * @defgroup tripal_chado Tripal Chado Module
+ * @ingroup tripal_modules
+ * @{
+ * The Tripal Chado module provides functionality for integration with the
+ * Chado database schema for storing biological content.
+ * @}
+ */
+/**
+ * @defgroup tripal_chado_api Chado API
+ * @ingroup tripal
+ * @{
+ * The Tripal Chado (tripal_chado) module provides an application programming
+ * interface (API) to support customizations and creation of new extensions
+ * using the Chado database schem as a data store.
+ * @}
+ */
 
 // Generic Chado API functions
 require_once "api/tripal_chado.api.inc";
@@ -29,7 +47,6 @@ require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
 require_once 'api/modules/tripal_chado.phylotree.api.inc';
-
 
 //
 // REQUIRED INCLUDE FILES

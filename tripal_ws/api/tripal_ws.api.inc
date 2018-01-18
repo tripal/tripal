@@ -7,7 +7,7 @@
  */
 
 /**
- * @defgroup tripal_ws_api Tripal Web Services
+ * @defgroup tripal_ws_api Tripal Web Services API
  *
  * @ingroup tripal_api
  * The Tripal Web Services API provides a set of functions for interacting

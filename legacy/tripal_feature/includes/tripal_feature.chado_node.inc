@@ -10,7 +10,7 @@
  * Provide information to drupal about the node types that we're creating
  *  in this module
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_info() {
   $nodes = array();
@@ -40,7 +40,7 @@ function tripal_feature_node_info() {
 /**
  * Implementation of hook_form().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_form($node, &$form_state) {
 
@@ -256,7 +256,7 @@ function chado_feature_form($node, &$form_state) {
  *   CASE B: Synchronizing a node from chado to drupal
  *   CASE C: Inserting a new node that exists in niether drupal nor chado
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_validate($node, $form, &$form_state) {
 
@@ -368,7 +368,7 @@ function chado_feature_validate($node, $form, &$form_state) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_access($node, $op, $account) {
   $node_type = $node;
@@ -410,7 +410,7 @@ function tripal_feature_node_access($node, $op, $account) {
  *  to our chado_feature table.  This function is called on insert of a new node
  *  of type 'chado_feature' and inserts the necessary information.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_insert($node) {
 
@@ -507,7 +507,7 @@ function chado_feature_insert($node) {
 /**
  * Implements hook_update().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_update($node) {
 
@@ -593,7 +593,7 @@ function chado_feature_update($node) {
 /**
  * Implements hook_delete().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_delete($node) {
 
@@ -644,7 +644,7 @@ function chado_feature_delete($node) {
  * @param $feature_id
  *   The feature to attach the synonyms to
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_add_synonyms($synonyms, $feature_id) {
 
@@ -715,7 +715,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
  * When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function chado_feature_load($nodes) {
 
@@ -743,7 +743,7 @@ function chado_feature_load($nodes) {
  * Implements hook_node_presave().
  * Acts on all content types.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_presave($node) {
 
@@ -787,7 +787,7 @@ function tripal_feature_node_presave($node) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_insert($node) {
   // set the URL path after inserting.  We do it here because we do not
@@ -814,7 +814,7 @@ function tripal_feature_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_update($node) {
 
@@ -836,7 +836,7 @@ function tripal_feature_node_update($node) {
  * Implements hook_node_view().
  * Acts on all content types.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_view($node, $view_mode, $langcode) {
 

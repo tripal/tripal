@@ -1,5 +1,28 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) for working with
+ * controlled vocaublary terms.
+ */
+
+/**
+ * @defgroup tripal_terms_api CV Terms
+ * @ingroup tripal_api
+ * @{
+ * Tripal provides an application programming interface (API) for working with
+ * controlled vocaublary terms.  Tripal v3 is highly dependent on controlled
+ * vocabularies for identifying all content types and fields attached to those
+ * content types.  However, Tripal v3 is also database agnostic. Therefore, it
+ * controlled vocabularies can be stored in any database back-end.  By default
+ * the tripal_chado module is used for storing controlled vocabularies. However,
+ * if someone wanted to store controlled vocabularies in a database other than
+ * Chado they can do so. These API functions provide a convenient wrapper for
+ * accession controlled vocabularies no matter where they are stored.
+ *
+ * @}
+ */
+
+/**
  * @section
  * Vocabulary Hooks.
  */
@@ -25,6 +48,8 @@
  *   settings: An array whose keys are the names of the settings available for
  *     the storage backend, and whose values are the default values for
  *     those settings.
+ *
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_storage_info() {
   return array(
@@ -53,6 +78,8 @@ function hook_vocab_storage_info() {
  *
  * @return
  *   A form object.
+ *
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_select_term_form(&$form, &$form_state) {
 
@@ -62,6 +89,8 @@ function hook_vocab_select_term_form(&$form, &$form_state) {
  * Validates the hook_vocab_select_term_form().
  *
  * @param $name
+ *
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_select_term_form_validate($form, &$form_state) {
 
@@ -75,6 +104,8 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ *
+ * @ingroup tripal_terms_api
  *
  */
 function hook_vocab_import_form($form, &$form_state) {
@@ -116,6 +147,8 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *     -definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
+ *
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_get_term($vocabulary, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
@@ -142,6 +175,7 @@ function hook_vocab_get_term($vocabulary, $accession) {
  *       prefix does not support appending then the exact location for the
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_get_vocabulary($vocabulary) {
   // See the tripal_chado_vocab_get_vocabulary() function for an example.
@@ -167,6 +201,7 @@ function hook_vocab_get_vocabulary($vocabulary) {
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
  *   it will be updated and the return value will be TRUE,
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_add_term($details) {
   // See the tripal_chado_vocab_set_term() function for an example.
@@ -193,6 +228,7 @@ function hook_vocab_add_term($details) {
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
  *   it will be updated and the return value will be TRUE,
+ * @ingroup tripal_terms_api
  */
 function tripal_add_term($details) {
   // TODO: we need some sort of administrative interface that lets the user
@@ -236,6 +272,8 @@ function tripal_add_term($details) {
  *     - definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
+ *
+ * @ingroup tripal_terms_api
  */
 function tripal_get_term_details($vocabulary, $accession) {
 
@@ -280,6 +318,8 @@ function tripal_get_term_details($vocabulary, $accession) {
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
  *     - sw_url: The URL for mapping terms via the semantic web.
+ *
+ * @ingroup tripal_terms_api
  */
 function tripal_get_vocabulary_details($vocabulary) {
   // TODO: we need some sort of administrative interface that lets the user
@@ -327,6 +367,8 @@ function tripal_get_vocabulary_details($vocabulary) {
  * @param  $delta
  *   The delta value for the field if this form is being added to a field
  *   widget.
+ *
+ * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $title = 'Vocabulary Term', $description = '', $is_required,
@@ -458,6 +500,8 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
  *
  * @return
  *   An array of term objects for each of the user selected terms.
+ *
+ * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form_result($form, $form_state, $field_name = '', $delta = 0) {
   $values = array();
@@ -483,6 +527,8 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
 
 /**
  * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
+ *
+ * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['storage']['term_match_field'];

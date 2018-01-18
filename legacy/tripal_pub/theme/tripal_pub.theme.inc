@@ -2,7 +2,7 @@
 /**
  *
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
    $pub = $variables['node']->pub;

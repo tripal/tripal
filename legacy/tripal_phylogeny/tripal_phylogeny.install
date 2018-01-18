@@ -7,7 +7,7 @@
 /**
  * Implements hook_install().
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_install() {
 
@@ -51,7 +51,7 @@ function tripal_phylogeny_install() {
  *
  * Disable default views when module is disabled
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_disable() {
   // Disable all default views provided by this module
@@ -65,7 +65,7 @@ function tripal_phylogeny_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_requirements($phase) {
   $requirements = array();
@@ -85,7 +85,7 @@ function tripal_phylogeny_requirements($phase) {
 /**
  * Implementation of hook_schema().
  * Standard tripal linker table between a node and a phylotree record.
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_schema() {
   $schema['chado_phylotree'] = array(
@@ -125,7 +125,7 @@ function tripal_phylogeny_schema() {
 /**
  * Adds controlled vocabulary terms needed by this module.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_add_cvterms() {
 
@@ -322,7 +322,7 @@ function tripal_phylogeny_integrate_view(){
  * Add any custom tables needed by this module.
  * - phylotreeprop: keep track of properties of phylotree
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_add_custom_tables() {
   $schema = array (

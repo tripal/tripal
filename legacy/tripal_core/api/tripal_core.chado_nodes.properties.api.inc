@@ -94,7 +94,7 @@
 
  * @endcode
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 
 /**
@@ -134,7 +134,7 @@
  *       from the named vocabulary.  The array must have keys with the cvterm_id
  *       and values with the cvterm name.
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 
 function chado_add_node_form_properties(&$form, &$form_state, $details) {
@@ -646,7 +646,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
  * Validate the user input for creating a new property
  * Called by the add button in chado_add_node_form_properties
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_properties_add_button_validate($form, &$form_state) {
 
@@ -676,7 +675,6 @@ function chado_add_node_form_properties_add_button_validate($form, &$form_state)
  * Create an array of properties in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_properties_add_button_submit($form, &$form_state) {
 
@@ -712,7 +710,6 @@ function chado_add_node_form_properties_add_button_submit($form, &$form_state) {
 /**
  * Called by the many remove buttons in chado_add_node_form_properties
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_properties_remove_button_validate($form, &$form_state) {
   // No validation needed.
@@ -722,7 +719,6 @@ function chado_add_node_form_properties_remove_button_validate($form, &$form_sta
  * Remove the correct property from the form
  * Called by the many remove buttons in chado_add_node_form_properties
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_properties_remove_button_submit(&$form, &$form_state) {
 
@@ -741,6 +737,12 @@ function chado_add_node_form_properties_remove_button_submit(&$form, &$form_stat
   }
 }
 
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ * @return unknown
+ */
 function chado_add_node_form_properties_ajax_desc($form, $form_state) {
   return $form['properties']['property_table']['new']['type'];
 }
@@ -761,7 +763,6 @@ function chado_add_node_form_properties_ajax_desc($form, $form_state) {
  *   ),
  * );
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_properties_create_property_formstate_array($form, &$form_state) {
 
@@ -844,7 +845,7 @@ function theme_chado_add_node_form_properties($variables) {
  * @return
  *   A property array
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_retrieve_node_form_properties($node) {
   $properties = array();
@@ -877,7 +878,7 @@ function chado_retrieve_node_form_properties($node) {
  *   An array of properties from chado_retrieve_node_form_properties($node). This can be used if you need
  *   special handling for some of the properties (See FeatureMap chado_featuremap_insert for an example)
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_update_node_form_properties($node, $details, $retrieved_properties = FALSE) {
 

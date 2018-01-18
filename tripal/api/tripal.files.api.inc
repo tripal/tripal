@@ -6,7 +6,7 @@
  */
 
 /**
- * @defgroup tripal_files_api Tripal Files API
+ * @defgroup tripal_files_api Files
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for managing files within

@@ -6,18 +6,7 @@
  */
 
 /**
- * @defgroup tripal_mviews Tripal Materialized Views
- * @ingroup tripal_chado
- * @{
- * Contains functions for viewing and editing of Materialized Views
- * on a Tripal website.
- * @}
- */
-
-/**
  * Provides a landing page for tripal jobs admin
- *
- * @ingroup tripal_mviews
  */
 function tripal_mview_admin_view() {
   $output = '';
@@ -54,8 +43,6 @@ function tripal_mview_admin_view() {
  *
  * @param $mview_id
  *  The unique ID of the materialized view to render
- *
- * @ingroup tripal_mviews
  */
 function tripal_mview_report($mview_id) {
 
@@ -137,8 +124,6 @@ function tripal_mview_report($mview_id) {
  *
  * @return
  *   A form array (Form API)
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   if (!$mview_id) {
@@ -462,8 +447,6 @@ SELECT
 /**
  * Validate the Create/Edit Materialized View Form
  * Implements hook_form_validate().
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form_validate($form, &$form_state) {
 
@@ -539,8 +522,6 @@ function tripal_mviews_form_validate($form, &$form_state) {
 /**
  * Submit the Create/Edit Materialized View Form
  * Implements hook_form_submit().
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form_submit($form, &$form_state) {
 
@@ -595,8 +576,6 @@ function tripal_mviews_form_submit($form, &$form_state) {
 
 /**
  * Just a simple form for confirming deletion of a custom table
- *
- * @ingroup tripal_custom_tables
  */
 function tripal_mviews_delete_form($form, &$form_state, $mview_id) {
 

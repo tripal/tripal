@@ -1,4 +1,20 @@
 <?php
+
+/**
+ * @file
+ * Provides legacy application programming interface (API) to manage controlled
+ * vocabularies in the Chado database.
+ */
+
+/**
+ * @defgroup tripal_legacy_chado_cv_api Legacy Chado CV
+ * @ingroup tripal_legacy_api
+ * @{
+ * Provides an application programming interface (API) to manage entities
+ * that use Chado as their base data.
+ * @}
+ */
+
 /**
  * Retreives the default vocabulary for a given table and field.
  *
@@ -23,6 +39,8 @@
  * @return
  *   The cv object of the default vocabulary or an empty array if not
  *   available.
+ *
+ * @ingroup tripal_legacy_chado_cv_api
  */
 function tripal_get_default_cv($table, $field) {
   $sql = "
@@ -55,6 +73,8 @@ function tripal_get_default_cv($table, $field) {
  * @return
  *   If an assignment is present, an object containing the 'table_name' and
  *   'field_name' is returned.
+ *
+ * @ingroup tripal_legacy_chado_cv_api
  */
 function tripal_get_default_cv_table($cv_id) {
   $default = db_select('tripal_cv_defaults', 't')
@@ -85,6 +105,8 @@ function tripal_get_default_cv_table($cv_id) {
  * @return
  *   An array(cvterm_id => name)
  *   for each cvterm in the chado cvterm table where cv_id=that supplied
+ *
+ * @ingroup tripal_legacy_chado_cv_api
  */
 function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
 

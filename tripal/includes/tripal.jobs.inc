@@ -4,18 +4,10 @@
  * Contains functions related to the display of Tripal jobs in a Tripal website.
  */
 
-/**
- * @defgroup tripal_jobs Jobs
- * @ingroup tripal
- * @{
- * Contains functions related to the display of Tripal jobs in a Tripal website.
- * @}
- */
 
 /**
  * Provides a landing page for tripal jobs admin
  *
- * @ingroup tripal_jobs
  */
 function tripal_jobs_admin_view() {
   $output = '';
@@ -47,7 +39,6 @@ function tripal_jobs_admin_view() {
 /**
  * NO LONGER USED: REPLACED BY VIEW
  *
- * @ingroup tripal_jobs
  */
 function tripal_jobs_report_form($form, &$form_state = NULL) {
   $form = array();
@@ -97,8 +88,6 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
 
 /**
  * NO LONGER USED: REPLACED BY VIEW
- *
- * @ingroup tripal_jobs
  */
 function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
 
@@ -113,8 +102,6 @@ function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
  *
  * @return
  *   The HTML to be rendered which describes the job report
- *
- * @ingroup tripal_jobs
  */
 function tripal_jobs_report() {
 
@@ -233,9 +220,6 @@ function tripal_jobs_report() {
  *
  * @return
  *   The HTML describing the indicated job
- * @ingroup tripal
- *
- * @ingroup tripal_jobs
  */
 function tripal_jobs_view($job_id) {
 

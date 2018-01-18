@@ -3,14 +3,14 @@
  * @file
  * Implements drupal node hooks.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 
 /**
  * Implementation of hook_node_info().
  * This node_info, is a simple node that describes the functionallity of the module.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_info() {
 
@@ -50,7 +50,7 @@ function tripal_contact_node_info() {
  *  @return $form
  *    The information that was enterd allong with
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_form(&$node, $form_state) {
   $form = array();
@@ -242,7 +242,7 @@ function chado_contact_form(&$node, $form_state) {
  * Implements hook_validate().
  * Validates submission of form when adding or updating a contact node.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_validate($node, $form, &$form_state) {
 
@@ -315,7 +315,7 @@ function chado_contact_validate($node, $form, &$form_state) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_access($node, $op, $account ) {
 
@@ -362,7 +362,7 @@ function tripal_contact_node_access($node, $op, $account ) {
  *  @parm $node
  *    Then node which contains the information stored within the node-ID
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_insert($node) {
   $contact_id = '';
@@ -445,7 +445,7 @@ function chado_contact_insert($node) {
  * @param $node
  *   The node being updated
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_update($node) {
   // remove surrounding white-space on submitted values
@@ -507,7 +507,7 @@ function chado_contact_update($node) {
  * @return $node
  *   The node with the information to be loaded into the database
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_load($nodes) {
 
@@ -561,7 +561,7 @@ function chado_contact_load($nodes) {
  *  @parm $node
  *    Then node which contains the information stored within the node-ID
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function chado_contact_delete(&$node) {
 
@@ -591,7 +591,7 @@ function chado_contact_delete(&$node) {
 /**
  * Implements hook_node_view().
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -639,7 +639,7 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
 /**
  * Implements hook_node_presave().
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_presave($node) {
   switch ($node->type) {
@@ -661,7 +661,7 @@ function tripal_contact_node_presave($node) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_insert($node) {
 
@@ -690,7 +690,7 @@ function tripal_contact_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_update($node) {
 

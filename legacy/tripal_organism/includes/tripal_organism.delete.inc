@@ -7,7 +7,7 @@
 /**
  * A form for indicating the organisms to delete
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_delete_form() {
   // get the list of organisms
@@ -42,7 +42,7 @@ function tripal_organism_delete_form() {
 /**
  * Submit for the delete features form
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_delete_form_submit($form, &$form_state) {
   global $user;
@@ -76,7 +76,7 @@ function tripal_organism_delete_form_submit($form, &$form_state) {
  * @param $job
  *   The tripal_job id
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_delete_organisms($organisms, $job = NULL) {
 

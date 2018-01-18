@@ -1,5 +1,26 @@
 <?php
+/**
+ * @file
+ * The Tripal Web Service Module
+ */
 
+/**
+ * @defgroup tripal_ws Tripal Web Services Module
+ * @ingroup tripal
+ * @{
+ * The Tripal Web Services module provides functionality for managing RESTful
+ * web services based on the W3C Hydra standard.
+ * @}
+ */
+
+/**
+ * @defgroup tripal_api Tripal API
+ * @ingroup tripal
+ * @{
+ * Tripal provides an application programming interface (API) to support
+ * customizations and creation of new extensions.
+ * @
+ *
 require_once  "api/tripal_ws.api.inc";
 require_once  "includes/tripal_ws.field_storage.inc";
 require_once  "includes/tripal_ws.fields.inc";

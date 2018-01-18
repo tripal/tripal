@@ -3,7 +3,7 @@
  * @file
  * Implements Drupal Node hooks to create the chado_analysis node content type.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 
 /**
@@ -12,7 +12,7 @@
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_info() {
   $nodes = array();
@@ -41,7 +41,7 @@ function tripal_pub_node_info() {
 /**
  * Implements hook_form().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_form($node, $form_state) {
   $form = array();
@@ -343,7 +343,7 @@ function chado_pub_form($node, $form_state) {
 /**
  * Implements hook_validate().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_validate($node, $form, &$form_state) {
 
@@ -455,7 +455,7 @@ function chado_pub_validate($node, $form, &$form_state) {
  *  If an update, provide the pub_id so we don't check for a matching
  *  uniquename of the pub we are editing
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 
@@ -488,7 +488,7 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
  *   the unique id of the publication
  *
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id = NULL) {
 
@@ -549,7 +549,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_access($node, $op, $account) {
   $node_type = $node;
@@ -586,7 +586,7 @@ function tripal_pub_node_access($node, $op, $account) {
 /**
  * Implements hook_insert().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_insert($node) {
 
@@ -797,7 +797,7 @@ function chado_pub_insert($node) {
  * @param $node
  *   The node being updated
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_update($node) {
   $node->pubtitle   = trim($node->pubtitle);
@@ -987,7 +987,7 @@ function chado_pub_update($node) {
  * @return $node
  *   The node with the information to be loaded into the database
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_load($nodes) {
 
@@ -1030,7 +1030,7 @@ function chado_pub_load($nodes) {
  * @parm $node
  *    Then node to be deleted
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function chado_pub_delete(&$node) {
 
@@ -1059,7 +1059,7 @@ function chado_pub_delete(&$node) {
 /**
  * Implements hook_node_view(). Acts on all content types.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -1148,7 +1148,7 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
  * so the nodeapi function ensures that the URL path is set after insert or update
  * of the node and when the node is loaded if it hasn't yet been set.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_insert($node) {
 
@@ -1183,7 +1183,7 @@ function tripal_pub_node_insert($node) {
  * so the nodeapi function ensures that the URL path is set after insert or update
  * of the node and when the node is loaded if it hasn't yet been set.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_load($nodes, $types) {
   if (count(array_intersect(array('chado_pub'), $types))) {
@@ -1206,7 +1206,7 @@ function tripal_pub_node_load($nodes, $types) {
  * so the nodeapi function ensures that the URL path is set after insert or update
  * of the node and when the node is loaded if it hasn't yet been set.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_update($node) {
 
@@ -1234,7 +1234,7 @@ function tripal_pub_node_update($node) {
 /**
  * Implements hook_node_presave(). Acts on all content types.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_node_presave($node) {
   switch ($node->type) {

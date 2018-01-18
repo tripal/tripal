@@ -7,7 +7,7 @@
 /**
  * Admin Launchpad
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_admin_natdiv_view() {
   $output = '';

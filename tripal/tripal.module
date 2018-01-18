@@ -1,7 +1,25 @@
 <?php
 /**
  * @file
- * The Tripal Core module
+ * The core Tripal module
+ */
+
+ /**
+  * @defgroup tripal Tripal Module
+  * @ingroup tripal_modules
+  * @{
+  * The core Tripal module provides functionality useful for all other Tripal
+  * modules and extension modules.
+  * @}
+  */
+
+/**
+ * @defgroup tripal_api Tripal API
+ * @ingroup tripal
+ * @{
+ * Tripal provides an application programming interface (API) to support
+ * customizations and creation of new extensions.
+ * @}
  */
 
 // Import the full Tripal API into scope.
@@ -34,14 +52,6 @@ require_once "includes/TripalImporter.inc";
 require_once "includes/TripalEntityCollection.inc";
 require_once "includes/TripalFieldDownloaders/TripalFieldDownloader.inc";
 
-/**
- * @defgroup tripal Tripal Core Module
- * @ingroup tripal_modules
- * @{
- * Functionality useful for all other Tripal modules including the Tripal jobs, files,
- * materialized views and custom table functions.
- * @}
- */
 
 /**
  * Implements hook_views_api().

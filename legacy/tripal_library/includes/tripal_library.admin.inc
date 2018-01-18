@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_admin_libraries_listing() {
   $output = '';
@@ -42,7 +42,7 @@ function tripal_library_admin_libraries_listing() {
 /**
  * Administrative settings form
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_admin() {
   $form = array();

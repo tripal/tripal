@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup tripal_custom_tables_api Tripal Custom Tables API
+ * @defgroup tripal_custom_tables_api Chado Custom Tables
  * @ingroup tripal_chado_api
  * @{
  * Provides an API to manage custom tables in Chado.

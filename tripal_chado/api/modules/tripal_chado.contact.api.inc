@@ -3,14 +3,13 @@
  * @file
  * Functions to interact with contacts.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_chado
  */
 
 /**
- * @defgroup tripal_contact_api Contact Module API
- * @ingroup tripal_api
+ * @defgroup tripal_contact_api Chado Contact
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage chado contacts
  * @}
  */
 
@@ -121,7 +120,7 @@ function tripal_insert_contact($values) {
  * @return
  *   A json array of terms that begin with the provided string
  *
- * @ingroup tripal_organism_api
+ * @ingroup tripal_contact_api
  */
 function tripal_autocomplete_contact($text) {
   $matches = array();

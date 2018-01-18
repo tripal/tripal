@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_featuremap_views_default_views() {
 /**
  * Defines the featuremap user search default view.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_defaultvalue_user_featuremaps() {
 
@@ -73,7 +73,7 @@ function tripal_featuremap_defaultvalue_user_featuremaps() {
 /**
  * Describes the default featuremap admin view
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_defaultview_admin_featuremaps() {
 

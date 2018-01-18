@@ -2,7 +2,7 @@
 
 /**
  * @file
- * API to manage the chado _dbxref table for various Tripal Node Types
+ * API to manage the Chado dbxref table for various Tripal Node Types
  *
  * How To Use:
  * @code
@@ -93,7 +93,7 @@
 
  * @endcode
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 
 /**
@@ -120,7 +120,7 @@
  *       the [value] is the human-readable name of the option. This includes all databases
  *       in the chado db table by default
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
@@ -437,8 +437,6 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 /**
  * Validate the user input for creating a new dbxref
  * Called by the add button in chado_add_node_form_dbxrefs
- *
- * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
 
@@ -468,7 +466,6 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
  * Create an array of additional dbxrefs in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_submit($form, &$form_state) {
 
@@ -500,7 +497,6 @@ function chado_add_node_form_dbxrefs_add_button_submit($form, &$form_state) {
 /**
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) {
   // No validation needed.
@@ -510,7 +506,6 @@ function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) 
  * Remove the correct dbxref from the form
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) {
 
@@ -545,7 +540,6 @@ function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) 
  *   ),
  * );
  *
- * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_create_dbxref_formstate_array($form, &$form_state) {
 
@@ -572,7 +566,6 @@ function chado_add_node_form_dbxrefs_create_dbxref_formstate_array($form, &$form
 /**
  * Function to theme the add/remove dbxrefs form into a table
  *
- * @ingroup tripal_chado_node_api
  */
 function theme_chado_add_node_form_dbxrefs_table($variables) {
   $element = $variables['element'];
@@ -630,7 +623,7 @@ function theme_chado_add_node_form_dbxrefs_table($variables) {
  * @return
  *   A dbxref array
  *
- * @ingroup tripal_chado_node_api
+ *  @ingroup tripal_legacy_chado_node_api
  */
 function chado_retrieve_node_form_dbxrefs($node) {
   $dbxrefs = array();
@@ -663,7 +656,7 @@ function chado_retrieve_node_form_dbxrefs($node) {
  *   An array of databa references from chado_retrieve_node_form_dbxrefs($node).
  *   This can be used if you need special handling for some of the database references
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_update_node_form_dbxrefs($node, $details, $retrieved_dbxrefs = FALSE) {
 

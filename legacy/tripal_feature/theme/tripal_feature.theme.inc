@@ -2,7 +2,7 @@
 
 
 /**
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
   // we want to provide a new variable that contains the matched features.
@@ -42,7 +42,7 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
  * @param $feature_id
  * @param $featurelocs
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 
@@ -178,7 +178,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 /**
  * Used to sort the list of relationship parts by start position
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_sort_rel_parts_by_start($a, $b) {
   foreach ($a as $type_name => $details) {
@@ -201,7 +201,7 @@ function tripal_feature_sort_rel_parts_by_start($a, $b) {
  * @param $aggregate
  *   Whether or not to get the locations for related features
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
 
@@ -268,7 +268,7 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
  * @return
  *   Which feature location comes first
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_sort_locations($a, $b) {
   return strnatcmp($a->fmin, $b->fmin);
@@ -281,7 +281,7 @@ function tripal_feature_sort_locations($a, $b) {
  * @param $parts
  * @param $defline
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
@@ -364,7 +364,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
 /**
  * Used to sort the list of relationship parts by start position
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_sort_rel_parts_by_end($a, $b) {
   $val = strnatcmp($b['end'], $a['end']);
@@ -376,7 +376,7 @@ function tripal_feature_sort_rel_parts_by_end($a, $b) {
 /**
  *
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   // we want to provide a new variable that contains the matched features.
@@ -390,7 +390,7 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
 /**
  *
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
   // we want to provide a new variable that contains the matched features.
@@ -403,7 +403,7 @@ function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
 /**
  *
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
@@ -528,7 +528,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
    * not want to include these, so we have to filter on the SO terms:
  * match, or %_match
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_get_matched_alignments($feature) {
 
@@ -583,7 +583,7 @@ function tripal_feature_get_matched_alignments($feature) {
 /**
  *
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $hook) {
   $organism = $variables['node']->organism;
@@ -595,7 +595,7 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $
  * @param $organism
  *  The organism of interest
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_load_organism_feature_counts($organism) {
 
@@ -692,7 +692,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
  * @return
  *   An array with two objects
  *
- * @ingroup tripal_feature_api
+ * @ingroup tripal_legacy_feature_api
  */
 function tripal_feature_get_feature_relationships($feature) {
   // expand the feature object to include the feature relationships.

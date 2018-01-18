@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_phylogeny_views_default_views() {
 /**
  * The default phylotree administration view.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_defaultview_admin_phylotree() {
   $view = new view();
@@ -157,7 +157,7 @@ function tripal_phylogeny_defaultview_admin_phylotree() {
 /**
  * Defines the phylotree user search default view.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_defaultvalue_user_phylotrees() {
 

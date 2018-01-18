@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_phenotype_views_default_views() {
 /**
  * Defines the phenotype user search default view.
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_defaultvalue_user_phenotypes() {
 
@@ -70,7 +70,7 @@ function tripal_phenotype_defaultvalue_user_phenotypes() {
 /**
  * Default phenotype administration view
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_defaultview_admin_phenotypes() {
 

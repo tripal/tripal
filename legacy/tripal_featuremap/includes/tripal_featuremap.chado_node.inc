@@ -10,7 +10,7 @@
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_node_info() {
   $nodes = array();
@@ -40,7 +40,7 @@ function tripal_featuremap_node_info() {
  *  When editing or creating a new node of type 'chado_featuremap' we need
  *  a form.  This function creates the form that will be used for this.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_form($node, &$form_state) {
   $form = array();
@@ -151,7 +151,7 @@ function chado_featuremap_form($node, &$form_state) {
 /**
  * Validates submission of form when adding or updating a map node
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_validate($node, $form, &$form_state) {
 
@@ -219,7 +219,7 @@ function chado_featuremap_validate($node, $form, &$form_state) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_node_access($node, $op, $account) {
   $node_type = $node;
@@ -260,7 +260,7 @@ function tripal_featuremap_node_access($node, $op, $account) {
  *  to our chado_featuremap table.  This function is called on insert of a new node
  *  of type 'chado_featuremap' and inserts the necessary information.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_insert($node) {
 
@@ -344,7 +344,7 @@ function chado_featuremap_insert($node) {
 /**
  * Implements hook_update(). Update nodes
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_update($node) {
 
@@ -413,7 +413,7 @@ function chado_featuremap_update($node) {
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_load($nodes) {
   foreach ($nodes as $nid => $node) {
@@ -444,7 +444,7 @@ function chado_featuremap_load($nodes) {
  * Implements hook_delete().
  *
  * Delete data from drupal and chado databases when a node is deleted
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function chado_featuremap_delete(&$node) {
 
@@ -475,7 +475,7 @@ function chado_featuremap_delete(&$node) {
 /**
  * Implements hook_node_presave(). Acts on all content types.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_node_presave($node) {
   switch ($node->type) {
@@ -565,7 +565,7 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_node_insert($node) {
 
@@ -592,7 +592,7 @@ function tripal_featuremap_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_node_update($node) {
 

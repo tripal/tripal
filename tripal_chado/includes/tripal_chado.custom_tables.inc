@@ -4,22 +4,10 @@
  * Contains functions for creating, editing and deleting custom tables
  * on the Tripal website.
  *
- * @ingroup tripal_custom_tables
- */
-
-/**
- * @defgroup tripal_custom_tables Custom Chado Tables
- * @ingroup tripal_chado
- * @{
- * Contains functions for creating, editing and deleting custom tables
- * on the Tripal website.
- * @}
  */
 
 /**
  * Provides a landing page for administrating custom tables.
- *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_admin_view() {
   $output = '';
@@ -54,7 +42,6 @@ function tripal_custom_table_admin_view() {
 /**
  * Renders the tripal_custom_tables_form.
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_new_page() {
 
@@ -68,7 +55,6 @@ function tripal_custom_table_new_page() {
  * @param $table_id
  *  The unique ID of the custom table
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_view($table_id) {
 
@@ -122,7 +108,6 @@ function tripal_custom_table_view($table_id) {
  * @return
  *   A form array (Form API)
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
 
@@ -285,7 +270,6 @@ array (
  * Implements hook_validate().
  * Validate the Create/Edit custom table form.
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form_validate($form, &$form_state) {
   $action = $form_state['values']['action'];
@@ -343,7 +327,6 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
  * Submit the Create/Edit Custom table form
  * Implements hook_form_submit().
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form_submit($form, &$form_state) {
 
@@ -379,7 +362,6 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
 /**
  * Just a simple form for confirming deletion of a custom table
  *
- * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
 

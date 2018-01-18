@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_disable() {
 
@@ -24,7 +24,7 @@ function tripal_organism_disable() {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_install() {
 
@@ -36,7 +36,7 @@ function tripal_organism_install() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_schema() {
  $schema['chado_organism'] = array(
@@ -74,7 +74,7 @@ function tripal_organism_schema() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_uninstall() {
 
@@ -83,7 +83,7 @@ function tripal_organism_uninstall() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_requirements($phase) {
   $requirements = array();

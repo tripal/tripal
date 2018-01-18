@@ -5,10 +5,9 @@
  */
 
 /**
- * @defgroup tripal_feature_api Feature API
- * @ingroup tripal_api
+ * @defgroup tripal_feature_api Chado Feature
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) for working with features
  * @}
  */
 /**
@@ -22,7 +21,7 @@
  * @return
  *   A json array of terms that begin with the provided string
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_feature_api
  */
 function tripal_autocomplete_feature($string = '') {
   $items = array();

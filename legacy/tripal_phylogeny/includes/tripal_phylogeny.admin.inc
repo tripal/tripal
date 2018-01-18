@@ -3,7 +3,7 @@
 /**
  * Administrative settings form
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_admin() {
   $form = array();
