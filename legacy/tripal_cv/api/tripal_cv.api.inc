@@ -151,10 +151,10 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
  * @param $cv_name
  *   The name of the vocabulary
  *
- * @ingroup tripal_legacy_chado_cv_api
- *
  * @return
  *   TRUE if set, FALSE if an error occured
+ *
+ * @ingroup tripal_legacy_chado_cv_api
  */
 function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 
