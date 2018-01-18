@@ -20,7 +20,7 @@
  * Tripal provides an application programming interface (API) to support
  * customizations and creation of new extensions.
  * @
- *
+ */
 require_once  "api/tripal_ws.api.inc";
 require_once  "includes/tripal_ws.field_storage.inc";
 require_once  "includes/tripal_ws.fields.inc";
