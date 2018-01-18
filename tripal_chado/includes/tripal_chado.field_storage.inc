@@ -54,6 +54,8 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
+
+
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
 
   // If this is an insert then add the chado_entity record.

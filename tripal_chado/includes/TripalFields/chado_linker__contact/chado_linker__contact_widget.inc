@@ -24,7 +24,10 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     // Get the FK column that links to the base table.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
+
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+//    $fkey_lcolumn = key($schema['foreign keys']['protocol']['columns']);
+
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Get the field defaults.

@@ -17,6 +17,7 @@ require_once 'api/tripal_chado.schema_v1.3.api.inc';
 require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
 require_once 'api/tripal_chado.semweb.api.inc';
+require_once 'api/tripal_chado.migrate.api.inc';
 
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';
@@ -363,16 +364,6 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
   //                           Data Loaders
   //////////////////////////////////////////////////////////////////////////////
-
-  // Data Loaders
-  $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
-    'title' => 'Chado Phylogenetic Trees (Newic format)',
-    'description' => 'Loads phylogenetic trees in Newic format.',
-    'page callback' => 'drupal_goto',
-    'page arguments' => array('node/add/chado-phylotree'),
-    'access arguments' => array('load tripal data'),
-    'type' => MENU_NORMAL_ITEM,
-  );
 
   $items['admin/tripal/loaders/pub'] = array(
     'title' => t('Chado Publication Importers'),
