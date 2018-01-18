@@ -13,6 +13,7 @@
  * that use Chado as their base data.
  * @}
  */
+
 /**
  * Retreive the entity_id assigned to a given record_id and bundle.
  *
@@ -120,4 +121,3 @@ function chado_get_bundle_entity_table($bundle) {
   }
   return 'chado_' . $bundle->name;
 }
-

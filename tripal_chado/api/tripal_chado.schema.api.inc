@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup tripal_chado_schema_api Chado Schema API
+ * @defgroup tripal_chado_schema_api Chado Schema
  * @ingroup tripal_chado_api
  * @{
  * Provides an application programming interface (API) for describing Chado tables.

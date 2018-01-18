@@ -15,6 +15,8 @@
  * @return boolean
  *   TRUE if all of the records of the given bundle type were published, and
  *   FALSE if a failure occured.
+ *
+ * @ingroup tripal_chado_api
  */
 function tripal_chado_publish_records($values, $job_id = NULL) {
 
@@ -353,80 +355,4 @@ function tripal_replace_chado_tokens($string, $record) {
     }
   }
   return $string;
-}
-
-/**
- * Retrieve an entity_id for a chado record.
- *
- * @param string $chado_table
- *   The chado_table where the record is stored.
- * @param integer $record_id
- *   The record_id which is the primary key of the chado table.
- *
- * @return
- *   Return an integer representing the entity_id or NULL if not found. The
- *   record is then accessible on the website through URL /bio_data/<entity_id>
- */
-function tripal_get_chado_entity_id ($chado_table, $record_id) {
-  // To find the bundle_table, check if type_column is used for the chado table.
-  $type_column =
-    db_select('chado_bundle', 'CB')
-    ->fields('CB', array('type_column'))
-    ->condition('data_table', $chado_table)
-    ->execute()
-    ->fetchField();
-
-  // If there is a type_column, get bundle_id by specifying the data_table,
-  // type_column, and type_id.
-  $bundle_id = NULL;
-  if ($type_column) {
-    $schema = chado_get_schema($chado_table);
-    $pkey = is_array($schema['primary key']) ? $schema['primary key'][0] : $schema['primary key'];
-    $type_id = NULL;
-    if (key_exists($type_column, $schema['fields'])) {
-      $type_id =
-        db_select("chado.$chado_table", 'C')
-          ->fields('C', array($type_column))
-          ->condition($pkey, $record_id)
-          ->execute()
-          ->fetchField();
-    }
-    if ($type_id) {
-      $bundle_id =
-        db_select('chado_bundle', 'CB')
-          ->fields('CB', array('bundle_id'))
-          ->condition('data_table', $chado_table)
-          ->condition('type_column', $type_column)
-          ->condition('type_id', $type_id)
-          ->execute()
-          ->fetchField();
-    }
-  }
-  // If type_column is not used, get bundle_id by specifying the data_table.
-  else {
-    $bundle_id =
-      db_select('chado_bundle', 'CB')
-        ->fields('CB', array('bundle_id'))
-        ->condition('data_table', $chado_table)
-        ->execute()
-        ->fetchField();
-  }
-
-  // If bundle_id is found, find the bundle table name and return the entity_id.
-  $entity_id = NULL;
-  if ($bundle_id) {
-    $table_name =
-      db_select('tripal_bundle', 'TB')
-        ->fields('TB', array('name'))
-        ->condition('id', $bundle_id)
-        ->execute()
-        ->fetchField();
-    $entity_id =
-      db_select('chado_' . $table_name, 'CBD')
-        ->fields('CBD', array('entity_id'))
-        ->condition('record_id', $record_id)
-        ->execute()
-        ->fetchField();
-  }
-  return $entity_id;
 }

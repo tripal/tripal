@@ -14,7 +14,6 @@
  */
 /**
  * @defgroup tripal_chado_api Chado API
- * @ingroup tripal
  * @{
  * The Tripal Chado (tripal_chado) module provides an application programming
  * interface (API) to support customizations and creation of new extensions
