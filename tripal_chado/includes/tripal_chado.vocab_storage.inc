@@ -30,7 +30,7 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   }
   $sql = "
      SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
-       string_agg(DBCVM.cvname, ', ') as name
+       array_to_string(array_agg(DBCVM.cvname), ', ') as name
      FROM {db} DB
       INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
      WHERE DB.name = :name
