@@ -112,7 +112,6 @@ function tripal_chado_add_tripal_gffprotein_temp_table() {
 /**
  * Creates a temporary table to store obo details while loading an obo file
  *
- * @ingroup tripal_cv
  */
 function tripal_chado_add_tripal_obo_temp_table() {
   // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
@@ -409,9 +408,61 @@ function tripal_chado_add_analysis_organism_mview() {
 }
 
 /**
- * Add a materialized view of root terms for all chado cvs. This is needed for viewing cv trees
+ * Add a materialized view that maps cv to db records.
  *
- * @ingroup tripal_cv
+ * This is needed for viewing cv trees
+ *
+ */
+function tripal_chado_add_db2cv_mview_mview() {
+  $mv_name = 'db2cv_mview';
+  $comment = 'A table for quick lookup of the vocabularies and the databases they are associated with.';
+  $schema = array(
+    'table' => $mv_name,
+    'description' => $comment,
+    'fields' => array (
+      'cv_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'cvname' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => true,
+      ),
+      'db_id' => array (
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'dbname' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => true,
+      ),
+    ),
+    'indexes' => array (
+      'cv_id_idx'  => array ('cv_id'),
+      'cvname_idx'    => array ('cvname'),
+      'db_id_idx' => array ('db_id'),
+      'dbname_idx'    => array ('db_id'),
+    ),
+  );
+
+  $sql = "
+   SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname
+   FROM cv CV
+     INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
+     INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+     INNER JOIN db DB on DB.db_id = DBX.db_id
+  ";
+
+  // Create the MView
+  tripal_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment);
+}
+/**
+ * Add a materialized view of root terms for all chado cvs.
+ *
+ * This is needed for viewing cv trees
+ *
  */
 function tripal_chado_add_cv_root_mview_mview() {
   $mv_name = 'cv_root_mview';
@@ -457,6 +508,6 @@ function tripal_chado_add_cv_root_mview_mview() {
   ";
 
   // Create the MView
-  tripal_add_mview($mv_name, 'tripal_cv', $schema, $sql, $comment);
+  tripal_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment);
 }
 

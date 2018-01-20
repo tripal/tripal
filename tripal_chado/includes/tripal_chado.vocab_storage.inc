@@ -29,14 +29,12 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     return FALSE;
   }
   $sql = "
-     SELECT DB.name as short_name, CV.name as name, DB.description, DB.url, DB.urlprefix
+     SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+       string_agg(DBCVM.cvname, ', ') as name
      FROM {db} DB
-      LEFT JOIN {dbxref} DBX on DBX.db_id = DB.db_id
-      LEFT JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
-      LEFT JOIN {cv} CV on CV.cv_id = CVT.cv_id
-     WHERE
-      DB.name = :name
-     LIMIT 1 OFFSET 0
+      INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
+     WHERE DB.name = :name
+     GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
   ";
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
@@ -51,24 +49,67 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     $sw_url = url($sw_url, array('absolute' => TRUE));
   }
   $result['sw_url'] = $sw_url;
-  unset($result['short_name']);
   return $result;
 }
 
+
 /**
- * Implements hook_vocab_get_term().
+ * Implements hook_vocab_get_root_terms().
  *
  * This hook is created by the Tripal module and is not a Drupal hook.
  */
-function tripal_chado_vocab_get_term($vocabulary, $accession) {
+function tripal_chado_vocab_get_root_terms($vocabulary) {
+  $terms = array();
+
 
   // It's possible that Chado is not available (i.e. it gets renamed
   // for copying) but Tripal has already been prepared and the
   // entities exist.  If this is the case we don't want to run the
   // commands below.
-  if (!chado_table_exists('cvterm')) {
+  if (!chado_table_exists('db')) {
     return FALSE;
   }
+
+
+  // Get the list of CV's that belong to this vocabulary and get their
+  // roots.
+  $sql = "
+    SELECT *
+    FROM {db2cv_mview} WHERE dbname = :dbname
+  ";
+  $cvs = chado_query($sql, array(':dbname' => $vocabulary));
+  while ($cv = $cvs->fetchObject()) {
+    $sql = "
+      SELECT cvterm_id
+      FROM {cv_root_mview} CRM
+      WHERE CRM.cv_id = :cv_id
+    ";
+    $results = chado_query($sql, array(':cv_id' => $cv->cv_id));
+    while($cvterm_id = $results->fetchField()) {
+      $match = array('cvterm_id' => $cvterm_id);
+      $cvterm = chado_generate_var('cvterm', $match);
+      $terms[] = _tripal_chado_format_term_description($cvterm);
+    }
+  }
+  return $terms;
+}
+/**
+ * Implements hook_vocab_get_term_children().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_get_term_children($vocabulary, $accession) {
+  $terms = array();
+
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cvtermpath')) {
+    return FALSE;
+  }
+
+  // Get the parent cvterm.
   $match = array(
     'dbxref_id' => array(
       'db_id' => array(
@@ -83,6 +124,60 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
 
+
+  // Get the children
+  $sql = "
+    SELECT subject_id
+    FROM {cvterm_relationship} CVTR
+    WHERE object_id = :object_id
+  ";
+  $results = chado_query($sql, array(':object_id' => $cvterm->cvterm_id));
+  while($cvterm_id = $results->fetchField()) {
+    $match = array('cvterm_id' => $cvterm_id);
+    $cvterm = chado_generate_var('cvterm', $match);
+    $terms[] = _tripal_chado_format_term_description($cvterm);
+  }
+  return $terms;
+}
+/**
+ * Implements hook_vocab_get_term().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_get_term($vocabulary, $accession) {
+
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cvterm')) {
+    return FALSE;
+  }
+
+  $match = array(
+    'dbxref_id' => array(
+      'db_id' => array(
+        'name' => $vocabulary,
+      ),
+      'accession' => $accession,
+    ),
+  );
+  $cvterm = chado_generate_var('cvterm', $match);
+  if (!$cvterm) {
+    return FALSE;
+  }
+  $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
+
+  return _tripal_chado_format_term_description($cvterm);
+}
+
+/**
+ * A helper functions for the hook_vocab_xxx functions.
+ *
+ * @param $cvterm
+ *   A cvterm object.
+ */
+function _tripal_chado_format_term_description($cvterm) {
   $url = $cvterm->dbxref_id->db_id->url;
   $urlprefix = $cvterm->dbxref_id->db_id->urlprefix;
 

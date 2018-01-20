@@ -287,7 +287,7 @@ function tripal_menu() {
 //   );
 
   $items['cv/lookup/%'] = array(
-    'title' => 'Vocabulary Lookup',
+    'title' => 'Vocabulary Details',
     'description' => t("Provides a tool to discover controlled vocabularies"),
     'access arguments' => array('access content'),
     'page callback' => 'tripal_vocabulary_lookup_page',
@@ -302,6 +302,15 @@ function tripal_menu() {
     'description' => t("Provides a tool to discover controlled vocabularies terms used by this site."),
     'access arguments' => array('access content'),
     'page callback' => 'tripal_vocabulary_lookup_term_page',
+    'page arguments' => array(2, 3),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['cv/lookup/%/%/children'] = array(
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_term_children_ajax',
     'page arguments' => array(2, 3),
     'file' => 'includes/tripal.term_lookup.inc',
     'file path' => drupal_get_path('module', 'tripal'),

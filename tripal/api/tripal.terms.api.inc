@@ -155,6 +155,48 @@ function hook_vocab_get_term($vocabulary, $accession) {
 
 }
 /**
+ * Hook used by the default term storage backend to provide children for a term.
+ *
+ * This hook is called by the tripal_entity module to retrieve a list of
+ * children for a term from the storage backend.  It must return an array
+ * of terms where each term contains the same structure as that of the
+ * hook_vocab_get_term().
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ * @param $accession
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   An array of terms where each term contains the same structure as that of
+ *   the hook_vocab_get_term(), or an empty array if no children are present.
+ *
+ * @ingroup tripal_terms_api
+ */
+function hook_vocab_get_term_children($vocabulary, $accession) {
+
+}
+/**
+ * Hook used by the default term storage backend to provide root terms.
+ *
+ * This hook is called by the tripal_entity module to retrieve a list of
+ * root terms for a given vocabulary from the storage backend.  It must return
+ * an array of terms where each term contains the same structure as that of the
+ * hook_vocab_get_term().
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ *
+ * @return
+ *   An array of root terms where each term contains the same structure as that
+ *   of the hook_vocab_get_term(), or an empty array if no children are present.
+ *
+ * @ingroup tripal_terms_api
+ */
+function hook_vocab_get_root_terms($vocabulary) {
+
+}
+/**
  * Hook used by the default term storage backend to provide details for a vocab.
  *
  * This hook is called by the tripal_entity module to retrieve information
@@ -289,6 +331,67 @@ function tripal_get_term_details($vocabulary, $accession) {
     $keys = array_keys($stores);
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
+    if (function_exists($function)) {
+      return $function($vocabulary, $accession);
+    }
+  }
+}
+/**
+ * Retrieves the immediate children of the given term.
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ * @param $accession
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   Returns an array of terms where each term is compatible with the
+ *   array returned by the tripal_get_term_details() function.
+ *
+ * @ingroup tripal_terms_api
+ */
+function tripal_get_vocabulary_root_terms($vocabulary) {
+  if (empty($vocabulary)) {
+    tripal_report_error('tripal_term', TRIPAL_ERROR, 'Unable to retrieve details for term due to missing vocabulary.');
+  }
+
+  // TODO: we need some sort of administrative interface that lets the user
+  // switch to the desired vocabulary type. For now, we'll just use the
+  // first one in the list.
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_root_terms';
+    if (function_exists($function)) {
+      return $function($vocabulary);
+    }
+  }
+}
+/**
+ * Retrieves the immediate children of the given term.
+ *
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
+ * @param $accession
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   Returns an array of terms where each term is compatible with the
+ *   array returned by the tripal_get_term_details() function.
+ *
+ * @ingroup tripal_terms_api
+ */
+function tripal_get_term_children($vocabulary, $accession) {
+  if (empty($vocabulary) OR empty($accession)) {
+    tripal_report_error('tripal_term', TRIPAL_ERROR, 'Unable to retrieve details for term due to missing vocabulary and/or accession.');
+  }
+
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_term_children';
     if (function_exists($function)) {
       return $function($vocabulary, $accession);
     }
