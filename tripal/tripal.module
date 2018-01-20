@@ -750,13 +750,18 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
   }
 
   // Remove fields that have no form. It's just a bit too confusing to have
-  // widgets appear in the form but without and form elements inside them.
+  // widgets appear in the form but without any form elements inside them.
   if ($form_id == 'tripal_entity_form') {
     $children = element_children($form);
     foreach ($children as $child) {
-      // count the number of form elements
+      // Count the number of form elements.
       if (array_key_exists('und', $form[$child])) {
         $total_widgets = 0;
+        // Some fields with cardinality of one that aren't TripalFields
+        // may not have an array, so we need to catch those.
+        if (array_key_exists('#type', $form[$child]['und'])) {
+          $total_widgets++;
+        }
         foreach ($form[$child]['und'] as $delta => $element) {
           if (is_numeric($delta)) {
             $total_widgets += count(element_children($element));

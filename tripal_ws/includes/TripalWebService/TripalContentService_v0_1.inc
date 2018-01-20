@@ -1,6 +1,6 @@
 <?php
 
-class TripalEntityService_v0_1 extends TripalWebService {
+class TripalContentService_v0_1 extends TripalWebService {
 
   /**
    * The human-readable label for this web service.
@@ -242,7 +242,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if ($instance['display']['default']['type'] == 'hidden') {
         continue;
       }
-
       // Get the information about this field.
       $field = field_info_field($field_name);
 
