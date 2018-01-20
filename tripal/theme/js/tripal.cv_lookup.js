@@ -3,7 +3,7 @@
   Drupal.behaviors.TripalCVLookup = {
     attach: function (context, settings) {
 
-      $('.tree-node-closed').on("click", function(event) {
+      $('.tree-node-closed').click(function(event) {
         expandNode($(this));
       });
     }
@@ -20,7 +20,7 @@
     
    // Add the click for expanding the node now that this node is expaded.
     parent.children('i').unbind('click');
-    parent.children('i').on("click", function(event){
+    parent.children('i').click(function(event){
       expandNode($(this));
     }) 
   }
@@ -38,7 +38,7 @@
     
     // Add the click for collapsing the node now that htis node is expaded.
     parent.children('i').unbind('click');
-    parent.children('i').on("click", function(event){
+    parent.children('i').click(function(event){
       collapseNode($(this));
     }) 
     
@@ -51,7 +51,7 @@
       parent.children('i').addClass('tree-node-open');
       // Add the click event to new DOM elements.
       var nodes = parent.find('.tree-node-closed');
-      nodes.on("click", function(event) {
+      nodes.click(function(event) {
         expandNode($(this));
       });
     })
