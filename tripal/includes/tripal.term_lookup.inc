@@ -16,10 +16,14 @@ function tripal_vocabulary_lookup_page() {
       l($vocabulary['short_name'], 'cv/lookup/' . $vocabulary['short_name']),
       $vocabulary['name'],
       $vocabulary['description'],
+      array(
+        'data' => number_format($vocabulary['num_terms']),
+        'style' => 'text-align: right;'
+      ),
     );
   }
 
-  $headers = array('Short Name', 'Vocabulary Name(s)', 'Description');
+  $headers = array('Short Name', 'Vocabulary Name(s)', 'Description', 'Loaded Terms');
   $table = array(
     'header' => $headers,
     'rows' => $rows,
@@ -56,7 +60,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
 
   $vocab = tripal_get_vocabulary_details($vocabulary);
   if ($vocab['description']) {
-    drupal_set_title($vocab['description']);
+    drupal_set_title($vocabulary . ': ' . $vocab['description']);
   }
   else {
     drupal_set_title($vocabulary);
@@ -79,14 +83,6 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   $vocab_desc = $vocab['description'];
   $rows[] = array(
     array(
-      'data' => 'Vocabulary Name(s)',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_name,
-  );
-  $rows[] = array(
-    array(
       'data' => 'Short Name',
       'header' => TRUE,
       'width' => '20%',
@@ -95,11 +91,27 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   );
   $rows[] = array(
     array(
+      'data' => 'Vocabulary Name(s)',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    $vocab_name,
+  );
+  $rows[] = array(
+    array(
       'data' => 'Description',
       'header' => TRUE,
       'width' => '20%',
     ),
     $vocab_desc,
+  );
+  $rows[] = array(
+    array(
+      'data' => 'Number of Loaded Terms',
+      'header' => TRUE,
+      'width' => '20%',
+    ),
+    number_format($vocab['num_terms']),
   );
 
   $table = array(
@@ -112,7 +124,15 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     'empty' => '',
   );
 
+  $has_root = TRUE;
   $root_terms = tripal_get_vocabulary_root_terms($vocabulary);
+  // If this vocabulary doesn't have root terms then it's either not an
+  // ontology or not all of the terms are loaded. In this case, let's get
+  // a paged list of all terms
+  if (count($root_terms) == 0) {
+    $root_terms = tripal_get_vocabulary_terms($vocabulary, 25);
+    $has_root = FALSE;
+  }
   $items = tripal_vocabulary_lookup_term_children_format($root_terms);
 
   if (count($root_terms) == 0) {
@@ -142,6 +162,12 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
       '#markup' => $items,
     ),
   );
+  if (!$has_root) {
+    $content['pager']= array(
+      '#type' => 'markup',
+      '#markup' => theme('pager'),
+    );
+  }
 
   // Add support for our custom tree viewer
   drupal_add_css(drupal_get_path('module', 'tripal') . '/theme/css/tripal.cv_lookup.css');
@@ -171,7 +197,13 @@ function tripal_vocabulary_lookup_term_children_format($children) {
       $class = 'tree-node-single';
     }
     $items .= '<i class = "tree-node-icon ' . $class . '"></i>';
-    $items .= l($child['name'], 'cv/lookup/' . $child['vocabulary']['short_name'] . '/' . $child['accession'], array('attributes' => array('target' => '_blank'))) . ' (' . $num_grand . ')';
+    $items .= l($child['name'], 'cv/lookup/' . $child['vocabulary']['short_name'] . '/' . $child['accession'], array('attributes' => array('target' => '_blank')));
+    if ($child['accession'] != $child['name']) {
+      $items .= ' [' . $child['vocabulary']['short_name'] . ':' . $child['accession'] . '] ';
+    }
+    if ($num_grand > 0) {
+      $items .= ' (' . $num_grand . ')';
+    }
     $items .= '</li>';
   }
   $items .= '</ul>';

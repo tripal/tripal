@@ -155,6 +155,20 @@ function hook_vocab_get_term($vocabulary, $accession) {
 
 }
 /**
+ * Retrieves a paged list of terms from a vocabulary.
+ *
+ * @param $vocabulary
+ *   The short name of the vocabulary.
+ * @param $limit
+ *   The number of results to return.
+ * @param $element
+ *   The pager element. This is equivalent to the element from the
+ *   pager_default_initialize() function of Drupal.
+ */
+function hook_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
+
+}
+/**
  * Hook used by the default term storage backend to provide children for a term.
  *
  * This hook is called by the tripal_entity module to retrieve a list of
@@ -433,6 +447,7 @@ function tripal_get_term_children($vocabulary, $accession) {
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
  *     - sw_url: The URL for mapping terms via the semantic web.
+ *     - num_terms: The number of terms loaded in the vocabulary.
  *
  * @ingroup tripal_terms_api
  */
@@ -447,6 +462,30 @@ function tripal_get_vocabulary_details($vocabulary) {
     $function = $module . '_vocab_get_vocabulary';
     if (function_exists($function)) {
       return $function($vocabulary);
+    }
+  }
+}
+
+
+/**
+ * Retrieves a paged list of terms from a vocabulary.
+ *
+ * @param $vocabulary
+ *   The short name of the vocabulary.
+ * @param $limit
+ *   The number of results to return.
+ * @param $element
+ *   The pager element. This is equivalent to the element from the
+ *   pager_default_initialize() function of Drupal.
+ */
+function tripal_get_vocabulary_terms($vocabulary, $limit = 25, $element = 0) {
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_terms';
+    if (function_exists($function)) {
+      return $function($vocabulary, $limit, $element);
     }
   }
 }

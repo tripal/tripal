@@ -40,6 +40,7 @@ function tripal_chado_vocab_get_vocabularies() {
 
   $sql = "
      SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+       SUM(DBCVM.num_terms) as num_terms,
        array_to_string(array_agg(DBCVM.cvname), ', ') as name
      FROM {db} DB
       INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
@@ -85,6 +86,7 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
 
   $sql = "
      SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+       SUM(DBCVM.num_terms) as num_terms,
        array_to_string(array_agg(DBCVM.cvname), ', ') as name
      FROM {db} DB
       INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
@@ -125,7 +127,6 @@ function tripal_chado_vocab_get_root_terms($vocabulary) {
     return FALSE;
   }
 
-
   // Get the list of CV's that belong to this vocabulary and get their
   // roots.
   $sql = "
@@ -145,6 +146,46 @@ function tripal_chado_vocab_get_root_terms($vocabulary) {
       $cvterm = chado_generate_var('cvterm', $match);
       $terms[] = _tripal_chado_format_term_description($cvterm);
     }
+  }
+  return $terms;
+}
+
+/**
+ * Implements hook_vocab_get_terms().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cvterm')) {
+    return FALSE;
+  }
+
+  $sql = "
+    SELECT CVT.cvterm_id
+    FROM {cvterm} CVT
+      INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
+      INNER JOIN {db} DB on DB.db_id = DBX.db_id
+    WHERE db.name = :dbname
+    ORDER BY CVT.name
+  ";
+  $csql = "
+    SELECT COUNT(CVT.cvterm_id)
+    FROM {cvterm} CVT
+      INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
+      INNER JOIN {db} DB on DB.db_id = DBX.db_id
+    WHERE db.name = :dbname
+  ";
+  $results = chado_pager_query($sql, array(':dbname' => $vocabulary), $limit, $element, $csql);
+
+  $terms = array();
+  while($cvterm_id = $results->fetchField()) {
+    $match = array('cvterm_id' => $cvterm_id);
+    $cvterm = chado_generate_var('cvterm', $match);
+    $terms[] = _tripal_chado_format_term_description($cvterm);
   }
   return $terms;
 }
@@ -243,16 +284,9 @@ function _tripal_chado_format_term_description($cvterm) {
     $sw_url = preg_replace('/{accession}/', '', $sw_url);
     $sw_url = url($sw_url, array('absolute' => TRUE));
   }
-
+  $vocabulary = tripal_chado_vocab_get_vocabulary($cvterm->dbxref_id->db_id->name);
   $term = array(
-    'vocabulary' => array(
-      'name' => $cvterm->cv_id->name,
-      'short_name' => $cvterm->dbxref_id->db_id->name,
-      'description' =>  $cvterm->dbxref_id->db_id->description,
-      'url' => $url,
-      'urlprefix' => $urlprefix,
-      'sw_url' => $sw_url,
-    ),
+    'vocabulary' => $vocabulary,
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,
     'url'        => tripal_get_dbxref_url($cvterm->dbxref_id),
