@@ -138,7 +138,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     $items = '<p>This vocabulary has no terms loaded</p>';
   }
   else {
-    $items = '<p>Click the + icon\'s (if present) to expand the tree. If ' .
+    $items = '<p>Click the + icon (if present) to expand the tree. If ' .
       'the full ontology or the term heirarchy is not loaded into this site. ' .
       'then the tree will consist of all terms at the same level. ' .
       'For some vocabularies, only a subset of terms are loaded</p>' . $items;
