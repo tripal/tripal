@@ -453,7 +453,7 @@ function tripal_chado_add_db2cv_mview_mview() {
 
   $sql = "
    SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
-     SUM(CVT.cvterm_id) as num_terms
+     COUNT(CVT.cvterm_id) as num_terms
    FROM cv CV
      INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
      INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
