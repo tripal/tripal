@@ -31,7 +31,7 @@ function tripal_vocabulary_lookup_page() {
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),
-    'empty' => '',
+    'empty' => t('There are no controlled vocabularies'),
   );
 
   $content = array(
@@ -75,6 +75,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   $headers = array();
   $rows = array();
   $vocab_name = $vocab['name'];
+  $short_name = $vocab['short_name'];
   if ($vocab['url']) {
     $short_name = l($vocab['short_name'], $vocab['url'], array('attributes' => array('target' => '_blank')));
   }

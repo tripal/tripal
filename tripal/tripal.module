@@ -577,6 +577,7 @@ function tripal_libraries_info() {
  * Define administrative paths.
  */
 function tripal_admin_paths() {
+  $paths = array();
   if (variable_get('node_admin_theme')) {
     $paths = array(
       'bio_data/*/edit' => TRUE,
@@ -584,8 +585,9 @@ function tripal_admin_paths() {
       'bio_data/add' => TRUE,
       'bio_data/add/*' => TRUE,
     );
-    return $paths;
   }
+  $paths['cv/lookup/*/*'] = TRUE;
+  return $paths;
 }
 
 /**

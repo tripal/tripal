@@ -62,6 +62,12 @@ function tripal_chado_vocab_get_vocabularies() {
     $result['sw_url'] = $sw_url;
     $vocabs[] = $result;
   }
+
+  if (count($vocabs) == 0) {
+    $link = l('populating', 'admin/tripal/storage/chado/mviews/update', array('attributes' => array('target' => '_blank')));
+    $message = t('If there are no controlled vocabularies it is mostly likely because the db2cv_mview is not populated.  Try !populating this mview.', array('!populating' => $link));
+    tripal_set_message($message, TRIPAL_NOTICE);
+  }
   return $vocabs;
 }
 /**
