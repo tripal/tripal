@@ -136,7 +136,8 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     'vocab_browser' => array(
       '#type' => 'item',
       '#title' => 'Term Browser',
-      '#markup' => $items,
+      '#markup' => '<p>Sometimes the full ontology may not be loaded into this site, but only terms needed by this site. The following allows browsing of loaded terms</p>' .
+         $items,
     ),
   );
 
