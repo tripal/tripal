@@ -44,17 +44,16 @@
     
     $.ajax({
       url : baseurl + '/cv/lookup/' + vocabulary + '/' + accession + '/children',
-    })
-    .done(function(data) {
-      parent.append(data.content);
-      parent.children('i').removeClass('tree-node-loading');
-      parent.children('i').addClass('tree-node-open');
-      // Add the click event to new DOM elements.
-      var nodes = parent.find('.tree-node-closed');
-      nodes.click(function(event) {
-        expandNode($(this));
-      });
-    })
+      success: function(data) {
+        parent.append(data.content);
+        parent.children('i').removeClass('tree-node-loading');
+        parent.children('i').addClass('tree-node-open');
+        // Add the click event to new DOM elements.
+        var nodes = parent.find('.tree-node-closed');
+        nodes.click(function(event) {
+          expandNode($(this));
+        });
+      }
+    });
   }
-
 })(jQuery);
