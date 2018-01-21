@@ -215,6 +215,13 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
   else {
     drupal_set_message("Custom table, '" . $table . "' , already exists. Table structure not changed, but definition array has been saved.", 'status');
   }
+
+  if ($mview_id) {
+    drupal_goto('admin/tripal/storage/chado/mviews/');
+  }
+  else {
+    drupal_goto('admin/tripal/storage/chado/custom_tables');
+  }
   return TRUE;
 }
 

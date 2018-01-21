@@ -111,6 +111,15 @@ function tripal_custom_table_view($table_id) {
  */
 function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Custom Tables', 'admin/tripal/storage/chado/custom_tables');
+  drupal_set_breadcrumb($breadcrumb);
+
   if (!$table_id) {
     $action = 'Add';
   }
@@ -146,11 +155,6 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
       $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
     }
   }
-
-  $form['return'] = array(
-    '#type' => 'markup',
-    '#markup' => "<p>" . l("Return to list of custom tables", "admin/tripal/storage/chado/custom_tables") . "</p>",
-  );
 
   // Build the form
   $form['action'] = array(
@@ -259,9 +263,10 @@ array (
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
   );
-
-
-
+  $form['cancel'] = array(
+    '#type'   => 'markup',
+    '#markup' => l('Cancel', 'admin/tripal/storage/chado/custom_tables'),
+  );
 
   return $form;
 }

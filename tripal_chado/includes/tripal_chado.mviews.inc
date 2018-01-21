@@ -45,6 +45,14 @@ function tripal_mview_admin_view() {
  *  The unique ID of the materialized view to render
  */
 function tripal_mview_report($mview_id) {
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Materialied Views', 'admin/tripal/storage/chado/mviews');
+  drupal_set_breadcrumb($breadcrumb);
 
   // get this mview details
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
@@ -55,8 +63,7 @@ function tripal_mview_report($mview_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/") . "</p>";
-  $output .= "<p>Details for <b>$mview->name</b>:</p>";
+  $output = "<p>Details for <b>$mview->name</b>:</p>";
 
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
@@ -126,6 +133,17 @@ function tripal_mview_report($mview_id) {
  *   A form array (Form API)
  */
 function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Materialied Views', 'admin/tripal/storage/chado/mviews');
+  drupal_set_breadcrumb($breadcrumb);
+
+
   if (!$mview_id) {
     $action = 'Add';
   }
@@ -237,11 +255,6 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['modulename'] = array(
     '#type' => 'value',
     '#value' => $default_modulename,
-  );
-
-  $form['return_link'] = array(
-    '#type' => 'item',
-    '#description' => l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/"),
   );
 
   $form['instructions'] = array(
@@ -438,6 +451,10 @@ SELECT
     '#type'         => 'submit',
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
+  );
+  $form['cancel'] = array(
+    '#type'         => 'markup',
+    '#markup'        => l('Cancel', 'admin/tripal/storage/chado/mviews'),
   );
 
 

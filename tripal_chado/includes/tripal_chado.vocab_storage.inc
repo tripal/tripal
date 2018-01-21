@@ -95,6 +95,9 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   ";
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
+  if (!$result) {
+    return FALSE;
+  }
 
   if (!$result['name']) {
     $result['name'] = $result['short_name'];
