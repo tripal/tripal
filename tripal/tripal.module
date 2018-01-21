@@ -274,23 +274,21 @@ function tripal_menu() {
   /*
    * Term Lookup
    */
-// TODO: finish this menu callback.
-//   $items['cv/lookup'] = array(
-//     'title' => 'Vocabulary Lookup',
-//     'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
-//     'access arguments' => array('access content'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_vocabulary_lookup_form'),
-//     'file' => 'includes/tripal.term_lookup.inc',
-//     'file path' => drupal_get_path('module', 'tripal'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
+   $items['cv/lookup'] = array(
+     'title' => 'Controlled Vocabularies',
+     'description' => t("A tool to explore the controlled vocabularies that are used on this site."),
+     'access arguments' => array('access content'),
+     'page callback' => 'tripal_vocabulary_lookup_page',
+     'file' => 'includes/tripal.term_lookup.inc',
+     'file path' => drupal_get_path('module', 'tripal'),
+     'type' => MENU_NORMAL_ITEM,
+   );
 
   $items['cv/lookup/%'] = array(
     'title' => 'Vocabulary Details',
     'description' => t("Provides a tool to discover controlled vocabularies"),
     'access arguments' => array('access content'),
-    'page callback' => 'tripal_vocabulary_lookup_page',
+    'page callback' => 'tripal_vocabulary_lookup_vocab_page',
     'page arguments' => array(2),
     'file' => 'includes/tripal.term_lookup.inc',
     'file path' => drupal_get_path('module', 'tripal'),

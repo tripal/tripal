@@ -222,6 +222,18 @@ function hook_vocab_get_root_terms($vocabulary) {
 function hook_vocab_get_vocabulary($vocabulary) {
   // See the tripal_chado_vocab_get_vocabulary() function for an example.
 }
+
+/**
+ * Retrieves the list of vocabularies that are available on the site.
+ *
+ * @return
+ *   An array of vocabularies where each entry in the array is compatible
+ *   with the array returned by the tripal_get_vocabulary_details()
+ *   function.
+ */
+function hook_vocab_get_vocabularies() {
+  // See the tripal_chado_vocab_get_vocabularies() function for an example.
+}
 /**
  * Hook used by the default term storage backend to add new terms.
  *
@@ -435,6 +447,26 @@ function tripal_get_vocabulary_details($vocabulary) {
     $function = $module . '_vocab_get_vocabulary';
     if (function_exists($function)) {
       return $function($vocabulary);
+    }
+  }
+}
+
+/**
+ * Retrieves the list of vocabularies that are available on the site.
+ *
+ * @return
+ *   An array of vocabularies where each entry in the array is compatible
+ *   with the array returned by the tripal_get_vocabulary_details()
+ *   function.
+ */
+function tripal_get_vocabularies() {
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_vocabularies';
+    if (function_exists($function)) {
+      return $function();
     }
   }
 }

@@ -1,31 +1,52 @@
 <?php
 
 /**
- *
- * @param $form
- * @param string $form_state
+ *  Provides the content for the Controlled vocabulary home page.
  */
-function tripal_vocabulary_lookup_form($form, &$form_state = NULL) {
+function tripal_vocabulary_lookup_page() {
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  drupal_set_breadcrumb($breadcrumb);
+  $vocabs = tripal_get_vocabularies();
 
+  $rows = array();
+  foreach ($vocabs as $vocabulary) {
+    $rows[] = array(
+      l($vocabulary['short_name'], 'cv/lookup/' . $vocabulary['short_name']),
+      $vocabulary['name'],
+      $vocabulary['description'],
+    );
+  }
+
+  $headers = array('Short Name', 'Vocabulary Name(s)', 'Description');
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  $content = array(
+    'description' => array(
+      '#type' => 'markup',
+      '#markup' => '<p>The following controlled vocabularies are used on this site. Click a vocabulary short name for more details.</p>',
+    ),
+    'vocab_table' => array(
+      '#type' => 'item',
+      '#markup' => theme_table($table),
+    ),
+  );
+  return $content;
 }
+
 /**
- *
- * @param $form
- * @param $form_state
+ * Provides the content for a single controlled vocabulary.
  */
-function tripal_vocabulary_lookup_form_validate($form, $form_state) {
-
-}
-/**
- *
- * @param $form
- * @param $form_state
- */
-function tripal_vocabulary_lookup_form_submit($form, $form_state) {
-
-}
-
-function tripal_vocabulary_lookup_page($vocabulary) {
+function tripal_vocabulary_lookup_vocab_page($vocabulary) {
 
   // set the breadcrumb
   $breadcrumb = array();
@@ -93,6 +114,10 @@ function tripal_vocabulary_lookup_page($vocabulary) {
 
   $root_terms = tripal_get_vocabulary_root_terms($vocabulary);
   $items = tripal_vocabulary_lookup_term_children_format($root_terms);
+
+  if (count($root_terms) == 0) {
+    $items = '<p>Sometimes a vocabulary may not be fully loaded, but individual terms are. In this case the term browser is not available.</p>';
+  }
 
   drupal_add_js(array(
     'tripal' => array(

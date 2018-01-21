@@ -15,6 +15,54 @@ function tripal_chado_vocab_storage_info() {
     ),
   );
 }
+
+/**
+ * Implements hook_vocab_get_vocabularies().
+ *
+ * This hook is created by the Tripal module and is not a Drupal hook.
+ */
+function tripal_chado_vocab_get_vocabularies() {
+  $vocabs = array();
+
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cv')) {
+    return FALSE;
+  }
+
+  // Make sure the materiailzd view is present.
+  if (!chado_table_exists('db2cv_mview')) {
+    drupal_set_message('Please update the database using "drush updatedb" before continuing');
+    return FALSE;
+  }
+
+  $sql = "
+     SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+       array_to_string(array_agg(DBCVM.cvname), ', ') as name
+     FROM {db} DB
+      INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
+     GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
+     ORDER BY DB.name
+  ";
+
+  $results = chado_query($sql, array());
+  while ($result = $results->fetchAssoc()) {
+    if (!$result['name']) {
+      $result['name'] = $result['short_name'];
+    }
+    $sw_url = $result['urlprefix'];
+    if ($sw_url) {
+      $sw_url = preg_replace('/\{db\}/', $result['short_name'], $sw_url);
+      $sw_url = preg_replace('/\{accession\}/', '', $sw_url);
+      $sw_url = url($sw_url, array('absolute' => TRUE));
+    }
+    $result['sw_url'] = $sw_url;
+    $vocabs[] = $result;
+  }
+  return $vocabs;
+}
 /**
  * Implements hook_vocab_get_vocabulary().
  *
@@ -29,29 +77,20 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     return FALSE;
   }
 
-  if (chado_table_exists('db2cv_mview')) {
-    $sql = "
-       SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
-         array_to_string(array_agg(DBCVM.cvname), ', ') as name
-       FROM {db} DB
-        INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
-       WHERE DB.name = :name
-       GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
-    ";
+  // Make sure the materiailzd view is present.
+  if (!chado_table_exists('db2cv_mview')) {
+    drupal_set_message('Please update the database using "drush updatedb" before continuing');
+    return FALSE;
   }
-  // For backwards compatibility.  Tripal sites above 3.0-beta2 don't need this.
-  else {
-    $sql = "
-     SELECT DB.name as short_name, CV.name as name, DB.description, DB.url, DB.urlprefix
+
+  $sql = "
+     SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+       array_to_string(array_agg(DBCVM.cvname), ', ') as name
      FROM {db} DB
-      LEFT JOIN {dbxref} DBX on DBX.db_id = DB.db_id
-      LEFT JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
-      LEFT JOIN {cv} CV on CV.cv_id = CVT.cv_id
-     WHERE
-      DB.name = :name
-     LIMIT 1 OFFSET 0
+      INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
+     WHERE DB.name = :name
+     GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
   ";
-  }
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
 
