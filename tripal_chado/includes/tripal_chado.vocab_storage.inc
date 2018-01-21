@@ -28,14 +28,30 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   if (!chado_table_exists('cv')) {
     return FALSE;
   }
-  $sql = "
-     SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
-       array_to_string(array_agg(DBCVM.cvname), ', ') as name
+
+  if (chado_table_exists('db2cv_mview')) {
+    $sql = "
+       SELECT DB.name as short_name, DB.description, DB.url, DB.urlprefix,
+         array_to_string(array_agg(DBCVM.cvname), ', ') as name
+       FROM {db} DB
+        INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
+       WHERE DB.name = :name
+       GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
+    ";
+  }
+  // For backwards compatibility.  Tripal sites above 3.0-beta2 don't need this.
+  else {
+    $sql = "
+     SELECT DB.name as short_name, CV.name as name, DB.description, DB.url, DB.urlprefix
      FROM {db} DB
-      INNER JOIN {db2cv_mview} DBCVM ON DBCVM.db_id = DB.db_id
-     WHERE DB.name = :name
-     GROUP BY DB.name, DB.description, DB.url, DB.urlprefix
+      LEFT JOIN {dbxref} DBX on DBX.db_id = DB.db_id
+      LEFT JOIN {cvterm} CVT on CVT.dbxref_id = DBX.dbxref_id
+      LEFT JOIN {cv} CV on CV.cv_id = CVT.cv_id
+     WHERE
+      DB.name = :name
+     LIMIT 1 OFFSET 0
   ";
+  }
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
 
