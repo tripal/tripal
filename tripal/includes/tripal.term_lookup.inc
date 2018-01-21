@@ -118,6 +118,9 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   if (count($root_terms) == 0) {
     $items = '<p>Sometimes a vocabulary may not be fully loaded, but individual terms are. In this case the term browser is not available.</p>';
   }
+  else {
+    $items = '<p>Sometimes the full ontology may not be loaded into this site, but only terms needed by this site. The following allows browsing of loaded terms</p>' . $items;
+  }
 
   drupal_add_js(array(
     'tripal' => array(
@@ -136,8 +139,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     'vocab_browser' => array(
       '#type' => 'item',
       '#title' => 'Term Browser',
-      '#markup' => '<p>Sometimes the full ontology may not be loaded into this site, but only terms needed by this site. The following allows browsing of loaded terms</p>' .
-         $items,
+      '#markup' => $items,
     ),
   );
 
