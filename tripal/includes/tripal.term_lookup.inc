@@ -76,10 +76,8 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   $rows = array();
   $vocab_name = $vocab['name'];
   if ($vocab['url']) {
-    $vocab_name = l($vocab['name'], $vocab['url'], array('attributes' => array('target' => '_blank')));
+    $short_name = l($vocab['short_name'], $vocab['url'], array('attributes' => array('target' => '_blank')));
   }
-
-  $short_name = $vocab['short_name'];
   $vocab_desc = $vocab['description'];
   $rows[] = array(
     array(
@@ -107,7 +105,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   );
   $rows[] = array(
     array(
-      'data' => 'Number of Loaded Terms',
+      'data' => 'Number of Terms Loaded on This Site',
       'header' => TRUE,
       'width' => '20%',
     ),
@@ -136,10 +134,13 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   $items = tripal_vocabulary_lookup_term_children_format($root_terms);
 
   if (count($root_terms) == 0) {
-    $items = '<p>Sometimes a vocabulary may not be fully loaded, but individual terms are. In this case the term browser is not available.</p>';
+    $items = '<p>This vocabulary has no terms loaded</p>';
   }
   else {
-    $items = '<p>Sometimes the full ontology may not be loaded into this site, but only terms needed by this site. The following allows browsing of loaded terms</p>' . $items;
+    $items = '<p>Click the + icon\'s (if present) to expand the tree. If ' .
+      'the full ontology or the term heirarchy is not loaded into this site. ' .
+      'then the tree will consist of all terms at the same level. ' .
+      'For some vocabularies, only a subset of terms are loaded</p>' . $items;
   }
 
   drupal_add_js(array(
@@ -154,7 +155,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     'vocab_table' => array(
       '#type' => 'item',
       '#title' => 'Details',
-      '#markup' => theme_table($table),
+      '#markup' => '<p>A vocabulary is always identified by its short name and sometimes it may offer multiple sub-vocabularies with different names. Both are listed below.</p>' . theme_table($table),
     ),
     'vocab_browser' => array(
       '#type' => 'item',
