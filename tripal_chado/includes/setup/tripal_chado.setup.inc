@@ -537,6 +537,7 @@ function tripal_chado_add_vx_x_custom_tables(){
   tripal_chado_add_analysis_organism_mview();
   tripal_chado_add_cv_root_mview_mview();
   tripal_chado_add_db2cv_mview_mview();
+
 }
 
 /**
