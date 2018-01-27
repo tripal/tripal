@@ -348,6 +348,48 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
         if (function_exists($function)) {
           $function($form_values['_add_new_field'], $bundle);
         }
+        // Otherwise, we should make a good attempt on our own.
+        // Especially in the case of fields added via the Library directory.
+        else {
+          $new_field = $form_values['_add_new_field'];
+
+          // Create the field.
+          $field = array(
+            'field_name' => $new_field['field_name'],
+            'type' => $new_field['type'],
+            'cardinality' => FIELD_CARDINALITY_UNLIMITED, // @hard-coded
+            'locked' => FALSE,
+            'storage' => array(
+              'type' => $type::$default_settings['storage']
+            ),
+          );
+          field_create_field($field);
+
+          // Then create the instance.
+          $instance =  array(
+            'field_name' => $new_field['field_name'],
+            'entity_type' => $bundle->type,
+            'bundle' => $bundle->name,
+            'label' => $new_field['label'],
+            'description' => $type::$default_description,
+            'required' => FALSE,
+            'settings' => array(
+              'auto_attach' => $type::$default_instance_settings['auto_attach'],
+            ),
+            'widget' => array(
+              'type' => $new_field['widget_type'],
+              'settings' => array(),
+            ),
+            'display' => array(
+              'default' => array(
+                'label' => 'hidden',
+                'type' => $type::$default_formatter,
+                'settings' => array(),
+              ),
+            ),
+          );
+          field_create_instance($instance);
+        }
         $destinations[] = $admin_path . '/fields/' . $field_name . '/field-shcef';
         $destinations[] = $admin_path . '/fields/' . $field_name;
 
