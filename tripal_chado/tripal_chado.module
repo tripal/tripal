@@ -1118,7 +1118,6 @@ function tripal_feature_match_features_page($id) {
     // iterate through the matches and build the table for showing matches
     $header = array('Uniquename', 'Name', 'Type', 'Species', 'Synonyms');
     $rows = array();
-    $curr_match;
     while ($match = $results->fetchObject()) {
       $curr_match = $match;
       $synonyms = $match->synonyms;
@@ -1132,7 +1131,7 @@ function tripal_feature_match_features_page($id) {
       }
       // If we didn't find an entity ID we need to check nodes for
       // backwards compatibility with Tv2.
-      if (!$entity_id and module_exists(tripal_feature)) {
+      if (!$entity_id and module_exists('tripal_feature')) {
         $nid = chado_get_nid_from_id('feature', $curr_match->feature_id);
         $link = "node/" . $nid;
       }
