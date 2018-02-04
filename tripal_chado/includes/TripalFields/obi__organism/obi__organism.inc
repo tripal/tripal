@@ -226,7 +226,7 @@ class obi__organism extends ChadoField {
         'elements' => array(
           'rdfs:label' => array(
             'searchable' => TRUE,
-            'name' => 'scientfic_name',
+            'name' => 'scientific_name',
             'operations' => array('eq', 'ne', 'contains', 'starts'),
             'sortable' => FALSE,
             'type' => 'xs:string',

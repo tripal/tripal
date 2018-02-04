@@ -508,7 +508,7 @@ function chado_insert_record($table, $values, $options = array()) {
     if ($ukeys) {
       foreach ($ukeys as $name => $fields) {
         foreach ($fields as $index => $field) {
-          // build the arrays for performing a select that will check the contraint
+          // build the arrays for performing a select that will check the constraint
           $ukselect_cols[] = $field;
           if (!array_key_exists($field, $insert_values)) {
             if (array_key_exists('default', $table_desc['fields'][$field])) {
@@ -1265,7 +1265,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
-          // if there is no primary key then use the unique contraint fields
+          // if there is no primary key then use the unique constraint fields
           if (!$has_pkey) {
             array_push($new_columns, $field);
           }
@@ -1821,7 +1821,7 @@ function chado_pager_get_count($element) {
  * This function is used by chado_select_record, chado_insert_record,
  * and chado_update_record to iterate through the associate array of
  * values that gets passed to each of those routines.  The values array
- * is nested where foreign key contraints are used to specify a value that.  See
+ * is nested where foreign key constraints are used to specify a value that.  See
  * documentation for any of those functions for further information.
  *
  * @param $table_desc

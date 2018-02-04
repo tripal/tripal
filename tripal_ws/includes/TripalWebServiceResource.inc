@@ -220,7 +220,7 @@ class TripalWebServiceResource {
   }
 
   /**
-   * Retreives the IRI for an entity of a given ID in this web service.
+   * Retrieves the IRI for an entity of a given ID in this web service.
    *
    * @param $id
    *   The unique identifier for the resource.
@@ -259,7 +259,7 @@ class TripalWebServiceResource {
   }
 
   /**
-   * Retreives the type of this resource.
+   * Retrieves the type of this resource.
    *
    * @return
    *   The name of the resource.

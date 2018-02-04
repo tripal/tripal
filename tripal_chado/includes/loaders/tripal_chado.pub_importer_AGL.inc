@@ -405,7 +405,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
 }
 
 /**
- * Retreives a range of publications from AGL
+ * Retrieves a range of publications from AGL
  *
  * @param $yazc
  *   The YAZC connection object.
@@ -475,7 +475,7 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
 }
 
 /**
- * Retreives the total number of publications that match the search string.
+ * Retrieves the total number of publications that match the search string.
  *
  * @param $yazc
  *   The YAZC connection object.

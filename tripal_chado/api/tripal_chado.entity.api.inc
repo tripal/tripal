@@ -108,7 +108,7 @@ function chado_get_record_entity_by_table($data_table, $record_id) {
  * table should always be unique.
  *
  * @param $bundle
- *   A bundle object (as retreieved from tripal_load_bundle_entity().
+ *   A bundle object (as retrieved from tripal_load_bundle_entity().
  *
  * @return
  *   The name of the mapping table that Chado uses to map entities to records.

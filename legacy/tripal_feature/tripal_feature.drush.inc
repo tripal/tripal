@@ -43,7 +43,7 @@ function tripal_feature_drush_command() {
       'parent'   => dt('Set this argument to 1 to retrieve the sequence from the parent in an alignment rather than the residues column of the feature itself.'),
       'agg'      => dt('Set this argument to 1 to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA'),
       'child'    => dt('Set this argument to the exact sequence ontology term for the children to aggregate.  This is useful in the case where a gene has exons as well as CDSs and UTRs.  You may sepcify as many feature types as desired by separating each with a single comma (no spaces). Term matching is case-sensitive.'),
-      'relationship'  => dt('Retreives the sequence of any feature in the specified relationship with the matched features.'),
+      'relationship'  => dt('Retrieves the sequence of any feature in the specified relationship with the matched features.'),
       'rel_part' => dt('If a relationship is provided, then this will be "subject" or "object" indicating the side of the relationship for the matched features. If the matched features are the "object" then the "subject" features will have their sequences included in the output (and vice versa).'),
       'width'    => dt('The number of nucleotides per row (defaults to 50).')
     ),
