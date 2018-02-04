@@ -1217,7 +1217,7 @@ function chado_node_get_unique_constraint_format($base_table, $format_type = 'ti
     tripal_report_error(
       'tripal_node_api',
       TRIPAL_ERROR,
-      'Unable to determine the format for the unique contraint since the format type (%format-type) is not supported (only "title" and "url" are at this time).',
+      'Unable to determine the format for the unique constraint since the format type (%format-type) is not supported (only "title" and "url" are at this time).',
       array('%format-type' => $format_type)
     );
   }

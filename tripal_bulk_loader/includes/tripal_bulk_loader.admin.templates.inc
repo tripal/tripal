@@ -155,7 +155,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
     '#collapsible' => TRUE,
     '#weight' => 2,
     '#description' => t('A "Record" is an entry in a database table. Each of the records '
-      . 'added to the bulk loader will be added per constant set and per line of you '
+      . 'added to the bulk loader will be added per constant set and per line of your '
       . 'input file when a Tripal Bulk Loading Job is created using this template. '
       . 'Furthermore, if you add two records for the same table (i.e. feature table) then '
       . 'two distinct entries will be created per line (i.e. if recordA specifies a parent '
@@ -2172,7 +2172,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#description' => 'You can use standard php regular expressions in this field to specify a '
       .'pattern. Only if this pattern matches the value in the data file does the replacement '
       .'pattern get applied to the value. To capture a section of your value for use in the '
-      .'replacement patten surround with round brackets. For example, <i>GI:(\d+)</i> will match '
+      .'replacement pattern surround with parentheses. For example, <i>GI:(\d+)</i> will match '
       .' NCBI gi numbers and will capture the numerical digits for use in the replacement pattern. '
       .' To match and capture any value use <i>.*</i>',
     '#default_value' => $pattern_default,

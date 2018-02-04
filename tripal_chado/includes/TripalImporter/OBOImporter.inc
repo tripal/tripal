@@ -983,7 +983,7 @@ class OBOImporter extends TripalImporter {
   }
 
   /**
-   * Retreives the term array from the temp loading table for a given term id.
+   * Retrieves the term array from the temp loading table for a given term id.
    *
    * @param id
    *   The id of the term to retrieve
