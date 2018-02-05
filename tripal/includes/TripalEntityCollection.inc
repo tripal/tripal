@@ -322,38 +322,7 @@ class TripalEntityCollection {
                 cache_set($cache_name, $site_vocab);
 
                 // Now find the tripal formatters in the json data returned.
-                foreach ($site_vocab as $item) {
-                  if (is_array($item)) {
-                    foreach ($item as $vocab_term) {
-                      if (!empty($vocab_term['supportedProperty'])) {
-                        $vocab_supported_properties = $vocab_term['supportedProperty'];
-                        if (is_array($vocab_supported_properties)) {
-                          foreach ($vocab_supported_properties as $property) {
-                            if ($property['property'] === $field) {
-                              if (in_array('tripal_formatters', $property)) {
-                                $download_types = $property['tripal_formatters'];
-
-                                foreach ($download_types as $download_type) {
-                                  $this->downloaders[$download_type] = $download_type;
-                                  continue 7;
-                                }
-                              }
-                            }
-                          }
-                        }
-                        else {
-                          if (in_array('tripal_formatters', $vocab_supported_properties)) {
-                            $download_types = $vocab_supported_properties['tripal_formatters'];
-                            foreach ($download_types as $download_type) {
-                              $this->downloaders[$download_type] = $download_type;
-                              continue 6;
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                $this->getRemoteFieldDownloadFormats($site_vocab, $bundle_name, $field, $site_id['site_id']);
               }
             }
             else {
@@ -398,6 +367,78 @@ class TripalEntityCollection {
    */
   public function getDownloadFormatters() {
      return $this->downloaders;
+  }
+
+  /**
+   * Retrieves the list of remote download formatters for the basket and
+   * assigns them to $this->downloader.
+   *
+   */
+  public function getRemoteFieldDownloadFormats($site_vocab, $bundle_name, $field, $site_id) {
+    // Now find the tripal formatters in the json data returned.
+    foreach ($site_vocab as $item) {
+      if (is_array($item)) {
+        foreach ($item as $vocab_term) {
+          /* The returned $vocab item should look like this:
+          "supportedProperty": [
+          {
+          "property": "OBI:0100026",
+          "hydra:title": "Organism",
+          "hydra:description
+          http://www.w3.org/ns/hydra/core#description
+          ": "The full scientific name for a species..",
+          "required": false,
+          "readable": false,
+          "writeable": true.
+          "tripal_formatter": "                 
+          (
+          [0] => TripalTabDownloader
+          [1] => TripalCSVDownloader
+          )"
+          }, */
+          if (!empty($vocab_term['supportedProperty'])) {
+            $vocab_supported_properties = $vocab_term['supportedProperty'];
+            if (is_array($vocab_supported_properties)) {
+              foreach ($vocab_supported_properties as $property) {
+                if ($property['property'] === $field) {
+                  if (array_key_exists('tripal_formatters', $property)) {
+                    $download_types = $property['tripal_formatters'];
+                    if (is_array($download_types)) {
+                      foreach ($download_types as $download_type) {
+                        $this->downloaders[$download_type] = $download_type;
+                        return $this->downloaders;
+                      }
+                    }
+                    else {
+                      $this->downloaders[$download_types] = $download_types;
+                      return $this->downloaders;
+                    }
+                  }
+                  else {
+                    $result = db_select('tripal_sites')
+                      ->fields('tripal_sites', array('name'))
+                      ->condition('id', $site_id, '=')
+                      ->execute()
+                      ->fetchAssoc();
+                    $site_name = $result['name'];
+                    drupal_set_message(t("Cannot find tripal_formatters array elements in the remote site: $site_name"), 'warning');
+                  }
+                }
+              }
+            }
+            else {
+              if (in_array('tripal_formatters', $vocab_supported_properties)) {
+                $download_types = $vocab_supported_properties['tripal_formatters'];
+                foreach ($download_types as $download_type) {
+                  $this->downloaders[$download_type] = $download_type;
+                  return $this->downloaders;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   /**

@@ -15,7 +15,6 @@ class TripalTabDownloader extends TripalFieldDownloader {
    * @see TripalFieldDownloader::format()
    */
   protected function formatEntity($entity) {
-   //print_r($entity);
     $row = array();
      // If more than one bundle is supplied we need to break the headers and entities
     // apart so that headers and content correspond.
