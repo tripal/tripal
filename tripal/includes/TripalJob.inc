@@ -113,7 +113,7 @@ class TripalJob {
       $details['includes'] = array();
     }
     if (!array_key_exists('ignore_duplicate', $details)) {
-      $details['ignore_duplicate'] = TRUE;
+      $details['ignore_duplicate'] = FALSE;
     }
 
     // Make sure the arguments are correct.

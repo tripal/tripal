@@ -75,7 +75,7 @@
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
-    $priority = 10, $includes = array(), $ignore_duplicate = TRUE) {
+    $priority = 10, $includes = array(), $ignore_duplicate = FALSE) {
 
   $user = user_load($uid);
 
