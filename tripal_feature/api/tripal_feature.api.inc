@@ -326,10 +326,16 @@ function tripal_get_feature_sequences($feature, $options) {
         // Iterate through the sub features and concat their sequences. They
         // should already be in order.
         $i = 0;
+        $already_processed_children = array();
         while ($child = $children->fetchObject()) {
           // If the callee has specified that only certain sub features should be
           // included then continue if this child is not one of those allowed
           // subfeatures.
+          if (count($already_processed_children) > 0 and in_array($child->feature_id,$already_processed_children)){
+            continue;
+          }
+          $already_processed_children[] = $child->feature_id;
+
           if (count($sub_features) > 0 and !in_array($child->type_name, $sub_features)) {
             $i++;
             continue;
