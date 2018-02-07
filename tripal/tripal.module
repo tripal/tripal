@@ -1058,7 +1058,7 @@ function tripal_cron() {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal', $function, $args, 1);
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal', $function, $args, 1, 10, [], true);
     }
   }
 
