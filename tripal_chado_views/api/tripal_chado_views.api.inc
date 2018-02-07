@@ -179,7 +179,7 @@ function tripal_make_view_compatible_with_external($view) {
 
   // IF chado is external then remove all config relating to drupal tables
   $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
-  if (!$is_local()) {
+  if (!$is_local) {
 
     // Iterate through all displays
     foreach ($view->display as $display_name => $display) {
