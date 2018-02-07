@@ -770,7 +770,7 @@ function tripal_chado_delete_selected_types($tv2_content_types = array(), $job_i
   foreach ($tv2_content_types AS $type) {
     $sql = "DELETE FROM $type";
     db_query($sql);
-    chado_cleanup_orphaned_nodes(str_replace('chado_', '', $type), $job_id);
+    chado_cleanup_orphaned_nodes(str_replace('chado_', '', $type), 25000, NULL, NULL, $job_id);
   }
 }
 

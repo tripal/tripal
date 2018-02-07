@@ -258,7 +258,7 @@ class TripalWebService {
   }
 
   /**
-   * Retreives the service URL for this service.
+   * Retrieves the service URL for this service.
    */
   public function getServicePath() {
     $class = get_class($this);

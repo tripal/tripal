@@ -16,7 +16,7 @@
  */
 
 /**
- * Retreives the default vocabulary for a given table and field.
+ * Retrieves the default vocabulary for a given table and field.
  *
  * Each table in Chado that has a 'type_id' (or foreign key constraint to
  * the cvterm table) will have a default vocabulary assigned. This indicates to

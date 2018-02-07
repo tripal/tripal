@@ -242,7 +242,7 @@ class TripalEntityCollection {
    * Retrieves the list of entity IDs.
    *
    * @return
-   *   An array of numeric enity IDs.
+   *   An array of numeric entity IDs.
    */
   public function getEntityIDs(){
     return $this->ids;
@@ -275,7 +275,7 @@ class TripalEntityCollection {
   }
 
   /**
-   * Retreives the name of the collection.
+   * Retrieves the name of the collection.
    *
    * @return
    *   A string containing the name of the collection.
@@ -295,7 +295,7 @@ class TripalEntityCollection {
   }
 
   /**
-   * Retreives the collection description
+   * Retrieves the collection description
    *
    * @return
    *   A string containing the description of the collection.

@@ -209,7 +209,7 @@ function chado_organism_form($node, $form_state) {
       $terms = tripal_get_cvterm_select_options($cv->cv_id);
 
       // Unfortunately the taxonomic_rank vocabulary is not properly organized
-      // such that we an only include terms below 'species'. Therefore we will
+      // such that we only include terms below 'species'. Therefore we will
       // just list them here and hope we haven't missed one.
       $valid_terms = array('subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
       foreach  ($terms as $cvterm_id => $name) {
