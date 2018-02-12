@@ -1168,13 +1168,15 @@ class TripalContentService_v0_1 extends TripalWebService {
         $proptype = $link;
       }
 
+      $formatters = tripal_get_field_field_formatters($field);
       $property = array(
         'type' => $proptype,
         'title' => $instance['label'],
         'description' => $instance['description'],
-        "required" => $instance['required'] ? TRUE : FALSE,
-        "readonly" => FALSE,
-        "writeonly" => TRUE,
+        'required' => $instance['required'] ? TRUE : FALSE,
+        'readonly' => FALSE,
+        'writeonly' => TRUE,
+        'tripal_formatters' => $formatters,
       );
       $properties[] = $property;
     }
