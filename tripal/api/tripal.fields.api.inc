@@ -217,7 +217,11 @@ function tripal_get_field_widgets() {
 
 /**
  * Retrieves a list of field formatters compatible with a given field.
- * @param unknown $field
+ *
+ * @param $field
+ *   A field array as returned by the field_info_field() function.
+ * @return
+ *   A list of file formatter class names.
  */
 function tripal_get_field_field_formatters($field) {
   $field_name = $field['field_name'];
@@ -244,8 +248,9 @@ function tripal_get_field_field_formatters($field) {
   }
   return $downloaders;
 }
+
 /**
- * Retrieves a list of all the TripalFieldFormatters available on this site.
+ * Retrieves a list of TripalFieldFormatters.
  *
  * The TripalFieldFormatter classes can be added by a site developer and should
  * be placed in the [module]/includes/TripalFields directory.  Tripal will
