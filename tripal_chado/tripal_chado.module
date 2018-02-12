@@ -276,7 +276,7 @@ function tripal_chado_menu() {
     'title' => 'Create Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_mviews_delete_form', 5),
+    'page arguments' => array('tripal_mviews_delete_form', 6),
     'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
