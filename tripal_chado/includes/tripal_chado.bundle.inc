@@ -70,7 +70,7 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
  * Creates the table that tripal_chado uses to link Chado records with entities.
  *
  * @param $bundle
- *   A bundle object (as retreieved from tripal_load_bundle_entity().
+ *   A bundle object (as retrieved from tripal_load_bundle_entity().
  */
 function tripal_chado_create_bundle_table($bundle) {
 

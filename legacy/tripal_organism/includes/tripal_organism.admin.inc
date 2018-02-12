@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_admin_organism_view() {
   $output = '';
@@ -42,7 +42,7 @@ function tripal_organism_admin_organism_view() {
 /**
  * Administrative settings for chado_orgnism
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_admin() {
 
@@ -90,7 +90,7 @@ function tripal_organism_admin() {
 /**
  * Validate the organism settings form
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_admin_validate($form, &$form_state) {
 

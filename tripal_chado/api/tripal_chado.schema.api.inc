@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup tripal_chado_schema_api Chado Schema API
+ * @defgroup tripal_chado_schema_api Chado Schema
  * @ingroup tripal_chado_api
  * @{
  * Provides an application programming interface (API) for describing Chado tables.
@@ -262,8 +262,15 @@ function chado_dbschema_exists($schema) {
  */
 function chado_is_local() {
 
+  // If the is_local variable has been set then we've already checked if
+  // Chado is local and we don't need to repeat it again.
+  if (isset($GLOBALS["chado_is_local"])) {
+    return $GLOBALS["chado_is_local"];
+  }
+
   // This is postgresql-specific code to check the existence of the chado schema
-  // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+  // @coder-ignore: acting on pg_catalog schema rather then drupal schema
+  // therefore, table prefixing does not apply
   $sql = "
     SELECT nspname
     FROM pg_namespace
@@ -330,13 +337,14 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 
   global $databases;
   $version = '';
-  $is_local = 0;
+  $is_local = FALSE;
+  $chado_exists = FALSE;
 
-  // check that Chado is installed if not return 'uninstalled as the version'
-  $chado_exists = chado_is_local();
-  if (!$chado_exists) {
-    // if it's not in the drupal database check to see if it's specified in the $db_url
-    // in the settings.php
+  // Check that Chado is installed if not return 'uninstalled as the version'
+  $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
+  if (!$is_local) {
+    // If it's not in the drupal database check to see if it's specified in
+    // the $db_url in the settings.php
     if (!array_key_exists(tripal_get_schema_name('chado'), $databases)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
@@ -348,7 +356,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     chado_set_active($previous_db);
   }
   else {
-    $is_local = 1;
+    $chado_exists = TRUE;
     // @todo we need a chado aware db_table_exists.
     $prop_exists = db_table_exists(tripal_get_schema_name('chado') . '.chadoprop');
   }

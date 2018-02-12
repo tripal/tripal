@@ -5,8 +5,8 @@
  */
 
 /**
- * @defgroup tripal_phenotype Phenotype Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_phenotype Legacy Phenotype Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Provides functions for managing chado phenotype data
  * @}
@@ -18,7 +18,7 @@
  * Set the permission types that the chado module uses.  Essentially we
  *  want permissionis
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_permission() {
   return array(
@@ -38,7 +38,7 @@ function tripal_phenotype_permission() {
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_menu() {
   $items = array();
@@ -96,7 +96,7 @@ function tripal_phenotype_search_biological_data_views() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -123,7 +123,7 @@ function tripal_phenotype_theme($existing, $type, $theme, $path) {
  *  for this module which then includes tripal_phenotype.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_views_api() {
   return array(
@@ -134,7 +134,7 @@ function tripal_phenotype_views_api() {
 /**
  * Admin Launchpad
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_admin_phenotypes_listing() {
   $output = '';
@@ -169,7 +169,7 @@ function tripal_phenotype_admin_phenotypes_listing() {
 /**
  * Implements hook_node_view().
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {

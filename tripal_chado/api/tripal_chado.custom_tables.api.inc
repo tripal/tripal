@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup tripal_custom_tables_api Tripal Custom Tables API
+ * @defgroup tripal_custom_tables_api Chado Custom Tables
  * @ingroup tripal_chado_api
  * @{
  * Provides an API to manage custom tables in Chado.
@@ -117,12 +117,16 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  *   it's mview_id. This paramter is intended only when this function
  *   is called by the tripal_add_mview() function. When creating a custom
  *   table you shouldn't need to use this parameter.
+ * @param $redirect
+ *   Optional (default: TRUE). By default this function redirects back to
+ *   admin pages. However, when called by Drush we don't want to redirect. This
+ *   parameter allows this to be used as a true API function.
  * @return
  *   TRUE on success, FALSE on failure
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mview_id = NULL) {
+function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mview_id = NULL, $redirect = TRUE) {
   global $databases;
   $created = 0;
   $recreated = 0;
@@ -206,6 +210,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
       array('%table_name' => $table, '%message' => $error['!message'])), 'error');
     return FALSE;
   }
+
   if ($created) {
     drupal_set_message("Custom table, '" . $table . "' ,  created successfully.", 'status');
   }
@@ -215,6 +220,18 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
   else {
     drupal_set_message("Custom table, '" . $table . "' , already exists. Table structure not changed, but definition array has been saved.", 'status');
   }
+
+  // Only redirect if asked to. This allows us to not try to redirect when this
+  // function is called by Drush.
+  if ($redirect) {
+    if ($mview_id) {
+      drupal_goto('admin/tripal/storage/chado/mviews/');
+    }
+    else {
+      drupal_goto('admin/tripal/storage/chado/custom_tables');
+    }
+  }
+
   return TRUE;
 }
 

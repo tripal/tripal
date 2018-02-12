@@ -6,34 +6,27 @@
  */
 
 /**
- * @defgroup tripal_jobs_api Tripal Jobs API
+ * @defgroup tripal_jobs_api Jobs
  * @ingroup tripal_api
  * @{
  * Tripal offers a job management subsystem for managing tasks that may require
- * an extended period of time for completion.  Drupal uses a UNIX-based cron
- * job to handle tasks such as  checking  the  availability of updates,
- * indexing new nodes for searching, etc.   Drupal's cron uses the web interface
- * for launching these tasks, however, Tripal provides several administrative
- * tasks that may time out and not complete due to limitations of the web
- * server. To circumvent this, as well as provide more fine-grained control and
- * monitoring, Tripal uses a jobs management sub-system.   It is anticipated
- * that this functionality will be used for managing analysis jobs provided by
- * future tools, with eventual support for distributed computing.
+ * an extended period of time for completion. Tripal provides several
+ * administrative tasks that may time out and not complete due to limitations
+ * of the web server. To circumvent this, as well as provide more fine-grained
+ * control and monitoring, Tripal uses a jobs management system.
  *
  * The  Tripal jobs management system allows administrators to submit tasks
- * to be performed which can then  be launched through a UNIX command-line PHP
+ * to be performed which can then be launched through a UNIX command-line PHP
  * script or cron job.  This command-line script can be added to a cron
  * entry along-side the Drupal cron entry for automatic, regular launching of
  * Tripal jobs.  The order of execution of waiting jobs is determined first by
  * priority and second by the order the jobs were entered.
  *
- * The API functions described below provide a programmatic interface for
- * adding, checking and viewing jobs.
  * @}
  */
 
 /**
- * Adds a job to the Tripal Jbo queue
+ * Adds a job to the Tripal Job queue
  *
  * @param $job_name
  *    The human readable name for the job
@@ -52,6 +45,10 @@
  *    An array of paths to files that should be included in order to execute
  *    the job. Use the module_load_include function to get a path for a given
  *    file.
+ * @param $ignore_duplicate.
+ *   Set to TRUE to not add the job if it has
+ *   the same name as another job which has not yet run. The default is TRUE.
+ *
  * @return
  *    The job_id of the registered job, or FALSE on failure.
  *
@@ -78,13 +75,13 @@
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
-    $priority = 10, $includes = array()) {
+    $priority = 10, $includes = array(), $ignore_duplicate = FALSE) {
 
   $user = user_load($uid);
 
   try {
     $job = new TripalJob();
-    $job->create(array(
+    $is_created = $job->create(array(
       'job_name' => $job_name,
       'modulename' => $modulename,
       'callback' => $callback,
@@ -92,21 +89,27 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       'uid' => $uid,
       'priority' => $priority,
       'includes' => $includes,
+      'ignore_duplicate' => $ignore_duplicate,
     ));
 
-    // If no exceptions were thrown then we know the creation worked.  So
-    // let the user know!
-    drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
+    if ($is_created) {
+      // If no exceptions were thrown then we know the creation worked.  So
+      // let the user know!
+      drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
 
-    // If this is the Tripal admin user then give a bit more information
-    // about how to run the job.
-    if (user_access('administer tripal')) {
-      $jobs_url = url("admin/tripal/tripal_jobs");
-      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
-          array('!jobs_url' => $jobs_url)));
-      drupal_set_message(t("You can execute the job queue manually on the command line " .
-          "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
-          array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+      // If this is the Tripal admin user then give a bit more information
+      // about how to run the job.
+      if (user_access('administer tripal')) {
+        $jobs_url = url("admin/tripal/tripal_jobs");
+        drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
+            array('!jobs_url' => $jobs_url)));
+        drupal_set_message(t("You can execute the job queue manually on the command line " .
+            "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
+            array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
+      }
+    }
+    else {
+      drupal_set_message(t("Job '%job_name' already exists in the queue and was not re-submitted.", array('%job_name' => $job_name)), 'warning');
     }
     return $job->getJobID();
   }
@@ -281,8 +284,6 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
     drupal_set_message($e->getMessage(), 'error');
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
   }
-
-
 }
 
 /**
@@ -443,7 +444,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
  * @return
  *   True on success and False otherwise
  *
- * @ingroup tripal
+ * @ingroup tripal_jobs_api
  */
 function tripal_set_job_progress($job_id, $percentage) {
 
@@ -469,6 +470,8 @@ function tripal_set_job_progress($job_id, $percentage) {
  * @return
  *   A value between 0 and 100 indicating the percentage complete of the job.
  *   FALSE on failure.
+ *
+ * @ingroup tripal_jobs_api
  */
 function tripal_get_job_progress($job_id) {
 
@@ -540,6 +543,8 @@ function tripal_get_active_jobs($modulename = NULL) {
  *   The job id to be exeuted.
  * @param bool $redirect [optional]
  *   Whether to redirect to the job page or not.
+ *
+ * @ingroup tripal_jobs_api
  */
 function tripal_execute_job($job_id, $redirect = TRUE) {
 

@@ -5,8 +5,8 @@
  */
 
 /**
- * @defgroup tripal_chado_node_api Chado Node API
- * @ingroup tripal_chado_api
+ * @defgroup tripal_legacy_chado_node_api Legacy Chado Nodes
+ * @ingroup tripal_legacy_api
  * @{
  * Many Tripal modules implement Drupal node types as a means of displaying chado
  * records individually through Drupal as a single web page. In order to do this, many of
@@ -52,7 +52,7 @@
  * @return
  *   The chado id of the associated chado record
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_get_id_from_nid($table, $nid, $linking_table = NULL) {
   if (empty($linking_table)) {
@@ -82,7 +82,7 @@ function chado_get_id_from_nid($table, $nid, $linking_table = NULL) {
  * @return
  *   The nid of the associated node
  *
- *  @ingroup tripal_chado_node_api
+ *  @ingroup tripal_legacy_chado_node_api
  */
 function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
   if (empty($linking_table)) {
@@ -106,7 +106,7 @@ function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
  * @return
  *    The name of the chado base table for the specified content type
  *
- *  @ingroup tripal_chado_node_api
+ *  @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_get_base_table($content_type, $module = FALSE) {
 
@@ -303,7 +303,7 @@ function chado_add_node_form_subtables_remove_button_submit($form, &$form_state)
  * Ajax function which returns the section of the form to be re-rendered
  * for either the properties, dbxref or relationship sub-sections.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
 
@@ -411,7 +411,7 @@ function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
  * functions: hook_chado_node_sync_create_new_node(), hook_chado_node_sync_form(),
  * hook_chado_node_sync_select_query().
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_sync_form($form, &$form_state) {
   $form = array();
@@ -652,7 +652,7 @@ function chado_node_sync_form($form, &$form_state) {
 /**
  * Generic Sync Form Validate
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function chado_node_sync_form_validate($form, &$form_state) {
 
@@ -672,7 +672,7 @@ function chado_node_sync_form_validate($form, &$form_state) {
 /**
  * Generic Sync Form Submit
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function chado_node_sync_form_submit($form, $form_state) {
 
@@ -781,7 +781,7 @@ function chado_node_sync_form_submit($form, $form_state) {
  *   Optional. Used by the Trpial Jobs system when running this function
  *   as a job. It is not needed othewise.
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_sync_records($base_table, $max_sync = FALSE,
     $organism_id = FALSE, $types = array(), $ids = array(),
@@ -998,7 +998,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
  *   Optional. This should be the job id from the Tripal jobs system. Typically,
  *   only the Tripal jobs system will use the argument.
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
     $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
@@ -1064,7 +1064,7 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
  *   This should be the job id from the Tripal jobs system.  This function
  *   will update the job status using the provided job ID.
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
     $offset, $linking_table, $node_type) {
@@ -1210,7 +1210,7 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
  *   A node object containing all the fields necessary to create a new node
  *   during sync
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function hook_chado_node_sync_create_new_node($new_node, $record) {
 
@@ -1233,7 +1233,7 @@ function hook_chado_node_sync_create_new_node($new_node, $record) {
  * Note: For your own module, replace hook in the function name with the
  * machine-name of your chado node type (ie: chado_feature).
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function hook_chado_node_sync_form($form, &$form_state) {
 
@@ -1255,7 +1255,7 @@ function hook_chado_node_sync_form($form, &$form_state) {
  * Note: For your own module, replace hook in the function name with the
  * machine-name of your chado node type (ie: chado_feature).
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function hook_chado_node_sync_form_submit ($form, $form_state) {
 
@@ -1311,7 +1311,7 @@ function hook_chado_node_sync_form_submit ($form, $form_state) {
  *    'where_args: An associative array of arguments to be subbed in to the
  *      where clause where the
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function hook_chado_node_sync_select_query($query) {
 

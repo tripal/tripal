@@ -3,14 +3,14 @@
  * @file
  * Provides functions for managing analysis'.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_chado
  */
 
 /**
- * @defgroup tripal_analysis_api Analysis Module API
- * @ingroup tripal_api
+ * @defgroup tripal_analysis_api Chado Analysis
+ * @ingroup tripal_chado_api
  * @{
- * Provides an interface for specialized analysis modules to extend the basic functionality.
+
  * @}
  */
 
@@ -135,6 +135,7 @@ function tripal_get_analysis($identifier, $options) {
  *   An array of analyses sync'd with Drupal where each value is the analysis scientific
  *   name and the keys are analysis_id's
  *
+ * @ingroup tripal_analysis_api
  */
 function tripal_get_analysis_select_options($syncd_only = TRUE) {
   $analysis_list = array();

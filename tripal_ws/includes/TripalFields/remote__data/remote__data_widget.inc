@@ -79,7 +79,7 @@ class remote__data_widget extends WebServicesFieldWidget {
     $tokens = tripal_get_entity_tokens($bundle_info);
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
-    dpm($items);
+
     // FORM PROPER
     $widget['#prefix'] =  "<span id='$field_name-remote_data-$delta'>";
     $widget['#suffix'] =  "</span>";

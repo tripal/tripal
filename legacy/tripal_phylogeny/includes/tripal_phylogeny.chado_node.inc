@@ -11,7 +11,7 @@
  * Provide information to drupal about the node types that we're creating
  * in this module.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_info() {
   $nodes = array();
@@ -45,7 +45,7 @@ function tripal_phylogeny_node_info() {
 /**
  * Implements hook_node_view(). Acts on all content types
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_view($node, $view_mode, $langcode) {
 
@@ -107,7 +107,7 @@ function tripal_phylogeny_node_view($node, $view_mode, $langcode) {
 /**
  * Implementation of hook_form().
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_form($node, &$form_state) {
 
@@ -341,7 +341,7 @@ function chado_phylotree_validate_newick_format(stdClass $file) {
  *   CASE B: Synchronizing a node from chado to drupal
  *   CASE C: Inserting a new node that exists in niether drupal nor chado
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_validate($node, $form, &$form_state) {
 
@@ -402,7 +402,7 @@ function chado_phylotree_validate($node, $form, &$form_state) {
 /**
  * Implements hook_node_presave(). Acts on all node content types.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_presave($node) {
 
@@ -431,7 +431,7 @@ function tripal_phylogeny_node_presave($node) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_insert($node) {
 
@@ -458,7 +458,7 @@ function tripal_phylogeny_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_update($node) {
 
@@ -484,7 +484,7 @@ function tripal_phylogeny_node_update($node) {
  * Defines a default title format for the Chado Node API to set the titles on
  * Chado phylotree nodes based on chado fields.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_chado_node_default_title_format() {
   return '[phylotree.name]';
@@ -507,7 +507,7 @@ function chado_phylotree_chado_node_default_url_format() {
  *  on insert of a new node of type 'chado_phylotree' and inserts the
  *  necessary information.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_insert($node) {
   global $user;
@@ -570,7 +570,7 @@ function chado_phylotree_insert($node) {
 /**
  * Implements hook_update().
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_update($node) {
 
@@ -620,7 +620,7 @@ function chado_phylotree_update($node) {
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_load($nodes) {
 
@@ -665,7 +665,7 @@ function chado_phylotree_load($nodes) {
  *
  * Delete data from drupal and chado databases when a node is deleted
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_delete(&$node) {
 
@@ -714,7 +714,7 @@ function chado_phylotree_delete(&$node) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function chado_phylotree_node_access($node, $op, $account) {
 
@@ -758,7 +758,7 @@ function chado_phylotree_node_access($node, $op, $account) {
  *
  * @param int phylotree_id
  * @return array
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function phylotree_feature_summary($phylotree_id) {
 

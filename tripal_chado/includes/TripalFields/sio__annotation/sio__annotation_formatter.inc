@@ -39,7 +39,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         }
 
         $row = array(
-          $item['value'][$vocabulary_term] . ':' . $item['value'][$accession_term],
+          $accession,
           $item['value'][$definition_term],
         );
 

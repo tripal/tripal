@@ -262,7 +262,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
 }
 
 /**
- * Retreives from PubMed a set of publications from the
+ * Retrieves from PubMed a set of publications from the
  * previously initiated query.
  *
  * @param $query_key

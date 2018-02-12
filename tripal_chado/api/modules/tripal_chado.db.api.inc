@@ -6,10 +6,9 @@
  */
 
 /**
- * @defgroup tripal_chado_api Database Reference API
- * @ingroup tripal_api
+ * @defgroup tripal_chado_database_api Chado DB
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage references to external databases
  * @}
  */
 
@@ -52,7 +51,7 @@
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
  *   an array of objects will be returned.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_database_api
  */
 function tripal_get_db($identifiers, $options = array()) {
 
@@ -65,7 +64,7 @@ function tripal_get_db($identifiers, $options = array()) {
   // Error Checking of parameters
   if (!is_array($identifiers)) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_chado_database_api',
       TRIPAL_ERROR,
       "tripal_get_db: The identifier passed in is expected to be an array with the key
         matching a column name in the db table (ie: db_id or name). You passed in %identifier.",
@@ -76,7 +75,7 @@ function tripal_get_db($identifiers, $options = array()) {
   }
   elseif (empty($identifiers)) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_chado_database_api',
       TRIPAL_ERROR,
       "tripal_get_db: You did not pass in anything to identify the db you want. The identifier
         is expected to be an array with the key matching a column name in the db table
@@ -97,7 +96,7 @@ function tripal_get_db($identifiers, $options = array()) {
   // Ensure the db is singular. If it's an array then it is not singular
   if (is_array($db)) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_chado_database_api',
       TRIPAL_ERROR,
       "tripal_get_db: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
@@ -109,7 +108,7 @@ function tripal_get_db($identifiers, $options = array()) {
   // Report an error if $db is FALSE since then chado_generate_var has failed
   elseif ($db === FALSE) {
     tripal_report_error(
-      'tripal_chado_api',
+      'tripal_chado_database_api',
       TRIPAL_ERROR,
       "tripal_get_db: chado_generate_var() failed to return a db based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
@@ -133,7 +132,7 @@ function tripal_get_db($identifiers, $options = array()) {
  * @return
  *   An array(db_id => name) for each db in the chado db table
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_database_api
  */
 function tripal_get_db_select_options() {
 
@@ -334,7 +333,7 @@ function tripal_get_dbxref_url($dbxref) {
  *   An object populated with fields from the newly added database.  If the
  *   database already exists it returns the values in the current entry.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_database_api
  */
 function tripal_insert_db($values, $options = array()) {
 
@@ -397,7 +396,7 @@ function tripal_insert_db($values, $options = array()) {
  *   The newly inserted dbxref as an object, similar to that returned by
  *   the chado_select_record() function.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_database_api
  */
 function tripal_insert_dbxref($values) {
 
@@ -455,7 +454,7 @@ function tripal_insert_dbxref($values) {
  *   An associative array of options. Valid keys include:
  *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is the default
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_database_api
  */
 function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = array()) {
   $linking_table = $basetable . '_dbxref';
@@ -479,7 +478,7 @@ function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = arr
     }
     else {
       tripal_report_error(
-        'tripal_chado_api',
+        'tripal_chado_database_api',
         TRIPAL_WARNING,
         "tripal_associate_dbxref: The dbxref needs to have either the db_name or db_id
           supplied. You were trying to associate a dbxref with the %base %record_id
@@ -500,7 +499,7 @@ function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = arr
       }
       else {
         tripal_report_error(
-          'tripal_chado_api',
+          'tripal_chado_database_api',
           TRIPAL_WARNING,
           "tripal_associate_dbxref: Unable to insert the dbxref using the dbxref values: %dbxref.",
           array('%dbxref' => print_r($dbxref,TRUE))

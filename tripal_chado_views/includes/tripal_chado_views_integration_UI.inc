@@ -403,7 +403,7 @@ function tripal_chado_views_integration_form($form, &$form_state) {
       .'default core and module definitions. The views integration definition with the '
       .'lightest priority will be used. For example, if there is a definition created by '
       .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
-      .'you definition will be used for that table because -1 is lighter then both 5 and 10.'),
+      .'your definition will be used for that table because -1 is lighter than both 5 and 10.'),
     '#options' => $priorities,
     '#default_value' => $default,
   );

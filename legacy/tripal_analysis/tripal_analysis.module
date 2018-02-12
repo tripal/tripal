@@ -4,29 +4,29 @@
  * @file
  * Contains basic functionality for the analysis module.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
-require_once 'api/tripal_analysis.DEPRECATED.inc';
-
-require_once 'includes/tripal_analysis.delete.inc';
-require_once 'includes/tripal_analysis_privacy.inc';
-require_once 'includes/tripal_analysis.admin.inc';
-require_once 'includes/tripal_analysis.chado_node.inc';
-
 /**
- * @defgroup tripal_analysis Analysis Module
+ * @defgroup tripal_analysis Legacy Analysis Module
  * @ingroup tripal_modules
  * @{
  * Integrates the Chado Analysis module with Drupal Nodes & Views
  * @}
  */
 
+require_once 'api/tripal_analysis.DEPRECATED.inc';
+require_once 'includes/tripal_analysis.delete.inc';
+require_once 'includes/tripal_analysis_privacy.inc';
+require_once 'includes/tripal_analysis.admin.inc';
+require_once 'includes/tripal_analysis.chado_node.inc';
+
+
 /**
  * Implements hook_init().
  * Add tripal javascript to page headers
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_init() {
 
@@ -37,7 +37,7 @@ function tripal_analysis_init() {
  * Implementation of hook_menu().
  * Entry points and paths of the module
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_menu() {
   $items = array();
@@ -126,7 +126,7 @@ function tripal_analysis_search_biological_data_views() {
  * Implements hook_help().
  * Purpose: Adds a help page to the module list
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_help ($path, $arg) {
   if ($path == 'admin/help#tripal_analysis') {
@@ -141,7 +141,7 @@ function tripal_analysis_help ($path, $arg) {
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_permission() {
   return array(
@@ -175,7 +175,7 @@ function tripal_analysis_permission() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -225,7 +225,7 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
  *  for this module which then includes tripal_analysis.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_views_api() {
   return array(
@@ -236,7 +236,7 @@ function tripal_analysis_views_api() {
 /**
  * Implementation of hook_form_alter().
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
@@ -255,7 +255,7 @@ function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
  * @param $modulename
  *  The name of the module to be registered as a tripal analysis submodule
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_legacy_analysis_api
  */
 function tripal_register_analysis_child($modulename) {
   $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
@@ -271,7 +271,7 @@ function tripal_register_analysis_child($modulename) {
  * @param $modulename
  *  The name of the module to un-register
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_legacy_analysis_api
  */
 function tripal_unregister_analysis_child($modulename) {
   if (db_table_exists('tripal_analysis')) {

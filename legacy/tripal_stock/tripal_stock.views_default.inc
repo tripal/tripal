@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_stock_views_default_views() {
 /**
  * Defines the stock user search default view.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_defaultvalue_user_stocks() {
 
@@ -73,7 +73,7 @@ function tripal_stock_defaultvalue_user_stocks() {
 /**
  * Default stock administration view
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_defaultview_admin_stocks() {
 

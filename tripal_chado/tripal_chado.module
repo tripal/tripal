@@ -1,8 +1,25 @@
 <?php
+/**
+ * @file
+ * The Tripal Chado module.
+ */
 
-//
-// APPLICATION PROGRAMMER INTERFACE
-//
+/**
+ * @defgroup tripal_chado Tripal Chado Module
+ * @ingroup tripal_modules
+ * @{
+ * The Tripal Chado module provides functionality for integration with the
+ * Chado database schema for storing biological content.
+ * @}
+ */
+/**
+ * @defgroup tripal_chado_api Chado API
+ * @{
+ * The Tripal Chado (tripal_chado) module provides an application programming
+ * interface (API) to support customizations and creation of new extensions
+ * using the Chado database schem as a data store.
+ * @}
+ */
 
 // Generic Chado API functions
 require_once "api/tripal_chado.api.inc";
@@ -29,7 +46,6 @@ require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
 require_once 'api/modules/tripal_chado.phylotree.api.inc';
-
 
 //
 // REQUIRED INCLUDE FILES
@@ -58,11 +74,12 @@ tripal_chado_set_globals();
  * @ingroup tripal_chado
  */
 function tripal_chado_set_globals() {
-  // these global variables are meant to be accessed by all Tripal
+  // These global variables are meant to be accessed by all Tripal
   // modules to find the chado version installed and if Chado is local.
-  // these variables are stored as globals rather than using the drupal_set_variable
-  // functions because the Drupal functions make databaes queries and for long
-  // running loaders we don't want those queries repeatedly.
+  // These variables are stored as globals rather than using the
+  // drupal_set_variable functions because the Drupal functions make databaes
+  // queries and for long running loaders we don't want those queries
+  // repeatedly.
   $GLOBALS["chado_is_installed"]  = chado_is_installed();
   if ($GLOBALS["chado_is_installed"]) {
     $GLOBALS["chado_is_local"]      = chado_is_local();
@@ -259,7 +276,7 @@ function tripal_chado_menu() {
     'title' => 'Create Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_mviews_delete_form', 5),
+    'page arguments' => array('tripal_mviews_delete_form', 6),
     'access arguments' => array('administer chado mviews'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
@@ -1102,7 +1119,6 @@ function tripal_feature_match_features_page($id) {
     // iterate through the matches and build the table for showing matches
     $header = array('Uniquename', 'Name', 'Type', 'Species', 'Synonyms');
     $rows = array();
-    $curr_match;
     while ($match = $results->fetchObject()) {
       $curr_match = $match;
       $synonyms = $match->synonyms;
@@ -1116,7 +1132,7 @@ function tripal_feature_match_features_page($id) {
       }
       // If we didn't find an entity ID we need to check nodes for
       // backwards compatibility with Tv2.
-      if (!$entity_id and module_exists(tripal_feature)) {
+      if (!$entity_id and module_exists('tripal_feature')) {
         $nid = chado_get_nid_from_id('feature', $curr_match->feature_id);
         $link = "node/" . $nid;
       }

@@ -7,7 +7,7 @@
 /**
  * Register form elements.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_element_info() {
   $elements = array();
@@ -35,7 +35,7 @@ function tripal_core_element_info() {
 /**
  * Upload File and keep track of previously uploaded files.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function expand_file_upload_combo($element, $form_state, $complete_form) {
 
@@ -81,7 +81,7 @@ function expand_file_upload_combo($element, $form_state, $complete_form) {
 /**
  * Theme the file upload combo form element.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function theme_file_upload_combo($variables) {
   $element = $variables['element'];
@@ -99,7 +99,7 @@ function theme_file_upload_combo($variables) {
 /**
  * Validate all content passed into the file upload combo form element.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function file_upload_combo_value_callback($element, $input = FALSE, &$form_state) {
   $values = array();
@@ -157,7 +157,7 @@ function file_upload_combo_value_callback($element, $input = FALSE, &$form_state
 /**
  * Retrieve Sequence bases form element.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function expand_sequence_combo($element, $form_state, $complete_form) {
 
@@ -197,7 +197,7 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
  * Validate all content passed into the sequence combo form element
  * D7 @todo: test/fix this callback.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
   $upstream = $form['values'][$element['#name']]['upstream'];
@@ -222,7 +222,7 @@ function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
 /**
  * Theme the file sequence form element.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function theme_sequence_combo($variables) {
   $element = $variables['element'];

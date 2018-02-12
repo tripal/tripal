@@ -492,7 +492,7 @@ abstract class TripalFieldDownloader {
   abstract protected function formatEntity($entity);
 
   /**
-   *  Retreives header lines
+   *  Retrieves header lines
    *
    *  This function should be implemented by a child class.  It should return
    *  the header lines for an output file.

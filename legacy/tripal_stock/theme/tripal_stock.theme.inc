@@ -8,7 +8,7 @@
  * Implements hook_preprocess_tripal_stock_relationships() which is the preprocess
  * hook for the tripal_stock_relationships template
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   // we want to provide a new variable that contains the matched stocks.

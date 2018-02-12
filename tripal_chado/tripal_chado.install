@@ -1467,5 +1467,50 @@ function tripal_chado_update_7322() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+/**
+ * Adding the db2cv materialized view.
+ */
+function tripal_chado_update_7323() {
+  try {
+    module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+    tripal_chado_add_db2cv_mview_mview();
+
+    drupal_set_message('Populating materialized view db2cv_mview...');
+    $mview_id = tripal_get_mview_id('db2cv_mview');
+    tripal_populate_mview($mview_id);
+
+    drupal_set_message('Populating materialized view cv_root_mview...');
+    $mview_id = tripal_get_mview_id('cv_root_mview');
+    tripal_populate_mview($mview_id);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+/**
+ * Updating the db2cv materialized view.
+ */
+function tripal_chado_update_7324() {
+  try {
+    if (chado_table_exists(db2cv_mview) and !chado_column_exists('db2cv_mview', 'num_terms')) {
+      module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+
+      // Remove the old mview.
+      $mview_id = tripal_get_mview_id('db2cv_mview');
+      tripal_delete_mview($mview_id);
+
+      // Readd the mview.
+      tripal_chado_add_db2cv_mview_mview();
+      drupal_set_message('Populating materialized view db2cv_mview...');
+      $mview_id = tripal_get_mview_id('db2cv_mview');
+      tripal_populate_mview($mview_id);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 
 

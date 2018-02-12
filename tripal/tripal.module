@@ -1,7 +1,25 @@
 <?php
 /**
  * @file
- * The Tripal Core module
+ * The core Tripal module
+ */
+
+ /**
+  * @defgroup tripal Tripal Module
+  * @ingroup tripal_modules
+  * @{
+  * The core Tripal module provides functionality useful for all other Tripal
+  * modules and extension modules.
+  * @}
+  */
+
+/**
+ * @defgroup tripal_api Tripal API
+ * @ingroup tripal
+ * @{
+ * Tripal provides an application programming interface (API) to support
+ * customizations and creation of new extensions.
+ * @}
  */
 
 // Import the full Tripal API into scope.
@@ -34,14 +52,6 @@ require_once "includes/TripalImporter.inc";
 require_once "includes/TripalEntityCollection.inc";
 require_once "includes/TripalFieldDownloaders/TripalFieldDownloader.inc";
 
-/**
- * @defgroup tripal Tripal Core Module
- * @ingroup tripal_modules
- * @{
- * Functionality useful for all other Tripal modules including the Tripal jobs, files,
- * materialized views and custom table functions.
- * @}
- */
 
 /**
  * Implements hook_views_api().
@@ -264,23 +274,21 @@ function tripal_menu() {
   /*
    * Term Lookup
    */
-// TODO: finish this menu callback.
-//   $items['cv/lookup'] = array(
-//     'title' => 'Vocabulary Lookup',
-//     'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
-//     'access arguments' => array('access content'),
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_vocabulary_lookup_form'),
-//     'file' => 'includes/tripal.term_lookup.inc',
-//     'file path' => drupal_get_path('module', 'tripal'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
+   $items['cv/lookup'] = array(
+     'title' => 'Controlled Vocabularies',
+     'description' => t("A tool to explore the controlled vocabularies that are used on this site."),
+     'access arguments' => array('access content'),
+     'page callback' => 'tripal_vocabulary_lookup_page',
+     'file' => 'includes/tripal.term_lookup.inc',
+     'file path' => drupal_get_path('module', 'tripal'),
+     'type' => MENU_NORMAL_ITEM,
+   );
 
   $items['cv/lookup/%'] = array(
-    'title' => 'Vocabulary Lookup',
+    'title' => 'Vocabulary Details',
     'description' => t("Provides a tool to discover controlled vocabularies"),
     'access arguments' => array('access content'),
-    'page callback' => 'tripal_vocabulary_lookup_page',
+    'page callback' => 'tripal_vocabulary_lookup_vocab_page',
     'page arguments' => array(2),
     'file' => 'includes/tripal.term_lookup.inc',
     'file path' => drupal_get_path('module', 'tripal'),
@@ -292,6 +300,15 @@ function tripal_menu() {
     'description' => t("Provides a tool to discover controlled vocabularies terms used by this site."),
     'access arguments' => array('access content'),
     'page callback' => 'tripal_vocabulary_lookup_term_page',
+    'page arguments' => array(2, 3),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['cv/lookup/%/%/children'] = array(
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_term_children_ajax',
     'page arguments' => array(2, 3),
     'file' => 'includes/tripal.term_lookup.inc',
     'file path' => drupal_get_path('module', 'tripal'),
@@ -571,6 +588,7 @@ function tripal_libraries_info() {
  * Define administrative paths.
  */
 function tripal_admin_paths() {
+  $paths = array();
   if (variable_get('node_admin_theme')) {
     $paths = array(
       'bio_data/*/edit' => TRUE,
@@ -578,8 +596,9 @@ function tripal_admin_paths() {
       'bio_data/add' => TRUE,
       'bio_data/add/*' => TRUE,
     );
-    return $paths;
   }
+  $paths['cv/lookup/*/*'] = TRUE;
+  return $paths;
 }
 
 /**
@@ -751,13 +770,18 @@ function tripal_form_alter(&$form, $form_state, $form_id) {
   }
 
   // Remove fields that have no form. It's just a bit too confusing to have
-  // widgets appear in the form but without and form elements inside them.
+  // widgets appear in the form but without any form elements inside them.
   if ($form_id == 'tripal_entity_form') {
     $children = element_children($form);
     foreach ($children as $child) {
-      // count the number of form elements
+      // Count the number of form elements.
       if (array_key_exists('und', $form[$child])) {
         $total_widgets = 0;
+        // Some fields with cardinality of one that aren't TripalFields
+        // may not have an array, so we need to catch those.
+        if (array_key_exists('#type', $form[$child]['und'])) {
+          $total_widgets++;
+        }
         foreach ($form[$child]['und'] as $delta => $element) {
           if (is_numeric($delta)) {
             $total_widgets += count(element_children($element));
@@ -1040,17 +1064,20 @@ function tripal_cron() {
 
   // Add jobs to the Tripal queue for commong tasks.
   $args = array();
+  $includes = array();
 
   if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal', $function, $args, 1);
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',
+        $function, $args, 1, $includes, TRUE);
     }
   }
 
   // Check for expired collections.
-  tripal_add_job('Cron: Checking expired collections', 'tripal', 'tripal_expire_collections', $args, 1);
+  tripal_add_job('Cron: Checking expired collections', 'tripal',
+    'tripal_expire_collections', $args, 1, $includes, TRUE);
 }
 
 /**

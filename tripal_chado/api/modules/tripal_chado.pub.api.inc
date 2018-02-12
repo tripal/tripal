@@ -5,13 +5,9 @@
  */
 
 /**
- * @defgroup tripal_pub_api Publication Module API
- * @ingroup tripal_api
+ * @defgroup tripal_pub_api Chado Publication
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage chado publications
- *
- * @stephen add documentation here for how to add a new importer.
- *
  * @}
  */
 

@@ -3,7 +3,7 @@
  * @file
  * Perform permission check (required node_privacy_byrole module).
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
 /**
@@ -12,7 +12,7 @@
  * @param $analysis_id
  *   Which analysis to check if the user has permission to view
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_check_permission($analysis_id) {
   if (module_exists('node_privacy_byrole')) {
@@ -54,7 +54,7 @@ function tripal_analysis_check_permission($analysis_id) {
  * @param $nid
  *   The node ID of the analysis
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_set_feature_permission($analysis_id, $nid) {
 

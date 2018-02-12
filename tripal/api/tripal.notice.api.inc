@@ -1,19 +1,19 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) for Tripal
- *
- * The Tripal API currently provides generic functionality for all Tripal
- * extension modules.
+ * Provides an application programming interface (API) for improved user
+ * notivications.  These API functions can be used to set messages for
+ * end-users, administrators, or simple logging.
  */
 
 /**
- * @defgroup tripal_api Tripal API
+ * @defgroup tripal_notify_api Notify
+ * @ingroup tripal_api
  * @{
- * Provides an application programming interface (API) for Tripal
+ * Provides an application programming interface (API) for improved user
+ * notivications.  These API functions can be used to set messages for
+ * end-users, administrators, or simple logging.
  *
- * The Tripal API currently provides generic functionality for all Tripal
- * extension modules..
  * @}
  */
 
@@ -59,7 +59,7 @@ define('TRIPAL_DEBUG',7);
  *     - print: prints the error message to the terminal screen. Useful when
  *       display is the command-line
  *
- * @ingroup tripal_api
+ * @ingroup tripal_notify_api
  */
 function tripal_report_error($type, $severity, $message, $variables = array(), $options = array()) {
 
@@ -156,6 +156,8 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  *     - return_html: return HTML instead of setting a drupal message. This can
  *       be used to place a tripal message in a particular place in the page.
  *       The default is FALSE.
+ *
+ * @ingroup tripal_notify_api
  */
 function tripal_set_message($message, $importance = TRIPAL_INFO, $options = array()) {
   global $user;
@@ -225,6 +227,8 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  *       without intervening date prefixes
  * @return
  *   The number of bytes that were written to the file, or FALSE on failure
+ *
+ * @ingroup tripal_notify_api
  */
 function tripal_log($message, $type = 'error', $options = array()) {
   global $base_url;

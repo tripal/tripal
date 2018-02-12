@@ -6,148 +6,7 @@
  */
 
 /**
- * Get max rank for a given set of criteria
- * This function was developed with the many property tables in chado in mind but will
- * work for any table with a rank
- *
- * @params tablename: the name of the chado table you want to select the max rank from
- *    this table must contain a rank column of type integer
- * @params where_options: array(
- *   <column_name> => array(
- *     'type' => <type of column: INT/STRING>,
- *     'value' => <the value you want to filter on>,
- *     'exact' => <if TRUE use =; if FALSE use ~>,
- *    )
- *  )
- *  where options should include the id and type for that table to correctly
- *  group a set of records together where the only difference are the value and rank
- *
- * @return the maximum rank
- *
- * @ingroup tripal_chado_api
- */
-function chado_get_table_max_rank($tablename, $where_options) {
-
-  $where_clauses = array();
-  $where_args = array();
-
-  //generate the where clause from supplied options
-  // the key is the column name
-  $i = 0;
-  $sql = "
-    SELECT max(rank) as max_rank, count(rank) as count
-    FROM {".$tablename."}
-    WHERE
-  ";
-  foreach ($where_options as $key => $value) {
-    $where_clauses[] = "$key = :$key";
-    $where_args[":$key"] = $value;
-  }
-  $sql .= implode($where_clauses, ' AND ');
-
-  $result = chado_query($sql, $where_args)->fetchObject();
-  if ($result->count > 0) {
-    return $result->max_rank;
-  }
-  else {
-    return -1;
-  }
-
-}
-/**
- * Alter Chado connection settings.
- *
- * This hook is useful for multi-chado instances. Tripal core functions
- * call the chado_set_active() function (e.g. chado_query) but there is no
- * opportunity elsewhere to set the active database.  This is useful in two
- * cases:  1) Users are managed at the database level as in the case of
- * SouthGreen Bioinformatics Platform tools (e.g. Banana Genone Hub).
- * This allows custom modules to change the database connections on a per-user
- * basis, and each user permissions is managed at the database level.  Users
- * are managed at the database level to provid the same access restrictions
- * across various tools that use Chado (e,g, Artemis) 2) When there are
- * simply two Chado instances housed in different Chado databases and the
- * module needs to control which one is being used at any given time.
- *
- * @param $settings
- *   An array containing
- *
- * @see chado_set_active()
- *
- * @ingroup tripal_chado_api
- */
-function hook_chado_connection_alter(&$settings) {
-  // This example shows how we could make sure no table of the 'public' schema
-  // would be allowed in the coming queries: to do so, the caller will call
-  // "chado_set_active('chado_only');" and the hook will remove 'public' from
-  // the search path.
-  if ('chado_only' == $settings['dbname']) {
-    $settings['new_active_db']   = 'chado';
-    // We don't include 'public' in search path.
-    $settings['new_search_path'] = 'chado';
-  }
-}
-
-/**
- * Set the Tripal Database
- *
- * The chado_set_active function is used to prevent namespace collisions
- * when Chado and Drupal are installed in the same database but in different
- * schemas. It is also used when using Drupal functions such as
- * db_table_exists().
- *
- * The connection settings can be altered through the hook
- * hook_chado_connection_alter.
- *
- * Current active connection name is stored in the global variable
- * $GLOBALS['chado_active_db'].
- *
- * @see hook_chado_connection_alter()
- *
- * @ingroup tripal_chado_api
- */
-function chado_set_active($dbname = 'default') {
-
-  // Check if the chado_active_db has been set yet.
-  if (!array_key_exists('chado_active_db', $GLOBALS)) {
-    $GLOBALS['chado_active_db'] = 'default';
-  }
-
-  $previous_db = $active_db = $GLOBALS['chado_active_db'];
-  $search_path = tripal_get_schema_name('drupal');
-
-  // Change only if 'chado' has been specified.
-  // Notice that we leave the active_db set as chado but use the possibly user-altered
-  // schema name for the actual search path. This is to keep outward facing mentions of
-  // chado as "chado" while still allowing the user to alter the schema name used.
-  if ($dbname == 'chado') {
-    $active_db = 'chado';
-    $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
-  }
-  else {
-    $active_db = $dbname;
-  }
-
-  $settings = array(
-    'dbname'          => $dbname,
-    'new_active_db'   => &$active_db,
-    'new_search_path' => &$search_path,
-  );
-
-  // Will call all modules implementing hook_chado_search_path_alter
-  // note: hooks can alter $active_db and $search_path.
-  drupal_alter('chado_connection', $settings);
-
-  // set chado_active_db to remember active db
-  $GLOBALS['chado_active_db'] = $active_db;
-
-  // set PostgreSQL search_path
-  db_query('SET search_path TO ' . $search_path);
-
-  return $previous_db;
-}
-/**
- * @defgroup tripal_chado_query_api Chado Query API
+ * @defgroup tripal_chado_query_api Chado Query
  * @ingroup tripal_chado_api
  * @{
  * Provides an API for querying of chado including inserting, updating, deleting and
@@ -318,10 +177,10 @@ function chado_set_active($dbname = 'default') {
  * chado_generate_var([table], [filter criteria], [optional options])
  * function. An example of how to use this function is:
  * @code
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
+ $values = array(
+ 'name' => 'Medtr4g030710'
+ );
+ $features = chado_generate_var('feature', $values);
  * @endcode
  * This will return an object if there is only one feature with the name Medtr4g030710 or it will
  * return an array of feature objects if more than one feature has that name.
@@ -331,19 +190,163 @@ function chado_set_active($dbname = 'default') {
  * chado_expand_var([chado variable], [type], [what to expand], [optional options])
  * function. An example of how to use this function is:
  * @code
-   // Get a chado object to be expanded
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
-   // Expand the organism node
-   $feature = chado_expand_var($feature, 'node', 'organism');
-   // Expand the feature.residues field
-   $feature = chado_expand_var($feature, 'field', 'feature.residues');
-   // Expand the feature properties (featureprop table)
-   $feature = chado_expand_var($feature, 'table', 'featureprop');
+ // Get a chado object to be expanded
+ $values = array(
+ 'name' => 'Medtr4g030710'
+ );
+ $features = chado_generate_var('feature', $values);
+ // Expand the organism node
+ $feature = chado_expand_var($feature, 'node', 'organism');
+ // Expand the feature.residues field
+ $feature = chado_expand_var($feature, 'field', 'feature.residues');
+ // Expand the feature properties (featureprop table)
+ $feature = chado_expand_var($feature, 'table', 'featureprop');
  * @endcode
  */
+
+
+/**
+ * Get max rank for a given set of criteria
+ * This function was developed with the many property tables in chado in mind but will
+ * work for any table with a rank
+ *
+ * @params tablename: the name of the chado table you want to select the max rank from
+ *    this table must contain a rank column of type integer
+ * @params where_options: array(
+ *   <column_name> => array(
+ *     'type' => <type of column: INT/STRING>,
+ *     'value' => <the value you want to filter on>,
+ *     'exact' => <if TRUE use =; if FALSE use ~>,
+ *    )
+ *  )
+ *  where options should include the id and type for that table to correctly
+ *  group a set of records together where the only difference are the value and rank
+ *
+ * @return the maximum rank
+ *
+ * @ingroup tripal_chado_query_api
+ */
+function chado_get_table_max_rank($tablename, $where_options) {
+
+  $where_clauses = array();
+  $where_args = array();
+
+  //generate the where clause from supplied options
+  // the key is the column name
+  $i = 0;
+  $sql = "
+    SELECT max(rank) as max_rank, count(rank) as count
+    FROM {".$tablename."}
+    WHERE
+  ";
+  foreach ($where_options as $key => $value) {
+    $where_clauses[] = "$key = :$key";
+    $where_args[":$key"] = $value;
+  }
+  $sql .= implode($where_clauses, ' AND ');
+
+  $result = chado_query($sql, $where_args)->fetchObject();
+  if ($result->count > 0) {
+    return $result->max_rank;
+  }
+  else {
+    return -1;
+  }
+
+}
+/**
+ * Alter Chado connection settings.
+ *
+ * This hook is useful for multi-chado instances. Tripal core functions
+ * call the chado_set_active() function (e.g. chado_query) but there is no
+ * opportunity elsewhere to set the active database.  This is useful in two
+ * cases:  1) Users are managed at the database level as in the case of
+ * SouthGreen Bioinformatics Platform tools (e.g. Banana Genone Hub).
+ * This allows custom modules to change the database connections on a per-user
+ * basis, and each user permissions is managed at the database level.  Users
+ * are managed at the database level to provid the same access restrictions
+ * across various tools that use Chado (e,g, Artemis) 2) When there are
+ * simply two Chado instances housed in different Chado databases and the
+ * module needs to control which one is being used at any given time.
+ *
+ * @param $settings
+ *   An array containing
+ *
+ * @see chado_set_active()
+ *
+ * @ingroup tripal_chado_query_api
+ */
+function hook_chado_connection_alter(&$settings) {
+  // This example shows how we could make sure no table of the 'public' schema
+  // would be allowed in the coming queries: to do so, the caller will call
+  // "chado_set_active('chado_only');" and the hook will remove 'public' from
+  // the search path.
+  if ('chado_only' == $settings['dbname']) {
+    $settings['new_active_db']   = 'chado';
+    // We don't include 'public' in search path.
+    $settings['new_search_path'] = 'chado';
+  }
+}
+
+/**
+ * Set the Tripal Database
+ *
+ * The chado_set_active function is used to prevent namespace collisions
+ * when Chado and Drupal are installed in the same database but in different
+ * schemas. It is also used when using Drupal functions such as
+ * db_table_exists().
+ *
+ * The connection settings can be altered through the hook
+ * hook_chado_connection_alter.
+ *
+ * Current active connection name is stored in the global variable
+ * $GLOBALS['chado_active_db'].
+ *
+ * @see hook_chado_connection_alter()
+ *
+ * @ingroup tripal_chado_query_api
+ */
+function chado_set_active($dbname = 'default') {
+
+  // Check if the chado_active_db has been set yet.
+  if (!array_key_exists('chado_active_db', $GLOBALS)) {
+    $GLOBALS['chado_active_db'] = 'default';
+  }
+
+  $previous_db = $active_db = $GLOBALS['chado_active_db'];
+  $search_path = tripal_get_schema_name('drupal');
+
+  // Change only if 'chado' has been specified.
+  // Notice that we leave the active_db set as chado but use the possibly user-altered
+  // schema name for the actual search path. This is to keep outward facing mentions of
+  // chado as "chado" while still allowing the user to alter the schema name used.
+  if ($dbname == 'chado') {
+    $active_db = 'chado';
+    $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
+  }
+  else {
+    $active_db = $dbname;
+  }
+
+  $settings = array(
+    'dbname'          => $dbname,
+    'new_active_db'   => &$active_db,
+    'new_search_path' => &$search_path,
+  );
+
+  // Will call all modules implementing hook_chado_search_path_alter
+  // note: hooks can alter $active_db and $search_path.
+  drupal_alter('chado_connection', $settings);
+
+  // set chado_active_db to remember active db
+  $GLOBALS['chado_active_db'] = $active_db;
+
+  // set PostgreSQL search_path
+  db_query('SET search_path TO ' . $search_path);
+
+  return $previous_db;
+}
+
 
 /**
  * Provides a generic routine for inserting into any Chado table
@@ -505,7 +508,7 @@ function chado_insert_record($table, $values, $options = array()) {
     if ($ukeys) {
       foreach ($ukeys as $name => $fields) {
         foreach ($fields as $index => $field) {
-          // build the arrays for performing a select that will check the contraint
+          // build the arrays for performing a select that will check the constraint
           $ukselect_cols[] = $field;
           if (!array_key_exists($field, $insert_values)) {
             if (array_key_exists('default', $table_desc['fields'][$field])) {
@@ -1262,7 +1265,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
-          // if there is no primary key then use the unique contraint fields
+          // if there is no primary key then use the unique constraint fields
           if (!$has_pkey) {
             array_push($new_columns, $field);
           }
@@ -1713,6 +1716,8 @@ function chado_query($sql, $args = array()) {
  * @param $args
  *    An array of arguments where the key is the token used in $sql (for example, :value)
  *    and the value is the value you would like substituted in.
+ *
+ * @ingroup tripal_chado_query_api
  */
 function hook_chado_query_alter(&$sql, &$args) {
 
@@ -1816,7 +1821,7 @@ function chado_pager_get_count($element) {
  * This function is used by chado_select_record, chado_insert_record,
  * and chado_update_record to iterate through the associate array of
  * values that gets passed to each of those routines.  The values array
- * is nested where foreign key contraints are used to specify a value that.  See
+ * is nested where foreign key constraints are used to specify a value that.  See
  * documentation for any of those functions for further information.
  *
  * @param $table_desc
@@ -1856,7 +1861,6 @@ function chado_pager_get_count($element) {
  * species.  The cvterm is also specified using its foreign key and the cv_id
  * for the cvterm is nested as well.
  *
- * @ingroup tripal_chado
  */
 function chado_schema_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 
@@ -1937,6 +1941,8 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
  *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the default.
  * @return
  *   The name of the PostgreSQL schema housing the $schema specified.
+ *
+ * @ingroup tripal_chado_query_api
  */
 function tripal_get_schema_name($schema = 'chado') {
 
@@ -1976,6 +1982,8 @@ function tripal_get_schema_name($schema = 'chado') {
  *     - schema: this is the schema that was passed to tripal_get_schema_name() and will
  *       be either "chado" or "drupal". This should be used to determine you are changing
  *       the name of the correct schema.
+ *
+ * @ingroup tripal_chado_query_api
  */
 function hook_tripal_get_schema_name_alter($schema_name, $context) {
 
@@ -2006,6 +2014,8 @@ function hook_tripal_get_schema_name_alter($schema_name, $context) {
  *
  * @return
  *   A new SelectQuery object for this connection.
+ *
+ * @ingroup tripal_chado_query_api
  */
 function chado_db_select($table, $alias = NULL, array $options = array()) {
   if (empty($options['target'])) {

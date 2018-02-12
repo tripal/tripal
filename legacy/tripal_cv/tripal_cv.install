@@ -9,7 +9,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_disable() {
 
@@ -25,7 +25,7 @@ function tripal_cv_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_requirements($phase) {
   $requirements = array();
@@ -45,7 +45,7 @@ function tripal_cv_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_install() {
 
@@ -54,7 +54,7 @@ function tripal_cv_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_uninstall() {
 

@@ -1,5 +1,20 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) to manage entities
+ * that use Chado as their base data.
+ */
+
+/**
+ * @defgroup tripal_chado_entity_api Chado Entity
+ * @ingroup tripal_chado_api
+ * @{
+ * Provides an application programming interface (API) to manage entities
+ * that use Chado as their base data.
+ * @}
+ */
+
+/**
  * Retreive the entity_id assigned to a given record_id and bundle.
  *
  * @param $bundle
@@ -10,6 +25,8 @@
  *
  * @return
  *   The ID of the entity that belongs to the given record_id.
+ *
+ * @ingroup tripal_chado_entity_api
  */
 function chado_get_record_entity_by_bundle(TripalBundle $bundle, $record_id) {
   if (!$bundle) {
@@ -43,6 +60,8 @@ function chado_get_record_entity_by_bundle(TripalBundle $bundle, $record_id) {
  * @return
  *   The ID of the entity that belongs to the given record_id, or NULL
  *   otherwise.
+ *
+ * @ingroup tripal_chado_entity_api
  */
 
 function chado_get_record_entity_by_table($data_table, $record_id) {
@@ -89,10 +108,12 @@ function chado_get_record_entity_by_table($data_table, $record_id) {
  * table should always be unique.
  *
  * @param $bundle
- *   A bundle object (as retreieved from tripal_load_bundle_entity().
+ *   A bundle object (as retrieved from tripal_load_bundle_entity().
  *
  * @return
  *   The name of the mapping table that Chado uses to map entities to records.
+ *
+ * @ingroup tripal_chado_entity_api
  */
 function chado_get_bundle_entity_table($bundle) {
   if (!$bundle) {
@@ -100,4 +121,3 @@ function chado_get_bundle_entity_table($bundle) {
   }
   return 'chado_' . $bundle->name;
 }
-

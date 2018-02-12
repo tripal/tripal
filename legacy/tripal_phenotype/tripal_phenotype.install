@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_phenotype
+ * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_disable() {
 

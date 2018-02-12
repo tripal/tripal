@@ -1,4 +1,21 @@
 <?php
+
+/**
+ * @file
+ * Provides an application programming interface (API) for working with
+ * data file importers using the TripalImporter class.
+ */
+
+/**
+ * @defgroup tripal_importer_api Data Importing
+ * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) for working with
+ * data file importers using the TripalImporter class.
+ * @}
+ *
+ */
+
 /**
  * Implements hook_handle_uplaoded_file().
  *
@@ -14,6 +31,8 @@
  *
  * @return
  *   A Drupal managed file ID.
+ *
+ * @ingroup tripal_importer_api
  */
 function hook_handle_uploaded_file($filename, $filepath, $type) {
 
@@ -30,6 +49,8 @@ function hook_handle_uploaded_file($filename, $filepath, $type) {
  *
  * @return
  *   A list of TripalImporter names.
+ *
+ * @ingroup tripal_importer_api
  */
 function tripal_get_importers() {
   $importers = array();
@@ -59,6 +80,8 @@ function tripal_get_importers() {
  *
  * @return
  *   TRUE if the field type class file was found, FALSE otherwise.
+ *
+ * @ingroup tripal_importer_api
  */
 function tripal_load_include_importer_class($class) {
 
@@ -87,6 +110,8 @@ function tripal_load_include_importer_class($class) {
  * @param $import_id
  *   The ID of the import record.
  * @throws Exception
+ *
+ * @ingroup tripal_importer_api
  */
 function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
@@ -136,6 +161,8 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
  * @param $job
  *   The TripalJob object.$this
  * @throws Exception
+ *
+ * @ingroup tripal_importer_api
  */
 function tripal_run_importer_run($loader, $job) {
 
@@ -169,6 +196,8 @@ function tripal_run_importer_run($loader, $job) {
  * @param $job
  *   The TripalJob object.
  * @throws Exception
+ *
+ * @ingroup tripal_importer_api
  */
 function tripal_run_importer_post_run($loader, $job) {
   try {

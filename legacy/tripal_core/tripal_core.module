@@ -4,7 +4,23 @@
  * The Tripal Core module
  */
 
+/**
+ * @defgroup tripal_legacy_api Tripal Legacy API
+ * @{
+ * Provides an application programming interface (API) for Tripal v2
+ * backwards-compatibilty. These functions are DEPRECATED and may not
+ * be available in future version of Tripal.
+ * @}
+ */
 
+/**
+ * @defgroup tripal_legacy_core Legacy Tripal Core Module
+ * @ingroup tripal_legacy_modules
+ * @{
+ * Functionality useful for all other Tripal modules including the Tripal jobs, files,
+ * materialized views and custom table functions.
+ * @}
+ */
 require_once 'api/tripal_core.chado_nodes.api.inc';
 require_once 'api/tripal_core.chado_nodes.title_and_path.inc';
 require_once 'api/tripal_core.chado_nodes.properties.api.inc';
@@ -14,20 +30,13 @@ require_once 'api/tripal_core.tripal_variables.api.inc';
 require_once 'includes/tripal_core.form_elements.inc';
 require_once 'includes/tripal_core.search.inc';
 
-/**
- * @defgroup tripal_core Tripal Core Module
- * @ingroup tripal_modules
- * @{
- * Functionality useful for all other Tripal modules including the Tripal jobs, files,
- * materialized views and custom table functions.
- * @}
- */
+
 
 /**
  * Implements hook_init().
  * Used to set the search_path, create default content and set default variables.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_init() {
 
@@ -45,7 +54,7 @@ function tripal_core_init() {
  * Implements hook_menu().
  * Defines all menu items needed by Tripal Core
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_menu() {
   $items = array();
@@ -108,7 +117,7 @@ function tripal_core_access_node_toc_form($node) {
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_permission() {
   return array();
@@ -118,7 +127,7 @@ function tripal_core_permission() {
  * Implements hook_theme().
  * Registers template files/functions used by this module.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_theme($existing, $type, $theme, $path) {
   return array(
@@ -199,7 +208,7 @@ function tripal_core_coder_ignore() {
  * for this module which then includes tripal_db.views.inc where all the
  * views integration code is.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_views_api() {
   return array(
@@ -210,7 +219,7 @@ function tripal_core_views_api() {
 /**
  * Implements hook_node_view_alter().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_node_view_alter(&$build) {
   module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
@@ -220,7 +229,7 @@ function tripal_core_node_view_alter(&$build) {
 /**
  * Implements hook_node_view().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_node_view($node, $view_mode, $langcode) {
 

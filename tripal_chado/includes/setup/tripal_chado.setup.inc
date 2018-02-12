@@ -205,6 +205,15 @@ function tripal_chado_prepare_chado($job = NULL) {
     drush_print("Loading Ontologies...");
     tripal_chado_load_ontologies();
 
+    // Populate the mviews based on controlled vocabularies.
+    drush_print('Populating materialized view db2cv_mview...');
+    $mview_id = tripal_get_mview_id('db2cv_mview');
+    tripal_populate_mview($mview_id);
+
+    drush_print('Populating materialized view cv_root_mview...');
+    $mview_id = tripal_get_mview_id('cv_root_mview');
+    tripal_populate_mview($mview_id);
+
     if ($report_progress) {
       $job->setProgress(50);
     }
@@ -245,7 +254,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Organism" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -268,7 +278,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Analysis" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -291,7 +302,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Project" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -314,7 +326,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Map" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     // Add cvterm mapping for the Map entity type
@@ -348,7 +361,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Publication" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     // Add cvterm mapping for the Publication entity type
@@ -391,7 +405,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Gene" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -415,7 +430,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered  creating "mRNA" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -438,7 +454,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Biological Sample" Tripal Content Type.';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -461,7 +478,8 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Phylogenetic tree" Tripal Content Type';
+        throw new Exception($msg);
       }
     }
     if ($report_progress) {
@@ -527,6 +545,8 @@ function tripal_chado_add_vx_x_custom_tables(){
   tripal_chado_add_organism_feature_count_mview();
   tripal_chado_add_analysis_organism_mview();
   tripal_chado_add_cv_root_mview_mview();
+  tripal_chado_add_db2cv_mview_mview();
+
 }
 
 /**

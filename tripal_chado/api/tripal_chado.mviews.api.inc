@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup tripal_mviews_api Tripal Materalized Views API
+ * @defgroup tripal_mviews_api Chado Materalized Views
  * @ingroup tripal_chado_api
  * @{
  * Provides an application programming interface (API) to manage materialized views in Chado.
@@ -33,10 +33,14 @@
  *   The SQL query that loads the materialized view with data
  * @param $comment
  *   A string containing a description of the materialized view
+ * @param $redirect
+ *   Optional (default: TRUE). By default this function redirects back to
+ *   admin pages. However, when called by Drush we don't want to redirect. This
+ *   parameter allows this to be used as a true API function.
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL) {
+function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
 
   if (!array_key_exists('table', $mv_schema)) {
      tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -77,7 +81,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
           chado_query($sql);
         }
         // create the table
-        chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id);
+        chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id, $redirect);
       }
     }
     catch (Exception $e) {

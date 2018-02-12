@@ -7,7 +7,7 @@
 /**
  * A form for indicating the features to delete
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_delete_form() {
   $form['desc'] = array(
@@ -61,7 +61,7 @@ function tripal_feature_delete_form() {
 /**
  * Validation for the delete features form
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_delete_form_validate($form, &$form_state) {
   $organism_id   = $form_state['values']['organism_id'];
@@ -78,7 +78,7 @@ function tripal_feature_delete_form_validate($form, &$form_state) {
 /**
  * Submit for the delete features form
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_delete_form_submit($form, &$form_state) {
   global $user;
@@ -111,7 +111,7 @@ function tripal_feature_delete_form_submit($form, &$form_state) {
  * @param $job
  *   The tripal_job id
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   $is_unique, $feature_names, $job = NULL) {

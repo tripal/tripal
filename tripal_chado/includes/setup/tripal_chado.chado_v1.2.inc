@@ -64,7 +64,7 @@ function tripal_chado_add_contactprop_table(){
       ),
     ),
   );
-  chado_create_custom_table('contactprop', $schema, TRUE);
+  chado_create_custom_table('contactprop', $schema, TRUE, NULL, FALSE);
 }
 
 /**
@@ -129,7 +129,7 @@ function tripal_chado_add_featuremap_dbxref_table(){
     'referring_tables' => NULL,
   );
 
-  chado_create_custom_table('featuremap_dbxref', $schema, TRUE);
+  chado_create_custom_table('featuremap_dbxref', $schema, TRUE, NULL, FALSE);
 
 }
 
@@ -201,7 +201,7 @@ function tripal_chado_add_featuremapprop_table(){
       ),
     ),
   );
-  chado_create_custom_table('featuremapprop', $schema, TRUE);
+  chado_create_custom_table('featuremapprop', $schema, TRUE, NULL, FALSE);
 }
 
 /**
@@ -266,7 +266,7 @@ function tripal_chado_add_featureposprop_table(){
       ),
     ),
   );
-  chado_create_custom_table('featureposprop', $schema, TRUE);
+  chado_create_custom_table('featureposprop', $schema, TRUE, NULL, FALSE);
 }
 
 
@@ -317,5 +317,5 @@ function tripal_chado_add_pubauthor_contact_table() {
       ),
     ),
   );
-  chado_create_custom_table('pubauthor_contact', $schema, TRUE);
+  chado_create_custom_table('pubauthor_contact', $schema, TRUE, NULL, FALSE);
 }

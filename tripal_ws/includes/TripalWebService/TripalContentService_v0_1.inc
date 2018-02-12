@@ -1,6 +1,6 @@
 <?php
 
-class TripalEntityService_v0_1 extends TripalWebService {
+class TripalContentService_v0_1 extends TripalWebService {
 
   /**
    * The human-readable label for this web service.
@@ -242,7 +242,6 @@ class TripalEntityService_v0_1 extends TripalWebService {
       if ($instance['display']['default']['type'] == 'hidden') {
         continue;
       }
-
       // Get the information about this field.
       $field = field_info_field($field_name);
 
@@ -321,7 +320,16 @@ class TripalEntityService_v0_1 extends TripalWebService {
 
     $values = array();
     for ($i = 0; $i < count($items); $i++) {
-      $values[$i] = $this->sanitizeFieldKeys($this->resource, $items[$i]['value'], $bundle, $service_path);
+      if (array_key_exists('value', $items[$i])) {
+        $values[$i] = $this->sanitizeFieldKeys($this->resource, $items[$i]['value'], $bundle, $service_path);
+      }
+      elseif ($field['type'] == 'image') {
+        $url = file_create_url($items[$i]['uri']);
+        $values[$i] = $this->sanitizeFieldKeys($this->resource, $url, $bundle, $service_path);
+      }
+      else {
+        // TODO: handle this case.
+      }
     }
 
     if ($hide_fields == 'hide' and empty($values[0])) {

@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_views_default_views() {
   $views = array();
