@@ -99,58 +99,25 @@ function tripal_enable() {
   if (db_table_exists('tripal_jobs2')) {
     $sql = "DROP TABLE tripal_jobs";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_jobs2 RENAME to tripal_jobs";
-    db_query($sql);
-    if (db_index_exists('tripal_jobs', 'tripal_jobs_job_id_idx2')) {
-      $sql = "ALTER INDEX tripal_jobs_job_id_idx2 RENAME TO tripal_jobs_job_id_idx";
-      db_query($sql);
-    }
-    if (db_index_exists('tripal_jobs', 'tripal_jobs_job_name_idx2')) {
-      $sql = "ALTER INDEX tripal_jobs_job_name_idx2 RENAME TO tripal_jobs_job_name_idx";
-      db_query($sql);
-    }
-    if (db_index_exists('tripal_jobs', 'tripal_jobs_pkey2')) {
-      $sql = "ALTER INDEX tripal_jobs_pkey2 RENAME TO tripal_jobs_pkey";
-      db_query($sql);
-    }
-    // schema change
-    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
-    db_query($sql);
+    db_rename_table('tripal_jobs2', 'tripal_jobs');
   }
 
   if (db_table_exists('tripal_token_formats2')) {
     $sql = "DROP TABLE tripal_token_formats";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_token_formats2 RENAME TO tripal_token_formats";
-    db_query($sql);
-    if (db_index_exists('tripal_token_formats', 'tripal_token_formats_pkey2')) {
-      $sql = "ALTER INDEX tripal_token_formats_pkey2 RENAME TO tripal_token_formats_pkey";
-      db_query($sql);
-    }
-    if (db_index_exists('tripal_token_formats', 'tripal_token_formats_type_application_key2')) {
-      $sql = "ALTER INDEX tripal_token_formats_type_application_key2 RENAME TO tripal_token_formats_type_application_key";
-      db_query($sql);
-    }
+    db_rename_table('tripal_token_formats2', 'tripal_token_formats');
   }
 
   if (db_table_exists('tripal_variables2')) {
     $sql = "DROP TABLE tripal_variables";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_variables2 RENAME TO tripal_variables";
-    db_query($sql);
-    if (db_index_exists('tripal_variables', 'tripal_variables_pkey2')) {
-      $sql = "ALTER INDEX tripal_variables_pkey2 RENAME TO tripal_variables_pkey";
-      db_query($sql);
-    }
-    if (db_index_exists('tripal_variables', 'tripal_variables_tripal_variable_names_idx1_idx2')) {
-      $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx2 RENAME TO tripal_variables_tripal_variable_names_idx1_idx";
-      db_query($sql);
-    }
-    if (db_index_exists('tripal_variables', 'tripal_variables_tripal_variables_c1_key2')) {
-      $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key2 RENAME TO tripal_variables_tripal_variables_c1_key";
-      db_query($sql);
-    }
+    db_rename_table('tripal_variables2', 'tripal_variables');
   }
+
+  // schema change
+  $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+  db_query($sql);
+
   tripal_add_variables();
 }
 
@@ -168,53 +135,15 @@ function tripal_schema() {
   $migrated = variable_get ('tripal_v2_upgrade_v3_check', FALSE);
   if (!$migrated) {
     if (db_table_exists('tripal_jobs')) {
-      // Move the tripal_jobs table out of the way.
-      $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
-      db_query($sql);
-      if (db_index_exists('tripal_jobs', 'tripal_jobs_job_id_idx')) {
-        $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
-        db_query($sql);
-      }
-      if (db_index_exists('tripal_jobs', 'tripal_jobs_job_name_idx')) {
-        $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
-        db_query($sql);
-      }
-      if (db_index_exists('tripal_jobs', 'tripal_jobs_pkey')) {
-        $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
-        db_query($sql);
-      }
+      db_rename_table('tripal_jobs', 'tripal_jobs2');
     }
 
     if (db_table_exists('tripal_token_formats')) {
-      // Move the tripal_token_formats table out of the way.
-      $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
-      db_query($sql);
-      if (db_index_exists('tripal_token_formats', 'tripal_token_formats_pkey')) {
-        $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
-        db_query($sql);
-      }
-      if (db_index_exists('tripal_token_formats', 'tripal_token_formats_type_application_key')) {
-        $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
-        db_query($sql);
-      }
+      db_rename_table('tripal_token_formats', 'tripal_token_formats2');
     }
 
     if (db_table_exists('tripal_variables')) {
-      // Move the tripal_variables table out of the way.
-      $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
-      db_query($sql);
-      if (db_index_exists('tripal_variables', 'tripal_variables_pkey')) {
-        $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
-        db_query($sql);
-      }
-      if (db_index_exists('tripal_variables', 'tripal_variables_tripal_variable_names_idx1_idx')) {
-        $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
-        db_query($sql);
-      }
-      if (db_index_exists('tripal_variables', 'tripal_variables_tripal_variables_c1_key')) {
-        $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
-        db_query($sql);
-      }
+      db_rename_table('tripal_variables', 'tripal_variables2');
     }
     variable_set ('tripal_v2_upgrade_v3_check', TRUE);
   }
@@ -223,7 +152,6 @@ function tripal_schema() {
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
   $schema['tripal_token_formats'] = tripal_tripal_token_formats_schema();
   $schema['tripal_variables'] = tripal_tripal_variables_schema();
-
 
   // Adds a table for managing TripalEntity entities.
   $schema['tripal_vocab'] = tripal_tripal_vocab_schema();
