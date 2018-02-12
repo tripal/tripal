@@ -606,6 +606,17 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/loaders/chado_vocabs/chado_cv/delete/%'] = array(
+    'title' => 'Delete a Controlled Vocabulary',
+    'description' => 'Delete a controlled vocabulary.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cv_delete_form', 6),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/tripal_chado.cv.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/loaders/chado_vocabs/chado_cv/add'] = array(
     'title' => 'Add a Controlled Vocabulary',
     'description' => 'Manually a new controlled vocabulary.',
