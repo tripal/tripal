@@ -1190,8 +1190,15 @@ function tripal_entity_label($entity) {
 }
 
 /**
+ * Retrieves details, including attached fields, for a given bundle.
  *
  * @param $bundle_name
+ *   The name of the bundle (e.g. bio_data_xx)
+ *
+ * @return
+ *   An array containing the name, label, controlled vocabulary details
+ *   and a list of fields attached to the bundle.  Returns FALSE
+ *   if the bundle does not exist.
  *
  * @ingroup tripal_entities_api
  */
@@ -1199,6 +1206,9 @@ function tripal_get_bundle_details($bundle_name) {
   global $user;
 
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  if (!$bundle) {
+    return FALSE;
+  }
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
   $vocab = $term->vocab;
   $instances = field_info_instances('TripalEntity', $bundle->name);
