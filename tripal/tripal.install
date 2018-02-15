@@ -115,8 +115,10 @@ function tripal_enable() {
   }
 
   // schema change
-  $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
-  db_query($sql);
+  if (!db_field_exists('tripal_jobs', 'includes')) {
+    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+    db_query($sql);
+  }
 
   tripal_add_variables();
 }
