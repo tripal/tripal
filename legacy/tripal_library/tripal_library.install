@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_disable() {
 
@@ -24,7 +24,7 @@ function tripal_library_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_library_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_install() {
 
@@ -60,7 +60,7 @@ function tripal_library_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_uninstall() {
 
@@ -69,7 +69,7 @@ function tripal_library_uninstall() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_schema() {
   $schema['chado_library'] = array(
@@ -107,7 +107,7 @@ function tripal_library_schema() {
 /**
  * Adds new CV's used by this module
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_add_cvs(){
   tripal_insert_cv(
@@ -123,7 +123,7 @@ function tripal_library_add_cvs(){
 /**
  * Adds cvterms needed for the library module
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_add_cvterms() {
 

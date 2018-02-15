@@ -1,6 +1,28 @@
 <?php
 
 /**
+ * @file
+ *
+ * Provides the API for working with Data collections. This includes creation,
+ * experiation, and retreival.
+ */
+
+/**
+ * @defgroup tripal_data_collections_api Data Collections
+ * @ingroup tripal_api
+ * @{
+ * New with Tripal v3 are data collections. A data collection can be compared
+ * to a "shopping cart" system where site users can collect data of interest
+ * to them, and use that data later for other purposes.  By default, Tripal
+ * offers data collections with the default search interface provided by views.
+ * This interface allows end-users to create data collections after searching
+ * for items using the default search.  Once in a collection users can then
+ * generate files for downloading or use by other tools that support data
+ * collections.
+ * @}
+ */
+
+/**
  * Creates a collection of entities for a given user.
  *
  * @param  $details
@@ -12,8 +34,11 @@
  *   - ids:  An array of the entity IDs that form the collection.
  *   - fields: An array of the field IDs that the collection is limited to.
  *   - description:  A user supplied description for the collection.
+ *
  * @return TripalEntityCollection
  *   An instance of a TripalEntityCollection class or FALSE on failure.
+ *
+ * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection($details) {
   global $user;
@@ -44,8 +69,11 @@ function tripal_create_collection($details) {
  *
  * @param $uid
  *   The User ID
+ *
  * @return
  *   An array of TripalEntityCollection objects.
+ *
+ * @ingroup tripal_data_collections_api
  */
 function tripal_get_user_collections($uid) {
   if (!$uid) {
@@ -71,6 +99,8 @@ function tripal_get_user_collections($uid) {
 
 /**
  * Deletes all collections that have surpassed their lifespan
+ *
+ * @ingroup tripal_data_collections_api
  */
 function tripal_expire_collections() {
   $max_days = variable_get('tripal_data_collections_lifespan', 30);
@@ -104,6 +134,7 @@ function tripal_expire_collections() {
  * @return
  *  An instance of a TripalEntityCollection class or FALSE on failure.
  *
+ * @ingroup tripal_data_collections_api
  */
 function tripal_get_collection($values) {
   $collection_id = array_key_exists('collection_id', $values) ? $values['collection_id'] : NULL;
@@ -147,6 +178,8 @@ function tripal_get_collection($values) {
  * Generates the downloadable files for a Collection
  *
  * @param TripalEntityCollection $collection
+ *
+ * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
   if ($job) {

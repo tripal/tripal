@@ -133,7 +133,7 @@ function tripal_chado_pub_search_page() {
             }
           }
           // try tripal v3 link (entity), if it exists, update the link to entity
-          $entity_id = tripal_get_chado_entity_id ('pub', $pub->pub_id);
+          $entity_id = chado_get_record_entity_by_table('pub', $pub->pub_id);
           if ($entity_id) {
             $link = "/bio_data/$entity_id";
           }

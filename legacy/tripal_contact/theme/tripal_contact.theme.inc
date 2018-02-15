@@ -2,7 +2,7 @@
 /**
  *
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $contact = $variables['node']->contact;

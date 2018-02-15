@@ -1,6 +1,19 @@
 <?php
 
 /**
+ * @file
+ * Provides an application programming interface (API) to manage organisms
+ */
+
+/**
+ * @defgroup tripal_phylotree_api Chado Phylotree
+ * @ingroup tripal_chado_api
+ * @{
+ * @}
+ */
+
+
+/**
  * Validates an $options array for insert or update of a phylotree record.
  *
  * If validation passes then any values that needed validation lookups
@@ -30,6 +43,7 @@
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
  *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
 
@@ -263,6 +277,8 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *   value is the error message.
  * @return
  *   TRUE for success and FALSE for failure.
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
   global $user;
@@ -390,6 +406,8 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
  *     'load_now':   If set, the tree will be loaded immediately if a tree_file
  *                   is provided. Otherwise, the tree will be loaded via
  *                   a Tripal jobs call.
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_update_phylotree($phylotree_id, &$options) {
   global $user;
@@ -507,6 +525,8 @@ function tripal_update_phylotree($phylotree_id, &$options) {
  *
  * @return
  *   TRUE on success, FALSE on failure.
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_delete_phylotree($phylotree_id) {
 
@@ -531,6 +551,8 @@ function tripal_delete_phylotree($phylotree_id) {
  * @param $index
  *   This parameters is not used when the function is first called. It
  *   is used for recursive calls.
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
   // Assign a left and right index to each node.  The child node must
@@ -603,6 +625,8 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @param $parent
  *   This argument is not needed when the funtion is first called. This
  *   function is recursive and this argument is used on recursive calls.
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = array(), $parent = NULL) {
 
@@ -719,7 +743,9 @@ function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arr
 
 /**
  *
- * @return boolean|multitype:Either
+ * @return
+ *
+ * @ingroup tripal_phylotree_api
  */
 function tripal_phylogeny_get_node_types_vocab() {
   // Get the vocabulary terms used to describe nodes in the tree
@@ -787,6 +813,7 @@ function tripal_phylogeny_get_node_types_vocab() {
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
  *
+ *  @ingroup tripal_phylotree_api
  */
 function tripal_phylogeny_import_tree_file($file_name, $format, $options = array(), $job_id = NULL) {
 

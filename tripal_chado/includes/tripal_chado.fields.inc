@@ -187,6 +187,16 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
     if ($column_name == 'uniquename') {
       $base_info['settings']['text_processing'] = 0;
     }
+
+    // Sometimes the boolean fields are listed as integer.  We need to
+    // correct for that.
+    if ($column_name == 'is_obsolete' or $column_name == 'is_analysis' or
+        $column_name == 'is_relationshiptype' or $column_name == 'is_for_definition' or
+        $column_name == 'is_view' or $column_name == 'is_updateable') {
+      $base_info['type'] = 'list_boolean';
+      $base_info['settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+    }
+
     //
     // PUB TABLE
     //
@@ -934,6 +944,15 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     if ($base_info['label'] == 'Timelastmodified') {
       $base_info['label'] = 'Time Last Modified';
       $base_info['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
+    }
+
+    // Sometimes the boolean fields are listed as integer.  We need to
+    // correct for that.
+    if ($column_name == 'is_obsolete' or $column_name == 'is_analysis' or
+        $column_name == 'is_relationshiptype' or $column_name == 'is_for_definition' or
+        $column_name == 'is_view' or $column_name == 'is_updateable') {
+      $base_info['widget']['type'] = 'options_onoff';
+      $base_info['required'] = FALSE;
     }
     //
     // ORGANISM TABLE

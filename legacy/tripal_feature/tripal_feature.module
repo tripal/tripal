@@ -5,8 +5,8 @@
  */
 
 /**
- * @defgroup tripal_feature Feature Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy feature Legacy Feature Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Integrates the Chado Sequence module with Drupal Nodes & Views
  * @}
@@ -27,7 +27,7 @@ require_once 'includes/tripal_feature.chado_node.inc';
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_api() {
   return array(
@@ -48,7 +48,7 @@ function tripal_feature_views_api() {
  * @return
  *   help text for the path
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_help($path, $arg) {
   $output = '';
@@ -67,7 +67,7 @@ function tripal_feature_help($path, $arg) {
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_permission() {
   return array(
@@ -103,7 +103,7 @@ function tripal_feature_permission() {
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_menu() {
   $items = array();
@@ -199,7 +199,7 @@ function tripal_feature_search_biological_data_views() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -310,7 +310,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
  * Implements hook_job_describe_args() in order to describe the various feature jobs
  * to the tripal jobs interface.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_job_describe_args($callback, $args) {
 
@@ -406,7 +406,7 @@ function tripal_feature_job_describe_args($callback, $args) {
  * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for
  * coder are stored
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_coder_ignore() {
   return array(
@@ -423,7 +423,7 @@ function tripal_feature_coder_ignore() {
  * @param $form_state
  * @param $form_id
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   // turn off preview button for insert/updates
@@ -458,7 +458,7 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
  * @return
  *   An array of field => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_exclude_field_from_feature_by_default() {
   return array('residues' => 'TRUE');

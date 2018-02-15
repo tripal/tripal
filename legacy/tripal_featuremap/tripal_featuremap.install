@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_disable() {
 
@@ -24,7 +24,7 @@ function tripal_featuremap_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_featuremap_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_install() {
 
@@ -64,7 +64,7 @@ function tripal_featuremap_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_uninstall() {
 
@@ -73,7 +73,7 @@ function tripal_featuremap_uninstall() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_schema() {
   $schema['chado_featuremap'] = array(
@@ -111,7 +111,7 @@ function tripal_featuremap_schema() {
 /**
  * Add cvs needed by the featuremap module
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_add_cvs() {
 
@@ -134,7 +134,7 @@ function tripal_featuremap_add_cvs() {
 /**
  * Add cv terms needed by the featuremap module
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_add_cvterms() {
 
@@ -307,7 +307,7 @@ function tripal_featuremap_add_cvterms() {
  *  - featuremap_dbxref
  *  - featureposprop
  *
- * @ingroup tripal_featuremap
+ * @ingroup tripal_legacy_featuremap
  */
 // This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_featuremap_add_custom_tables(){

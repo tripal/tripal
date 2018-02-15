@@ -17,7 +17,7 @@ class TripalField {
   // The default description for this field.
   public static $default_description = 'The generic base class for all Tripal fields. Replace this text as appropriate for the child implementation.';
 
-  // Provide a list of global settings. These can be accessed witihn the
+  // Provide a list of global settings. These can be accessed within the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
@@ -132,10 +132,13 @@ class TripalField {
       $this->term = tripal_get_term_details($vocabulary, $accession);
     }
     else {
-      tripal_report_error('tripal_field', TRIPAL_ERROR, 'Unable to instantiate Field :name due to missing vocabulary and/or accession.',
-        array(':name' => $class::$default_label));
+      $bundle = tripal_load_bundle_entity(array('name' => $instance['bundle']));
+      tripal_report_error('tripal_field', TRIPAL_ERROR,
+        'Unable to instantiate the field named, ":name", due to missing vocabulary and/or accession. The term provided was: ":term". The bundle is: ":bundle".',
+        array(':name' => $instance['field_name'],
+          ':term' => $vocabulary . ':' . $accession,
+          ':bundle' => $bundle->label));
     }
-
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
     }

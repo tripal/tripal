@@ -5,8 +5,8 @@
  */
 
 /**
- * @defgroup tripal_library Library Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_library Library Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Integrates the Chado Library module with Drupal Nodes & Views
  * @}
@@ -26,7 +26,7 @@ require_once 'includes/tripal_library.chado_node.inc';
  * want permissionis that protect creation, editing and deleting of chado
  * data objects
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_permission() {
   return array(
@@ -62,7 +62,7 @@ function tripal_library_permission() {
  * by this module to the 'Create Content' Navigation menu item.  This function
  * adds more menu items needed for this module.
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_menu() {
   $items = array();
@@ -124,7 +124,7 @@ function tripal_library_menu() {
     'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK,
   );
-  
+
   return $items;
 }
 
@@ -151,7 +151,7 @@ function tripal_library_search_biological_data_views() {
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_views_api() {
   return array(
@@ -166,7 +166,7 @@ function tripal_library_views_api() {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -250,7 +250,7 @@ function tripal_library_theme($existing, $type, $theme, $path) {
  * Implements hook_help().
  * Adds a help page to the module list
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_help ($path, $arg) {
   if ($path == 'admin/help#tripal_library') {
@@ -265,7 +265,7 @@ function tripal_library_help ($path, $arg) {
  * @param $form_state
  * @param $form_id
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_form_alter(&$form, &$form_state, $form_id) {
 

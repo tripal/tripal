@@ -2,7 +2,7 @@
 /**
  *
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   $project = $variables['node']->project;

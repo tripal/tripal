@@ -3,7 +3,7 @@
  * @file
  * Implements Drupal Node hooks to create the chado_analysis node content type.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
 /**
@@ -12,7 +12,7 @@
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_info() {
   $nodes = array();
@@ -56,7 +56,7 @@ function chado_analysis_chado_node_sync_form($form, &$form_state) {
  * When editing or creating a new node of type 'chado_analysis' we need
  * a form.  This function creates the form that will be used for this.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_form($node, &$form_state) {
   $form = array();
@@ -286,7 +286,7 @@ function chado_analysis_form($node, &$form_state) {
  * Implements hook_validate().
  * Validates the user input before creating an analysis node
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_validate($node, $form, &$form_state) {
   // use the analysis parent to validate the node
@@ -299,7 +299,7 @@ function chado_analysis_validate($node, $form, &$form_state) {
  *   CASE B: Synchronizing a node from chado to drupal
  *   CASE C: Inserting a new node that exists in niether drupal nor chado
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_validate($node, $form, &$form_state) {
 
@@ -402,7 +402,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
  * to our chado_analysis table.  This function is called on insert of a new
  * node of type 'chado_analysis' and inserts the necessary information.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_insert($node) {
 
@@ -482,7 +482,7 @@ function chado_analysis_insert($node) {
  * Implements hook_delete().
  * Removes analysis from the chado database.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_delete($node) {
   $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
@@ -509,7 +509,7 @@ function chado_analysis_delete($node) {
  * Implements hook_update().
  * Update analyses
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_update($node) {
   $node->analysisname = trim($node->analysisname);
@@ -568,7 +568,7 @@ function chado_analysis_update($node) {
  * When a node is requested by the user this function is called to allow us
  * to add auxiliary data to the node object.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_load($nodes) {
 
@@ -616,7 +616,7 @@ function chado_analysis_load($nodes) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_access($node, $op, $account) {
 
@@ -655,7 +655,7 @@ function tripal_analysis_node_access($node, $op, $account) {
  * Implements hook_node_view().
  * Called for all node types.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -690,7 +690,7 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_presave().
  * Called for all node types.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_presave($node) {
   $name = '';
@@ -743,7 +743,7 @@ function tripal_analysis_node_presave($node) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_insert($node) {
 
@@ -772,7 +772,7 @@ function tripal_analysis_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_update($node) {
 

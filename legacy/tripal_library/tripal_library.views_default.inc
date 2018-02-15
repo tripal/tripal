@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_library_views_default_views() {
 /**
  * Defines the library user search default view.
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_defaultvalue_user_library() {
 
@@ -73,7 +73,7 @@ function tripal_library_defaultvalue_user_library() {
 /**
  * Default administration library view
  *
- * @ingroup tripal_library
+ * @ingroup tripal_legacy_library
  */
 function tripal_library_admin_defaultviews_library() {
 

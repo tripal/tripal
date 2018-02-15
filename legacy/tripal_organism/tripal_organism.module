@@ -4,19 +4,18 @@
  * Integrates the Chado Organism module with Drupal Nodes & Views
  */
 
-require_once 'api/tripal_organism.DEPRECATED.inc';
-
-require_once 'includes/tripal_organism.admin.inc';
-require_once 'includes/tripal_organism.delete.inc';
-require_once 'includes/tripal_organism.chado_node.inc';
-
 /**
- * @defgroup tripal_organism Organism Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_organism Legacy Organism Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Integrates the Chado Organism module with Drupal Nodes & Views
  * @}
  */
+
+require_once 'api/tripal_organism.DEPRECATED.inc';
+require_once 'includes/tripal_organism.admin.inc';
+require_once 'includes/tripal_organism.delete.inc';
+require_once 'includes/tripal_organism.chado_node.inc';
 
 /**
  *  Implements hook_menu().
@@ -25,7 +24,7 @@ require_once 'includes/tripal_organism.chado_node.inc';
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_menu() {
   $items = array();
@@ -124,7 +123,7 @@ function tripal_organism_search_biological_data_views() {
  * Implements hook_help().
  * Adds a help page to the module list
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_help ($path, $arg) {
   if ($path == 'admin/help#tripal_organism') {
@@ -139,7 +138,7 @@ function tripal_organism_help ($path, $arg) {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -187,7 +186,7 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
   *  want permissionis that protect creation, editing and deleting of chado
   *  data objects
   *
-  * @ingroup tripal_organism
+  * @ingroup tripal_legacy_organism
   */
 function tripal_organism_permission() {
   return array(
@@ -223,7 +222,7 @@ function tripal_organism_permission() {
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_views_api() {
   return array(
@@ -234,7 +233,7 @@ function tripal_organism_views_api() {
 /**
  * Implements hook_job_describe_args().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_job_describe_args($callback, $args) {
 
@@ -254,7 +253,7 @@ function tripal_organism_job_describe_args($callback, $args) {
  * @param $form_state
  * @param $form_id
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates

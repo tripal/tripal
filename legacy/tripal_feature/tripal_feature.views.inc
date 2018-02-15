@@ -14,7 +14,7 @@
  *
  * @return: An array of handler definitions
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_handlers() {
   return array(

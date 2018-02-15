@@ -6,20 +6,19 @@
  */
 
 /**
- * @defgroup tripal_variables_api Tripal Variables API
+ * @defgroup tripal_variables_api Variables
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for managing variables
  * associated with Tripal managed content. The Tripal Variables API
  * supports storing any type of variable such as a property or setting that
- * should be associated with a Tripal managed Drupal node.  Variables are
- * meant to store non-biological information only. Be aware that any data
- * stored as a Tripal Variable will not be made visible through services such
- * as Tripal Web Services and therefore can be a good place to hide application
- * specific settings.
- *
+ * should be associated with a Tripal managed content.  Variables are
+ * meant to store non-biological information only because biological data
+ * should be stored together in the primary data store (e.g. Chado). Be aware
+ * that any data stored as a Tripal Variable will not be made visible through
+ * services such as Tripal Web Services and therefore can be a good place to
+ * hide application specific settings.
  * @}
- *
  */
 
 /**
@@ -31,6 +30,8 @@
  *   The description for the variable
  * @return
  *   A record object containg the variable that was added if successful.
+ *
+ * @ingroup tripal_variables_api
  */
 function tripal_insert_variable($name, $description) {
   $name = trim($name);
@@ -69,6 +70,8 @@ function tripal_insert_variable($name, $description) {
  *   The name of the variable to retrieve
  * @return
  *   A record object containg the variable.
+ *
+ * @ingroup tripal_variables_api
  */
 function tripal_get_variable($name) {
   return db_select('tripal_variables', 'v')

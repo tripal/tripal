@@ -10,7 +10,7 @@
  * Provide information to drupal about the node types that we're creating
  *  in this module
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_info() {
   $nodes = array();
@@ -59,7 +59,7 @@ function tripal_organism_node_info() {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_access($node, $op, $account) {
   $node_type = $node;
@@ -99,7 +99,7 @@ function tripal_organism_node_access($node, $op, $account) {
  *  When editing or creating a new node of type 'chado_organism' we need
  *  a form.  This function creates the form that will be used for this.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_form($node, $form_state) {
   $form = array();
@@ -209,7 +209,7 @@ function chado_organism_form($node, $form_state) {
       $terms = tripal_get_cvterm_select_options($cv->cv_id);
 
       // Unfortunately the taxonomic_rank vocabulary is not properly organized
-      // such that we an only include terms below 'species'. Therefore we will
+      // such that we only include terms below 'species'. Therefore we will
       // just list them here and hope we haven't missed one.
       $valid_terms = array('subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
       foreach  ($terms as $cvterm_id => $name) {
@@ -296,7 +296,7 @@ function chado_organism_form($node, $form_state) {
  * @param $form
  * @param $form_state
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_validate($node, $form, &$form_state) {
 
@@ -373,7 +373,7 @@ function chado_organism_validate($node, $form, &$form_state) {
  *  to our chado_organism table.  This function is called on insert of a new node
  *  of type 'chado_organism' and inserts the necessary information.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_insert($node) {
 
@@ -464,7 +464,7 @@ function chado_organism_insert($node) {
 /**
  * Implements hook_update().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_update($node) {
 
@@ -573,7 +573,7 @@ function chado_organism_add_image($node) {
  * Delete organism from both drupal and chado databases. Check dependency before
  * deleting from chado.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_delete($node) {
   $organism_id = chado_get_id_from_nid('organism', $node->nid);
@@ -615,7 +615,7 @@ function chado_organism_delete($node) {
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function chado_organism_load($nodes) {
 
@@ -649,7 +649,7 @@ function chado_organism_load($nodes) {
  * @param $node
  *  The node to be saved
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_presave($node) {
   switch ($node->type) {
@@ -686,7 +686,7 @@ function tripal_organism_node_presave($node) {
 /**
  * Implements hook_node_view().
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_view($node, $view_mode, $langcode) {
 
@@ -729,7 +729,7 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_insert($node) {
 
@@ -756,7 +756,7 @@ function tripal_organism_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_organism
+ * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_update($node) {
 

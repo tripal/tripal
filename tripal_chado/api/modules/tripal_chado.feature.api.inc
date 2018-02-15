@@ -5,10 +5,9 @@
  */
 
 /**
- * @defgroup tripal_feature_api Feature API
- * @ingroup tripal_api
+ * @defgroup tripal_feature_api Chado Feature
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) for working with features
  * @}
  */
 /**
@@ -22,7 +21,7 @@
  * @return
  *   A json array of terms that begin with the provided string
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_feature_api
  */
 function tripal_autocomplete_feature($string = '') {
   $items = array();
@@ -363,7 +362,18 @@ function tripal_get_feature_sequences($feature, $options) {
         // Iterate through the sub features and concat their sequences. They
         // should already be in order.
         $i = 0;
+        $already_processed_children = array();
         while ($child = $children->fetchObject()) {
+          // In some cases, a feature may be discontinuous (i.e. one feature
+          // spread over several positions). In this case, the feature will
+          // appear multiple times and we want to prevent addition of the
+          // sequence multiple times.  A simple check to make sure we haven't
+          // seen the feature already should suffice.
+          if (count($already_processed_children) > 0 and in_array($child->feature_id, $already_processed_children)){
+            continue;
+          }
+          $already_processed_children[] = $child->feature_id;
+
           // If the callee has specified that only certain sub features should be
           // included then continue if this child is not one of those allowed
           // subfeatures.

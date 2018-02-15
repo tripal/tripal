@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_admin_stock_view() {
   $output = '';
@@ -45,7 +45,7 @@ function tripal_stock_admin_stock_view() {
  * @return
  *   Form array (as described by the drupal form api)
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_admin() {
   $form = array();
@@ -89,7 +89,7 @@ function tripal_stock_admin() {
  * @param $form_state
  *   An array describing the current state of the form including user input
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info

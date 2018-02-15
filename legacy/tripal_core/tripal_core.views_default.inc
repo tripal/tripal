@@ -7,7 +7,7 @@
 /**
  * Describes core default views
 *
-* @ingroup tripal_core
+* @ingroup tripal_legacy_core
 */
 function tripal_core_views_default_views() {
   $views = array();

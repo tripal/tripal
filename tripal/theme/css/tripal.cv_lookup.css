@@ -1,0 +1,54 @@
+#tripal-cv-lookup-tree {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+#tripal-cv-lookup-tree .tree-node-icon {
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  display: inline-block;
+  vertical-align: top;
+  text-align: center;
+  cursor: pointer;
+  text-indent: 0;
+}
+#tripal-cv-lookup-tree .tree-node-loading {
+  background: url(../images/ajax-loader.gif) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree .tree-node-closed {
+  background: url(../images/tree-node-closed.png) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree .tree-node-open {
+  background: url(../images/tree-node-open.png) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree .tree-node-single {
+  background: url(../images/tree-node-single.png) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree li:last-child .tree-node-closed {
+  background: url(../images/tree-node-closed-last.png) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree li:last-child .tree-node-single {
+  background: url(../images/tree-node-single-last.png) no-repeat;
+  background-size: 22px 22px;
+}
+#tripal-cv-lookup-tree ul {
+  margin-left: 10px;
+}
+
+#tripal-cv-lookup-tree li {
+  margin: 0;
+  padding: 0 12px;
+  line-height: 22px;
+  color: #369;
+}
+
+#tripal-cv-lookup-tree a {
+  border-bottom-width: 1px;
+  border-bottom-style: dotted;
+}

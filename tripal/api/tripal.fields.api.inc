@@ -1,5 +1,20 @@
 <?php
 
+/**
+ * @file
+ * Provides an application programming interface (API) for working with
+ * fields attached to TripalEntity content types (bundles).
+ */
+
+/**
+ * @defgroup tripal_fields_api Tripal Fields
+ * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) for working with
+ * fields attached to TripalEntity content types (bundles).
+ * @}
+ *
+ */
 
 /**
  * Executes a TripalFieldQuery using the provided conditions.
@@ -26,20 +41,53 @@
  *   - orderBy: the name of the field on which the filter should be applied.
  *   - direction: either the string 'ASC' (for ascending sort) or 'DESC' (for
  *     descending).
+ *
+ * @ingroup tripal_fields_api
  */
 function hook_field_storage_tquery($conditions, $orderBy) {
   // See the tripal_chado_field_storage_tquery() function for an example.
 }
 
+/**
+ *
+ * @param unknown $entity_type
+ * @param unknown $bundle
+ *
+ * @ingroup tripal_fields_api
+ */
 function hook_bundle_fields_info($entity_type, $bundle) {
 
 }
+
+/**
+ *
+ * @param unknown $entity_type
+ * @param unknown $bundle
+ *
+ * @ingroup tripal_fields_api
+ */
 function hook_bundle_instances_info($entity_type, $bundle) {
 
 }
+/**
+ *
+ * @param unknown $info
+ * @param unknown $bundle
+ * @param unknown $term
+ *
+ * @ingroup tripal_fields_api
+ */
 function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 
 }
+/**
+ *
+ * @param unknown $info
+ * @param unknown $bundle
+ * @param unknown $term
+ *
+ * @ingroup tripal_fields_api
+ */
 function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
 
 }
@@ -55,6 +103,8 @@ function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
  *
  * @return
  *   A list of TripalField names.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_get_field_types() {
   $types = array();
@@ -116,6 +166,8 @@ function tripal_get_field_types() {
  *
  * @return
  *   A list of TripalFieldWidget names.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_get_field_widgets() {
   $widgets = array();
@@ -165,7 +217,11 @@ function tripal_get_field_widgets() {
 
 /**
  * Retrieves a list of field formatters compatible with a given field.
- * @param unknown $field
+ *
+ * @param $field
+ *   A field array as returned by the field_info_field() function.
+ * @return
+ *   A list of file formatter class names.
  */
 function tripal_get_field_field_formatters($field) {
   $field_name = $field['field_name'];
@@ -192,8 +248,9 @@ function tripal_get_field_field_formatters($field) {
   }
   return $downloaders;
 }
+
 /**
- * Retrieves a list of all the TripalFieldFormatters available on this site.
+ * Retrieves a list of TripalFieldFormatters.
  *
  * The TripalFieldFormatter classes can be added by a site developer and should
  * be placed in the [module]/includes/TripalFields directory.  Tripal will
@@ -202,6 +259,8 @@ function tripal_get_field_field_formatters($field) {
  *
  * @return
  *   A list of TripalFieldFormatter names.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_get_field_formatters() {
   $formatters = array();
@@ -257,6 +316,8 @@ function tripal_get_field_formatters() {
  *
  * @return
  *   TRUE if the field type class file was found, FALSE otherwise.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_load_include_field_class($class) {
 
@@ -297,6 +358,8 @@ function tripal_load_include_field_class($class) {
  *
  * @return
  *   TRUE if the downloader class file was found, FALSE otherwise.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_load_include_downloader_class($class) {
 
@@ -353,6 +416,8 @@ function tripal_load_include_downloader_class($class) {
  * @return
  *   The value assigned to the item's key; FALSE if the key doesn't exist or
  *   the $default argument if no value is associated with the key.
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_get_field_item_keyval($items, $delta, $key, $default='') {
   if (!array_key_exists($delta, $items)) {
@@ -383,6 +448,8 @@ function tripal_get_field_item_keyval($items, $delta, $key, $default='') {
  *   The name of the field to which the element belongs.
  * @param $term
  *   The term object as returned by tripal_get_term_details();
+ *
+ * @ingroup tripal_fields_api
  */
 function tripal_format_views_field_element($field_name, $term) {
   $element_name = $term['vocabulary']['short_name'] . '__' . $term['accession'];

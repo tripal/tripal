@@ -6,7 +6,7 @@
  */
 
 /**
- * @defgroup tripal_files_api Tripal Files API
+ * @defgroup tripal_files_api Files
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for managing files within
@@ -65,7 +65,7 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
 }
 
 /**
- * Retreives the Drupal relative directory for a Tripal module.
+ * Retrieves the Drupal relative directory for a Tripal module.
  *
  * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function
@@ -97,7 +97,7 @@ function tripal_get_files_dir($module_name = FALSE) {
 }
 
 /**
- * Retreives the Drupal stream (e.g. public://...) for a Tripal module.
+ * Retrieves the Drupal stream (e.g. public://...) for a Tripal module.
  *
  * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function

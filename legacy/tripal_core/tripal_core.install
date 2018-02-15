@@ -7,7 +7,7 @@
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_install() {
 
@@ -16,7 +16,7 @@ function tripal_core_install() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_schema() {
 
@@ -43,7 +43,7 @@ function tripal_core_schema() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_uninstall() {
 
@@ -61,7 +61,7 @@ function tripal_core_uninstall() {
  * can easily provide the entire list for hook_install or individual
  * tables for an update.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_legacy_core
  */
 function tripal_core_get_schemas() {
   $schema = array();

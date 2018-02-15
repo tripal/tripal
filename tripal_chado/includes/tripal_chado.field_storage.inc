@@ -696,7 +696,7 @@ function tripal_chado_field_storage_query($query) {
 function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
     $term, &$submit_disabled) {
 
-  $selected_term_id = $term->cvterm_id;
+  $selected_term_id = (is_object($term)) ? $term->cvterm_id : NULL;
 
   // Initialize the form.
   $form = array();
@@ -886,7 +886,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
   // Get the list of columns in the default table.
   $schema = chado_get_schema($default['table']);
   $column_options = array('none' => '--None--');
-  $cvt_fkeys = array_keys($schema['foreign keys']['cvterm']['columns']);
+  $cvt_fkeys = (isset($schema['foreign keys']['cvterm'])) ? array_keys($schema['foreign keys']['cvterm']['columns']) : array();
   foreach ($schema['fields'] as $column_name => $column_details) {
     if (in_array($column_name, $cvt_fkeys)) {
       $column_options[$column_name] = $column_name;

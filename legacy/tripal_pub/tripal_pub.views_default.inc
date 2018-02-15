@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_views_default_views() {
   $views = array();
@@ -23,7 +23,7 @@ function tripal_pub_views_default_views() {
 /**
  * Default publication administration view
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_defaultview_admin_publications() {
 

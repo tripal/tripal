@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_admin_pub_view() {
   $output = '';
@@ -42,7 +42,7 @@ function tripal_pub_admin_pub_view() {
 /**
  * Administrative settings form
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_admin() {
   $form = array();
@@ -137,7 +137,7 @@ function tripal_pub_admin() {
 /**
  * Validate the admin settings form
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info
@@ -162,7 +162,7 @@ function tripal_pub_admin_validate($form, &$form_state) {
  * @return
  *   The url alias set
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_set_pub_url($node, $pub_id) {
 

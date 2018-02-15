@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_views_default_views() {
   $views = array();
@@ -30,7 +30,7 @@ function tripal_project_views_default_views() {
 /**
  * Defines the project user search default view.
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_defaultvalue_user_projects() {
 
@@ -73,7 +73,7 @@ function tripal_project_defaultvalue_user_projects() {
 /**
  * Project administration view
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_defaultview_admin_projects() {
 

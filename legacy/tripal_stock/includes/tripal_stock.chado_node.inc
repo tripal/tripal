@@ -10,7 +10,7 @@
  * @return
  *   An array describing various details of the node
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_node_info() {
   return array(
@@ -42,7 +42,7 @@ function tripal_stock_node_info() {
  * When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_load($nodes) {
 
@@ -89,7 +89,7 @@ function chado_stock_load($nodes) {
  * @return
  *   A description of the form to be rendered by drupal_get_form()
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_form($node, $form_state) {
 
@@ -325,7 +325,7 @@ function chado_stock_form($node, $form_state) {
  * @param $form
  *   A description of the form to be rendered by drupal_get_form()
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_validate(&$node, $form, &$form_state) {
 
@@ -446,7 +446,7 @@ function chado_stock_validate(&$node, $form, &$form_state) {
  * @return
  *   TRUE if the node was successfully inserted into drupal/chado; FALSE otherwise
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_insert($node) {
 
@@ -560,7 +560,7 @@ function chado_stock_insert($node) {
  * @return
  *   TRUE if the node was successfully updated in drupal/chado; FALSE otherwise
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_update($node) {
 
@@ -710,7 +710,7 @@ function chado_stock_update($node) {
  * @return
  *   TRUE if the node was successfully deleted from drupal/chado; FALSE otherwise
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_delete($node) {
 
@@ -724,7 +724,7 @@ function chado_stock_delete($node) {
 /**
  * Used by Tripal Chado Node API during sync'ing of nodes
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
 
@@ -739,7 +739,7 @@ function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
 /**
  * Implements hook_node_presave(). Acts on all content types.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_node_presave($node) {
 
@@ -783,7 +783,7 @@ function tripal_stock_node_presave($node) {
 /**
  * Implements hook_node_view(). Acts on all content types.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_node_view($node, $view_mode, $langcode) {
 
@@ -858,7 +858,7 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_node_insert($node) {
 
@@ -890,7 +890,7 @@ function tripal_stock_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 function tripal_stock_node_update($node) {
 
@@ -948,7 +948,7 @@ function chado_stock_chado_node_default_url_format() {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_legacy_stock
  */
 
 function tripal_stock_node_access($node, $op, $account) {

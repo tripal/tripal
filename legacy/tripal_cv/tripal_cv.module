@@ -6,8 +6,8 @@
  */
 
 /**
- * @defgroup tripal_cv Controlled Vocabulary Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_cv Legacy Controlled Vocabulary Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Provides functions for managing chado controlled vocabularies which are used ubiquitously
  * throughout chado.
@@ -25,7 +25,7 @@ require_once 'includes/tripal_cv.cvterm_form.inc';
  * Implements hook_init().
  * Adds CSS and JS needed for this modules rendered content
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_init() {
 
@@ -35,7 +35,7 @@ function tripal_cv_init() {
  * Implements hook_menu().
  * Registers all menu items associated with this module
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_menu() {
   $items = array();
@@ -205,7 +205,7 @@ function tripal_cv_help ($path, $arg) {
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_permission() {
   return array(
@@ -219,7 +219,7 @@ function tripal_cv_permission() {
  *  for this module which then includes tripal_cv.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_views_api() {
   return array('api' => 3.0);
@@ -229,7 +229,7 @@ function tripal_cv_views_api() {
  * Implements hook_coder_ignore().
  * Defines the path to the file (tripal_cv.coder_ignores.txt) where ignore rules for coder are stored
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_coder_ignore() {
   return array(
@@ -242,7 +242,7 @@ function tripal_cv_coder_ignore() {
  * Implements hook_form_alter().
  * Alter Forms
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "tripal_cv_cvterm_form") {
@@ -264,7 +264,7 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_legacy_cv
  */
 function tripal_cv_theme($existing, $type, $theme, $path) {
 

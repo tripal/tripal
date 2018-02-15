@@ -7,7 +7,7 @@
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_views_default_views() {
   $views = array();
@@ -38,7 +38,7 @@ function tripal_natural_diversity_views_default_views() {
 /**
  * Describes the default experiment administration view
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
 
@@ -159,7 +159,7 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
 /**
  * Describes the default geological locations administration view
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_defaultview_admin_geolocations() {
 
@@ -340,7 +340,7 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
 /**
  * Describes the default reagents administration view
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_defaultview_admin_reagents() {
 
@@ -454,7 +454,7 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
 /**
  * Describes the default protocols administration view
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_defaultview_admin_protocols() {
 

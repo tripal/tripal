@@ -14,7 +14,7 @@
  *
  * @return: An array of handler definitions
  *
- * @ingroup tripal_phylogeny
+ * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_views_handlers() {
   return array(

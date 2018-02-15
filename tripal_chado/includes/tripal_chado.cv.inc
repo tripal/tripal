@@ -105,13 +105,12 @@ function tripal_cv_cv_edit_form($form, &$form_state) {
     tripal_cv_add_cv_form_fields($form, $form_state, $cv_id);
 
     $form['update'] = array(
-      '#type'         => 'submit',
-      '#value'        => t('Update'),
+      '#type' => 'submit',
+      '#value' => t('Update'),
     );
     $form['delete'] = array(
-      '#type'         => 'submit',
-      '#value'        => t('Delete'),
-      '#attributes'   => array('onclick' => 'if(!confirm("Really Delete?")){return false;}'),
+      '#type' => 'markup',
+      '#markup' => l('delete', 'admin/tripal/loaders/chado_vocabs/chado_cv/delete/' . $cv_id),
     );
   }
   else {
@@ -271,16 +270,6 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
     }
     else {
       drupal_set_message(t("Failed to update controlled vocabulary."));
-    }
-  }
-  if (strcmp($op, 'Delete')==0) {
-    $match = array('cv_id' => $cv_id);
-    $success = chado_delete_record('cv', $match);
-    if ($success) {
-      drupal_set_message(t("Controlled vocabulary deleted"));
-    }
-    else {
-      drupal_set_message(t("Failed to delete controlled vocabulary."));
     }
   }
 }
@@ -821,5 +810,41 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
   if ($form_state['values']['op'] == t('Update cvtermpath')) {
     tripal_add_job("Update cvtermpath: $cv->name", 'tripal_cv',
         'tripal_update_cvtermpath', $job_args, $user->uid, 10);
+  }
+}
+
+/**
+ * A confirmation form for deleting a controlled vocabulary.
+ */
+function tripal_cv_cv_delete_form($form, &$form_state, $cv_id) {
+
+  $cv = tripal_get_cv(array('cv_id' => $cv_id));
+
+  $form['cv_id'] = array(
+    '#type' => 'value',
+    '#value' => $cv_id,
+  );
+
+  return confirm_form($form,
+    t('Confirm removal of the vocabulary: "' . $cv->name . '"? '),
+    'admin/tripal/loaders/chado_vocabs/chado_cv/edit/' . $cv_id,
+    t('WARNING: removal of a vocabulary will result in removal of all terms, and any associations used for other records in the site that use those terms.')
+  );
+}
+
+/**
+ * Implements the submit hook for tripal_cv_cv_delete_form.
+ */
+function tripal_cv_cv_delete_form_submit($form, &$form_state) {
+  $cv_id = $form_state['values']['cv_id'];
+
+  try {
+    $match = array('cv_id' => $cv_id);
+    $success = chado_delete_record('cv', $match);
+    drupal_set_message(t("Controlled vocabulary deleted"));
+    drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cv');
+  }
+  catch (Exception $e) {
+    drupal_set_message(t("Failed to delete controlled vocabulary."), 'error');
   }
 }

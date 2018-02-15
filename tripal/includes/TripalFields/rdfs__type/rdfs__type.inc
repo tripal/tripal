@@ -8,7 +8,7 @@ class rdfs__type extends TripalField {
   // The default description for this field.
   public static $description = 'The resource content type.';
 
-  // Provide a list of global settings. These can be accessed witihn the
+  // Provide a list of global settings. These can be accessed within the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
   public static $default_settings = array();

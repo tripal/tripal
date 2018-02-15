@@ -7,7 +7,7 @@
 /**
  * Launchpad for feature administration.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_admin_feature_view() {
   $output = '';
@@ -52,7 +52,7 @@ function tripal_feature_admin_feature_view() {
 /**
  * Feature Settings page
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_admin() {
 
@@ -152,7 +152,7 @@ function tripal_feature_admin() {
 /**
  * Validate the feature settings forms
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_legacy_feature
  */
 function tripal_feature_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info

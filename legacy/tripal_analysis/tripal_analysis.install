@@ -3,14 +3,14 @@
  * @file
  * Implements hooks from the Schema API.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
 /**
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_disable() {
 
@@ -26,7 +26,7 @@ function tripal_analysis_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_requirements($phase) {
   $requirements = array();
@@ -46,7 +46,7 @@ function tripal_analysis_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_install() {
 
@@ -63,7 +63,7 @@ function tripal_analysis_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_uninstall() {
 
@@ -73,7 +73,7 @@ function tripal_analysis_uninstall() {
 /**
  * Add cvs related to analyses
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_add_cvs() {
 
@@ -85,7 +85,7 @@ function tripal_analysis_add_cvs() {
 /**
  * Adds controlled vocabulary terms needed by this module.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_add_cvterms() {
 
@@ -145,7 +145,7 @@ function tripal_analysis_add_cvterms() {
  *     stores the sub-module names, such as tripal_analysis_blast, that are registered
  *     with this module.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_schema() {
 

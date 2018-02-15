@@ -4,13 +4,13 @@
  * @file
  * Contains the default views for the analysis module.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 
 /**
  * Implements hook_views_default_views().
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_views_default_views() {
   $views = array();
@@ -33,7 +33,7 @@ function tripal_analysis_views_default_views() {
 /**
  * Defines the analysis user search default view.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_defaultvalue_user_analysis() {
 
@@ -71,7 +71,7 @@ function tripal_analysis_defaultvalue_user_analysis() {
 /**
  * Defines the analysis admin default view.
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_defaultvalue_admin_analysis() {
 

@@ -4,17 +4,16 @@
  * Basic function for the natural diversity module
  */
 
-require_once 'theme/tripal_natural_diversity.theme.inc';
-
-require_once 'includes/tripal_natural_diversity.admin.inc';
-
 /**
- * @defgroup tripal_natural_diversity Natural Diversity Module
- * @ingroup tripal_modules
+ * @defgroup tripal_legacy_natural_diversity Legacy Natural Diversity Module
+ * @ingroup tripal_legacy_modules
  * @{
  * Provides functions for managing chado natural diversity data
  * @}
  */
+
+require_once 'theme/tripal_natural_diversity.theme.inc';
+require_once 'includes/tripal_natural_diversity.admin.inc';
 
 /**
  * Implements hook_permission().
@@ -22,7 +21,7 @@ require_once 'includes/tripal_natural_diversity.admin.inc';
  * Set the permission types that the chado module uses.  Essentially we
  *  want permissionis
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_permission() {
   return array(
@@ -42,7 +41,7 @@ function tripal_natural_diversity_permission() {
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_menu() {
   $items = array();
@@ -85,7 +84,7 @@ function tripal_natural_diversity_menu() {
  *  for this module which then includes tripal_natural_diversity.views.inc where all the
  *  views integration code is
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_views_api() {
   return array(
@@ -96,7 +95,7 @@ function tripal_natural_diversity_views_api() {
 /**
  * Implements hook_theme().
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -131,7 +130,7 @@ function tripal_natural_diversity_theme($existing, $type, $theme, $path) {
 /**
  * Implements hook_node_view(). Acts on all content types.
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {

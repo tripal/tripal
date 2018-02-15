@@ -11,7 +11,7 @@
  * that the title(Project Name) and body(Description) set to true so that they information can be
  * entered
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_node_info() {
   return array(
@@ -53,7 +53,7 @@ function tripal_project_node_info() {
  *    An array as described by the Drupal Form API
  *
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_form(&$node, $form_state) {
   $form = array();
@@ -192,7 +192,7 @@ function chado_project_form(&$node, $form_state) {
  * Implements hook_validate().
  * Validates submission of form when adding or updating a project node
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_validate($node, $form, &$form_state) {
 
@@ -235,7 +235,7 @@ function chado_project_validate($node, $form, &$form_state) {
  *  @parm $node
  *    Then node that has the information stored within, accessed given the nid
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_insert($node) {
 
@@ -309,7 +309,7 @@ function chado_project_insert($node) {
  *  The node which is to be deleted, only chado project and chado_project need to be dealt with
  *  since the drupal node is deleted automagically
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_delete($node) {
 
@@ -342,7 +342,7 @@ function chado_project_delete($node) {
  *  The node which is to have its containing information updated when the user modifies information
  *  pertaining to the specific project
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_update($node) {
 
@@ -394,7 +394,7 @@ function chado_project_update($node) {
  * @param $node
  *   The node that is to have its containing information loaded
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function chado_project_load($nodes) {
 
@@ -443,7 +443,7 @@ function chado_project_load($nodes) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_node_access($node, $op, $account) {
 
@@ -481,7 +481,7 @@ function tripal_project_node_access($node, $op, $account) {
 /**
  * Implements hook_node_view().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -534,7 +534,7 @@ function tripal_project_node_view($node, $view_mode, $langcode) {
  * Implements hook_node_insert().
  * Acts on all content types.
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_node_insert($node) {
 
@@ -563,7 +563,7 @@ function tripal_project_node_insert($node) {
  * Implements hook_node_update().
  * Acts on all content types.
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_node_update($node) {
 

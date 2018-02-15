@@ -7,7 +7,7 @@
 /**
  * Admin launchpad
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_admin_project_view() {
   $output = '';
@@ -41,7 +41,7 @@ function tripal_project_admin_project_view() {
 /**
  * Project settings
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_admin($form, $form_state) {
   $form = array();

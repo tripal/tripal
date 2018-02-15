@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_disable() {
 
@@ -24,7 +24,7 @@ function tripal_project_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_project_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_install() {
 
@@ -59,7 +59,7 @@ function tripal_project_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_uninstall() {
 
@@ -68,7 +68,7 @@ function tripal_project_uninstall() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_schema() {
   $schema['chado_project'] = array(
@@ -96,7 +96,7 @@ function tripal_project_schema() {
 /**
  * Add cvs pertaining to projects
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_add_cvs() {
   // Add the cv for project properties
@@ -115,7 +115,7 @@ function tripal_project_add_cvs() {
 /**
  * Add cvterms pertaining to projects
  *
- * @ingroup tripal_project
+ * @ingroup tripal_legacy_project
  */
 function tripal_project_add_cvterms() {
 

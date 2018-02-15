@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_disable() {
 
@@ -24,7 +24,7 @@ function tripal_natural_diversity_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_natural_diversity_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_install() {
 
@@ -56,7 +56,7 @@ function tripal_natural_diversity_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_uninstall() {
 
@@ -65,7 +65,7 @@ function tripal_natural_diversity_uninstall() {
 /**
  * Add cvterms related to natural diversity
  *
- * @ingroup tripal_natural_diversity
+ * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_add_cvterms(){
 

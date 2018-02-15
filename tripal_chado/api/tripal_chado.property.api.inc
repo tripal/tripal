@@ -4,40 +4,14 @@
  * Provides an application programming interface (API) to manage data withing the Chado database.
  */
 
-
 /**
- * @defgroup tripal_chado_api Chado API
- * @ingroup tripal_chado_api
- * @{
- * Provides an application programming interface (API) to manage data withing the Chado database.
+ * @defgroup tripal_chado_prop_api Chado Properties
  *
- * This includes functions for selecting, inserting, updating and deleting records
- * in Chado tables.  The functions will ensure proper integrity contraints are met
- * for inserts and updates.
- *
- * Also, a set of functions is provided for creating template variables.  First,
- * is the chado_generate_var which is used to select one ore more
- * records from a table and return an array with foreign key relationships fully
- * populated.  For example, if selecting a feature, the organism_id and type_id
- * would be present in the returned array as a nested array with their respective
- * foreign keys also nested.  The only fields that are not included are text
- * fields (which may be very large) or many-to-many foreign key relationships.
- * However, these fields and relationships can be expanded using the
- * chado_expand_var.
- *
- * When a row from a chado table is selected using these two functions, it provides
- * a way for users who want to cutomize Drupal template files to access all data
- * associate with a specific record.
- *
- * Finally, the property tables in Chado generally follow the same format.  Therefore
- * there is a set of functions for inserting, updating and deleting properties for
- * any table.  This provides quick lookup of properties (provided the CV term is
- * known).
- *
- * @}
+ * @ingroup tripal_api
+ * The Chado Properties API provides a set of functions for interacting
+ * with the any chado prop table.
  *
  */
-
 
 /**
  * Retrieve a property for a given base table record.
@@ -68,7 +42,7 @@
  *   is a single object.  If more than one record is returned then it is an array
  *   of objects
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_prop_api
  */
 function chado_get_property($record, $property) {
 
@@ -182,7 +156,7 @@ function chado_get_property($record, $property) {
  * @return
  *   Return TRUE if successful and FALSE otherwise
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_prop_api
  */
 function chado_insert_property($record, $property, $options = array()) {
 
@@ -322,7 +296,7 @@ function chado_insert_property($record, $property, $options = array()) {
  * @return
  *   Return TRUE on Update/Insert and FALSE otherwise
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_prop_api
  */
 function chado_update_property($record, $property, $options = array()) {
 
@@ -447,7 +421,7 @@ function chado_update_property($record, $property, $options = array()) {
  * @return
  *   Return TRUE on successful deletion and FALSE otherwise
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_prop_api
  */
 function chado_delete_property($record, $property) {
 
@@ -549,7 +523,7 @@ function chado_delete_property($record, $property) {
  * @return
  *   An array of chado variables with the given property
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_prop_api
  */
 function chado_get_record_with_property($record, $property, $options = array()) {
 
@@ -637,6 +611,7 @@ function chado_get_record_with_property($record, $property, $options = array()) 
  * @throws Exception
  * @return
  *   An array of cvterm objects as created by chado_generate_var().
+ * @ingroup tripal_chado_prop_api
  */
 function chado_get_table_property_types($prop_table) {
 

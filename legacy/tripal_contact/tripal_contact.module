@@ -3,7 +3,7 @@
  * @file
  * Functions related to general module functionality.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 
 /**
@@ -27,7 +27,7 @@ require_once 'includes/tripal_contact.chado_node.inc';
  * for this module which then includes tripal_contact.views.inc where all the
  * views integration code is.
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_views_api() {
   return array(
@@ -44,7 +44,7 @@ function tripal_contact_views_api() {
  *   An array of menu items that is visible within the Drupal Menu, returned as soon
  *   as the program is ran
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_menu() {
 
@@ -134,7 +134,7 @@ function tripal_contact_search_biological_data_views() {
  * @return
  *   An array of themeing functions to register
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -182,7 +182,7 @@ function tripal_contact_theme($existing, $type, $theme, $path) {
 /**
  * Implement hook_permission().
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_permission() {
   return array(
@@ -214,7 +214,7 @@ function tripal_contact_permission() {
 /**
  * Implementation of hook_form_alter().
  *
- * @ingroup tripal_contact
+ * @ingroup tripal_legacy_contact
  */
 function tripal_contact_form_alter(&$form, &$form_state, $form_id) {
 

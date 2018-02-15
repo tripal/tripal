@@ -3,22 +3,15 @@
  * @file
  * This module provides a set of functions to simplify working with
  * controlled vocabularies.
+ *
+ * @ingroup tripal_chado
  */
 
 /**
- * @defgroup tripal_chado_api Controlled Vocabulary API
- * @ingroup tripal_api
- * This module provides a set of functions to simplify working with
- * controlled vocabularies.  Most of the API functions deal with retrieving
- * terms or their parent vocabularies.
- *
- * However, the API also supports
- * generation of trees for browsing a vocabulary as well as generation of
- * pie graphs for display of hierarchical counts of terms.  Version 0.3b of
- * Tripal provides a feature browser and a feature summary chart uses
- * the API functions provided here.  But in general charts and trees can be
- * created for any controlled vocabulary.
- *
+ * @defgroup tripal_chado_cv_api Chado CV
+ * @ingroup tripal_chado_api
+ * @{
+ * @}
  */
 
 /**
@@ -42,7 +35,7 @@
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
  *   FALSE will be returned.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_get_cv($identifiers, $options = array()) {
 
@@ -123,7 +116,7 @@ function tripal_get_cv($identifiers, $options = array()) {
  * @return
  *   An array(cv_id => name) for each cv in the chado cv table
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_get_cv_select_options() {
 
@@ -172,7 +165,7 @@ function tripal_get_cv_select_options() {
  *   the cvterm will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
- * @ingroup tripal_cv_api
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_get_cvterm($identifiers, $options = array()) {
 
@@ -302,7 +295,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *   An associative array with the cvterm_id's as keys. The first
  *   element in the array has a key of '0' and a value of 'Select a Type'
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
   $columns = array('cvterm_id', 'name');
@@ -336,7 +329,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
  * @return
  *   TRUE on success FALSE on failure
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
   // TODO: need better error checking in this function
@@ -375,6 +368,8 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
  * @param $job_id
+ *
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_update_cvtermpath($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
@@ -417,6 +412,8 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
  *   The term ID from the cvterm table of Chado (i.e. cvterm.cvterm_id).
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
+ *
+ * @ingroup tripal_chado_cv_api
  */
 function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
 
@@ -1573,58 +1570,5 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
 
   return FALSE;
 }
-/**
- * This function sets the default vocabulary for a given table and field.
- *
- * @param $table
- *   The name of the table that contains a field with a foreign key
- *   relationship to the cvterm table
- * @param $field
- *   The table field name that has the foreign key relationship to the
- *   cvterm table for which the default vocabulary will be set
- * @param $cv_name
- *   The name of the vocabulary
- *
- * @return
- *   TRUE if set, FALSE if an error occured
- */
-function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 
-  // Get the CV object
-  if ($cv_id) {
-    $cv = tripal_get_cv(array('cv_id' => $cv_id));
-  }
-  else {
-    $cv = tripal_get_cv(array('name' => $cv_name));
-  }
 
-  if ($cv) {
-    // first delete any entries for this table and field
-    $num_deleted = db_delete('tripal_cv_defaults')
-    ->condition('table_name', $table)
-    ->condition('field_name', $field)
-    ->execute();
-
-    // now add the default value
-    $cv_default_id = db_insert('tripal_cv_defaults')
-    ->fields(array(
-      'table_name' => $table,
-      'field_name' => $field,
-      'cv_id'      => $cv->cv_id,
-    ))
-    ->execute();
-
-    if (!$cv_default_id) {
-      tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      "Cannot set default vocabulary for %table.%field. Check the error logs.",
-      array('%table' => $table, '%field' => $field));
-      return FALSE;
-    }
-  }
-  else {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING,
-    "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
-    array('%table' => $table, '%field' => $field, '%cvname' => $cv_name));
-    return FALSE;
-  }
-}

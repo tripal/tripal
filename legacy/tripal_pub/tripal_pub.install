@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_disable() {
 
@@ -24,7 +24,7 @@ function tripal_pub_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_pub_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_install() {
   global $base_path;
@@ -70,7 +70,7 @@ function tripal_pub_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_uninstall() {
 
@@ -79,7 +79,7 @@ function tripal_pub_uninstall() {
 /**
  * Implements hook_enable().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_enable() {
 
@@ -88,7 +88,7 @@ function tripal_pub_enable() {
 /**
  * Implementation of hook_schema().
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 function tripal_pub_schema() {
 
@@ -169,7 +169,7 @@ function tripal_pub_schema() {
  * Add custom table related to publications
  *  - pubauthor_contact
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_legacy_pub
  */
 // This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
 /* function tripal_pub_add_custom_tables() {

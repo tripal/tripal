@@ -5,10 +5,9 @@
  */
 
 /**
- * @defgroup tripal_organism_api Organism API
- * @ingroup tripal_api
+ * @defgroup tripal_organism_api Chado Organism
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage organisms
  * @}
  */
 
@@ -133,6 +132,8 @@ function tripal_get_organism($identifiers, $options = array()) {
  *   An organism object.
  * @return
  *   The full scientific name of the organism.
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_get_organism_scientific_name($organism) {
   $name = $organism->genus . ' ' . $organism->species;
@@ -216,6 +217,8 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
  *   url to the image is returend. If no image is present then NULL is returned
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_get_organism_image_url($organism) {
   $url = '';
@@ -312,6 +315,8 @@ function tripal_autocomplete_organism($text) {
  *   The rank below species.
  * @return
  *   The proper abbreviation for the rank.
+ *
+ * @ingroup tripal_organism_api
  */
 function tripal_abbreviate_infraspecific_rank($rank) {
   $abb = '';

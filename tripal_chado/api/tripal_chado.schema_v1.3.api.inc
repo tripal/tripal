@@ -5,7 +5,7 @@
  */
 
 /**
- * @defgroup tripal_schema_v1_3_api Chado v1.3 Schema API
+ * @defgroup tripal_schema_v1_3_api Chado v1.3 Schema
  * @ingroup tripal_chado_schema_api
  * @{
  * Provides an application programming interface (API) for describing Chado

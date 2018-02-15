@@ -6,18 +6,7 @@
  */
 
 /**
- * @defgroup tripal_mviews Tripal Materialized Views
- * @ingroup tripal_chado
- * @{
- * Contains functions for viewing and editing of Materialized Views
- * on a Tripal website.
- * @}
- */
-
-/**
  * Provides a landing page for tripal jobs admin
- *
- * @ingroup tripal_mviews
  */
 function tripal_mview_admin_view() {
   $output = '';
@@ -54,10 +43,16 @@ function tripal_mview_admin_view() {
  *
  * @param $mview_id
  *  The unique ID of the materialized view to render
- *
- * @ingroup tripal_mviews
  */
 function tripal_mview_report($mview_id) {
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Materialied Views', 'admin/tripal/storage/chado/mviews');
+  drupal_set_breadcrumb($breadcrumb);
 
   // get this mview details
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
@@ -68,8 +63,7 @@ function tripal_mview_report($mview_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/") . "</p>";
-  $output .= "<p>Details for <b>$mview->name</b>:</p>";
+  $output = "<p>Details for <b>$mview->name</b>:</p>";
 
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
@@ -137,10 +131,19 @@ function tripal_mview_report($mview_id) {
  *
  * @return
  *   A form array (Form API)
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Materialied Views', 'admin/tripal/storage/chado/mviews');
+  drupal_set_breadcrumb($breadcrumb);
+
+
   if (!$mview_id) {
     $action = 'Add';
   }
@@ -252,11 +255,6 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['modulename'] = array(
     '#type' => 'value',
     '#value' => $default_modulename,
-  );
-
-  $form['return_link'] = array(
-    '#type' => 'item',
-    '#description' => l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/"),
   );
 
   $form['instructions'] = array(
@@ -454,6 +452,10 @@ SELECT
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
   );
+  $form['cancel'] = array(
+    '#type'         => 'markup',
+    '#markup'        => l('Cancel', 'admin/tripal/storage/chado/mviews'),
+  );
 
 
   return $form;
@@ -462,8 +464,6 @@ SELECT
 /**
  * Validate the Create/Edit Materialized View Form
  * Implements hook_form_validate().
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form_validate($form, &$form_state) {
 
@@ -539,8 +539,6 @@ function tripal_mviews_form_validate($form, &$form_state) {
 /**
  * Submit the Create/Edit Materialized View Form
  * Implements hook_form_submit().
- *
- * @ingroup tripal_mviews
  */
 function tripal_mviews_form_submit($form, &$form_state) {
 
@@ -595,8 +593,6 @@ function tripal_mviews_form_submit($form, &$form_state) {
 
 /**
  * Just a simple form for confirming deletion of a custom table
- *
- * @ingroup tripal_custom_tables
  */
 function tripal_mviews_delete_form($form, &$form_state, $mview_id) {
 

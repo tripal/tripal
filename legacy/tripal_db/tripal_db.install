@@ -8,7 +8,7 @@
  * Implements hook_disable().
  * Disable default views when module is disabled
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_disable() {
 
@@ -24,7 +24,7 @@ function tripal_db_disable() {
 /**
  * Implementation of hook_requirements().
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_requirements($phase) {
   $requirements = array();
@@ -44,7 +44,7 @@ function tripal_db_requirements($phase) {
 /**
  * Implementation of hook_install().
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_install() {
 
@@ -53,7 +53,7 @@ function tripal_db_install() {
 /**
  * Implementation of hook_uninstall().
  *
- * @ingroup tripal_db
+ * @ingroup tripal_legacy_db
  */
 function tripal_db_uninstall() {
 

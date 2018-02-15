@@ -5,10 +5,9 @@
  */
 
 /**
- * @defgroup tripal_stock_api Stock Module API
- * @ingroup tripal_api
+ * @defgroup tripal_stock_api Chado Stock
+ * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage stocks
  * @}
  */
 
@@ -78,7 +77,7 @@ function tripal_get_stock($identifiers, $options = array()) {
     unset($identifiers['property']);
     $stock = chado_get_record_with_property(
       array('table' => 'stock', 'base_records' => $identifiers),
-      array('type_name' => $property), 
+      array('type_name' => $property),
       $options
     );
   }
@@ -182,7 +181,7 @@ function tripal_get_multiple_stocks($identifiers, $options = array()) {
     unset($identifiers['property']);
     $stock = chado_get_record_with_property(
       array('table' => 'stock', 'base_records' => $identifiers),
-      array('type_name' => $property), 
+      array('type_name' => $property),
       $options
     );
   }
