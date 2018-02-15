@@ -722,7 +722,7 @@ class TripalEntityCollection {
                 }
                 else {
                   $site_vocab = tripal_web_services_vocab_request($site_id);
-                  if (!empty($site_vocab)){
+                  if (!empty($site_vocab)) {
                     cache_set('tripal_web_services_vocab', $site_vocab);
                   }
                 }

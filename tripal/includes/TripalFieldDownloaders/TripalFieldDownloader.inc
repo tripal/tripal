@@ -22,7 +22,16 @@ abstract class TripalFieldDownloader {
    * The collection ID
    */
   protected $collection_id = NULL;  
-  
+
+  /**
+   * The collection bundle IDs
+   */
+  protected $collection_bundles = '';  
+
+    /**
+   * The collection bundle IDs
+   */
+  protected $collection_bundle_ids = array();  
 
   /**
    * A set of entity IDs. 
@@ -70,11 +79,22 @@ abstract class TripalFieldDownloader {
       throw new Exception("Please provide an outputfilename");
     }
 
-    $this->bundle_name = $bundle_name;
-    $this->entity_ids = $ids;
-    $this->fields = $fields;
+    $this->collection_bundles = db_select('tripal_collection_bundle')
+      ->fields('tripal_collection_bundle')
+      ->condition('collection_id', $collection_id, '=')
+      ->execute()
+      ->fetchAll();
+
+    foreach ($this->collection_bundles as $collection_bundle) {
+      $collection_id = $collection_bundle->collection_bundle_id;
+      $this->collection_bundle_ids[] = $collection_id;
+      $this->bundle_name_ . $collection_id = $collection_bundle->bundle_name;
+      $this->entity_ids_ . $collection_id = unserialize($collection_bundle->ids);
+      $this->fields_ . $collection_id = unserialize($collection_bundle->fields);
+      $this->site_id_ . $collection_id = $collection_bundle->site_id;
+    }
     $this->collection_id = $collection_id;
-    
+
     // Make sure the user directory exists
     $user_dir = 'public://tripal/users/' . $user->uid;
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
@@ -124,139 +144,49 @@ abstract class TripalFieldDownloader {
     if (!$fh) {
       throw new Exception("Cannout open collection file: " . $this->outfile);
     }
- 
-    // If more than one bundle is supplied we need to break the headers and entities
-    // apart so that headers and content correspond.
-    if (count($this->bundle_name) > 1) {
-      foreach ($this->bundle_name as $bundle) {
-        // Set the single bundle name for getting the Header.
-        $bundle_name = $bundle->bundle_name;
-        /*$headers = $this->getHeader();
-        if ($headers) {
-          foreach ($headers as $line) {
-            fwrite($fh, $line . "\r\n");
-          }
-        }*/
 
-        // Determine if the entity is remote or local.
-        if (strpos($bundle_name, 'bio_data_') !== 0) {
-          // Get all fields for that remote site/bundle name pairing,
-          // put them all in a fake entity.
-          // Need Field_id, have bundle_name, need collection_id
-          // Return the bundles from the collection_bundle table.
-          // Get the site id to build the web services call.
-          $remote_site_data = db_select('tripal_collection_bundle')
-            ->fields('tripal_collection_bundle', array('site_id', 'fields', 'ids'))
-            ->condition('collection_id', $this->collection_id, '=')
-            ->condition('bundle_name', $bundle_name, '=')
-            ->execute()
-            ->fetchAssoc();
- 
-          $site_id = $remote_site_data['site_id'];
-          $remote_fields = unserialize($remote_site_data['fields']);
-          $remote_ids = unserialize($remote_site_data['ids']);
-          $remote_entities = [];
-
-          // Now we have the remote site info we need to check against the 
-          // passed field and entity ids.
-          foreach ($remote_ids as $remote_id) {
-            foreach ($this->entity_ids as $entity_id) {
-              if (is_array($entity_id)) {
-                foreach ($entity_id as $entity) {
-                  if (is_array($entity)) {
-                    foreach ($entity as $single_id) {
-                      if ($remote_id == $single_id) {
-                        $fake_tripal_entity = $this->getRemoteEntity($remote_id, $site_id, $remote_fields);
-                      }
-                    }
-                  }
-                }
-              }
-              else {
-                if ($remote_id == $entity_id) {
-                  $fake_tripal_entity = $this->getRemoteEntity($remote_id, $site_id, $remote_fields);
-                }
-              }
-            }
-            $lines = $this->formatEntity($fake_tripal_entity);
-            foreach ($lines as $line) {
-              fwrite($fh, $line . "\r\n");
-            }
-          }
-        }
-        else {
-          foreach ($this->entity_ids[$bundle_name] as $entity_id) {
-            if (is_array($entity_id)) {
-              foreach ($entity_id as $single_entity) {
-                if (is_array($single_entity)) {
-                  foreach ($single_entity as $entity) {
-                    // If the field is from a remote entity then we need to load the info through web services.
-                    $result = tripal_load_entity('TripalEntity', array($entity), FALSE, $this->fields);
-                    $entity_info = $result[$entity];
-                    $lines = $this->formatEntity($entity_info);
-                    foreach ($lines as $line) {
-                      fwrite($fh, $line . "\r\n");
-                    }
-                  }
-                }
-                else {
-                  $result = tripal_load_entity('TripalEntity', array($single_entity), FALSE, $this->fields);
-                  $entity = $result[$single_entity];
-                  $lines = $this->formatEntity($entity);
-                  foreach ($lines as $line) {
-                    fwrite($fh, $line . "\r\n");
-                  }
-                }
-              }
-            }
-            else {
-              $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
-              $entity = $result[$entity_id];
-              $lines = $this->formatEntity($entity);
-              foreach ($lines as $line) {
-                fwrite($fh, $line . "\r\n");
-              }
-            }
-          }
-        }
+    $headers = $this->getHeader();
+    if ($headers) {
+      foreach ($headers as $line) {
+        fwrite($fh, $line . "\r\n");
       }
     }
-    else {
-      $bundle_id = $this->bundle_name[0]->bundle_name;
-      $this->bundle_name = $bundle_id;
-      $headers = $this->getHeader();
-      if ($headers) {
-        foreach ($headers as $line) {
-          fwrite($fh, $line . "\r\n");
-        }
+
+    $bundle_collections = $this->collection_bundles;
+    foreach ($bundle_collections as $bundle_collection) {
+      $collection_bundle_id = $bundle_collection->collection_bundle_id;
+      $bundle_name = $bundle_collection->bundle_name;
+      $fields = unserialize($bundle_collection->fields);
+      $entity_ids = unserialize($bundle_collection->ids);
+      $site_id = $bundle_collection->site_id;
+  
+      // Determine if the entity is remote or local.
+      if (strpos($bundle_name, 'bio_data_') !== 0) {
+        $external = TRUE;
       }
-      foreach ($this->entity_ids as $entity_id) {
-        if (is_array($entity_id)) {
-          foreach ($entity_id as $single_entity) {
-            if (is_array($single_entity)) {
-              foreach ($single_entity as $entity) {
-                $result = tripal_load_entity('TripalEntity', array($entity), FALSE, $this->fields);
-                $entity_info = $result[$entity];
-                $lines = $this->formatEntity($entity_info);
-                foreach ($lines as $line) {
-                  fwrite($fh, $line . "\r\n");
-                }
-              }
-            }
-            else {
-              $result = tripal_load_entity('TripalEntity', array($single_entity), FALSE, $this->fields);
-              $entity = $result[$single_entity];
-              $lines = $this->formatEntity($entity);
-              foreach ($lines as $line) {
-                fwrite($fh, $line . "\r\n");
-              }
-            }
+      else {
+        $external = FALSE;
+      }
+
+      // Now handle the external bundles.
+      if ($external) {
+        // Now we have the remote site info we need to check against the 
+        // passed field and entity ids.
+        foreach ($entity_ids as $remote_id) {
+          $fake_tripal_entity = $this->getRemoteEntity($remote_id, $site_id, $fields, $bundle_name);
+          $lines = $this->formatEntity($fake_tripal_entity);
+          foreach ($lines as $line) {
+            fwrite($fh, $line . "\r\n");
           }
         }
-        else {
-          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $this->fields);
-          $entity = $result[$entity_id];
-          $lines = $this->formatEntity($entity);
+      }
+      else {
+        // Now handle the local bundles.
+        foreach ($entity_ids as $entity) {
+          // If the field is from a remote entity then we need to load the info through web services.
+          $result = tripal_load_entity('TripalEntity', array($entity), FALSE, $fields);
+          $entity_info = $result[$entity];
+          $lines = $this->formatEntity($entity_info);
           foreach ($lines as $line) {
             fwrite($fh, $line . "\r\n");
           }
@@ -301,21 +231,20 @@ abstract class TripalFieldDownloader {
    */
   public function vocabSearch($haystack, $needle, &$current_array) {
     static $_return_array = array();
-
-    if (is_array($haystack) && count($haystack) > 0 && count($_return_array) == 0) {
+    // If the $current_array has a value and the $item is not an array
+    // then we are at the single item section of the nested vocab array
+    // and we can start to check for the $needle.
+    if ($current_array['property'] == $needle) {
+      $_return_array = $current_array;
+      return $_return_array;
+    }
+    elseif (is_array($haystack) && count($haystack) > 0) {
       foreach ($haystack as $item) {
         if (is_array($item)) {
           // Clear out the previous array.
           $current_array = [];
           $current_array = $item;
-          $_return_array = $this->vocabSearch($item, $needle, $current_array);
-        }
-        // If the $current_array has a value and the $item is not an array
-        // then we are at the single item section of the nested vocab array
-        // and we can start to check for the $needle.
-        if (!empty($current_array) && !is_array($item) && ($needle === $item)) {
-          $_return_array = $current_array;
-          return $_return_array;
+          $this->vocabSearch($item, $needle, $current_array);
         }
       }
     }
@@ -331,10 +260,10 @@ abstract class TripalFieldDownloader {
    * @return
    *   .
    */
-  public function getRemoteEntity($remote_id, $site_id, $remote_fields) {
+  public function getRemoteEntity($remote_ids, $site_id, $remote_fields, $bundle_name) {
     // Before a request can be made we need to get the entity type
     // '@id' contains the bundle_name, so look for that.
-    if (!empty($remote_id)) {
+    if (!empty($site_id)) {
       $cache_name = 'tripal_web_services_vocab_' . $site_id;
       if ($cache = cache_get($cache_name)) {
         $site_vocab = $cache->data;
@@ -345,7 +274,7 @@ abstract class TripalFieldDownloader {
           cache_set('tripal_web_services_vocab', $site_vocab);
         }
       }
-      // Now we have the vocab we can look for the bundle_name in the @id field
+      // Now we have the vocab we can look for the bundle_name in the @id field.
       foreach ($site_vocab as $item) {
         if (is_array($item)) {
           foreach ($item as $vocab_term) {
@@ -357,9 +286,17 @@ abstract class TripalFieldDownloader {
           }
         }
       }
-      // This entity needs to be pulled down and data grabbed.
-      $query = $entity_type . '/' . $remote_id;
-      $this->remote_entity = tripal_web_services_remote_request($site_id, $query);
+      if (is_array($remote_ids)) {
+        foreach ($remote_ids as $remote_id) {
+          // This entity needs to be pulled down and data grabbed.
+          $query = $entity_type . '/' . $remote_id;
+          $this->remote_entity = tripal_web_services_remote_request($site_id, $query);
+        }
+      }
+      else {
+        $query = $entity_type . '/' . $remote_ids;
+        $this->remote_entity = tripal_web_services_remote_request($site_id, $query);
+      }
       /**
        * remote_entity looks like this:
        *  [@context] => http://demo.tripal.info/3.x/sites/default/files/tripal/ws/context/content.v0_1.gene.296.json
@@ -383,96 +320,86 @@ abstract class TripalFieldDownloader {
        *  [sequence_coordinates] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/Sequence+coordinates
        *  [relationship] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/relationship
        */
-    }
-    // Build the fields for the fake entity.
-    /**
-     * $site_vocab will look like this:
-     * [3] => Array(
-     *  [property] => data:0842
-     *  [hydra:title] => Identifier
-     *  [hydra:description] => 
-     *  [required] => 1
-     *  [readable] => 
-     *  [writeable] => 1
-     *  [tripal_formatters] => Array
-     *    (
-     *      [0] => TripalTabDownloader
-     *      [1] => TripalCSVDownloader
-     *    )
-     *  )
-     */
-    // If only one field was passed then it needs to be handled differently.
-    if (!is_array($remote_fields)) {
-      $field_entity = array();
-      $returned_array = $this->vocabSearch($site_vocab, $field, $field_entity);
-      if (in_array('hydra:title', $returned_array)) {
-        $fields[$field]['field_name'] = $returned_array['hydra:title'];
-        // Turn the hydra:title into the machine name to get the value.
-        $machine_name = (str_replace(' ', '-', strtolower($returned_array['field_name']['hydra:title'])));
-        $fields[$field]['value'] = $this->entity[$machine_name];
-      }
-    }
-    else {
-      foreach ($remote_fields as $field) {
+      
+      // Build the fields for the fake entity.
+      /**
+       * $site_vocab will look like this:
+       * [3] => Array(
+       *  [property] => data:0842
+       *  [hydra:title] => Identifier
+       *  [hydra:description] => 
+       *  [required] => 1
+       *  [readable] => 
+       *  [writeable] => 1
+       *  [tripal_formatters] => Array
+       *    (
+       *      [0] => TripalTabDownloader
+       *      [1] => TripalCSVDownloader
+       *    )
+       *  )
+       */
+      // If only one field was passed then it needs to be handled differently.
+      if (!is_array($remote_fields)) {
         $field_entity = array();
-        $returned_array = $this->vocabSearch($site_vocab, $field, $field_entity);
-        if (in_array('hydra:title', $returned_array)) {
-          $fields[$field]['field_name'] = $returned_array['hydra:title'];
-          // Turn the hydra:title into the machine name to get the value.
-          $machine_name = (str_replace(' ', '-', strtolower($returned_array['field_name']['hydra:title'])));
-          $fields[$field]['value'] = $this->entity[$machine_name];
+        $returned_array = $this->vocabSearch($site_vocab, $remote_fields, $field_entity);
+        if ($returned_array['hydra:title']) {
+          $fields[$remote_fields]['field_name'] = $returned_array['hydra:title'];
+          // Turn the hydra:title into the machine name to get the label.
+          $machine_name = (str_replace(' ', '-', strtolower($fields[$remote_fields]['field_name'])));
+          $fields[$remote_fields]['label'] = $machine_name;
+          // Get the value from the previously created entity.
+          $fields[$remote_fields]['value'] = $this->remote_entity[$machine_name];
         }
       }
-    }
-    // Because this is a remote field we need to construct a fake entity.
-    $fake_tripal_entity = new stdClass();
-    $fake_tripal_entity->entityType = 'TripalEntity';
-    $fake_tripal_entity->entityInfo = [];
-    $fake_tripal_entity->id = $entity_id;
-    $fake_tripal_entity->type = 'TripalEntity';
-    $fake_tripal_entity->bundle = $bundle_name;
-    foreach ($fields as $name => $field) {
-      $fake_tripal_entity->$name = [
-        'und' => [
-          '0' => [
-            'field_name' => $field['field_name'],
-            'value' => $field['value'],
+      else {
+        foreach ($remote_fields as $field) {
+          $field_entity = array();
+          $returned_array = $this->vocabSearch($site_vocab, $field, $field_entity);
+          if (!empty($returned_array)) {
+            if ($returned_array['hydra:title']) {
+              $fields[$field]['field_name'] = $returned_array['hydra:title'];
+              // Turn the hydra:title into the machine name to get the label.
+              $machine_name = (str_replace(' ', '-', strtolower($fields[$field]['field_name'])));
+              $fields[$field]['label'] = $machine_name;
+              // Get the value from the previously created entity.
+              $fields[$field]['value'] = $this->remote_entity[$machine_name];
+            }
+          }
+        }
+      }
+      // Because this is a remote field we need to construct a fake entity.
+      $fake_tripal_entity = new stdClass();
+      $fake_tripal_entity->entityType = 'TripalEntity';
+      $fake_tripal_entity->entityInfo = [];
+      $fake_tripal_entity->id = $entity_id;
+      $fake_tripal_entity->type = 'TripalEntity';
+      $fake_tripal_entity->bundle = $bundle_name;
+      if (is_array($fields)) {
+        foreach ($fields as $name => $field) {
+          $fake_tripal_entity->$name = [
+            'und' => [
+              '0' => [
+                'field_name' => $field['field_name'],
+                'label' => $field['label'],
+                'value' => $field['value'],
+              ],
+            ],
+          ];
+        };
+      }
+      else {
+        $fake_tripal_entity->$name = [
+          'und' => [
+            '0' => [
+              'field_name' => $fields[$remote_fields]['field_name'],
+              'label' => $fields[$remote_fields]['label'],
+              'value' => $fields[$remote_fields]['value'],
+            ],
           ],
-        ],
-      ];
-    };
-
-    return $fake_tripal_entity;
-  }
-
-  /**
-   * Find the header info for the remote field
-   * 
-   * @param $field 
-   *   The accession which is stored as the field id.
-   * 
-   * @return
-   *   .
-   */
-  public function getRemoteHeaders($field) {
-    // Need the site ID from the tripal_collection_bundle table.
-    $collection_id = $this->collection_id;
-    // Return the bundles from the collection_bundle table.
-    $collections = db_select('tripal_collection_bundle')
-      ->fields('tripal_collection_bundle')
-      ->condition('collection_id', $collection_id, '=')
-      ->execute()
-      ->fetchAll();
-
-    // Now that we have all possible bundles we need to find the right one.
-    foreach ($collections as $collection) {
-      $fields = unserialize($collection->fields);
-      if (in_array($field, $fields)) {
-        $site_id = $collection->site_id;
+        ];
       }
     }
-    $this->getRemoteEntity($field, $site_id);
-
+    return $fake_tripal_entity;
   }
 
   /**

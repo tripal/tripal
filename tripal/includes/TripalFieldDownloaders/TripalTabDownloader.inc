@@ -16,81 +16,57 @@ class TripalTabDownloader extends TripalFieldDownloader {
    */
   protected function formatEntity($entity) {
     $row = array();
-     // If more than one bundle is supplied we need to break the headers and entities
-    // apart so that headers and content correspond.
-    if (count($this->bundle_name) > 1) {
-      foreach ($this->bundle_name as $bundle) {
-        // Set the single bundle name for getting the Header.
-        $this->bundle_name = $bundle->bundle_name;
-        // Determine if the entity is remote or local.
-        if (strpos($this->bundle_name, 'bio_data_') !== 0) {
-          $this->remote_entity;
-        }
-        else {
-          foreach ($this->fields as $field_id) {
-            $field = field_info_field_by_id($field_id);
-            $field_name = $field['field_name'];
-      
-            if (!property_exists($entity, $field_name)) {
-              continue;
-            }
-      
-            // If we only have one element then this is good.
-            if (count($entity->{$field_name}['und']) == 1) {
-              $value = $entity->{$field_name}['und'][0]['value'];
-              // If the single element is not an array then this is good.
-              if (!is_array($value)) {
-                $row[] = $value;
-              }
-              else {
-                if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
-                  $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
-                }
-                else {
-                  $row[] = '';
-                }
-                // TODO: What to do with fields that are arrays?
-              }
-            }
-            else {
-              $row[] = '';
-              // TODO: What to do with fields that have multiple values?
-            }
-          }
-        }
-      }
+    $bundle_name = $entity->bundle;
+
+    // Determine if the entity is remote or local.
+    if (strpos($bundle_name, 'bio_data_') !== 0) {
+      $external = TRUE;
     }
     else {
-      //Do it for one bundle
+      $external = FALSE;
     }
-    foreach ($this->fields as $field_id) {
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
 
-      if (!property_exists($entity, $field_name)) {
-        continue;
+    $bundle_collections = $this->collection_bundles;
+
+    foreach ($bundle_collections as $bundle_collection) {
+      $bundle = $bundle_collection->bundle_name;
+      if ($bundle_name == $bundle) {
+        $fields = unserialize($bundle_collection->fields);
       }
+    }
 
-      // If we only have one element then this is good.
-      if (count($entity->{$field_name}['und']) == 1) {
-        $value = $entity->{$field_name}['und'][0]['value'];
-        // If the single element is not an array then this is good.
+    foreach ($fields as $field) {
+      if ($external) {
+        $field_name = $entity->$field['und'][0]['label'];
+        $value = $entity->$field['und'][0]['value'];
         if (!is_array($value)) {
           $row[] = $value;
         }
-        else {
-          if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
-            $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
-          }
-          else {
-            $row[] = '';
-          }
-          // TODO: What to do with fields that are arrays?
-        }
       }
       else {
-        $row[] = '';
-        // TODO: What to do with fields that have multiple values?
+        $field_info = field_info_field_by_id($field);
+        $field_name = $field_info['field_name'];
+        
+        if (count($entity->{$field_name}['und']) == 1) {
+          $value = $entity->{$field_name}['und'][0]['value'];
+          // If the single element is not an array then this is good.
+          if (!is_array($value)) {
+            $row[] = $value;
+          }
+          else {
+            if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
+              $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+            }
+            else {
+              $row[] = '';
+            }
+            // TODO: What to do with fields that are arrays?
+          }
+        }
+        else {
+          $row[] = '';
+          // TODO: What to do with fields that have multiple values?
+        }
       }
     }
     return array(implode("\t", $row));
@@ -101,21 +77,37 @@ class TripalTabDownloader extends TripalFieldDownloader {
    */
   protected function getHeader() {
     $row = array();
+    $bundle_collections = $this->collection_bundles;
 
-    foreach ($this->fields as $field_id) {
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
-      if (is_array($this->bundle_name)) {
-        foreach ($this->bundle_name as $bundle) {
-          $instance = field_info_instance('TripalEntity', $field_name, $bundle->bundle_name);
-          $row[] = $instance['label'];
-        }
+    foreach ($bundle_collections as $bundle_collection) {
+      $collection_id = $bundle_collection->collection_bundle_id;
+      $bundle_name = $bundle_collection->bundle_name;
+      $fields = unserialize($bundle_collection->fields);
+      $entity_ids = unserialize($bundle_collection->ids);
+      $site_id = $bundle_collection->site_id;
+
+      // Determine if the entity is remote or local.
+      if (strpos($bundle_name, 'bio_data_') !== 0) {
+        $external = TRUE;
       }
       else {
-        $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
-        $row[] = $instance['label'];
+        $external = FALSE;
+      }
+      foreach ($fields as $field) {
+        if ($external) {
+          $fake_tripal_entity = $this->getRemoteEntity($entity_ids, $site_id, $field, $bundle_name);
+          $field_name = $fake_tripal_entity->$field['und'][0]['field_name'];
+          $row[] = $field_name;
+        }
+        else {
+          $field_info = field_info_field_by_id($field);
+          $field_name = $field_info['field_name'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+          $row[] = $instance['label'];
+        }
       }
     }
     return array(implode("\t", $row));
   }
+
 }

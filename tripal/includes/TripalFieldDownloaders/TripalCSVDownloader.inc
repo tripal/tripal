@@ -16,45 +16,60 @@ class TripalCSVDownloader extends TripalFieldDownloader {
    */
   protected function formatEntity($entity) {
     $row = array();
-    foreach ($this->fields as $field_id) {
-      // Check is the field is remote or not.
-      if (!is_numeric($field)) {
-        $field_name = $entity->$field_id['field_name'];
+    $bundle_name = $entity->bundle;
 
+    // Determine if the entity is remote or local.
+    if (strpos($bundle_name, 'bio_data_') !== 0) {
+      $external = TRUE;
+    }
+    else {
+      $external = FALSE;
+    }
+
+    $bundle_collections = $this->collection_bundles;
+
+    foreach ($bundle_collections as $bundle_collection) {
+      $bundle = $bundle_collection->bundle_name;
+      if ($bundle_name == $bundle) {
+        $fields = unserialize($bundle_collection->fields);
+      }
+    }
+
+    foreach ($fields as $field) {
+      if ($external) {
+        $field_name = $entity->$field['und'][0]['label'];
+        $value = $entity->$field['und'][0]['value'];
+        if (!is_array($value)) {
+          $row[] = $value;
+        }
       }
       else {
-        $field = field_info_field_by_id($field_id);
-        $field_name = $field['field_name'];
-      }
-      if (!property_exists($entity, $field_name)) {
-        continue;
-      }
-
-      // If we only have one element then this is good.
-      if (count($entity->{$field_name}['und']) == 1) {
-        $value = $entity->{$field_name}['und'][0]['value'];
-        // If the single element is not an array then this is good.
-        if (!is_array($value)) {
-          $row[] = '"' . $value . '"';
-        }
-        else {
-
-          if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
-            $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+        $field_info = field_info_field_by_id($field);
+        $field_name = $field_info['field_name'];
+        
+        if (count($entity->{$field_name}['und']) == 1) {
+          $value = $entity->{$field_name}['und'][0]['value'];
+          // If the single element is not an array then this is good.
+          if (!is_array($value)) {
+            $row[] = $value;
           }
           else {
-            $row[] = '';
+            if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
+              $row[] = strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+            }
+            else {
+              $row[] = '';
+            }
+            // TODO: What to do with fields that are arrays?
           }
-          // TODO: What to do with fields that are arrays?
+        }
+        else {
+          $row[] = '';
+          // TODO: What to do with fields that have multiple values?
         }
       }
-      else {
-        $row[] = '';
-        // TODO: What to do with fields that have multiple values?
-      }
-
     }
-    return array(implode(',', $row));
+    return array(implode("\t", $row));
   }
 
   /**
@@ -62,23 +77,38 @@ class TripalCSVDownloader extends TripalFieldDownloader {
    */
   protected function getHeader() {
     $row = array();
-    foreach ($this->fields as $field_id) {
-      // If the $field is numeric it's a field id from the local site but
-      // if it is not then it's a remote field that needs to be handled differently.
-      if (!is_numeric($field)) {
-        $fake_tripal_entity = $this->getRemoteEntity($remote_id, $site_id, $remote_id);
-        $field_name = $fake_tripal_entity[$field_id]['field_name'];
-        $row[] = '"' . $field_name . '"';
+    $bundle_collections = $this->collection_bundles;
+
+    foreach ($bundle_collections as $bundle_collection) {
+
+      $collection_id = $bundle_collection->collection_bundle_id;
+      $bundle_name = $bundle_collection->bundle_name;
+      $fields = unserialize($bundle_collection->fields);
+      $entity_ids = unserialize($bundle_collection->ids);
+      $site_id = $bundle_collection->site_id;
+
+      // Determine if the entity is remote or local.
+      if (strpos($bundle_name, 'bio_data_') !== 0) {
+        $external = TRUE;
       }
       else {
-        $field = field_info_field_by_id($field_id);
-        $field_name = $field['field_name'];
-        $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
-        $row[] = '"' . $instance['label'] . '"';
+        $external = FALSE;
       }
-
-      
+      foreach ($fields as $field) {
+        if ($external) {
+          $fake_tripal_entity = $this->getRemoteEntity($entity_ids, $site_id, $field, $bundle_name);
+          $field_name = $fake_tripal_entity->$field['und'][0]['field_name'];
+          $row[] = $field_name;
+        }
+        else {
+          $field_info = field_info_field_by_id($field);
+          $field_name = $field_info['field_name'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+          $row[] = $instance['label'];
+        }
+      }
     }
-    return array(implode(',', $row));
+    return array(implode("\t", $row));
   }
+
 }
