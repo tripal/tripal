@@ -169,6 +169,7 @@ function chado_insert_property($record, $property, $options = array()) {
   $cv_id       = array_key_exists('cv_id', $property) ? $property['cv_id'] : '';
   $value       = array_key_exists('value', $property) ? $property['value'] : '';
   $rank        = array_key_exists('rank', $property) ? $property['rank'] : 0;
+  $cvalue_id = array_key_exists('cvalue_id', $property) ? $property['cvalue_id'] : '';
 
   $update_if_present = array_key_exists('update_if_present', $options) ? $options['update_if_present'] : FALSE;
   $force_rank = array_key_exists('force_rank', $options) ? $options['force_rank'] : FALSE;
@@ -249,6 +250,18 @@ function chado_insert_property($record, $property, $options = array()) {
       array('%property' => print_r($property, TRUE)));    return FALSE;
   }
 
+  //Check that the cvalue property exists
+  if ($cvalue_id){
+    $term = chado_select_record('cvterm', array('cvterm_id'), array('cvterm_id' => $cvalue_id), $options);
+    if (!$term or count($term) == 0) {
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, "chado_insert_property: " .
+        "Cannot find the term for the property value described by: %property.",
+        array('%property' => print_r($property, TRUE)));
+      return FALSE;
+    }
+    $values['cvalue'] = $cvalue_id;
+  }
+
   // Get the foreign key for this property table
   $table_desc = chado_get_schema($base_table . 'prop');
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
@@ -310,6 +323,7 @@ function chado_update_property($record, $property, $options = array()) {
   $cv_id       = array_key_exists('cv_id', $property) ? $property['cv_id'] : '';
   $value       = array_key_exists('value', $property) ? $property['value'] : '';
   $rank        = array_key_exists('rank', $property) ? $property['rank'] : 0;
+  $cvalue_id   = array_key_exists('cvalue_id', $property) ? $property['cvalue_id'] : '';
 
   $insert_if_missing = array_key_exists('insert_if_missing', $options) ? $options['insert_if_missing'] : FALSE;
 
@@ -383,6 +397,17 @@ function chado_update_property($record, $property, $options = array()) {
   $values['value'] = $value;
   if ($rank) {
     $values['rank'] = $rank;
+  }
+  // If a cvalue_id is supplied, check that it is a valid cvterm
+  if ($cvalue_id) {
+    $term = chado_select_record('cvterm', array('cvterm_id'), array('cvterm_id' => $cvalue_id), $options);
+    if (!$term or count($term) == 0) {
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, "chado_insert_property: " .
+        "Cannot find the term for the property value described by: %property.",
+        array('%property' => print_r($property, TRUE)));
+      return FALSE;
+    }
+    $values['cvalue_id'] = $cvalue_id;
   }
 
   // If we have the unique property_id then we can also update the type
