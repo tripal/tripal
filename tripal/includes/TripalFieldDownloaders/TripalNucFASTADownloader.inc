@@ -3,9 +3,16 @@
 class TripalNucFASTADownloader extends TripalFieldDownloader {
 
   /**
-   * Sets the label shown to the user describing this formatter.
+   * Sets the label shown to the user describing this formatter.  It
+   * should be a short identifier. Use the $full_label for a more
+   * descriptive label.
    */
-  static public $label = 'Nucleotide FASTA';
+  static public $label = 'FASTA';
+
+  /**
+   * A more verbose label that better describes the formatter.
+   */
+  static public $full_label = 'Nucleotide FASTA';
 
   /**
    * Indicates the default extension for the outputfile.

@@ -2,9 +2,16 @@
 
 class TripalCSVDownloader extends TripalFieldDownloader {
   /**
-   * Sets the label shown to the user describing this formatter.
+   * Sets the label shown to the user describing this formatter.  It
+   * should be a short identifier. Use the $full_label for a more
+   * descriptive label.
    */
-  static public $label = 'CSV (comma separated)';
+  static public $label = 'CSV';
+
+  /**
+   * A more verbose label that better describes the formatter.
+   */
+  static public $full_label = 'Comma separated';
 
   /**
    * Indicates the default extension for the outputfile.
@@ -68,7 +75,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
       else {
         $field_info = field_info_field_by_id($field);
         $field_name = $field_info['field_name'];
-        
+
         if (count($entity->{$field_name}['und']) == 1) {
           $value = $entity->{$field_name}['und'][0]['value'];
           // Add the tabs so it's in the right place.

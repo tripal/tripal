@@ -35,13 +35,14 @@ class data__sequence extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-    // Indicates the download formats for this field.  The list must be the
-    // name of a child class of the TripalFieldDownloader.
-    'download_formatters' => array(
-      'TripalTabDownloader',
-      'TripalCSVDownloader',
-      'TripalNucFASTADownloader',
-    ),
+  );
+
+  // Indicates the download formats for this field.  The list must be the
+  // name of a child class of the TripalFieldDownloader.
+  public static $download_formatters = array(
+    'TripalTabDownloader',
+    'TripalCSVDownloader',
+    'TripalNucFASTADownloader',
   );
 
   // The default widget for this field.
