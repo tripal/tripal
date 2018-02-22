@@ -75,7 +75,7 @@ class TripalEntityCollection {
         tripal_load_include_downloader_class($class_name);
         $outfile = $this->getOutfile($class_name);
         $downloader = new $class_name($this->bundles, $this->ids, $this->fields,
-            $outfile, $this->getUserID());
+            $outfile, $this->getUserID(), $this->collection_id);
         $downloader->delete();
       }
 
@@ -311,14 +311,14 @@ class TripalEntityCollection {
               $site_id = $this->getSiteId($bundle_name);
               // Use the webservices call to pull the available downloaders list.
               // Need to pull the vocab doc of the web services to know the download formats.
-              // Use the api call to get the vocab for the site which will need to be parsed 
+              // Use the api call to get the vocab for the site which will need to be parsed
               // to find the accession and the download types available.
               $site_vocab = tripal_web_services_vocab_request($site_id);
               if (!empty($site_vocab)) {
                 // Because there are multiple sites available we need to differentiate the
-                // different cached vocab structures. 
+                // different cached vocab structures.
                 $cache_name = 'tripal_web_services_vocab_' . $site_id['site_id'];
-                // Put it in the cache so we don't need to make repeated calls to it.                
+                // Put it in the cache so we don't need to make repeated calls to it.
                 cache_set($cache_name, $site_vocab);
 
                 // Now find the tripal formatters in the json data returned.
@@ -337,7 +337,7 @@ class TripalEntityCollection {
               // API function
               // All fields should support the Tab and CSV downloaders.
               $downloaders = array();
-              $this->downloaders += tripal_get_field_field_formatters($field);
+              $this->downloaders += tripal_get_field_field_formatters($field, $instance);
             }
           }
         }
@@ -350,7 +350,7 @@ class TripalEntityCollection {
           $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
           // API function
           $downloaders = array();
-          $this->downloaders += tripal_get_field_field_formatters($field);
+          $this->downloaders += tripal_get_field_field_formatters($field, $instance);
         }
       }
     }
@@ -390,7 +390,7 @@ class TripalEntityCollection {
           "required": false,
           "readable": false,
           "writeable": true.
-          "tripal_formatter": "                 
+          "tripal_formatter": "
           (
           [0] => TripalTabDownloader
           [1] => TripalCSVDownloader
@@ -461,7 +461,7 @@ class TripalEntityCollection {
     $unserialized_result = [];
     foreach ($result as $id_list) {
       $unserialized_id_list = unserialize($id_list->ids);
-  
+
       foreach ($id_list as $item) {
         $unserialized_result[] = $unserialized_id_list;
       }
@@ -478,7 +478,8 @@ class TripalEntityCollection {
    */
   public function getFields($bundle_name) {
     $collection_id = $this->collection_id;
-    // Return the bundles from the collection_bundle table.
+
+    // Get the fields from the collection_bundle table.
     $result = db_select('tripal_collection_bundle')
       ->fields('tripal_collection_bundle', array('fields'))
       ->condition('collection_id', $collection_id, '=')
@@ -486,8 +487,8 @@ class TripalEntityCollection {
       ->execute()
       ->fetchAll();
 
-     // Unserialize the array of standard class objects.
-    $unserialized_result = [];
+    // Unserialize the array of standard class objects.
+    $unserialized_result = array();
     foreach ($result as $field_list) {
       $unserialized_field_list = unserialize($field_list->fields);
       foreach ($field_list as $item) {
@@ -713,7 +714,7 @@ class TripalEntityCollection {
               }
               // Use the webservices call to pull the available downloaders list.
               // Need to pull the vocab doc of the web services to know the download formats.
-              // Use the api call to get the vocab for the site which will need to be parsed 
+              // Use the api call to get the vocab for the site which will need to be parsed
               // to find the accession and the download types available.
               if (!empty($site_id)) {
                 $cache_name = 'tripal_web_services_vocab_' . $site_id;

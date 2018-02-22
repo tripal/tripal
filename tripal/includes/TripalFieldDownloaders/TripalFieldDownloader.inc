@@ -4,9 +4,16 @@
 abstract class TripalFieldDownloader {
 
   /**
-   * Sets the label shown to the user describing this formatter.
+   * Sets the label shown to the user describing this formatter.  It
+   * should be a short identifier. Use the $full_label for a more
+   * descriptive label.
    */
   static public $label = 'Generic';
+
+  /**
+   * A more verbose label that better describes the formatter.
+   */
+  static public $full_label = 'Generic File format';
 
   /**
    * Indicates the default extension for the outputfile.
@@ -21,20 +28,20 @@ abstract class TripalFieldDownloader {
   /**
    * The collection ID
    */
-  protected $collection_id = NULL;  
+  protected $collection_id = NULL;
 
   /**
    * The collection bundle IDs
    */
-  protected $collection_bundles = '';  
+  protected $collection_bundles = '';
 
     /**
    * The collection bundle IDs
    */
-  protected $collection_bundle_ids = array();  
+  protected $collection_bundle_ids = array();
 
   /**
-   * A set of entity IDs. 
+   * A set of entity IDs.
    */
   protected $entity_ids = array();
 
@@ -159,7 +166,7 @@ abstract class TripalFieldDownloader {
       $fields = unserialize($bundle_collection->fields);
       $entity_ids = unserialize($bundle_collection->ids);
       $site_id = $bundle_collection->site_id;
-  
+
       // Determine if the entity is remote or local.
       if (strpos($bundle_name, 'bio_data_') !== 0) {
         $external = TRUE;
@@ -170,7 +177,7 @@ abstract class TripalFieldDownloader {
 
       // Now handle the external bundles.
       if ($external) {
-        // Now we have the remote site info we need to check against the 
+        // Now we have the remote site info we need to check against the
         // passed field and entity ids.
         foreach ($entity_ids as $remote_id) {
           $fake_tripal_entity = $this->getRemoteEntity($remote_id, $site_id, $fields, $bundle_name);
@@ -218,14 +225,14 @@ abstract class TripalFieldDownloader {
 
   /**
    * Recursive function to walk down the array looking for the passed value.
-   * 
-   * @param $haystack 
+   *
+   * @param $haystack
    *   The array of vocab returned from the remote site.
    * @param $needle
    *   The field which is trying to be matched to.
    * @param $current_array
    *   Holder for the last array identified.
-   * 
+   *
    * @return
    *   The array of the field with title included.
    */
@@ -253,10 +260,10 @@ abstract class TripalFieldDownloader {
 
   /**
    * Find the header info for the remote field
-   * 
-   * @param $field 
+   *
+   * @param $field
    *   The accession which is stored as the field id.
-   * 
+   *
    * @return
    *   .
    */
@@ -320,16 +327,16 @@ abstract class TripalFieldDownloader {
        *  [sequence_coordinates] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/Sequence+coordinates
        *  [relationship] => http://demo.tripal.info/3.x/web-services/content/v0.1/Gene/296/relationship
        */
-      
+
       // Build the fields for the fake entity.
       /**
        * $site_vocab will look like this:
        * [3] => Array(
        *  [property] => data:0842
        *  [hydra:title] => Identifier
-       *  [hydra:description] => 
+       *  [hydra:description] =>
        *  [required] => 1
-       *  [readable] => 
+       *  [readable] =>
        *  [writeable] => 1
        *  [tripal_formatters] => Array
        *    (

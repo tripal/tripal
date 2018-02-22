@@ -1168,7 +1168,7 @@ class TripalContentService_v0_1 extends TripalWebService {
         $proptype = $link;
       }
 
-      $formatters = tripal_get_field_field_formatters($field);
+      $formatters = tripal_get_field_field_formatters($field, $instance);
 
       $property = array(
         'type' => $proptype,

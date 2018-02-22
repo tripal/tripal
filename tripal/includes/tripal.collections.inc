@@ -7,7 +7,8 @@
 function tripal_user_collections_page() {
   global $user;
 
-  $headers = array('Name', 'Description', 'Create Date', 'Downloads Formats', 'Generate File', 'Delete');
+  $headers = array('Name', 'Description', 'Create Date', 'Downloads Formats',
+    'Generate File', 'Actions');
   $rows = array();
 
   $collections = db_select('tripal_collection', 'tc')
@@ -24,7 +25,7 @@ function tripal_user_collections_page() {
     $formatters = $collection->getDownloadFormatters();
 
     foreach ($formatters as $class_name => $label) {
-     
+
       $outfile = $collection->getOutfilePath($class_name);
 
       if (file_exists($outfile)) {
@@ -49,6 +50,7 @@ function tripal_user_collections_page() {
         $collection->getCreateDate(),
         $download_list,
         l('Generate File for Download', 'user/' . $user->uid . '/data-collections/generate/' . $collection_id),
+        l('View', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/view') . ' ' .
         l('Delete', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/delete'),
       ),
     );
@@ -79,6 +81,96 @@ function tripal_user_collections_page() {
   return $content;
 }
 
+/**
+ * Renders a view of a data collection
+ */
+function tripal_user_collections_view_page($uid, $collection_id) {
+
+  $user = user_load($uid);
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l($user->name, 'user/' . $uid);
+  $breadcrumb[] = l('Data Collections', 'user/' . $uid . '/data-collections');
+  drupal_set_breadcrumb($breadcrumb);
+
+  $collection = new TripalEntityCollection();
+  $collection->load($collection_id);
+
+  drupal_set_title('Data Collection: ' . $collection->getName());
+
+  // Get the content types for this data collection.
+  $bundles = $collection->getBundles();
+  $content_types = array();
+  $field_list = array();
+  $formatters_list = array();
+  $entities_list = array();
+  foreach ($bundles as $bundle) {
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle->bundle_name));
+    $content_types[] = $bundle->label;
+
+    $fields = $collection->getFields($bundle->name);
+    foreach ($fields as $index => $flist) {
+      foreach ($flist as $field_id) {
+        $field = field_info_field_by_id($field_id);
+        $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle->name);
+        $field_list[] = $instance['label'];
+
+        $field_formatters = tripal_get_field_field_formatters($field, $instance);
+        foreach ($field_formatters as $class_name => $label) {
+          tripal_load_include_downloader_class($class_name);
+          $formatters_list[] = $label . ' (' . $class_name::$full_label . ')';
+        }
+      }
+    }
+
+    $eids = $collection->getEntityIDs($bundle->name);
+    foreach ($eids as $index => $elist) {
+      foreach ($elist as $eid) {
+        $entities_list[] = $eid;
+      }
+    }
+  }
+
+
+  $contents['content_types'] = array(
+    '#type' => 'item',
+    '#title' => 'Content types',
+    '#description' => t('The content types in this data collection'),
+    '#markup' => join(', ', $content_types),
+  );
+
+  $contents['field_list'] = array(
+    '#type' => 'item',
+    '#title' => 'Fields',
+    '#description' => t('The fields listed in this data collection'),
+    '#markup' => join(', ', array_unique($field_list)),
+  );
+  $contents['formatters'] = array(
+    '#type' => 'item',
+    '#title' => 'Supported File Types',
+    '#description' => t('The fields in your data collection appear to support the above file formats.  Please note that not all fields are compatible with all formats and only those that are compatible will appear in the format. Some file formats require certain fields and if all fields are not present in the collection they will not be complete.'),
+    '#markup' => join(', ', array_unique($formatters_list)),
+  );
+  $contents['ecount'] = array(
+    '#type' => 'item',
+    '#title' => 'Records',
+    '#description' => t('The number of records contained in this data collection.'),
+    '#markup' => count($entities_list),
+  );
+
+  $contents['peek'] = array(
+    '#type' => 'item',
+    '#title' => 'Data View',
+    '#markup' => 'Coming soon...',
+  );
+
+
+  return $contents;
+}
+/**
+ * Provides the confirm form for deleting a data collection.
+ */
 function tripal_user_collections_delete_form($form, &$form_state,  $uid, $collection_id) {
   $form_state['collection_id'] = $collection_id;
   $form['#submit'][] = 'tripal_user_collections_delete_form_submit';
