@@ -49,6 +49,11 @@ abstract class TripalFieldDownloader {
   protected $outfile = '';
 
   /**
+   * An array of the header.
+   */
+  protected $header_array = array();
+
+  /**
    * The remote site json data returned for the entity
    */
   protected $remote_entity = '';
@@ -97,14 +102,15 @@ abstract class TripalFieldDownloader {
 
     // Make sure the user directory exists
     $user_dir = 'public://tripal/users/' . $user->uid;
+
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
       $message = 'Could not access the directory on the server for storing this file.';
       watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-      /*drupal_json_output(array(
+      drupal_json_output(array(
         'status'  => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));*/
+      ));
       return;
     }
 
@@ -349,6 +355,8 @@ abstract class TripalFieldDownloader {
           $fields[$remote_fields]['label'] = $machine_name;
           // Get the value from the previously created entity.
           $fields[$remote_fields]['value'] = $this->remote_entity[$machine_name];
+          // Add the accession information.
+          $fields[$remote_fields]['accession'] = $remote_fields;
         }
       }
       else {
@@ -363,6 +371,8 @@ abstract class TripalFieldDownloader {
               $fields[$field]['label'] = $machine_name;
               // Get the value from the previously created entity.
               $fields[$field]['value'] = $this->remote_entity[$machine_name];
+              // Add the accession information.
+              $fields[$field]['accession'] = $field;
             }
           }
         }
@@ -382,6 +392,7 @@ abstract class TripalFieldDownloader {
                 'field_name' => $field['field_name'],
                 'label' => $field['label'],
                 'value' => $field['value'],
+                'accession' => $field['accession'],
               ],
             ],
           ];
@@ -394,6 +405,7 @@ abstract class TripalFieldDownloader {
               'field_name' => $fields[$remote_fields]['field_name'],
               'label' => $fields[$remote_fields]['label'],
               'value' => $fields[$remote_fields]['value'],
+              'accession' => $fields[$remote_fields]['accession'],
             ],
           ],
         ];
