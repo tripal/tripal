@@ -379,7 +379,7 @@ function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
   $group_field_name = 'gp_'.$form_state['input']['field_name'];
   //Create the field groups, last passed parameter is NULL because there are no
   //children.
-  _additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, NULL);
+  tripal_ds_additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, NULL);
   //Place the field groups in the layout.
   tripal_ds_update_ds_layout($bundle_name, NULL, $group_field_name);
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
