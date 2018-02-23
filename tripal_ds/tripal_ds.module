@@ -4,6 +4,10 @@ require_once "includes/tripal_ds.inc";
 require_once "includes/tripal_ds.ds.inc";
 require_once "includes/tripal_ds.field_group.inc";
 require_once "includes/tripal_ds.field_formatter.inc";
+require_once "includes/tripal_ds.field_formatter.inc";
+
+// Import the full Tripal_DS API into scope.
+tripal_ds_import_api(); 
 
 /**
  * Implements hook_init().
@@ -376,12 +380,8 @@ function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
   $bundle_name = $form_state['build_info']['args'][0];
   //Build the rest of the passed variables.
   $field_name = $form_state['input']['field_name'];
-  $group_field_name = 'gp_'.$form_state['input']['field_name'];
-  //Create the field groups, last passed parameter is NULL because there are no
-  //children.
-  tripal_ds_additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, NULL);
-  //Place the field groups in the layout.
-  tripal_ds_update_ds_layout($bundle_name, NULL, $group_field_name);
+  $field_label = $form_state['input']['field_name'];
+  tripal_ds_field_create_field($field_label, $field_name, $bundle_name);
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
 
@@ -583,3 +583,11 @@ function tripal_ds_toc_order($bundle, $fields = array()){
   }
 }
 
+/**
+ * Imports all of the Tripal_DS API into scope.
+ *
+ *
+ */
+function tripal_ds_import_api() {
+  module_load_include('inc', 'tripal_ds', 'api/tripal_ds.pane.api');
+}
