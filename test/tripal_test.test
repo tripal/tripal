@@ -1,0 +1,16 @@
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+//some reading for organizing and annotating tests
+//https://stackoverflow.com/questions/8313283/phpunit-best-practices-to-organize-tests
+//https://jtreminio.com/2013/03/unit-testing-tutorial-introduction-to-phpunit/
+
+final class tripal_test extends TestCase {
+
+  public function testTrueIsTrue() {
+    $foo = TRUE;
+    $this->assertTrue($foo);
+
+  }
+}
