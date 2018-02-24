@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/statonlab/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/statonlab/tripal)
+
+
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
 Tripal is a toolkit for construction of online biological (genetics, genomics,

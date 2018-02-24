@@ -8,6 +8,8 @@ sudo: required
 
 script:
   - git clone https://github.com/tripal/docker-tripal-centos  && cd docker-tripal-centos
-  - cd tripal-v2 && docker build .  #Aftewards run the container and do stuff with it  - docker run -it -p 8080:80 mingchen0919/docker-tripal-v2 /bin/bash
+  - cd tripal-v2 && docker build .
+  - docker run -it -d -p 8080:80 tripal-v2 /bin/bash
+  - docker exec -it tripal-v2 bash -c drush pm-disable tripal_core -y && cd /var/www/html/sites/all/modules/tripal/ && git checkout 7.x-3.x && drush pm-enable tripal -y && drush pm-enable tripal_chado -y && drush cc all --yes && drush status'
   - cd ../tripal-v3 && docker build .
-  - ls #we'll run tests at this step  # docker exec -it tripal-v3 bash -c 'cd /var/www/html/sites/all/modules/tripal/ &&composer install && ./vendor/bin/phpunit'
+  - docker exec -it tripal-v3 bash -c 'cd /var/www/html/sites/all/modules/tripal/ &&composer install && ./vendor/bin/phpunit'
