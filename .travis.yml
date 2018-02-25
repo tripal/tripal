@@ -12,5 +12,6 @@ script:
   - docker run -it -d -p 8080:80 tripal-v2 /bin/bash
   - docker exec -it tripal-v2 bash -c 'drush pm-disable tripal_core -y && cd /var/www/html/sites/all/modules/tripal/ && git checkout 7.x-3.x && drush pm-enable tripal -y && drush pm-enable tripal_chado -y && drush cc all --yes && drush status'
   - cd ../tripal-v3 && docker build -t tripal-v3 .
-  - docker run -it -d -p 8080:80 tripal-v3 /bin/bash
+  - docker run -it -d -p 8082:80 tripal-v3 /bin/bash
+  - sleep 40
   - docker exec -it tripal-v3 bash -c 'cd /var/www/html/sites/all/modules/tripal/ &&composer install && ./vendor/bin/phpunit'
