@@ -17,7 +17,7 @@ script:
   - docker run -it -d --rm --name tripal -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
   - docker exec -it tripal drush en -y tripal
-  - docker exec -it tripal bash -c "cd /modules/tripal && composer install && ./vendor/bin/phpunit"
+  - docker exec -it tripal bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
 #  - git clone https://github.com/tripal/docker-tripal-centos  && cd docker-tripal-centos
 #  - cd tripal-v2 && docker build -t tripal-v2 .
 #  - docker run -it -d --name tripal-v2 -p 8080:80 tripal-v2 /bin/bash
