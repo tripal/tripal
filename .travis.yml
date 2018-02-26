@@ -18,7 +18,7 @@ script:
   # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
-  - docker exec -it tripal3 drush en -y tripal tripal_chado tripal_chado_views tripal_daemon tripal_ds tripal_ws
+  - docker exec -it tripal3 drush en -y tripal tripal_chado tripal_chado_views tripal_ds tripal_ws
   # Prepare Chado
   - docker exec -it tripal3 drush eval "module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'); tripal_chado_load_drush_submit('Install Chado v1.3');"
   - docker exec -it tripal3 drush trp-run-jobs --username=tripal
