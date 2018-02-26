@@ -6,7 +6,6 @@
     <testsuites>
         <testsuite name="default">
             <directory suffix=".test">./tests/</directory>
-            <exclude>tests/bootstrap.php</exclude>
         </testsuite>
     </testsuites>
 </phpunit>
