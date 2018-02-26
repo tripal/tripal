@@ -381,6 +381,11 @@ function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
   //Build the rest of the passed variables.
   $field_name = $form_state['input']['field_name'];
   $field_label = $form_state['input']['field_name'];
+
+  if (!$field_name){
+    return;
+  }
+
   tripal_ds_field_create_field($field_label, $field_name, $bundle_name);
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
