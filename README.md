@@ -118,13 +118,11 @@ Developer's Handbook for additional details.
 
 # Development Testing
 
-The Travis build will test creation of a new Tripal 2 and Tripal 3 docker, pull the latest master branch, and run the updatedb.
-
-Once this completes, it will run unit tests.
-
-To run unit tests on your local system, simply create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
+To run PHP unit tests on your local system, simply create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
 
 ```
 DRUPAL_ROOT=/var/www/html
 ```
-Then run PHPUnit from your root directory.
+Then run PHPUnit from your root Tripal directory.
+
+PHPUnit tests will also be run in the Travis CI build.
