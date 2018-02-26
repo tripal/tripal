@@ -31,7 +31,7 @@ script:
   - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 15
-  - docker exec -it tripal2 drush en -y tripal
+  - docker exec -it tripal2 drush en -y tripal_core
   - docker exec -it tripal2 drush pm-disable tripal_core -y
   - git checkout $BRANCH
   - docker exec -it tripal2 drush en -y tripal
