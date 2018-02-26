@@ -18,14 +18,16 @@ script:
   # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
-  - docker exec -it tripal3 drush en -y tripal
+  - docker exec -it tripal3 drush en -y tripal tripal_chado tripal_chado_views tripal_bulk_loader tripal_daemon tripal_ds tripal_ws
+  # Prepare Drupal and Chado
+
   # Run PHPUnit tests
   - docker exec -it tripal3 bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
   # Test Tripal 2 installation
   - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
-  - docker exec -it tripal2 drush en -y tripal tripal_chado tripal_views
+  - docker exec -it tripal2 drush en -y tripal
   - docker exec -it tripal2 bash -c 'drush pm-disable tripal_core -y'
   - git checkout $BRANCH
   - docker exec -it tripal2 drush en -y tripal
