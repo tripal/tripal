@@ -12,12 +12,12 @@ branches:
 
 before_script:
   - docker pull statonlab/drupal7
-  # Travis does a shallow clone of on
-  - git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
 
 script:
   # Set branch name
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  # Travis does a shallow clone so get all branches from origin
+  - git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
   - git pull origin $BRANCH
   # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
@@ -33,14 +33,3 @@ script:
   - docker exec -it tripal2 bash -c 'drush pm-disable tripal_core -y'
   - git checkout $BRANCH
   - docker exec -it tripal2 drush en -y tripal
-
-
-#  - git clone https://github.com/tripal/docker-tripal-centos  && cd docker-tripal-centos
-#  - cd tripal-v2 && docker build -t tripal-v2 .
-#  - docker run -it -d --name tripal-v2 -p 8080:80 tripal-v2 /bin/bash
-#  - sleep 40  #need to sleep after booting docker
-#  - docker exec -it tripal-v2 bash -c 'drush pm-disable tripal_core -y && cd /var/www/html/sites/all/modules/tripal/ && git checkout statonlab/travis_integration && drush pm-enable tripal -y && drush pm-enable tripal_chado -y && drush pm-enable tripal_views && drush cc all --yes && drush status'
-#  - cd ../tripal-v3 && docker build -t tripal-v3 .
-#  - docker run -it -d --name tripal-v3 -p 8082:80 tripal-v3 /bin/bash
-#  - sleep 40
-#  - docker exec -it tripal-v3 bash -c 'cd /var/www/html/sites/all/modules/tripal/ && git checkout statonlab/travis_integration  && composer install && ./vendor/bin/phpunit'
