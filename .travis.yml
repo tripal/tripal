@@ -11,10 +11,10 @@ branches:
   - travis_integration
 
 before_script:
-  - docker pull statoblab/drupal7
+  - docker pull statonlab/drupal7
 
 script:
-  - docker run -it -d --rm --name tripal -v "$(PWD)":/modules/tripal /statonlab/drupal7
+  - docker run -it -d --rm --name tripal -v "$(PWD)":/modules/tripal statonlab/drupal7
   - sleep 10
   - docker exec -it tripal drush en -y tripal
   - docker exec -it tripal bash -c "cd /modules/tripal && composer install && ./vendor/bin/phpunit"
