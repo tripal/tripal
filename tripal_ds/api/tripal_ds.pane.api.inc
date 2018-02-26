@@ -32,6 +32,12 @@
  *  tripal_ds_field_create_field($field_label, $field, $bundle);
  */
 function tripal_ds_field_create_field($field_label, $field_name, $bundle_name) {
+
+  if (isset($field_name['field_name'])){
+    $field_name = $field_name['field_name'];
+  }
+
+
   $field_name = str_replace(' ', '_', strtolower($field_name));
   //Build the rest of the passes parameters.
   $group_field_name = 'gp_'.$field_name;
