@@ -18,7 +18,7 @@ script:
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
   # Travis does a shallow clone so get all branches from origin
   - git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
-  - git pull origin $BRANCH
+  - git pull --all
   # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
