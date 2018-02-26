@@ -15,14 +15,13 @@ before_script:
 
 
 script:
-  - pwd && ls
-  - cd statonlab/tripal
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
   - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, PR=$PR, BRANCH=$BRANCH"
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
   - docker exec -it tripal3 drush en -y tripal
   - docker exec -it tripal3 bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
+  - git fetch
   - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
