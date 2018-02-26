@@ -12,16 +12,19 @@ branches:
 
 before_script:
   - docker pull statonlab/drupal7
-
+  - git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+  - git pull
 
 script:
+  # Set branch name
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
-  - echo "TRAVIS_BRANCH=$TRAVIS_BRANCH, PR=$PR, BRANCH=$BRANCH"
+  # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
   - docker exec -it tripal3 drush en -y tripal
+  # Run PHPUnit tests
   - docker exec -it tripal3 bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
-  - git fetch
+  # Test Tripal 2 installation
   - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
