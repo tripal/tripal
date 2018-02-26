@@ -18,7 +18,7 @@ script:
   - export REPO=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_REPO_SLUG; else echo $TRAVIS_PULL_REQUEST_SLUG; fi)
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
   #  Travis does a shallow clone and we need a full clone to test Tripal v2 to v3 upgrade
-  - cd .. && rm -rf tripal && git clone https://github.com/$REPO.git tripal
+  - cd .. && rm -rf tripal && git clone https://github.com/$REPO.git tripal && cd tripal
   # Test tripal 3 installation
   - docker run -it -d --rm --name tripal3 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
@@ -26,7 +26,7 @@ script:
   # Run PHPUnit tests
   - docker exec -it tripal3 bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
   # Test Tripal 2 installation
-  - git checkout refs/remotes/origin/7.x-2.x
+  - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
   - sleep 10
   - docker exec -it tripal2 drush en -y tripal tripal_chado tripal_views
