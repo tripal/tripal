@@ -5,39 +5,17 @@ use PHPUnit\Framework\TestCase;
 class TripalJobsTest extends TestCase {
 
   /**
-   * Holds the job id to delete when done.
-   *
-   * @var int|bool
-   */
-  protected $job_id;
-
-  /**
    * Tests the ability to create a tripal job.
    *
    * @test
    */
   public function should_create_a_tripal_job() {
-    $this->job_id = tripal_add_job('Test adding jobs', 'test_module', 'test_callback', [], 1);
+    $job_id = tripal_add_job('Test adding jobs', 'tripal', 'tripal_tripal_cron_notification', [], 1);
     $this->assertTrue(is_numeric($this->job_id));
-  }
 
-  /**
-   * Tests whether creating a duplicate job is possible.
-   *
-   * @test
-   */
-  public function should_refuse_to_create_duplicate_job() {
-    $job = tripal_add_job('Test adding jobs', 'test_module', 'test_callback', [], 1, 10, TRUE);
-    $this->assertEmpty($job);
-  }
-
-  /**
-   * Run clean up
-   */
-  public function __destruct() {
-    // Clean up any data inserted to the DB
-    if ($this->job_id) {
-      db_query('DELETE FROM {tripal_jobs} WHERE job_id = :id', [':id' => $this->job_id]);
+    // Clean up
+    if($job_id) {
+      db_query('DELETE FROM {tripal_jobs} WHERE job_id = :id', [':id' => $job_id]);
     }
   }
 }
