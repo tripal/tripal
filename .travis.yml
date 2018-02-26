@@ -27,6 +27,8 @@ script:
   - docker exec -it tripal3 drush trp-run-jobs --username=tripal
   # Run PHPUnit tests
   - docker exec -it tripal3 bash -c "cd /modules/tripal && composer install && DRUPAL_ROOT=/var/www/html ./vendor/bin/phpunit"
+  # Destroy tripal 3 container
+  - docker container stop tripal3 && docker container rm tripal3
   # Test Tripal 2 installation
   - git checkout 7.x-2.x
   - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/drupal7
