@@ -31,12 +31,7 @@
  *  field_create_instance($instance);
  *  tripal_ds_field_create_field($field_label, $field, $bundle);
  */
-function tripal_ds_field_create_field($field_label, $field_name, $bundle_name) {
-
-  if (isset($field_name['field_name'])){
-    $field_name = $field_name['field_name'];
-  }
-
+function tripal_ds_field_create_field_but_not_the_hook($field_label, $field_name, $bundle_name) {
 
   $field_name = str_replace(' ', '_', strtolower($field_name));
   //Build the rest of the passes parameters.
