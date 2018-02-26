@@ -1,3 +1,5 @@
+[![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
+
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
 Tripal is a toolkit for construction of online biological (genetics, genomics,
@@ -111,3 +113,15 @@ precise customizations as required by the community. A well-developed
 Tripal API provides a uniform set of variables and functions for 
 accessing any and all data within the Chado database. See the Tripal 3.x
 Developer's Handbook for additional details.
+
+
+# Development Testing
+
+To run PHP unit tests on your local system, simply create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
+
+```
+DRUPAL_ROOT=/var/www/html
+```
+Then run PHPUnit from your root Tripal directory.
+
+PHPUnit tests will also be run in the Travis CI build.
