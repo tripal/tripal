@@ -15,7 +15,10 @@ before_script:
 
 script:
   # Set branch name
+  - export REPO=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_REPO_SLUG; else echo $TRAVIS_PULL_REQUEST_SLUG; fi)
   - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  # Get our repo
+  - rm -rf * && git clone https://github.com/$REPO.git .
   # Travis does a shallow clone so get all branches from origin
   - git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
   - git pull --all
