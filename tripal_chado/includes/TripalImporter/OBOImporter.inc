@@ -739,6 +739,29 @@ class OBOImporter extends TripalImporter {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
 
+    // Check that the default_cv is in the cv table.
+    $sql =  "
+      SELECT CV.name 
+      FROM {cv} CV 
+      WHERE CV.name = '$defaultcv'
+    ";
+    $results = chado_query($sql)->fetchObject();
+    if (!$results){
+      //The controlled vocabulary is not in the cv term table and needs to be added.
+      $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
+      if (!empty($ontology_info)){
+        if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
+          $results = $ontology_info['config']['annotations']['default-namespace'];
+        }
+        elseif (array_key_exists('namespace', $ontology_info['config'])) {
+          $results = $ontology_info['config']['namespace'];
+        }
+        $cv_returned = tripal_insert_cv($results[0], '');
+        if($cv_returned) {
+          $defaultcv = $cv_returned;
+        }
+      }
+    }
     // construct the term array for sending to the tripal_chado_add_cvterm function
     // for adding a new cvterm
     $t = array();
@@ -1236,27 +1259,6 @@ class OBOImporter extends TripalImporter {
       $matches = array();
       if ($tag == 'id' and preg_match('/^(.+?):.*$/', $value, $matches)) {
         $default_db = $matches[1];
-        // Check that the default_db is in the cv table.
-        $sql =  "
-          SELECT CV.name 
-          FROM {cv} CV 
-          WHERE CV.name = '$default_db'
-        ";
-        $results = chado_query($sql)->fetchObject();
-        if (!$results){
-          //The controlled vocabulary is not in the cv term table and needs to be added.
-          $ontology_info = $this->oboEbiLookup($default_db, 'ontology');
-          if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
-            $results = $ontology_info['config']['annotations']['default-namespace'];
-          }
-          elseif (array_key_exists('namespace', $ontology_info['config'])) {
-            $results = $ontology_info['config']['namespace'];
-          }
-          $defaultcv = tripal_insert_cv($results[0], '');
-          if($default_cv) {
-            $default_db = $default_cv;
-          }
-        }
       }
       $tag = preg_replace("/\|-\|-\|/", "\:", $tag); // return the escaped colon
       $value = preg_replace("/\|-\|-\|/", "\:", $value);
