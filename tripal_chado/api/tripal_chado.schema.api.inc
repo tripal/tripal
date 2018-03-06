@@ -41,9 +41,19 @@
  */
 function chado_table_exists($table) {
 
+  // Get the default database and chado schema.
   global $databases;
-
   $default_db = $databases['default']['default']['database'];
+  $chado_schema = tripal_get_schema_name('chado');
+
+  // If we've already lookup up this table then don't do it again, as
+  // we don't need to keep querying the database for the same tables.
+  if (array_key_exists("chado_tables", $GLOBALS) and
+      array_key_exists($default_db, $GLOBALS["chado_tables"]) and
+      array_key_exists($chado_schema, $GLOBALS["chado_tables"][$default_db]) and
+      array_key_exists($table, $GLOBALS["chado_tables"][$default_db][$chado_schema])) {
+    return TRUE;
+  }
 
   $sql = "
     SELECT 1
@@ -55,7 +65,7 @@ function chado_table_exists($table) {
   ";
   $args = array(
     ':table_name' => $table,
-    ':chado' => tripal_get_schema_name('chado'),
+    ':chado' => $chado_schema,
     ':default_db' => $default_db
   );
   $results = db_query($sql, $args);
@@ -63,6 +73,9 @@ function chado_table_exists($table) {
   if (!$exists) {
     return FALSE;
   }
+
+  // Set this table in the GLOBALS so we don't query for it again the next time.
+  $GLOBALS["chado_tables"][$default_db][$chado_schema][$table] = TRUE;
   return TRUE;
 }
 /**

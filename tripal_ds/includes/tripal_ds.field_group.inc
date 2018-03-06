@@ -230,7 +230,7 @@ function _data_sequence_field_group_info($bundle_name, $fields){
  * @param $field_name
  *  Machine name of the child element.
  */
-function _additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name){
+function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name){
   //Write to the tripal_ds table to record the new tripal pane.
   tripal_ds_bundle_menu_item($bundle_name, $field_label, $group_field_name, 'TripalEntity');
 

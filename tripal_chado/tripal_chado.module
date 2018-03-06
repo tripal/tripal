@@ -85,6 +85,7 @@ function tripal_chado_set_globals() {
     $GLOBALS["chado_is_local"]      = chado_is_local();
     $GLOBALS["chado_version"]       = chado_get_version();
     $GLOBALS["exact_chado_version"] = chado_get_version(TRUE);
+    $GLOBALS["chado_tables"] = array();
   }
 }
 
