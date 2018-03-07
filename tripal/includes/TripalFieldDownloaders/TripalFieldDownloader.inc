@@ -265,13 +265,26 @@ abstract class TripalFieldDownloader {
   }
 
   /**
-   * Find the header info for the remote field
+   * Build and return a fake entity from a remote site using
+   * tripal web services calls.
    *
-   * @param $field
-   *   The accession which is stored as the field id.
+   * @param $remote_ids
+   *   Array of the remote ids.
+   * 
+   * @param $site_id
+   *   Unique site id assigned in the tripal_sites table when
+   *   a new site is created via the web services interface.
+   * 
+   * @param $remote_fields
+   *   Array of the remote fields.
+   * 
+   * @param $bundle_name
+   *   Bundle name of the remote field, in this instance it will be 
+   *   the accession of the field.
    *
-   * @return
-   *   .
+   * @return $fake_tripal_entity
+   *    This is a fake entity structured to allow the format
+   *    entity function to process and return the info.
    */
   public function getRemoteEntity($remote_ids, $site_id, $remote_fields, $bundle_name) {
     // Before a request can be made we need to get the entity type
@@ -419,6 +432,83 @@ abstract class TripalFieldDownloader {
       }
     }
     return $fake_tripal_entity;
+  }
+
+  /**
+   * Process and return a header for tab delimited file formats.
+   *
+   * @param $bundle_collections
+   *   The accession which is stored as the field id.
+   *
+   * @return array
+   *    The impoded array for the header.
+   */
+  public function processTabHeader($bundle_collections) {
+    $row = array();
+    $accession_ids = array();
+
+    foreach ($bundle_collections as $bundle_collection) {
+      $collection_id = $bundle_collection->collection_bundle_id;
+      $bundle_name = $bundle_collection->bundle_name;
+      $fields = unserialize($bundle_collection->fields);
+      $entity_ids = unserialize($bundle_collection->ids);
+      $site_id = $bundle_collection->site_id;
+
+      // Determine if the entity is remote or local.
+      if (strpos($bundle_name, 'bio_data_') !== 0) {
+        $external = TRUE;
+      }
+      else {
+        $external = FALSE;
+      }
+
+      foreach ($fields as $field) {
+        if ($external) {
+          $fake_tripal_entity = $this->getRemoteEntity($entity_ids, $site_id, $field, $bundle_name);
+          $field_name = $fake_tripal_entity->$field['und'][0]['field_name'];
+          $accession = $fake_tripal_entity->$field['und'][0]['accession'];
+          if (!empty($accession_ids) && !empty($row)) {
+            // If the accession is already in the accession_ids list skip.
+            if (array_search($accession, $accession_ids)) {
+              continue;
+            }
+            else {
+              $row[] = $field_name;
+              $accession_ids[] = $accession;
+            }
+          } 
+          else {
+            $row[] = $field_name;
+            $accession_ids[] = $accession;
+          }
+        }
+        else {
+          $field_info = field_info_field_by_id($field);
+          //$field_name is the accession info.
+          $field_name = $field_info['field_name'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+
+          // Build the accession incase someone renames a cord field name.
+          $accession = $instance['settings']['term_vocabulary'] . $instance['settings']['term_accession'];
+          if (!empty($accession_ids) && !empty($row)) {
+            // If the accession is already in the accession_ids list skip.
+            if (array_search($accession, $accession_ids)) {
+              continue;
+            }
+            else {
+              $accession_ids[] = $accession;
+              $row[] = $instance['label'];
+            }
+          } 
+          else {
+            $accession_ids[] = $accession;
+            $row[] = $instance['label'];
+          }
+        }
+      }
+    }
+    $this->header_array = $accession_ids;
+    return array(implode("\t", $row));
   }
 
   /**
