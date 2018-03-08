@@ -83,7 +83,7 @@ class TripalWebService {
 
     $this->addDocClass(array(
       "id" => "http://www.w3.org/ns/hydra/core#Resource",
-      "name" => 'resource',
+      "term" => 'hydra:Resource',
       "title" => "Resource",
       'subClassOf' => NULL,
     ));
@@ -345,9 +345,7 @@ class TripalWebService {
    *    An array of key/value pairs providing the details for the class. Valid
    *    keys include:
    *      - id: The unique IRI for this class.
-   *      - name: a computer-readable name for this class (i.e. no spaces,
-   *        no special characters).  This name is used to construct
-   *        type identifiers for operations.
+   *      - term: the accession for the term for this class.
    *      - title:  The title for the resource that this Class represents.
    *      - description: (Optional). A description of the resource.
    *      - subClassOf: (Optional). If this class is a subclass of another
@@ -416,7 +414,11 @@ class TripalWebService {
 
     // Set the Class ID.
     $class_id = $details['id'];
-    $supported_class->setID($class_id);
+    $accession = $details['term'];
+    if ($accession != $class_id) {
+      $supported_class->addContextItem($accession, $class_id);
+    }
+    $supported_class->setID($accession);
 
     // Set the class Type.
     if (array_key_exists('type', $details)) {

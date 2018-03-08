@@ -1,21 +1,21 @@
 <?php
 
-class TripalVocabService_v0_1 extends TripalWebService {
+class TripalDocService_v0_1 extends TripalWebService {
 
   /**
    * The human-readable label for this web service.
    */
-  public static $label = 'Vocabulary';
+  public static $label = 'API Documentation';
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides access to vocabulary terms that are in use by this site.';
+  public static $description = 'Provides Hydra style documenation to make this RESTful webservice discoverable.';
   /**
    * A machine-readable type for this service. This name must be unique
    * among all Tripal web services and is used to form the URL to access
    * this service.
    */
-  public static $type = 'vocab';
+  public static $type = 'doc';
 
   /**
    * The list of web services.
@@ -24,7 +24,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
 
 
   /**
-   * Constructor for the TripalVocabService_v0_1 class.
+   * Constructor for the TripalDocService_v0_1 class.
    */
   public function __construct($base_path) {
     parent::__construct($base_path);
@@ -52,7 +52,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
     $this->resource->addContextItem('apiDocumentation', 'hydra:apiDocumentation');
     $this->resource->addContextItem('supportedClass', 'hydra:supportedClass');
     $this->resource->setType('apiDocumentation');
-    $this->resource->setID('vocab/' . $this->getVersion());
+    $this->resource->setID('doc/' . $this->getVersion());
 
     // Add the EntryPoint class.
     $this->addEntryPointClass();
@@ -81,6 +81,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
     $service_path = $this->getServicePath();
     $details = array(
       'id' => $service_path . '#EntryPoint',
+      'term' => 'vocab:EntryPoint',
       'title' => 'EntryPoint',
       'description' => 'The main entry point or homepage of the API',
       'subClassOf' => NULL,
@@ -134,7 +135,7 @@ class TripalVocabService_v0_1 extends TripalWebService {
       $op->addProperty('label', 'Retrieves the ' . $service_class::$label . ' resource.');
       $op->addProperty('description', NULL);
       $op->addProperty('expects', NULL);
-      $op->addProperty('returns', 'vocab:EntryPoint/' . $service::$type);
+      $op->addProperty('returns', 'local:EntryPoint/' . $service::$type);
       $op->addProperty('statusCodes', array());
       $ops[] = $op;
       $link->addContextItem('supportedOperation', 'hydra:supportedOperation');

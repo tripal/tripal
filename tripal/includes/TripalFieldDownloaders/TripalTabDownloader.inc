@@ -19,82 +19,62 @@ class TripalTabDownloader extends TripalFieldDownloader {
   static public $default_extension = 'txt';
 
   /**
-   * @see TripalFieldDownloader::format()
+   * @see TripalFieldDownloader::isFieldSupported()
    */
- protected function formatEntity($entity) {
-    $row = array();
-    $bundle_name = $entity->bundle;
-    
-    // Grab the headers to ensure we tab the fields properly.
-    $header =  $this->header_array;
-    if (!empty($header)) { 
-      // Count the number of items in the header and build an array with that many items.
-      $header_count = count($header);
-      $row = array_fill(0, $header_count, NULL);
-    }
-    // Determine if the entity is remote or local.
-    if (strpos($bundle_name, 'bio_data_') !== 0) {
-      $external = TRUE;
-    }
-    else {
-      $external = FALSE;
-    }
+  public function isFieldSupported($field, $instance) {
+    $is_supported = parent::isFieldSupported($field, $instance);
 
-    $bundle_collections = $this->collection_bundles;
+    // For now all fields are supported.
+    return TRUE;
+  }
 
-    foreach ($bundle_collections as $bundle_collection) {
-      $bundle = $bundle_collection->bundle_name;
-      if ($bundle_name == $bundle) {
-        $fields = unserialize($bundle_collection->fields);
-      }
-    }
+  /**
+   * @see TripalFieldDownloader::formatEntity()
+   */
+   protected function formatEntity($entity) {
+     $bundle_name = $entity->bundle;
+     $row = array();
 
-    foreach ($fields as $field) {
-      if ($external) {
-        $field_name = $entity->$field['und'][0]['label'];
-        $value = $entity->$field['und'][0]['value'];
-        $accession = $entity->$field['und'][0]['accession'];
-        if (!empty($header)) {
-          //Now find the accession in the header array and place it where it needs to go.
-          $position = array_search($accession, $header);
-          $row[$position] = $value;
-        }
-      }
-      else {
-        $field_info = field_info_field_by_id($field);
-        $field_name = $field_info['field_name'];
-        $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-        // Build the accession incase someone renames a cord field name.
-        $accession = $instance['settings']['term_vocabulary'] . $instance['settings']['term_accession'];
+     // Iterate through all of the printable fields and add the value to
+     // the row.
+     foreach ($this->printable_fields as $accession => $label) {
 
-        if (count($entity->{$field_name}['und']) == 1) {
-          $value = $entity->{$field_name}['und'][0]['value'];
+       // If this field is not present for this entity then add an empty
+       // element and move on.
+       if (!array_key_exists($accession, $this->fields2terms[$bundle_name]['by_accession'])) {
+         $row[] = '';
+         continue;
+       }
 
-          if (!empty($header)) { 
-            //Now find the accession in the header array and place it where it needs to go.
-            $position = array_search($accession, $header);
+       // Get the field from the class variables.
+       $field_id = $this->fields2terms[$bundle_name]['by_accession'][$accession];
+       $field = $this->fields[$bundle_name][$field_id]['field'];
+       $instance = $this->fields[$bundle_name][$field_id]['instance'];
+       $field_name = $field['field_name'];
 
-            // If the single element is not an array then this is good.
-            if (!is_array($value)) {
-              $row[$position] = $value;
-            }
-            else {
-              if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
-                $row[$position] = $tabs . strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
-              }
-              else {
-                $row[$position] = '';
-              }
-              // TODO: What to do with fields that are arrays?
-            }
+       // If we only have one item for this value then add it.
+       if (count($entity->{$field_name}['und']) == 1) {
+         $value = $entity->{$field_name}['und'][0]['value'];
 
-          } 
-        }
-        else {
-          $row[] = '';
-          // TODO: What to do with fields that have multiple values?
-        }
-      }
+         // If the single element is not an array then this is good.
+         if (!is_array($value)) {
+           $row[] = $value;
+         }
+         else {
+           if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
+             $row[] = $tabs . strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']);
+           }
+           else {
+             $row[] = '';
+           }
+           // TODO: What to do with fields that are arrays?
+         }
+       }
+       // If we have multiple items then deal with that.
+       else {
+         $row[] = '';
+         // TODO: What to do with fields that have multiple values?
+       }
     }
     return array(implode("\t", $row));
   }
@@ -103,8 +83,10 @@ class TripalTabDownloader extends TripalFieldDownloader {
    * @see TripalFieldDownloader::getHeader()
    */
   protected function getHeader() {
-    $bundle_collections = $this->collection_bundles;
-    return $this->processTabHeader($bundle_collections);
+    $row = array();
+    foreach ($this->printable_fields as $accession => $label) {
+      $row[] = $label;
+    }
+    return array(implode("\t", $row));
   }
-
 }

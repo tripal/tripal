@@ -185,6 +185,7 @@ function tripal_load_entity($entity_type, $ids = FALSE, $reset = FALSE,
   if ($reset) {
     $ec->resetCache();
   }
+
   return $ec->load($ids, $conditions, $field_ids);
 }
 /**

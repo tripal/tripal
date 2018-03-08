@@ -34,6 +34,7 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
       }
       $available_fields[$instance['field_name']] = $instance;
     }
+return array();
 
     foreach ($this->fields as $field_id) {
       $field = field_info_field_by_id($field_id);

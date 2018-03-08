@@ -53,8 +53,32 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // is this a valid content type?
     if ($ctype) {
-      $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-      if (!$bundle) {
+      // Get the list of published terms (these are the bundle IDs)
+      $bquery = db_select('tripal_bundle', 'tb');
+      $bquery->join('tripal_term', 'tt', 'tt.id = tb.term_id');
+      $bquery->join('tripal_vocab', 'tv', 'tv.id = tt.vocab_id');
+      $bquery->fields('tb', array('label'));
+      $bquery->fields('tt', array('accession'));
+      $bquery->fields('tv', array('vocabulary'));
+      $bquery->orderBy('tb.label', 'ASC');
+      $bundles = $bquery->execute();
+
+      // Iterate through the terms convert the santized name to the real label.
+      $i = 0;
+      $ctype_lookup = array();
+      $found = FALSE;
+      while ($bundle = $bundles->fetchObject()) {
+        if ($ctype == preg_replace('/[^\w]/', '_', $bundle->label)) {
+          $ctype = $bundle->label;
+          $found = TRUE;
+        }
+        if ($ctype == $bundle->vocabulary . ':' . $bundle->accession) {
+          $ctype = $bundle->label;
+          $found = TRUE;
+        }
+      }
+
+      if (!$found) {
         throw new Exception('Invalid content type: ' . $ctype);
       }
     }
@@ -272,7 +296,8 @@ class TripalContentService_v0_1 extends TripalWebService {
         // that information.
         $items = field_get_items('TripalEntity', $entity, $field_name);
         $term_key = $this->getContextTerm($term, array('lowercase', 'spacing'));
-        $this->resource->addContextItem($term_key, array(
+        $this->resource->addContextItem($term_key, $vocabulary . ':' . $accession);
+        $this->resource->addContextItem($vocabulary . ':' . $accession, array(
           '@id' => $term['url'],
           '@type' => '@id'
         ));
@@ -780,7 +805,7 @@ class TripalContentService_v0_1 extends TripalWebService {
    * Creates a collection of resources for a given type.
    */
   private function doContentTypeList($ctype) {
-    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $service_path = $this->getServicePath() . '/' . preg_replace('/[^\w]/', '_', $ctype);
     $this->resource = new TripalWebServiceCollection($service_path, $this->params);
 
     // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
@@ -789,10 +814,11 @@ class TripalContentService_v0_1 extends TripalWebService {
     $term = reset($term);
 
     // The type of collection is provided by our API vocabulary service.
-    $vocab_service = new TripalVocabService_v0_1($this->base_path);
+    $vocab_service = new TripalDocService_v0_1($this->base_path);
     $this->resource->addContextItem('vocab', $vocab_service->getServicePath() . '#');
-    $this->resource->addContextItem(urlencode($bundle->label) . 'Collection', 'vocab:' . urlencode($bundle->label) . 'Collection');
-    $this->resource->setType(urlencode($bundle->label) . 'Collection');
+    $accession = preg_replace('/[^\w]/', '_', $bundle->label . ' Collection');
+    $this->resource->addContextItem($accession, 'vocab:' . $accession);
+    $this->resource->setType($accession);
 
     // Convert term to a simple array
     $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
@@ -893,11 +919,11 @@ class TripalContentService_v0_1 extends TripalWebService {
    */
   private function doAllTypesList() {
     $service_path = $this->getServicePath();
-    $service_vocab = new TripalVocabService_v0_1($this->base_path);
+    $service_vocab = new TripalDocService_v0_1($this->base_path);
     $this->resource = new TripalWebServiceCollection($service_path, $this->params);
     $this->resource->addContextItem('vocab', $service_vocab->getServicePath());
-    $this->resource->addContextItem('ContentCollection', $service_vocab->getServicePath() . '#ContentCollection');
-    $this->resource->setType('ContentCollection');
+    $this->resource->addContextItem('Content_Collection', $service_vocab->getServicePath() . '#Content_Collection');
+    $this->resource->setType('Content_Collection');
 
     $label = tripal_get_term_details('rdfs', 'label');
     $this->addResourceProperty($this->resource, $label, 'Content Types');
@@ -919,12 +945,13 @@ class TripalContentService_v0_1 extends TripalWebService {
       $term = tripal_get_term_details($term->vocab->vocabulary, $term->accession);
 
       $member = new TripalWebServiceResource($service_path);
-      $member->setID(urlencode($bundle->label));
+      $member->setID(preg_replace('/[^\w]/', '_', $bundle->label));
 
-      $vocab_service = new TripalVocabService_v0_1($this->base_path);
+      $vocab_service = new TripalDocService_v0_1($this->base_path);
       $member->addContextItem('vocab', $vocab_service->getServicePath() . '#');
-      $member->addContextItem(urlencode($bundle->label) . 'Collection', 'vocab:' . urlencode($bundle->label) . 'Collection');
-      $member->setType(urlencode($bundle->label) . 'Collection');
+      $accession = preg_replace('/[^\w]/', '_', $bundle->label . ' Collection');
+      $member->addContextItem($accession, 'vocab:' . $accession);
+      $member->setType($accession);
 
       // Make sure the term has a URL.
       $url = $term['url'];
@@ -954,7 +981,8 @@ class TripalContentService_v0_1 extends TripalWebService {
    */
   private function addDocContentCollectionClass() {
     $details = array(
-      'id' => 'vocab:ContentCollection',
+      'id' => 'vocab:Content_Collection',
+      'term' => 'vocab:Content_Collection',
       'title' => 'Content Collection',
     );
     $vocab = tripal_get_vocabulary_details('hydra');
@@ -1017,14 +1045,15 @@ class TripalContentService_v0_1 extends TripalWebService {
       // use the term definition
       $description = tripal_get_bundle_variable('description', $bundle->id);
       if (!$description) {
-        $description = $term->definition;
+        $description = $term->getDefinition();
       }
 
       // Create the details array for the class.
       $class_id = $this->getServicePath() . '/' . urlencode($bundle->label);
       $details = array(
-        'id' => $term->url,
-        'title' => $bundle->label,
+        'id' => $term->getURL(),
+        'term' => $term->getAccession(),
+        'title' => preg_replace('/[^\w]/', '_', $bundle->label),
         'description' => $description,
       );
 
@@ -1187,8 +1216,12 @@ class TripalContentService_v0_1 extends TripalWebService {
    * Every content type (bundle) needs a collection class in the documentation.
    */
   private function addDocBundleCollectionClass($bundle, $term) {
+
+    $accession = preg_replace('/[^\w]/', '_', $bundle->label . ' Collection');
+
     $details = array(
-      'id' => 'vocab:' . urlencode($bundle->label) . 'Collection',
+      'id' => 'vocab:' . $accession,
+      'term' => 'vocab:' . $accession,
       'title' => $bundle->label . ' Collection',
       'subClassOf' => 'hydra:Collection',
       'description' => 'A collection (or list) of ' . $bundle->label . ' resources.',

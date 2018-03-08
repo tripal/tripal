@@ -114,9 +114,9 @@ function tripal_load_include_web_service_class($class) {
  * @param $version
  *   Version of the API being used. default to 1
  * @param $description
- *    A description of the site and any additional info that 
+ *    A description of the site and any additional info that
  *    would be helpful for admins.
- * 
+ *
  * @return
  *   TRUE if the site is successfully added, FALSE otherwise.
  */
@@ -185,13 +185,14 @@ function tripal_remove_site($record_id) {
   return FALSE;
 }
 
-/** 
+/**
+ * Retreives the full Hydra documentattion for the remote Tripal site.
+ *
  * When passed a site_id from the tripal_sites table the full
- * site's vocab service is returned in json format
- *
- *
+ * site's document service is returned in json format
  */
-function tripal_web_services_vocab_request($site_id) {
+function tripal_get_remote_site_doc($site_id) {
+
   // Get the site url from the tripal_sites table.
   if ($site_id) {
     $remote_site = db_select('tripal_sites', 'ts')
@@ -200,11 +201,12 @@ function tripal_web_services_vocab_request($site_id) {
       ->execute()
       ->fetchObject();
   }
+
   // Build the URL to the remote web services.
   $ws_version = $remote_site->version;
   $ws_url = $remote_site->url;
   $ws_url = trim($ws_url, '/');
-  $ws_url .= '/web-services/vocab/' . $ws_version;
+  $ws_url .= '/web-services/doc/' . $ws_version;
 
   // Build and make the request.
   $options = [];
@@ -246,8 +248,11 @@ function tripal_web_services_vocab_request($site_id) {
  * @param $query
  *   The query string. This string is added to the URL for the remote
  *   website.
+ *
+ * @return
+ *   The JSON response formatted in a PHP array or FALSE if a problem occured.
  */
-function tripal_web_services_remote_request($site_id, $query) {
+function tripal_query_remote_site($site_id, $query) {
   $ctype = $query;
   $qdata = '';
   if (preg_match('/\?/', $query)) {
