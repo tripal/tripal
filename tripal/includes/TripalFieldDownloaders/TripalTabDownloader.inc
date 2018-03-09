@@ -33,6 +33,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
    */
    protected function formatEntity($entity) {
      $bundle_name = $entity->bundle;
+     $site = !property_exists($entity, 'site_id') ? 'local' : $entity->site_id;
      $row = array();
 
      // Iterate through all of the printable fields and add the value to
@@ -41,15 +42,15 @@ class TripalTabDownloader extends TripalFieldDownloader {
 
        // If this field is not present for this entity then add an empty
        // element and move on.
-       if (!array_key_exists($accession, $this->fields2terms[$bundle_name]['by_accession'])) {
+       if (!array_key_exists($accession, $this->fields2terms[$site][$bundle_name]['by_accession'])) {
          $row[] = '';
          continue;
        }
 
        // Get the field from the class variables.
-       $field_id = $this->fields2terms[$bundle_name]['by_accession'][$accession];
-       $field = $this->fields[$bundle_name][$field_id]['field'];
-       $instance = $this->fields[$bundle_name][$field_id]['instance'];
+       $field_id = $this->fields2terms[$site][$bundle_name]['by_accession'][$accession];
+       $field = $this->fields[$site][$bundle_name][$field_id]['field'];
+       $instance = $this->fields[$site][$bundle_name][$field_id]['instance'];
        $field_name = $field['field_name'];
 
        // If we only have one item for this value then add it.

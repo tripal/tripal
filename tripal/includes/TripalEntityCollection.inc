@@ -365,6 +365,7 @@ class TripalEntityCollection {
         }
       }
     }
+    $this->downloaders = array_unique($this->downloaders);
     return $this->downloaders;
   }
 

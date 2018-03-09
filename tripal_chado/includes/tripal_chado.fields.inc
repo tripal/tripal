@@ -1337,7 +1337,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Sequence',
-      'description' => 'All available sequences for this record.',
+      'description' => 'One or more molecular sequences, possibly with associated annotation.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,

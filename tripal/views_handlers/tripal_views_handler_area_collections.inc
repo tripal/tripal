@@ -138,7 +138,7 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     $field_formatters = tripal_get_field_field_formatters($field, $instance);
     foreach ($field_formatters as $class_name => $label) {
       tripal_load_include_downloader_class($class_name);
-      $formatters[] = $label;
+      $formatters[] = $class_name::$label;
     }
 
     // Add the field to those supported.

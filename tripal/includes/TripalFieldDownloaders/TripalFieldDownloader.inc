@@ -60,31 +60,37 @@ abstract class TripalFieldDownloader {
   protected $remote_entity = '';
 
   /**
-   * An array that associates a field ID with a term.  The key is the bundle
-   * name, followed by two subkeys: by_field and by_accession.  To lookup
-   * a field's term you use the 'by_field' subkey with the field_id as the next
-   * level.  To lookup the field ID for a term use the 'by_accession' subkey
-   * with the accession as the next level.  Below is an example of the structure
-   * of this array.
+   * An array that associates a field ID with a term.
+   *
+   * The first-level key is the site ID. For the local site this will be
+   * the word 'local' for all others it will be the numeric id.  The second
+   * level key is the bundle bundle name.  For local bundles this will
+   * always be bio_data_xxxx.  Third, are two subkeys: by_field and
+   * by_accession.  To lookup a field's term you use the 'by_field' subkey
+   * with the field_id as the next level.  To lookup the field ID for a term
+   * use the 'by_accession' subkey with the accession as the next level.  Below
+   * is an example of the structure of this array.
    *
    * @code
     Array (
-      [bio_data_7] => Array(
-        [by_field] => Array(
-          [56] => data:2091,
-          [57] => OBI:0100026,
-          [17] => schema:name,
-          [58] => data:2044,
-          [34] => data:0842,
-          [67] => schema:alternateName,
-        ),
-        [by_accession] => Array (
-          [data:2091] => 56,
-          [OBI:0100026] => 57,
-          [schema:name] => 17,
-          [data:2044] => 58,
-          [data:0842] => 34,
-          [schema:alternateName] => 67,
+      [local] => Array(
+        [bio_data_7] => Array(
+          [by_field] => Array(
+            [56] => data:2091,
+            [57] => OBI:0100026,
+            [17] => schema:name,
+            [58] => data:2044,
+            [34] => data:0842,
+            [67] => schema:alternateName,
+          ),
+          [by_accession] => Array (
+            [data:2091] => 56,
+            [OBI:0100026] => 57,
+            [schema:name] => 17,
+            [data:2044] => 58,
+            [data:0842] => 34,
+            [schema:alternateName] => 67,
+          ),
         ),
       ),
     )
@@ -94,9 +100,11 @@ abstract class TripalFieldDownloader {
 
 
   /**
-   * A list of field and instance items, indexed first by bundle_name and
-   * then by field_id and then by the keys 'field' or 'instance' where the
-   * value is the field or instance details respectively.
+   * A list of field and instance items, indexed first by site_id with 'local'
+   * being the key for local fields and the numeric site_id for remote
+   * fields.  The second-levle key is the bundle_name and the the field_id.
+   * Below the field_id are the keys 'field' or 'instance' where the
+   * value of each is the field or instance details respectively.
    */
   protected $fields = array();
 
@@ -134,12 +142,11 @@ abstract class TripalFieldDownloader {
 
     // A data collection may have multiple bundles.  We'll need to get
     // them all and store them.
-    $this->collection_bundles = db_select('tripal_collection_bundle')
+    $collection_bundles = db_select('tripal_collection_bundle')
       ->fields('tripal_collection_bundle')
       ->condition('collection_id', $collection_id, '=')
-      ->execute()
-      ->fetchAll();
-    foreach ($this->collection_bundles as $collection_bundle) {
+      ->execute();
+    while ($collection_bundle = $collection_bundles->fetchObject()) {
       $collection_bundle->ids = unserialize($collection_bundle->ids);
       $collection_bundle->fields = unserialize($collection_bundle->fields);
       $this->collection_bundles[] = $collection_bundle;
@@ -240,7 +247,6 @@ abstract class TripalFieldDownloader {
 
       foreach ($entity_ids as $entity_id) {
 
-
         // if we have a site_id then we need to get the entity from the
         // remote service. Otherwise create the entity from the local system.
         if ($site_id) {
@@ -334,6 +340,7 @@ abstract class TripalFieldDownloader {
   protected function loadRemoteEntity($remote_id, $site_id, $bundle_name) {
 
     // Get the site documentation
+    $site = empty($site_id) ? 'local' : $site_id;
     $site_doc = $this->retrieveRemoteAPIDoc($site_id);
 
     // Get the remote entity and create the fake entity.
@@ -350,6 +357,7 @@ abstract class TripalFieldDownloader {
     $entity->id = $remote_id;
     $entity->type = 'TripalEntity';
     $entity->bundle = $bundle_name;
+    $entity->site_id = $site_id;
 
     // Get the context JSON for this remote entity, we'll use it to map
     // the properties to the correct fields.
@@ -360,15 +368,15 @@ abstract class TripalFieldDownloader {
     // Iterate through the fields that are printable and get those values
     // from the results.
     foreach ($this->printable_fields as $accession => $label) {
-      $field_id = $this->fields2terms[$bundle_name]['by_accession'][$accession];
+      $field_id = $this->fields2terms[$site][$bundle_name]['by_accession'][$accession];
 
       // If the field isn't part of this bundle then skip it.
       if (!$field_id) {
         continue;
       }
 
-      $field = $this->fields[$bundle_name][$field_id]['field'];
-      $instance = $this->fields[$bundle_name][$field_id]['instance'];
+      $field = $this->fields[$site][$bundle_name][$field_id]['field'];
+      $instance = $this->fields[$site][$bundle_name][$field_id]['instance'];
       $field_name = $field['field_name'];
       $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
 
@@ -435,6 +443,7 @@ abstract class TripalFieldDownloader {
   private function setLocalFields() {
     foreach ($this->collection_bundles as $collection_bundle) {
       $bundle_name = $collection_bundle->bundle_name;
+      $site = empty($collection_bundle->site_id) ? 'local' : $collection_bundle->site_id;
       // Skip remote fields.
       if ($collection_bundle->site_id) {
         continue;
@@ -442,8 +451,8 @@ abstract class TripalFieldDownloader {
       foreach ($collection_bundle->fields as $field_id) {
         $field = field_info_field_by_id($field_id);
         $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-        $this->fields[$bundle_name][$field_id]['field'] = $field;
-        $this->fields[$bundle_name][$field_id]['instance'] = $instance;
+        $this->fields[$site][$bundle_name][$field_id]['field'] = $field;
+        $this->fields[$site][$bundle_name][$field_id]['instance'] = $instance;
       }
     }
   }
@@ -461,6 +470,7 @@ abstract class TripalFieldDownloader {
         continue;
       }
 
+      $site = empty($site_id) ? 'local' : $site_id;
       $site_doc = $this->retrieveRemoteAPIDoc($collection_bundle->site_id);
 
       // Get the class that matches this bundle.
@@ -496,8 +506,8 @@ abstract class TripalFieldDownloader {
           'entity_type' => 'TripalEntity',
           'bundle_name' => $bundle_name,
         );
-        $this->fields[$bundle_name][$field_id]['field'] = $field;
-        $this->fields[$bundle_name][$field_id]['instance'] = $instance;
+        $this->fields[$site][$bundle_name][$field_id]['field'] = $field;
+        $this->fields[$site][$bundle_name][$field_id]['instance'] = $instance;
       }
     }
   }
@@ -538,12 +548,15 @@ abstract class TripalFieldDownloader {
    * to it's accession number.
    **/
   protected function setFields2Terms() {
-    foreach ($this->fields as $bundle_name => $bundle_fields) {
-      foreach ($bundle_fields as $field_id => $info) {
-        $instance = $info['instance'];
-        $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-        $this->fields2terms[$bundle_name]['by_field'][$field_id] = $accession;
-        $this->fields2terms[$bundle_name]['by_accession'][$accession] = $field_id;
+
+    foreach ($this->fields as $site => $bundles) {
+      foreach ($bundles as $bundle_name => $bundle_fields) {
+        foreach ($bundle_fields as $field_id => $info) {
+          $instance = $info['instance'];
+          $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+          $this->fields2terms[$site][$bundle_name]['by_field'][$field_id] = $accession;
+          $this->fields2terms[$site][$bundle_name]['by_accession'][$accession] = $field_id;
+        }
       }
     }
   }
@@ -557,15 +570,17 @@ abstract class TripalFieldDownloader {
    */
   protected function setPrintableFields() {
 
-    foreach ($this->fields as $bundle_name => $bundle_fields) {
-      foreach ($bundle_fields as $field_id => $info) {
-        $instance = $info['instance'];
-        $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-        if (!array_key_exists($accession, $this->printable_fields)) {
-          // Only include fields that support this downloader type in
-          // or list of printable fields.
-          if ($this->isFieldSupported($field, $instance)) {
-            $this->printable_fields[$accession] = $instance['label'];
+    foreach ($this->fields as $site => $bundles) {
+      foreach ($bundles as $bundle_name => $bundle_fields) {
+        foreach ($bundle_fields as $field_id => $info) {
+          $instance = $info['instance'];
+          $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+          if (!array_key_exists($accession, $this->printable_fields)) {
+            // Only include fields that support this downloader type in
+            // or list of printable fields.
+            if ($this->isFieldSupported($field, $instance)) {
+              $this->printable_fields[$accession] = $instance['label'];
+            }
           }
         }
       }

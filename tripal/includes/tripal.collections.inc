@@ -7,7 +7,7 @@
 function tripal_user_collections_page() {
   global $user;
 
-  $headers = array('Name', 'Description', 'Create Date', 'Downloads Formats',
+  $headers = array('Name', 'Description', 'Create Date', 'Download Formats',
     'Generate File', 'Actions');
   $rows = array();
 
@@ -216,9 +216,9 @@ function tripal_user_collections_generate_file_form($form, &$form_state,  $uid, 
   $collection  = new TripalEntityCollection();
   $collection->load($collection_id);
   $form = confirm_form($form,
-      t('Click the button below to generate the collection filed: %title',
+      t('Confirm creation of files for the data collection named: "%title"',
           array('%title' => $collection->getName())), 'user/' . $uid . '/data-collections',
-      '<p>' .t('This action cannot be undone.') .'</p>', t('Generate File'), t('Cancel'), 'confirm');
+      '<p>' .t('It may take some time for the file(s) to be generated.  An email will be sent when files are ready.') .'</p>', t('Generate File'), t('Cancel'), 'confirm');
 
   return $form;
 }

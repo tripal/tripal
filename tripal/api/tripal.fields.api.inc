@@ -237,7 +237,7 @@ function tripal_get_field_field_formatters($field, $instance) {
     foreach ($formatters as $class_name) {
       if (!array_key_exists($class_name, $downloaders)) {
         tripal_load_include_downloader_class($class_name);
-        $downloaders[$class_name] = $class_name::$label;
+        $downloaders[$class_name] = $class_name::$full_label;
       }
     }
   }
@@ -245,8 +245,8 @@ function tripal_get_field_field_formatters($field, $instance) {
     // For non TripalFields we'll assume TAB and CSV.
     tripal_load_include_downloader_class('TripalTabDownloader');
     tripal_load_include_downloader_class('TripalCSVDownloader');
-    $downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-    $downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
+    $downloaders['TripalTabDownloader'] = TripalTabDownloader::$full_label;
+    $downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$full_label;
   }
   return $downloaders;
 }
