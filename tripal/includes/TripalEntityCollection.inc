@@ -624,11 +624,14 @@ class TripalEntityCollection {
   /**
    * Writes the collection to all file downloadable formats.
    *
+   * @param $job
+   *    If this function is run as a Tripal Job then this argument can be
+   *    set to the Tripaljob object for keeping track of progress.
    * @throws Exception
    */
-  public function writeAll() {
+  public function writeAll(TripalJob $job = NULL) {
     foreach ($this->downloaders as $class_name => $label) {
-      $this->write($class_name);
+      $this->write($class_name, $job);
     }
   }
 
@@ -673,10 +676,12 @@ class TripalEntityCollection {
    * @param formatter
    *   The name of the formatter class to use (e.g. TripalTabDownloader). The
    *   formatter must be compatible with the data collection.
-   *
+   * @param $job
+   *    If this function is run as a Tripal Job then this argument can be
+   *    set to the Tripaljob object for keeping track of progress.
    * @throws Exception
    */
-  public function write($formatter) {
+  public function write($formatter, TripalJob $job = NULL) {
     if (!$this->isFormatterCompatible($formatter)) {
       throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
 
@@ -689,7 +694,7 @@ class TripalEntityCollection {
     $outfile = $this->getOutfile($formatter);
 
     $downloader = new $formatter($this->collection_id, $outfile);
-    $downloader->write();
+    $downloader->write($job);
 
   }
 

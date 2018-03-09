@@ -220,8 +220,13 @@ abstract class TripalFieldDownloader {
 
   /**
    * Creates the downloadable file.
+   *
+   * @param $job
+   *    If this function is run as a Tripal Job then this argument can be
+   *    set to the Tripaljob object for keeping track of progress.
    */
-  public function write() {
+  public function write(TripalJob $job = NULL) {
+
     $user = user_load($this->collection->uid);
 
     $fh = fopen(drupal_realpath($this->outfile), "w");
@@ -237,7 +242,17 @@ abstract class TripalFieldDownloader {
       }
     }
 
+    // Count the total number of entities
+    $total_entities = 0;
     $bundle_collections = $this->collection_bundles;
+    foreach ($bundle_collections as $bundle_collection) {
+      $total_entities += count($bundle_collection->ids);
+    }
+    if ($job) {
+      $job->setTotalItems($total_entities);
+    }
+
+    $num_handled = 0;
     foreach ($bundle_collections as $bundle_collection) {
       $collection_bundle_id = $bundle_collection->collection_bundle_id;
       $bundle_name = $bundle_collection->bundle_name;
@@ -246,6 +261,10 @@ abstract class TripalFieldDownloader {
       $site_id = $bundle_collection->site_id;
 
       foreach ($entity_ids as $entity_id) {
+        $num_handled++;
+        if ($job) {
+          $job->setItemsHandled($num_handled);
+        }
 
         // if we have a site_id then we need to get the entity from the
         // remote service. Otherwise create the entity from the local system.
@@ -305,6 +324,10 @@ abstract class TripalFieldDownloader {
       if (!array_key_exists('data-collection', $usage['tripal'])) {
         file_usage_add($file, 'tripal', 'data-collection', $fid);
       }
+    }
+
+    if ($job) {
+      $job->setItemsHandled($num_handled);
     }
   }
 

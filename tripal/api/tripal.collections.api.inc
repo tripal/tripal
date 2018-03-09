@@ -182,15 +182,7 @@ function tripal_get_collection($values) {
  * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
-  if ($job) {
-    $job->setProgress(0);
-  }
-
   $collection = new TripalEntityCollection();
   $collection->load($collection_id);
-  $collection->writeAll();
-
-  if ($job) {
-    $job->setProgress(100);
-  }
+  $collection->writeAll($job);
 }
