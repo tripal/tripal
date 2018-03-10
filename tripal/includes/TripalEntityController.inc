@@ -437,8 +437,13 @@ class TripalEntityController extends EntityAPIController {
    *  The list of key/value filters for querying the entity.
    * @param $field_ids
    *  The list of numeric field IDs for fields that should be attached.
+   * @param $cache
+   *  When loading of entities they can be cached with Drupal for later
+   *  faster loading. However, this can cause memory issues when running
+   *  Tripal jobs that load lots of entities.  Caching of entities can
+   *  be disabled to improve memory performance by setting this to FALSE.
    */
-  public function load($ids = array(), $conditions = array(), $field_ids = array()) {
+  public function load($ids = array(), $conditions = array(), $field_ids = array(), $cache = TRUE) {
 
     $entities = array();
 
@@ -529,10 +534,10 @@ class TripalEntityController extends EntityAPIController {
       EntityCacheControllerHelper::entityCacheSet($this, $queried_entities);
     }
 
-    if ($this->cache) {
+    if ($this->cache and $cache) {
       // Add entities to the cache if we are not loading a revision.
       if (!empty($queried_entities) && !$revision_id) {
-        $this->cacheSet($queried_entities);
+          $this->cacheSet($queried_entities);
 
         // Remember if we have cached all entities now.
         if (!$conditions && $ids === FALSE) {

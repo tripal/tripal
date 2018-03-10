@@ -74,8 +74,7 @@ class TripalEntityCollection {
       foreach ($this->downloaders as $class_name => $label) {
         tripal_load_include_downloader_class($class_name);
         $outfile = $this->getOutfile($class_name);
-        $downloader = new $class_name($this->bundles, $this->ids, $this->fields,
-            $outfile, $this->getUserID(), $this->collection_id);
+        $downloader = new $class_name($this->collection_id, $outfile);
         $downloader->delete();
       }
 
@@ -136,11 +135,11 @@ class TripalEntityCollection {
         $bundle_name = $bundle->bundle_name;
         if (strpos($bundle->bundle_name, 'bio_data_') !== 0) {
           $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
-          $fields[$bundle_name] = $this->getFields($bundle_name);
+          $fields[$bundle_name] = $this->getFieldIDs($bundle_name);
         }
         $bundle_name = $bundle->bundle_name;
         $ids[$bundle_name] = $this->getEntityIDs($bundle_name);
-        $fields[$bundle_name] = $this->getFields($bundle_name);
+        $fields[$bundle_name] = $this->getFieldIDs($bundle_name);
       }
       $this->ids = $ids;
       $this->fields = $fields;
@@ -149,7 +148,7 @@ class TripalEntityCollection {
       if (!empty($this->bundles)) {
         $bundle_name = $this->bundles[0]->bundle_name;
         $this->ids = $this->getEntityIDs($bundle_name);
-        $this->fields = $this->getFields($bundle_name);
+        $this->fields = $this->getFieldIDs($bundle_name);
       }
     }
     // Iterate through the fields and find out what download formats are
@@ -460,26 +459,22 @@ class TripalEntityCollection {
    *   An array of numeric entity IDs.
    */
   public function getEntityIDs($bundle_name) {
+    $entity_ids = array();
+
+    if (!$bundle_name) {
+      throw new Exception('Please provide the $bundle_name argument for the TripalEntityCollection::getEntityIDs() function.');
+    }
+
+    // Get the IDs for the entities for tihs bundle collection.
     $collection_id = $this->collection_id;
-    // Return the bundles from the collection_bundle table.
-    $result = db_select('tripal_collection_bundle')
+    $ids = db_select('tripal_collection_bundle')
       ->fields('tripal_collection_bundle', array('ids'))
       ->condition('collection_id', $collection_id, '=')
       ->condition('bundle_name', $bundle_name, '=')
       ->execute()
-      ->fetchAll();
+      ->fetchField();
 
-    // Unserialize the array of standard class objects.
-    $unserialized_result = [];
-    foreach ($result as $id_list) {
-      $unserialized_id_list = unserialize($id_list->ids);
-
-      foreach ($id_list as $item) {
-        $unserialized_result[] = $unserialized_id_list;
-      }
-    }
-
-    return $unserialized_result;
+    return unserialize($ids);
   }
 
   /**
@@ -488,10 +483,11 @@ class TripalEntityCollection {
    * @return
    *   An array of numeric field IDs.
    */
-  public function getFields($bundle_name) {
-    $collection_id = $this->collection_id;
+  public function getFieldIDs($bundle_name) {
+    $field_ids = array();
 
-    // Get the fields from the collection_bundle table.
+    // Get the IDs for the fields for this bundle collection.
+    $collection_id = $this->collection_id;
     $result = db_select('tripal_collection_bundle')
       ->fields('tripal_collection_bundle', array('fields'))
       ->condition('collection_id', $collection_id, '=')
@@ -622,20 +618,6 @@ class TripalEntityCollection {
   }
 
   /**
-   * Writes the collection to all file downloadable formats.
-   *
-   * @param $job
-   *    If this function is run as a Tripal Job then this argument can be
-   *    set to the Tripaljob object for keeping track of progress.
-   * @throws Exception
-   */
-  public function writeAll(TripalJob $job = NULL) {
-    foreach ($this->downloaders as $class_name => $label) {
-      $this->write($class_name, $job);
-    }
-  }
-
-  /**
    * Retrieves the URL for the downloadable file.
    *
    * @param $formatter
@@ -671,31 +653,195 @@ class TripalEntityCollection {
   }
 
   /**
-   * Writes the collection to a file.
+   * Writes the collection to a file using a given formatter.
    *
    * @param formatter
    *   The name of the formatter class to use (e.g. TripalTabDownloader). The
-   *   formatter must be compatible with the data collection.
+   *   formatter must be compatible with the data collection.  If no
+   *   formatter is supplied then all file formats supported by this
+   *   data collection will be created.
    * @param $job
    *    If this function is run as a Tripal Job then this argument can be
    *    set to the Tripaljob object for keeping track of progress.
    * @throws Exception
    */
-  public function write($formatter, TripalJob $job = NULL) {
-    if (!$this->isFormatterCompatible($formatter)) {
-      throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
+  public function write($formatter = NULL, TripalJob $job = NULL) {
 
+    $downloaders = array();
+
+    // Initialize the downloader classes and initialize the files for writing.
+    $formatters = $this->getDownloadFormatters();
+    foreach ($formatters as $class => $label) {
+      if (!$this->isFormatterCompatible($class)) {
+        throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
+      }
+      if (!tripal_load_include_downloader_class($class)) {
+        throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+      }
+      $outfile = $this->getOutfile($class);
+      if (!$formatter or ($formatter == $class)) {
+        $downloaders[$class] = new $class($this->collection_id, $outfile);
+        $downloaders[$class]->writeInit($job);
+        if ($job) {
+          $job->logMessage("Writing " . lcfirst($class::$full_label) . " file.");
+        }
+      }
     }
 
-    if (!tripal_load_include_downloader_class($formatter)) {
-      throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+    // Count the total number of entities
+    $total_entities = 0;
+    $bundle_collections = $this->collection_bundles;
+    foreach ($this->bundles as $bundle) {
+      $bundle_name = $bundle->bundle_name;
+      $entity_ids  = $this->getEntityIDs($bundle_name);
+      $total_entities += count($entity_ids);
+    }
+    if ($job) {
+      $job->setTotalItems($total_entities);
     }
 
-    $outfile = $this->getOutfile($formatter);
+    // Next load the entities and write them to the files.
+    foreach ($this->bundles as $bundle) {
+      $bundle_name = $bundle->bundle_name;
+      $site_id = $bundle->site_id;
+      $entity_ids  = $this->getEntityIDs($bundle_name);
+      $field_ids = $this->getFieldIDs($bundle_name);
 
-    $downloader = new $formatter($this->collection_id, $outfile);
-    $downloader->write($job);
+      foreach ($entity_ids as $entity_id) {
+        $num_handled++;
 
+        if ($job) {
+          $job->setItemsHandled($num_handled);
+        }
+
+        // if we have a site_id then we need to get the entity from the
+        // remote service. Otherwise create the entity from the local system.
+        $entity = NULL;
+        if ($site_id) {
+          $entity = $this->loadRemoteEntity($entity_id, $site_id, $bundle_name);
+          if (!$entity) {
+            continue;
+          }
+        }
+        else {
+          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $field_ids, FALSE);
+          $entity = $result[$entity_id];
+        }
+
+        if (!$entity) {
+          continue;
+        }
+
+        // Write the same entity to all the formatters that are supported.
+        foreach ($downloaders as $my_formatter => $downloader) {
+          $downloader->writeEntity($entity, $job);
+        }
+      }
+    }
+
+    // Now close up all the files
+    foreach ($downloaders as $my_formatter => $downloader) {
+      $downloader->writeDone($job);
+    }
   }
 
+  /**
+   * Build and return a fake entity from a remote site using
+   * tripal web services calls.
+   *
+   * @param $remote_ids
+   *   Array of the remote ids.
+   *
+   * @param $site_id
+   *   Unique site id assigned in the tripal_sites table when
+   *   a new site is created via the web services interface.
+   *
+   * @param $remote_fields
+   *   Array of the remote fields.
+   *
+   * @param $bundle_name
+   *   Bundle name of the remote field, in this instance it will be
+   *   the accession of the field.
+   *
+   * @return $fake_tripal_entity
+   *    This is a fake entity structured to allow the format
+   *    entity function to process and return the info.
+   */
+  protected function loadRemoteEntity($remote_id, $site_id, $bundle_name) {
+
+    // Get the site documentation
+    $site = empty($site_id) ? 'local' : $site_id;
+    $site_doc = $this->retrieveRemoteAPIDoc($site_id);
+
+    // Get the remote entity and create the fake entity.
+    $query = $bundle_name . '/' . $remote_id;
+    $remote_entity = tripal_query_remote_site($site_id, $query);
+    if (!$remote_entity) {
+      return FALSE;
+    }
+
+    // Start building the fake id.
+    $entity = new stdClass();
+    $entity->entityType = 'TripalEntity';
+    $entity->entityInfo = [];
+    $entity->id = $remote_id;
+    $entity->type = 'TripalEntity';
+    $entity->bundle = $bundle_name;
+    $entity->site_id = $site_id;
+
+    // Get the context JSON for this remote entity, we'll use it to map
+    // the properties to the correct fields.
+    $context = drupal_http_request($remote_entity['@context']);
+    $context = drupal_json_decode($context->data);
+    $context = $context['@context'];
+
+    // Iterate through the fields that are printable and get those values
+    // from the results.
+    foreach ($this->printable_fields as $accession => $label) {
+      $field_id = $this->fields2terms[$site][$bundle_name]['by_accession'][$accession];
+
+      // If the field isn't part of this bundle then skip it.
+      if (!$field_id) {
+        continue;
+      }
+
+      $field = $this->fields[$site][$bundle_name][$field_id]['field'];
+      $instance = $this->fields[$site][$bundle_name][$field_id]['instance'];
+      $field_name = $field['field_name'];
+      $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+
+      // Get the key for this field from the context.
+      $field_key = $accession;
+      foreach ($context as $k => $v) {
+        if (!is_array($v)) {
+        }
+        if (!is_array($v) and $v == $accession) {
+          $field_key = $k;
+        }
+      }
+
+      // If the field is not in this remote bundle then add an empty value for
+      // it.
+      if (!$field_key) {
+        $entity->{$field_name}['und'][0]['value'] = '';
+        continue;
+      }
+
+      // If the key is for a field that is not "auto attached' then we need
+      // to get that field through a separate call.
+      $needs_query = FALSE;
+      if (array_key_exists($field_name, $context) and is_array($context[$field_name]) and
+          array_key_exists('@type', $context[$field_name]) and $context[$field_name]['@type'] == '@id'){
+            $needs_query = TRUE;
+      }
+
+      $value = '';
+      if (!$needs_query) {
+        $value = $remote_entity[$field_key];
+      }
+      $entity->{$field_name}['und'][0]['value'] = $value;
+    }
+
+    return $entity;
+  }
 }

@@ -110,6 +110,11 @@ abstract class TripalFieldDownloader {
 
 
   /**
+   * The file handle for an opeend file using during writing.
+   */
+  protected $fh;
+
+  /**
    * Constructs a new instance of the TripalFieldDownloader class.
    *
    * @param $collection_id
@@ -219,77 +224,53 @@ abstract class TripalFieldDownloader {
   }
 
   /**
-   * Creates the downloadable file.
    *
-   * @param $job
-   *    If this function is run as a Tripal Job then this argument can be
-   *    set to the Tripaljob object for keeping track of progress.
+   * @param TripalJob $job
    */
-  public function write(TripalJob $job = NULL) {
+  public function writeInit(TripalJob $job = NULL) {
 
     $user = user_load($this->collection->uid);
 
-    $fh = fopen(drupal_realpath($this->outfile), "w");
-
-    if (!$fh) {
+    $this->fh = fopen(drupal_realpath($this->outfile), "w");
+    if (!$this->fh) {
       throw new Exception("Cannout open collection file: " . $this->outfile);
     }
 
+    // Add the headers to the file.
     $headers = $this->getHeader();
     if ($headers) {
       foreach ($headers as $line) {
-        fwrite($fh, $line . "\r\n");
+        fwrite($this->fh, $line . "\r\n");
       }
     }
+  }
 
-    // Count the total number of entities
-    $total_entities = 0;
-    $bundle_collections = $this->collection_bundles;
-    foreach ($bundle_collections as $bundle_collection) {
-      $total_entities += count($bundle_collection->ids);
+  /**
+   * Write a single entity to the file.
+   *
+   * Before calling this function call the initWrite() function to
+   * establish the file and write headers.
+   *
+   * @param $entity
+   *   The Entity to write.
+   * @param TripalJob $job
+   */
+  public function writeEntity($entity, TripalJob $job = NULL){
+    $lines = $this->formatEntity($entity);
+    foreach ($lines as $line) {
+      fwrite($this->fh, $line . "\r\n");
     }
-    if ($job) {
-      $job->setTotalItems($total_entities);
-    }
+  }
 
-    $num_handled = 0;
-    foreach ($bundle_collections as $bundle_collection) {
-      $collection_bundle_id = $bundle_collection->collection_bundle_id;
-      $bundle_name = $bundle_collection->bundle_name;
-      $entity_ids = $bundle_collection->ids;
-      $fields = $bundle_collection->fields;
-      $site_id = $bundle_collection->site_id;
+  /**
+   * Closes the output file once writing of all entities is completed.
+   *
+   * @param TripalJob $job
+   */
+  public function writeDone(TripalJob $job = NULL) {
+    fclose($this->fh);
 
-      foreach ($entity_ids as $entity_id) {
-        $num_handled++;
-        if ($job) {
-          $job->setItemsHandled($num_handled);
-        }
-
-        // if we have a site_id then we need to get the entity from the
-        // remote service. Otherwise create the entity from the local system.
-        if ($site_id) {
-          $entity = $this->loadRemoteEntity($entity_id, $site_id, $bundle_name);
-          if (!$entity) {
-            continue;
-          }
-        }
-        else {
-          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $fields);
-          $entity = $result[$entity_id];
-        }
-
-        if (!$entity) {
-          continue;
-        }
-
-        $lines = $this->formatEntity($entity);
-        foreach ($lines as $line) {
-          fwrite($fh, $line . "\r\n");
-        }
-      }
-    }
-    fclose($fh);
+    $user = user_load($this->collection->uid);
 
     $file = new stdClass();
     $file->uri = $this->outfile;
@@ -315,7 +296,6 @@ abstract class TripalFieldDownloader {
       $file = file_load($fid);
     }
 
-
     // We use the fid for the last argument because these files
     // aren't really associated with any entity, but we need a value./
     // But, only add the usage if it doens't already exists.
@@ -331,6 +311,59 @@ abstract class TripalFieldDownloader {
     }
   }
 
+
+  /**
+   * Creates the downloadable file.
+   *
+   * @param $job
+   *    If this function is run as a Tripal Job then this argument can be
+   *    set to the Tripaljob object for keeping track of progress.
+   */
+  public function write(TripalJob $job = NULL) {
+
+    $this->initWrite($job);
+
+    $num_handled = 0;
+    foreach ($bundle_collections as $bundle_collection) {
+      $collection_bundle_id = $bundle_collection->collection_bundle_id;
+      $bundle_name = $bundle_collection->bundle_name;
+      $entity_ids = $bundle_collection->ids;
+      $fields = $bundle_collection->fields;
+      $site_id = $bundle_collection->site_id;
+
+      foreach ($entity_ids as $entity_id) {
+        $num_handled++;
+        if ($job) {
+          $job->setItemsHandled($num_handled);
+        }
+
+        // if we have a site_id then we need to get the entity from the
+        // remote service. Otherwise create the entity from the local system.
+        if ($site_id) {
+          $entity = $this->loadRemoteEntity($entity_id, $site_id, $bundle_name);
+          if (!$entity) {
+            continue;
+          }
+        }
+        else {
+          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $fields, FALSE);
+          $entity = $result[$entity_id];
+        }
+
+        if (!$entity) {
+          continue;
+        }
+
+         $lines = $this->formatEntity($entity);
+         foreach ($lines as $line) {
+           fwrite($fh, $line . "\r\n");
+         }
+      }
+    }
+
+    $this->finishWrite($job);
+  }
+
   /**
    * Setups a download stream for the file.
    */
@@ -338,105 +371,7 @@ abstract class TripalFieldDownloader {
 
   }
 
-  /**
-   * Build and return a fake entity from a remote site using
-   * tripal web services calls.
-   *
-   * @param $remote_ids
-   *   Array of the remote ids.
-   *
-   * @param $site_id
-   *   Unique site id assigned in the tripal_sites table when
-   *   a new site is created via the web services interface.
-   *
-   * @param $remote_fields
-   *   Array of the remote fields.
-   *
-   * @param $bundle_name
-   *   Bundle name of the remote field, in this instance it will be
-   *   the accession of the field.
-   *
-   * @return $fake_tripal_entity
-   *    This is a fake entity structured to allow the format
-   *    entity function to process and return the info.
-   */
-  protected function loadRemoteEntity($remote_id, $site_id, $bundle_name) {
 
-    // Get the site documentation
-    $site = empty($site_id) ? 'local' : $site_id;
-    $site_doc = $this->retrieveRemoteAPIDoc($site_id);
-
-    // Get the remote entity and create the fake entity.
-    $query = $bundle_name . '/' . $remote_id;
-    $remote_entity = tripal_query_remote_site($site_id, $query);
-    if (!$remote_entity) {
-      return FALSE;
-    }
-
-    // Start building the fake id.
-    $entity = new stdClass();
-    $entity->entityType = 'TripalEntity';
-    $entity->entityInfo = [];
-    $entity->id = $remote_id;
-    $entity->type = 'TripalEntity';
-    $entity->bundle = $bundle_name;
-    $entity->site_id = $site_id;
-
-    // Get the context JSON for this remote entity, we'll use it to map
-    // the properties to the correct fields.
-    $context = drupal_http_request($remote_entity['@context']);
-    $context = drupal_json_decode($context->data);
-    $context = $context['@context'];
-
-    // Iterate through the fields that are printable and get those values
-    // from the results.
-    foreach ($this->printable_fields as $accession => $label) {
-      $field_id = $this->fields2terms[$site][$bundle_name]['by_accession'][$accession];
-
-      // If the field isn't part of this bundle then skip it.
-      if (!$field_id) {
-        continue;
-      }
-
-      $field = $this->fields[$site][$bundle_name][$field_id]['field'];
-      $instance = $this->fields[$site][$bundle_name][$field_id]['instance'];
-      $field_name = $field['field_name'];
-      $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-
-      // Get the key for this field from the context.
-      $field_key = $accession;
-      foreach ($context as $k => $v) {
-        if (!is_array($v)) {
-        }
-        if (!is_array($v) and $v == $accession) {
-          $field_key = $k;
-        }
-      }
-
-      // If the field is not in this remote bundle then add an empty value for
-      // it.
-      if (!$field_key) {
-        $entity->{$field_name}['und'][0]['value'] = '';
-        continue;
-      }
-
-      // If the key is for a field that is not "auto attached' then we need
-      // to get that field through a separate call.
-      $needs_query = FALSE;
-      if (array_key_exists($field_name, $context) and is_array($context[$field_name]) and
-          array_key_exists('@type', $context[$field_name]) and $context[$field_name]['@type'] == '@id'){
-        $needs_query = TRUE;
-      }
-
-      $value = '';
-      if (!$needs_query) {
-        $value = $remote_entity[$field_key];
-      }
-      $entity->{$field_name}['und'][0]['value'] = $value;
-    }
-
-    return $entity;
-  }
 
   /**
    * Retrieves the vocabulary for a remote Tripal web service.

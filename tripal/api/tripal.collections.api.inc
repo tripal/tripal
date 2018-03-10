@@ -184,5 +184,5 @@ function tripal_get_collection($values) {
 function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
   $collection = new TripalEntityCollection();
   $collection->load($collection_id);
-  $collection->writeAll($job);
+  $collection->write(NULL, $job);
 }
