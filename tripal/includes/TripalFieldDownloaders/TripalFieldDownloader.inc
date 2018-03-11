@@ -372,27 +372,6 @@ abstract class TripalFieldDownloader {
   }
 
 
-
-  /**
-   * Retrieves the vocabulary for a remote Tripal web service.
-   *
-   * @return
-   *   The vocabulary of a remote Tripal web service.
-   */
-  protected function retrieveRemoteAPIDoc($site_id) {
-    $cache_name = 'tripal_web_services_doc_' . $site_id;
-    if ($cache = cache_get($cache_name)) {
-      $site_doc = $cache->data;
-    }
-    else {
-      $site_doc = tripal_get_remote_site_doc($site_id);
-      if (!$site_doc) {
-        cache_set('tripal_web_services_doc_'  . $site_id, $site_doc);
-      }
-    }
-    return $site_doc;
-  }
-
   /**
    * A helper function for the setFields() function.
    *
@@ -401,16 +380,14 @@ abstract class TripalFieldDownloader {
   private function setLocalFields() {
     foreach ($this->collection_bundles as $collection_bundle) {
       $bundle_name = $collection_bundle->bundle_name;
-      $site = empty($collection_bundle->site_id) ? 'local' : $collection_bundle->site_id;
-      // Skip remote fields.
       if ($collection_bundle->site_id) {
         continue;
       }
       foreach ($collection_bundle->fields as $field_id) {
         $field = field_info_field_by_id($field_id);
         $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-        $this->fields[$site][$bundle_name][$field_id]['field'] = $field;
-        $this->fields[$site][$bundle_name][$field_id]['instance'] = $instance;
+        $this->fields['local'][$bundle_name][$field_id]['field'] = $field;
+        $this->fields['local'][$bundle_name][$field_id]['instance'] = $instance;
       }
     }
   }
@@ -421,72 +398,28 @@ abstract class TripalFieldDownloader {
    * Adds remote fields to the list of fields.
    */
   private function setRemoteFields() {
+    // We can't use the Tripal ws API extensions if the
+    // tripal_ws module is not enabled.
+    if (!module_exists('tripal_ws')) {
+      return;
+    }
+
     foreach ($this->collection_bundles as $collection_bundle) {
       $bundle_name = $collection_bundle->bundle_name;
+      $site_id = $collection_bundle->site_id;
       // Skip local fields.
-      if (!$collection_bundle->site_id) {
+      if (!$site_id) {
         continue;
       }
-
-      $site = empty($site_id) ? 'local' : $site_id;
-      $site_doc = $this->retrieveRemoteAPIDoc($collection_bundle->site_id);
-
-      // Get the class that matches this bundle.
-      $class = $this->getRemoteClass($bundle_name, $site_doc);
 
       // Iterate through the fields of this collection and get the
       // info for each one from the class.  We will create "fake" field and
       // instance info arrays.
       foreach ($collection_bundle->fields as $field_id) {
-
-        // Get the property from the document for this field.
-        $property = $this->getRemoteClassProperty($class, $field_id, $site_doc);
-
-        // Now create the fake field and instance.
-        list($vocab, $accession) = explode(':', $field_id);
-        $field_name = 'tripal_remote_site_' . $collection_bundle->site_id . '_' . $field_id;
-        $field = array(
-          'field_name' => $field_name,
-          'type' => $field_name,
-          'storage' => array(
-            'type' => 'tripal_remote_site'
-          ),
-        );
-        $instance = array(
-          'label' => $property['hydra:title'],
-          'description' => $property['hydra:description'],
-          'formatters' => $property['tripal_formatters'],
-          'settings' => array(
-            'term_vocabulary' => $vocab,
-            'term_accession' => $accession
-          ),
-          'field_name' => $field_name,
-          'entity_type' => 'TripalEntity',
-          'bundle_name' => $bundle_name,
-        );
-        $this->fields[$site][$bundle_name][$field_id]['field'] = $field;
-        $this->fields[$site][$bundle_name][$field_id]['instance'] = $instance;
-      }
-    }
-  }
-
-  private function getRemoteClass($class_id, $site_doc){
-    // Get the class that matches this bundle.
-    $classes = $site_doc['supportedClass'];
-    $class = NULL;
-    foreach ($classes as $item) {
-      if ($item['@id'] == $class_id) {
-        $class = $item;
-      }
-    }
-    return $class;
-  }
-
-  private function getRemoteClassProperty($class, $prop_id, $site_doc){
-    $properties = $class['supportedProperty'];
-    foreach ($properties as $item) {
-      if ($item['property'] == $prop_id) {
-         return $item;
+        $field = tripal_get_remote_field_info($site_id, $bundle_name, $field_id);
+        $instance = tripal_get_remote_field_instance_info($site_id, $bundle_name, $field_id);
+        $this->fields[$site_id][$bundle_name][$field_id]['field'] = $field;
+        $this->fields[$site_id][$bundle_name][$field_id]['instance'] = $instance;
       }
     }
   }

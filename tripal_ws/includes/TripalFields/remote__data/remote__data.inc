@@ -205,45 +205,7 @@ class remote__data extends WebServicesField {
        list($ctype, $qdata) = explode('?', $query);
      }
 
-     // Build the URL to the remote web services.
-     $ws_version = $this->remote_site->version;
-     $ws_url = $this->remote_site->url;
-     $ws_url = trim($ws_url, '/');
-     $ws_url .= '/web-services/content/' . $ws_version . '/' . $ctype;
-
-     // Build the Query and make and substitions needed.
-     //dpm($ws_url . '?' . $query);
-     $options = array(
-       'data' => $qdata,
-     );
-     $data = drupal_http_request($ws_url, $options);
-
-     if (!$data) {
-       tripal_report_error('tripal_ws', TRIPAL_ERROR,
-           t('Could not connect to the remote web service.'));
-       return FALSE;
-     }
-
-     // If the data object has an error then this is some sort of
-     // connection error (not a Tripal web servcies error).
-     if (property_exists($data, 'error')) {
-       tripal_report_error('tripal_ws', TRIPAL_ERROR,
-           'Web Services error on remote site: %error.',
-           array('%error' => $data->error));
-       return FALSE;
-     }
-
-     // We got a response, so convert it to a PHP array.
-     $data = drupal_json_decode($data->data);
-
-     // Check if there was a Tripal Web Services error.
-     if (array_key_exists('error', $data)) {
-       $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
-       tripal_report_error('tripal_ws', TRIPAL_ERROR,
-           'Web Services error on remote site: %error.',
-           array('%error' => $error));
-       return FALSE;
-     }
+     $data = tripal_query_remote_site($this->remote_site->site_id, $query);
 
      return $data;
    }

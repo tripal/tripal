@@ -84,7 +84,7 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
         }
         // Add in the organism.
         else if ($accession == 'OBI:0100026') {
-          $others[$instance['label']] = strip_tags($value['rdfs:label']);
+          //$others[$instance['label']] = strip_tags($value['rdfs:label']);
         }
         // All other fields add them to the others list.
         else {

@@ -22,7 +22,7 @@ function tripal_user_collections_page() {
     $collection->load($collection_id);
 
     $downloads = array();
-    $formatters = $collection->getDownloadFormatters();
+    $formatters = $collection->getFormatters();
 
     foreach ($formatters as $class_name => $label) {
 
