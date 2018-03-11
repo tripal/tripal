@@ -34,7 +34,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
   protected function formatEntity($entity) {
     $bundle_name = $entity->bundle;
     $site = !property_exists($entity, 'site_id') ? 'local' : $entity->site_id;
-    $row = array();
+    $col = array();
 
     // Iterate through all of the printable fields and add the value to
     // the row.
@@ -43,7 +43,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
       // If this field is not present for this entity then add an empty
       // element and move on.
       if (!array_key_exists($accession, $this->fields2terms[$site][$bundle_name]['by_accession'])) {
-        $row[] = '';
+        $col[] = '';
         continue;
       }
 
@@ -60,33 +60,33 @@ class TripalCSVDownloader extends TripalFieldDownloader {
         // If the single element is not an array then this is good.
         if (!is_array($value)) {
           if (is_numeric($value) or !$value) {
-            $row[] = $value;
+            $col[] = $value;
           }
           else {
-            $row[] = '"' . $value . '"';
+            $col[] = '"' . $value . '"';
           }
         }
         else {
-          if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
-            $row[] = '"' . strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']) . '"';
+          if (array_key_exists('rdfs:label', $value)) {
+            $col[] = '"' . strip_tags($entity->{$field_name}['und'][0]['value']['rdfs:label']) . '"';
           }
-          elseif (array_key_exists('schema:description', $entity->{$field_name}['und'][0]['value'])) {
+          elseif (array_key_exists('schema:description', $value)) {
             $label = $entity->{$field_name}['und'][0]['value']['schema:description'];
-            $row[] = strip_tags($label);
+            $col[] = strip_tags($label);
           }
           else {
-            $row[] = '';
+            $col[] = '';
           }
           // TODO: What to do with fields that are arrays?
         }
       }
       // If we have multiple items then deal with that.
       else {
-        $row[] = '';
+        $col[] = '';
         // TODO: What to do with fields that have multiple values?
       }
     }
-    return array(implode(",", $row));
+    return array(implode(",", $col));
   }
 
   /**
