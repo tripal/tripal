@@ -62,9 +62,12 @@ class TripalTabDownloader extends TripalFieldDownloader {
            $row[] = $value;
          }
          else {
-           print_r($value);
            if (array_key_exists('rdfs:label', $entity->{$field_name}['und'][0]['value'])) {
              $label = $entity->{$field_name}['und'][0]['value']['rdfs:label'];
+             $row[] = strip_tags($label);
+           }
+           elseif (array_key_exists('schema:description', $entity->{$field_name}['und'][0]['value'])) {
+             $label = $entity->{$field_name}['und'][0]['value']['schema:description'];
              $row[] = strip_tags($label);
            }
            else {

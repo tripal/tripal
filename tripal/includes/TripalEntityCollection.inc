@@ -549,9 +549,9 @@ class TripalEntityCollection {
 
         // Write the same entity to all the formatters that are supported.
         foreach ($formatters as $class => $formatter) {
-          if ($class == 'TripalTabDownloader') {
+          //if ($class == 'TripalTabDownloader') {
             $formatter->writeEntity($entity, $job);
-          }
+          //}
         }
       }
     }
