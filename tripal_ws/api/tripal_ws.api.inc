@@ -323,6 +323,24 @@ function tripal_get_remote_content_context($site_id, $context_url, $bundle_acces
   $context = tripal_get_remote_context($context_url, $cache_id);
   return $context;
 }
+
+/**
+ * Clears the cached remote site documentation and context.
+ *
+ * When querying a remote website, the site's API documenation and page context
+ * is cached to make re-use of that information easier in the future. This
+ * function can be used to clear those caches.
+ *
+ * @param $site_id
+ *   The numeric site ID for the remote Tripal site.
+ */
+function tripal_clear_remote_cache($site_id) {
+  if (!$site_id) {
+    throw new Exception('PLease provide a numeric site ID for the tripal_get_remote_API_doc function.');
+  }
+  clear_cache_all('trp_ws_context_' . $site_id , 'cache', TRUE);
+  clear_cache_all('trp_ws_doc_' . $site_id , 'cache', TRUE);
+}
 /**
  * Retrieves the API documentation for a remote Tripal web service.
  *
