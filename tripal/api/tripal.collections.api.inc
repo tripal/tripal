@@ -41,6 +41,7 @@
  * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection($details) {
+
   global $user;
 
   try {
@@ -48,7 +49,7 @@ function tripal_create_collection($details) {
     $collection->create($details);
     $collection_id = $collection->getCollectionID();
 
-    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view for generate file links.",
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
       array(
         '%name' => $details['collection_name'],
         '%num_recs' => count($details['ids']),

@@ -165,7 +165,7 @@ class TripalEntityCollection {
     }
 
 
-    // Before inserting the new collection make sure we don't violote the unique
+    // Before inserting the new collection make sure we don't violate the unique
     // constraint that a user can only have one collection of the give name.
     $has_match = db_select('tripal_collection', 'tc')
       ->fields('tc', array('collection_id'))
@@ -207,7 +207,9 @@ class TripalEntityCollection {
    *
    * @throws Exception
    */
-  public function addBundle($details, $collection_id) {
+  public function addBundle($details) {
+    $collection_id = $this->collection_id;
+
     if (!$details['bundle_name']) {
       throw new Exception("Must provide a 'bundle_name' to TripalEntityCollection::addFields().");
     }
@@ -219,6 +221,7 @@ class TripalEntityCollection {
     }
 
     try {
+
       $collection_bundle_id = db_insert('tripal_collection_bundle')
         ->fields(array(
           'bundle_name' => $details['bundle_name'],
