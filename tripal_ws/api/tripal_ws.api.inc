@@ -642,8 +642,7 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
  */
 function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
 
-  // If depth is 0 then we are tring to find out how to deal with this field.
-  if ($depth == 0) {
+
     // Check if this is an array.
     if ($field_data['@type'] == 'Collection') {
       $members = array();
@@ -662,13 +661,6 @@ function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
         return $members;
       }
     }
-    else {
-      $next_depth = $depth + 1;
-      return _tripal_update_remote_entity_field($field_data, $context, $next_depth);
-    }
-  }
-  // If this isn't depth 0 then we are rewriting keys as CV term accession.
-  else {
 
     $value = array();
     foreach ($field_data as $k => $v) {
@@ -682,14 +674,14 @@ function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
       if (is_array($v)) {
         $next_depth = $depth + 1;
         $subvalue = _tripal_update_remote_entity_field($v, $context, $next_depth);
-        $value[$accession] = $value;
+        $value[$accession] = $subvalue;
       }
       else {
         $value[$accession] = $v;
       }
     }
     return $value;
-  }
+
 }
 
 /**
