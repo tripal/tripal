@@ -1086,14 +1086,30 @@ function tripal_cron() {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',
-        $function, $args, 1, $includes, TRUE);
+      tripal_add_job(
+        "Cron: Checking for '$module' notifications.",    // Job Name
+        'tripal',                                         // Module Name
+        $function,                                        // Callback
+        $args,                                            // Arguements
+        1,                                                // User UID
+        1,                                                // Priority (1-10)
+        $includes,                                        // Includes
+        TRUE                                              // Ignore Duplicates
+      );
     }
   }
 
   // Check for expired collections.
-  tripal_add_job('Cron: Checking expired collections', 'tripal',
-    'tripal_expire_collections', $args, 1, $includes, TRUE);
+  tripal_add_job(
+    'Cron: Checking expired collections',             // Job Name
+    'tripal',                                         // Module Name
+    'tripal_expire_collections',                      // Callback
+    $args,                                            // Arguements
+    1,                                                // User UID
+    1,                                                // Priority (1-10)
+    $includes,                                        // Includes
+    TRUE                                              // Ignore Duplicates
+  );
 }
 
 /**
