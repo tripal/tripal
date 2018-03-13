@@ -336,10 +336,10 @@ function tripal_get_remote_content_context($site_id, $context_url, $bundle_acces
  */
 function tripal_clear_remote_cache($site_id) {
   if (!$site_id) {
-    throw new Exception('PLease provide a numeric site ID for the tripal_get_remote_API_doc function.');
+    throw new Exception('Please provide a numeric site ID for the tripal_clear_remote_cache function.');
   }
-  clear_cache_all('trp_ws_context_' . $site_id , 'cache', TRUE);
-  clear_cache_all('trp_ws_doc_' . $site_id , 'cache', TRUE);
+  cache_clear_all('trp_ws_context_' . $site_id , 'cache', TRUE);
+  cache_clear_all('trp_ws_doc_' . $site_id , 'cache', TRUE);
 }
 /**
  * Retrieves the API documentation for a remote Tripal web service.
@@ -354,7 +354,7 @@ function tripal_get_remote_API_doc($site_id) {
   $site_doc = '';
 
   if (!$site_id) {
-    throw new Exception('PLease provide a numeric site ID for the tripal_get_remote_API_doc function.');
+    throw new Exception('Please provide a numeric site ID for the tripal_get_remote_API_doc function.');
   }
 
   $cache_name = 'trp_ws_doc_' . $site_id;

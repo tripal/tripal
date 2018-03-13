@@ -523,7 +523,9 @@ class TripalEntityCollection {
       $field_ids = $this->getFieldIDs($bundle_name);
 
       // Clear any cached @context or API docs.
-      tripal_clear_remote_cache();
+      if ($site_id and module_exists('tripal_ws')) {
+        tripal_clear_remote_cache($site_id);
+      }
 
       foreach ($entity_ids as $entity_id) {
         $num_handled++;
