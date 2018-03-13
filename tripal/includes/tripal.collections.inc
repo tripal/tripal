@@ -100,18 +100,22 @@ function tripal_user_collections_view_page($uid, $collection_id) {
   drupal_set_title('Data Collection: ' . $collection->getName());
 
   // Get the content types for this data collection.
-  $bundles = $collection->getBundles();
+  $cbundles = $collection->getBundles();
   $content_types = array();
   $field_list = array();
   $formatters_list = array();
-  $entities_list = array();
-  foreach ($bundles as $bundle) {
-    $bundle = tripal_load_bundle_entity(array('name' => $bundle->bundle_name));
-    $content_types[] = $bundle->label;
+  $num_entities = 0;
 
-    $fields = $collection->getFields($bundle->name);
-    foreach ($fields as $index => $flist) {
-      foreach ($flist as $field_id) {
+  foreach ($cbundles as $cbundle) {
+    $eids = $collection->getEntityIDs($cbundle->bundle_name);
+    $fields = $collection->getFieldIDs($cbundle->bundle_name);
+
+    // Convert local field IDs to their names.
+    if (!$cbundle->site_id) {
+      $bundle = tripal_load_bundle_entity(array('name' => $cbundle->bundle_name));
+      $content_types[] = $bundle->label;
+
+      foreach ($fields as $field_id) {
         $field = field_info_field_by_id($field_id);
         $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle->name);
         $field_list[] = $instance['label'];
@@ -119,17 +123,15 @@ function tripal_user_collections_view_page($uid, $collection_id) {
         $field_formatters = tripal_get_field_field_formatters($field, $instance);
         foreach ($field_formatters as $class_name => $label) {
           tripal_load_include_downloader_class($class_name);
-          $formatters_list[] = $label . ' (' . $class_name::$full_label . ')';
+          $formatters_list[] = $class_name::$label . ' (' . $class_name::$full_label . ')';
         }
       }
     }
+    // Convert remote field IDs to their names.
+    // TODO: add in retrieval of remote details.
 
-    $eids = $collection->getEntityIDs($bundle->name);
-    foreach ($eids as $index => $elist) {
-      foreach ($elist as $eid) {
-        $entities_list[] = $eid;
-      }
-    }
+
+    $num_entities += count($eids);
   }
 
 
@@ -156,7 +158,7 @@ function tripal_user_collections_view_page($uid, $collection_id) {
     '#type' => 'item',
     '#title' => 'Records',
     '#description' => t('The number of records contained in this data collection.'),
-    '#markup' => count($entities_list),
+    '#markup' => number_format($num_entities),
   );
 
   $contents['peek'] = array(

@@ -186,44 +186,54 @@ function tripal_remove_site($record_id) {
 }
 
 /**
- * Makes a request to the "content"service of a remote Tripal web site.
+ * Makes a request to the "content" service of a remote Tripal web site.
  *
  * @param $site_id
  *   The numeric site ID for the remote Tripal site.
- *
+ * @param $path
+ *   The web service path for the content (excluding
+ *   'web-servcies/vX.x/content').  To retrieve the full content listing
+ *   leave this paramter empty.
  * @param $query
- *   The query string. This string is added to the URL for the remote
- *   website.
+ *   An query string to appear after the ? in a URL.
  *
  * @return
  *   The JSON response formatted in a PHP array or FALSE if a problem occured.
  */
-function tripal_query_remote_site($site_id, $query) {
-  $ctype = $query;
-  $qdata = '';
-  if (preg_match('/\?/', $query)) {
-    list($ctype, $qdata) = explode('?', $query);
+function tripal_get_remote_content($site_id, $path = '', $query = '') {
+
+  if (!$site_id) {
+    throw new Exception('Please provide a numeric site ID for the tripal_get_remote_content function.');
   }
 
-  if ($site_id) {
-    $remote_site = db_select('tripal_sites', 'ts')
-      ->fields('ts')
-      ->condition('ts.id', $site_id)
-      ->execute()
-      ->fetchObject();
+  // Fetch the record for this site id.
+  $remote_site = db_select('tripal_sites', 'ts')
+    ->fields('ts')
+    ->condition('ts.id', $site_id)
+    ->execute()
+    ->fetchObject();
+
+  if (!$remote_site) {
+    tripal_report_error('tripal_ws', TRIPAL_ERROR,
+      t('Could not find a remote tripal site using the id provided: !id.',
+        array('!id' => $site_id)));
+    return FALSE;
   }
 
   // Build the URL to the remote web services.
   $ws_version = $remote_site->version;
   $ws_url = $remote_site->url;
   $ws_url = trim($ws_url, '/');
-  $ws_url .= '/web-services/content/' . $ws_version . '/' . $ctype;
+  $ws_url .= '/web-services/content/' . $ws_version . '/' . $path;
+
   // Build the Query and make and substitions needed.
-  //dpm($ws_url . '?' . $query);
-  $options = array(
-    'data' => $qdata,
-  );
-  $data = drupal_http_request($ws_url, $options);
+  if ($query) {
+    $ws_url = $ws_url . '?' . $query;
+  }
+
+  // TODO: something is wrong here, the query is not being recognized on
+  // the remote Tripal site. It's just returning the default.
+  $data = drupal_http_request($ws_url);
 
   if (!$data) {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
@@ -416,10 +426,103 @@ function tripal_get_remote_API_doc($site_id) {
 }
 
 /**
- * Build and return a "fake" entity for a record from a remote Tripal site.
+ * Queries a remote site for an array of bulk entity ids.
+ *
+ * This function returns an array of "fake" entities containing values
+ * for fields specified.
+ *
+ * @param $remote_entity_ids
+ *   Array of the remote ids.
+ * @param $site_id
+ *   The numeric site ID for the remote Tripal site.
+ * @param $bundle_accession
+ *   The controlled vocabulary term accession for the content type
+ *   on the remote Tripal site.
+ * @param $field_ids
+ *   The controlled vocabulary term accessions for the fields available
+ *   on the remote content type.  Any remote fields that matches these IDs will
+ *   be added to the entity returned.
+ * @return
+ *    An array of fake entity objects where the key is the entity_id and
+ *    the value is the object.
+ */
+function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_accession, $field_ids) {
+
+  if (!$remote_entity_ids) {
+    throw new Exception('Please provide the list of remote entity ids for the tripal_load_remote_entities function.');
+  }
+  if (!is_array($remote_entity_ids)) {
+    throw new Exception('Please provide an array for the remote entity ids for the tripal_load_remote_entities function.');
+  }
+  if (!$site_id) {
+    throw new Exception('Please provide a numeric site ID for the tripal_load_remote_entities function.');
+  }
+  if (!$bundle_accession) {
+    throw new Exception('Please provide the bundle accession for the tripal_load_remote_entities function.');
+  }
+  if (!$field_ids) {
+    throw new Exception('Please provide the list of field IDs for the tripal_load_remote_entities function.');
+  }
+  if (!is_array($field_ids)) {
+    throw new Exception('Please provide an array for the field IDs for the tripal_load_remote_entities function.');
+  }
+
+  // Get the site documentation (loads from cache if already retrieved).
+  $site_doc = tripal_get_remote_API_doc($site_id);
+
+  // Generate an array for the query and then execute it.
+  $query = 'page=1&limit=' . count($remote_entity_ids) .
+    '&ids=' . urlencode(implode(",", $remote_entity_ids)) .
+    '&fields=' . urlencode(implode(",", $field_ids));
+
+  $results = tripal_get_remote_content($site_id, $bundle_accession, $query);
+  if (!$results) {
+    return FALSE;
+  }
+
+  // Get the context JSON for this remote entity, we'll use it to map
+  $context_url = $results['@context'];
+  $context = tripal_get_remote_content_context($site_id, $context_url, $bundle_accession);
+  if (!$context) {
+    return $entity;
+  }
+
+  $total_items = $results['totalItems'];
+  $members = $results['member'];
+
+  $entities = array();
+  foreach($members as $member) {
+    // Start building the fake entity.
+    $entity_id = preg_replace('/^.*?(\d+)$/', '$1', $member['@id']);
+    $entity = new stdClass();
+    $entity->entityType = 'TripalEntity';
+    $entity->entityInfo = [];
+    $entity->id = $entity_id;
+    $entity->type = 'TripalEntity';
+    $entity->bundle = $bundle_accession;
+    $entity->site_id = $site_id;
+
+    $member = _tripal_update_remote_entity_field($member, $context, 1);
+    foreach ($member as $field_id => $value) {
+      $field = tripal_get_remote_field_info($site_id, $bundle_accession, $field_id);
+      $instance = tripal_get_remote_field_instance_info($site_id, $bundle_accession, $field_id);
+      $field_name = $field['field_name'];
+      $entity->{$field_name}['und'][0]['value'] = $value;
+    }
+
+    $entities[$entity_id] = $entity;
+  }
+  return $entities;
+}
+
+/**
+ * Queries a remote site for an entity.
+ *
+ * This function returns a "fake" entity containing values for all fields
+ * specified.
  *
  * @param $remote_entity_id
- *   Array of the remote ids.
+ *   A remote entity ID.
  * @param $site_id
  *   The numeric site ID for the remote Tripal site.
  * @param $bundle_accession
@@ -438,13 +541,12 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
   $site_doc = tripal_get_remote_API_doc($site_id);
 
   // Get the remote entity and create the fake entity.
-  $query = $bundle_accession . '/' . $remote_entity_id;
-  $remote_entity = tripal_query_remote_site($site_id, $query);
+  $remote_entity = tripal_get_remote_content($site_id, $bundle_accession . '/' . $remote_entity_id);
   if (!$remote_entity) {
     return FALSE;
   }
 
-  // Start building the fake id.
+  // Start building the fake entity.
   $entity = new stdClass();
   $entity->entityType = 'TripalEntity';
   $entity->entityInfo = [];
@@ -452,7 +554,6 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
   $entity->type = 'TripalEntity';
   $entity->bundle = $bundle_accession;
   $entity->site_id = $site_id;
-
 
   // Get the context JSON for this remote entity, we'll use it to map
   $context_url = $remote_entity['@context'];
@@ -678,7 +779,7 @@ function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $fie
 
 
 /**
- * Retreive the bundle (content type) information from a remote Tripal site.
+ * Retreive the content type information from a remote Tripal site.
  *
  * The array returned is equivalent to the Hydra Vocabulary "supportedClass"
  * stanza.
@@ -692,7 +793,7 @@ function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $fie
  *   A PHP array corresponding to the Hydra Class stanza (i.e. a content type).
  *   Returns NULL if the class ID cannot be found.
  */
-function tripal_get_remote_bundle_doc($site_id, $bundle_accession){
+function tripal_get_remote_content_doc($site_id, $bundle_accession){
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -732,7 +833,7 @@ function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accessi
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
 
-  $class = tripal_get_remote_bundle_doc($site_id, $bundle_accession);
+  $class = tripal_get_remote_content_doc($site_id, $bundle_accession);
   $properties = $class['supportedProperty'];
   foreach ($properties as $item) {
     if ($item['property'] == $field_accession) {

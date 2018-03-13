@@ -515,48 +515,55 @@ class TripalEntityCollection {
       $job->setTotalItems($total_entities);
     }
 
-    // Next load the entities and write them to the files.
+    // Iterate through the bundles in this collection and get the entities.
     foreach ($this->bundles as $bundle) {
       $bundle_name = $bundle->bundle_name;
       $site_id = $bundle->site_id;
-      $entity_ids  = $this->getEntityIDs($bundle_name);
-      $field_ids = $this->getFieldIDs($bundle_name);
+      $entity_ids  = array_unique($this->getEntityIDs($bundle_name));
+      $field_ids = array_unique($this->getFieldIDs($bundle_name));
 
       // Clear any cached @context or API docs.
       if ($site_id and module_exists('tripal_ws')) {
         tripal_clear_remote_cache($site_id);
       }
 
-      foreach ($entity_ids as $entity_id) {
-        $num_handled++;
-
+      // We want to load entities in batches to speed up performance.
+      $num_eids = count($entity_ids);
+      $bundle_eids_handled = 0;
+      $slice_size = 100;
+      while ($bundle_eids_handled < $num_eids) {
+        // Get a bantch of $slice_size elements from the entities array.
+        $slice = array_slice($entity_ids, $bundle_eids_handled, $slice_size);
         if ($job) {
-          $job->setItemsHandled($num_handled);
+          $job->logMessage('Getting entities for ids !start to !end of !total',
+              array('!start' => $bundle_eids_handled,
+                    '!end' => $bundle_eids_handled + count($slice),
+                    '!total' => $num_eids));
         }
+        $bundle_eids_handled += count($slice);
 
-        // if we have a site_id then we need to get the entity from the
-        // remote service. Otherwise create the entity from the local system.
-        $entity = NULL;
+        // If the bundle is from a remote site then call the appropriate
+        // function, otherwise, call the local function.
         if ($site_id and module_exists('tripal_ws')) {
-          $entity = tripal_load_remote_entity($entity_id, $site_id, $bundle_name, $field_ids);
-          if (!$entity) {
-            continue;
-          }
+          $entities = tripal_load_remote_entities($slice, $site_id, $bundle_name, $field_ids);
         }
         else {
-          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $field_ids, FALSE);
-          $entity = $result[$entity_id];
+          $entities = tripal_load_entity('TripalEntity', $slice, FALSE, $field_ids, FALSE);
         }
+        $job->logMessage('Got !count entities.', array('!count' => count($entities)));
 
-        if (!$entity) {
-          continue;
+        // Now write each entity one at a time to the files.
+        foreach ($entities as $entity_id => $entity) {
+
+          // Write the same entity to all the formatters that are supported.
+          foreach ($formatters as $class => $formatter) {
+            //if ($class == 'TripalTabDownloader') {
+              $formatter->writeEntity($entity, $job);
+            //}
+          }
         }
-
-        // Write the same entity to all the formatters that are supported.
-        foreach ($formatters as $class => $formatter) {
-          //if ($class == 'TripalTabDownloader') {
-            $formatter->writeEntity($entity, $job);
-          //}
+        if ($job) {
+          $job->setItemsHandled($num_handled + count($slice));
         }
       }
     }

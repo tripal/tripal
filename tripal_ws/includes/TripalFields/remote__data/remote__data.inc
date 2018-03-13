@@ -205,7 +205,7 @@ class remote__data extends WebServicesField {
        list($ctype, $qdata) = explode('?', $query);
      }
 
-     $data = tripal_query_remote_site($this->remote_site->site_id, $query);
+     $data = tripal_get_remote_content($this->remote_site->site_id, $query);
 
      return $data;
    }
