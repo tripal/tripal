@@ -1,0 +1,50 @@
+<?php
+
+// Bootstrap Drupal.
+$_SERVER['HTTP_HOST'] = 'localhost';
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['REQUEST_METHOD'] = 'GET';
+$_SERVER['SERVER_NAME'] = NULL;
+$_SERVER['SERVER_SOFTWARE'] = NULL;
+$_SERVER['HTTP_USER_AGENT'] = NULL;
+define('DRUPAL_ROOT', '/var/www/html');
+require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
+drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+
+use PHPUnit\Framework\TestCase;
+
+class TripalEntityCollectionTest extends TestCase {
+
+  protected $collection = NULL;
+
+
+  public function setUp() {
+    $details = ['uid' => 1, 'collection_name' => "test_collection_name"];
+    $collection = new TripalEntityCollection();
+    $collection->create($details);
+    $this->collection = $collection;
+  }
+
+  public function testCreateCollectionAndBaseGetters() {
+
+    $collection = $this->collection;
+
+    $name = $collection->getName();
+    $collection_id = $collection->getCollectionID();
+    $this->assertEquals($name, "test_collection_name");
+    $this->assertNotNull($collection_id);
+    $this->assertInternalType("int", (int) $collection_id);
+  }
+
+  public function testAddBundle() {
+//create two entities, AND their fields.  annoying.
+
+    $details = ['bundle_name' => 'organism'];
+
+  }
+
+  public function tearDown() {
+    $this->collection->delete();
+  }
+}

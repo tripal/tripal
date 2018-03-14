@@ -322,7 +322,7 @@ class TripalEntityController extends EntityAPIController {
    * @return
    *   The saved entity object with updated properties.
    */
-  public function save($entity) {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
     $pkeys = array();
 
@@ -348,7 +348,7 @@ class TripalEntityController extends EntityAPIController {
       }
     }
 
-    $transaction  = db_transaction();
+    $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
       // If our entity has no id, then we need to give it a
       // time of creation.

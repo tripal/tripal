@@ -165,7 +165,7 @@ class TripalEntityCollection {
     }
 
 
-    // Before inserting the new collection make sure we don't violote the unique
+    // Before inserting the new collection make sure we don't violate the unique
     // constraint that a user can only have one collection of the give name.
     $has_match = db_select('tripal_collection', 'tc')
       ->fields('tc', array('collection_id'))
