@@ -310,10 +310,6 @@ abstract class TripalFieldDownloader {
         file_usage_add($file, 'tripal', 'data-collection', $fid);
       }
     }
-
-    if ($job) {
-      $job->setItemsHandled($num_handled);
-    }
   }
 
 
