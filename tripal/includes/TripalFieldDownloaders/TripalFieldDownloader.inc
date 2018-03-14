@@ -130,11 +130,16 @@ abstract class TripalFieldDownloader {
     }
 
     // Get the collection record and store it.
-    $this->collection = db_select('tripal_collection', 'tc')
+    $collection = db_select('tripal_collection', 'tc')
       ->fields('tc')
       ->condition('collection_id', $collection_id, '=')
       ->execute()
       ->fetchObject();
+
+    if (!$collection) {
+      throw new Exception(t("Cannot find a collection that matches the provided id: !id", array('!id' => $collection_id)));
+    }
+    $this->collection = $collection;
 
     // Make sure the user directory exists
     $user = user_load($this->collection->uid);
@@ -143,7 +148,6 @@ abstract class TripalFieldDownloader {
     // Set the collection ID of the collection that this downloader will use.
     $this->collection_id = $collection_id;
     $this->outfile = $user_dir . '/' . $outfile_name;
-    $this->selected_fields = $selected_fields;
 
     // A data collection may have multiple bundles.  We'll need to get
     // them all and store them.
@@ -183,18 +187,19 @@ abstract class TripalFieldDownloader {
   public function isFieldSupported($field, $instance) {
     $field_name = $field['field_name'];
     $field_type = $field['type'];
+    $this_formatter = get_class($this);
 
     // If a field is a TripalField then check its supported downloaders.
     if (tripal_load_include_field_class($field_type)) {
       $formatters = $field_type::$download_formatters;
-      if (in_array($formatter, $settings['download_formatters'])) {
+      if (in_array($this_formatter, $formatters)) {
         return TRUE;
       }
     }
 
-    $is_remote = $field['field']['storage']['type'] == 'tripal_remote_field' ? TRUE : FALSE;
-    if ($is_remote) {
-      if (in_array($formatter, $instance['formatters'])) {
+    // If this is a remote field then check that differently.
+    if ($field['storage']['type'] == 'tripal_remote_field' ) {
+      if (in_array($this_formatter, $instance['formatters'])) {
         return TRUE;
       }
     }
@@ -464,6 +469,7 @@ abstract class TripalFieldDownloader {
     foreach ($this->fields as $site => $bundles) {
       foreach ($bundles as $bundle_name => $bundle_fields) {
         foreach ($bundle_fields as $field_id => $info) {
+          $field = $info['field'];
           $instance = $info['instance'];
           $accession = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
           if (!array_key_exists($accession, $this->printable_fields)) {

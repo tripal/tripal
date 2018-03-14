@@ -79,9 +79,10 @@ class schema__alternate_name extends ChadoField {
     $linker_table = $base_table . '_synonym';
     $options = array('return_array' => 1);
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    if (count($record->$linker_table) > 0) {
+    $synonyms_linker = $record->$linker_table;
+    if (is_array($synonyms_linker) and count($synonyms_linker) > 0) {
       $i = 0;
-      foreach ($record->$linker_table as $index => $linker) {
+      foreach ($synonyms_linker as $index => $linker) {
         $synonym = $linker->synonym_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => $synonym->name,

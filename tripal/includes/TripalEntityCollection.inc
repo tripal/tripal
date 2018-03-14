@@ -60,6 +60,14 @@ class TripalEntityCollection {
     }
 
     try {
+      // Remove any files that may have been created
+      foreach ($this->formatters as $class_name => $label) {
+        tripal_load_include_downloader_class($class_name);
+        $outfile = $this->getOutfile($class_name);
+        $downloader = new $class_name($this->collection_id, $outfile);
+        $downloader->delete();
+      }
+
       // Delete from the tripal collection table.
       db_delete('tripal_collection')
         ->condition('collection_id', $this->collection_id)
@@ -69,14 +77,6 @@ class TripalEntityCollection {
       db_delete('tripal_collection_bundle')
         ->condition('collection_id', $this->collection_id)
         ->execute();
-
-      // Remove any files that may have been created
-      foreach ($this->formatters as $class_name => $label) {
-        tripal_load_include_downloader_class($class_name);
-        $outfile = $this->getOutfile($class_name);
-        $downloader = new $class_name($this->collection_id, $outfile);
-        $downloader->delete();
-      }
 
       // Reset the class to defaults.
       $this->collection_id = NULL;

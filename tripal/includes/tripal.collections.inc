@@ -205,7 +205,8 @@ function tripal_user_collections_delete_form_submit($form, &$form_state) {
       drupal_set_message('The data collection has been deleted.');
     }
     catch (Exception $e) {
-      drupal_set_message('There was a problem deleting the data collection please contact the site to report the error.', 'error');
+      drupal_set_message(t('There was a problem deleting the data collection ' .
+          'please contact the site to report the error: !message', array('!message', $e->getMessage())), 'error');
     }
   }
   drupal_goto('user/' . $user->uid . '/data-collections');
