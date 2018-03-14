@@ -324,7 +324,7 @@ abstract class TripalFieldDownloader {
     $this->initWrite($job);
 
     $num_handled = 0;
-    foreach ($bundle_collections as $bundle_collection) {
+    foreach ($this->collection_bundles as $bundle_collection) {
       $collection_bundle_id = $bundle_collection->collection_bundle_id;
       $bundle_name = $bundle_collection->bundle_name;
       $entity_ids = $bundle_collection->ids;
@@ -356,7 +356,7 @@ abstract class TripalFieldDownloader {
 
          $lines = $this->formatEntity($entity);
          foreach ($lines as $line) {
-           fwrite($fh, $line . "\r\n");
+           fwrite($this->fh, $line . "\r\n");
          }
       }
     }
