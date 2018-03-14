@@ -207,7 +207,7 @@ class TripalEntityCollection {
    *
    * @throws Exception
    */
-  public function addBundle($details, $collection_id) {
+  public function addBundle($details) {
     if (!$details['bundle_name']) {
       throw new Exception("Must provide a 'bundle_name' to TripalEntityCollection::addFields().");
     }
@@ -224,12 +224,12 @@ class TripalEntityCollection {
           'bundle_name' => $details['bundle_name'],
           'ids' => serialize($details['ids']),
           'fields' => serialize($details['fields']),
-          'collection_id' => $collection_id,
+          'collection_id' => $this->collection_id,
         ))
         ->execute();
 
       // Now load the job into this object.
-      $this->load($collection_id);
+      $this->load($this->collection_id);
     }
     catch (Exception $e) {
       throw new Exception('Cannot create collection: ' . $e->getMessage());

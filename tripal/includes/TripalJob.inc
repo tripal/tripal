@@ -283,9 +283,11 @@ class TripalJob {
     try {
 
       // Include the necessary files needed to run the job.
-      foreach ($this->job->includes as $path) {
-        if ($path) {
-          require_once $path;
+      if (is_array($this->job->includes)) {
+        foreach ($this->job->includes as $path) {
+          if ($path) {
+            require_once $path;
+          }
         }
       }
 

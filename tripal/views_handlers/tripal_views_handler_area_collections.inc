@@ -261,7 +261,6 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
     }
   }
 
-
   // Get the entity Ids that match results
   $query->range['length'] = $view->total_rows;
   $results = $query->execute();
@@ -272,9 +271,9 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   $collection = tripal_create_collection(array(
     'uid'  => $uid,
     'collection_name' => $collection_name,
+    'description'  => $description,
     'bundle_name' => $bundle_name,
     'ids' => $entities,
     'fields' => $selected_fids,
-    'description'  => $description,
   ));
 }

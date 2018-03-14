@@ -25,6 +25,10 @@
 /**
  * Creates a collection of entities for a given user.
  *
+ * Use this function if you want to create a new collection with an bundle.
+ * Otherwise, a new colleciton can also be created by creating an new instance
+ * of a TripalEntityCollection object.
+ *
  * @param  $details
  *   An association array containing the details for a collection. The
  *   details must include the following key/value pairs:
@@ -47,6 +51,7 @@ function tripal_create_collection($details) {
     $collection = new TripalEntityCollection();
     $collection->create($details);
     $collection_id = $collection->getCollectionID();
+    $collection->addBundle($details);
 
     drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view for generate file links.",
       array(
@@ -55,13 +60,13 @@ function tripal_create_collection($details) {
         '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
       ))
     );
-
+    return $collection;
   }
   catch (Exception $e) {
     drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), array('%name' =>  $details['collection_name'])), 'error');
     return FALSE;
   }
-  return $collection;
+
 }
 
 /**
