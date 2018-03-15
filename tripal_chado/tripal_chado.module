@@ -1024,22 +1024,40 @@ function tripal_chado_node_delete($node) {
  * backend indicates they are not appropriate.
  */
 function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-  // For entity fields added by Tripal Entities we don't want the
-  // the end-user to change the cardinality and the required fields
-  // such that record can't be saved in Chado.
 
-  // TODO: we shouldn't check for specific field types here
-  // (e.g. chado_linker_prop). That should be done via the TripalField
-  // functions.
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
+
+    // For entity fields added by Tripal Entities we don't want the
+    // the end-user to change the cardinality and the required fields
+    // such that record can't be saved in Chado.
+    // TODO: we shouldn't check for specific field types here
+    // (e.g. chado_linker_prop). That should be done via the TripalField
+    // functions.
     if ($form['#field']['storage']['type'] == 'field_chado_storage' and
         $form['#field']['type'] != 'chado_linker__prop') {
       $form['field']['cardinality']['#access'] = FALSE;
       $form['instance']['required']['#access'] = FALSE;
     }
+
+    // If this is a Chado field we need to preserve the Chado elements of the
+    // settings or they will be lost if a user edits the field settings.
+    if (array_key_Exists('chado_table', $form['#instance']['settings'])) {
+      $form['instance']['settings']['base_table'] = array(
+        '#type' => 'value',
+        '#value' => $form['#instance']['settings']['base_table'],
+      );
+      $form['instance']['settings']['chado_table'] = array(
+        '#type' => 'value',
+        '#value' => $form['#instance']['settings']['chado_table'],
+      );
+      $form['instance']['settings']['chado_column'] = array(
+        '#type' => 'value',
+        '#value' => $form['#instance']['settings']['chado_column'],
+      );
+    }
   }
 
-  // TODO: don't the the maximum length be larger than the field size.
+  // TODO: don't let the maximum length be larger than the field size.
 }
 
 
