@@ -50,6 +50,14 @@ class TripalField {
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
+    // Set to TRUE if the field should be automatically attached to an entity
+    // when it is loaded. Otherwise, the callee must attach the field
+    // manually.  This is useful to prevent really large fields from slowing
+    // down page loads.  However, if the content type display is set to
+    // "Hide empty fields" then this has no effect as all fields must be
+    // attached to determine which are empty.  It should always work with
+    // web services.
+    'auto_attach' => TRUE,
   );
 
   // Indicates the download formats for this field.  The list must be the

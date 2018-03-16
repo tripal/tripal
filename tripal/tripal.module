@@ -774,16 +774,42 @@ function tripal_import_api() {
 }
 
 /**
- * Implements hook_form_alter().
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ *
+ * This alter function disables some of the form widgets when the storage
+ * backend indicates they are not appropriate.
  */
-function tripal_form_alter(&$form, $form_state, $form_id) {
+function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   // If this is the field_ui_field_edit_form (i.e. the form that appears
   // when editing a field that is attached to an entity). Then we want
   // to add term settings for any field attached to a TripalEntity
   // content type.
-  if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+
+    // Add the form elements for setting the vocabulary terms.
     tripal_field_instance_settings_form_alter($form, $form_state);
+
+    // Make sure we preserve the auto_attach settings.
+    $auto_attach = TRUE;
+    if (array_key_exists('auto_attach', $form['#instance']['settings'])) {
+      $auto_attach = $form['#instance']['settings']['auto_attach'];
+    }
+    $form['instance']['settings']['auto_attach'] = array(
+      '#type' => 'value',
+      '#value' => $auto_attach,
+    );
   }
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function tripal_form_alter(&$form, $form_state, $form_id) {
 
   // Remove fields that have no form. It's just a bit too confusing to have
   // widgets appear in the form but without any form elements inside them.
