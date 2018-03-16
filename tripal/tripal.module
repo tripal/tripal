@@ -390,6 +390,28 @@ function tripal_menu() {
     'file' => 'includes/tripal.collections.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
+  $items['user/%/data-collections/%/view'] = array (
+    'title' => 'View a Collections',
+    'description' => 'Views a data collection.',
+    'page callback' => 'tripal_user_collections_view_page',
+    'page arguments' => array(1, 3),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+  $items['user/%/data-collections/generate/%'] = array (
+    'title' => 'Generate a file for download of a Collections',
+    'description' => 'Generates a data collection file for download.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_user_collections_generate_file_form', 1, 4),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
 
   $items['admin/tripal/data-collections'] = array(
     'title' => 'Data Collections',
@@ -531,6 +553,11 @@ function tripal_theme($existing, $type, $theme, $path) {
     'tripal_field_default' => array(
       'render element' => 'element',
       'file' => 'includes/tripal.fields.inc',
+    ),
+    // Themed forms
+    'tripal_views_handler_area_collections_fields_fset' => array(
+      'render element' => 'form',
+      'file' => 'views_handlers/tripal_views_handler_area_collections.inc',
     ),
   );
 

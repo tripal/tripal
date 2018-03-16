@@ -40,7 +40,7 @@ class TripalTerm extends Entity {
     return $this->name;
   }
   public function getAccession() {
-    return $this->name;
+    return $this->vocab->vocabulary . ':' . $this->accession;
   }
   public function getDefinition() {
     return $this->definition;

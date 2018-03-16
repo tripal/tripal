@@ -61,15 +61,6 @@ function tripal_field_info_alter(&$info) {
       $info[$field_name]['instance_settings']['term_fixed'] = FALSE;
       $info[$field_name]['instance_settings']['auto_attach'] = TRUE;
     }
-
-    // Make sure all fields have some sort of downloader support. The Tab
-    // delimited and CSV downloaders should support all types of fields.
-    if (!array_key_exists('download_formatters', $details)) {
-      $info[$field_name]['instance_settings']['download_formatters'] = array(
-        'TripalTabDownloader',
-        'TripalCSVDownloader',
-      );
-    }
   }
 }
 

@@ -50,12 +50,6 @@ class TripalField {
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     'term_fixed' => FALSE,
-    // Indicates the download formats for this field.  The list must be the
-    // name of a child class of the TripalFieldDownloader.
-    'download_formatters' => array(
-      'TripalTabDownloader',
-      'TripalCSVDownloader',
-    ),
     // Set to TRUE if the field should be automatically attached to an entity
     // when it is loaded. Otherwise, the callee must attach the field
     // manually.  This is useful to prevent really large fields from slowing
@@ -64,6 +58,13 @@ class TripalField {
     // attached to determine which are empty.  It should always work with
     // web services.
     'auto_attach' => TRUE,
+  );
+
+  // Indicates the download formats for this field.  The list must be the
+  // name of a child class of the TripalFieldDownloader.
+  public static $download_formatters = array(
+    'TripalTabDownloader',
+    'TripalCSVDownloader',
   );
 
   // The default widget for this field.
@@ -140,10 +141,13 @@ class TripalField {
       $this->term = tripal_get_term_details($vocabulary, $accession);
     }
     else {
-      tripal_report_error('tripal_field', TRIPAL_ERROR, 'Unable to instantiate Field :name due to missing vocabulary and/or accession.',
-        array(':name' => $class::$default_label));
+      $bundle = tripal_load_bundle_entity(array('name' => $instance['bundle']));
+      tripal_report_error('tripal_field', TRIPAL_ERROR,
+        'Unable to instantiate the field named, ":name", due to missing vocabulary and/or accession. The term provided was: ":term". The bundle is: ":bundle".',
+        array(':name' => $instance['field_name'],
+          ':term' => $vocabulary . ':' . $accession,
+          ':bundle' => $bundle->label));
     }
-
     if (!$instance) {
       tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
     }

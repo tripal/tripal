@@ -220,31 +220,33 @@ function tripal_get_field_widgets() {
  *
  * @param $field
  *   A field array as returned by the field_info_field() function.
+ * @param $instance
+ *   An field instance array.
  * @return
  *   A list of file formatter class names.
  */
-function tripal_get_field_field_formatters($field) {
+function tripal_get_field_field_formatters($field, $instance) {
   $field_name = $field['field_name'];
   $field_type = $field['type'];
 
   $downloaders = array();
 
-  // All fields should support the Tab and CSV downloaders.
-  tripal_load_include_downloader_class('TripalTabDownloader');
-  $downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-  tripal_load_include_downloader_class('TripalCSVDownloader');
-  $downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
-
+  // If the field type is a TripalField then get information about the formatter.
   if (tripal_load_include_field_class($field_type)) {
-    $settings = $field_type::$default_instance_settings;
-    if (array_key_exists('download_formatters', $settings)) {
-      foreach ($settings['download_formatters'] as $class_name) {
-        if (!array_key_exists($class_name, $downloaders)) {
-          tripal_load_include_downloader_class($class_name);
-          $downloaders[$class_name] = $class_name::$label;
-        }
+    $formatters = $field_type::$download_formatters;
+    foreach ($formatters as $class_name) {
+      if (!array_key_exists($class_name, $downloaders)) {
+        tripal_load_include_downloader_class($class_name);
+        $downloaders[$class_name] = $class_name::$full_label;
       }
     }
+  }
+  else {
+    // For non TripalFields we'll assume TAB and CSV.
+    tripal_load_include_downloader_class('TripalTabDownloader');
+    tripal_load_include_downloader_class('TripalCSVDownloader');
+    $downloaders['TripalTabDownloader'] = TripalTabDownloader::$full_label;
+    $downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$full_label;
   }
   return $downloaders;
 }

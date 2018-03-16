@@ -158,7 +158,11 @@ function hook_tripal_default_title_format($bundle, $available_tokens) {
  * @param $field_ids
  *   A list of numeric field IDs that should be loaded.  The
  *   TripalField named 'content_type' is always automatically added.
- *
+ * @param $cache
+ *  When loading of entities they can be cached with Drupal for later
+ *  faster loading. However, this can cause memory issues when running
+ *  Tripal jobs that load lots of entities.  Caching of entities can
+ *  be disabled to improve memory performance by setting this to FALSE.
  * @return
  *   An array of entity objects indexed by their ids. When no results are
  *   found, an empty array is returned.
@@ -166,7 +170,7 @@ function hook_tripal_default_title_format($bundle, $available_tokens) {
  * @ingroup tripal_entities_api
  */
 function tripal_load_entity($entity_type, $ids = FALSE, $reset = FALSE,
-    $field_ids = array()) {
+    $field_ids = array(), $cache = TRUE) {
 
   // The $conditions is deprecated in the funtion arguments of entity_load
   // so it was removed from the parameters of this function as well. But
@@ -185,7 +189,8 @@ function tripal_load_entity($entity_type, $ids = FALSE, $reset = FALSE,
   if ($reset) {
     $ec->resetCache();
   }
-  return $ec->load($ids, $conditions, $field_ids);
+
+  return $ec->load($ids, $conditions, $field_ids, $cache);
 }
 /**
  * Retrieves a TripalTerm entity that matches the given arguments.
@@ -1190,8 +1195,15 @@ function tripal_entity_label($entity) {
 }
 
 /**
+ * Retrieves details, including attached fields, for a given bundle.
  *
  * @param $bundle_name
+ *   The name of the bundle (e.g. bio_data_xx)
+ *
+ * @return
+ *   An array containing the name, label, controlled vocabulary details
+ *   and a list of fields attached to the bundle.  Returns FALSE
+ *   if the bundle does not exist.
  *
  * @ingroup tripal_entities_api
  */
@@ -1199,6 +1211,9 @@ function tripal_get_bundle_details($bundle_name) {
   global $user;
 
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  if (!$bundle) {
+    return FALSE;
+  }
   $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
   $vocab = $term->vocab;
   $instances = field_info_instances('TripalEntity', $bundle->name);

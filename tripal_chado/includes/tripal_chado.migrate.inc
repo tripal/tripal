@@ -927,7 +927,7 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle
     file_usage_add($file, 'file', 'TripalEntity', $entity_id);
     $image_file = (array) $file;
     // Attached it to the entity
-    /* 
+    /*
     $entities = entity_load('TripalEntity', array($entity_id));
     $entity = $entities[$entity_id];
     $image = array(

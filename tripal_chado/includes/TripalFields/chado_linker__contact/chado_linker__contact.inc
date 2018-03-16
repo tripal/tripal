@@ -38,7 +38,6 @@ class chado_linker__contact extends ChadoField {
     'term_fixed' => FALSE,
   );
 
-
   // The default widget for this field.
   public static $default_widget = 'chado_linker__contact_widget';
 

@@ -1071,13 +1071,13 @@ class GFF3Importer extends TripalImporter {
     if (!$type_id) {
       $result = chado_select_record('feature', array('type_id'), $values);
       if (count($result) > 1) {
-        $this->logMessage("Cannot find feature type for, '%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
-            array('%subject' => $object), TRIPAL_WARNING);
+        $this->logMessage("Cannot find feature type for, '!subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
+            array('!subject' => $object), TRIPAL_WARNING);
         return;
       }
       else if (count($result) == 0) {
-        $this->logMessage("Cannot find feature type for, '%subject' , in 'derives_from' relationship.",
-            array('%subject' => $object), TRIPAL_WARNING);
+        $this->logMessage("Cannot find feature type for, '!subject' , in 'derives_from' relationship.",
+            array('!subject' => $object), TRIPAL_WARNING);
         return '';
       }
       else {
