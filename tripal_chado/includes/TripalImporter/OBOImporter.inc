@@ -419,8 +419,6 @@ class OBOImporter extends TripalImporter {
     // Upate the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->newcvs as $namespace => $cvid) {
-      print_r($cv_id);
-      print_r("\n");
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
       tripal_update_cvtermpath($cvid);
     }
