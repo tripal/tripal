@@ -823,3 +823,22 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
         'tripal_update_cvtermpath', $job_args, $user->uid, 10);
   }
 }
+
+function tripal_cv_obo_ebi_lookup($accession) {
+  print_r("accession: $accession\n");
+  //The IRI of the terms, this value must be double URL encoded
+  $iri = urlencode("http://purl.obolibrary.org/obo/" . $accession);
+  //Grab just the ontology from the $accession.
+  $parts = explode(':', $accession);
+  $ontology = $parts[0];
+  print_r("ontology: $ontology\n");
+  $options = array();
+  $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
+  $response = drupal_http_request($full_url, $options);
+  if(!empty($response)){
+    $response = drupal_json_decode($response->data);
+  }
+  print_r($response);
+  return $response;
+  // php-eval "module_load_include('inc', 'tripal_chado', 'sites/all/modules/tripal/tripal_chado/includes/tripal_chado.cv'); tripal_cv_obo_ebi_lookup('BFO:0000050')"
+}

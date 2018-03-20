@@ -419,6 +419,8 @@ class OBOImporter extends TripalImporter {
     // Upate the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->newcvs as $namespace => $cvid) {
+      print_r($cv_id);
+      print_r("\n");
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
       tripal_update_cvtermpath($cvid);
     }
@@ -594,9 +596,12 @@ class OBOImporter extends TripalImporter {
       fclose($fh);
       // Check if the EBI ontology search has this ontology:
       try {
-        $results = $this->oboEbiLookup($short_name, 'ontology');  
+        $results = $this->oboEbiLookup($short_name, 'ontology');
         if (array_key_exists('default-namespace', $results['config']['annotations'])) {
           $results = $results['config']['annotations']['default-namespace'];
+          if (is_array($results)) {
+            $results = $results[0];
+          }
         }
         elseif (array_key_exists('namespace', $results['config'])) {
           $results = $results['config']['namespace'];
@@ -605,7 +610,7 @@ class OBOImporter extends TripalImporter {
           $results = $short_name;
         }
         $defaultcv = tripal_insert_cv(strtoupper($results), '');
-        $this->newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
+        $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
       }
       catch (Exception $e) {
         watchdog_exception('OBOImporter no such accession found in EBI Ontology Search', $e);
@@ -738,6 +743,23 @@ class OBOImporter extends TripalImporter {
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
+   // construct the term array for sending to the tripal_chado_add_cvterm function
+    // for adding a new cvterm
+    $t = array();
+    $t['id'] = $term['id'][0];
+    $t['name'] = $term['name'][0];
+    if (array_key_exists('def', $term)) {
+      $t['definition'] = $term['def'][0];
+    }
+    if (array_key_exists('subset', $term)) {
+      $t['subset'] = $term['subset'][0];
+    }
+    if (array_key_exists('namespace', $term)) {
+      $t['namespace'] = $term['namespace'][0];
+    }
+    if (array_key_exists('is_obsolete', $term)) {
+      $t['is_obsolete'] = $term['is_obsolete'][0];
+    }
 
     // Check that the default_cv is in the cv table.
     $sql =  "
@@ -757,28 +779,13 @@ class OBOImporter extends TripalImporter {
           $results = $ontology_info['config']['namespace'];
         }
         $cv_returned = tripal_insert_cv($results[0], '');
+        // If name && definition are both empty then look up the term from the ontology you just loaded.
         if($cv_returned) {
           $defaultcv = $cv_returned;
         }
       }
     }
-    // construct the term array for sending to the tripal_chado_add_cvterm function
-    // for adding a new cvterm
-    $t = array();
-    $t['id'] = $term['id'][0];
-    $t['name'] = $term['name'][0];
-    if (array_key_exists('def', $term)) {
-      $t['definition'] = $term['def'][0];
-    }
-    if (array_key_exists('subset', $term)) {
-      $t['subset'] = $term['subset'][0];
-    }
-    if (array_key_exists('namespace', $term)) {
-      $t['namespace'] = $term['namespace'][0];
-    }
-    if (array_key_exists('is_obsolete', $term)) {
-      $t['is_obsolete'] = $term['is_obsolete'][0];
-    }
+ 
 
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
@@ -955,7 +962,7 @@ class OBOImporter extends TripalImporter {
       $pair = explode(":", $rel);    
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
-      if (strlen($accession_num) > 6) {
+      if (is_numeric($accession_num)) {
         $results = $this->oboEbiLookup($rel, 'query');
         if (!empty($results)) {
           if (array_key_exists('docs', $results)){

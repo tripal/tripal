@@ -372,12 +372,9 @@ function drush_tripal_trp_set_permissions() {
 
   drush_tripal_set_user($username);
   $permissions = array();
-  $bundles =
-  db_select('tripal_bundle', 'TB')
-    ->fields('TB', array('name'))
-    ->execute()
-    ->fetchAll();
-  print_r($bundles);
+    
+  $bundles = tripal_get_content_types();
+
   foreach ($bundles as $bundles => $bundle) {
     array_push($permissions, ' view ' . $bundle->name, ' create ' . $bundle->name,
       ' edit ' . $bundle->name, ' delete ' . $bundle->name);
