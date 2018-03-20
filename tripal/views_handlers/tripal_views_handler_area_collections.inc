@@ -46,13 +46,13 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
 
   $form = array();
   $form['save_collection'] = array(
-   '#type' => 'fieldset',
-   '#title' => t('Save Results'),
-   '#collapsible' => TRUE,
-   '#collapsed' => TRUE,
-   '#description' => t('A data collection is a virtual container into which you can
-     save data.  You can place your search results into a data collection for
-     download or use with other tools on this site that support data collections.'),
+    '#type' => 'fieldset',
+    '#title' => t('Save Results'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('A data collection is a virtual container into which you can
+      save data.  You can place your search results into a data collection for
+      download or use with other tools on this site that support data collections.'),
   );
   $form['save_collection']['bundle'] = array(
     '#type' => 'value',
@@ -67,22 +67,28 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
     '#value' => unserialize(serialize($query->query))
   );
   $form['save_collection']['summary'] = array(
-   '#type' => 'item',
-   '#title' => 'Results Summary',
-   '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
+    '#type' => 'item',
+    '#title' => 'Results Summary',
+    '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
   );
   $form['save_collection']['collection_name'] = array(
-   '#type' => 'textfield',
-   '#title' => t('Collection Name'),
-   '#description' => t('Please name this collection for future reference.'),
-   '#default_value' => $collection_name,
-   '#required' => TRUE,
+    '#type' => 'textfield',
+    '#title' => t('Collection Name'),
+    '#description' => t('Please name this collection for future reference.'),
+    '#default_value' => $collection_name,
+    '#required' => TRUE,
   );
-  $form['save_collection']['collection_desc'] = array(
-   '#type' => 'textarea',
-   '#title' => t('Description'),
-   '#description' => t('Please provide a description about this data collection.'),
-   '#default_value' => $collection_name,
+  $form['save_collection']['description_fset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add a Description'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['save_collection']['description_fset']['collection_desc'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#description' => t('Please provide a description about this data collection. This is meant to help you remember what is in the collection.'),
+    '#default_value' => $collection_name,
   );
 
   // Get the list of fields used in the view.
@@ -93,6 +99,24 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
   else {
     $view_fields = $view->display['default']->display_options['fields'];
   }
+
+  $form['save_collection']['fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add or Update Fields'),
+    '#description' => t('You may select any of the additional fields below to
+      add to this data collection. Please note that different fields may be able
+      to create different output file types.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  // We want to theme all of the fields, so we add this next level in the
+  // form array to theme.
+  $form['save_collection']['fields']['items'] = array(
+    '#theme' => 'tripal_views_handler_area_collections_fields_fset'
+  );
+
+
   // Get the list of fields in this view.
   $field_ids = array();
   $defaults = array();
@@ -111,52 +135,40 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
 
     // Add in in any non CSV or Tab formatters to the label.
     $formatters = array();
-    if (tripal_load_include_field_class($field_type)) {
-      $instance_settings = $field_type::$default_instance_settings;
-      if (array_key_exists('download_formatters', $instance_settings)) {
-        foreach ($instance_settings['download_formatters'] as $class_name) {
-          if ($class_name != 'TripalTabDownloader' and $class_name != 'TripalCSVDownloader') {
-            tripal_load_include_downloader_class($class_name);
-              $formatters[] = $class_name::$label;
-          }
-        }
-      }
-    }
-    if (count($formatters) > 0) {
-      $field_label .= ' (' . implode(',' , $formatters) . ')';
+    $field_formatters = tripal_get_field_field_formatters($field, $instance);
+    foreach ($field_formatters as $class_name => $label) {
+      tripal_load_include_downloader_class($class_name);
+      $formatters[] = $class_name::$label;
     }
 
     // Add the field to those supported.
-    $field_ids[$instance['field_id']] =  $field_label;
+    $field_ids[$instance['field_id']]= $field_label;
+
 
     // Automatically check fields that are in the view and not excluded.
+    $checked = FALSE;
     if (array_key_exists($field_name, $view_fields)) {
       if (array_key_exists('exclude', $view_fields[$field_name]) and
           $view_fields[$field_name]['exclude'] == TRUE) {
         continue;
       }
-      $defaults[] = $instance['field_id'];
+      $checked = TRUE;
     }
+
+    $form['save_collection']['fields']['items'] ['select-' . $instance['field_id']] = array(
+      '#type' => 'checkbox',
+      '#title' => $field_label,
+      '#default_value' => $checked,
+    );
+    $form['save_collection']['fields']['items'] ['description-' . $instance['field_id']] = array(
+      '#type' => 'markup',
+      '#markup' => $instance['description']
+    );
+    $form['save_collection']['fields']['items'] ['formatters-' . $instance['field_id']] = array(
+      '#type' => 'markup',
+      '#markup' => join(', ', $formatters)
+    );
   }
-  $form['save_collection']['fields'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Advanced field selection'),
-    '#description' => t('Please select the fields to include in this data
-      collection. Not all of these fields appear in the search results
-      above but they are available for this content type. By default,
-      tab-delimeted and comma-separated files are genearted for the
-      collection using only the fields selected. However, some fields when
-      selected will generate other downloadable file formats.  Fields that
-      generate other file formats are indicated. '),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['save_collection']['fields']['field_ids'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Field Selection'),
-    '#options' => $field_ids,
-    '#default_value' => $defaults,
-  );
 
   $form['save_collection']['button'] = array(
     '#type' => 'submit',
@@ -173,6 +185,48 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
   $form['#prefix'] = '<div id="tripal-views-handler-area-collections">';
   $form['#suffix'] = '</div>';
   return $form;
+}
+/**
+ * Theme the fields section of the tripal_views_handler_area_collections form.
+ *
+ * @ingroup tripal_pub
+ */
+function theme_tripal_views_handler_area_collections_fields_fset($variables) {
+  $form = $variables['form'];
+
+  // Organize the elements by the same field id
+  $fields = array();
+  $order = array();
+  $children =  element_children($form);
+  foreach ($children as $key) {
+    list($item, $field_id) = preg_split('/-/', $key);
+    $fields[$field_id][$item] = $form[$key];
+    if (!in_array($field_id, $order)) {
+      $order[] = $field_id;
+    }
+  }
+
+  // Next create a table with each field in a different row.
+  $headers = array('Field', 'Description', 'Supported Files Types');
+  $rows = array();
+  foreach ($order as $field_id) {
+    $rows[] = array(
+      drupal_render($fields[$field_id]['select']),
+      drupal_render($fields[$field_id]['description']),
+      drupal_render($fields[$field_id]['formatters'])
+    );
+  }
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'sticky' => TRUE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  return theme_table($table);
 }
 
 /**
@@ -196,10 +250,14 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   $uid = $user->uid;
   $bundle_name = $bundle->name;
 
+  // Get the fields that have been selected
   $selected_fids = array();
-  foreach ($field_ids as $field_id => $is_selected) {
-    if ($is_selected) {
-      $selected_fids[] = $field_id;
+  foreach ($form_state['values'] as $key => $value) {
+    $matches = array();
+    if (preg_match('/select-(\d+)/', $key, $matches)) {
+      if ($value == 1) {
+        $selected_fids[] = $matches[1];
+      }
     }
   }
 
@@ -213,9 +271,9 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   $collection = tripal_create_collection(array(
     'uid'  => $uid,
     'collection_name' => $collection_name,
+    'description'  => $description,
     'bundle_name' => $bundle_name,
     'ids' => $entities,
     'fields' => $selected_fids,
-    'description'  => $description,
   ));
 }

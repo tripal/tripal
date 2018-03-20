@@ -601,6 +601,56 @@ function tripal_chado_field_storage_query($query) {
     $cquery->condition('TE.' . $condition['column'], $condition['value']);
   }
 
+  // If there is an entity_id filter then apply that.
+  if (array_key_exists('entity_id', $query->entityConditions)) {
+    $value = $query->entityConditions['entity_id']['value'];
+    $op = '';
+    if (array_key_exists('op', $query->entityConditions['entity_id'])) {
+      $op = $query->entityConditions['entity_id']['op'];
+    }
+    // Handle a single entity_id
+    if (!is_array($value)) {
+      switch ($op) {
+        case 'CONTAINS':
+          $op = 'LIKE';
+          $value = '%' . $value . '%';
+          break;
+        case 'STARTS_WITH':
+          $op = 'LIKE';
+          $value = $value . '%';
+          break;
+        case 'BETWEEN':
+          // This case doesn't make sense for a single value. So, just set it
+          // equal to the end.
+          $op = '=';
+        default:
+          $op = $op ? $op : '=';
+      }
+    }
+    // Handle multiple entitie IDs.
+    else {
+      switch ($op) {
+        case 'CONTAINS':
+          $op = 'IN';
+          break;
+        case 'STARTS_WITH':
+          $op = 'IN';
+          break;
+        case 'BETWEEN':
+          $op = 'BETWEEN';
+        default:
+          $op = 'IN';
+      }
+    }
+    if ($op == 'BETWEEN') {
+      $cquery->condition('TE.id', $value[0], '>');
+      $cquery->condition('TE.id', $value[1], '<');
+    }
+    else {
+      $cquery->condition('TE.id', $value, $op);
+    }
+  }
+
   // Now set any ordering.
   foreach ($query->order as $index => $sort) {
     // Add in property ordering.

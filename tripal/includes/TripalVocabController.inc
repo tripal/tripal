@@ -21,15 +21,23 @@ class TripalVocabController extends EntityAPIController {
    *
    * Really a convenience function for deleteMultiple().
    */
-  public function delete($entity) {
-    $transaction = db_transaction();
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+    $entities = $ids ? $this->load($ids) : FALSE;
+    if (!$entities) {
+      // Do nothing, in case invalid or no ids have been passed.
+      return;
+    }
+    $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
-      // Invoke hook_entity_delete().
-      module_invoke_all('entity_delete', $entity, 'TripalTerm');
-      field_attach_delete('TripalVocab', $entity);
+      $ids = array_keys($entities);
+      foreach ($entities as $id => $entity) {
+        // Invoke hook_entity_delete().
+        module_invoke_all('entity_delete', $entity, 'TripalTerm');
+        field_attach_delete('TripalVocab', $entity);
+      }
 
       db_delete('tripal_term')
-        ->condition('id', $entity->id)
+        ->condition('id', $ids)
         ->execute();
     }
     catch (Exception $e) {
@@ -44,11 +52,11 @@ class TripalVocabController extends EntityAPIController {
   /**
    * Saves the custom fields using drupal_write_record().
    */
-  public function save($entity) {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
     $pkeys = array();
 
-    $transaction  = db_transaction();
+    $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
       // If our entity has no id, then we need to give it a
       // time of creation.

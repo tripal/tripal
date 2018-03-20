@@ -25,6 +25,10 @@
 /**
  * Creates a collection of entities for a given user.
  *
+ * Use this function if you want to create a new collection with an bundle.
+ * Otherwise, a new colleciton can also be created by creating an new instance
+ * of a TripalEntityCollection object.
+ *
  * @param  $details
  *   An association array containing the details for a collection. The
  *   details must include the following key/value pairs:
@@ -41,33 +45,29 @@
  * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection($details) {
+
   global $user;
 
   try {
     $collection = new TripalEntityCollection();
     $collection->create($details);
     $collection_id = $collection->getCollectionID();
+    $collection->addBundle($details);
 
-    // Add the job to write the collection download files.
-    $args = array($collection_id);
-    tripal_add_job('Create data collection files for ' . $user->name, 'tripal',
-        'tripal_create_collection_files', $args, $user->uid, 10, array());
-
-
-    drupal_set_message(t("Collection '%name' created with %num_recs record(s).  Downloadble files will be available shortly.  Check the !view for status and download links.",
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
       array(
         '%name' => $details['collection_name'],
         '%num_recs' => count($details['ids']),
         '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
       ))
     );
-
+    return $collection;
   }
   catch (Exception $e) {
     drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), array('%name' =>  $details['collection_name'])), 'error');
     return FALSE;
   }
-  return $collection;
+
 }
 
 /**
@@ -109,12 +109,12 @@ function tripal_get_user_collections($uid) {
  * @ingroup tripal_data_collections_api
  */
 function tripal_expire_collections() {
-  $max_hours = variable_get('tripal_data_collections_lifespan', 7);
+  $max_days = variable_get('tripal_data_collections_lifespan', 30);
   $ctime = time();
 
   $query = db_select('tripal_collection', 'tc');
   $query->fields('tc', array('collection_id'));
-  $query->where("(($ctime - create_date) / 60) / 60 >= $max_hours");
+  $query->where("((($ctime - create_date) / 60) / 60) / 24 >= $max_days");
   $results = $query->execute();
   while ($collection_id = $results->fetchField()) {
     $collection = new TripalEntityCollection();
@@ -188,15 +188,7 @@ function tripal_get_collection($values) {
  * @ingroup tripal_data_collections_api
  */
 function tripal_create_collection_files($collection_id, TripalJob $job = NULL) {
-   if($job) {
-     $job->setProgress(0);
-   }
-
-   $collection = new TripalEntityCollection();
-   $collection->load($collection_id);
-   $collection->writeAll();
-
-   if ($job) {
-     $job->setProgress(100);
-   }
+  $collection = new TripalEntityCollection();
+  $collection->load($collection_id);
+  $collection->write(NULL, $job);
 }

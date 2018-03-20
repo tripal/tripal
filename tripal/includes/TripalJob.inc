@@ -12,6 +12,35 @@ class TripalJob {
    */
   protected $job = NULL;
 
+
+  /**
+   * The number of items that this importer needs to process. A progress
+   * can be calculated by dividing the number of items process by this
+   * number.
+   */
+  private $total_items;
+
+  /**
+   * The number of items that have been handled so far.  This must never
+   * be below 0 and never exceed $total_items;
+   */
+  private $num_handled;
+
+  /**
+   * The interval when the job progress should be updated. Updating the job
+   * progress incurrs a database write which takes time and if it occurs to
+   * frequently can slow down the loader.  This should be a value between
+   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
+   * progress every time the num_handled increases by 1%).
+   */
+  private $interval;
+
+  /**
+   * Each time the job progress is updated this variable gets set.  It is
+   * used to calculate if the $interval has passed for the next update.
+   */
+  private $prev_update;
+
   /**
    * Instantiates a new TripalJob object.
    *
@@ -254,9 +283,11 @@ class TripalJob {
     try {
 
       // Include the necessary files needed to run the job.
-      foreach ($this->job->includes as $path) {
-        if ($path) {
-          require_once $path;
+      if (is_array($this->job->includes)) {
+        foreach ($this->job->includes as $path) {
+          if ($path) {
+            require_once $path;
+          }
         }
       }
 
@@ -403,6 +434,81 @@ class TripalJob {
       ->condition('job_id', $this->job->job_id)
       ->execute();
   }
+
+  /**
+   * Sets the total number if items to be processed.
+   *
+   * This should typically be called near the beginning of the loading process
+   * to indicate the number of items that must be processed.
+   *
+   * @param $total_items
+   *   The total number of items to process.
+   */
+  public function setTotalItems($total_items) {
+    $this->total_items = $total_items;
+  }
+
+  /**
+   * Adds to the count of the total number of items that have been handled.
+   *
+   * @param $num_handled
+   */
+  public function addItemsHandled($num_handled) {
+    $items_handled = $this->num_handled = $this->num_handled + $num_handled;
+    $this->setItemsHandled($items_handled);
+  }
+  /**
+   * Sets the number of items that have been processed.
+   *
+   * This should be called anytime the loader wants to indicate how many
+   * items have been processed.  The amount of progress will be
+   * calculated using this number.  If the amount of items handled exceeds
+   * the interval specified then the progress is reported to the user.  If
+   * this loader is associated with a job then the job progress is also updated.
+   *
+   * @param $total_handled
+   *   The total number of items that have been processed.
+   */
+  public function setItemsHandled($total_handled) {
+    // First set the number of items handled.
+    $this->num_handled = $total_handled;
+
+    if ($total_handled == 0) {
+      $memory = number_format(memory_get_usage());
+      print "Percent complete: 0%. Memory: " . $memory . " bytes.\r";
+      return;
+    }
+
+    // Now see if we need to report to the user the percent done.  A message
+    // will be printed on the command-line if the job is run there.
+    $percent = sprintf("%.2f", ($this->num_handled / $this->total_items) * 100);
+    $diff = $percent - $this->prev_update;
+
+    if ($diff >= $this->interval) {
+
+      $memory = number_format(memory_get_usage());
+      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes.\r";
+      $this->prev_update = $diff;
+      $this->setProgress($percent);
+    }
+  }
+
+  /**
+   * Updates the percent interval when the job progress is updated.
+   *
+   * Updating the job
+   * progress incurrs a database write which takes time and if it occurs to
+   * frequently can slow down the loader.  This should be a value between
+   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
+   * progress every time the num_handled increases by 1%).
+   *
+   * @param $interval
+   *   A number between 0 and 100.
+   */
+  public function setInterval($interval) {
+    $this->interval = $interval;
+  }
+
   /**
    * Retrieves the status of the job.
    */

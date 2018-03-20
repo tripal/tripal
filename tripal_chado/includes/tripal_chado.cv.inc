@@ -105,13 +105,12 @@ function tripal_cv_cv_edit_form($form, &$form_state) {
     tripal_cv_add_cv_form_fields($form, $form_state, $cv_id);
 
     $form['update'] = array(
-      '#type'         => 'submit',
-      '#value'        => t('Update'),
+      '#type' => 'submit',
+      '#value' => t('Update'),
     );
     $form['delete'] = array(
-      '#type'         => 'submit',
-      '#value'        => t('Delete'),
-      '#attributes'   => array('onclick' => 'if(!confirm("Really Delete?")){return false;}'),
+      '#type' => 'markup',
+      '#markup' => l('delete', 'admin/tripal/loaders/chado_vocabs/chado_cv/delete/' . $cv_id),
     );
   }
   else {
@@ -271,16 +270,6 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
     }
     else {
       drupal_set_message(t("Failed to update controlled vocabulary."));
-    }
-  }
-  if (strcmp($op, 'Delete')==0) {
-    $match = array('cv_id' => $cv_id);
-    $success = chado_delete_record('cv', $match);
-    if ($success) {
-      drupal_set_message(t("Controlled vocabulary deleted"));
-    }
-    else {
-      drupal_set_message(t("Failed to delete controlled vocabulary."));
     }
   }
 }
@@ -824,21 +813,38 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
   }
 }
 
-function tripal_cv_obo_ebi_lookup($accession) {
-  print_r("accession: $accession\n");
-  //The IRI of the terms, this value must be double URL encoded
-  $iri = urlencode("http://purl.obolibrary.org/obo/" . $accession);
-  //Grab just the ontology from the $accession.
-  $parts = explode(':', $accession);
-  $ontology = $parts[0];
-  print_r("ontology: $ontology\n");
-  $options = array();
-  $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
-  $response = drupal_http_request($full_url, $options);
-  if(!empty($response)){
-    $response = drupal_json_decode($response->data);
+/**
+ * A confirmation form for deleting a controlled vocabulary.
+ */
+function tripal_cv_cv_delete_form($form, &$form_state, $cv_id) {
+
+  $cv = tripal_get_cv(array('cv_id' => $cv_id));
+
+  $form['cv_id'] = array(
+    '#type' => 'value',
+    '#value' => $cv_id,
+  );
+
+  return confirm_form($form,
+    t('Confirm removal of the vocabulary: "' . $cv->name . '"? '),
+    'admin/tripal/loaders/chado_vocabs/chado_cv/edit/' . $cv_id,
+    t('WARNING: removal of a vocabulary will result in removal of all terms, and any associations used for other records in the site that use those terms.')
+  );
+}
+
+/**
+ * Implements the submit hook for tripal_cv_cv_delete_form.
+ */
+function tripal_cv_cv_delete_form_submit($form, &$form_state) {
+  $cv_id = $form_state['values']['cv_id'];
+
+  try {
+    $match = array('cv_id' => $cv_id);
+    $success = chado_delete_record('cv', $match);
+    drupal_set_message(t("Controlled vocabulary deleted"));
+    drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cv');
   }
-  print_r($response);
-  return $response;
-  // php-eval "module_load_include('inc', 'tripal_chado', 'sites/all/modules/tripal/tripal_chado/includes/tripal_chado.cv'); tripal_cv_obo_ebi_lookup('BFO:0000050')"
+  catch (Exception $e) {
+    drupal_set_message(t("Failed to delete controlled vocabulary."), 'error');
+  }
 }

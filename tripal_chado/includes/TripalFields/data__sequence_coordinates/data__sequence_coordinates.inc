@@ -216,6 +216,7 @@ class data__sequence_coordinates extends ChadoField {
     $feature = $entity->chado_record;
     $num_seqs = 0;
 
+    $description = 'schema:description';
     $reference_term = 'data:3002';
     $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
     $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
@@ -245,11 +246,14 @@ class data__sequence_coordinates extends ChadoField {
         else {
           $strand = '-';
         }
+        $fmin = $featureloc->fmin + 1;
+        $fmax = $featureloc->fmax;
         $entity->{$field_name}['und'][0] = array(
           'value' => array(
+            $description => $srcfeature . ':' . $fmin . '-' . $fmax . $strand,
             $reference_term => $srcfeature,
-            $fmin_term => $featureloc->fmin + 1,
-            $fmax_term => $featureloc->fmax,
+            $fmin_term => $fmin,
+            $fmax_term => $fmax,
             $strand_term => $strand,
             $phase_term => $featureloc->phase,
           ),

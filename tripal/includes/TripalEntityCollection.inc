@@ -3,9 +3,9 @@
 class TripalEntityCollection {
 
   /**
-   * The name of the bundle (i.e. content type) to which the entities belong.
+   * The name of the bundles (i.e. content type) to which the entities belong.
    */
-  protected $bundle_name = '';
+  protected $bundles = array();
 
   /**
    * The collection ID
@@ -36,7 +36,7 @@ class TripalEntityCollection {
   /**
    * The list of downloaders available for this bundle.
    */
-  protected $downloaders = array();
+  protected $formatters = array();
 
   /**
    * The description for this collection.
@@ -60,31 +60,33 @@ class TripalEntityCollection {
     }
 
     try {
+      // Remove any files that may have been created
+      foreach ($this->formatters as $class_name => $label) {
+        tripal_load_include_downloader_class($class_name);
+        $outfile = $this->getOutfile($class_name);
+        $downloader = new $class_name($this->collection_id, $outfile);
+        $downloader->delete();
+      }
+
+      // Delete from the tripal collection table.
       db_delete('tripal_collection')
         ->condition('collection_id', $this->collection_id)
         ->execute();
 
-      // Remove any files that may have been created
-      foreach ($this->downloaders as $class_name => $label) {
-        tripal_load_include_downloader_class($class_name);
-        $outfile = $this->getOutfile($class_name);
-        $downloader = new $class_name($this->bundle_name, $this->ids, $this->fields,
-            $outfile, $this->getUserID());
-        $downloader->delete();
-      }
+      // Delete the field groups from the tripal_bundle_collection table.
+      db_delete('tripal_collection_bundle')
+        ->condition('collection_id', $this->collection_id)
+        ->execute();
 
       // Reset the class to defaults.
       $this->collection_id = NULL;
-      $this->bundle_name = '';
       $this->collection_name = '';
       $this->create_date = '';
       $this->description = '';
-      $this->fields = array();
-      $this->ids = array();
 
     }
     catch (Exception $e) {
-      throw new Exception('Cannot delete collection: ' .  $e->getMessage());
+      throw new Exception('Cannot delete collection: ' . $e->getMessage());
     }
   }
 
@@ -114,59 +116,42 @@ class TripalEntityCollection {
     }
 
     // Fix the date/time fields.
-    $this->bundle_name = $collection->bundle_name;
     $this->collection_name = $collection->collection_name;
     $this->create_date = $collection->create_date;
     $this->user = user_load($collection->uid);
-    $this->ids = unserialize($collection->ids);
-    $this->fields = unserialize($collection->fields);
     $this->description = $collection->description;
     $this->collection_id = $collection->collection_id;
 
+    // Now get the bundles in this collection.
+    $bundles = db_select('tripal_collection_bundle', 'tcb')
+      ->fields('tcb')
+      ->condition('collection_id', $collection->collection_id)
+      ->execute();
+
+    // If more than one bundle plop into associative array.
+    while ($bundle = $bundles->fetchObject()) {
+      $bundle_name = $bundle->bundle_name;
+      $this->bundles[$bundle_name] = $bundle;
+      $this->ids[$bundle_name] = unserialize($bundle->ids);
+      $this->fields[$bundle_name] = unserialize($bundle->fields);
+    }
+
     // Iterate through the fields and find out what download formats are
     // supported for this basket.
-    foreach ($this->fields as $field_id) {
-      $field = field_info_field_by_id($field_id);
-      if (!$field) {
-        continue;
-      }
-      $field_name = $field['field_name'];
-      $field_type = $field['type'];
-      $field_module = $field['module'];
-      $instance = field_info_instance('TripalEntity', $field_name, $this->bundle_name);
-      $downloaders = array();
-
-      // All fields should support the Tab and CSV downloaders.
-      tripal_load_include_downloader_class('TripalTabDownloader');
-      $this->downloaders['TripalTabDownloader'] = TripalTabDownloader::$label;
-      tripal_load_include_downloader_class('TripalCSVDownloader');
-      $this->downloaders['TripalCSVDownloader'] = TripalCSVDownloader::$label;
-
-      if (tripal_load_include_field_class($field_type)) {
-        $settings = $field_type::$default_instance_settings;
-        if (array_key_exists('download_formatters', $settings)) {
-          foreach ($settings['download_formatters'] as $class_name) {
-            if (!array_key_exists($class_name, $this->downloaders)) {
-              tripal_load_include_downloader_class($class_name);
-              $this->downloaders[$class_name] = $class_name::$label;
-            }
-          }
-        }
-      }
-    }
+    $this->formatters = $this->setFormatters();
   }
 
   /**
-   * Creates a new collection.
+   * Creates a new data collection.
+   *
+   * To add bundles with entities and fields to a collection, use the
+   * addBundle() function after the collection is created.
    *
    * @param  $details
    *   An association array containing the details for a collection. The
    *   details must include the following key/value pairs:
    *   - uid:  The ID of the user that owns the collection
    *   - collection_name:  The name of the collection
-   *   - bundle_name:  The name of the TripalEntity content type.
-   *   - ids:  An array of the entity IDs that form the collection.
-   *   - fields: An array of the field IDs that the collection is limited to.
    *   - description:  A user supplied description for the collection.
    *
    * @throws Exception
@@ -178,24 +163,9 @@ class TripalEntityCollection {
     if (!$details['collection_name']) {
       throw new Exception("Must provide a 'collection_name' key to TripalEntityCollection::create().");
     }
-    if (!$details['bundle_name']) {
-      throw new Exception("Must provide a 'bundle_name' key to TripalEntityCollection::create().");
-    }
-    if (!$details['ids']) {
-      throw new Exception("Must provide a 'ids' key to TripalEntityCollection::create().");
-    }
-    if (!$details['fields']) {
-      throw new Exception("Must provide a 'fields' key to TripalEntityCollection::create().");
-    }
 
-    if (!is_array($details['ids'])) {
-      throw new Exception("The 'ids' key must be an array key to TripalEntityCollection::create().");
-    }
-    if (!is_array($details['fields'])) {
-      throw new Exception("The 'ids' key must be an array key to TripalEntityCollection::create().");
-    }
 
-    // Before inserting the new collection make sure we don't violote the unique
+    // Before inserting the new collection make sure we don't violate the unique
     // constraint that a user can only have one collection of the give name.
     $has_match = db_select('tripal_collection', 'tc')
       ->fields('tc', array('collection_id'))
@@ -211,20 +181,79 @@ class TripalEntityCollection {
       $collection_id = db_insert('tripal_collection')
         ->fields(array(
           'collection_name' => $details['collection_name'],
-          'bundle_name' => $details['bundle_name'],
-          'ids' => serialize($details['ids']),
-          'fields' => serialize($details['fields']),
           'create_date' => time(),
           'uid' => $details['uid'],
           'description' => array_key_exists('description', $details) ? $details['description'] : '',
         ))
         ->execute();
+
       // Now load the job into this object.
       $this->load($collection_id);
     }
     catch (Exception $e) {
-      throw new Exception('Cannot create collection: ' .  $e->getMessage());
+      throw new Exception('Cannot create collection: ' . $e->getMessage());
     }
+  }
+
+  /**
+   * Creates a new tripal_collection_bundle entry.
+   *
+   * @param  $details
+   *   An association array containing the details for a collection. The
+   *   details must include the following key/value pairs:
+   *   - bundle_name:  The name of the TripalEntity content type.
+   *   - ids:  An array of the entity IDs that form the collection.
+   *   - fields: An array of the field IDs that the collection is limited to.
+   *
+   * @throws Exception
+   */
+  public function addBundle($details) {
+    if (!$details['bundle_name']) {
+      throw new Exception("Must provide a 'bundle_name' to TripalEntityCollection::addFields().");
+    }
+    if (!$details['ids']) {
+      throw new Exception("Must provide a 'ids' to TripalEntityCollection::addFields().");
+    }
+    if (!$details['fields']) {
+      throw new Exception("Must provide a 'fields' to TripalEntityCollection::addFields().");
+    }
+
+    try {
+      $collection_bundle_id = db_insert('tripal_collection_bundle')
+        ->fields(array(
+          'bundle_name' => $details['bundle_name'],
+          'ids' => serialize($details['ids']),
+          'fields' => serialize($details['fields']),
+          'collection_id' => $this->collection_id,
+        ))
+        ->execute();
+
+      // Now load the job into this object.
+      $this->load($this->collection_id);
+    }
+    catch (Exception $e) {
+      throw new Exception('Cannot create collection: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Retrieves the list of bundles associated with the collection.
+   *
+   * @return
+   *   An array of bundles.
+   */
+  public function getBundles() {
+    return $this->bundles;
+  }
+
+  /**
+   * Retrieves the site id for this specific bundle fo the collection.
+   *
+   * @return
+   *   A remote site ID, or an empty string if the bundle is local.
+   */
+  public function getBundleSiteId($bundle_name) {
+    return $this->bundles[$bundle_name]->site_id;
   }
 
   /**
@@ -234,8 +263,47 @@ class TripalEntityCollection {
    *   An associative array where the key is the TripalFieldDownloader class
    *   name and the value is the human-readable lable for the formatter.
    */
-  public function getDownloadFormatters() {
-     return $this->downloaders;
+  private function setFormatters() {
+
+    $downloaders = array();
+    // Iterate through the fields and find out what download formats are
+    // supported for this basket.
+    foreach ($this->fields as $bundle_name => $field_ids) {
+
+      // Need the site ID from the tripal_collection_bundle table.
+      $site_id = $this->getBundleSiteId($bundle_name);
+
+      foreach ($field_ids as $field_id) {
+        // If this is a field from a remote site then get it's formatters
+        if ($site_id and module_exists('tripal_ws')) {
+          $formatters = tripal_get_remote_field_formatters($site_id, $bundle_name, $field_id);
+          $this->formatters += $formatters;
+        }
+        else {
+          $field_info = field_info_field_by_id($field_id);
+          if (!$field_info) {
+            continue;
+          }
+          $field_name = $field_info['field_name'];
+          $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
+          $formatters = tripal_get_field_field_formatters($field_info, $instance);
+          $this->formatters += $formatters;
+        }
+      }
+    }
+    $this->formatters = array_unique($this->formatters);
+    return $this->formatters;
+  }
+
+  /**
+   * Retrieves the list of appropriate download formatters for the basket.
+   *
+   * @return
+   *   An associative array where the key is the TripalFieldDownloader class
+   *   name and the value is the human-readable lable for the formatter.
+   */
+  public function getFormatters() {
+    return $this->formatters;
   }
 
   /**
@@ -244,8 +312,8 @@ class TripalEntityCollection {
    * @return
    *   An array of numeric entity IDs.
    */
-  public function getEntityIDs(){
-    return $this->ids;
+  public function getEntityIDs($bundle_name) {
+    return $this->ids[$bundle_name];
   }
 
   /**
@@ -254,8 +322,8 @@ class TripalEntityCollection {
    * @return
    *   An array of numeric field IDs.
    */
-  public function getFields() {
-    return $this->fields;
+  public function getFieldIDs($bundle_name) {
+    return $this->fields[$bundle_name];
   }
 
   /**
@@ -348,7 +416,6 @@ class TripalEntityCollection {
     $extension = $formatter::$default_extension;
     $create_date = $this->getCreateDate(FALSE);
     $outfile = preg_replace('/[^\w]/', '_', ucwords($this->collection_name)) . '_collection' . '_' . $create_date . '.' . $extension;
-
     return $outfile;
   }
 
@@ -360,24 +427,13 @@ class TripalEntityCollection {
    * @return boolean
    *   TRUE if the formatter is compatible, FALSE otherwise.
    */
-  public function isFormatterCompatible($formatter) {
-    foreach ($this->downloaders as $class_name => $label) {
+  protected function isFormatterCompatible($formatter) {
+    foreach ($this->formatters as $class_name => $label) {
       if ($class_name == $formatter) {
         return TRUE;
       }
     }
     return FALSE;
-  }
-
-  /**
-   * Writes the collection to all file downloadable formats.
-   *
-   * @throws Exception
-   */
-  public function writeAll() {
-    foreach ($this->downloaders as $class_name => $lable) {
-      $this->write($class_name);
-    }
   }
 
   /**
@@ -388,7 +444,6 @@ class TripalEntityCollection {
    */
   public function getOutfileURL($formatter) {
     $outfile = $this->getOutfilePath($formatter);
-    return file_create_url($outfile);
   }
 
   /**
@@ -400,73 +455,124 @@ class TripalEntityCollection {
    *   The name of the class
    */
   public function getOutfilePath($formatter) {
-    if(!$this->isFormatterCompatible($formatter)) {
+    if (!$this->isFormatterCompatible($formatter)) {
       throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
-
     }
-
     if (!tripal_load_include_downloader_class($formatter)) {
       throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
     }
 
     $outfile = $this->getOutfile($formatter);
-
-    $downloader = new $formatter($this->bundle_name, $this->ids, $this->fields, $outfile, $this->user->uid);
-
-    return $downloader->getURL();
+    // Make sure the user directory exists
+    $user_dir = 'public://tripal/users/' . $this->user->uid;
+    $outfilePath = $user_dir. '/' . $outfile;
+    return $outfilePath;
   }
 
   /**
-   * Writes the collection to a file.
+   * Writes the collection to a file using a given formatter.
    *
    * @param formatter
    *   The name of the formatter class to use (e.g. TripalTabDownloader). The
-   *   formatter must be compatible with the data collection.
-   *
+   *   formatter must be compatible with the data collection.  If no
+   *   formatter is supplied then all file formats supported by this
+   *   data collection will be created.
+   * @param $job
+   *    If this function is run as a Tripal Job then this argument can be
+   *    set to the Tripaljob object for keeping track of progress.
    * @throws Exception
    */
-  public function write($formatter) {
+  public function write($formatter = NULL, TripalJob $job = NULL) {
 
-    if(!$this->isFormatterCompatible($formatter)) {
-      throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
-
-    }
-
-    if (!tripal_load_include_downloader_class($formatter)) {
-      throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
-    }
-
-    $outfile = $this->getOutfile($formatter);
-
-    // Filter out fields that aren't supported by the formatter.
-    $supported_fields = array();
-    foreach ($this->fields as $field_id) {
-      // If the formatter is TripalTabDownloader or TripalCSVDownloader then
-      // we always want to support the field.
-      if ($formatter == 'TripalTabDownloader' or $formatter == 'TripalCSVDownloader') {
-        if (!in_array($field_id, $supported_fields)) {
-          $supported_fields[] = $field_id;
+    // Initialize the downloader classes and initialize the files for writing.
+    $formatters = array();
+    foreach ($this->formatters as $class => $label) {
+      if (!$this->isFormatterCompatible($class)) {
+        throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
+      }
+      if (!tripal_load_include_downloader_class($class)) {
+        throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+      }
+      $outfile = $this->getOutfile($class);
+      if (!$formatter or ($formatter == $class)) {
+        $formatters[$class] = new $class($this->collection_id, $outfile);
+        $formatters[$class]->writeInit($job);
+        if ($job) {
+          $job->logMessage("Writing " . lcfirst($class::$full_label) . " file.");
         }
-        continue;
+      }
+    }
+
+    // Count the total number of entities
+    $total_entities = 0;
+    $bundle_collections = $this->collection_bundles;
+    foreach ($this->bundles as $bundle) {
+      $bundle_name = $bundle->bundle_name;
+      $entity_ids  = $this->getEntityIDs($bundle_name);
+      $total_entities += count($entity_ids);
+    }
+    if ($job) {
+      $job->setTotalItems($total_entities);
+    }
+
+    // Iterate through the bundles in this collection and get the entities.
+    foreach ($this->bundles as $bundle) {
+      $bundle_name = $bundle->bundle_name;
+      $site_id = $bundle->site_id;
+      $entity_ids  = array_unique($this->getEntityIDs($bundle_name));
+      $field_ids = array_unique($this->getFieldIDs($bundle_name));
+
+      // Clear any cached @context or API docs.
+      if ($site_id and module_exists('tripal_ws')) {
+        tripal_clear_remote_cache($site_id);
       }
 
-      // Otherwise, find out if the formatter specified is supporte by the
-      // field and if so then add it to our list of supported fields.
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
-      $field_type = $field['type'];
-      if (tripal_load_include_field_class($field_type)) {
-        $settings = $field_type::$default_instance_settings;
-        if (array_key_exists('download_formatters', $settings)) {
-          if (in_array($formatter, $settings['download_formatters'])) {
-            $supported_fields[] = $field_id;
+      // We want to load entities in batches to speed up performance.
+      $num_eids = count($entity_ids);
+      $bundle_eids_handled = 0;
+      $slice_size = 100;
+      while ($bundle_eids_handled < $num_eids) {
+        // Get a bantch of $slice_size elements from the entities array.
+        $slice = array_slice($entity_ids, $bundle_eids_handled, $slice_size);
+        if ($job) {
+          $job->logMessage('Getting entities for ids !start to !end of !total',
+              array('!start' => $bundle_eids_handled,
+                    '!end' => $bundle_eids_handled + count($slice),
+                    '!total' => $num_eids));
+        }
+        $bundle_eids_handled += count($slice);
+
+        // If the bundle is from a remote site then call the appropriate
+        // function, otherwise, call the local function.
+        if ($site_id and module_exists('tripal_ws')) {
+          $entities = tripal_load_remote_entities($slice, $site_id, $bundle_name, $field_ids);
+        }
+        else {
+          $entities = tripal_load_entity('TripalEntity', $slice, FALSE, $field_ids, FALSE);
+        }
+        $job->logMessage('Got !count entities.', array('!count' => count($entities)));
+
+        // Now write each entity one at a time to the files.
+        foreach ($entities as $entity_id => $entity) {
+
+          // Write the same entity to all the formatters that are supported.
+          foreach ($formatters as $class => $formatter) {
+            //if ($class == 'TripalTabDownloader') {
+              $formatter->writeEntity($entity, $job);
+            //}
           }
         }
+        if ($job) {
+          $job->setItemsHandled($num_handled + count($slice));
+        }
       }
     }
 
-    $downloader = new $formatter($this->bundle_name, $this->ids, $supported_fields, $outfile, $this->user->uid);
-    $downloader->write();
-
+    // Now close up all the files
+    foreach ($formatters as $class => $formatter) {
+      $formatter->writeDone($job);
+    }
   }
+
+
 }

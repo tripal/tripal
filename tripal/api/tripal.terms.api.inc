@@ -346,7 +346,7 @@ function tripal_add_term($details) {
 function tripal_get_term_details($vocabulary, $accession) {
 
   if (empty($vocabulary) OR empty($accession)) {
-    tripal_report_error('tripal_term', TRIPAL_ERROR, 'Unable to retrieve details for term due to missing vocabulary and/or accession.');
+    tripal_report_error('tripal_term', TRIPAL_ERROR, "Unable to retrieve details for term due to missing vocabulary and/or accession");
   }
 
   // TODO: we need some sort of administrative interface that lets the user

@@ -390,6 +390,28 @@ function tripal_menu() {
     'file' => 'includes/tripal.collections.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
+  $items['user/%/data-collections/%/view'] = array (
+    'title' => 'View a Collections',
+    'description' => 'Views a data collection.',
+    'page callback' => 'tripal_user_collections_view_page',
+    'page arguments' => array(1, 3),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+  $items['user/%/data-collections/generate/%'] = array (
+    'title' => 'Generate a file for download of a Collections',
+    'description' => 'Generates a data collection file for download.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_user_collections_generate_file_form', 1, 4),
+    'access callback' => 'tripal_accesss_user_collections',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.collections.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
 
   $items['admin/tripal/data-collections'] = array(
     'title' => 'Data Collections',
@@ -531,6 +553,11 @@ function tripal_theme($existing, $type, $theme, $path) {
     'tripal_field_default' => array(
       'render element' => 'element',
       'file' => 'includes/tripal.fields.inc',
+    ),
+    // Themed forms
+    'tripal_views_handler_area_collections_fields_fset' => array(
+      'render element' => 'form',
+      'file' => 'views_handlers/tripal_views_handler_area_collections.inc',
     ),
   );
 
@@ -747,16 +774,42 @@ function tripal_import_api() {
 }
 
 /**
- * Implements hook_form_alter().
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ *
+ * This alter function disables some of the form widgets when the storage
+ * backend indicates they are not appropriate.
  */
-function tripal_form_alter(&$form, $form_state, $form_id) {
+function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   // If this is the field_ui_field_edit_form (i.e. the form that appears
   // when editing a field that is attached to an entity). Then we want
   // to add term settings for any field attached to a TripalEntity
   // content type.
-  if ($form_id == 'field_ui_field_edit_form' and $form['#instance']['entity_type'] == 'TripalEntity') {
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+
+    // Add the form elements for setting the vocabulary terms.
     tripal_field_instance_settings_form_alter($form, $form_state);
+
+    // Make sure we preserve the auto_attach settings.
+    $auto_attach = TRUE;
+    if (array_key_exists('auto_attach', $form['#instance']['settings'])) {
+      $auto_attach = $form['#instance']['settings']['auto_attach'];
+    }
+    $form['instance']['settings']['auto_attach'] = array(
+      '#type' => 'value',
+      '#value' => $auto_attach,
+    );
   }
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function tripal_form_alter(&$form, $form_state, $form_id) {
 
   // Remove fields that have no form. It's just a bit too confusing to have
   // widgets appear in the form but without any form elements inside them.
@@ -1059,14 +1112,30 @@ function tripal_cron() {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',
-        $function, $args, 1, $includes, TRUE);
+      tripal_add_job(
+        "Cron: Checking for '$module' notifications.",    // Job Name
+        'tripal',                                         // Module Name
+        $function,                                        // Callback
+        $args,                                            // Arguements
+        1,                                                // User UID
+        1,                                                // Priority (1-10)
+        $includes,                                        // Includes
+        TRUE                                              // Ignore Duplicates
+      );
     }
   }
 
   // Check for expired collections.
-  tripal_add_job('Cron: Checking expired collections', 'tripal',
-    'tripal_expire_collections', $args, 1, $includes, TRUE);
+  tripal_add_job(
+    'Cron: Checking expired collections',             // Job Name
+    'tripal',                                         // Module Name
+    'tripal_expire_collections',                      // Callback
+    $args,                                            // Arguements
+    1,                                                // User UID
+    1,                                                // Priority (1-10)
+    $includes,                                        // Includes
+    TRUE                                              // Ignore Duplicates
+  );
 }
 
 /**

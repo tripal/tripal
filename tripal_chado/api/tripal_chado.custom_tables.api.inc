@@ -126,7 +126,9 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mview_id = NULL, $redirect = TRUE) {
+function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
+    $mview_id = NULL, $redirect = TRUE) {
+
   global $databases;
   $created = 0;
   $recreated = 0;
@@ -204,10 +206,10 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
   }
   catch (Exception $e) {
     $transaction->rollback();
+    $error = $e->getMessage();
     watchdog_exception('tripal_chado', $e);
-    $error = _drupal_decode_exception($e);
     drupal_set_message(t("Could not add custom table '%table_name': %message.",
-      array('%table_name' => $table, '%message' => $error['!message'])), 'error');
+        array('%table_name' => $table, '%message' => $error)), 'error');
     return FALSE;
   }
 
