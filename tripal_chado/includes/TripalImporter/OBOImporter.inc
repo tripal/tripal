@@ -1466,10 +1466,10 @@ class OBOImporter extends TripalImporter {
    * API call to Ontology Lookup Service provided by
    * https://www.ebi.ac.uk/ols/docs/api#resources-terms
    *
-   * @param ontology
-   *   The OLS ontology id e.g. go
    * @param accession
    *   Accession term for query
+   * @param type_of_search
+   *   Either ontology, term, query, or query-non-local
    *
    * @ingroup tripal_obo_loader
    */
@@ -1514,8 +1514,6 @@ class OBOImporter extends TripalImporter {
     }
     return $response;
   }
-
-  //drush php-eval "module_load_include('inc', 'tripal_chado', 'sites/all/modules/tripal/tripal_chado/includes/TripalImporter'); oboEbiLookup('BFO:0000050')"
 }
 
 /**
