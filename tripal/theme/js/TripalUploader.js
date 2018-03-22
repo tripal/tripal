@@ -41,7 +41,11 @@
       var i = options['i'];
       var url = options['url'];
       var self = this;
-      
+
+      if (file.size > 2147483648) {
+        alert('Please upload a file less than 2048M (2G).');
+      }
+
       // Make sure the file type is allowed.  If there are no file types
       // then anything is allowed.
       if (this.tables[tname]['allowed_types'] && this.tables[tname]['allowed_types'].length > 0) {
