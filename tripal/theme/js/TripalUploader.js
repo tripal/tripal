@@ -44,6 +44,7 @@
 
       if (file.size > 2147483648) {
         alert('Please upload a file less than 2048M (2G).');
+        return null;
       }
 
       // Make sure the file type is allowed.  If there are no file types
