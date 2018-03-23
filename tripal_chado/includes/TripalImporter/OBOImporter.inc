@@ -239,7 +239,8 @@ class OBOImporter extends TripalImporter {
       '#type'          => 'textfield',
       '#title'         => t('New Vocabulary Name'),
       '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
-                             list above for use again later.'),
+                             list above for use again later. Additionally, if a default namespace is not provided in the OBO
+                             header this name will be used as the default_namespace.'),
     );
 
     $form['obo_new']['obo_url']= array(
@@ -488,7 +489,7 @@ class OBOImporter extends TripalImporter {
       tripal_insert_obo($obo_name, $file);
     }
 
-    $success = $this->loadOBO_v1_2($file);
+    $success = $this->loadOBO_v1_2($file, $obo_name);
   }
 
   /**
@@ -531,7 +532,7 @@ class OBOImporter extends TripalImporter {
     }
 
     // second, parse the OBO
-    $this->loadOBO_v1_2($temp);
+    $this->loadOBO_v1_2($temp, $obo_name);
 
     // now remove the temp file
     unlink($temp);
@@ -549,8 +550,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function loadOBO_v1_2($file) {
-
+  private function loadOBO_v1_2($file, $obo_name) {
     $header = array();
     $ret = array();
 
@@ -576,24 +576,52 @@ class OBOImporter extends TripalImporter {
     }
     // If the 'default-namespace' is missing.
     else {
-
-      // Look to see if an 'ontology' key is present.  It is part of the v1.4
-      // specification so it shouldn't be in the file, but just in case
-      if (array_key_exists('ontology', $header)) {
-        $defaultcv = tripal_insert_cv(strtoupper($header['ontology'][0]), '');
-        if (!$defaultcv) {
-          throw new Exception('Cannot add namespace ' . strtoupper($header['ontology'][0]));
+      // Grab the first term accession from the file and get the short name for the cv
+      $fh = fopen($file, 'r');
+      while ($line = fgets($fh)) {
+        // Grab the first item's id info to break apart.
+        if (preg_match('/^\s*\[/', $line)) {
+          $stanza = TRUE;
+          continue;
         }
-        $this->newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
+        if ($stanza === TRUE && (substr($line, 0, 3) === "id:")) {
+          $parts = explode(':', $line);
+          $short_name = strtolower($parts[1]);
+          $short_name = preg_replace('/\s+/', '', $short_name);
+          break;
+        }
       }
-      else {
+      fclose($fh);
+      // Check if the EBI ontology search has this ontology:
+      try {
+        $results = $this->oboEbiLookup($short_name, 'ontology');
+        if (array_key_exists('default-namespace', $results['config']['annotations'])) {
+          $results = $results['config']['annotations']['default-namespace'];
+          if (is_array($results)) {
+            $results = $results[0];
+          }
+        }
+        elseif (array_key_exists('namespace', $results['config'])) {
+          $results = $results['config']['namespace'];
+        }
+        else {
+          $results = $short_name;
+        }
+        $defaultcv = tripal_insert_cv(strtoupper($results), '');
+        $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
+      }
+      catch (Exception $e) {
+        watchdog_exception('OBOImporter no such accession found in EBI Ontology Search', $e);
+      }
+    
+      if (empty($defaultcv)) {
         throw new Exception("Could not find a namespace for this OBO file: $file");
       }
       $this->logMessage("This OBO is missing the 'default-namespace' header. It " .
-          "is not possible to determine which vocabulary terms without a 'namespace' key " .
-          "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
-          array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
-    }!
+        "is not possible to determine which vocabulary terms without a 'namespace' key " .
+        "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
+        array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
+    }
     // Add any typedefs to the vocabulary first.
     $this->logMessage("Step 2: Loading type defs...");
     $this->loadTypeDefs($defaultcv, $default_db);
@@ -713,8 +741,7 @@ class OBOImporter extends TripalImporter {
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
-
-    // construct the term array for sending to the tripal_chado_add_cvterm function
+   // construct the term array for sending to the tripal_chado_add_cvterm function
     // for adding a new cvterm
     $t = array();
     $t['id'] = $term['id'][0];
@@ -731,6 +758,32 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('is_obsolete', $term)) {
       $t['is_obsolete'] = $term['is_obsolete'][0];
     }
+
+    // Check that the default_cv is in the cv table.
+    $sql =  "
+      SELECT CV.name 
+      FROM {cv} CV 
+      WHERE CV.name = '$defaultcv'
+    ";
+    $results = chado_query($sql)->fetchObject();
+    if (!$results){
+      //The controlled vocabulary is not in the cv term table and needs to be added.
+      $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
+      if (!empty($ontology_info)){
+        if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
+          $results = $ontology_info['config']['annotations']['default-namespace'];
+        }
+        elseif (array_key_exists('namespace', $ontology_info['config'])) {
+          $results = $ontology_info['config']['namespace'];
+        }
+        $cv_returned = tripal_insert_cv($results[0], '');
+        // If name && definition are both empty then look up the term from the ontology you just loaded.
+        if($cv_returned) {
+          $defaultcv = $cv_returned;
+        }
+      }
+    }
+ 
 
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
@@ -902,7 +955,42 @@ class OBOImporter extends TripalImporter {
    */
   private function addRelationship($cvterm, $defaultcv, $rel,
       $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
-
+    // If an accession was passed we need to see if we can find the actual label.
+    if (strpos($rel, ':')) {
+      $pair = explode(":", $rel);    
+      $ontology_id = $pair[0];
+      $accession_num = $pair[1];
+      if (is_numeric($accession_num)) {
+        $results = $this->oboEbiLookup($rel, 'query');
+        if (!empty($results)) {
+          if (array_key_exists('docs', $results)){
+            if(!empty($results['docs'])) {
+              $rel = $results['docs']['label'];
+            }
+            else {
+              // The first search doesn't work, so let's try a broader one.
+              $results = $this->oboEbiLookup($rel, 'query-non-local');
+              if (!empty($results)) {
+                if (array_key_exists('docs', $results)){
+                  if(!empty($results['docs'])) {
+                    $accession = $rel;
+                    $accession_underscore = str_replace(":", "_", $accession);
+                    foreach ($results['docs'] as $item) {
+                      if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
+                        //Found the first place a label is other than the accession is used, so take
+                        // that info and then end the loop.
+                        $rel = $item['label'];
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }    
     // Make sure the relationship cvterm exists.
     $term = array(
       'name' => $rel,
@@ -932,7 +1020,7 @@ class OBOImporter extends TripalImporter {
         throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
       }
     }
-
+  
     // Get the object term.
     $oterm = $this->getTerm($objname);
     if (!$oterm) {
@@ -1120,7 +1208,6 @@ class OBOImporter extends TripalImporter {
     // iterate through the lines in the OBO file and parse the stanzas
     $fh = fopen($obo_file, 'r');
     while ($line = fgets($fh)) {
-
       $line_num++;
       $size = drupal_strlen($line);
       $num_read += $size;
@@ -1178,7 +1265,6 @@ class OBOImporter extends TripalImporter {
       if ($tag == 'id' and preg_match('/^(.+?):.*$/', $value, $matches)) {
         $default_db = $matches[1];
       }
-
       $tag = preg_replace("/\|-\|-\|/", "\:", $tag); // return the escaped colon
       $value = preg_replace("/\|-\|-\|/", "\:", $value);
       if ($in_header) {
@@ -1374,6 +1460,60 @@ class OBOImporter extends TripalImporter {
     }
     return $result[0];
   }
+
+
+  /**
+   * API call to Ontology Lookup Service provided by
+   * https://www.ebi.ac.uk/ols/docs/api#resources-terms
+   *
+   * @param accession
+   *   Accession term for query
+   * @param type_of_search
+   *   Either ontology, term, query, or query-non-local
+   *
+   * @ingroup tripal_obo_loader
+   */
+  private function oboEbiLookup($accession, $type_of_search) {
+    //Grab just the ontology from the $accession.
+    $parts = explode(':', $accession);
+    $ontology = strtolower($parts[0]);
+    $ontology = preg_replace('/\s+/', '', $ontology);
+    if ($type_of_search == 'ontology') {
+      $options = array();
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
+      $response = drupal_http_request($full_url, $options);
+      if(!empty($response)){
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'term') {
+      //The IRI of the terms, this value must be double URL encoded
+      $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':' , '_', $accession)));
+      $options = array();
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
+      $response = drupal_http_request($full_url, $options);
+      if(!empty($response)){
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif($type_of_search == 'query') {    
+      $options = array();
+      $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
+      $response = drupal_http_request($full_url, $options);
+      if(!empty($response)){
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif($type_of_search == 'query-non-local') {    
+      $options = array();
+      $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
+      $response = drupal_http_request($full_url, $options);
+      if(!empty($response)){
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    return $response;
+  }
 }
 
 /**
@@ -1382,3 +1522,4 @@ class OBOImporter extends TripalImporter {
 function tripal_cv_obo_form_ajax_callback($form, $form_state) {
   return $form['class_elements']['obo_existing'];
 }
+
