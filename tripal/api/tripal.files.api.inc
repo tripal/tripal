@@ -125,3 +125,67 @@ function tripal_get_files_stream($module_name = FALSE) {
 
   return $stream;
 }
+
+/**
+ * Formats a size (in bytes) in human readable format.
+ *
+ * Function taken from php.net
+ *
+ * @param $bytes
+ *   The size of the file in bytes
+ * @param $precision
+ *   The number of decimal places to use in the final number if needed
+ *
+ * @return string
+ *   A formatted string indicating the size of the file
+ */
+function tripal_format_bytes($bytes, $precision = 2) {
+  $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    
+  $bytes = max($bytes, 0);
+  $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+  $pow = min($pow, count($units) - 1);
+    
+  // Uncomment one of the following alternatives
+  $bytes /= pow(1000, $pow);
+  // $bytes /= (1 << (10 * $pow));
+    
+  return round($bytes, $precision) . '' . $units[$pow];
+}
+
+/**
+ * Retrieves the list of files uploaded by a user.
+ * @param $uid
+ *   The ID of the user whose files should be retrieved.
+ * @param $allowed_types
+ *   A list of valid extensions to restrict the files to.
+ * @param $module
+ *   The name of the module that is managing the file.
+ *      
+ * @return
+ *   A list of file objects.
+ */
+function tripal_get_user_uploads($uid, $allowed_types = array(), $module = 'tripal') {
+  $user = user_load($uid);
+  
+  $query = db_select('file_managed', 'FM');
+  $query->fields('FM', array('fid'));
+  $query->distinct();
+  $query->condition('FM.uid', $user->uid);
+  $query->innerJoin('file_usage', 'FU', "FU.fid = FM.fid");
+  $query->condition('FU.module', $module);
+  $query->orderBy('FM.filename');
+  $files = $query->execute();
+  
+  $files_list = [];
+  while ($fid = $files->fetchField()) {
+    $file = file_load($fid);
+    foreach ($allowed_types as $type) {
+      if (preg_match('/\.' . $type . '$/', $file->filename)) {
+        $files_list[$fid] = $file;
+      }
+    }
+  }
+  
+  return $files_list;
+}
