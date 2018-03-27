@@ -72,6 +72,10 @@ function tripal_cv_install() {
  */
 function tripal_cv_uninstall() {
 
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_general.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_query.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_schema.api');
+
   // drop the tripal_obo_temp table
   if (chado_table_exists('tripal_obo_temp')) {
     $sql = "DROP TABLE {tripal_obo_temp}";
