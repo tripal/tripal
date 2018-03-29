@@ -509,6 +509,8 @@ function tripal_create_bundle($args, &$error = '') {
 }
 
 /*
+ * Are we keeping this in?
+ * 
  * Checks access permissions for a given entity.
  *
  * This function is set for TripalEntity access checking in the
