@@ -5,6 +5,15 @@
  * Provides an application programming interface (API) for working with
  * fields attached to TripalEntity content types (bundles).
  * 
+ */
+
+/**
+ * @defgroup tripal_fields_api Tripal Fields
+ * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) for working with
+ * fields attached to TripalEntity content types (bundles).
+ * 
  * Fields:
  * A field is a reusable "data container" that is attached to a Bundle. 
  * Programmatically, each field provides one or more primitive data types, with 
@@ -30,14 +39,6 @@
  * display, Drupal examines all of the fields that are attached to the entity's 
  * bundle, and then populates the fields instances with data specific to the 
  * entity being loaded.
- */
-
-/**
- * @defgroup tripal_fields_api Tripal Fields
- * @ingroup tripal_api
- * @{
- * Provides an application programming interface (API) for working with
- * fields attached to TripalEntity content types (bundles).
  * @}
  *
  */

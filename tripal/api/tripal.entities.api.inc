@@ -5,6 +5,15 @@
  * Provides an application programming interface (API) for working with
  * TripalEntity content types (bundles) and their entities. 
  * 
+ */
+
+/**
+ * @defgroup tripal_entities_api Tripal Entities
+ * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) for working with
+ * TripalEntity content types (bundles) and their entities.
+ * 
  * Bundles (Content Types): Bundles are types of content in a Drupal site.  
  * By default, Drupal provides the Basic Page and Article content types, 
  * and Drupal allows a site developer to create new content types on-the-fly 
@@ -31,14 +40,6 @@
  * 
  * For more information please see: 
  * http://tripal.info/tutorials/v3.x/developers-handbook/structure
- */
-
-/**
- * @defgroup tripal_entities_api Tripal Entities
- * @ingroup tripal_api
- * @{
- * Provides an application programming interface (API) for working with
- * TripalEntity content types (bundles) and their entities.
  * @}
  *
  */

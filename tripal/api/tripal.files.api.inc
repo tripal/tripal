@@ -36,8 +36,8 @@
  */
 function tripal_create_files_dir($module_name, $path = FALSE) {
 
-  // if the path is not supplied then assume they want to create the base files directory
-  // for the specified module
+  // if the path is not supplied then assume they want to create the base files
+  // directory for the specified module
   if (!$path) {
     // make the data directory for this module
     $data_dir = tripal_get_files_dir() . "/$module_name";
