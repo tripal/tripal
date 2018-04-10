@@ -14,21 +14,22 @@
  */
 
 /**
- * Adds a contact to the Chado contact table
+ * Adds a contact to the Chado contact table.
  *
  * @param $values
  *   An array of values to be inserted. Valid keys include:
- *   - name: The name of the contact
- *   - description: Text describing the contact
- *   - type_name: The type of contact.  Must be a term in the tripal_contact vocabulary
- *   - properties: An associative array containing a list of key value pairs for the properites.
- *     The key's must be valid terms in the tripal_contact vocabulary (e.g. Affiliation,
- *     Address, etc).
+ *   - name: The name of the contact.
+ *   - description: Text describing the contact.
+ *   - type_name: The type of contact.  Must be a term in the tripal_contact 
+ *     vocabulary.
+ *   - properties: An associative array containing a list of key value pairs for
+ *     the properites. The key's must be valid terms in the tripal_contact 
+ *     vocabulary (e.g. Affiliation, Address, etc).
  *
  * @return
  *   On success, an array is returned containing the fields of the contact
  *   record including the newly added contact_id. On failure, FALSE is
- *   returned
+ *   returned.
  *
  * @ingroup tripal_contact_api
  */
@@ -115,10 +116,10 @@ function tripal_insert_contact($values) {
  * This function is intended to be used in autocomplete forms for contacts.
  *
  * @param $text
- *   The string to search for
+ *   The string to search for.
  *
  * @return
- *   A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string.
  *
  * @ingroup tripal_contact_api
  */

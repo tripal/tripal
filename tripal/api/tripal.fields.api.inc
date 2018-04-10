@@ -106,30 +106,7 @@ function hook_bundle_fields_info($entity_type, $bundle) {
 function hook_bundle_instances_info($entity_type, $bundle) {
 
 }
-/**
- * This doesn't appear to be integrated anywhere? 
- * 
- * @param $info
- * @param $bundle
- * @param $term
- *
- * @ingroup tripal_fields_api
- */
-function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 
-}
-/**
- * This doesn't appear to be integrated anywhere? 
- * 
- * @param $info
- * @param $bundle
- * @param $term
- *
- * @ingroup tripal_fields_api
- */
-function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
-
-}
 /**
  * Retrieves a list of TripalField types.
  *

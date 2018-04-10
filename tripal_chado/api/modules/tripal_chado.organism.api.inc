@@ -12,41 +12,43 @@
  */
 
 /**
- * Retrieves a chado organism variable
+ * Retrieves a chado organism variable.
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only on of the
- *   following unique keys is required):
- *    - organism_id: the chado organism.organism_id primary key
- *    - genus & species: the chado organism.genus field & organism.species field
+ *   An array with the key stating what the identifier is. Supported keys (only 
+ *   on of the following unique keys is required):
+ *    - organism_id: the chado organism.organism_id primary key.
+ *    - genus & species: the chado organism.genus field & organism.species field.
  *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. It
- *      should at least have either a type_name (if unique across cvs) or type_id. Other
- *      supported keys include: cv_id/cv_name (of the type), value and rank
+ *    - property: An array/object describing the property to select records for. 
+ *      It should at least have either a type_name (if unique across cvs) or 
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
+ *     - Any keys supported by chado_generate_var(). See that function 
+ *      definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the organism record to be returned.
+ * NOTE: the $identifier parameter can really be any array similar to $values 
+ * passed into chado_select_record(). It should fully specify the organism 
+ * record to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing the organism
- *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   FALSE will be returned.
+ *   If unique values were passed in as an identifier then an object describing 
+ *   the organism will be returned (will be a chado variable from 
+ *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_organism_api
  */
 function tripal_get_organism($identifiers, $options = array()) {
 
-  // Set Defaults
+  // Set Defaults.
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var not to follow any foreign keys
+    // Tells chado_generate_var not to follow any foreign keys.
     $options['include_fk'] = array();
   }
 
-  // Error Checking of parameters
+  // Error Checking of parameters.
   if (!is_array($identifiers)) {
     tripal_report_error(
       'tripal_organism_api',
@@ -71,7 +73,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     );
   }
 
-  // If one of the identifiers is property then use chado_get_record_with_property()
+  // If one of the identifiers is property then use chado_get_record_with_property().
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
@@ -82,7 +84,8 @@ function tripal_get_organism($identifiers, $options = array()) {
     );
   }
 
-  // Else we have a simple case and we can just use chado_generate_var to get the analysis
+  // Else we have a simple case and we can just use chado_generate_var to get 
+  // the analysis.
   else {
 
     // Try to get the organism
@@ -93,7 +96,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     );
   }
 
-  // Ensure the organism is singular. If it's an array then it is not singular
+  // Ensure the organism is singular. If it's an array then it is not singular.
   if (is_array($organism)) {
     tripal_report_error(
       'tripal_organism_api',
@@ -105,7 +108,8 @@ function tripal_get_organism($identifiers, $options = array()) {
     );
   }
 
-  // Report an error if $organism is FALSE since then chado_generate_var has failed
+  // Report an error if $organism is FALSE since then chado_generate_var has 
+  // failed.
   elseif ($organism === FALSE) {
     tripal_report_error(
       'tripal_organism_api',
@@ -141,7 +145,7 @@ function tripal_get_organism_scientific_name($organism) {
   // For Chado v1.3 we have a type_id and infraspecific name.
   if (property_exists($organism, 'type_id')) {
     $rank = '';
-    // For organism objects crated using chado_generate_var
+    // For organism objects crated using chado_generate_var.
     if (is_object($organism->type_id)) {
       if ($organism->type_id) {
         $rank = $orgasnism->type_id->name;
@@ -166,14 +170,15 @@ function tripal_get_organism_scientific_name($organism) {
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in select lists
+ * Returns a list of organisms that are currently synced with Drupal to use in 
+ * select lists.
  *
  * @param $syncd_only
- *   Whether or not to return all chado organisms or just those sync'd with drupal. Defaults
- *   to TRUE (only sync'd organisms)
+ *   Whether or not to return all chado organisms or just those sync'd with 
+ *   drupal. Defaults to TRUE (only sync'd organisms).
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism scientific
- *   name and the keys are organism_id's
+ *   An array of organisms sync'd with Drupal where each value is the organism 
+ *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
@@ -190,7 +195,7 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
     ";
     $orgs = chado_query($sql);
 
-    // iterate through the organisms and build an array of those that are synced
+    // Iterate through the organisms and build an array of those that are synced.
     foreach ($orgs as $org) {
       $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
     }
@@ -200,7 +205,7 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
     $csql =  "SELECT * FROM {organism} ORDER BY genus, species";
     $orgs = chado_query($csql);
 
-    // iterate through the organisms and build an array of those that are synced
+    // Iterate through the organisms and build an array of those that are synced.
     foreach ($orgs as $org) {
       $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
     }
@@ -212,11 +217,11 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  * Return the path for the organism image.
  *
  * @param $organism
- *   An organism table record
+ *   An organism table record.
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
- *   url to the image is returend. If no image is present then NULL is returned
+ *   url to the image is returend. If no image is present then NULL is returned.
  *
  * @ingroup tripal_organism_api
  */
@@ -227,7 +232,7 @@ function tripal_get_organism_image_url($organism) {
     return NULL;
   }
 
-  // Get the organism's node
+  // Get the organism's node.
   $nid = chado_get_nid_from_id('organism', $organism->organism_id);
 
   // Look in the file_usage table of Drupal for the image file. This
@@ -245,8 +250,8 @@ function tripal_get_organism_image_url($organism) {
     return file_create_url($file->uri);
   }
 
-  // First look for an image with the genus/species name.  This is old-style tripal
-  // and we keep it for backwards compatibility.
+  // First look for an image with the genus/species name.  This is old-style 
+  // tripal and we keep it for backwards compatibility.
   $base_path = realpath('.');
   $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
@@ -272,13 +277,13 @@ function tripal_get_organism_image_url($organism) {
 
 /**
  * This function is intended to be used in autocomplete forms
- * for searching for organisms that begin with the provided string
+ * for searching for organisms that begin with the provided string.
  *
  * @param $text
- *   The string to search for
+ *   The string to search for.
  *
  * @return
- *   A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string.
  *
  * @ingroup tripal_organism_api
  */

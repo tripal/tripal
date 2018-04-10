@@ -1,4 +1,19 @@
 <?php
+
+/**
+ * @file
+ * Provides an application programming interface (API) for semantic web support.
+ *
+ * @ingroup tripal_chado
+ */
+/**
+ * @defgroup tripal_chado_semweb_api Semantic Web
+ * @ingroup tripal_chado_api
+ * @{
+ * Provides an application programming interface (API) for semantic web support.
+ * @}
+ */
+
 /**
  * Adds a new Chado table to the semantic web support for Chado.
  *
@@ -17,10 +32,12 @@
  *
  * @param $chado_table
  *   The name of the Chado table.
+ * 
+ * @ingroup tripal_chado_semweb_api
  */
 function tripal_add_chado_semweb_table($chado_table) {
 
-  // Don't include the tripal temp tables
+  // Don't include the tripal temp tables.
   if (preg_match('/tripal_.+_temp/', $chado_table)) {
     return;
   }
@@ -30,7 +47,7 @@ function tripal_add_chado_semweb_table($chado_table) {
   $schema = chado_get_schema($chado_table);
   foreach ($schema['fields'] as $chado_column => $details) {
 
-    // If the record already exists don't overwrite it
+    // If the record already exists don't overwrite it.
     $record = db_select('chado_semweb', 'CS')
       ->fields('CS', array('chado_semweb_id'))
       ->condition('CS.chado_table', $chado_table)
@@ -46,6 +63,7 @@ function tripal_add_chado_semweb_table($chado_table) {
     }
   }
 }
+
 /**
  * Associates a controlled vocabulary term with a field in a Chado table.
  *
@@ -71,6 +89,8 @@ function tripal_add_chado_semweb_table($chado_table) {
  *
  * @return boolean
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
 function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
     $update = FALSE) {
@@ -174,6 +194,8 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *   Returns a string-based representation of the term (e.g. SO:0000704). If
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
 function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
   $cvterm_id = db_select('chado_semweb', 'CS')
@@ -200,6 +222,8 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *   A cvterm object.
  * @return
  *   The semantic web name for the term.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
 function tripal_format_chado_semweb_term($cvterm) {
   if ($cvterm) {
@@ -219,6 +243,8 @@ function tripal_format_chado_semweb_term($cvterm) {
  * @return
  *   The name of the Chado column that matches the given term or FALSE if the
  *   term is not mapped to the Chado table.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
 function tripal_get_chado_semweb_column($chado_table, $term) {
   $columns = db_select('chado_semweb', 'CS')

@@ -2,7 +2,7 @@
 /**
  * @file
  * Provides an application programming interface (API) for improved user
- * notivications.  These API functions can be used to set messages for
+ * notifications.  These API functions can be used to set messages for
  * end-users, administrators, or simple logging.
  */
 
@@ -63,7 +63,7 @@ define('TRIPAL_DEBUG',7);
  */
 function tripal_report_error($type, $severity, $message, $variables = array(), $options = array()) {
 
-  // Get human-readable severity string
+  // Get human-readable severity string.
   $severity_string = '';
   switch ($severity) {
     case TRIPAL_CRITICAL:
@@ -140,7 +140,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  * tripal administrators.
  *
  * @param $message
- *   The message to be displayed to the tripal administrators
+ *   The message to be displayed to the tripal administrators.
  * @param $importance
  *   The level of importance for this message. In the future this will be used
  *   to allow administrators to filter some of these messages. It can be one of
@@ -167,10 +167,10 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
     return '';
   }
 
-  // set defaults
+  // Set defaults.
   $options['return_html'] = (isset($options['return_html'])) ? $options['return_html'] : FALSE;
 
-  // Get human-readable severity string
+  // Get human-readable severity string.
   $importance_string = '';
   switch ($importance) {
     case TRIPAL_CRITICAL:
@@ -193,7 +193,7 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
       break;
   }
 
-  // Mark-up the Message
+  // Mark-up the Message.
   $full_message =
      '<div class="tripal-site-admin-message">' .
        '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>' .
@@ -201,7 +201,8 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
    '</div>';
 
   // Handle whether to return the HTML & let the caller deal with it
-  // or to use drupal_set_message to put it near the top of the page  & let the theme deal with it
+  // or to use drupal_set_message to put it near the top of the page  & let the 
+  // theme deal with it.
   if ($options['return_html']) {
     return '<div class="messages tripal-site-admin-only">' . $full_message . '</div>';
   }
@@ -211,22 +212,22 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
 }
 
 /**
- * File-based Logging for Tripal
+ * File-based logging for Tripal.
  *
  * @param $message
- *   The message to be logged. Need not contain date/time information
+ *   The message to be logged. Need not contain date/time information.
  * @param $log_type
  *   The type of log. Should be one of 'error' or 'job' although other types
  *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
  *     - first_progress_bar: this sohuld be used for the first log call for a
- *       progress bar
+ *       progress bar.
  *     - is_progress_bar: this option should be used for all but the first print
  *       of a progress bar to allow it all to be printed on the same line
- *       without intervening date prefixes
+ *       without intervening date prefixes.
  * @return
- *   The number of bytes that were written to the file, or FALSE on failure
+ *   The number of bytes that were written to the file, or FALSE on failure.
  *
  * @ingroup tripal_notify_api
  */
@@ -245,4 +246,3 @@ function tripal_log($message, $type = 'error', $options = array()) {
   return error_log($message);
 
 }
-

@@ -16,10 +16,10 @@
  * @param $field
  *   The field in the publication to search on.
  * @param $string
- *   The string to search for
+ *   The string to search for.
  *
  * @return
- *   A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string.
  *
  * @ingroup tripal_feature_api
  */
@@ -47,13 +47,13 @@ function tripal_autocomplete_feature($string = '') {
 }
 
 /**
- * Performs a reverse compliment of a nucleotide sequence
+ * Performs a reverse compliment of a nucleotide sequence.
  *
  * @param $sequence
- *   The nucelotide sequence
+ *   The nucelotide sequence.
  *
  * @return
- *   an upper-case reverse complemented sequence
+ *   an upper-case reverse complemented sequence.
  *
  * @ingroup tripal_feature_api
  */
@@ -87,12 +87,13 @@ function tripal_reverse_compliment_sequence($sequence) {
  * @param $feature
  *   An associative array describing the feature. Valid keys include:
  *    - feature_id: The feature_id of the feature for which the sequence will
- *      be retrieved
- *    - name: The feature name. This will appear on the FASTA definition line
+ *      be retrieved.
+ *    - name: The feature name. This will appear on the FASTA definition line.
  *    - parent_id:  (optional) only retrieve a sequence if 'derive_from_parent'
  *      is true and the parent matches this ID.
- *    - featureloc_id: (optional) only retrieve a sequence if 'derive_from_parent' is
- *      true and the alignment is defined with this featureloc_id
+ *    - featureloc_id: (optional) only retrieve a sequence if 
+ *      'derive_from_parent' is true and the alignment is defined with this 
+ *      featureloc_id.
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - width: Indicate the number of bases to use per line.  A new line will
@@ -105,28 +106,28 @@ function tripal_reverse_compliment_sequence($sequence) {
  *      excluding intro sub feature sequence.  For example, set this option to
  *      obtain just the coding sequence of an mRNA.
  *    - upstream: An integer specifing the number of upstream bases to include
- *      in the output
+ *      in the output.
  *    - downstream: An integer specifying the number of downstream bases to
  *      include in the output.
  *    - sub_feature_types: Only include sub features (or child features) of
- *      the types provided in the array
+ *      the types provided in the array.
  *    - relationship_type: If a relationship name is provided (e.g. sequence_of)
  *      then any sequences that are in relationships of this type with matched
- *      sequences are also included
+ *      sequences are also included.
  *    - relationship_part: If a relationship is provided in the preceeding
  *      argument then the rel_part must be either 'object' or 'subject' to
- *      indicate which side of the relationship the matched features belong
+ *      indicate which side of the relationship the matched features belong.
  *
  * @return
  *   an array of matching sequence in the following keys for each sequence:
- *      'types'         => an array of feature types that were used to derive
- *         the sequence (e.g. from an aggregated sequence)
- *      'upstream'      => the number of upstream bases included in the sequence
- *      'downstream'    => the number of downstream bases included in the
- *        sequence
- *      'defline'       => the definintion line used to create a FASTA sequence
- *      'residues'      => the residues
- *      'featureloc_id' => the featureloc_id if the sequences is from an
+ *    - types: an array of feature types that were used to derive
+ *      the sequence (e.g. from an aggregated sequence)
+ *    - upstream: the number of upstream bases included in the sequence
+ *    - downstream: the number of downstream bases included in the
+ *      sequence
+ *    - defline: the definintion line used to create a FASTA sequence
+ *    - residues: the residues
+ *    - featureloc_id: the featureloc_id if the sequences is from an
  *        alignment
  *
  * @ingroup tripal_feature_api
@@ -341,7 +342,7 @@ function tripal_get_feature_sequences($feature, $options) {
       if ($parent_id and $parent_id != $parent->srcfeature_id) {
         continue;
       }
-      // if the user specified a particular featureloc_id and this one
+      // If the user specified a particular featureloc_id and this one
       // doesn't match then skip it.
       if ($featureloc_id and $featureloc_id != $parent->featureloc_id) {
         continue;
@@ -351,8 +352,8 @@ function tripal_get_feature_sequences($feature, $options) {
       $notes = '';
       $types = array();
 
-      // if we are to aggregate then we will ignore the feature returned
-      // by the query above and rebuild it using the sub features
+      // If we are to aggregate then we will ignore the feature returned
+      // by the query above and rebuild it using the sub features.
       if ($aggregate) {
 
         // now get the sub features that are located on the parent.
@@ -382,13 +383,14 @@ function tripal_get_feature_sequences($feature, $options) {
             continue;
           }
 
-          // keep up with the types
+          // Keep up with the types.
           if (!in_array($child->type_name, $types)) {
             $types[] = $child->type_name;
           }
 
-          // if the first sub feature we need to include the upstream bases. first check if
-          // the feature is in the foward direction or the reverse.
+          // If the first sub feature we need to include the upstream bases. 
+          // First check if the feature is in the foward direction or the 
+          // reverse.
           if ($i == 0 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //    ....---->  ---->
@@ -402,8 +404,9 @@ function tripal_get_feature_sequences($feature, $options) {
             $q = chado_query($parent_sql, array(':upstream' => 0, ':downstream' => $downstream, ':feature_id' => $child->feature_id));
           }
 
-          // Next, if the last sub feature we need to include the downstream bases. first check if
-          // the feature is in teh forward direction or the reverse
+          // Next, if the last sub feature we need to include the downstream 
+          // bases. First check if the feature is in teh forward direction or 
+          // the reverse.
           elseif ($i == $num_children - 1 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
             //        ---->  ---->....
@@ -416,7 +419,7 @@ function tripal_get_feature_sequences($feature, $options) {
             //          1       2  up
             $q = chado_query($parent_sql, array(':upstream' => $upstream, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
-          // for internal sub features we don't want upstream or downstream bases
+          // For internal sub features we don't want upstream or downstream bases.
           else {
             $q = chado_query($parent_sql, array(':upstream' => 0, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
@@ -435,7 +438,7 @@ function tripal_get_feature_sequences($feature, $options) {
           $i++;
         }
       }
-      // if this isn't an aggregate then use the parent residues
+      // If this isn't an aggregate then use the parent residues.
       else {
          $seq = $parent->residues;
          if ($parent->upstream > 0) {
@@ -446,14 +449,14 @@ function tripal_get_feature_sequences($feature, $options) {
          }
       }
 
-      // get the reverse compliment if feature is on the reverse strand
+      // Get the reverse compliment if feature is on the reverse strand.
       $dir = 'forward';
       $length = strlen($seq);
       if ($parent->strand < 0) {
         $seq = tripal_reverse_compliment_sequence($seq);
         $dir = 'reverse';
       }
-      // now format for display
+      // Now format for display.
       if ($is_html) {
         $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
       }
@@ -513,10 +516,10 @@ function tripal_get_feature_sequences($feature, $options) {
       $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);
     }
 
-    // get the definintion line for this feature
+    // Get the definintion line for this feature.
     $defline = tripal_get_fasta_defline($f, '', NULL, '', $length);
 
-    // add to the sequence array
+    // Add to the sequence array.
     $sequences[] = array(
       'types'      => $f->type_id->name,
       'upstream'   => 0,
@@ -531,6 +534,7 @@ function tripal_get_feature_sequences($feature, $options) {
 }
 
 /**
+ * Retrieves the bulk sequences for a given feature.
  *
  * @param $options
  *   An associative array of options for selecting a feature. Valid keys include:
@@ -582,7 +586,7 @@ function tripal_get_feature_sequences($feature, $options) {
  */
 function tripal_get_bulk_feature_sequences($options) {
 
-  // default values for building the sequence
+  // Default values for building the sequence
   $org_commonname     = array_key_exists('org_commonname', $options)     ? $options['org_commonname']    : '';
   $genus              = array_key_exists('genus', $options)              ? $options['genus']             : '';
   $species            = array_key_exists('species', $options)            ? $options['species']           : '';
@@ -604,7 +608,7 @@ function tripal_get_bulk_feature_sequences($options) {
     return;
   }
 
-  // get the list of features
+  // Get the list of features.
   $vars = array();
   $sql  = "
     SELECT DISTINCT F.feature_id, F.name, F.uniquename,
@@ -643,7 +647,7 @@ function tripal_get_bulk_feature_sequences($options) {
         $sql .= ":fname$i, ";
         $vars[":fname$i"] = $fname;
       }
-      // remove the trailing comma and close the paren
+      // Remove the trailing comma and close the parenthesis.
       $sql = substr($sql, 0, -2) . ")";
     }
     else {
@@ -658,7 +662,7 @@ function tripal_get_bulk_feature_sequences($options) {
         $sql .= ":funame$i, ";
         $vars[":funame$i"] = $funame;
       }
-      // remove the trailing comma and close the paren
+      // Remove the trailing comma and close the parenthesis.
       $sql = substr($sql, 0, -2) . ")";
     }
     else {
@@ -686,30 +690,34 @@ function tripal_get_bulk_feature_sequences($options) {
 }
 
 /**
- * Returns a definition line that can be used in a FASTA file
+ * Returns a definition line that can be used in a FASTA file.
  *
  * @param $feature
- *   A single feature object containing all the fields from the chado.feature table.
- *   Best case is to provide an object generated by the chado_generate_var() function.
+ *   A single feature object containing all the fields from the chado.feature 
+ *   table. Best case is to provide an object generated by the 
+ *   chado_generate_var() function.
  * @param $notes
- *   Optional: additional notes to be added to the definition line
+ *   Optional: additional notes to be added to the definition line.
  * @param $featureloc
- *   Optional: a single featureloc object generated using chado_generate_var that
- *   contains a record from the chado.featureloc table. Provide this if the
- *   sequence was obtained by using the alignment rather than from the feature.residues
- *   column
+ *   Optional: a single featureloc object generated using chado_generate_var
+ *   that contains a record from the chado.featureloc table. Provide this if the
+ *   sequence was obtained by using the alignment rather than from the 
+ *   feature.residues column.
  * @param $type
  *   Optional: the type of sequence. By default the feature type is used.
  * @param $length
- *   Optional: the length of the sequence
+ *   Optional: the length of the sequence.
  *
  * @return
  *   A string of the format: uniquename|name|type|feature_id
- *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of uniquename|name|type|feature_id
+ *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of 
+ *   uniquename|name|type|feature_id.
+ * 
+ * @ingroup tripal_feature_api
  */
 function tripal_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $type = '', $length = 0) {
 
-  // make sure the featureloc object has the srcfeature if not, then add it
+  // Make sure the featureloc object has the srcfeature if not, then add it.
   if ($featureloc) {
     if (!is_object($featureloc->srcfeature_id)) {
       $featureloc->srcfeature_id = chado_generate_var('feature', array('feature_id' => $featureloc->srcfeature_id));
@@ -718,17 +726,17 @@ function tripal_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $ty
       $featureloc->srcfeature_id->organism_id = chado_generate_var('organism', array('organism_id' => $featureloc->srcfeature_id->organism_id));
     }
   }
-  // make sure the feature object has the organism if not, then add it
+  // Make sure the feature object has the organism if not, then add it.
   if (!is_object($feature->organism_id)) {
     $feature->organism_id = chado_generate_var('organism', array('organism_id' => $feature->organism_id));
   }
 
-  // if a type is not provided then use the default type
+  // If a type is not provided then use the default type.
   if (!$type) {
     $type = $feature->type_id->name;
   }
 
-  // construct the definition line
+  // Construct the definition line.
   $defline = $feature->uniquename . " " .
              'ID=' . $feature->uniquename . "|" .
              'Name=' . $feature->name . "|" .
@@ -749,11 +757,16 @@ function tripal_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $ty
 }
 
 /**
- * Returns a string representing a feature location in an alignment
+ * Returns a string representing a feature location in an alignment.
  *
- * @param unknown $featureloc
+ * @param $featureloc
  *   A single featureloc object generated using chado_generate_var that
  *   contains a record from the chado.featureloc table.
+ *
+ *  @return
+ *   A string of the format: uniquename:featurelocmin..featurelocmax.strand
+ * 
+ * @ingroup tripal_feature_api
  */
 function tripal_get_location_string($featureloc) {
   $feature = $featureloc->feature_id;
@@ -774,10 +787,10 @@ function tripal_get_location_string($featureloc) {
  * Quickly retrieves relationships for a feature.
  *
  * Using the chado_expand_var function to retrieve a set
- * of relationships can be very slow, especialy if there are many relationships
+ * of relationships can be very slow, especialy if there are many relationships.
  * This function is intended to help speed up the retrieval of relationships
  * by only retrieving the base information for the relationship and returning
- * an array with
+ * an array.
  *
  * @param $feature
  *   The feature object
@@ -788,13 +801,13 @@ function tripal_get_location_string($featureloc) {
  * @ingroup tripal_feature_api
  */
 function tripal_get_feature_relationships($feature) {
-  // expand the feature object to include the feature relationships.
+  // Expand the feature object to include the feature relationships.
   $options = array(
     'return_array' => 1,
     'order_by' => array('rank' => 'ASC'),
-    // we don't want to fully recurse we only need information about the
-    // relationship type and the object and subject features (including feature type
-    // and organism)
+    // We don't want to fully recurse we only need information about the
+    // relationship type and the object and subject features (including feature 
+    // type and organism).
     'include_fk' => array(
       'type_id' => 1,
       'object_id' => array(
@@ -809,13 +822,13 @@ function tripal_get_feature_relationships($feature) {
   );
   $feature = chado_expand_var($feature, 'table', 'feature_relationship', $options);
 
-  // get the subject relationships
+  // Get the subject relationships.
   $srelationships = $feature->feature_relationship->subject_id;
   $orelationships = $feature->feature_relationship->object_id;
 
 
-  // get alignment as child. The $feature->featureloc element
-  // is already populated from the alignment preprocess function
+  // Get alignment as child. The $feature->featureloc element
+  // is already populated from the alignment preprocess function.
   $options = array(
     'return_array' => 1,
     'include_fk' => array(
@@ -832,7 +845,7 @@ function tripal_get_feature_relationships($feature) {
     $cfeaturelocs = array($cfeaturelocs);
   }
 
-  // prepare the SQL statement to get the featureloc for the
+  // Prepare the SQL statement to get the featureloc for the
   // feature in the relationships.
   $flrels_sql = "
     SELECT
@@ -843,22 +856,23 @@ function tripal_get_feature_relationships($feature) {
     WHERE FL.feature_id = :feature_id and FL.srcfeature_id = :srcfeature_id
   ";
 
-  // combine both object and subject relationshisp into a single array
+  // Combine both object and subject relationshisp into a single array.
   $relationships = array();
   $relationships['object'] = array();
   $relationships['subject'] = array();
 
-  // iterate through the object relationships
+  // Iterate through the object relationships.
   if ($orelationships) {
     foreach ($orelationships as $relationship) {
       $rel = new stdClass();
-      // get locations where the child feature and this feature overlap with the
+      // Get locations where the child feature and this feature overlap with the
       // same landmark feature.
       $rel->child_featurelocs = array();
       foreach ($cfeaturelocs as $featureloc) {
         $res = chado_query($flrels_sql, array(':feature_id' => $relationship->subject_id->feature_id, ':srcfeature_id' => $featureloc->srcfeature_id->feature_id));
         while ($loc = $res->fetchObject()) {
-          // add in the node id of the src feature if it exists and save this location
+          // Add in the node id of the src feature if it exists and save this 
+          // location.
           if (property_exists($featureloc->srcfeature_id, 'nid')) {
             $loc->nid = $featureloc->srcfeature_id->nid;
           }
@@ -867,7 +881,7 @@ function tripal_get_feature_relationships($feature) {
       }
       $rel->record = $relationship;
 
-      // get the relationship and child types
+      // Get the relationship and child types.
       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
       $child_type = $relationship->subject_id->type_id->name;
 
@@ -888,16 +902,17 @@ function tripal_get_feature_relationships($feature) {
     }
   }
 
-  // now add in the subject relationships
+  // Now add in the subject relationships.
   if ($srelationships) {
     foreach ($srelationships as $relationship) {
       $rel = new stdClass();
-      // get locations where this feature overlaps with the parent
+      // Get locations where this feature overlaps with the parent.
       $rel->parent_featurelocs = array();
       foreach ($cfeaturelocs as $featureloc) {
         $res = chado_query($flrels_sql, array(':feature_id' => $relationship->object_id->feature_id, ':srcfeature_id' => $featureloc->srcfeature_id->feature_id));
         while ($loc = $res->fetchObject()) {
-          // add in the node id of the src feature if it exists and save this location
+          // Add in the node id of the src feature if it exists and save this 
+          // location.
           if (property_exists($featureloc->srcfeature_id, 'nid')) {
             $loc->nid = $featureloc->srcfeature_id->nid;
           }
@@ -941,23 +956,24 @@ function chado_get_featureloc_sequences($feature_id, $featurelocs) {
   }
 
   // Get the list of relationships (including any aggregators) and iterate
-  // through each one to find information needed to color-code the reference sequence
+  // through each one to find information needed to color-code the reference 
+  // sequence.
   $relationships = _tripal_feature_get_aggregate_relationships($feature_id);
   if (!$relationships) {
     return array();
   }
 
 
-  // iterate through each of the realtionships features and get their
-  // locations
+  // Iterate through each of the realtionships features and get their
+  // locations.
   foreach ($relationships as $rindex => $rel) {
-    // get the featurelocs for each of the relationship features
+    // Get the featurelocs for each of the relationship features.
     $rel_featurelocs = chado_get_featurelocs($rel->subject_id, 'as_child', 0);
     foreach ($rel_featurelocs as $rfindex => $rel_featureloc) {
-      // keep track of this unique source feature
+      // Keep track of this unique source feature.
       $src = $rel_featureloc->src_feature_id . "-" . $rel_featureloc->src_cvterm_id;
 
-      // copy over the results to the relationship object.  Since there can
+      // Copy over the results to the relationship object.  Since there can
       // be more than one feature location for each relationship feature we
       // use the '$src' variable to keep track of these.
       $rel->featurelocs = new stdClass();
@@ -979,7 +995,7 @@ function chado_get_featureloc_sequences($feature_id, $featurelocs) {
     }
   }
 
-  // the featurelocs array provided to the function contains the locations
+  // The featurelocs array provided to the function contains the locations
   // where this feature is found.   We want to get the sequence for each
   // location and then annotate it with the parts found from the relationships
   // locations determiend above.
@@ -1159,16 +1175,16 @@ function chado_get_feature_relationships($feature_id, $side = 'as_subject') {
 }
 
 /**
- * Load the locations for a given feature
+ * Load the locations for a given feature.
  *
  * @param $feature_id
- *   The feature to look up locations for
+ *   The feature to look up locations for.
  * @param $side
- *   Whether the feature is the scrfeature, 'as_parent', or feature, 'as_child'
+ *   Whether the feature is the scrfeature, 'as_parent', or feature, 'as_child'.
  * @param $aggregate
- *   Whether or not to get the locations for related features
+ *   Whether or not to get the locations for related features.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_feature_api
  */
 function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
 
@@ -1194,12 +1210,12 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
 
   $flresults = chado_query($sql, array(':feature_id' => $feature_id));
 
-  // copy the results into an array
+  // Copy the results into an array.
   $i=0;
   $featurelocs = array();
   while ($loc = $flresults->fetchObject()) {
-    // if a drupal entity exists for this feature then add the nid to the
-    // results object
+    // If a drupal entity exists for this feature then add the nid to the
+    // results object.
 
 
     // Get the bundle for this feature type, if one exists.
@@ -1222,17 +1238,17 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
       $sbundle = tripal_load_bundle_entity(array('term_id' => $sterm->id));
       $loc->seid = chado_get_record_entity_by_bundle($sbundle, $loc->src_feature_id);
     }
-    // add the result to the array
+    // Add the result to the array.
     $featurelocs[$i++] = $loc;
   }
 
-  // Add the relationship feature locs if aggregate is turned on
+  // Add the relationship feature locs if aggregate is turned on.
   if ($aggregate and strcmp($side, 'as_parent')==0) {
-  // get the relationships for this feature without substituting any children
-  // for the parent. We want all relationships
+  // Get the relationships for this feature without substituting any children
+  // for the parent. We want all relationships.
   $relationships = _tripal_feature_get_aggregate_relationships($feature_id, 0);
   foreach ($relationships as $rindex => $rel) {
-    // get the featurelocs for each of the relationship features
+    // Get the featurelocs for each of the relationship features.
     $rel_featurelocs = tripal_feature_load_featurelocs($rel->subject_id, 'as_child', 0);
       foreach ($rel_featurelocs as $findex => $rfloc) {
         $featurelocs[$i++] = $rfloc;
@@ -1245,13 +1261,15 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
 }
 
 /**
- * Get features related to the current feature to a given depth. Recursive function.
+ * Get features related to the current feature to a given depth. 
+ * Recursive function.
  *
  * @param $feature_id
  * @param $substitute
  * @param $levels
  * @param $base_type_id
  * @param $depth
+ * 
  *
  */
 function _tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
@@ -1275,7 +1293,9 @@ function _tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
  * @param $feature_id
  *   The feature to get relationships for
  * @param $side
- *   The side of the relationship this feature is (ie: 'as_subject' or 'as_object')
+ *   The side of the relationship this feature is (ie: 'as_subject' or 
+ *   'as_object')
+ * 
  *
  */
 function _tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
@@ -1326,10 +1346,13 @@ function _tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
   return $relationships;
 }
 /**
-  * Used to sort the list of relationship parts by start position
-  *
-  * @ingroup tripal_feature
-  */
+ * Used to sort the list of relationship parts by start position.
+ * 
+ * @param $a
+ * @param $b
+ * 
+ * @ingroup tripal_feature_api
+ */
 function chado_feature__residues_sort_rel_parts_by_start($a, $b) {
   foreach ($a as $type_name => $details) {
     $astart = $a[$type_name]['start'];
@@ -1342,17 +1365,17 @@ function chado_feature__residues_sort_rel_parts_by_start($a, $b) {
   return strnatcmp($astart, $bstart);
 }
 /**
- * Used to sort the feature locs by start position
+ * Used to sort the feature locs by start position.
  *
  * @param $a
- *   One featureloc record (as an object)
+ *   One featureloc record (as an object).
  * @param $b
- *   The other featureloc record (as an object)
+ *   The other featureloc record (as an object).
  *
  * @return
- *   Which feature location comes first
+ *   Which feature location comes first.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_feature_api
  */
 function chado_feature__residues_sort_locations($a, $b) {
   return strnatcmp($a->fmin, $b->fmin);

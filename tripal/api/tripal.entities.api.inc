@@ -509,50 +509,6 @@ function tripal_create_bundle($args, &$error = '') {
   return $bundle;
 }
 
-/*
- * Are we keeping this in?
- * 
- * Checks access permissions for a given entity.
- *
- * This function is set for TripalEntity access checking in the
- * tripal_entity_info() under the 'access callback' element.
- *
- *
- * @param $entity
- *   The entity to check access for.
-
-function tripal_entity_permissions($entity) {
-
-  if ($entity) {
-    $bundle_name = $entity->bundle;
-  }
-  else {
-    return FALSE;
-  }
-
-  // Get the bundle object.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-
-  // Identify the administrative user roles.
-  $admin_role = user_role_load_by_name('administrator');
-  $roles = array($admin_role->rid => $admin_role->name);
-  // Define the permissions.
-  $permission_for_role = array(
-    'create ' . $bundle->label => TRUE,
-    'view ' . $bundle->label => TRUE,
-    'edit ' . $bundle->label => TRUE,
-    'delete ' . $bundle->label => TRUE,
-  );
-  // Assign the permissions
-  foreach($roles as $role => $value){
-    user_role_grant_permissions($role, $permission_for_role);
-    watchdog('debug', '<pre>tripal_entity_permissions  $role: '. print_r($role, TRUE) .'</pre>');
-  }
-
-  return TRUE;
-}
- */
-
 /**
  * Retrieves a list of the content types.
  *
@@ -1392,7 +1348,7 @@ function _tripal_get_bundle_field_element_details($elements, &$field_details) {
  *
  * @throws Exception
  *
- * @ingroup tripal_entities_api
+ * 
  */
 function tripal_insert_entity($bundle_name, $values){
   global $user;
@@ -1448,7 +1404,7 @@ function tripal_insert_entity($bundle_name, $values){
  * @param $bundle_name
  * @param $values
  *
- * @ingroup tripal_entities_api
+ * 
  */
 function tripal_update_entity($bundle_name, $values) {
 

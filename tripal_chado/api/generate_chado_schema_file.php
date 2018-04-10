@@ -11,16 +11,16 @@
  *
  * @code
  *'chado' => array(
-    'default' => array(
-      'database' => 'd7x_t2x_c13',
-      'username' => 'chado',
-      'password' => 'testing123',
-      'host' => 'localhost',
-      'port' => '',
-      'driver' => 'pgsql',
-      'prefix' => '',
-    ),
-  ),
+ *   'default' => array(
+ *     'database' => 'd7x_t2x_c13',
+ *     'username' => 'chado',
+ *     'password' => 'testing123',
+ *     'host' => 'localhost',
+ *     'port' => '',
+ *     'driver' => 'pgsql',
+ *     'prefix' => '',
+ *   ),
+ * ),
  * @endcode
  *
  * This script requires a single argument (-v) which is the Chado version.

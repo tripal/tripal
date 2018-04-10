@@ -12,7 +12,7 @@
  * Tripal provides an application programming interface (API) for working with
  * controlled vocaublary terms.  Tripal v3 is highly dependent on controlled
  * vocabularies for identifying all content types and fields attached to those
- * content types.  However, Tripal v3 is also database agnostic. Therefore, it
+ * content types.  However, Tripal v3 is also database agnostic. Therefore,
  * controlled vocabularies can be stored in any database back-end.  By default
  * the tripal_chado module is used for storing controlled vocabularies. However,
  * if someone wanted to store controlled vocabularies in a database other than
@@ -85,16 +85,19 @@ function hook_vocab_select_term_form(&$form, &$form_state) {
 
   return $form;
 }
+
 /**
  * Validates the hook_vocab_select_term_form().
  *
- * @param $name
+ * @param $form
+ * @param $form_state
  *
  * @ingroup tripal_terms_api
  */
 function hook_vocab_select_term_form_validate($form, &$form_state) {
 
 }
+
 /**
  * Provides a form for importing vocabularies and their terms.
  *
@@ -111,9 +114,27 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
 function hook_vocab_import_form($form, &$form_state) {
   return $form;
 }
+
+/**
+ * Validates the hook_vocab_import_form().
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @ingroup tripal_terms_api
+ */
 function hook_vocab_import_form_validate($form, &$form_state) {
 
 }
+
+/**
+ * Submits the hook_vocab_import_form().
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @ingroup tripal_terms_api
+ */
 function hook_vocab_import_form_submit($form, &$form_state) {
 
 }
@@ -132,7 +153,7 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *
  * @return
  *   An array with at least the following keys:
- *     -vocabulary : An associative array with the following keys
+ *     -vocabulary : An associative array with the following keys:
  *       -name:  The short name for the vocabulary (e.g. SO, PATO, etc).
  *       -description: The description of this vocabulary.
  *       -url: The URL for the vocabulary.
@@ -154,6 +175,7 @@ function hook_vocab_get_term($vocabulary, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
 
 }
+
 /**
  * Retrieves a paged list of terms from a vocabulary.
  *
@@ -164,10 +186,13 @@ function hook_vocab_get_term($vocabulary, $accession) {
  * @param $element
  *   The pager element. This is equivalent to the element from the
  *   pager_default_initialize() function of Drupal.
+ * 
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
-
+  // See the tripal_chado_vocab_get_terms() function for an example.
 }
+
 /**
  * Hook used by the default term storage backend to provide children for a term.
  *
@@ -188,8 +213,9 @@ function hook_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_term_children($vocabulary, $accession) {
-
+  // See the tripal_chado_vocab_get_term_children() function for an example.
 }
+
 /**
  * Hook used by the default term storage backend to provide root terms.
  *
@@ -208,8 +234,9 @@ function hook_vocab_get_term_children($vocabulary, $accession) {
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_root_terms($vocabulary) {
-
+  // See the tripal_chado_vocab_get_root_terms() function for an example.
 }
+
 /**
  * Hook used by the default term storage backend to provide details for a vocab.
  *
@@ -231,6 +258,7 @@ function hook_vocab_get_root_terms($vocabulary) {
  *       prefix does not support appending then the exact location for the
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
+ * 
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_vocabulary($vocabulary) {
@@ -244,16 +272,19 @@ function hook_vocab_get_vocabulary($vocabulary) {
  *   An array of vocabularies where each entry in the array is compatible
  *   with the array returned by the tripal_get_vocabulary_details()
  *   function.
+ * 
+ * @ingroup tripal_terms_api
  */
 function hook_vocab_get_vocabularies() {
   // See the tripal_chado_vocab_get_vocabularies() function for an example.
 }
+
 /**
  * Hook used by the default term storage backend to add new terms.
  *
  * @param $details
  *   An array with at least the following keys:
- *     -vocabulary : An associative array with the following keys
+ *     -vocabulary : An associative array with the following keys:
  *       -name:  The short name for the vocabulary (e.g. SO, PATO, etc).
  *       -description: The description of this vocabulary.
  *       -url: The URL for the vocabulary.
@@ -268,14 +299,13 @@ function hook_vocab_get_vocabularies() {
  *     -definition : The term's description.
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
- *   it will be updated and the return value will be TRUE,
+ *   it will be updated and the return value will be TRUE.
+ * 
  * @ingroup tripal_terms_api
  */
 function hook_vocab_add_term($details) {
   // See the tripal_chado_vocab_set_term() function for an example.
 }
-
-
 
 /**
  * Adds a term to the vocabulary storage backend.
@@ -295,7 +325,8 @@ function hook_vocab_add_term($details) {
  *     -definition : The term's description.
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
- *   it will be updated and the return value will be TRUE,
+ *   it will be updated and the return value will be TRUE.
+ * 
  * @ingroup tripal_terms_api
  */
 function tripal_add_term($details) {
@@ -362,6 +393,7 @@ function tripal_get_term_details($vocabulary, $accession) {
     }
   }
 }
+
 /**
  * Retrieves the immediate children of the given term.
  *
@@ -394,6 +426,7 @@ function tripal_get_vocabulary_root_terms($vocabulary) {
     }
   }
 }
+
 /**
  * Retrieves the immediate children of the given term.
  *
@@ -423,6 +456,7 @@ function tripal_get_term_children($vocabulary, $accession) {
     }
   }
 }
+
 /**
  * Retrieves full information about a vocabulary.
  *
@@ -477,6 +511,8 @@ function tripal_get_vocabulary_details($vocabulary) {
  * @param $element
  *   The pager element. This is equivalent to the element from the
  *   pager_default_initialize() function of Drupal.
+ * 
+ * @ingroup tripal_terms_api
  */
 function tripal_get_vocabulary_terms($vocabulary, $limit = 25, $element = 0) {
   $stores = module_invoke_all('vocab_storage_info');
@@ -497,6 +533,8 @@ function tripal_get_vocabulary_terms($vocabulary, $limit = 25, $element = 0) {
  *   An array of vocabularies where each entry in the array is compatible
  *   with the array returned by the tripal_get_vocabulary_details()
  *   function.
+ * 
+ * @ingroup tripal_terms_api
  */
 function tripal_get_vocabularies() {
   $stores = module_invoke_all('vocab_storage_info');
@@ -520,7 +558,7 @@ function tripal_get_vocabularies() {
  * multiple vocabularies and the user would need to select the proper term.
  *
  * This function will add the form elements necessary to provide a lookup form.
- * The form elements should work with a flat fortm (no #tree set for the form)
+ * The form elements should work with a flat form (no #tree set for the form)
  * or with a form in a TripalField.
  *
  * Use the tripal_get_term_lookup_form_result() function to retreive the

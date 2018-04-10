@@ -12,7 +12,7 @@
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for working with
- * data file importers using the TripalImporter class.
+ * data file importers using the TripalImporter class into a chado database.
  * @}
  *
  */

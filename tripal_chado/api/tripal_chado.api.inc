@@ -1,6 +1,20 @@
 <?php
 
+/**
+ * @file
+ *
+ * This file provides the Chado API: a set of functions for
+ * interacting with Chado.
+ */
 
+/**
+ * @defgroup tripal_chado_api Chado
+ *
+ * @ingroup tripal_api
+ * The Tripal Chado API: a set of functions for
+ * interacting with Chado.
+ *
+ */
 /**
  * Publishes content in Chado as a new TripalEntity entity.
  *
@@ -251,6 +265,8 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
  *    The name of a base table in Chado.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
+ * 
+ * @ingroup tripal_chado_api
  */
 function tripal_get_chado_tokens($base_table) {
 
@@ -307,6 +323,8 @@ function tripal_get_chado_tokens($base_table) {
  *
  * @return
  *   The string will all tokens replaced with values.
+ * 
+ *  @ingroup tripal_chado_api
  */
 function tripal_replace_chado_tokens($string, $record) {
   // Get the list of tokens
