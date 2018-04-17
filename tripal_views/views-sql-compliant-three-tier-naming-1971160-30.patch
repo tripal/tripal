@@ -2,10 +2,10 @@ diff --git a/includes/handlers.inc b/includes/handlers.inc
 index 680a54d..1d72aed 100644
 --- a/includes/handlers.inc
 +++ b/includes/handlers.inc
-@@ -1637,7 +1637,17 @@ class views_join {
+@@ -1729,7 +1729,17 @@ class views_join {
        }
      }
- 
+
 -    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
 +    $table_data = views_fetch_data($this->table);
 +
@@ -20,11 +20,11 @@ index 680a54d..1d72aed 100644
 +    $select_query->addJoin($this->type, $scoped_right_table, $table['alias'], $condition, $arguments);
    }
  }
- 
-@@ -1728,7 +1738,17 @@ class views_join_subquery extends views_join {
+
+@@ -1832,7 +1842,17 @@ class views_join_subquery extends views_join {
        }
      }
- 
+
 -    $select_query->addJoin($this->type, $right_table, $table['alias'], $condition, $arguments);
 +    $table_data = views_fetch_data($this->table);
 +
@@ -39,14 +39,14 @@ index 680a54d..1d72aed 100644
 +    $select_query->addJoin($this->type, $scoped_right_table, $table['alias'], $condition, $arguments);
    }
  }
- 
+
 diff --git a/includes/view.inc b/includes/view.inc
 index d9fb43f..1cf5c50 100644
 --- a/includes/view.inc
 +++ b/includes/view.inc
-@@ -202,6 +202,11 @@ class view extends views_db_object {
-   var $base_database = NULL;
- 
+@@ -234,6 +234,11 @@ class view extends views_db_object {
+   public $base_database = NULL;
+
    /**
 +   * Allow to set the search_path for databases which, unlike MySQL, are actually SQL-compliant
 +   */
@@ -55,11 +55,11 @@ index d9fb43f..1cf5c50 100644
 +  /**
     * Here comes a list of the possible handler which are active on this view.
     */
- 
-@@ -897,6 +902,12 @@ class view extends views_db_object {
+
+@@ -939,6 +944,12 @@ class view extends views_db_object {
        $this->base_database = $views_data['table']['base']['database'];
      }
- 
+
 +    if (!empty($views_data['table']['base']['search_path'])) {
 +      $this->search_path = $views_data['table']['base']['search_path'];
 +    } elseif (!empty($views_data['table']['search_path'])) {
@@ -68,15 +68,15 @@ index d9fb43f..1cf5c50 100644
 +
      // Load the options.
      $query_options = $this->display_handler->get_option('query');
- 
+
 diff --git a/plugins/views_plugin_query_default.inc b/plugins/views_plugin_query_default.inc
 index 7468dd9..f092515 100644
 --- a/plugins/views_plugin_query_default.inc
 +++ b/plugins/views_plugin_query_default.inc
-@@ -1290,8 +1290,13 @@ class views_plugin_query_default extends views_plugin_query {
- 
-     // Go ahead and build the query.
-     // db_select doesn't support to specify the key, so use getConnection directly.
+@@ -1308,8 +1308,13 @@ class views_plugin_query_default extends views_plugin_query {
+
+     // Go ahead and build the query. db_select doesn't support to specify the
+     // key, so use getConnection directly.
 +    $scoped_base_table = $this->base_table;
 +    if (isset($this->view->search_path)) {
 +      $scoped_base_table = $this->view->search_path . '.' . $this->base_table;
@@ -87,4 +87,3 @@ index 7468dd9..f092515 100644
 +      ->select($scoped_base_table, $this->base_table, $options)
        ->addTag('views')
        ->addTag('views_' . $this->view->name);
- 
