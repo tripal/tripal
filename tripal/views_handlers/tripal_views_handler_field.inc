@@ -82,7 +82,7 @@ class tripal_views_handler_field extends views_handler_field {
     $items = $this->get_value($values);
 
     // Handle single value fields:
-    if (count($items == 1)) {
+    if (count($items) == 1) {
       $function = $field['module'] . '_field_formatter_view';
       $value = $function('TripalEntity', $entity, $field, $instance, 'und', $items, $instance['display']['default']);
       return $value;
