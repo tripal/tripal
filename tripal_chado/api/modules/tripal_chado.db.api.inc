@@ -1,14 +1,21 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) to manage references to
- * external databases
+ * Provides API functions specificially for managing external database reference
+ * records in Chado. 
  */
 
 /**
  * @defgroup tripal_chado_database_api Chado DB
  * @ingroup tripal_chado_api
  * @{
+ * External databases can be used to indicate the source for a variety of data.
+ * The most common use is with controlled vocabularies (CV).  Chado expects that
+ * every CV have an external database record, where the database name must be
+ * the short name of the CV.  In other cases, records such as features, stocks,
+ * libraries, etc., can also be present in remote databases and these
+ * associations can be made through dbxref linker tables.  The API functions
+ * provided here provide tools to easily work with external databases.
  * @}
  */
 
@@ -22,6 +29,7 @@
  *   );
  *   $db_object = tripal_get_db($select_values);
  * @endcode
+ * 
  *  The above code selects the SOFP db and returns the following object:
  * @code
  *   $db_object = stdClass Object (

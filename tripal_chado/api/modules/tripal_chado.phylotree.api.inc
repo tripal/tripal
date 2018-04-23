@@ -2,13 +2,18 @@
 
 /**
  * @file
- * Provides an application programming interface (API) to manage organisms
+ * Provides API functions specificially for managing phylogenetic and taxonomic
+ * tree records in Chado.  
  */
 
 /**
  * @defgroup tripal_phylotree_api Chado Phylotree
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing phylogenetic and taxonomic
+ * tree records in Chado.  The API consists of functions for creation, 
+ * retrieval, update and deltion (CRUD) for phylogenetic tree records as 
+ * well as importing of trees in the newick file format.
  * @}
  */
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides functions for managing analysis'.
+ * Provides API functions specificially for managing analysis records in Chado.
  *
  * @ingroup tripal_chado
  */
@@ -10,7 +10,8 @@
  * @defgroup tripal_analysis_api Chado Analysis
  * @ingroup tripal_chado_api
  * @{
-
+ * Provides API functions for working with analysis records in Chado that
+ * go beyond the generic Chado API functions.
  * @}
  */
 
@@ -28,14 +29,13 @@
  *      It should at least have either a type_name (if unique across cvs) or 
  *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
  *      value and rank.
+ *   NOTE: the $identifier parameter can be any array similar to $values 
+ *   passed into chado_select_record(). It should fully specify the stock record 
+ *   to be returned.
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function 
  *       definition for additional details.
- *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the stock record 
- * to be returned.
  *
  * @return
  *   the analysis node matching the passed in identifier
