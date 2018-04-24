@@ -375,6 +375,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');
+  $transaction = db_transaction();
   try {
     $result = db_query('
       SELECT DISTINCT t.*
@@ -397,6 +398,9 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
     // If there's an exception we have to set the database back. So, do that
     // and then rethrow the error.
     chado_set_active($prev_db);
+
+    // Rollback any database changes
+    $transaction->rollback();
     throw $e;
   }
   chado_set_active($prev_db);
