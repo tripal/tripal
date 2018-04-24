@@ -375,7 +375,12 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');
+
+  print "\nNOTE: Updating CV Term Path is performed using a database transaction. \n" .
+    "If the update fails or is terminated prematurely then any new changes \n" .
+    "made will be rolled back.\n\n";
   $transaction = db_transaction();
+
   try {
     $result = db_query('
       SELECT DISTINCT t.*
