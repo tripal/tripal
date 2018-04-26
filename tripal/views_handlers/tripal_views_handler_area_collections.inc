@@ -321,23 +321,17 @@ function tripal_views_handler_area_collections_search_api_form($form, $form_stat
       download or use with other tools on this site that support data collections.'),
   );
 
-  //ddl($view, 'view');
-  //ddl($query, 'query');
-
-  // Get the Entity Ids per bundle for the full resultset.
-
-
   // Save the results of the full query for further processing.
   // We use clones to ensure we don't inadvertently change the current view.
   $cloned_view = clone $view;
   $cloned_query = clone $query;
   $cloned_query->set_limit(0);
   $cloned_query->execute($cloned_view);
-  unset($cloned_view, $cloned_query);
   $form['save_collection']['results'] = array(
     '#type' => 'hidden',
     '#value' => serialize($cloned_view->result),
   );
+  unset($cloned_view, $cloned_query);
 
   $form['save_collection']['summary'] = array(
     '#type' => 'item',
@@ -442,7 +436,7 @@ function tripal_views_handler_area_collections_search_api_form_submit($form, $fo
 
     $field_ids = array();
     foreach (field_info_instances('TripalEntity', $bundle_name) as $field) {
-      $field_ids[] = $field->field_id;
+      $field_ids[] = $field['field_id'];
     }
     $bundle_col['fields'] = $field_ids;
     $collection->addBundle($bundle_col);
