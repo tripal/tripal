@@ -739,21 +739,30 @@ function tripal_update_cvtermpath_loop_increment(
         }
       }
 
-      $query = db_insert('cvtermpath')
-        ->fields([
-          'object_id' => $origin,
-          'subject_id' => $child_id,
-          'cv_id' => $cv_id,
-          'type_id' => $type_id,
-          'pathdistance' => $depth,
-        ]);
+      $find_query = db_select('chado.cvtermpath', 'CVTP');
+      $find_query->fields('CVTP', ['subject_id']);
+      $find_query->condition('object_id', $origin);
+      $find_query->condition('subject_id', $child_id);
+      $find_query->condition('type_id', $type_id);
+      $find_query->condition('pathdistance', $depth);
+      $exists = $find_query->execute()->fetchObject();
 
-      try {
-        $rows = $query->execute();
-      } catch (Exception $e) {
-        $error = $e->getMessage();
-        tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath term: @error", array('@error' => $error));
-        return false;
+      if(!$exists){
+        $query = db_insert('cvtermpath')
+          ->fields([
+            'object_id' => $origin,
+            'subject_id' => $child_id,
+            'cv_id' => $cv_id,
+            'type_id' => $type_id,
+            'pathdistance' => $depth,
+          ]);
+        try {
+          $rows = $query->execute();
+        } catch (Exception $e) {
+          $error = $e->getMessage();
+          tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath term: @error", array('@error' => $error));
+          return false;
+        }
       }
 
       // Then add that new entry to the $tree_path.
