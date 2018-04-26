@@ -321,6 +321,24 @@ function tripal_views_handler_area_collections_search_api_form($form, $form_stat
       download or use with other tools on this site that support data collections.'),
   );
 
+  //ddl($view, 'view');
+  //ddl($query, 'query');
+
+  // Get the Entity Ids per bundle for the full resultset.
+
+
+  // Save the results of the full query for further processing.
+  // We use clones to ensure we don't inadvertently change the current view.
+  $cloned_view = clone $view;
+  $cloned_query = clone $query;
+  $cloned_query->set_limit(0);
+  $cloned_query->execute($cloned_view);
+  unset($cloned_view, $cloned_query);
+  $form['save_collection']['results'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($cloned_view->result),
+  );
+
   $form['save_collection']['summary'] = array(
     '#type' => 'item',
     '#title' => 'Results Summary',
@@ -373,59 +391,69 @@ function tripal_views_handler_area_collections_search_api_form($form, $form_stat
 /**
  * Views Area Handler Form SUBMIT: Tripal Collections on Drupal Search API-based Views
  */
+function tripal_views_handler_area_collections_search_api_form_validate($form, $form_state) {
+
+  // CHECK: Collection with the given name doesn't already exist.
+
+}
+
+/**
+ * Views Area Handler Form SUBMIT: Tripal Collections on Drupal Search API-based Views
+ */
 function tripal_views_handler_area_collections_search_api_form_submit($form, $form_state) {
   global $user;
 
-  $view = $form_state['values']['view'];
-  $query = $form_state['values']['query'];
-  $collection_name = trim($form_state['values']['collection_name']);
-  $description = $form_state['values']['collection_desc'];
-  $uid = $user->uid;
-
-  // @todo implment creating the collection
+  // Create the collection.
+  $collection_details = array(
+    'uid' => $user->uid,
+    'collection_name' => trim($form_state['values']['collection_name']),
+    'description' => $form_state['values']['collection_desc'],
+  );
   // This can't be done via tripal_create_collection() since we support more
   // then a single bundle. Instead we are going to use the controller class directly.
-  /* @code
-    $collection = new TripalEntityCollection();
-    $collection->create($details);
-    $collection_id = $collection->getCollectionID();
-    $collection->addBundle($details);
+  $collection = new TripalEntityCollection();
+  $collection->create($collection_details);
+  $collection_id = $collection->getCollectionID();
 
-    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
-      array(
-        '%name' => $details['collection_name'],
-        '%num_recs' => count($details['ids']),
-        '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
-      ))
-    );
-    */
-
-  /* How it was implemented for tripal entities.
-  // Get the fields that have been selected
-  $selected_fids = array();
-  foreach ($form_state['values'] as $key => $value) {
-    $matches = array();
-    if (preg_match('/select-(\d+)/', $key, $matches)) {
-      if ($value == 1) {
-        $selected_fids[] = $matches[1];
-      }
-    }
-  }
-
-  // Get the entity Ids that match results
-  $query->range['length'] = $view->total_rows;
-  $results = $query->execute();
+  // First, determine the bundle for each entity in our resultset.
   $entities = array();
-  foreach ($results['TripalEntity'] as $entity) {
-    $entities[] = $entity->id;
+  $results = unserialize($form_state['values']['results']);
+  foreach($results as $r) {
+
+    // Retrieve the bundle for the current entity.
+    // ASSUMPTION: all search results are TripalEntities.
+    $wrapper = entity_metadata_wrapper('TripalEntity', $r->entity);
+    $bundle = $wrapper->getBundle();
+
+    // If this is the first time we've seen this bundle
+    // then initialize the array.
+    if (!isset($entities[$bundle])) {
+      $entities[$bundle] = array(
+        'bundle_name' => $bundle,
+        'ids' => array(),
+        'fields' => array(),
+      );
+    }
+    $entities[$bundle]['ids'][] = $r->entity;
   }
-  $collection = tripal_create_collection(array(
-    'uid'  => $uid,
-    'collection_name' => $collection_name,
-    'description'  => $description,
-    'bundle_name' => $bundle_name,
-    'ids' => $entities,
-    'fields' => $selected_fids,
-  ));
-  */
+
+  // Now add the entities to the collection based on bundle.
+  foreach($entities as $bundle_name => $bundle_col) {
+
+    $field_ids = array();
+    foreach (field_info_instances('TripalEntity', $bundle_name) as $field) {
+      $field_ids[] = $field->field_id;
+    }
+    $bundle_col['fields'] = $field_ids;
+    $collection->addBundle($bundle_col);
+  }
+
+  // Finally, tell the user we're done and link them to the collection.
+  drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
+    array(
+      '%name' => $collection_details['collection_name'],
+      '%num_recs' => count($results),
+      '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+    ))
+  );
 }
