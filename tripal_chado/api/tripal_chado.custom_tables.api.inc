@@ -128,6 +128,18 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  */
 function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
     $mview_id = NULL, $redirect = TRUE) {
+  
+  if (!$table) {
+    throw new Exception('Please provide a value for the $table argument to the chado_create_custom_table() function'); 
+  }
+  if (!$schema) {
+    throw new Exception('Please provide a value for the $schema argument to the chado_create_custom_table() function');
+  }
+  if ($schema and !is_array($schema)) {
+    throw new Exception('Please provide an array for the $schema argument to the chado_create_custom_table() function');
+  }
+  // TODO: make sure the schema is valid by adding extra checks.
+  
 
   global $databases;
   $created = 0;
