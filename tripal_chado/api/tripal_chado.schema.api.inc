@@ -524,8 +524,8 @@ function chado_get_schema($table) {
   // An API call we can call directly.  The only time this occurs is
   // during an upgrade of a major Drupal version and tripal_core is disabled.
   if ((!$table_arr or !is_array($table_arr)) and
-        function_exists('tripal_core_' . $hook_name)) {
-    $api_hook = "tripal_core_" . $hook_name;
+        function_exists('tripal_chado_' . $hook_name)) {
+    $api_hook = "tripal_chado_" . $hook_name;
     $table_arr = $api_hook();
   }
 

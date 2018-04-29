@@ -122,23 +122,21 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $pager = $this->ajaxifyPager($pager, $entity);
     $page_items = array_chunk($rows, $items_per_page);
 
-    $content = '';
-    if ($total_pages > 1) {
-      if (count($rows) == 1) {
-        $content = 'There is ' . count($rows) . ' relationship.';
-      }
-      if (count($rows) > 1) {
-        $content = 'There are ' . count($rows) . ' relationships.';
-      }
+    $caption = '';
+    if ($total_records == 1) {
+      $caption = 'There is ' . count($rows) . ' relationship.';
     }
-    $content .= theme_table(array(
+    else {
+      $caption = 'There are ' . count($rows) . ' relationships.';
+    }
+    $content = theme_table(array(
       'header' => $headers,
       'rows' => count($rows) > 0 ? $page_items[$current_page] : array(),
       'attributes' => array(
-        'id' => 'sbo--relationship-table',
+        'class' => 'tripal-data-table',
       ),
       'sticky' => FALSE,
-      'caption' => '',
+      'caption' => $caption,
       'colgroups' => array(),
       'empty' => $settings['empty'],
     ));

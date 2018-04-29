@@ -565,7 +565,12 @@ class GFF3Importer extends TripalImporter {
         $strand = -1;
       }
       if (strcmp($phase, '.') == 0) {
-        $phase = '';
+        if ($type == 'CDS') {
+          $phase = '0';
+        }
+        else {
+          $phase = '';
+        }
       }
       if (array_key_exists($type, $cvterm_lookup)) {
         $cvterm = $cvterm_lookup[$type];
