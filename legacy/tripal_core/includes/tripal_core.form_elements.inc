@@ -10,24 +10,24 @@
  * @ingroup tripal_legacy_core
  */
 function tripal_core_element_info() {
-  $elements = array();
+  $elements = [];
 
-  $elements['file_upload_combo'] = array(
+  $elements['file_upload_combo'] = [
     '#input' => TRUE,
-    '#process' => array('expand_file_upload_combo'),
-    '#value_callback' =>'file_upload_combo_value_callback',
+    '#process' => ['expand_file_upload_combo'],
+    '#value_callback' => 'file_upload_combo_value_callback',
     '#theme' => 'theme_file_upload_combo',
-    '#theme_wrappers' => array('form_element'),
-  );
+    '#theme_wrappers' => ['form_element'],
+  ];
 
-  $elements['sequence_combo'] = array(
+  $elements['sequence_combo'] = [
     '#input' => TRUE,
-    '#process' => array('expand_sequence_combo'),
+    '#process' => ['expand_sequence_combo'],
     '#value_callback' => 'sequence_combo_value_callback',
     '#theme' => 'theme_sequence_combo',
-    '#theme_wrappers' => array('form_element'),
+    '#theme_wrappers' => ['form_element'],
     '#tree' => TRUE,
-  );
+  ];
 
   return $elements;
 }
@@ -41,11 +41,11 @@ function expand_file_upload_combo($element, $form_state, $complete_form) {
 
   // set the default values for each field
   if (empty($element['#value'])) {
-    $element['#value'] = array(
+    $element['#value'] = [
       'items' => '',
       'items_file' => '',
       'file_path' => '',
-    );
+    ];
   }
 
   $element['#tree'] = TRUE;
@@ -53,27 +53,27 @@ function expand_file_upload_combo($element, $form_state, $complete_form) {
   // add items text area element
   $parents = $element['#parents'];
   $parents[] = 'items';
-  $element['items'] = array(
+  $element['items'] = [
     '#type' => 'textarea',
     '#default_value' => (isset($element['#value']['items'])) ? $element['#value']['items'] : '',
-  );
+  ];
 
   // add file upload element
   $parents = $element['#parents'];
   $parents[] = 'items_file';
-  $element['items_file'] = array(
+  $element['items_file'] = [
     '#type' => 'file',
-    '#title' =>  'File upload',
+    '#title' => 'File upload',
     '#default_value' => (isset($element['#value']['items_file'])) ? $element['#value']['items_file'] : '',
-  );
+  ];
 
   // add hidden elelment
   $parents = $element['#parents'];
   $parents[] = 'file_path';
-  $element['file_path'] = array(
+  $element['file_path'] = [
     '#type' => 'hidden',
     '#default_value' => (isset($element['#value']['file_path'])) ? $element['#value']['file_path'] : '',
-  );
+  ];
 
   return $element;
 }
@@ -102,7 +102,7 @@ function theme_file_upload_combo($variables) {
  * @ingroup tripal_legacy_core
  */
 function file_upload_combo_value_callback($element, $input = FALSE, &$form_state) {
-  $values = array();
+  $values = [];
 
   if ($input == FALSE) {
     if (!empty($element['#default_value'])) {
@@ -114,10 +114,10 @@ function file_upload_combo_value_callback($element, $input = FALSE, &$form_state
   }
 
   // get the items in the textbox
-  $items =  $input['items'];
+  $items = $input['items'];
   if ($items) {
     // split on new line or comma
-    $vals  = preg_split("/[\n,]+/", $items);
+    $vals = preg_split("/[\n,]+/", $items);
     // iterate through the values and trim surrounding space
     foreach ($vals as $i => $value) {
       $values[] = trim($value);
@@ -125,7 +125,7 @@ function file_upload_combo_value_callback($element, $input = FALSE, &$form_state
   }
 
   // merge any items from the file upload
-  $file = file_save_upload($element['#name'], array());
+  $file = file_save_upload($element['#name'], []);
   if ($file) {
     $file_path = $file->uri;
 
@@ -139,7 +139,7 @@ function file_upload_combo_value_callback($element, $input = FALSE, &$form_state
       $items = trim($line);
 
       // split on new line or comma
-      $vals  = preg_split("/[\n,]+/", $items);
+      $vals = preg_split("/[\n,]+/", $items);
       // iterate through the values and trim surrounding space
       foreach ($vals as $i => $value) {
         $values[] = trim($value);
@@ -163,10 +163,10 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
 
   // set the default values for each field
   if (empty($element['#value'])) {
-    $element['#value'] = array(
+    $element['#value'] = [
       'upstream' => '',
       'downstream' => '',
-    );
+    ];
   }
 
   $element['#tree'] = TRUE;
@@ -174,22 +174,22 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
   // add the upstream box
   $parents = $element['#parents'];
   $parents[] = 'upstream';
-  $element['upstream'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Get Upstream Bases'),
-     '#description' => t('Specify the number of upstream bases to include in the sequence'),
-     '#default_value' => $element['#value']['upstream'],
-  );
+  $element['upstream'] = [
+    '#type' => 'textfield',
+    '#title' => t('Get Upstream Bases'),
+    '#description' => t('Specify the number of upstream bases to include in the sequence'),
+    '#default_value' => $element['#value']['upstream'],
+  ];
   // add the downstream box
   $parents = $element['#parents'];
   $parents[] = 'downstream';
-  $element['downstream'] = array(
-     '#type' => 'textfield',
-     '#prefix' => '<br>',
-     '#title' => t('Get Downstream Bases'),
-     '#description' => t('Specify the number of downstream bases to include in the sequence'),
-     '#default_value' => $element['#value']['downstream'],
-  );
+  $element['downstream'] = [
+    '#type' => 'textfield',
+    '#prefix' => '<br>',
+    '#title' => t('Get Downstream Bases'),
+    '#description' => t('Specify the number of downstream bases to include in the sequence'),
+    '#default_value' => $element['#value']['downstream'],
+  ];
   return $element;
 }
 

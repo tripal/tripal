@@ -16,7 +16,7 @@ function tripal_organism_disable() {
   require_once("tripal_organism.views_default.inc");
   $views = tripal_organism_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -39,35 +39,35 @@ function tripal_organism_install() {
  * @ingroup tripal_legacy_organism
  */
 function tripal_organism_schema() {
- $schema['chado_organism'] = array(
-    'fields' => array(
-       'vid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0
-        ),
-       'nid' => array(
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0
-        ),
-       'organism_id' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'default' => 0
-        )
-    ),
-    'indexes' => array(
-       'organism_id' => array('organism_id')
-    ),
-    'unique keys' => array(
-       'nid_vid' => array('nid', 'vid'),
-       'vid' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+  $schema['chado_organism'] = [
+    'fields' => [
+      'vid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'organism_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'organism_id' => ['organism_id'],
+    ],
+    'unique keys' => [
+      'nid_vid' => ['nid', 'vid'],
+      'vid' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
   return $schema;
 }
 
@@ -86,15 +86,15 @@ function tripal_organism_uninstall() {
  * @ingroup tripal_legacy_organism
  */
 function tripal_organism_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_organism'] = array(
-            'title' => "tripal_organism",
-            'value' => "ERROR: Chado must be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements ['tripal_organism'] = [
+        'title' => "tripal_organism",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
     }
   }
   return $requirements;

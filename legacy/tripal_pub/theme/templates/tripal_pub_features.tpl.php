@@ -1,6 +1,6 @@
 <?php
 $pub = $variables['node']->pub;
-$features = array();
+$features = [];
 
 // get the features that are associated with this publication.  But we only
 // want 25 and we want a pager to let the user cycle between pages of features.
@@ -12,17 +12,17 @@ $element = 2;        // an index to specify the pager this must be unique amongs
 $num_per_page = 25;  // the number of features to show per page$num_results_per_page = 25;
 
 // get the features from the feature_pub table
-$options = array(
+$options = [
   'return_array' => 1,
-  'pager' => array(
-    'limit'   => $num_per_page,
-    'element' => $element
-  ),
-);
+  'pager' => [
+    'limit' => $num_per_page,
+    'element' => $element,
+  ],
+];
 
 $pub = chado_expand_var($pub, 'table', 'feature_pub', $options);
 $feature_pubs = $pub->feature_pub;
-if (count($feature_pubs) > 0 ) {
+if (count($feature_pubs) > 0) {
   foreach ($feature_pubs as $feature_pub) {
     $features[] = $feature_pub->feature_id;
   }
@@ -31,48 +31,51 @@ if (count($feature_pubs) > 0 ) {
 // get the total number of records
 $total_records = chado_pager_get_count($element);
 
-if(count($features) > 0){ ?>
-  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> features:</div> <?php
+if (count($features) > 0) { ?>
+    <div class="tripal_pub-data-block-desc tripal-data-block-desc">This
+        publication contains information
+        about <?php print number_format($total_records) ?> features:
+    </div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Feature Name', 'Uniquename', 'Type');
+  $headers = ['Feature Name', 'Uniquename', 'Type'];
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
+  $rows = [];
 
-  foreach ($features as $feature){
-     $feature_name = $feature->name;
-     if (property_exists($feature, 'nid')) {
-       $feature_name = l($feature_name, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
-     }
+  foreach ($features as $feature) {
+    $feature_name = $feature->name;
+    if (property_exists($feature, 'nid')) {
+      $feature_name = l($feature_name, 'node/' . $feature->nid, ['attributes' => ['target' => '_blank']]);
+    }
 
-     $rows[] = array(
-       $feature_name,
-       $feature->uniquename,
-       $feature->type_id->name,
-     );
+    $rows[] = [
+      $feature_name,
+      $feature->uniquename,
+      $feature->type_id->name,
+    ];
   }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_pub-table-features',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -87,14 +90,14 @@ if(count($features) > 0){ ?>
   // Drupal won't reset the parameter if it already exists.
   $get = $_GET;
   unset($_GET['pane']);
-  $pager = array(
-    'tags' => array(),
+  $pager = [
+    'tags' => [],
     'element' => $element,
-    'parameters' => array(
-      'pane' => 'features'
-    ),
+    'parameters' => [
+      'pane' => 'features',
+    ],
     'quantity' => $num_per_page,
-  );
+  ];
   print theme_pager($pager);
   $_GET = $get;
 }

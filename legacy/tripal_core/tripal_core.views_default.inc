@@ -1,21 +1,21 @@
 <?php
 /**
  * @file
-* Describes core default views
-*/
+ * Describes core default views
+ */
 
 /**
  * Describes core default views
-*
-* @ingroup tripal_legacy_core
-*/
+ *
+ * @ingroup tripal_legacy_core
+ */
 function tripal_core_views_default_views() {
-  $views = array();
+  $views = [];
 
   // We only want to make this view available if the Search API module is installed
   // and the "Default Node Index has been enabled.
   if (module_exists('search_api')) {
-    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', array(':name' => 'default_node_index'))->fetchField();
+    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', [':name' => 'default_node_index'])->fetchField();
     if ($index_enabled) {
       $view = tripal_core_search_default_node_index();
       $views[$view->name] = $view;
@@ -84,11 +84,11 @@ function tripal_core_search_default_node_index() {
   $handler->display->display_options['filters']['search_api_views_fulltext']['expose']['label'] = 'Keywords';
   $handler->display->display_options['filters']['search_api_views_fulltext']['expose']['operator'] = 'search_api_views_fulltext_op';
   $handler->display->display_options['filters']['search_api_views_fulltext']['expose']['identifier'] = 'keywords';
-  $handler->display->display_options['filters']['search_api_views_fulltext']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['search_api_views_fulltext']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');

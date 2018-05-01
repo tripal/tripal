@@ -24,7 +24,7 @@ class data__sequence_coordinates extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
@@ -35,7 +35,7 @@ class data__sequence_coordinates extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'data__sequence_coordinates_widget';
@@ -49,6 +49,7 @@ class data__sequence_coordinates extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -67,72 +68,72 @@ class data__sequence_coordinates extends ChadoField {
     $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
     $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
 
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'label' => 'Location Coordinates',
         'help' => 'The locations on other genomic sequences where this record has been aligned.',
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          $reference_term => array(
+        'elements' => [
+          $reference_term => [
             'searchable' => TRUE,
             'label' => 'Location Reference Name',
             'help' => 'The genomic feature on which this feature is localized.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $fmin_term => array(
+          ],
+          $fmin_term => [
             'searchable' => TRUE,
             'label' => 'Location Start Position',
             'help' => 'The start position',
             'type' => 'numeric',
-            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'operations' => ['eq', 'gt', 'lt', 'gte', 'lte'],
             'sortable' => TRUE,
             'type' => 'xs:integer',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $fmax_term => array(
+          ],
+          $fmax_term => [
             'searchable' => TRUE,
             'label' => 'Location End Position',
             'help' => 'The end position',
             'type' => 'numeric',
-            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'operations' => ['eq', 'gt', 'lt', 'gte', 'lte'],
             'sortable' => TRUE,
             'type' => 'xs:integer',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $phase_term => array(
+          ],
+          $phase_term => [
             'searchable' => TRUE,
             'type' => 'numeric',
             'label' => 'Location Phase',
             'help' => 'The phase of the feature (applicable only to coding sequences).',
-            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'operations' => ['eq', 'gt', 'lt', 'gte', 'lte'],
             'sortable' => TRUE,
             'type' => 'xs:integer',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $strand_term => array(
+          ],
+          $strand_term => [
             'searchable' => TRUE,
             'label' => 'Location Strand',
             'help' => 'The orientation of this feature where it is localized',
-            'operations' => array('eq', 'gt', 'lt', 'gte' ,'lte'),
+            'operations' => ['eq', 'gt', 'lt', 'gte', 'lte'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -223,16 +224,16 @@ class data__sequence_coordinates extends ChadoField {
     $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
     $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
 
-    $options = array(
+    $options = [
       'return_array' => TRUE,
-      'order_by' => array('rank' => 'ASC'),
-    );
+      'order_by' => ['rank' => 'ASC'],
+    ];
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
     // Set some defauls for the empty record
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
-    );
+    ];
 
     // Get the featureloc records that this feature is aligned to.
     $aligned = $feature->featureloc->feature_id;
@@ -248,16 +249,16 @@ class data__sequence_coordinates extends ChadoField {
         }
         $fmin = $featureloc->fmin + 1;
         $fmax = $featureloc->fmax;
-        $entity->{$field_name}['und'][0] = array(
-          'value' => array(
+        $entity->{$field_name}['und'][0] = [
+          'value' => [
             $description => $srcfeature . ':' . $fmin . '-' . $fmax . $strand,
             $reference_term => $srcfeature,
             $fmin_term => $fmin,
             $fmax_term => $fmax,
             $strand_term => $strand,
             $phase_term => $featureloc->phase,
-          ),
-        );
+          ],
+        ];
         $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
         if ($sentity_id) {
           $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;

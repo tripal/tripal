@@ -15,7 +15,7 @@ class uo__unit extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'UO',
     // The name of the term.
@@ -26,7 +26,7 @@ class uo__unit extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'UO__unit_widget';
@@ -49,9 +49,9 @@ class uo__unit extends ChadoField {
 
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
-    );
+    ];
 
     if ($record) {
       $entity->{$field_name}['und'][0]['value'] = $record->unittype_id->name;

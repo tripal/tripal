@@ -16,7 +16,7 @@ function tripal_library_disable() {
   require_once("tripal_library.views_default.inc");
   $views = tripal_library_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_library_disable() {
  * @ingroup tripal_legacy_library
  */
 function tripal_library_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_library'] = array(
+      $requirements ['tripal_library'] = [
         'title' => "tripal_library",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -72,35 +72,35 @@ function tripal_library_uninstall() {
  * @ingroup tripal_legacy_library
  */
 function tripal_library_schema() {
-  $schema['chado_library'] = array(
-    'fields' => array(
-      'vid' => array(
+  $schema['chado_library'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'nid' => array(
+        'default' => 0,
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'library_id' => array(
+        'default' => 0,
+      ],
+      'library_id' => [
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
-      )
-    ),
-    'indexes' => array(
-      'chado_library_idx1' => array('library_id')
-    ),
-    'unique keys' => array(
-      'chado_library_uq1' => array('nid', 'vid'),
-      'chado_library_uq2' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'chado_library_idx1' => ['library_id'],
+    ],
+    'unique keys' => [
+      'chado_library_uq1' => ['nid', 'vid'],
+      'chado_library_uq2' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
   return $schema;
 }
 
@@ -109,7 +109,7 @@ function tripal_library_schema() {
  *
  * @ingroup tripal_legacy_library
  */
-function tripal_library_add_cvs(){
+function tripal_library_add_cvs() {
   tripal_insert_cv(
     'library_property',
     'Contains properties for libraries.'
@@ -131,75 +131,75 @@ function tripal_library_add_cvterms() {
   // database. This CV term is used to keep track of the library
   // description in the libraryprop table.
   tripal_insert_cvterm(
-     array(
-       'name' => 'Library Description',
-       'definition' => 'Description of a library',
-       'cv_name' => 'library_property',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
-   );
+    [
+      'name' => 'Library Description',
+      'definition' => 'Description of a library',
+      'cv_name' => 'library_property',
+      'is_relationship' => 0,
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
+  );
 
   // add cvterms for the map unit types
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'cdna_library',
       'definition' => 'cDNA library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'bac_library',
       'definition' => 'Bacterial Artifical Chromsome (BAC) library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'fosmid_library',
       'definition' => 'Fosmid library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'cosmid_library',
       'definition' => 'Cosmid library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'yac_library',
       'definition' => 'Yeast Artificial Chromosome (YAC) library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'genomic_library',
       'definition' => 'Genomic Library',
       'cv_name' => 'library_type',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 }

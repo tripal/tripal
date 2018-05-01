@@ -52,7 +52,7 @@ abstract class TripalFieldDownloader {
    * and a field label as the value.
    *
    */
-  protected $printable_fields = array();
+  protected $printable_fields = [];
 
   /**
    * The remote site json data returned for the entity
@@ -72,31 +72,31 @@ abstract class TripalFieldDownloader {
    * is an example of the structure of this array.
    *
    * @code
-    Array (
-      [local] => Array(
-        [bio_data_7] => Array(
-          [by_field] => Array(
-            [56] => data:2091,
-            [57] => OBI:0100026,
-            [17] => schema:name,
-            [58] => data:2044,
-            [34] => data:0842,
-            [67] => schema:alternateName,
-          ),
-          [by_accession] => Array (
-            [data:2091] => 56,
-            [OBI:0100026] => 57,
-            [schema:name] => 17,
-            [data:2044] => 58,
-            [data:0842] => 34,
-            [schema:alternateName] => 67,
-          ),
-        ),
-      ),
-    )
+   * Array (
+   * [local] => Array(
+   * [bio_data_7] => Array(
+   * [by_field] => Array(
+   * [56] => data:2091,
+   * [57] => OBI:0100026,
+   * [17] => schema:name,
+   * [58] => data:2044,
+   * [34] => data:0842,
+   * [67] => schema:alternateName,
+   * ),
+   * [by_accession] => Array (
+   * [data:2091] => 56,
+   * [OBI:0100026] => 57,
+   * [schema:name] => 17,
+   * [data:2044] => 58,
+   * [data:0842] => 34,
+   * [schema:alternateName] => 67,
+   * ),
+   * ),
+   * ),
+   * )
    * @endcode
    */
-  protected $fields2terms = array();
+  protected $fields2terms = [];
 
 
   /**
@@ -106,7 +106,7 @@ abstract class TripalFieldDownloader {
    * Below the field_id are the keys 'field' or 'instance' where the
    * value of each is the field or instance details respectively.
    */
-  protected $fields = array();
+  protected $fields = [];
 
 
   /**
@@ -137,7 +137,7 @@ abstract class TripalFieldDownloader {
       ->fetchObject();
 
     if (!$collection) {
-      throw new Exception(t("Cannot find a collection that matches the provided id: !id", array('!id' => $collection_id)));
+      throw new Exception(t("Cannot find a collection that matches the provided id: !id", ['!id' => $collection_id]));
     }
     $this->collection = $collection;
 
@@ -163,12 +163,12 @@ abstract class TripalFieldDownloader {
 
     if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
       $message = 'Could not access the directory on the server for storing this file.';
-      watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-      drupal_json_output(array(
-        'status'  => 'failed',
+      watchdog('tripal', $message, [], WATCHDOG_ERROR);
+      drupal_json_output([
+        'status' => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));
+      ]);
       return;
     }
 
@@ -198,7 +198,7 @@ abstract class TripalFieldDownloader {
     }
 
     // If this is a remote field then check that differently.
-    if ($field['storage']['type'] == 'tripal_remote_field' ) {
+    if ($field['storage']['type'] == 'tripal_remote_field') {
       if (in_array($this_formatter, $instance['formatters'])) {
         return TRUE;
       }
@@ -209,7 +209,7 @@ abstract class TripalFieldDownloader {
    * Retrieves the URL for the downloadable file.
    */
   public function getURL() {
-     return $this->outfile;
+    return $this->outfile;
   }
 
   /**
@@ -217,7 +217,7 @@ abstract class TripalFieldDownloader {
    */
   public function delete() {
     $fid = db_select('file_managed', 'fm')
-      ->fields('fm', array('fid'))
+      ->fields('fm', ['fid'])
       ->condition('uri', $this->outfile)
       ->execute()
       ->fetchField();
@@ -260,7 +260,7 @@ abstract class TripalFieldDownloader {
    *   The Entity to write.
    * @param TripalJob $job
    */
-  public function writeEntity($entity, TripalJob $job = NULL){
+  public function writeEntity($entity, TripalJob $job = NULL) {
     $lines = $this->formatEntity($entity);
     foreach ($lines as $line) {
       fwrite($this->fh, $line . "\r\n");
@@ -287,7 +287,7 @@ abstract class TripalFieldDownloader {
     // Check if this file already exists. If it does then just update
     // the stats.
     $fid = db_select('file_managed', 'fm')
-      ->fields('fm', array('fid'))
+      ->fields('fm', ['fid'])
       ->condition('uri', $this->outfile)
       ->execute()
       ->fetchField();
@@ -347,7 +347,7 @@ abstract class TripalFieldDownloader {
           }
         }
         else {
-          $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, $fields, FALSE);
+          $result = tripal_load_entity('TripalEntity', [$entity_id], FALSE, $fields, FALSE);
           $entity = $result[$entity_id];
         }
 
@@ -355,10 +355,10 @@ abstract class TripalFieldDownloader {
           continue;
         }
 
-         $lines = $this->formatEntity($entity);
-         foreach ($lines as $line) {
-           fwrite($this->fh, $line . "\r\n");
-         }
+        $lines = $this->formatEntity($entity);
+        foreach ($lines as $line) {
+          fwrite($this->fh, $line . "\r\n");
+        }
       }
     }
 

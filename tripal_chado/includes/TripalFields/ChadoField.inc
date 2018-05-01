@@ -13,9 +13,9 @@ class ChadoField extends TripalField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'field_chado_storage',
-  );
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -24,7 +24,7 @@ class ChadoField extends TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -41,14 +41,14 @@ class ChadoField extends TripalField {
     'chado_column' => '',
     // The base table.
     'base_table' => '',
-  );
+  ];
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
-  public static $download_formatters = array(
+  public static $download_formatters = [
     'TripalTabDownloader',
     'TripalCSVDownloader',
-  );
+  ];
 
   // The module that manages this field.
   public static $module = 'tripal_chado';
@@ -79,7 +79,7 @@ class ChadoField extends TripalField {
       // Get the base table column that is associated with the term
       // passed as $condition['column'].
       $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
-      $query->condition('base.' . $base_field , $condition['value'], $operator);
+      $query->condition('base.' . $base_field, $condition['value'], $operator);
     }
     else {
       // If the two are not the same then we expect that the child class
@@ -137,7 +137,7 @@ class ChadoField extends TripalField {
       return;
     }
 
-    switch($type) {
+    switch ($type) {
       case 'LEFT OUTER':
         $query->leftjoin($table, $alias, $condition);
         break;
@@ -156,18 +156,18 @@ class ChadoField extends TripalField {
     // Make sure we don't lose our Chado table mappings when the settings
     // are updated.  Setting them as values in the form ensures they don't
     // get accidentally overwritten.
-    $element['base_table'] = array(
+    $element['base_table'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['base_table'],
-    );
-    $element['chado_table'] = array(
+    ];
+    $element['chado_table'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['chado_table'],
-    );
-    $element['chado_column'] = array(
+    ];
+    $element['chado_column'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['chado_column'],
-    );
+    ];
     return $element;
   }
 }

@@ -17,17 +17,17 @@ class tripal_views_handler_area_action_links extends views_handler_area {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['link-1']['label-1'] = array('default' => '');
-    $options['link-1']['path-1'] = array('default' => '');
+    $options['link-1']['label-1'] = ['default' => ''];
+    $options['link-1']['path-1'] = ['default' => ''];
 
-    $options['link-2']['label-2'] = array('default' => '');
-    $options['link-2']['path-2'] = array('default' => '');
+    $options['link-2']['label-2'] = ['default' => ''];
+    $options['link-2']['path-2'] = ['default' => ''];
 
-    $options['link-3']['label-3'] = array('default' => '');
-    $options['link-3']['path-3'] = array('default' => '');
+    $options['link-3']['label-3'] = ['default' => ''];
+    $options['link-3']['path-3'] = ['default' => ''];
 
-    $options['link-4']['label-4'] = array('default' => '');
-    $options['link-4']['path-4'] = array('default' => '');
+    $options['link-4']['label-4'] = ['default' => ''];
+    $options['link-4']['path-4'] = ['default' => ''];
 
     return $options;
   }
@@ -40,81 +40,81 @@ class tripal_views_handler_area_action_links extends views_handler_area {
 
     $form['label']['#default_value'] = 'Action Links';
 
-    $form['link-1'] = array(
+    $form['link-1'] = [
       '#type' => 'fieldset',
-      '#title' => t('Link #1')
-    );
+      '#title' => t('Link #1'),
+    ];
 
-    $form['link-1']['label-1'] = array(
+    $form['link-1']['label-1'] = [
       '#type' => 'textfield',
       '#title' => t('Label'),
       '#description' => t('The text that will be displayed as the link'),
       '#default_value' => $this->options['link-1']['label-1'],
-    );
+    ];
 
-    $form['link-1']['path-1'] = array(
+    $form['link-1']['path-1'] = [
       '#type' => 'textfield',
       '#title' => t('URL'),
       '#description' => t('The path that the link will link to'),
-      '#default_value' => $this->options['link-1']['path-1']
-    );
+      '#default_value' => $this->options['link-1']['path-1'],
+    ];
 
-    $form['link-2'] = array(
+    $form['link-2'] = [
       '#type' => 'fieldset',
-      '#title' => t('Link #2')
-    );
+      '#title' => t('Link #2'),
+    ];
 
-    $form['link-2']['label-2'] = array(
+    $form['link-2']['label-2'] = [
       '#type' => 'textfield',
       '#title' => t('Label'),
       '#description' => t('The text that will be displayed as the link'),
       '#default_value' => $this->options['link-2']['label-2'],
-    );
+    ];
 
-    $form['link-2']['path-2'] = array(
+    $form['link-2']['path-2'] = [
       '#type' => 'textfield',
       '#title' => t('URL'),
       '#description' => t('The path that the link will link to'),
-      '#default_value' => $this->options['link-2']['path-2']
-    );
+      '#default_value' => $this->options['link-2']['path-2'],
+    ];
 
-    $form['link-3'] = array(
+    $form['link-3'] = [
       '#type' => 'fieldset',
-      '#title' => t('Link #3')
-    );
+      '#title' => t('Link #3'),
+    ];
 
-    $form['link-3']['label-3'] = array(
+    $form['link-3']['label-3'] = [
       '#type' => 'textfield',
       '#title' => t('Label'),
       '#description' => t('The text that will be displayed as the link'),
       '#default_value' => $this->options['link-3']['label-3'],
-    );
+    ];
 
-    $form['link-3']['path-3'] = array(
+    $form['link-3']['path-3'] = [
       '#type' => 'textfield',
       '#title' => t('URL'),
       '#description' => t('The path that the link will link to'),
-      '#default_value' => $this->options['link-3']['path-3']
-    );
+      '#default_value' => $this->options['link-3']['path-3'],
+    ];
 
-    $form['link-4'] = array(
+    $form['link-4'] = [
       '#type' => 'fieldset',
-      '#title' => t('Link #4')
-    );
+      '#title' => t('Link #4'),
+    ];
 
-    $form['link-4']['label-4'] = array(
+    $form['link-4']['label-4'] = [
       '#type' => 'textfield',
       '#title' => t('Label'),
       '#description' => t('The text that will be displayed as the link'),
       '#default_value' => $this->options['link-4']['label-4'],
-    );
+    ];
 
-    $form['link-4']['path-4'] = array(
+    $form['link-4']['path-4'] = [
       '#type' => 'textfield',
       '#title' => t('URL'),
       '#description' => t('The path that the link will link to'),
-      '#default_value' => $this->options['link-4']['path-4']
-    );
+      '#default_value' => $this->options['link-4']['path-4'],
+    ];
 
   }
 

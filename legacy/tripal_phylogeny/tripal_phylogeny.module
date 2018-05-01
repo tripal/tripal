@@ -29,16 +29,16 @@ require_once 'includes/tripal_phylogeny.taxonomy.inc';
  * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_permission() {
-  return array(
-    'access chado_phylotree content' => array(
+  return [
+    'access chado_phylotree content' => [
       'title' => t('View Phylotrees'),
       'description' => t('Allow users to view phylotree pages.'),
-    ),
-    'administer tripal phylotree' => array(
+    ],
+    'administer tripal phylotree' => [
       'title' => t('Administer Phylotrees'),
       'description' => t('Allow users to administer all phylotrees.'),
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -51,76 +51,83 @@ function tripal_phylogeny_permission() {
  * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_menu() {
-  $items = array();
+  $items = [];
 
-  $items['taxonomy_view'] = array(
+  $items['taxonomy_view'] = [
     'title' => 'Taxonomy',
     'description' => 'Taxonomic view of the species available on this site.',
     'page callback' => 'tripal_phylogeny_taxonomy_view',
-    'access arguments' => array('access taxonomy content'),
+    'access arguments' => ['access taxonomy content'],
     'file' => '/includes/tripal_phylogeny.taxonomy.inc',
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
   // administration landing page. currently has no content but is
   // apparently required for the Sync and Help links to work.
-  $items['admin/tripal/legacy/tripal_phylogeny'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny'] = [
     'title' => 'Phylogeny and Taxonomy',
     'description' => 'Phylogenetic and taxonomic trees.',
     'page callback' => 'tripal_phylogeny_admin_phylotrees_listing',
-    'access arguments' => array('administer tripal phylotree'),
+    'access arguments' => ['administer tripal phylotree'],
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
   // help menu
-  $items['admin/tripal/legacy/tripal_phylogeny/help'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/help'] = [
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Phylotree Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_phylogeny_help'),
-    'access arguments' => array('administer tripal phylotree'),
+    'page arguments' => ['tripal_phylogeny_help'],
+    'access arguments' => ['administer tripal phylotree'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
   // configuration menu item
-  $items['admin/tripal/legacy/tripal_phylogeny/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/configuration'] = [
     'title' => 'Settings',
     'description' => 'Configure the Tripal Phylotree module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_phylogeny_admin'),
-    'access arguments' => array('administer tripal phylotree'),
+    'page arguments' => ['tripal_phylogeny_admin'],
+    'access arguments' => ['administer tripal phylotree'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
-  );
+    'weight' => 1,
+  ];
 
   // sync menu item (will be rendered as a tab by tripal)
-  $items['admin/tripal/legacy/tripal_phylogeny/sync'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for phylotrees stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_phylogeny', 'chado_phylotree'),
-    'access arguments' => array('administer tripal phylotree'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_phylogeny',
+      'chado_phylotree',
+    ],
+    'access arguments' => ['administer tripal phylotree'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
   // Enable admin view
-  $items['admin/tripal/legacy/tripal_phylogeny/views/phylotree/enable'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/views/phylotree/enable'] = [
     'title' => 'Enable Phylotree Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_phylogeny_admin_phylotree', 'admin/tripal/legacy/tripal_phylogeny'),
-    'access arguments' => array('administer tripal phylotree'),
+    'page arguments' => [
+      'tripal_phylogeny_admin_phylotree',
+      'admin/tripal/legacy/tripal_phylogeny',
+    ],
+    'access arguments' => ['administer tripal phylotree'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // create a route for viewing json of all phylonodes having this phylotree_id
-  $items['ajax/chado_phylotree/%/json'] = array(
+  $items['ajax/chado_phylotree/%/json'] = [
     'page callback' => 'tripal_phylogeny_ajax_get_tree_json',
-    'page arguments' => array(2),
+    'page arguments' => [2],
     // allow all anonymous http clients
-    'access callback' => TRUE
-  );
+    'access callback' => TRUE,
+  ];
 
   return $items;
 }
@@ -131,14 +138,14 @@ function tripal_phylogeny_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_phylogeny_search_biological_data_views() {
-  return array(
-      'tripal_phylogeny_user_phylotree' => array(
-          'machine_name' => 'tripal_phylogeny_user_phylotree',
-          'human_name' => 'Phylogenetic Trees',
-          'description' => 'Gene trees, species trees, etc.',
-          'link' => 'chado/phylotree'
-      ),
-  );
+  return [
+    'tripal_phylogeny_user_phylotree' => [
+      'machine_name' => 'tripal_phylogeny_user_phylotree',
+      'human_name' => 'Phylogenetic Trees',
+      'description' => 'Gene trees, species trees, etc.',
+      'link' => 'chado/phylotree',
+    ],
+  ];
 }
 
 /**
@@ -151,9 +158,9 @@ function tripal_phylogeny_search_biological_data_views() {
  * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -167,63 +174,63 @@ function tripal_phylogeny_views_api() {
  */
 function tripal_phylogeny_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  $items = array(
+  $items = [
     // built-in theme
-    'node__chado_phylotree' => array(
+    'node__chado_phylotree' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
+    ],
     // base template for this page (default tab) includes the phylogram
-    'tripal_phylogeny_base' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_base',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // Template for the phylogram.
-    'tripal_phylogeny_phylogram' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_phylogram' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_phylogram',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // Template for the taxonomic tree.
-    'tripal_phylogeny_taxonomic_tree' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_taxonomic_tree' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_taxonomic_tree',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // partial for organisms block
-    'tripal_phylogeny_organisms' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_organisms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_organisms',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // partial for cross references block
-    'tripal_phylogeny_references' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_references',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // partial for cross references block
-    'tripal_phylogeny_analysis' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_analysis' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_analysis',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // partial for teaser view
-    'tripal_phylogeny_teaser' => array(
-      'variables' => array('node' => NULL),
+    'tripal_phylogeny_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_phylogeny_teaser',
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // FORM THEMES
     // Theme function for the project table in admin projects form
-    'tripal_phylogeny_admin_org_color_tables' => array(
+    'tripal_phylogeny_admin_org_color_tables' => [
       'render element' => 'element',
-    )
-  );
+    ],
+  ];
   return $items;
 }
 
@@ -233,8 +240,8 @@ function tripal_phylogeny_theme($existing, $type, $theme, $path) {
  *
  * @ingroup tripal_legacy_phylogeny
  */
-function tripal_phylogeny_help ($path, $arg) {
+function tripal_phylogeny_help($path, $arg) {
   if ($path == 'admin/help#tripal_phylogeny') {
-    return theme('tripal_phylogeny_help', array());
+    return theme('tripal_phylogeny_help', []);
   }
 }

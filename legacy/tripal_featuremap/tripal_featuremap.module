@@ -27,6 +27,7 @@ require_once 'includes/tripal_featuremap.chado_node.inc';
  *   which path of the site we're displaying help
  * @param arg
  *   array that holds the current path as would be returned from arg() function
+ *
  * @return
  *  help text for the path
  *
@@ -36,9 +37,9 @@ function tripal_featuremap_help($path, $arg) {
   $output = '';
   switch ($path) {
     case "admin/help#tripal_featuremap":
-      $output = '<p>'.
-      t("Displays links to nodes created on this date") .
-               '</p>';
+      $output = '<p>' .
+        t("Displays links to nodes created on this date") .
+        '</p>';
       break;
   }
   return $output;
@@ -54,7 +55,7 @@ function tripal_featuremap_help($path, $arg) {
  * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_permission() {
-  return array(
+  return [
     /*
     'access chado_featuremap content' => array(
       'title' => t('View Maps'),
@@ -77,7 +78,7 @@ function tripal_featuremap_permission() {
       'description' => t('Allow users to administer all maps.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -90,67 +91,77 @@ function tripal_featuremap_permission() {
  * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_menu() {
-  $items = array();
+  $items = [];
 
   // The administative settings menu
 
-  $items['admin/tripal/legacy/tripal_featuremap'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap'] = [
     'title' => 'Feature Maps',
     'description' => 'A map of features from the chado database (e.g. genetic map)',
     'page callback' => 'tripal_featuremap_admin_featuremaps_listing',
-    'access arguments' => array('administer tripal featuremap'),
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
-  $items['admin/tripal/legacy/tripal_featuremap/help'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/help'] = [
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Map Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_featuremap_help'),
-    'access arguments' => array('administer tripal featuremap'),
+    'page arguments' => ['tripal_featuremap_help'],
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
-  $items['admin/tripal/legacy/tripal_featuremap/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/configuration'] = [
     'title' => 'Settings',
     'description' => 'Manage integration of Chado maps including associated features.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_featuremap_admin'),
-    'access arguments' => array('administer tripal featuremap'),
+    'page arguments' => ['tripal_featuremap_admin'],
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
+    'weight' => 2,
+  ];
 
-  $items['admin/tripal/legacy/tripal_featuremap/sync'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/sync'] = [
     'title' => ' Sync',
     'description' => 'Sync featuremaps from Chado with Drupal',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_featuremap', 'chado_featuremap'),
-    'access arguments' => array('administer tripal featuremap'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_featuremap',
+      'chado_featuremap',
+    ],
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
+    'weight' => 0,
+  ];
 
-  $items['admin/tripal/legacy/tripal_featuremap/chado_featuremap_toc'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/chado_featuremap_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature map nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_featuremap'),
-    'access arguments' => array('administer tripal featuremap'),
+    'page arguments' => [
+      'tripal_core_content_type_toc_form',
+      'chado_featuremap',
+    ],
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_featuremap/views/featuremaps/enable'] = array(
+  $items['admin/tripal/legacy/tripal_featuremap/views/featuremaps/enable'] = [
     'title' => 'Enable featuremap Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/legacy/tripal_featuremap'),
-    'access arguments' => array('administer tripal featuremap'),
+    'page arguments' => [
+      'tripal_featuremap_admin_featuremaps',
+      'admin/tripal/legacy/tripal_featuremap',
+    ],
+    'access arguments' => ['administer tripal featuremap'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -160,29 +171,29 @@ function tripal_featuremap_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_featuremap_search_biological_data_views() {
-  return array(
-    'tripal_featuremap_user_featuremaps' => array(
+  return [
+    'tripal_featuremap_user_featuremaps' => [
       'machine_name' => 'tripal_featuremap_user_featuremaps',
       'human_name' => 'Maps',
       'description' => 'A map of features from the chado database (e.g. genetic map)',
-      'link' => 'chado/featuremap'
-    ),
-  );
+      'link' => 'chado/featuremap',
+    ],
+  ];
 }
 
 /**
  * Implements hook_views_api().
  *
  * Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_featuremap.views.inc where all the
- *  views integration code is
+ *  for this module which then includes tripal_featuremap.views.inc where all
+ * the views integration code is
  *
  * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -197,56 +208,56 @@ function tripal_featuremap_views_api() {
 function tripal_featuremap_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_featuremap' => array(
+  $items = [
+    'node__chado_featuremap' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_featuremap_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_featuremap_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_featuremap_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_featuremap_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_featuremap_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_featurepos' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_featuremap_featurepos' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_featuremap_featurepos',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_publication' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_featuremap_publication' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_featuremap_publication',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_references' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_featuremap_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_featuremap_references',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_help' => array(
+    ],
+    'tripal_featuremap_help' => [
       'template' => 'tripal_featuremap_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
-    'tripal_featuremap_teaser' => array(
+    ],
+    'tripal_featuremap_teaser' => [
       'template' => 'tripal_featuremap_teaser',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // templates for the chado_feature nodes:
-    'tripal_feature_featurepos' => array(
-      'variables' => array('node' => NULL),
+    'tripal_feature_featurepos' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_featurepos',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
   return $items;
 }
 

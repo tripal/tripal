@@ -57,21 +57,23 @@
 $feature = $variables['node']->feature;
 $alignments = $feature->all_featurelocs;
 
-if(count($alignments) > 0){ ?>
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following features are aligned</div><?php
-  
+if (count($alignments) > 0) { ?>
+    <div class="tripal_feature-data-block-desc tripal-data-block-desc">The
+        following features are aligned
+    </div><?php
+
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Aligned Feature' ,'Feature Type', 'Alignment Location');
-  
+  $headers = ['Aligned Feature', 'Feature Type', 'Alignment Location'];
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
-  
-  foreach ($alignments as $alignment){
+  $rows = [];
+
+  foreach ($alignments as $alignment) {
     $feature_name = $alignment->name;
     if (property_exists($alignment, 'nid')) {
       $feature_name = l($feature_name, "node/" . $alignment->nid);
@@ -80,52 +82,52 @@ if(count($alignments) > 0){ ?>
     $strand = '.';
     if ($alignment->strand == -1) {
       $strand = '-';
-    } 
+    }
     elseif ($alignment->strand == 1) {
-       $strand = '+';
-    } 
+      $strand = '+';
+    }
     // if this is a match then make the other location 
-    if(property_exists($alignment, 'right_feature')){
+    if (property_exists($alignment, 'right_feature')) {
       $rstrand = '.';
       if ($alignment->right_strand == -1) {
         $rstrand = '-';
-      } 
+      }
       elseif ($alignment->right_strand == 1) {
         $rstrand = '+';
       }
-      $feature_loc = $feature->name .":". ($alignment->fmin + 1) . ".." . $alignment->fmax . " " . $strand; 
-      $feature_loc .= "<br>" . $alignment->name .":". ($alignment->right_fmin + 1) . ".." . $alignment->right_fmax . " " . $rstrand; 
+      $feature_loc = $feature->name . ":" . ($alignment->fmin + 1) . ".." . $alignment->fmax . " " . $strand;
+      $feature_loc .= "<br>" . $alignment->name . ":" . ($alignment->right_fmin + 1) . ".." . $alignment->right_fmax . " " . $rstrand;
     }
     else {
-      $feature_loc = $alignment->name .":". ($alignment->fmin + 1) . ".." . $alignment->fmax . " " . $strand; 
+      $feature_loc = $alignment->name . ":" . ($alignment->fmin + 1) . ".." . $alignment->fmax . " " . $strand;
     }
-    
-    $rows[] = array(
+
+    $rows[] = [
       $feature_name,
       $alignment->type,
-      $feature_loc
-    );
-  } 
-  
+      $feature_loc,
+    ];
+  }
+
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_feature-table-alignments',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
-  
+  ];
+
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
-  print theme_table($table); 
+  print theme_table($table);
 }
 

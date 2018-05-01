@@ -22,7 +22,7 @@ class TripalField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'tripal_no_storage',
     // It is expected that all fields set a 'value' in the load() function.
     // In many cases, the value may be an associative array of key/value pairs.
@@ -30,8 +30,8 @@ class TripalField {
     // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
     // function that are supported by the query() function should be
     // listed here.
-    'searchable_keys' => array(),
-  );
+    'searchable_keys' => [],
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -40,7 +40,7 @@ class TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -58,14 +58,14 @@ class TripalField {
     // attached to determine which are empty.  It should always work with
     // web services.
     'auto_attach' => TRUE,
-  );
+  ];
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
-  public static $download_formatters = array(
+  public static $download_formatters = [
     'TripalTabDownloader',
     'TripalCSVDownloader',
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = '';
@@ -115,7 +115,8 @@ class TripalField {
    * @param $field
    *   An array containing the field data as returned by field_info_field().
    * @param $instance
-   *   An array containing the instance data as returned by field_instance_info().
+   *   An array containing the instance data as returned by
+   *   field_instance_info().
    */
   public function __construct($field, $instance) {
     $term = NULL;
@@ -141,15 +142,17 @@ class TripalField {
       $this->term = tripal_get_term_details($vocabulary, $accession);
     }
     else {
-      $bundle = tripal_load_bundle_entity(array('name' => $instance['bundle']));
+      $bundle = tripal_load_bundle_entity(['name' => $instance['bundle']]);
       tripal_report_error('tripal_field', TRIPAL_ERROR,
         'Unable to instantiate the field named, ":name", due to missing vocabulary and/or accession. The term provided was: ":term". The bundle is: ":bundle".',
-        array(':name' => $instance['field_name'],
+        [
+          ':name' => $instance['field_name'],
           ':term' => $vocabulary . ':' . $accession,
-          ':bundle' => $bundle->label));
+          ':bundle' => $bundle->label,
+        ]);
     }
     if (!$instance) {
-      tripal_set_message(t('Missing instance of field "%field"', array('%field' => $field['field_name'])), TRIPAL_ERROR);
+      tripal_set_message(t('Missing instance of field "%field"', ['%field' => $field['field_name']]), TRIPAL_ERROR);
     }
   }
 
@@ -170,7 +173,7 @@ class TripalField {
    */
   public static function info() {
     $class = get_called_class();
-    $info = array(
+    $info = [
       'label' => $class::$default_label,
       'description' => $class::$default_description,
       'settings' => $class::$default_settings,
@@ -178,7 +181,7 @@ class TripalField {
       'default_widget' => $class::$default_widget,
       'default_formatter' => $class::$default_formatter,
       'no_ui' => $class::$no_ui,
-    );
+    ];
     return $info;
   }
 
@@ -200,6 +203,7 @@ class TripalField {
   public function getField() {
     return $this->field;
   }
+
   public function getInstance() {
     return $this->instance;
   }
@@ -212,7 +216,7 @@ class TripalField {
     return $this->field['id'];
   }
 
-  public function getFieldTerm(){
+  public function getFieldTerm() {
     return $this->term;
   }
 
@@ -239,8 +243,8 @@ class TripalField {
     $field_term_name = strtolower(preg_replace('/[^\w]/', '_', $this->term['name']));
     $field_details = $elements[$field_term];
 
-    $searchable_keys = array();
-    $sortable_keys = array();
+    $searchable_keys = [];
+    $sortable_keys = [];
 
     if (array_key_exists('searchable', $field_details) and $field_details['searchable']) {
       $searchable_keys[$field_term_name] = $field_term;
@@ -258,10 +262,10 @@ class TripalField {
       }
     }
 
-    return array(
+    return [
       'searchable' => $searchable_keys,
-      'sortable' => $sortable_keys
-    );
+      'sortable' => $sortable_keys,
+    ];
   }
 
   /**
@@ -272,7 +276,7 @@ class TripalField {
    * @param $element_details
    */
   protected function _addWebServiceElement(&$searchable_keys, &$sortable_keys,
-      $parent_term_name, $parent_term, $element_name, $element_details) {
+                                           $parent_term_name, $parent_term, $element_name, $element_details) {
 
     // Skip the 'entity' element, as we'll never make this searchable or
     // viewable. It's meant for linking.
@@ -287,10 +291,10 @@ class TripalField {
 
     // Is the field searchable?
     if (array_key_exists('searchable', $element_details) and $element_details['searchable']) {
-      $searchable_keys[$field_term_name] =  $field_term;
+      $searchable_keys[$field_term_name] = $field_term;
     }
     if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
-      $sortable_keys[$field_term_name] =  $field_term;
+      $sortable_keys[$field_term_name] = $field_term;
     }
 
     // Now add any entries for child elements.
@@ -324,7 +328,7 @@ class TripalField {
    *   instructions provided by the hook_views_data() function.
    */
   public function viewsData($view_base_id) {
-    $data = array();
+    $data = [];
     $field_name = $this->field['field_name'];
     $field_term = $this->getFieldTermID();
 
@@ -342,14 +346,14 @@ class TripalField {
     }
 
     // Build the entry for the field.
-    $data[$view_base_id][$field_name] = array(
+    $data[$view_base_id][$field_name] = [
       'title' => $title,
       'help' => $help,
-      'field' => array(
+      'field' => [
         'handler' => 'tripal_views_handler_field',
         'click sortable' => TRUE,
-      ),
-    );
+      ],
+    ];
     // Is the field sortable?
     if (array_key_exists('sortable', $field_details) and $field_details['sortable']) {
       $data[$view_base_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
@@ -361,9 +365,9 @@ class TripalField {
       if (array_key_exists('type', $field_details) and $field_details['type'] == 'numeric') {
         $filter_handler = 'tripal_views_handler_filter_numeric';
       }
-      $data[$view_base_id][$field_name]['filter'] = array(
+      $data[$view_base_id][$field_name]['filter'] = [
         'handler' => $filter_handler,
-      );
+      ];
     }
 
     // Now add any entries for child elements.
@@ -411,13 +415,13 @@ class TripalField {
     }
 
     // Build the entry for the field.
-    $data[$view_base_id][$field_name] = array(
+    $data[$view_base_id][$field_name] = [
       'title' => $title,
       'help' => $help,
-      'field' => array(
+      'field' => [
         'handler' => 'tripal_views_handler_field_element',
-      ),
-    );
+      ],
+    ];
     // Is the field sortable?
     if (array_key_exists('sortable', $element_details) and $element_details['sortable']) {
       $data[$view_base_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
@@ -430,9 +434,9 @@ class TripalField {
       if (array_key_exists('type', $element_details) and $element_details['type'] == 'numeric') {
         $filter_handler = 'tripal_views_handler_filter_numeric';
       }
-      $data[$view_base_id][$field_name]['filter'] = array(
+      $data[$view_base_id][$field_name]['filter'] = [
         'handler' => $filter_handler,
-      );
+      ];
     }
 
     // Recusrively add any entries for child elements.
@@ -454,15 +458,15 @@ class TripalField {
    *  Any errors encountered should be indicated by adding a value to the
    *  $errors array according to the instructions below.
    *
-   *  @param $entity_type
+   * @param $entity_type
    *    The type of $entity.
-   *  @param $entity
+   * @param $entity
    *    The entity for the operation.
-   *  @param $langcode
+   * @param $langcode
    *    The language associated with $items.
-   *  @param $items
+   * @param $items
    *    $entity->{$field['field_name']}[$langcode], or an empty array if unset.
-   *  @param $errors
+   * @param $errors
    *    The array of errors (keyed by field name, language code, and delta) that
    *    have already been reported for the entity. The function should add its
    *    errors to this array. Each error is an associative array with the
@@ -551,50 +555,51 @@ class TripalField {
    * and infraspecific type. If the organism to which the field belong is
    * published then an entity ID is provided.  The following array describes
    * all of these.
+   *
    * @code
-    $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
-        'sortable' => TRUE,
-        'searchable' => TRUE,
-        'elements' => array(
-          'rdfs:label' => array(
-            'searchable' => TRUE,
-            'name' => 'scientific_name',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000005' => array(
-            'searchable' => TRUE,
-            'name' => 'genus',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000006' => array(
-            'searchable' => TRUE,
-            'name' => 'species',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000045' => array(
-            'searchable' => TRUE,
-            'name' => 'infraspecies',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'local:infraspecific_type' => array(
-            'searchable' => TRUE,
-            'name' => 'infraspecific_type',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'entity' => array(
-            'searchable' => FALSE,
-          ),
-        ),
-      )
-    );
+   * $field_term = $this->getFieldTermID();
+   * return array(
+   * $field_term => array(
+   * 'operations' => array('eq', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * 'searchable' => TRUE,
+   * 'elements' => array(
+   * 'rdfs:label' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'scientific_name',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000005' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'genus',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000006' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'species',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000045' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'infraspecies',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'local:infraspecific_type' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'infraspecific_type',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'entity' => array(
+   * 'searchable' => FALSE,
+   * ),
+   * ),
+   * )
+   * );
    * @endcode
    *
    * If a field does not have a complex nested set of values, but simply returns
@@ -606,13 +611,13 @@ class TripalField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'ne', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'ne', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
 
   /**
@@ -626,7 +631,7 @@ class TripalField {
    */
   public function settingsForm($has_data) {
     $settings = $this->field['settings'];
-    $element = array();
+    $element = [];
 
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
@@ -634,6 +639,7 @@ class TripalField {
 
     return $element;
   }
+
   /**
    *
    * @param $form
@@ -666,25 +672,26 @@ class TripalField {
    */
   public function instanceSettingsForm() {
     $settings = $this->instance['settings'];
-    $element = array();
+    $element = [];
 
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
     return $element;
   }
+
   /**
-  * Provides validation of the instance settings form.
-  *
-  * There is no equivalent function in the Drupal Field API. Validation
-  * of instance settings forms in Drupal is not supported. However, the
-  * TripalField provides this function to fill the gap.  See the
-  * documentation for the instanceSettingsForm() function for instructions
-  * to support use of this function.
-  *
-  * @param $form
-  * @param $form_state
-  */
+   * Provides validation of the instance settings form.
+   *
+   * There is no equivalent function in the Drupal Field API. Validation
+   * of instance settings forms in Drupal is not supported. However, the
+   * TripalField provides this function to fill the gap.  See the
+   * documentation for the instanceSettingsForm() function for instructions
+   * to support use of this function.
+   *
+   * @param $form
+   * @param $form_state
+   */
   public function instanceSettingsFormValidate($form, &$form_state) {
 
   }

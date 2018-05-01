@@ -20,16 +20,44 @@ function tripal_chado_load_form($form, $form_state) {
 
   if (array_key_exists('values', $form_state)) {
     if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
-      $tables_list = implode(', ', array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub',
-        'analysis_relationship', 'contactprop', 'dbprop', 'feature_contact',
-        'featuremap_contact', 'featuremap_dbxref', 'featuremap_organism', 'featuremapprop',
-        'featureposprop', 'library_contact', 'library_expression', 'library_expressionprop',
-        'library_featureprop', 'library_relationship', 'library_relationship_pub', 'nd_experiment_analysis',
-        'organism_cvterm', 'organism_cvtermprop', 'organism_pub', 'organism_relationship',
-        'organismprop_pub', 'phenotypeprop', 'phylotreeprop', 'project_analysis',
-        'project_dbxref', 'project_feature', 'project_stock', 'pubauthor_contact',
-        'stock_feature', 'stock_featuremap', 'stock_library', 'stockcollection_db'));
-      $items = array(
+      $tables_list = implode(', ', [
+        'analysis_cvterm',
+        'analysis_dbxref',
+        'analysis_pub',
+        'analysis_relationship',
+        'contactprop',
+        'dbprop',
+        'feature_contact',
+        'featuremap_contact',
+        'featuremap_dbxref',
+        'featuremap_organism',
+        'featuremapprop',
+        'featureposprop',
+        'library_contact',
+        'library_expression',
+        'library_expressionprop',
+        'library_featureprop',
+        'library_relationship',
+        'library_relationship_pub',
+        'nd_experiment_analysis',
+        'organism_cvterm',
+        'organism_cvtermprop',
+        'organism_pub',
+        'organism_relationship',
+        'organismprop_pub',
+        'phenotypeprop',
+        'phylotreeprop',
+        'project_analysis',
+        'project_dbxref',
+        'project_feature',
+        'project_stock',
+        'pubauthor_contact',
+        'stock_feature',
+        'stock_featuremap',
+        'stock_library',
+        'stockcollection_db',
+      ]);
+      $items = [
         'PostgreSQL version 9.1 is required to perform this upgrade. If your Tripal
          site uses an older version please upgrade before proceeding.',
         'A major change between Chado v1.2 and v1.3 is that primary and foreign
@@ -55,22 +83,22 @@ function tripal_chado_load_form($form, $form_state) {
          Otherwise you may have problems using Tripal. If you have not added any
          Chado v1.3 tables to your Chado v1.2 database you can ignore this issue.
          These are the newly added tables:  ' .
-         $tables_list  . '.'
-      );
-      $list = theme_item_list(array(
+        $tables_list . '.',
+      ];
+      $list = theme_item_list([
         'items' => $items,
         'title' => '',
         'type' => 'ul',
-        'attributes' => array(),
-      ));
+        'attributes' => [],
+      ]);
       drupal_set_message('Please note: the upgrade of Chado from v1.2 to v1.3 may
           require several fixes to your database. Please review the following
           list to ensure a safe upgrade. The Tripal upgrader is
           not able to fix these problems automatically: ' . $list, 'warning');
     }
     if ($form_state['values']['action_to_do'] == "Install Chado v1.3" or
-        $form_state['values']['action_to_do'] == "Install Chado v1.2" or
-        $form_state['values']['action_to_do'] == "Install Chado v1.11") {
+      $form_state['values']['action_to_do'] == "Install Chado v1.2" or
+      $form_state['values']['action_to_do'] == "Install Chado v1.11") {
       drupal_set_message('Please note: if Chado is already installed it will
           be removed and recreated and all data will be lost. If this is
           desired or if this is the first time Chado has been installed
@@ -78,41 +106,41 @@ function tripal_chado_load_form($form, $form_state) {
     }
   }
 
-  $form['current_version'] = array(
+  $form['current_version'] = [
     '#type' => 'item',
     '#title' => t("Current installed version of Chado:"),
     '#description' => $real_version,
-  );
+  ];
 
-  $form['action_to_do'] = array(
+  $form['action_to_do'] = [
     '#type' => 'radios',
     '#title' => 'Installation/Upgrade Action',
-    '#options' => array(
+    '#options' => [
       'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
       'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
       'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
       'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
       'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
-    ),
+    ],
     '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
     '#required' => TRUE,
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_chado_load_form_ajax_callback",
-      'wrapper'  => 'tripal_chado_load_form',
-      'effect'   => 'fade',
-      'method'   => 'replace',
-    ),
-  );
+      'wrapper' => 'tripal_chado_load_form',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ],
+  ];
 
-  $form['warning'] = array(
+  $form['warning'] = [
     '#markup' => "<div><font color=\"red\">WARNING:</font>" . t('A new install of
       Chado will remove and recreate the Chado database if it already exists.') . '</div>',
-  );
+  ];
 
-  $form['button'] = array(
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => t('Install/Upgrade Chado'),
-  );
+  ];
 
   $form['#prefix'] = '<div id="tripal_chado_load_form">';
   $form['#suffix'] = '</div>';
@@ -136,14 +164,14 @@ function tripal_chado_load_form_validate($form, &$form_state) {
   // of those modules may add content to Chado and reinstalling Chado
   // removes that content which may break the modules.
   if ($form_state['values']['action_to_do'] == "Install Chado v1.3" or
-      $form_state['values']['action_to_do'] == "Install Chado v1.2" or
-      $form_state['values']['action_to_do'] == "Install Chado v1.11") {
+    $form_state['values']['action_to_do'] == "Install Chado v1.2" or
+    $form_state['values']['action_to_do'] == "Install Chado v1.11") {
 
     $modules = system_get_info('module');
     // The tripal_chado_views module should not be included as it's a required
     // dependency of tripal_chado
     unset($modules['tripal_chado_views']);
-    $list = array();
+    $list = [];
     foreach ($modules as $mname => $module) {
       if (array_key_exists('dependencies', $module) and in_array('tripal_chado', $module['dependencies'])) {
         $list[] = $module['name'] . " ($mname)";
@@ -153,7 +181,7 @@ function tripal_chado_load_form_validate($form, &$form_state) {
       form_set_error("action_to_do", "Chado cannot be installed while other Tripal modules
           are enabled.  You must fully uninstall the following modules if you
           would like to install or re-install chado.<br>" .
-          implode("<br>", $list));
+        implode("<br>", $list));
     }
   }
   if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.11 to v1.2") {
@@ -171,6 +199,7 @@ function tripal_chado_load_form_validate($form, &$form_state) {
     }
   }
 }
+
 /**
  * Submit Load Chado Schema Form
  *
@@ -179,9 +208,9 @@ function tripal_chado_load_form_validate($form, &$form_state) {
 function tripal_chado_load_form_submit($form, &$form_state) {
   global $user;
   $action_to_do = trim($form_state['values']['action_to_do']);
-  $args = array($action_to_do);
+  $args = [$action_to_do];
 
-  $includes = array(module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'));
+  $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
   tripal_add_job($action_to_do, 'tripal_chado',
     'tripal_chado_install_chado', $args, $user->uid, 10, $includes);
 }
@@ -192,11 +221,12 @@ function tripal_chado_load_form_submit($form, &$form_state) {
  * @ingroup tripal_chado
  */
 function tripal_chado_load_drush_submit($version) {
-  $args = array($version);
-  $includes = array(module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'));
+  $args = [$version];
+  $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
   tripal_add_job($version, 'tripal_chado',
     'tripal_chado_install_chado', $args, 1, 10, $includes);
 }
+
 /**
  * Install Chado Schema
  *
@@ -227,28 +257,27 @@ function tripal_chado_install_chado($action, TripalJob $job = NULL) {
   try {
     if ($action == 'Install Chado v1.3') {
       tripal_chado_install_chado_1_3();
-      chado_query($vsql, array(':version' => '1.3'));
+      chado_query($vsql, [':version' => '1.3']);
     }
     elseif ($action == 'Upgrade Chado v1.2 to v1.3') {
       tripal_chado_upgrade_chado_1_2_to_1_3();
-      chado_query($vusql, array(':version' => '1.3'));
+      chado_query($vusql, [':version' => '1.3']);
     }
     elseif ($action == 'Install Chado v1.2') {
       tripal_chado_install_chado_1_2();
-      chado_query($vsql, array(':version' => '1.2'));
+      chado_query($vsql, [':version' => '1.2']);
     }
     elseif ($action == 'Upgrade Chado v1.11 to v1.2') {
       tripal_chado_upgrade_chado_1_11_to_1_2();
-      chado_query($vsql, array(':version' => '1.2'));
+      chado_query($vsql, [':version' => '1.2']);
     }
     elseif ($action == 'Install Chado v1.11') {
       tripal_chado_install_chado_1_11();
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     tripal_chado_install_done();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, $e->getMessage(), array('print' => TRUE));
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, $e->getMessage(), ['print' => TRUE]);
     return FALSE;
   }
   return TRUE;
@@ -287,6 +316,7 @@ function tripal_chado_install_chado_1_3(TripalJob $job = NULL) {
     throw new Exception("ERROR: cannot install chado.  Please check database permissions");
   }
 }
+
 /**
  * Installs Chado v1.2.
  */
@@ -318,6 +348,7 @@ function tripal_chado_install_chado_1_2() {
     throw new Exception("ERROR: cannot install chado.  Please check database permissions");
   }
 }
+
 /**
  *
  */
@@ -350,6 +381,7 @@ function tripal_chado_install_chado_1_11() {
     throw new Exception("ERROR: cannot install chado.  Please check database permissions");
   }
 }
+
 /**
  * Upgrades Chado from v1.2 to v1.3
  */
@@ -392,16 +424,43 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
   module_load_include('inc', 'tripal_chado', '/api/tripal_chado.schema_v1.3.api');
 
   // The list of new tables in Chado v1.3
-  $new_tables = array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub', 'analysis_relationship',
-    'contactprop', 'dbprop', 'feature_contact', 'featuremap_contact', 'featuremap_dbxref',
-    'featuremap_organism', 'featuremapprop', 'featureposprop', 'library_contact',
-    'library_expression', 'library_expressionprop', 'library_featureprop',
-    'library_relationship', 'library_relationship_pub', 'nd_experiment_analysis',
-    'organism_cvterm', 'organism_cvtermprop', 'organism_pub', 'organism_relationship',
-    'organismprop_pub', 'phenotypeprop', 'phylotreeprop', 'project_analysis',
-    'project_dbxref', 'project_feature', 'project_stock', 'pubauthor_contact',
-    'stock_feature', 'stock_featuremap', 'stock_library', 'stockcollection_db',
-  );
+  $new_tables = [
+    'analysis_cvterm',
+    'analysis_dbxref',
+    'analysis_pub',
+    'analysis_relationship',
+    'contactprop',
+    'dbprop',
+    'feature_contact',
+    'featuremap_contact',
+    'featuremap_dbxref',
+    'featuremap_organism',
+    'featuremapprop',
+    'featureposprop',
+    'library_contact',
+    'library_expression',
+    'library_expressionprop',
+    'library_featureprop',
+    'library_relationship',
+    'library_relationship_pub',
+    'nd_experiment_analysis',
+    'organism_cvterm',
+    'organism_cvtermprop',
+    'organism_pub',
+    'organism_relationship',
+    'organismprop_pub',
+    'phenotypeprop',
+    'phylotreeprop',
+    'project_analysis',
+    'project_dbxref',
+    'project_feature',
+    'project_stock',
+    'pubauthor_contact',
+    'stock_feature',
+    'stock_featuremap',
+    'stock_library',
+    'stockcollection_db',
+  ];
 
   // Get the name of the chado schema.
   $chado_schema = tripal_get_schema_name('chado');
@@ -448,7 +507,7 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
     }
   }
   // Now create the sequences if they don't already exist.
-  $sequences = array(
+  $sequences = [
     'analysis_cvterm_analysis_cvterm_id_seq',
     'analysis_dbxref_analysis_dbxref_id_seq',
     'analysis_pub_analysis_pub_id_seq',
@@ -483,8 +542,8 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
     'stock_feature_stock_feature_id_seq',
     'stock_featuremap_stock_featuremap_id_seq',
     'stock_library_stock_library_id_seq',
-    'stockcollection_db_stockcollection_db_id_seq'
-  );
+    'stockcollection_db_stockcollection_db_id_seq',
+  ];
   foreach ($sequences as $sequence) {
 
     // Now add in the sequences if they don't already exist. There is no
@@ -601,7 +660,7 @@ function tripal_chado_install_sql($sql_file) {
     return 'Cannot open $schema_file';
   }
 
-  $stack = array();
+  $stack = [];
   $in_string = 0;
   $in_function = FALSE;
   $query = '';
@@ -618,7 +677,7 @@ function tripal_chado_install_sql($sql_file) {
       $line = preg_replace('/\/\*.*?\*\//', '', $line);  // remove comments
     }
     // skip empty lines
-    if (preg_match('/^\s*$/', $line) or strcmp($line, '')==0) {
+    if (preg_match('/^\s*$/', $line) or strcmp($line, '') == 0) {
       continue;
     }
     // Find SQL for new objects
@@ -644,7 +703,7 @@ function tripal_chado_install_sql($sql_file) {
       $stack[] = 'view';
       $line = preg_replace("/public\./", $chado_dot, $line);
     }
-    if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack)==0 and !$in_function) {
+    if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack) == 0 and !$in_function) {
       $stack[] = 'comment';
       $line = preg_replace("/public\./", $chado_dot, $line);
     }
@@ -694,79 +753,83 @@ function tripal_chado_install_sql($sql_file) {
     $in_string = abs($in_string);
 
     // if we've reached the end of an object then pop the stack
-    if (strcmp($stack[sizeof($stack)-1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
+    if (strcmp($stack[sizeof($stack) - 1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'function') == 0) {
 
-      if(preg_match('/LANGUAGE.*?;\s*$/i', $line)) {
+      if (preg_match('/LANGUAGE.*?;\s*$/i', $line)) {
         $type = array_pop($stack);
         $in_function = FALSE;
         //print "FUNCTION DONE ($i): $line";
-      }
-      else if(preg_match('/\$_\$;\s*$/i', $line)) {
-        $type = array_pop($stack);
-        $in_function = FALSE;
-        //print "FUNCTION DONE ($i): $line";
-      }
-      else if(preg_match('/\$\$;\s*$/i', $line)) {
-        $type = array_pop($stack);
-        $in_function = FALSE;
-       // print "FUNCTION DONE ($i): $line";
       }
       else {
-       // print "FUNCTION ($i): $line";
+        if (preg_match('/\$_\$;\s*$/i', $line)) {
+          $type = array_pop($stack);
+          $in_function = FALSE;
+          //print "FUNCTION DONE ($i): $line";
+        }
+        else {
+          if (preg_match('/\$\$;\s*$/i', $line)) {
+            $type = array_pop($stack);
+            $in_function = FALSE;
+            // print "FUNCTION DONE ($i): $line";
+          }
+          else {
+            // print "FUNCTION ($i): $line";
+          }
+        }
       }
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    elseif (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack) - 1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
     // if we're in a recognized SQL statement then let's keep track of lines
@@ -790,14 +853,13 @@ function tripal_chado_install_sql($sql_file) {
       // execute the statement
       try {
         $result = db_query($query);
-      }
-      catch (Exception $e) {
-        $error  = $e->getMessage();
+      } catch (Exception $e) {
+        $error = $e->getMessage();
         throw new Exception("FAILED. Line  $i, $in_string\n$error:\n$query\n\n");
       }
 
       if (!$result) {
-        $error  = pg_last_error();
+        $error = pg_last_error();
         throw new Exception("FAILED. Line  $i, $in_string\n$error:\n$query\n\n");
       }
       $query = '';

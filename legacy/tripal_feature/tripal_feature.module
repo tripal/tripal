@@ -30,9 +30,9 @@ require_once 'includes/tripal_feature.chado_node.inc';
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -43,7 +43,8 @@ function tripal_feature_views_api() {
  * @param
  *   path which path of the site we're displaying help
  * @param
- *   arg array that holds the current path as would be returned from arg() function
+ *   arg array that holds the current path as would be returned from arg()
+ *   function
  *
  * @return
  *   help text for the path
@@ -53,9 +54,9 @@ function tripal_feature_views_api() {
 function tripal_feature_help($path, $arg) {
   $output = '';
   switch ($path) {
-  case "admin/help#tripal_feature":
-    $output='<p>' . t("Displays links to nodes created on this date") . '</p>';
-    break;
+    case "admin/help#tripal_feature":
+      $output = '<p>' . t("Displays links to nodes created on this date") . '</p>';
+      break;
   }
   return $output;
 }
@@ -70,7 +71,7 @@ function tripal_feature_help($path, $arg) {
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_permission() {
-  return array(
+  return [
     /*
     'access chado_feature content' => array(
       'title' => t('View Features'),
@@ -93,7 +94,7 @@ function tripal_feature_permission() {
       'description' => t('Allow users to administer all features.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -106,73 +107,80 @@ function tripal_feature_permission() {
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_menu() {
-  $items = array();
+  $items = [];
 
   // the administative settings menu
-  $items['admin/tripal/legacy/tripal_feature'] = array(
+  $items['admin/tripal/legacy/tripal_feature'] = [
     'title' => 'Features',
     'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
     'page callback' => 'tripal_feature_admin_feature_view',
-    'access arguments' => array('administer tripal feature'),
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
-  $items['admin/tripal/legacy/tripal_feature/delete'] = array(
+  $items['admin/tripal/legacy/tripal_feature/delete'] = [
     'title' => ' Delete',
     'description' => 'Delete multiple features from Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_delete_form'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => ['tripal_feature_delete_form'],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
-  $items['admin/tripal/legacy/tripal_feature/sync'] = array(
+    'weight' => 2,
+  ];
+  $items['admin/tripal/legacy/tripal_feature/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for features stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_feature', 'chado_feature'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_feature',
+      'chado_feature',
+    ],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
-  );
-  $items['admin/tripal/legacy/tripal_feature/chado_feature_toc'] = array(
+    'weight' => 1,
+  ];
+  $items['admin/tripal/legacy/tripal_feature/chado_feature_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_feature'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_feature'],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
-  $items['admin/tripal/legacy/tripal_feature/configuration'] = array(
+    'weight' => 3,
+  ];
+  $items['admin/tripal/legacy/tripal_feature/configuration'] = [
     'title' => 'Settings',
     'description' => 'Configure the Tripal Feature module.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_admin'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => ['tripal_feature_admin'],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
-  $items['admin/tripal/legacy/tripal_feature/help'] = array(
+    'weight' => 5,
+  ];
+  $items['admin/tripal/legacy/tripal_feature/help'] = [
     'title' => 'Help',
     'description' => 'Help with the Tripal Feature module.',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_feature_help'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => ['tripal_feature_help'],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_LOCAL_TASK,
-    'weight' =>  10
-  );
+    'weight' => 10,
+  ];
 
   // Enable admin view
-  $items['admin/tripal/legacy/tripal_feature/views/features/enable'] = array(
+  $items['admin/tripal/legacy/tripal_feature/views/features/enable'] = [
     'title' => 'Enable feature Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_feature_admin_features', 'admin/tripal/legacy/tripal_feature'),
-    'access arguments' => array('administer tripal feature'),
+    'page arguments' => [
+      'tripal_feature_admin_features',
+      'admin/tripal/legacy/tripal_feature',
+    ],
+    'access arguments' => ['administer tripal feature'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -182,14 +190,14 @@ function tripal_feature_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_feature_search_biological_data_views() {
-  return array(
-    'tripal_feature_user_features' => array(
+  return [
+    'tripal_feature_user_features' => [
       'machine_name' => 'tripal_feature_user_features',
       'human_name' => 'Features',
       'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
-      'link' => 'chado/feature'
-    ),
-  );
+      'link' => 'chado/feature',
+    ],
+  ];
 }
 
 /**
@@ -205,122 +213,126 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
   // Feature Node Page Templates.
-  $items = array(
-    'node__chado_feature' => array(
+  $items = [
+    'node__chado_feature' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_feature_alignments' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_alignments' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_alignments',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_analyses' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_analyses' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_analyses',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_sequence' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_sequence' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_sequence',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_proteins' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_proteins' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_proteins',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_publications' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_publications' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_publications',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_synonyms' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_synonyms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_synonyms',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_references' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_references',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_terms' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_terms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_terms',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_feature_relationships' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_feature_relationships' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_relationships',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
 
   // Feature Node Teaser
-  $items['tripal_feature_teaser'] = array(
-    'variables' => array('node' => NULL),
+  $items['tripal_feature_teaser'] = [
+    'variables' => ['node' => NULL],
     'template' => 'tripal_feature_teaser',
     'path' => "$path/theme/templates",
-  );
+  ];
 
   // Templates for other node pages.
   // Organism Feature Browser.
-  $items['tripal_organism_feature_browser'] = array(
-    'variables' => array('node' => NULL),
+  $items['tripal_organism_feature_browser'] = [
+    'variables' => ['node' => NULL],
     'template' => 'tripal_organism_feature_browser',
     'path' => "$path/theme/templates",
-  );
-  $items['tripal_organism_feature_counts'] = array(
-    'variables' => array('node' => NULL),
+  ];
+  $items['tripal_organism_feature_counts'] = [
+    'variables' => ['node' => NULL],
     'template' => 'tripal_organism_feature_counts',
     'path' => "$path/theme/templates",
-  );
+  ];
 
   // Administrative Help Template.
-  $items['tripal_feature_help'] = array(
+  $items['tripal_feature_help'] = [
     'template' => 'tripal_feature_help',
-    'variables' =>  array(NULL),
-    'path' => "$path/theme/templates"
-  );
+    'variables' => [NULL],
+    'path' => "$path/theme/templates",
+  ];
 
   // D3 Charts.
   // Feature Type/Organism Stacked Bar Chart.
-  $items['tripal_feature_bar_chart_type_organism_summary'] = array(
+  $items['tripal_feature_bar_chart_type_organism_summary'] = [
     'template' => 'tripal_feature_bar_chart_type_organism_summary',
-    'variables' =>  array(NULL),
-    'path' => "$path/theme/templates"
-  );
+    'variables' => [NULL],
+    'path' => "$path/theme/templates",
+  ];
 
   return $items;
 }
+
 /**
- * Implements hook_job_describe_args() in order to describe the various feature jobs
- * to the tripal jobs interface.
+ * Implements hook_job_describe_args() in order to describe the various feature
+ * jobs to the tripal jobs interface.
  *
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_job_describe_args($callback, $args) {
 
-  $new_args = array();
+  $new_args = [];
   if ($callback == 'tripal_feature_load_fasta') {
     $new_args['FASTA file'] = $args[0];
 
     // Add in the organism.
     if ($args[1] AND is_numeric($args[1])) {
-      $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
+      $organism = chado_select_record('organism', [
+        'genus',
+        'species',
+      ], ['organism_id' => $args[1]]);
       $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
     }
     $new_args['Sequence Type'] = $args[2];
@@ -338,7 +350,7 @@ function tripal_feature_job_describe_args($callback, $args) {
 
     // add in the database reference arguments
     if ($args[7] AND is_numeric($args[7])) {
-      $db = chado_select_record('db', array('name'), array('db_id' => $args[7]));
+      $db = chado_select_record('db', ['name'], ['db_id' => $args[7]]);
       $new_args['Database Reference'] = $db[0]->name;
       $new_args['Accession RE'] = $args[6];
       $new_args['Method'] = $args[11];
@@ -346,13 +358,16 @@ function tripal_feature_job_describe_args($callback, $args) {
 
     // add in the analysis
     if ($args[12] AND is_numeric($args[12])) {
-      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[12]));
+      $analysis = chado_select_record('analysis', ['name'], ['analysis_id' => $args[12]]);
       $new_args['Analysis'] = $analysis[0]->name;
     }
   }
   if ($callback == 'tripal_feature_delete_features') {
     if ($args[0]) {
-      $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[0]));
+      $organism = chado_select_record('organism', [
+        'genus',
+        'species',
+      ], ['organism_id' => $args[0]]);
       $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
     }
     else {
@@ -360,7 +375,7 @@ function tripal_feature_job_describe_args($callback, $args) {
     }
 
     if ($args[1]) {
-      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[1]));
+      $analysis = chado_select_record('analysis', ['name'], ['analysis_id' => $args[1]]);
       $new_args['Analysis'] = $analysis[0]->name;
     }
     else {
@@ -374,9 +389,12 @@ function tripal_feature_job_describe_args($callback, $args) {
   elseif ($callback == 'tripal_feature_load_gff3') {
 
     $new_args['GFF File'] = $args[0];
-    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
+    $organism = chado_select_record('organism', [
+      'genus',
+      'species',
+    ], ['organism_id' => $args[1]]);
     $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
-    $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[2]));
+    $analysis = chado_select_record('analysis', ['name'], ['analysis_id' => $args[2]]);
     $new_args['Analysis'] = $analysis[0]->name;
     $new_args['Use a Transaction'] = ($args[7] == 1) ? "Yes" : "No";
     $new_args['Import only new features'] = ($args[3] == 1) ? "Yes" : "No";
@@ -384,7 +402,10 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Import all and replace'] = ($args[5] == 1) ? "Yes" : "No";
     $new_args['Delete features'] = ($args[6] == 1) ? "Yes" : "No";
     if ($args[8]) {
-      $target_organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[8]));
+      $target_organism = chado_select_record('organism', [
+        'genus',
+        'species',
+      ], ['organism_id' => $args[8]]);
       $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
     }
     else {
@@ -403,16 +424,16 @@ function tripal_feature_job_describe_args($callback, $args) {
 /**
  * Implements hook_coder_ignore().
  *
- * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for
- * coder are stored
+ * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore
+ * rules for coder are stored
  *
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_coder_ignore() {
-  return array(
+  return [
     'path' => drupal_get_path('module', 'tripal_feature'),
     'line prefix' => drupal_get_path('module', 'tripal_feature'),
-  );
+  ];
 }
 
 
@@ -438,28 +459,30 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implements hook_exclude_field_from_<tablename>_by_default()
  *
- * This hooks allows fields from a specified table that match a specified criteria to be excluded by
- * default from any table when chado_generate_var() is called. Keep in mind that if
- * fields are excluded by default they can always be expanded at a later date using
- * chado_expand_var().
+ * This hooks allows fields from a specified table that match a specified
+ * criteria to be excluded by default from any table when chado_generate_var()
+ * is called. Keep in mind that if fields are excluded by default they can
+ * always be expanded at a later date using chado_expand_var().
  *
- * Criteria are php strings that evaluate to either TRUE or FALSE. These strings are evaluated using
- * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are
- * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can
- * contain the following tokens:
+ * Criteria are php strings that evaluate to either TRUE or FALSE. These
+ * strings are evaluated using drupal_eval() which suppresses syntax errors and
+ * throws watchdog entries of type php. There are also watchdog entries of type
+ * tripal_core stating the exact criteria evaluated. Criteria can contain the
+ * following tokens:
  *   - <field_name>
  *       Replaced by the name of the field to be excluded
  *   - <field_value>
  *       Replaced by the value of the field in the current record
- * Also keep in mind that if your criteria doesn't contain the <field_value>  token then it will be
- * evaluated before the query is executed and if the field is excluded it won't be included in the
- * query.
+ * Also keep in mind that if your criteria doesn't contain the <field_value>
+ * token then it will be evaluated before the query is executed and if the
+ * field is excluded it won't be included in the query.
  *
  * @return
- *   An array of field => criteria where the type is excluded if the criteria evaluates to TRUE
+ *   An array of field => criteria where the type is excluded if the criteria
+ *   evaluates to TRUE
  *
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_exclude_field_from_feature_by_default() {
-  return array('residues' => 'TRUE');
+  return ['residues' => 'TRUE'];
 }

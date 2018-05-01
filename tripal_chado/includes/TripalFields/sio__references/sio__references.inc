@@ -24,7 +24,7 @@ class sio__references extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SIO',
     // The name of the term.
@@ -41,7 +41,7 @@ class sio__references extends ChadoField {
     'chado_column' => 'pub_id',
     // The base table.
     'base_table' => 'pub',
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'sio__references_widget';
@@ -61,16 +61,17 @@ class sio__references extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -85,16 +86,16 @@ class sio__references extends ChadoField {
 
     // Set some defaults for the empty record.
     $chado_record = $entity->chado_record;
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
-    );
+    ];
 
     // Iterate through all of the _pub tables and look for any that have
     // linked to this record. If so then add them.
     $chado_tables = chado_get_table_names(TRUE);
     $delta = 0;
     foreach ($chado_tables as $chado_table) {
-      $matches = array();
+      $matches = [];
       if (preg_match('/^(.+?)_pub$/', $chado_table, $matches)) {
         $reference_table = $matches[1];
         // Find the base table this links to and get the fk columns that map it.
@@ -108,13 +109,13 @@ class sio__references extends ChadoField {
         }
         // Iterate through all of the records in the linker table that
         // match the given pub ID.
-        $records = chado_generate_var($chado_table, array('pub_id' => $chado_record->pub_id), array('return_array' => TRUE));
+        $records = chado_generate_var($chado_table, ['pub_id' => $chado_record->pub_id], ['return_array' => TRUE]);
         foreach ($records as $record) {
           // We want to add a 'type' and 'name' element to the values (at a
           // minimum) for each of the records.  Unfortunately, every base table
           // is different and their may not be an easy to identify name,
           // so... we'll do the best we can.
-          $entity->{$field_name}['und'][$delta]['value'] = array();
+          $entity->{$field_name}['und'][$delta]['value'] = [];
 
           // First get the type of record.
           if (property_exists($record->$fkleft, 'type_id') and $record->$fkleft->type_id) {
@@ -129,7 +130,7 @@ class sio__references extends ChadoField {
               ->execute()
               ->fetchObject();
             if ($mapping) {
-              $cvterm = tripal_get_cvterm(array('cvterm_id' => $mapping->cvterm_id));
+              $cvterm = tripal_get_cvterm(['cvterm_id' => $mapping->cvterm_id]);
               $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $cvterm->name;
             }
           }

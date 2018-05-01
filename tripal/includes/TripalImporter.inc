@@ -31,7 +31,7 @@ class TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = array();
+  public static $file_types = [];
 
 
   /**
@@ -72,14 +72,14 @@ class TripalImporter {
   /**
    * Indicates the methods that the file uploader will support.
    */
-  public static $methods = array(
+  public static $methods = [
     // Allow the user to upload a file to the server.
     'file_upload' => TRUE,
     // Allow the user to provide the path on the Tripal server for the file.
     'file_local' => TRUE,
     // Allow the user to provide a remote URL for the file.
     'file_remote' => TRUE,
-  );
+  ];
 
   /**
    * Indicates if the file must be provided.  An example when it may not be
@@ -95,7 +95,7 @@ class TripalImporter {
    * be a separate array containing a machine_name, name, and description
    * keys.  This information is used to build the help text for the loader.
    */
-  public static $argument_list = array();
+  public static $argument_list = [];
 
 
   /**
@@ -172,7 +172,6 @@ class TripalImporter {
   protected $is_prepared;
 
 
-
   // --------------------------------------------------------------------------
   //                          CONSTRUCTORS
   // --------------------------------------------------------------------------
@@ -187,7 +186,7 @@ class TripalImporter {
     // Intialize the private member variables.
     $this->is_prepared = FALSE;
     $this->import_id = NULL;
-    $this->arguments = array();
+    $this->arguments = [];
     $this->job = NULL;
     $this->total_items = 0;
     $this->interval = 1;
@@ -203,6 +202,7 @@ class TripalImporter {
    *
    * @param $import_id
    *   The ID of the import recrod.
+   *
    * @return
    *   An TripalImporter object of the appropriate child class.
    */
@@ -260,38 +260,38 @@ class TripalImporter {
    *
    * @throws Exception
    */
-  public function create($run_args, $file_details = array()) {
+  public function create($run_args, $file_details = []) {
     global $user;
     $class = get_called_class();
 
     try {
       // Build the values for the tripal_importer table insert.
-      $values = array(
+      $values = [
         'uid' => $user->uid,
         'class' => $class,
         'submit_date' => time(),
-      );
+      ];
 
       // Build the arguments array, which consists of the run arguments
       // and the file.
-      $arguments = array(
+      $arguments = [
         'run_args' => $run_args,
-        'files' => array(),
-      );
+        'files' => [],
+      ];
 
       // Get the file argument.
       $has_file = 0;
       if (array_key_exists('file_local', $file_details)) {
-        $arguments['files'][] = array(
+        $arguments['files'][] = [
           'file_local' => $file_details['file_local'],
-          'file_path' => $file_details['file_local']
-        );
+          'file_path' => $file_details['file_local'],
+        ];
         $has_file++;
       }
       if (array_key_exists('file_remote', $file_details)) {
-        $arguments['files'][] = array(
-          'file_remote' => $file_details['file_remote']
-        );
+        $arguments['files'][] = [
+          'file_remote' => $file_details['file_remote'],
+        ];
         $has_file++;
       }
       if (array_key_exists('fid', $file_details)) {
@@ -301,10 +301,10 @@ class TripalImporter {
           $fids = explode('|', $file_details['fid']);
           foreach ($fids as $fid) {
             $file = file_load($fid);
-            $arguments['files'][] = array(
+            $arguments['files'][] = [
               'file_path' => base_path() . drupal_realpath($file->uri),
-              'fid' => $fid
-            );
+              'fid' => $fid,
+            ];
             $has_file++;
           }
         }
@@ -312,17 +312,17 @@ class TripalImporter {
         else {
           $fid = $file_details['fid'];
           $file = file_load($fid);
-          $arguments['files'][] = array(
+          $arguments['files'][] = [
             'file_path' => base_path() . drupal_realpath($file->uri),
-            'fid' => $fid
-          );
+            'fid' => $fid,
+          ];
           $has_file++;
 
           // For backwards compatibility add the old 'file' element.
-          $arguments['file'] = array(
+          $arguments['file'] = [
             'file_path' => base_path() . drupal_realpath($file->uri),
-            'fid' => $fid
-          );
+            'fid' => $fid,
+          ];
         }
       }
 
@@ -341,9 +341,8 @@ class TripalImporter {
         ->execute();
 
       $this->import_id = $import_id;
-    }
-    catch (Exception $e){
-      throw new Exception('Cannot create importer: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot create importer: ' . $e->getMessage());
     }
   }
 
@@ -394,17 +393,16 @@ class TripalImporter {
 
     // Add a job to run the importer.
     try {
-      $args = array($this->import_id);
-      $includes = array(
+      $args = [$this->import_id];
+      $includes = [
         module_load_include('inc', 'tripal', 'api/tripal.importer.api'),
-      );
+      ];
       $job_id = tripal_add_job($class::$button_text, 'tripal',
-          'tripal_run_importer', $args, $user->uid, 10, $includes);
+        'tripal_run_importer', $args, $user->uid, 10, $includes);
 
       return $job_id;
-    }
-    catch (Exception $e){
-      throw new Exception('Cannot create importer job: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot create importer job: ' . $e->getMessage());
     }
   }
 
@@ -424,10 +422,10 @@ class TripalImporter {
     }
 
     try {
-      for($i = 0; $i < count($this->arguments['files']); $i++) {
+      for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
-          $this->logMessage('Download file: !file_remote...', array('!file_remote' => $file_remote));
+          $this->logMessage('Download file: !file_remote...', ['!file_remote' => $file_remote]);
 
           // If this file is compressed then keepthe .gz extension so we can
           // uncompress it.
@@ -437,13 +435,13 @@ class TripalImporter {
           }
           // Create a temporary file.
           $temp = tempnam("temporary://", 'import_') . $ext;
-          $this->logMessage("Saving as: !file", array('!file' => $temp));
+          $this->logMessage("Saving as: !file", ['!file' => $temp]);
 
           $url_fh = fopen($file_remote, "r");
           $tmp_fh = fopen($temp, "w");
           if (!$url_fh) {
             throw new Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
-                array('%url', $file_remote)));
+              ['%url', $file_remote]));
           }
 
           // Write the contents of the remote file to the temp file.
@@ -456,9 +454,9 @@ class TripalImporter {
         }
 
         // Is this file compressed?  If so, then uncompress it
-        $matches = array();
+        $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logMessage("Uncompressing: !file", array('!file' => $this->arguments['files'][$i]['file_path']));
+          $this->logMessage("Uncompressing: !file", ['!file' => $this->arguments['files'][$i]['file_path']]);
           $buffer_size = 4096;
           $new_file_path = $matches[1];
           $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
@@ -484,9 +482,8 @@ class TripalImporter {
           $this->arguments['files'][$i]['file_path'] = $new_file_path;
         }
       }
-    }
-    catch (Exception $e){
-      throw new Exception('Cannot prepare the importer: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
   }
 
@@ -499,17 +496,16 @@ class TripalImporter {
   public function cleanFile() {
     try {
       // If a remote file was downloaded then remove it.
-      for($i = 0; $i < count($this->arguments['files']); $i++) {
-          if (!empty($this->arguments['files'][$i]['file_remote']) and
-              file_exists($this->arguments['files'][$i]['file_path'])) {
-            $this->logMessage('Removing downloaded file...');
-            unlink($this->arguments['files'][$i]['file_path']);
-            $this->is_prepared = FALSE;
-          }
+      for ($i = 0; $i < count($this->arguments['files']); $i++) {
+        if (!empty($this->arguments['files'][$i]['file_remote']) and
+          file_exists($this->arguments['files'][$i]['file_path'])) {
+          $this->logMessage('Removing downloaded file...');
+          unlink($this->arguments['files'][$i]['file_path']);
+          $this->is_prepared = FALSE;
+        }
       }
-    }
-    catch (Exception $e){
-      throw new Exception('Cannot prepare the importer: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
   }
 
@@ -542,7 +538,7 @@ class TripalImporter {
    *     - TRIPAL_INFO: (default) Informational messages.
    *     - TRIPAL_DEBUG: Debug-level messages.
    */
-  public function logMessage($message, $variables = array(), $severity = TRIPAL_INFO) {
+  public function logMessage($message, $variables = [], $severity = TRIPAL_INFO) {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
@@ -575,6 +571,7 @@ class TripalImporter {
   protected function setTotalItems($total_items) {
     $this->total_items = $total_items;
   }
+
   /**
    * Adds to the count of the total number of items that have been handled.
    *
@@ -584,6 +581,7 @@ class TripalImporter {
     $items_handled = $this->num_handled = $this->num_handled + $num_handled;
     $this->setItemsHandled($items_handled);
   }
+
   /**
    * Sets the number of items that have been processed.
    *

@@ -18,7 +18,7 @@ function tripal_analysis_disable() {
   require_once("tripal_analysis.views_default.inc");
   $views = tripal_analysis_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -29,15 +29,15 @@ function tripal_analysis_disable() {
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_analysis'] = array(
-            'title' => "tripal_analysis",
-            'value' => "ERROR: Chado must be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements ['tripal_analysis'] = [
+        'title' => "tripal_analysis",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
     }
   }
   return $requirements;
@@ -97,42 +97,42 @@ function tripal_analysis_add_cvterms() {
   // add analysis_date.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'analysis_date',
       'definition' => 'The date that an analysis was performed.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 
   // add analysis_short_name.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'analysis_short_name',
       'definition' => 'A computer legible (no spaces or special characters) '
         . 'abbreviation for the analysis.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
-      'db_name' => 'local'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'local',
+    ],
+    ['update_existing' => TRUE]
   );
 
 
   // the 'analysis_property' vocabulary is for user definable properties wo we
   // will add an 'Analysis Type' to this vocubulary
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'Analysis Type',
       'definition' => 'The type of analysis that was performed.',
       'cv_name' => 'analysis_property',
       'is_relationship' => 0,
-      'db_name' => 'local'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'local',
+    ],
+    ['update_existing' => TRUE]
   );
 }
 
@@ -140,61 +140,62 @@ function tripal_analysis_add_cvterms() {
  * Implementation of hook_schema().
  *
  * - chado_analysis table
- *     stores nodes that are also saved in the analysis table of chado database.
+ *     stores nodes that are also saved in the analysis table of chado
+ * database.
  * - tripal_analysis table
- *     stores the sub-module names, such as tripal_analysis_blast, that are registered
- *     with this module.
+ *     stores the sub-module names, such as tripal_analysis_blast, that are
+ * registered with this module.
  *
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_schema() {
 
   // chado_analysis table
-  $schema['chado_analysis'] = array(
-    'fields' => array(
-      'vid' => array(
+  $schema['chado_analysis'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'nid' => array(
+        'default' => 0,
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'analysis_id' => array(
+        'default' => 0,
+      ],
+      'analysis_id' => [
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
-      )
-    ),
-    'indexes' => array(
-      'analysis_id' => array('analysis_id')
-    ),
-    'unique keys' => array(
-      'nid_vid' => array('nid', 'vid'),
-      'vid' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'analysis_id' => ['analysis_id'],
+    ],
+    'unique keys' => [
+      'nid_vid' => ['nid', 'vid'],
+      'vid' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
 
   // tripal_analysis table
-  $schema['tripal_analysis'] = array(
+  $schema['tripal_analysis'] = [
     'description' => 'Table to store analysis sub-modules',
-    'fields' => array(
-      'modulename' => array(
+    'fields' => [
+      'modulename' => [
         'type' => 'text',
         'size' => 'small',
         'not null' => TRUE,
-        'description' => 'The module name. Tripal Analysis will use the module name to call module_setting_form()'
-      )
-    ),
-    'unique keys' => array(
-      'modulename' => array('modulename')
-    )
-  );
+        'description' => 'The module name. Tripal Analysis will use the module name to call module_setting_form()',
+      ],
+    ],
+    'unique keys' => [
+      'modulename' => ['modulename'],
+    ],
+  ];
 
   return $schema;
 }

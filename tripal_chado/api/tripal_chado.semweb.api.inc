@@ -32,20 +32,21 @@ function tripal_add_chado_semweb_table($chado_table) {
 
     // If the record already exists don't overwrite it
     $record = db_select('chado_semweb', 'CS')
-      ->fields('CS', array('chado_semweb_id'))
+      ->fields('CS', ['chado_semweb_id'])
       ->condition('CS.chado_table', $chado_table)
       ->condition('CS.chado_column', $chado_column)
       ->execute()
       ->fetchField();
     if (!$record) {
-      $record = array(
+      $record = [
         'chado_table' => $chado_table,
         'chado_column' => $chado_column,
-      );
+      ];
       drupal_write_record('chado_semweb', $record);
     }
   }
 }
+
 /**
  * Associates a controlled vocabulary term with a field in a Chado table.
  *
@@ -73,7 +74,7 @@ function tripal_add_chado_semweb_table($chado_table) {
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
  */
 function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
-    $update = FALSE) {
+                                            $update = FALSE) {
 
   // Check for required arguments.
   if (!$chado_column) {
@@ -101,12 +102,12 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
   // First check to see if a valid record exists that matches the table and
   // column indicated. If it doesn't then insert the record.
   $query = db_select('chado_semweb', 'CS')
-    ->fields('CS', array('chado_semweb_id'))
+    ->fields('CS', ['chado_semweb_id'])
     ->condition('chado_column', $chado_column);
   if ($chado_table) {
     $query->condition('chado_table', $chado_table);
   }
-  $query->range(0,1);
+  $query->range(0, 1);
   $id = $query->execute()->fetchField();
   if (!$id) {
 
@@ -122,11 +123,11 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
 
     // Insert the record.
     $id = db_insert('chado_semweb')
-    ->fields(array(
-      'chado_table' => $chado_table,
-      'chado_column' => $chado_column,
-      'cvterm_id' => $term->cvterm_id,
-    ));
+      ->fields([
+        'chado_table' => $chado_table,
+        'chado_column' => $chado_column,
+        'cvterm_id' => $term->cvterm_id,
+      ]);
     if ($id) {
       return TRUE;
     }
@@ -139,10 +140,10 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
   // If the $chado_table argument is empty or NULL then the term applies to
   // all fields of the specified name.
   $update = db_update('chado_semweb')
-  ->fields(array(
-    'cvterm_id' => $term->cvterm_id
-  ))
-  ->condition('chado_column', $chado_column);
+    ->fields([
+      'cvterm_id' => $term->cvterm_id,
+    ])
+    ->condition('chado_column', $chado_column);
   if ($chado_table) {
     $update->condition('chado_table', $chado_table);
   }
@@ -175,16 +176,16 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
  */
-function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
+function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = []) {
   $cvterm_id = db_select('chado_semweb', 'CS')
-    ->fields('CS', array('cvterm_id'))
+    ->fields('CS', ['cvterm_id'])
     ->condition('chado_column', $chado_column)
     ->condition('chado_table', $chado_table)
     ->execute()
     ->fetchField();
 
   if ($cvterm_id) {
-    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+    $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
     if (array_key_exists('return_object', $options)) {
       return $cvterm;
     }
@@ -198,6 +199,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *
  * @param $cvterm
  *   A cvterm object.
+ *
  * @return
  *   The semantic web name for the term.
  */
@@ -207,6 +209,7 @@ function tripal_format_chado_semweb_term($cvterm) {
   }
   return '';
 }
+
 /**
  * Retreive the column name in a Chado table that matches a given term.
  *
@@ -226,12 +229,12 @@ function tripal_get_chado_semweb_column($chado_table, $term) {
     ->condition('chado_table', $chado_table)
     ->execute();
 
-  while($column = $columns->fetchObject()) {
+  while ($column = $columns->fetchObject()) {
     $cvterm_id = $column->cvterm_id;
 
     if ($cvterm_id) {
 
-      $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
 
       $full_accession = strtolower($cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession);
       $full_accession = preg_replace('/ /', '_', $full_accession);
@@ -246,12 +249,16 @@ function tripal_get_chado_semweb_column($chado_table, $term) {
         return $column->chado_column;
       }
       // Is the term a concatenation of the vocab and the accession?
-      else if ($term == $full_accession) {
-        return $column->chado_column;
-      }
-      // Is the term a concatenation of the vocab and the accession?
-      else if ($term == $full_name_uscore) {
-        return $column->chado_column;
+      else {
+        if ($term == $full_accession) {
+          return $column->chado_column;
+        }
+        // Is the term a concatenation of the vocab and the accession?
+        else {
+          if ($term == $full_name_uscore) {
+            return $column->chado_column;
+          }
+        }
       }
     }
   }

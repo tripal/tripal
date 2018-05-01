@@ -8,13 +8,15 @@
  * @defgroup tripal_legacy_pub Legacy Publication Module
  * @ingroup tripal_legacy_modules
  * @{
- * Integrates the Chado Publication module with Drupal Nodes & Views, as well as, provides
- * the ability to import publication from PubMed
+ * Integrates the Chado Publication module with Drupal Nodes & Views, as well
+ *   as, provides the ability to import publication from PubMed
  *
- * The Tripal Publication module allows you to search the PubMed database for academic articles,
- * that relate to user specified topic\s. As well, it allows management of publications so that
- * a user can enter specified details regarding a desired publication. This allows all of the important
- * information that is unique to a Academic Publication to be stored for access.
+ * The Tripal Publication module allows you to search the PubMed database for
+ *   academic articles, that relate to user specified topic\s. As well, it
+ *   allows management of publications so that a user can enter specified
+ *   details regarding a desired publication. This allows all of the important
+ *   information that is unique to a Academic Publication to be stored for
+ *   access.
  * @}
  */
 
@@ -30,88 +32,87 @@ require_once 'includes/tripal_pub.chado_node.inc';
  * gives the outline for the main menu of the Tripal-Publication module
  *
  * @return
- *   An array of menu items that is visible within the Drupal Menu, returned as soon
- *   as the program is ran
+ *   An array of menu items that is visible within the Drupal Menu, returned as
+ *   soon as the program is ran
  *
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_menu() {
-  $items = array();
+  $items = [];
 
   // because the publication search is not views we need to manually add
   // it to the Search Data list in the navigation menu
-  $items['chado/publication' ]= array(
+  $items['chado/publication'] = [
     'title' => 'Publications',
     'description' => ('Publications such as journal articles, conference proceedings, or other media.'),
     'page callback' => 'tripal_pub_search_page',
-    'access arguments' => array('access chado_pub content'),
-    'type' => MENU_NORMAL_ITEM
-  );
+    'access arguments' => ['access chado_pub content'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
   // for backwards compatibility the same chado/publications is also found
   // at find/publications
 
 
-  $items['admin/tripal/legacy/tripal_pub']= array(
+  $items['admin/tripal/legacy/tripal_pub'] = [
     'title' => 'Publications',
     'description' => ('A documented provenance artefact - publications, documents, personal communication.'),
     'page callback' => 'tripal_pub_admin_pub_view',
-    'access arguments' => array('administer tripal pub'),
-    'type' => MENU_NORMAL_ITEM
-  );
+    'access arguments' => ['administer tripal pub'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-  $items['admin/tripal/legacy/tripal_pub/help']= array(
+  $items['admin/tripal/legacy/tripal_pub/help'] = [
     'title' => 'Help',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_pub_help'),
-    'access arguments' => array('administer tripal pub'),
+    'page arguments' => ['tripal_pub_help'],
+    'access arguments' => ['administer tripal pub'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
-  $items['admin/tripal/legacy/tripal_pub/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_pub/configuration'] = [
     'title' => 'Settings',
     'description' => 'Configure the Tripal publication module.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_pub_admin'),
-    'access arguments' => array('administer tripal pub'),
+    'page arguments' => ['tripal_pub_admin'],
+    'access arguments' => ['administer tripal pub'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
+    'weight' => 5,
+  ];
 
-  $items['admin/tripal/legacy/tripal_pub/sync'] = array(
+  $items['admin/tripal/legacy/tripal_pub/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_pub', 'chado_pub'),
-    'access arguments' => array('administer tripal pub'),
+    'page arguments' => ['chado_node_sync_form', 'tripal_pub', 'chado_pub'],
+    'access arguments' => ['administer tripal pub'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
+    'weight' => 2,
+  ];
 
-  $items['admin/tripal/legacy/tripal_pub/chado_pub_toc'] = array(
+  $items['admin/tripal/legacy/tripal_pub/chado_pub_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for pub nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_pub'),
-    'access arguments' => array('administer tripal pub'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_pub'],
+    'access arguments' => ['administer tripal pub'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_pub/citation'] = array(
+  $items['admin/tripal/legacy/tripal_pub/citation'] = [
     'title' => 'Citations',
     'description' => 'Update publication citations',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_pub_citation_form'),
-    'access arguments' => array('administer tripal pub'),
+    'page arguments' => ['tripal_pub_citation_form'],
+    'access arguments' => ['administer tripal pub'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
-  );
-
+    'weight' => 1,
+  ];
 
 
   return $items;
@@ -129,81 +130,80 @@ function tripal_pub_menu() {
 function tripal_pub_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_pub' => array(
+  $items = [
+    'node__chado_pub' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
+    ],
     // node templates
-    'tripal_pub_authors' => array(
-      'variables' => array('node' => NULL),
+    'tripal_pub_authors' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_authors',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_featuremaps' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_featuremaps' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_featuremaps',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_features' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_features' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_features',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_libraries' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_libraries' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_libraries',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_projects' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_projects' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_projects',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_references' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_references',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_relationships' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_relationships' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_relationships',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_pub_stocks' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_pub_stocks' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_stocks',
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // instructions page for the pub module
-    'tripal_pub_help' => array(
-      'variables' =>  array(NULL),
+    'tripal_pub_help' => [
+      'variables' => [NULL],
       'template' => 'tripal_pub_help',
       'path' => "$path/theme/templates",
-    ),
-
+    ],
 
 
     // teaser
-    'tripal_pub_teaser' => array(
-      'variables' => array('node' => NULL),
+    'tripal_pub_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_pub_teaser',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
 
   return $items;
 }
@@ -214,9 +214,9 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
  *
  * @ingroup tripal_legacy_pub
  */
-function tripal_pub_help ($path, $arg) {
+function tripal_pub_help($path, $arg) {
   if ($path == 'admin/help#tripal_pub') {
-    return theme('tripal_pub_help', array());
+    return theme('tripal_pub_help', []);
   }
 }
 
@@ -230,9 +230,9 @@ function tripal_pub_help ($path, $arg) {
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -241,28 +241,28 @@ function tripal_pub_views_api() {
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_permission() {
-  return array(
-    'access chado_pub content' => array(
+  return [
+    'access chado_pub content' => [
       'title' => t('View Publications'),
       'description' => t('Allow users to view publication pages.'),
-    ),
-    'create chado_pub content' => array(
+    ],
+    'create chado_pub content' => [
       'title' => t('Create Publication'),
       'description' => t('Allow users to create new publication pages.'),
-    ),
-    'delete chado_pub content' => array(
+    ],
+    'delete chado_pub content' => [
       'title' => t('Delete Publication'),
       'description' => t('Allow users to delete publication pages.'),
-    ),
-    'edit chado_pub content' => array(
+    ],
+    'edit chado_pub content' => [
       'title' => t('Edit Publications'),
       'description' => t('Allow users to edit publication pages.'),
-    ),
-    'administer tripal pub' => array(
+    ],
+    'administer tripal pub' => [
       'title' => t('Administer Publications'),
       'description' => t('Allow users to administer all publications.'),
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -273,18 +273,18 @@ function tripal_pub_permission() {
 function tripal_pub_mail($key, &$message, $params) {
   $site_name = variable_get('site_name');
   $language = $message['language'];
-  switch($key) {
+  switch ($key) {
     case 'import_report':
-      $headers = array(
+      $headers = [
         'MIME-Version' => '1.0',
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
         'Content-Transfer-Encoding' => '8Bit',
-        'X-Mailer' => 'Drupal'
-      );
+        'X-Mailer' => 'Drupal',
+      ];
       foreach ($headers as $key => $value) {
         $message['headers'][$key] = $value;
       }
-      $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
+      $message['subject'] = t('Publication import from !site', ['!site' => $site_name]);
       $message['body'][] = $params['message'];
       break;
   }
@@ -309,16 +309,16 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     unset($form['body']);
   }
   if ($form_id == "tripal_pub_importer_setup_form") {
-/*    // updating the form through the ahah callback sets the action of
-    // the form to the ahah callback URL. We need to set it back
-    // to the normal form URL
-    if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'edit') {
-      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
-    }
-    if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'new') {
-      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/new");
-    }
-    */
+    /*    // updating the form through the ahah callback sets the action of
+        // the form to the ahah callback URL. We need to set it back
+        // to the normal form URL
+        if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'edit') {
+          $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
+        }
+        if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'new') {
+          $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/new");
+        }
+        */
   }
   if ($form_id == "tripal_pub_search_form") {
     $form['#action'] = url("find/publications");
@@ -337,10 +337,10 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
  */
 function tripal_pub_job_describe_args($callback, $args) {
 
-  $new_args = array();
+  $new_args = [];
   if ($callback == 'tripal_execute_pub_importer') {
     // get all of the loaders
-    $qargs = array(':import_id' => $args[0]);
+    $qargs = [':import_id' => $args[0]];
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
     $import = db_query($sql, $qargs)->fetchObject();
 
@@ -353,14 +353,16 @@ function tripal_pub_job_describe_args($callback, $args) {
 /**
  * A simple wrapper function to put <pre> tags around the raw results
  * returned by the
+ *
  * @param unknown $dbxref
+ *
  * @return string
  */
 function tripal_get_remote_pub_raw_page($dbxref) {
   $pub = tripal_get_remote_pub($dbxref);
   if ($pub) {
     $page = "<strong>Raw results for $dbxref:</strong><br><br>";
-    $page.= '<textarea cols=80 rows=20>' . $pub['raw'] . '</textarea>';
+    $page .= '<textarea cols=80 rows=20>' . $pub['raw'] . '</textarea>';
     return $page;
   }
   return "Cound not find the requested publication ($dbxref)";
@@ -370,12 +372,12 @@ function tripal_get_remote_pub_raw_page($dbxref) {
  *
  */
 function tripal_pub_search_biological_data_views() {
-  return array(
-    'publications' => array(
+  return [
+    'publications' => [
       'machine_name' => 'publications',
-      'human_name'   => 'Publications',
-      'description'  => 'Publications such as journal articles, conference proceedings, or other media.',
-      'link'         => 'find/publications'
-    ),
-  );
+      'human_name' => 'Publications',
+      'description' => 'Publications such as journal articles, conference proceedings, or other media.',
+      'link' => 'find/publications',
+    ],
+  ];
 }

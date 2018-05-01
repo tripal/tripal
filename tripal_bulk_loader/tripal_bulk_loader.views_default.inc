@@ -12,7 +12,7 @@
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_views_default_views() {
-  $views = array();
+  $views = [];
 
   // Default Tripal Admin View: Jobs
   $view = tripal_bulk_loader_defaultview_admin_job_listing();
@@ -54,7 +54,7 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'template_id' => 'template_id',
     'edit_node' => 'edit_node',
     'loader_name' => 'loader_name',
@@ -62,79 +62,79 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
     'created' => 'created',
     'changed' => 'changed',
     'job_status' => 'job_status',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'changed';
-  $handler->display->display_options['style_options']['info'] = array(
-    'template_id' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'template_id' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'edit_node' => array(
+    ],
+    'edit_node' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'loader_name' => array(
+    ],
+    'loader_name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'created' => array(
+    ],
+    'created' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'changed' => array(
+    ],
+    'changed' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'job_status' => array(
+    ],
+    'job_status' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Bulk Loading Job',
     'path-1' => 'node/add/tripal-bulk-loader',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
@@ -229,11 +229,11 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Template Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Bulk Loading Jobs: Job Status */
   $handler->display->display_options['filters']['job_status']['id'] = 'job_status';
   $handler->display->display_options['filters']['job_status']['table'] = 'tripal_bulk_loader';
@@ -243,11 +243,11 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['filters']['job_status']['expose']['label'] = 'Job Status';
   $handler->display->display_options['filters']['job_status']['expose']['operator'] = 'job_status_op';
   $handler->display->display_options['filters']['job_status']['expose']['identifier'] = 'job_status';
-  $handler->display->display_options['filters']['job_status']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['job_status']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Bulk Loading Jobs: Name */
   $handler->display->display_options['filters']['loader_name']['id'] = 'loader_name';
   $handler->display->display_options['filters']['loader_name']['table'] = 'tripal_bulk_loader';
@@ -258,11 +258,11 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['filters']['loader_name']['expose']['label'] = 'Job Name Contains';
   $handler->display->display_options['filters']['loader_name']['expose']['operator'] = 'loader_name_op';
   $handler->display->display_options['filters']['loader_name']['expose']['identifier'] = 'loader_name';
-  $handler->display->display_options['filters']['loader_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['loader_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -314,14 +314,14 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Template',
     'path-1' => 'admin/tripal/loaders/bulk/template/create',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => 'Import Template',
     'path-2' => 'admin/tripal/loaders/bulk/templates/import',
-  );
+  ];
   /* Field: Tripal Bulk Loader Templates: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'tripal_bulk_loader_template';
@@ -402,11 +402,11 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Template Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Bulk Loader Templates: Created */
   $handler->display->display_options['filters']['created']['id'] = 'created';
   $handler->display->display_options['filters']['created']['table'] = 'tripal_bulk_loader_template';
@@ -417,11 +417,11 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['filters']['created']['expose']['label'] = 'Date Created';
   $handler->display->display_options['filters']['created']['expose']['operator'] = 'created_op';
   $handler->display->display_options['filters']['created']['expose']['identifier'] = 'created';
-  $handler->display->display_options['filters']['created']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['created']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

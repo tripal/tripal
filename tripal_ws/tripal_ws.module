@@ -21,12 +21,12 @@
  * customizations and creation of new extensions.
  * @
  */
-require_once  "api/tripal_ws.api.inc";
-require_once  "includes/tripal_ws.field_storage.inc";
-require_once  "includes/tripal_ws.fields.inc";
-require_once  "includes/TripalWebService.inc";
-require_once  "includes/TripalWebServiceResource.inc";
-require_once  "includes/TripalWebServiceCollection.inc";
+require_once "api/tripal_ws.api.inc";
+require_once "includes/tripal_ws.field_storage.inc";
+require_once "includes/tripal_ws.fields.inc";
+require_once "includes/TripalWebService.inc";
+require_once "includes/TripalWebServiceResource.inc";
+require_once "includes/TripalWebServiceCollection.inc";
 
 // Web Services Fields
 require_once "includes/TripalFields/WebServicesField.inc";
@@ -46,10 +46,10 @@ function tripal_ws_init() {
   // Following the WC3 Hydra documentation, we want to add  LINK to the header
   // of the site that indicates where the API documentation can be found.
   // This allows a hydra-enabled client to discover the API and use it.
-  $attributes = array(
+  $attributes = [
     'rel' => $vocab['sw_url'] . 'apiDocumentation',
     'href' => $api_url . '/doc/v0.1',
-  );
+  ];
   drupal_add_html_head_link($attributes, $header = FALSE);
 }
 
@@ -62,65 +62,65 @@ function tripal_ws_init() {
 function tripal_ws_menu() {
 
   // Web Services API callbacks.
-  $items['web-services'] = array(
+  $items['web-services'] = [
     'title' => 'Tripal Web Services API',
     'page callback' => 'tripal_ws_get_services',
-    'access arguments' => array('access content'),
+    'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
-  $items['remote/%/%/%/%'] = array(
+  $items['remote/%/%/%/%'] = [
     'page callback' => 'tripal_ws_load_remote_entity',
-    'page arguments' => array(1, 2, 3, 4),
-    'access arguments' => array('access content'),
+    'page arguments' => [1, 2, 3, 4],
+    'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   // Tripal Web Services setting groups
-  $items['admin/tripal/storage/ws'] = array(
+  $items['admin/tripal/storage/ws'] = [
     'title' => 'Remote Tripal Sites',
     'description' => t("Create mashups of content using data from this site and remote Tripal sites."),
     'weight' => 20,
     'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => ['administer tripal'],
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
-  );
-  $items['admin/tripal/storage/ws/tripal_sites'] = array(
+  ];
+  $items['admin/tripal/storage/ws/tripal_sites'] = [
     'title' => 'Configuration',
     'description' => t('Provides information about other Tripal sites.
         This allows data exchange and communication betwen Tripal
         enabled sites through the web services.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_ws_tripal_sites_form'),
-    'access arguments' => array('administer tripal'),
+    'page arguments' => ['tripal_ws_tripal_sites_form'],
+    'access arguments' => ['administer tripal'],
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
     'file' => 'includes/tripal_ws.admin.inc',
     'file path' => drupal_get_path('module', 'tripal_ws'),
-  );
-  $items['admin/tripal/storage/ws/tripal_sites/edit'] = array(
+  ];
+  $items['admin/tripal/storage/ws/tripal_sites/edit'] = [
     'title' => 'Add Tripal Site',
     'description' => 'Add a Tripal site',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_ws_tripal_sites_edit_form'),
-    'access arguments' => array('administer tripal'),
-    'file' =>  'includes/tripal_ws.admin.inc',
+    'page arguments' => ['tripal_ws_tripal_sites_edit_form'],
+    'access arguments' => ['administer tripal'],
+    'file' => 'includes/tripal_ws.admin.inc',
     'file path' => drupal_get_path('module', 'tripal_ws'),
     'type' => MENU_LOCAL_ACTION,
-    'weight' => 2
-  );
-  $items['admin/tripal/storage/ws/tripal_sites/remove/%'] = array(
+    'weight' => 2,
+  ];
+  $items['admin/tripal/storage/ws/tripal_sites/remove/%'] = [
     'title' => 'Remove Tripal Site',
     'description' => 'Remove a Tripal site',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_ws_tripal_sites_remove_form', 6),
-    'access arguments' => array('administer tripal'),
-    'file' =>  'includes/tripal_ws.admin.inc',
+    'page arguments' => ['tripal_ws_tripal_sites_remove_form', 6],
+    'access arguments' => ['administer tripal'],
+    'file' => 'includes/tripal_ws.admin.inc',
     'file path' => drupal_get_path('module', 'tripal_ws'),
     'type' => MENU_CALLBACK,
-    'weight' => 2
-  );
+    'weight' => 2,
+  ];
   return $items;
 }
 
@@ -153,7 +153,7 @@ function tripal_ws_get_services() {
 
     // The Tripal web services bath will be:
     // [base_path]/web-services/[service name]/v[major_version].[minor_version]
-    $matches = array();
+    $matches = [];
     $service = '';
     $major_version = '';
     $minor_version = '';
@@ -167,15 +167,17 @@ function tripal_ws_get_services() {
     // A service path will have the service name in $ws_path[0] and the
     // version in $ws_path[1].  If we check that the version is correctly
     // formatted then we can look for the service class and invoke it.
-    else if (preg_match("/^v(\d+)\.(\d+)$/", $ws_path[1], $matches)) {
-      $service_type = $ws_path[0];
-      $major_version = $matches[1];
-      $minor_version = $matches[2];
-      $service_version = 'v' . $major_version . '.' . $minor_version;
-    }
-    // If the URL doesn't match then return not found.
     else {
-      throw new Exception("Unsupported service URL: '" . $ws_path[1] . "'");
+      if (preg_match("/^v(\d+)\.(\d+)$/", $ws_path[1], $matches)) {
+        $service_type = $ws_path[0];
+        $major_version = $matches[1];
+        $minor_version = $matches[2];
+        $service_version = 'v' . $major_version . '.' . $minor_version;
+      }
+      // If the URL doesn't match then return not found.
+      else {
+        throw new Exception("Unsupported service URL: '" . $ws_path[1] . "'");
+      }
     }
 
     // Get the service that matches the service_name
@@ -207,8 +209,7 @@ function tripal_ws_get_services() {
     $response = $service->getResponse();
     print drupal_json_encode($response);
 
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $service = new TripalWebService($service_path);
     $service->setError($e->getMessage());
     $response = $service->getResponse();
@@ -247,10 +248,10 @@ function tripal_ws_list_services() {
       continue;
     }
     $service = new $service_class($base_path);
-    $resource->addContextItem($service_class::$type, array(
+    $resource->addContextItem($service_class::$type, [
       '@id' => 'vocab:EntryPoint/' . $service_class::$type,
       '@type' => '@id',
-    ));
+    ]);
     $resource->addProperty($service_class::$type, $service->getServicePath());
   }
 
@@ -259,8 +260,8 @@ function tripal_ws_list_services() {
   print drupal_json_encode($response);
 
 
-
 }
+
 /**
  * The callback function for all RESTful web services.
  *
@@ -284,7 +285,7 @@ function tripal_ws_services() {
     module_load_include('inc', 'tripal_ws', 'includes/tripal_ws.rest_' . $version);
     $version = preg_replace('/\./', '_', $version);
     $function = 'tripal_ws_services_' . $version;
-    $response = array();
+    $response = [];
     if (function_exists($function)) {
       $response = $function($api_url, $ws_path, $params);
     }
@@ -309,8 +310,8 @@ function tripal_ws_services() {
 function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
 
   // Get the content type on this site
-  $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+  $bundle = tripal_load_bundle_entity(['label' => $ctype]);
+  $term = entity_load('TripalTerm', ['id' => $bundle->term_id]);
   $term = reset($term);
   $vocab = $term->vocab;
 
@@ -332,12 +333,12 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
   drupal_set_title($response['label']);
 
   // Attribute this data to the proper source.
-  $source_url = l($response['label'], $response['ItemPage'], array('attributes' => array('target' => '_blank')));
+  $source_url = l($response['label'], $response['ItemPage'], ['attributes' => ['target' => '_blank']]);
   $content = '<div><strong>Source:</strong> ' . $site->name . ': ' . $source_url . '</div>';
 
   // Fake an entity so we can display this content using the same
   // entity type on this site.
-  $entity = new TripalEntity(array(), 'TripalEntity');
+  $entity = new TripalEntity([], 'TripalEntity');
   $entity->id = 807;
   $entity->type = 'TripalEntity';
   $entity->bundle = $bundle->name;
@@ -348,7 +349,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
 
   // Get the fields and create a list of those that are attached to the bundle.
   $fields = field_info_fields();
-  $my_fields = array();
+  $my_fields = [];
   foreach ($fields as $field) {
     if (isset($field['bundles']['TripalEntity'])) {
       foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
@@ -360,7 +361,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
   }
 
   // Add in the value for the 'content_type' field.
-  $entity->content_type = array();
+  $entity->content_type = [];
   $entity->content_type['und'][0]['value'] = $bundle->label;
 
   // For each field we know about that should be attached to our bundle,
@@ -394,14 +395,14 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
       // URL where that information can be retrieved. We'll have to
       // handle that separately.
       if (isset($response['@context'][$term_name]['@type']) and
-          $response['@context'][$term_name]['@type'] == '@id') {
+        $response['@context'][$term_name]['@type'] == '@id') {
         $subquery = json_decode(file_get_contents($response[$term_name]), TRUE);
 
         // If the result is a collection then we want to add each value with
         // it's own delta value.
         if (array_key_exists('@type', $subquery) and $subquery['@type'] == 'Collection') {
           $i = 0;
-          $f = array();
+          $f = [];
           foreach ($subquery['member'] as $member) {
             $f['und'][$i]['value'] = $member;
             $i++;
@@ -412,7 +413,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
         else {
           unset($subquery['@context']);
           unset($subquery['@id']);
-          $f = array();
+          $f = [];
           $f['und'][0]['value'] = $subquery;
           $entity->$field_name = $f;
         }
@@ -420,7 +421,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
       // For all fields that are currently attached, add the field and
       // value to the entity.
       else {
-        $f = array();
+        $f = [];
         $f['und'][0]['value'] = $response[$term_name];
         $entity->$field_name = $f;
       }
@@ -428,7 +429,7 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
   }
 
   // Generate the View for this entity
-  $entities = array();
+  $entities = [];
   $entities[] = $entity;
   $view = entity_view('TripalEntity', $entities);
   $content .= drupal_render($view['TripalEntity'][807]);
@@ -439,18 +440,18 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
 
 function tripal_ws_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
-      $form['field']['cardinality']['#access'] = FALSE;
+    $form['field']['cardinality']['#access'] = FALSE;
   }
 }
 
 /*
 * Returns the decoded json data for a specific field.
 */
-function tripal_ws_remote_data_single_field_pull($field, $entity_url){
-  $options = array();
+function tripal_ws_remote_data_single_field_pull($field, $entity_url) {
+  $options = [];
   $full_url = $entity_url . '/' . $field;
   $data = drupal_http_request($full_url, $options);
-  if(!empty($data)){
+  if (!empty($data)) {
     $data = drupal_json_decode($data->data);
   }
   return $data;
@@ -466,10 +467,10 @@ function tripal_ws_entity_info_alter(&$entity_info) {
 
   // Set the controller class for nodes to an alternate implementation of the
   // DrupalEntityController interface.
-  $entity_info['TripalEntity']['view modes']  += array(
-    'tripal_ws' => array(
+  $entity_info['TripalEntity']['view modes'] += [
+    'tripal_ws' => [
       'label' => t('Tripal Web Services'),
       'custom settings' => FALSE,
-    ),
-  );
+    ],
+  ];
 }

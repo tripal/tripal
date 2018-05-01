@@ -15,7 +15,7 @@ class operation__phylotree_vis extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'operation',
     // The name of the term.
@@ -26,7 +26,7 @@ class operation__phylotree_vis extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'operation__phylotree_vis_widget';
@@ -73,12 +73,12 @@ class operation__phylotree_vis extends ChadoField {
     $label_term = 'operation:0567';
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0]['value'] = array();
+    $entity->{$field_name}['und'][0]['value'] = [];
 
     if ($record) {
-      $entity->{$field_name}['und'][0]['value'] = array(
-        'schema:url' => url('bio_data/' . $entity->id, array('absolute' => TRUE)),
-      );
+      $entity->{$field_name}['und'][0]['value'] = [
+        'schema:url' => url('bio_data/' . $entity->id, ['absolute' => TRUE]),
+      ];
     }
   }
 
@@ -88,23 +88,23 @@ class operation__phylotree_vis extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'string',
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          'schema:url' => array(
+        'elements' => [
+          'schema:url' => [
             'searchabel' => FALSE,
             'type' => 'xs:anyURI',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-        ),
-      )
-    );
+          ],
+        ],
+      ],
+    ];
   }
 }

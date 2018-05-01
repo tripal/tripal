@@ -1,10 +1,12 @@
 <?php
 
 class TripalWebServiceResource {
+
   /**
    * The unique identifier for this resource.
    */
   protected $id;
+
   /**
    * The unique type of resource.  The type must exists in the
    * context for the web service.
@@ -37,8 +39,8 @@ class TripalWebServiceResource {
    */
   public function __construct($service_path) {
 
-    $this->context = array();
-    $this->data = array();
+    $this->context = [];
+    $this->data = [];
     $this->service_path = $service_path;
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
@@ -60,7 +62,7 @@ class TripalWebServiceResource {
     $this->addContextItem('schema', $vocab['sw_url']);
 
     $vocab = tripal_get_vocabulary_details('local');
-    $this->addContextItem('local', url($vocab['sw_url'], array('absolute' => TRUE)));
+    $this->addContextItem('local', url($vocab['sw_url'], ['absolute' => TRUE]));
 
 
     $this->data['@id'] = $service_path;
@@ -124,6 +126,7 @@ class TripalWebServiceResource {
    *
    * @param $key
    *   The key to check.
+   *
    * @throws Exception
    */
   private function checkKey($key) {
@@ -137,7 +140,7 @@ class TripalWebServiceResource {
 
     // If the key has a colon separating the vocabulary and the term then we
     // just need to make sure that the vocabulary is present.
-    $matches = array();
+    $matches = [];
     if (preg_match('/^(.*?):(.*?)$/', $key, $matches)) {
       $vocab = $matches[1];
       $accession = $matches[2];
@@ -150,14 +153,14 @@ class TripalWebServiceResource {
       // If the vocabulary is not in the.
       if (!in_array($vocab, $keys)) {
         throw new Exception(t("The key, !key, has a vocabulary that has not yet been added to the " .
-            "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.", array('!key' => $key)));
+          "context. Use the addContextItem() function to add the vocabulary prior to adding a value for it.", ['!key' => $key]));
       }
     }
     else {
       // If the key is not in the context then throw an error.
       if (!in_array($key, $keys)) {
         throw new Exception(t("The key, !key, has not yet been added to the " .
-            "context. Use the addContextItem() function to add this key prior to adding a value for it.", array('!key' => $key)));
+          "context. Use the addContextItem() function to add this key prior to adding a value for it.", ['!key' => $key]));
       }
     }
   }
@@ -229,7 +232,7 @@ class TripalWebServiceResource {
     // If this is a key/value pair for an id and if the vocab portion is
     // an underscore then this represents a blank node and we don't want
     // to add the full path.
-    $matches = array();
+    $matches = [];
     if (preg_match('/^(.*?):(.*?)$/', $id, $matches)) {
       $vocab = $matches[1];
       if ($vocab == '_') {
@@ -291,7 +294,7 @@ class TripalWebServiceResource {
     // If this is a numeric keyed array then add each item.
     if (is_array($value) and count(array_filter(array_keys($value), 'is_int')) == count(array_keys($value))) {
       if (!array_key_exists($key, $this->data)) {
-        $this->data[$key] = array();
+        $this->data[$key] = [];
       }
       foreach ($value as $item) {
         $this->addProperty($key, $item);
@@ -310,7 +313,7 @@ class TripalWebServiceResource {
       // second test in the condition below is for for a numeric array.
       if (!is_array($this->data[$key]) or count(array_filter(array_keys($this->data[$key]), 'is_string')) > 0) {
         $element = $this->data[$key];
-        $this->data[$key] = array();
+        $this->data[$key] = [];
         $this->data[$key][] = $element;
       }
       $this->data[$key][] = $value;
@@ -356,7 +359,7 @@ class TripalWebServiceResource {
    *   An associative array containing the data section of the response.
    */
   public function getContext() {
-      return $this->context;
+    return $this->context;
   }
 
   /**

@@ -13,7 +13,7 @@ function tripal_genetic_admin_genetics_listing() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -22,7 +22,7 @@ function tripal_genetic_admin_genetics_listing() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_genetic_admin_genetics','default');
+  $view = views_embed_view('tripal_genetic_admin_genetics', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -32,7 +32,7 @@ function tripal_genetic_admin_genetics_listing() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Genetic Admin', 'admin/tripal/legacy/tripal_genetic/views/genetics/enable').'</li>';
+    $output .= '<li>' . l('Genetic Admin', 'admin/tripal/legacy/tripal_genetic/views/genetics/enable') . '</li>';
     $output .= '</ul>';
   }
 

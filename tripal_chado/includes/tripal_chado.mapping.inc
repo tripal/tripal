@@ -53,7 +53,10 @@ function tripal_chado_map_cvterms() {
             accession = :accession
           AND
             db_id = (SELECT db_id FROM {db} WHERE name = :voc)";
-      $dbxref_id = chado_query($dbxref_sql, array(':accession' => $accession, ':voc' => $voc))->fetchField();
+      $dbxref_id = chado_query($dbxref_sql, [
+        ':accession' => $accession,
+        ':voc' => $voc,
+      ])->fetchField();
       if ($dbxref_id) {
         $cvterm_sql =
           "SELECT cvterm_id
@@ -61,24 +64,26 @@ function tripal_chado_map_cvterms() {
             WHERE
               dbxref_id = :dbxref_id
             AND name = :name";
-        $cvterm_id = chado_query($cvterm_sql, array(':dbxref_id' => $dbxref_id, ':name' => $name))->fetchField();
+        $cvterm_id = chado_query($cvterm_sql, [
+          ':dbxref_id' => $dbxref_id,
+          ':name' => $name,
+        ])->fetchField();
         if ($cvterm_id) {
-         // Check if this term is already mapped in the chado_cvterm_mapping table
-         $check_sql =
-           "SELECT mapping_id
+          // Check if this term is already mapped in the chado_cvterm_mapping table
+          $check_sql =
+            "SELECT mapping_id
              FROM chado_cvterm_mapping
              WHERE cvterm_id = :cvterm_id";
-         $mapped = db_query($check_sql, array(':cvterm_id' => $cvterm_id))->fetchField();
-         // If mapping does not exist and a table name matches the term name, add it
-         if (!$mapped && chado_table_exists($name)) {
-           print "Adding mapped tripal term: $name\n";
-           tripal_chado_add_cvterm_mapping($cvterm_id, $name, NULL);
-         }
+          $mapped = db_query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
+          // If mapping does not exist and a table name matches the term name, add it
+          if (!$mapped && chado_table_exists($name)) {
+            print "Adding mapped tripal term: $name\n";
+            tripal_chado_add_cvterm_mapping($cvterm_id, $name, NULL);
+          }
         }
       }
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     print "\n"; // make sure we start errors on new line
     $transaction->rollback();
     watchdog_exception('tripal_chado', $e);
@@ -96,33 +101,32 @@ function tripal_chado_map_cvterms() {
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists
   $record = db_select('chado_cvterm_mapping', 'tcm')
-    ->fields('tcm', array('mapping_id'))
+    ->fields('tcm', ['mapping_id'])
     ->condition('cvterm_id', $cvterm_id)
     ->execute()
     ->fetchField();
   // insert records into the chado_cvterm_mapping table.
   if (!$record) {
     db_insert('chado_cvterm_mapping')
-    ->fields(
-        array(
+      ->fields(
+        [
           'cvterm_id' => $cvterm_id,
           'chado_table' => $tablename,
-          'chado_field' => $chado_field
-        )
+          'chado_field' => $chado_field,
+        ]
       )
       ->execute();
   }
   // if the record exists, update the term mapping
   else {
     db_update('chado_cvterm_mapping')
-    ->fields(
-        array(
+      ->fields(
+        [
           'chado_table' => $tablename,
-          'chado_field' => $chado_field
-        )
+          'chado_field' => $chado_field,
+        ]
       )
-    ->condition('cvterm_id', $cvterm_id)
-    ->execute()
-    ;
+      ->condition('cvterm_id', $cvterm_id)
+      ->execute();
   }
 }

@@ -69,6 +69,7 @@ function hook_bundle_fields_info($entity_type, $bundle) {
 function hook_bundle_instances_info($entity_type, $bundle) {
 
 }
+
 /**
  *
  * @param unknown $info
@@ -80,6 +81,7 @@ function hook_bundle_instances_info($entity_type, $bundle) {
 function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 
 }
+
 /**
  *
  * @param unknown $info
@@ -91,6 +93,7 @@ function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
 
 }
+
 /**
  * Retrieves a list of TripalField types.
  *
@@ -107,7 +110,7 @@ function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
  * @ingroup tripal_fields_api
  */
 function tripal_get_field_types() {
-  $types = array();
+  $types = [];
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
@@ -145,7 +148,7 @@ function tripal_get_field_types() {
         continue;
       }
       $field_type = $file->name;
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $field_type . '.inc';
+      $file_path = realpath(".") . '/' . $library_path . '/' . $field_type . '/' . $field_type . '.inc';
       if (file_exists($file_path)) {
         require_once($file_path);
         if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
@@ -156,6 +159,7 @@ function tripal_get_field_types() {
   }
   return $types;
 }
+
 /**
  * Retrieves a list of TripalFieldWidgets.
  *
@@ -170,7 +174,7 @@ function tripal_get_field_types() {
  * @ingroup tripal_fields_api
  */
 function tripal_get_field_widgets() {
-  $widgets = array();
+  $widgets = [];
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
@@ -203,7 +207,7 @@ function tripal_get_field_widgets() {
     foreach ($field_files as $file) {
       $widget_type = $file->name;
       $field_type = preg_replace('/(^.*)_widget/', '$1', $widget_type);
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $widget_type . '.inc';
+      $file_path = realpath(".") . '/' . $library_path . '/' . $field_type . '/' . $widget_type . '.inc';
       if (file_exists($file_path)) {
         require_once($file_path);
         if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
@@ -222,6 +226,7 @@ function tripal_get_field_widgets() {
  *   A field array as returned by the field_info_field() function.
  * @param $instance
  *   An field instance array.
+ *
  * @return
  *   A list of file formatter class names.
  */
@@ -229,7 +234,7 @@ function tripal_get_field_field_formatters($field, $instance) {
   $field_name = $field['field_name'];
   $field_type = $field['type'];
 
-  $downloaders = array();
+  $downloaders = [];
 
   // If the field type is a TripalField then get information about the formatter.
   if (tripal_load_include_field_class($field_type)) {
@@ -265,7 +270,7 @@ function tripal_get_field_field_formatters($field, $instance) {
  * @ingroup tripal_fields_api
  */
 function tripal_get_field_formatters() {
-  $formatters = array();
+  $formatters = [];
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
@@ -298,7 +303,7 @@ function tripal_get_field_formatters() {
     foreach ($field_files as $file) {
       $formatter_type = $file->name;
       $field_type = preg_replace('/(^.*)_formatter/', '$1', $formatter_type);
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $formatter_type . '.inc';
+      $file_path = realpath(".") . '/' . $library_path . '/' . $field_type . '/' . $formatter_type . '.inc';
       if (file_exists($file_path)) {
         require_once($file_path);
         if (class_exists($formatter_type) and is_subclass_of($formatter_type, 'TripalFieldFormatter')) {
@@ -309,6 +314,7 @@ function tripal_get_field_formatters() {
   }
   return $formatters;
 }
+
 /**
  * Loads the TripalField class file into scope.
  *
@@ -340,7 +346,7 @@ function tripal_load_include_field_class($class) {
   if (module_exists('libraries')) {
     $library_path = libraries_get_path('TripalFields');
     $field_type = preg_replace('/(^.*)_(formatter|widget)/', '$1', $class);
-    $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $class . '.inc';
+    $file_path = realpath(".") . '/' . $library_path . '/' . $field_type . '/' . $class . '.inc';
     if (file_exists($file_path)) {
       require_once($file_path);
       if (class_exists($class)) {
@@ -380,7 +386,7 @@ function tripal_load_include_downloader_class($class) {
   // TripalFieldDownloader library folder and see if our field exist there.
   if (module_exists('libraries')) {
     $library_path = libraries_get_path('TripalFieldDownloaders');
-    $file_path = realpath(".") . '/' . $library_path .'/' . $class . '.inc';
+    $file_path = realpath(".") . '/' . $library_path . '/' . $class . '.inc';
     if (file_exists($file_path)) {
       require_once($file_path);
       if (class_exists($class)) {
@@ -421,7 +427,7 @@ function tripal_load_include_downloader_class($class) {
  *
  * @ingroup tripal_fields_api
  */
-function tripal_get_field_item_keyval($items, $delta, $key, $default='') {
+function tripal_get_field_item_keyval($items, $delta, $key, $default = '') {
   if (!array_key_exists($delta, $items)) {
     return FALSE;
   }

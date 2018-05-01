@@ -17,8 +17,8 @@
  * @defgroup tripal_legacy_core Legacy Tripal Core Module
  * @ingroup tripal_legacy_modules
  * @{
- * Functionality useful for all other Tripal modules including the Tripal jobs, files,
- * materialized views and custom table functions.
+ * Functionality useful for all other Tripal modules including the Tripal jobs,
+ *   files, materialized views and custom table functions.
  * @}
  */
 require_once 'api/tripal_core.chado_nodes.api.inc';
@@ -31,10 +31,10 @@ require_once 'includes/tripal_core.form_elements.inc';
 require_once 'includes/tripal_core.search.inc';
 
 
-
 /**
  * Implements hook_init().
- * Used to set the search_path, create default content and set default variables.
+ * Used to set the search_path, create default content and set default
+ * variables.
  *
  * @ingroup tripal_legacy_core
  */
@@ -57,37 +57,37 @@ function tripal_core_init() {
  * @ingroup tripal_legacy_core
  */
 function tripal_core_menu() {
-  $items = array();
+  $items = [];
 
   // Triapl setting groups
-  $items['admin/tripal/legacy'] = array(
+  $items['admin/tripal/legacy'] = [
     'title' => 'Tripal Legacy',
     'description' => t("Legacy functionality from Tripal v2.0."),
     'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer tripal'),
+    'access arguments' => ['administer tripal'],
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
-  );
+  ];
 
   // Relationshi API autocomplete callback
-  $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
+  $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = [
     'page callback' => 'chado_add_node_form_relationships_name_to_id_callback',
-    'page arguments' => array(2,3),
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK
-  );
+    'page arguments' => [2, 3],
+    'access arguments' => ['access content'],
+    'type' => MENU_CALLBACK,
+  ];
 
   // The node's TOC tab
-  $items['node/%node/tripal_toc'] = array(
+  $items['node/%node/tripal_toc'] = [
     'title' => 'TOC',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_node_toc_form', 1),
+    'page arguments' => ['tripal_core_node_toc_form', 1],
     'access callback' => 'tripal_core_access_node_toc_form',
-    'access arguments' => array(1),
+    'access arguments' => [1],
     'type' => MENU_LOCAL_TASK,
     'file' => '/includes/tripal_core.toc.inc',
-  );
+  ];
 
   return $items;
 }
@@ -97,6 +97,7 @@ function tripal_core_menu() {
  *
  * @param $node
  *   A node object
+ *
  * @return
  *   Returns TRUE if the node is a Tripal-based node and the user hass
  *   the 'administer tripal' role.
@@ -104,7 +105,7 @@ function tripal_core_menu() {
 function tripal_core_access_node_toc_form($node) {
   $types = module_invoke_all('node_info');
   if (array_key_exists($node->type, $types) and
-      array_key_exists('chado_node_api', $types[$node->type])) {
+    array_key_exists('chado_node_api', $types[$node->type])) {
     return user_access('administer tripal');
   }
   return FALSE;
@@ -120,7 +121,7 @@ function tripal_core_access_node_toc_form($node) {
  * @ingroup tripal_legacy_core
  */
 function tripal_core_permission() {
-  return array();
+  return [];
 }
 
 /**
@@ -130,61 +131,61 @@ function tripal_core_permission() {
  * @ingroup tripal_legacy_core
  */
 function tripal_core_theme($existing, $type, $theme, $path) {
-  return array(
-    'tripal_core_customize' => array(
-      'arguments' => array('job_id' => NULL),
+  return [
+    'tripal_core_customize' => [
+      'arguments' => ['job_id' => NULL],
       'template' => 'tripal_core_customize',
-      'path' => "$path/theme/templates"
-    ),
-    'theme_file_upload_combo' => array(
+      'path' => "$path/theme/templates",
+    ],
+    'theme_file_upload_combo' => [
       'render element' => 'element',
-    ),
-    'theme_sequence_combo' => array(
+    ],
+    'theme_sequence_combo' => [
       'render element' => 'element',
-    ),
-    'tripal_core_jobs_help' => array(
+    ],
+    'tripal_core_jobs_help' => [
       'template' => 'tripal_core_jobs_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
-    'tripal_core_customtables_help' => array(
+      'variables' => [NULL],
+      'path' => "$path/theme/templates",
+    ],
+    'tripal_core_customtables_help' => [
       'template' => 'tripal_core_customtables_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
+      'variables' => [NULL],
+      'path' => "$path/theme/templates",
+    ],
 
     // Chado Node API Themes
     // --------------------------------
     // Properties Node Form
-    'chado_node_properties_form_table' => array(
+    'chado_node_properties_form_table' => [
       'function' => 'theme_chado_add_node_form_properties',
       'render element' => 'element',
-    ),
+    ],
     // Additional Dbxrefs Nore Form
-    'chado_node_additional_dbxrefs_form_table' => array(
+    'chado_node_additional_dbxrefs_form_table' => [
       'function' => 'theme_chado_add_node_form_dbxrefs_table',
       'render element' => 'element',
-    ),
+    ],
     // Relationships Nore Form
-    'chado_node_relationships_form_table' => array(
+    'chado_node_relationships_form_table' => [
       'function' => 'theme_chado_add_node_form_relationships_table',
       'render element' => 'element',
-    ),
+    ],
 
     // Form and form element themes.
     // --------------------------------
-    'tripal_node_toc_items_table' => array(
+    'tripal_node_toc_items_table' => [
       'render element' => 'element',
-    ),
+    ],
     // Theme function for the extension admin page.
-    'tripal_core_extensions_form_tables' => array(
+    'tripal_core_extensions_form_tables' => [
       'render element' => 'element',
-    ),
-    'administer controlled vocabularies' => array(
+    ],
+    'administer controlled vocabularies' => [
       'title' => t('Administer controlled vocabularies (CVs).'),
-      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.')
-    ),
-  );
+      'description' => t('Allow a user to add, edit and delete controlled vocabularies as well as add and edit terms.'),
+    ],
+  ];
 }
 
 /**
@@ -195,10 +196,10 @@ function tripal_core_theme($existing, $type, $theme, $path) {
  *
  */
 function tripal_core_coder_ignore() {
-  return array(
+  return [
     'path' => drupal_get_path('module', 'tripal_core'),
     'line prefix' => drupal_get_path('module', 'tripal_core'),
-  );
+  ];
 }
 
 /**
@@ -211,9 +212,9 @@ function tripal_core_coder_ignore() {
  * @ingroup tripal_legacy_core
  */
 function tripal_core_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -271,17 +272,17 @@ function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) 
       $base_table = preg_replace('/^chado_(.*)$/', '\1', $bundle);
       $tokens = chado_node_generate_tokens($base_table);
       $token_list = chado_node_format_tokens($tokens);
-      $element['tokens'] = array(
+      $element['tokens'] = [
         '#type' => 'fieldset',
         '#title' => 'Available tokens',
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
-        '#weight' => 100
-      );
-      $element['tokens']['tokens_table'] = array(
+        '#weight' => 100,
+      ];
+      $element['tokens']['tokens_table'] = [
         '#type' => 'item',
-        '#markup' => $token_list
-      );
+        '#markup' => $token_list,
+      ];
     }
   }
 }
@@ -291,10 +292,10 @@ function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) 
  */
 function tripal_core_block_info() {
 
-  $blocks['tripal_search'] = array(
+  $blocks['tripal_search'] = [
     'info' => t('Tripal Search Block'),
     'cache' => DRUPAL_NO_CACHE,
-  );
+  ];
 
   return $blocks;
 }
@@ -303,16 +304,16 @@ function tripal_core_block_info() {
  * Implements hook_block_view().
  */
 function tripal_core_block_view($delta = '') {
-  $block = array();
+  $block = [];
 
   switch ($delta) {
     case 'tripal_search':
       $block['title'] = 'Search';
 
       $form_render_arr = drupal_get_form('tripal_core_search_block');
-      $block['content'] = array(
+      $block['content'] = [
         '#markup' => drupal_render($form_render_arr),
-      );
+      ];
       break;
   }
 
@@ -324,37 +325,37 @@ function tripal_core_block_view($delta = '') {
  */
 function tripal_core_search_block($form, $form_state) {
 
-  $form['wrapper'] = array(
+  $form['wrapper'] = [
     '#prefix' => '<div id="search-block-form" class="container-inline">',
     '#suffix' => '</div>',
-  );
+  ];
 
-  $form['wrapper']['title'] = array(
+  $form['wrapper']['title'] = [
     '#markup' => '<h2 class="element-invisible">Search form</h2>',
-  );
+  ];
 
-  $form['wrapper']['search_block_form'] = array(
+  $form['wrapper']['search_block_form'] = [
     '#title' => 'Search',
     '#title_display' => 'invisible',
     '#type' => 'textfield',
     '#size' => 15,
     '#maxlength' => 128,
-    '#attributes' =>array('placeholder' => t(variable_get('tripal_search_placeholder', 'Keywords')))
-  );
+    '#attributes' => ['placeholder' => t(variable_get('tripal_search_placeholder', 'Keywords'))],
+  ];
 
-  $form['wrapper']['submit'] = array(
+  $form['wrapper']['submit'] = [
     '#type' => 'submit',
     '#value' => 'Search',
     '#prefix' => '<div class="form-actions form-wrapper" id="edit-actions">',
-    '#suffix' => '</div>'
-  );
+    '#suffix' => '</div>',
+  ];
 
-  $form['search_placeholder'] = array(
+  $form['search_placeholder'] = [
     '#type' => 'textfield',
     '#title' => 'Placeholder Text',
     '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
     '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
-  );
+  ];
 
   return $form;
 }
@@ -364,24 +365,24 @@ function tripal_core_search_block($form, $form_state) {
  */
 function tripal_core_search_block_submit($form, &$form_state) {
 
-  $form_state['redirect'] = array(
+  $form_state['redirect'] = [
     variable_get('tripal_search_block_url', 'search/data'),
-    array(
-      'query' => array(
-        'keywords' => $form_state['values']['search_block_form']
-      ),
-    ),
-  );
+    [
+      'query' => [
+        'keywords' => $form_state['values']['search_block_form'],
+      ],
+    ],
+  ];
 
 }
 
 /**
  * Implements hook_block_configure().
  */
-function tripal_core_block_configure ($delta = '') {
-  $form = array();
+function tripal_core_block_configure($delta = '') {
+  $form = [];
 
-  $form['search_url'] = array(
+  $form['search_url'] = [
     '#type' => 'textfield',
     '#title' => 'Search Page URL',
     '#description' => 'The URL for the page you would like to redirect to when the user
@@ -389,7 +390,7 @@ function tripal_core_block_configure ($delta = '') {
         filter having a "Filter Identifier" (in "More" fieldset on the edit filter form)
         of "keywords".',
     '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
-  );
+  ];
 
   return $form;
 }
@@ -397,7 +398,7 @@ function tripal_core_block_configure ($delta = '') {
 /**
  * Implements hook_block_save().
  */
-function tripal_core_block_save($delta = '', $edit = array()) {
+function tripal_core_block_save($delta = '', $edit = []) {
 
   // We simply want to save this information in a Drupal variable for use in the form submit.
   if (!empty($edit['search_url'])) {

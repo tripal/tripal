@@ -5,7 +5,7 @@ class TripalEntityCollection {
   /**
    * The name of the bundles (i.e. content type) to which the entities belong.
    */
-  protected $bundles = array();
+  protected $bundles = [];
 
   /**
    * The collection ID
@@ -16,18 +16,22 @@ class TripalEntityCollection {
    * The name of this collection.
    */
   protected $collection_name = '';
+
   /**
    * An array of numeric entities IDs.
    */
-  protected $ids = array();
+  protected $ids = [];
+
   /**
    * An array of field IDs.
    */
-  protected $fields = array();
+  protected $fields = [];
+
   /**
    * The user object of the user that owns the collection.
    */
-  protected $user = array();
+  protected $user = [];
+
   /**
    * The date that the collection was created.
    */
@@ -36,7 +40,7 @@ class TripalEntityCollection {
   /**
    * The list of downloaders available for this bundle.
    */
-  protected $formatters = array();
+  protected $formatters = [];
 
   /**
    * The description for this collection.
@@ -84,8 +88,7 @@ class TripalEntityCollection {
       $this->create_date = '';
       $this->description = '';
 
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       throw new Exception('Cannot delete collection: ' . $e->getMessage());
     }
   }
@@ -168,7 +171,7 @@ class TripalEntityCollection {
     // Before inserting the new collection make sure we don't violate the unique
     // constraint that a user can only have one collection of the give name.
     $has_match = db_select('tripal_collection', 'tc')
-      ->fields('tc', array('collection_id'))
+      ->fields('tc', ['collection_id'])
       ->condition('uid', $details['uid'])
       ->condition('collection_name', $details['collection_name'])
       ->execute()
@@ -179,18 +182,17 @@ class TripalEntityCollection {
 
     try {
       $collection_id = db_insert('tripal_collection')
-        ->fields(array(
+        ->fields([
           'collection_name' => $details['collection_name'],
           'create_date' => time(),
           'uid' => $details['uid'],
           'description' => array_key_exists('description', $details) ? $details['description'] : '',
-        ))
+        ])
         ->execute();
 
       // Now load the job into this object.
       $this->load($collection_id);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       throw new Exception('Cannot create collection: ' . $e->getMessage());
     }
   }
@@ -220,18 +222,17 @@ class TripalEntityCollection {
 
     try {
       $collection_bundle_id = db_insert('tripal_collection_bundle')
-        ->fields(array(
+        ->fields([
           'bundle_name' => $details['bundle_name'],
           'ids' => serialize($details['ids']),
           'fields' => serialize($details['fields']),
           'collection_id' => $this->collection_id,
-        ))
+        ])
         ->execute();
 
       // Now load the job into this object.
       $this->load($this->collection_id);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       throw new Exception('Cannot create collection: ' . $e->getMessage());
     }
   }
@@ -265,7 +266,7 @@ class TripalEntityCollection {
    */
   private function setFormatters() {
 
-    $downloaders = array();
+    $downloaders = [];
     // Iterate through the fields and find out what download formats are
     // supported for this basket.
     foreach ($this->fields as $bundle_name => $field_ids) {
@@ -331,6 +332,7 @@ class TripalEntityCollection {
    *
    * @param $formatted
    *   If TRUE then the date time will be formatted for human readability.
+   *
    * @return
    *   A UNIX time stamp string containing the date or a human-readable
    *   string if $formatted = TRUE.
@@ -358,7 +360,7 @@ class TripalEntityCollection {
    * @return
    *   A numeric ID for this collection.
    */
-  public function getCollectionID(){
+  public function getCollectionID() {
     return $this->collection_id;
   }
 
@@ -405,12 +407,15 @@ class TripalEntityCollection {
    * @throws Exception
    */
   public function getOutfile($formatter) {
-    if(!$this->isFormatterCompatible($formatter)) {
-      throw new Exception(t('The formatter, "%formatter", is not compatible with this data collection.', array('%formatter' => $formatter)));
+    if (!$this->isFormatterCompatible($formatter)) {
+      throw new Exception(t('The formatter, "%formatter", is not compatible with this data collection.', ['%formatter' => $formatter]));
     }
 
     if (!tripal_load_include_downloader_class($formatter)) {
-      throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+      throw new Exception(t('Cannot find the formatter named "@formatter".', [
+        '@formatter',
+        $formatter,
+      ]));
     }
 
     $extension = $formatter::$default_extension;
@@ -424,6 +429,7 @@ class TripalEntityCollection {
    *
    * @param $formatter
    *   The class name of the formatter to check.
+   *
    * @return boolean
    *   TRUE if the formatter is compatible, FALSE otherwise.
    */
@@ -456,16 +462,19 @@ class TripalEntityCollection {
    */
   public function getOutfilePath($formatter) {
     if (!$this->isFormatterCompatible($formatter)) {
-      throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
+      throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', ['@formatter' => $formatter]));
     }
     if (!tripal_load_include_downloader_class($formatter)) {
-      throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+      throw new Exception(t('Cannot find the formatter named "@formatter".', [
+        '@formatter',
+        $formatter,
+      ]));
     }
 
     $outfile = $this->getOutfile($formatter);
     // Make sure the user directory exists
     $user_dir = 'public://tripal/users/' . $this->user->uid;
-    $outfilePath = $user_dir. '/' . $outfile;
+    $outfilePath = $user_dir . '/' . $outfile;
     return $outfilePath;
   }
 
@@ -480,18 +489,22 @@ class TripalEntityCollection {
    * @param $job
    *    If this function is run as a Tripal Job then this argument can be
    *    set to the Tripaljob object for keeping track of progress.
+   *
    * @throws Exception
    */
   public function write($formatter = NULL, TripalJob $job = NULL) {
 
     // Initialize the downloader classes and initialize the files for writing.
-    $formatters = array();
+    $formatters = [];
     foreach ($this->formatters as $class => $label) {
       if (!$this->isFormatterCompatible($class)) {
-        throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', array('@formatter' => $formatter)));
+        throw new Exception(t('The formatter, "@formatter", is not compatible with this data collection.', ['@formatter' => $formatter]));
       }
       if (!tripal_load_include_downloader_class($class)) {
-        throw new Exception(t('Cannot find the formatter named "@formatter".', array('@formatter', $formatter)));
+        throw new Exception(t('Cannot find the formatter named "@formatter".', [
+          '@formatter',
+          $formatter,
+        ]));
       }
       $outfile = $this->getOutfile($class);
       if (!$formatter or ($formatter == $class)) {
@@ -508,7 +521,7 @@ class TripalEntityCollection {
     $bundle_collections = $this->collection_bundles;
     foreach ($this->bundles as $bundle) {
       $bundle_name = $bundle->bundle_name;
-      $entity_ids  = $this->getEntityIDs($bundle_name);
+      $entity_ids = $this->getEntityIDs($bundle_name);
       $total_entities += count($entity_ids);
     }
     if ($job) {
@@ -519,7 +532,7 @@ class TripalEntityCollection {
     foreach ($this->bundles as $bundle) {
       $bundle_name = $bundle->bundle_name;
       $site_id = $bundle->site_id;
-      $entity_ids  = array_unique($this->getEntityIDs($bundle_name));
+      $entity_ids = array_unique($this->getEntityIDs($bundle_name));
       $field_ids = array_unique($this->getFieldIDs($bundle_name));
 
       // Clear any cached @context or API docs.
@@ -536,9 +549,11 @@ class TripalEntityCollection {
         $slice = array_slice($entity_ids, $bundle_eids_handled, $slice_size);
         if ($job) {
           $job->logMessage('Getting entities for ids !start to !end of !total',
-              array('!start' => $bundle_eids_handled,
-                    '!end' => $bundle_eids_handled + count($slice),
-                    '!total' => $num_eids));
+            [
+              '!start' => $bundle_eids_handled,
+              '!end' => $bundle_eids_handled + count($slice),
+              '!total' => $num_eids,
+            ]);
         }
         $bundle_eids_handled += count($slice);
 
@@ -550,7 +565,7 @@ class TripalEntityCollection {
         else {
           $entities = tripal_load_entity('TripalEntity', $slice, FALSE, $field_ids, FALSE);
         }
-        $job->logMessage('Got !count entities.', array('!count' => count($entities)));
+        $job->logMessage('Got !count entities.', ['!count' => count($entities)]);
 
         // Now write each entity one at a time to the files.
         foreach ($entities as $entity_id => $entity) {
@@ -558,7 +573,7 @@ class TripalEntityCollection {
           // Write the same entity to all the formatters that are supported.
           foreach ($formatters as $class => $formatter) {
             //if ($class == 'TripalTabDownloader') {
-              $formatter->writeEntity($entity, $job);
+            $formatter->writeEntity($entity, $job);
             //}
           }
         }

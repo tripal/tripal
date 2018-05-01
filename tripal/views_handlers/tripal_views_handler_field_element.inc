@@ -8,6 +8,7 @@
  * Views field handler for basic TripalFields fields.
  */
 class tripal_views_handler_field_element extends tripal_views_handler_field {
+
   /**
    *
    */
@@ -75,38 +76,42 @@ class tripal_views_handler_field_element extends tripal_views_handler_field {
     if (count($items) == 0) {
       return '';
     }
-    else if (count($items) == 1) {
-      $item = $items[0];
-      $element = array_shift($elements);
-      if (is_array($item['value'][$element])) {
-        return $this->_get_element_value($elements, $item['value'][$element]);
-      }
-      else {
-        return $this->sanitize_value($item['value'][$element_name], 'xss');
-      }
-    }
-    else if (count($items) <= 10) {
-      $element = array_shift($elements);
-      $element_values = array();
-      foreach ($items as $index => $item) {
+    else {
+      if (count($items) == 1) {
+        $item = $items[0];
+        $element = array_shift($elements);
         if (is_array($item['value'][$element])) {
-          $element_values[] = $this->_get_element_value($elements, $item['value'][$element]);
+          return $this->_get_element_value($elements, $item['value'][$element]);
         }
         else {
-          $element_values[] = $this->sanitize_value($item['value'][$element], 'xss');
+          return $this->sanitize_value($item['value'][$element_name], 'xss');
         }
       }
-      // TODO: theming this way should probably be handled by a sepcial
-      // field handler that the user can tweak. But for now we'll just do this.
-      return theme_item_list(array(
-        'items' => $element_values,
-        'title' => NULL,
-        'type' => 'ul',
-        'attributes' => array(),
-      ));
-    }
-    else {
-      return t('Too many values to show.');
+      else {
+        if (count($items) <= 10) {
+          $element = array_shift($elements);
+          $element_values = [];
+          foreach ($items as $index => $item) {
+            if (is_array($item['value'][$element])) {
+              $element_values[] = $this->_get_element_value($elements, $item['value'][$element]);
+            }
+            else {
+              $element_values[] = $this->sanitize_value($item['value'][$element], 'xss');
+            }
+          }
+          // TODO: theming this way should probably be handled by a sepcial
+          // field handler that the user can tweak. But for now we'll just do this.
+          return theme_item_list([
+            'items' => $element_values,
+            'title' => NULL,
+            'type' => 'ul',
+            'attributes' => [],
+          ]);
+        }
+        else {
+          return t('Too many values to show.');
+        }
+      }
     }
   }
 

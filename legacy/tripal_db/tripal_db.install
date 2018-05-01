@@ -16,7 +16,7 @@ function tripal_db_disable() {
   require_once("tripal_db.views_default.inc");
   $views = tripal_db_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_db_disable() {
  * @ingroup tripal_legacy_db
  */
 function tripal_db_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_db'] = array(
-          'title' => "tripal_db",
-          'value' => "ERROR: Chado must be installed before this module can be enabled",
-          'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements ['tripal_db'] = [
+        'title' => "tripal_db",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
     }
   }
   return $requirements;

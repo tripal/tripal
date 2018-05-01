@@ -10,7 +10,7 @@
  * @ingroup tripal
  */
 function tripal_views_default_views() {
-  $views = array();
+  $views = [];
 
   $view = tripal_admin_defaultview_jobs();
   $views[$view->name] = $view;
@@ -34,7 +34,7 @@ function tripal_bundle_default_views(&$views) {
     // The base table for a TripalEntity content type is simply the
     // vocab and the accession for the term.  It's not really a table
     // but we use that nomenclature for views.
-    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
     $base_table = $term->vocab->vocabulary . '__' . $term->accession;
     $view_name = preg_replace('/[^\w]/', '_', $bundle->label) . '_search';
 
@@ -75,13 +75,22 @@ function tripal_bundle_default_views(&$views) {
     // We can't have all fields show up as columns in a table so we have
     // to be selective and choose those that are most likely to be most
     // descriptive of a content type.
-    $columns = array();
-    $default_fields = array('data__image', 'data__identifier', 'schema__name',
-      'data__accession', 'rdfs__label', 'taxrank__genus',
-      'taxrank__species', 'obi__organism', 'tpub__title',
-      'schema__alternate_name', 'schema__description', 'tpub__abstract'
-    );
-    $selected_fields = array();
+    $columns = [];
+    $default_fields = [
+      'data__image',
+      'data__identifier',
+      'schema__name',
+      'data__accession',
+      'rdfs__label',
+      'taxrank__genus',
+      'taxrank__species',
+      'obi__organism',
+      'tpub__title',
+      'schema__alternate_name',
+      'schema__description',
+      'tpub__abstract',
+    ];
+    $selected_fields = [];
     foreach ($default_fields as $field_name) {
       if (in_array($field_name, array_keys($fields))) {
         $selected_fields[] = $field_name;
@@ -91,10 +100,10 @@ function tripal_bundle_default_views(&$views) {
 
     // Add in the entity_id field.
     $handler->display->display_options['style_options']['columns']['entity_id'] = 'entity_id';
-    $handler->display->display_options['style_options']['info']['entity_id'] = array(
+    $handler->display->display_options['style_options']['info']['entity_id'] = [
       'sortable' => 1,
       'separator' => '',
-    );
+    ];
     $handler->display->display_options['fields']['entity_id']['id'] = 'entity_id';
     $handler->display->display_options['fields']['entity_id']['table'] = $base_table;
     $handler->display->display_options['fields']['entity_id']['field'] = 'entity_id';
@@ -115,18 +124,25 @@ function tripal_bundle_default_views(&$views) {
       $handler->display->display_options['fields'][$field_name]['label'] = $field['label'];
 
       // Only some fields are sortable.
-      if (in_array($field_name, array('data__identifier', 'schema__name',
-          'data__accession', 'rdfs__label', 'taxrank__genus',
-          'taxrank__species', 'obi__organism',
-          'schema__alternate_name', 'tpub__title'))) {
+      if (in_array($field_name, [
+        'data__identifier',
+        'schema__name',
+        'data__accession',
+        'rdfs__label',
+        'taxrank__genus',
+        'taxrank__species',
+        'obi__organism',
+        'schema__alternate_name',
+        'tpub__title',
+      ])) {
         $handler->display->display_options['style_options']['info'][$field_name]['sortable'] = 1;
         $handler->display->display_options['style_options']['info'][$field_name]['default_sort_order'] = 'asc';
       }
 
       // The name or identifier fields should link to the record.
       if ($field_name == 'data__identifier' or $field_name == 'schema__name' or
-          $field_name == 'taxrank__genus' or $field_name == 'taxrank__species' or
-          $field_name == 'tpub__title') {
+        $field_name == 'taxrank__genus' or $field_name == 'taxrank__species' or
+        $field_name == 'tpub__title') {
         $handler->display->display_options['fields'][$field_name]['alter']['make_link'] = TRUE;
         $handler->display->display_options['fields'][$field_name]['alter']['path'] = 'bio_data/[entity_id]';
       }
@@ -152,9 +168,16 @@ function tripal_bundle_default_views(&$views) {
       $handler->display->display_options['filters']['status']['value'] = '1';
 
       // Filter criterion.
-      if (in_array($field_name, array('data__identifier', 'schema__name',
-          'data__accession', 'rdfs__label', 'taxrank__genus',
-          'taxrank__species', 'obi__organism', 'tpub__title'))) {
+      if (in_array($field_name, [
+        'data__identifier',
+        'schema__name',
+        'data__accession',
+        'rdfs__label',
+        'taxrank__genus',
+        'taxrank__species',
+        'obi__organism',
+        'tpub__title',
+      ])) {
         $handler->display->display_options['filters'][$field_name]['id'] = $field_name;
         $handler->display->display_options['filters'][$field_name]['table'] = $base_table;
         $handler->display->display_options['filters'][$field_name]['field'] = $field_name;
@@ -166,11 +189,11 @@ function tripal_bundle_default_views(&$views) {
         $handler->display->display_options['filters'][$field_name]['expose']['use_operator'] = TRUE;
         $handler->display->display_options['filters'][$field_name]['expose']['operator'] = $field_name . '_op';
         $handler->display->display_options['filters'][$field_name]['expose']['identifier'] = $field_name;
-        $handler->display->display_options['filters'][$field_name]['expose']['remember_roles'] = array(
+        $handler->display->display_options['filters'][$field_name]['expose']['remember_roles'] = [
           2 => '2',
           1 => 0,
           3 => 0,
-        );
+        ];
         $handler->display->display_options['filters'][$field_name]['select_optional'] = TRUE;
         $handler->display->display_options['filters'][$field_name]['max_length'] = '40';
       }
@@ -182,30 +205,40 @@ function tripal_bundle_default_views(&$views) {
       $handler->display->display_options['sorts']['priority']['table'] = $base_table;
       $handler->display->display_options['sorts']['priority']['field'] = 'data__identifier';
     }
-    else if (in_array('schema__name', $selected_fields)) {
-      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
-      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
-      $handler->display->display_options['sorts']['priority']['field'] = 'schema__name';
-    }
-    else if (in_array('obi__organism', $selected_fields)) {
-      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
-      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
-      $handler->display->display_options['sorts']['priority']['field'] = 'obi__organism';
-    }
-    else if (in_array('rdfs_label', $selected_fields)) {
-      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
-      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
-      $handler->display->display_options['sorts']['priority']['field'] = 'rdfs_label';
-    }
-    else if (in_array('taxrank__genus', $selected_fields)) {
-      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
-      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
-      $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__genus';
-    }
-    else if (in_array('taxrank__species', $selected_fields)) {
-      $handler->display->display_options['sorts']['priority']['id'] = $field_name;
-      $handler->display->display_options['sorts']['priority']['table'] = $base_table;
-      $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__species';
+    else {
+      if (in_array('schema__name', $selected_fields)) {
+        $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+        $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+        $handler->display->display_options['sorts']['priority']['field'] = 'schema__name';
+      }
+      else {
+        if (in_array('obi__organism', $selected_fields)) {
+          $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+          $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+          $handler->display->display_options['sorts']['priority']['field'] = 'obi__organism';
+        }
+        else {
+          if (in_array('rdfs_label', $selected_fields)) {
+            $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+            $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+            $handler->display->display_options['sorts']['priority']['field'] = 'rdfs_label';
+          }
+          else {
+            if (in_array('taxrank__genus', $selected_fields)) {
+              $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+              $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+              $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__genus';
+            }
+            else {
+              if (in_array('taxrank__species', $selected_fields)) {
+                $handler->display->display_options['sorts']['priority']['id'] = $field_name;
+                $handler->display->display_options['sorts']['priority']['table'] = $base_table;
+                $handler->display->display_options['sorts']['priority']['field'] = 'taxrank__species';
+              }
+            }
+          }
+        }
+      }
     }
 
     /* Footer: Global: Tripal Content Data Collections */
@@ -235,6 +268,7 @@ function tripal_bundle_default_views(&$views) {
     $views[$view_name] = $view;
   }
 }
+
 /**
  * Describes the jobs administration view.
  *
@@ -251,7 +285,7 @@ function tripal_admin_defaultview_jobs() {
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  
+
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Jobs';
@@ -265,7 +299,7 @@ function tripal_admin_defaultview_jobs() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'job_id' => 'job_id',
     'job_name' => 'job_name',
     'submit_date' => 'submit_date',
@@ -278,86 +312,86 @@ function tripal_admin_defaultview_jobs() {
     'nothing_2' => 'nothing_2',
     'nothing_3' => 'nothing_3',
     'nothing_1' => 'nothing_1',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'job_id';
-  $handler->display->display_options['style_options']['info'] = array(
-    'job_id' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'job_id' => [
       'sortable' => 1,
       'default_sort_order' => 'desc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'job_name' => array(
+    ],
+    'job_name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'submit_date' => array(
+    ],
+    'submit_date' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'start_time' => array(
+    ],
+    'start_time' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'end_time' => array(
+    ],
+    'end_time' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'nothing' => array(
+    ],
+    'nothing' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'priority' => array(
+    ],
+    'priority' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'progress' => array(
+    ],
+    'progress' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'status' => array(
+    ],
+    'status' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'nothing_2' => array(
+    ],
+    'nothing_2' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'nothing_3' => array(
+    ],
+    'nothing_3' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'nothing_1' => array(
+    ],
+    'nothing_1' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Text area */
   $handler->display->display_options['header']['area']['id'] = 'area';
   $handler->display->display_options['header']['area']['table'] = 'views';
@@ -473,11 +507,11 @@ function tripal_admin_defaultview_jobs() {
   $handler->display->display_options['filters']['job_name']['expose']['label'] = 'Job Name Contains';
   $handler->display->display_options['filters']['job_name']['expose']['operator'] = 'job_name_op';
   $handler->display->display_options['filters']['job_name']['expose']['identifier'] = 'job_name';
-  $handler->display->display_options['filters']['job_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['job_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Jobs: Module Name */
   $handler->display->display_options['filters']['modulename']['id'] = 'modulename';
   $handler->display->display_options['filters']['modulename']['table'] = 'tripal_jobs';
@@ -487,11 +521,11 @@ function tripal_admin_defaultview_jobs() {
   $handler->display->display_options['filters']['modulename']['expose']['label'] = 'Submitting Module';
   $handler->display->display_options['filters']['modulename']['expose']['operator'] = 'modulename_op';
   $handler->display->display_options['filters']['modulename']['expose']['identifier'] = 'modulename';
-  $handler->display->display_options['filters']['modulename']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['modulename']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Jobs: Status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'tripal_jobs';
@@ -501,12 +535,12 @@ function tripal_admin_defaultview_jobs() {
   $handler->display->display_options['filters']['status']['expose']['label'] = 'Job Status';
   $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
   $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
-  
+  ];
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['path'] = 'admin/tripal/tripal_jobs/jobs';
@@ -516,6 +550,6 @@ function tripal_admin_defaultview_jobs() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
   $handler->display->display_options['tab_options']['weight'] = '0';
-  
+
   return $view;
 }

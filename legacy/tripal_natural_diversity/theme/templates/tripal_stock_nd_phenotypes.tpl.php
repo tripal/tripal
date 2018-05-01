@@ -57,23 +57,23 @@ $current_page_num = pager_default_initialize($total_records, $num_results_per_pa
 $offset = $num_results_per_page * $current_page_num;
 
 
-$phenotypes = array();
+$phenotypes = [];
 if ($total_records > 0) {
 
   // iterate through the nd_experiment_phenotype_ids and get the phenotype record
-  for ($i = $offset ; $i < $offset + $num_results_per_page; $i++) {
+  for ($i = $offset; $i < $offset + $num_results_per_page; $i++) {
     // expand the nd_experiment record to include the nd_experiment_phenotype table
     // there many be many phenotypes for a stock so we want to use a pager to limit
     // the results returned
-    $options = array(
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'phenotype_id' => array(
+      'include_fk' => [
+        'phenotype_id' => [
           'type_id' => 1,
-        )
-      ),
-    );
-    $values = array('nd_experiment_phenotype_id' => $nd_experiment_phenotype_id);
+        ],
+      ],
+    ];
+    $values = ['nd_experiment_phenotype_id' => $nd_experiment_phenotype_id];
     $nd_experiment_phenotype = chado_generate_var('nd_experiment_phenotype', $values);
     $phenotype = $nd_experiment_phenotype->phenotype_id;
     $phenotypes[$phenotype->phenotype_id]['phenotype'] = $phenotype;
@@ -81,30 +81,31 @@ if ($total_records > 0) {
   }
 }
 
-if (count($phenotypes) > 0) {?>
-  <div class="tripal_stock-data-block-desc tripal-data-block-desc">
-    The following <?php print number_format($total_records) ?> phenotypes(s) have been recorded.
-  </div><?php
+if (count($phenotypes) > 0) { ?>
+    <div class="tripal_stock-data-block-desc tripal-data-block-desc">
+    The following <?php print number_format($total_records) ?> phenotypes(s)
+    have been recorded.
+    </div><?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Phenotypes', 'Project');
+  $headers = ['Phenotypes', 'Project'];
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
+  $rows = [];
 
   // iterate through the nd_experiment_stock records and get
   // each experiment and the associated phenotypes
-  foreach ($phenotypes as $info){
-    $phenotype         = $info['phenotype'];
-    $nd_experiment_id  = $info['nd_experiment_id'];
+  foreach ($phenotypes as $info) {
+    $phenotype = $info['phenotype'];
+    $nd_experiment_id = $info['nd_experiment_id'];
 
     // get the nd_experiment record
-    $nd_experiment = chado_generate_var('nd_experiment', array('nd_experiment_id' => $nd_experiment_id));
+    $nd_experiment = chado_generate_var('nd_experiment', ['nd_experiment_id' => $nd_experiment_id]);
 
     $details = '';
 
@@ -130,13 +131,13 @@ if (count($phenotypes) > 0) {?>
 
     // get the evidence unit and add it to the details
     if ($phenotype->assay_id) {
-      $details .= "Evidence: " .  ucwords(preg_replace('/_/', ' ', $phenotype->assay_id->name)) . '<br>';
+      $details .= "Evidence: " . ucwords(preg_replace('/_/', ' ', $phenotype->assay_id->name)) . '<br>';
     }
 
     // Get the project for this experiment. For each nd_experiment_id there should only be one project
     // but the database does not constrain that there only be one project so just in case we get them all
-    $projects = array();
-    $values = array('nd_experiment_id' => $nd_experiment_stock->nd_experiment_id->nd_experiment_id);
+    $projects = [];
+    $values = ['nd_experiment_id' => $nd_experiment_stock->nd_experiment_id->nd_experiment_id];
     $nd_experiment_project = chado_generate_var('nd_experiment_project', $values, $options);
     $nd_experiment_projects = $nd_experiment_project;
     foreach ($nd_experiment_projects as $nd_experiment_project) {
@@ -148,33 +149,33 @@ if (count($phenotypes) > 0) {?>
       $project = $project->project_id;
       $name = $project->name;
       if (property_exists($project, 'nid')) {
-        $name = l($name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+        $name = l($name, "node/" . $project->nid, ['attributes' => ['target' => '_blank']]);
       }
       $pnames .= $name . '<br>';
     }
     $pnames = substr($pnames, 0, -4); // remove trailing <br>
 
-    $rows[] = array(
-       $details,
-       $pnames,
-    );
+    $rows[] = [
+      $details,
+      $pnames,
+    ];
   }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_natural_diversity-table-phenotypes',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -189,14 +190,14 @@ if (count($phenotypes) > 0) {?>
   // Drupal won't reset the parameter if it already exists.
   $get = $_GET;
   unset($_GET['pane']);
-  $pager = array(
-    'tags' => array(),
+  $pager = [
+    'tags' => [],
     'element' => $stock_pager_id,
-    'parameters' => array(
-      'pane' => 'genotypes'
-    ),
+    'parameters' => [
+      'pane' => 'genotypes',
+    ],
     'quantity' => $num_results_per_page,
-  );
+  ];
   print theme_pager($pager);
   $_GET = $get;
 }

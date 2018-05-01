@@ -13,27 +13,27 @@
  * @ingroup tripal_legacy_organism
  */
 function tripal_organism_node_info() {
-  $nodes = array();
-  $nodes['chado_organism'] = array(
-    'name'        => t('Organism'),
-    'base'        => 'chado_organism',
+  $nodes = [];
+  $nodes['chado_organism'] = [
+    'name' => t('Organism'),
+    'base' => 'chado_organism',
     'description' => t('An organism'),
-    'has_title'   => TRUE,
-    'locked'      => TRUE,
-    'chado_node_api' => array(
+    'has_title' => TRUE,
+    'locked' => TRUE,
+    'chado_node_api' => [
       'base_table' => 'organism',
       'hook_prefix' => 'chado_organism',
-      'record_type_title' => array(
+      'record_type_title' => [
         'singular' => t('Organism'),
-        'plural' => t('Organisms')
-      ),
-      'sync_filters' => array(
+        'plural' => t('Organisms'),
+      ],
+      'sync_filters' => [
         'type_id' => FALSE,
         'organism_id' => FALSE,
-        'checkboxes' => array('genus', 'species'),
-      ),
-    )
-  );
+        'checkboxes' => ['genus', 'species'],
+      ],
+    ],
+  ];
   return $nodes;
 }
 
@@ -42,22 +42,23 @@ function tripal_organism_node_info() {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
+ * @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet
+ *   exist, the type of node to be created
  *
- *  @param $op
+ * @param $op
  *  The operation to be performed
  *
  *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
+ * @param $account
+ *  A user object representing the user for whom the operation is to be
+ *   performed
  *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
+ * @return
+ *  If the permission for the specified operation is not set then return FALSE.
+ *   If the permission is set then return NULL as this allows other modules to
+ *   disable access.  The only exception is when the $op == 'create'.  We will
+ *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_legacy_organism
  */
@@ -67,7 +68,7 @@ function tripal_organism_node_access($node, $op, $account) {
     $node_type = $node->type;
   }
 
-  if($node_type == 'chado_organism') {
+  if ($node_type == 'chado_organism') {
     if ($op == 'create') {
       if (!user_access('create chado_organism content', $account)) {
         return NODE_ACCESS_DENY;
@@ -102,7 +103,7 @@ function tripal_organism_node_access($node, $op, $account) {
  * @ingroup tripal_legacy_organism
  */
 function chado_organism_form($node, $form_state) {
-  $form = array();
+  $form = [];
   $chado_version = chado_get_version(TRUE);
 
   // Default values can come in the following ways:
@@ -117,11 +118,11 @@ function chado_organism_form($node, $form_state) {
   // Set form field defaults.
   $organism = NULL;
   $organism_id = NULL;
-  $abbreviation   = '';
-  $genus          = '';
-  $species        = '';
-  $common_name    = '';
-  $description    = '';
+  $abbreviation = '';
+  $genus = '';
+  $species = '';
+  $common_name = '';
+  $description = '';
   $infraspecific_name = '';
   $type_id = '';
 
@@ -139,69 +140,69 @@ function chado_organism_form($node, $form_state) {
     $organism = chado_expand_var($organism, 'field', 'organism.comment');
 
     // Get form defaults.
-    $abbreviation   = $organism->abbreviation;
-    $genus          = $organism->genus;
-    $species        = $organism->species;
-    $common_name    = $organism->common_name;
-    $description    = $organism->comment;
+    $abbreviation = $organism->abbreviation;
+    $genus = $organism->genus;
+    $species = $organism->species;
+    $common_name = $organism->common_name;
+    $description = $organism->comment;
     // The infraspecific and type_id fields are new to Chado v1.3
     if ($chado_version > 1.2) {
       $infraspecific_name = $organism->infraspecific_name;
-      $type_id  = $organism->type_id->cvterm_id;
+      $type_id = $organism->type_id->cvterm_id;
     }
 
     // Set the organism_id in the form.
-    $form['organism_id'] = array(
+    $form['organism_id'] = [
       '#type' => 'value',
       '#value' => $organism->organism_id,
-    );
+    ];
     $organism_id = $organism->organism_id;
   }
 
   // If we are re constructing the form from a failed validation or ajax
   // callback then use the $form_state['values'] values.
   if (array_key_exists('values', $form_state) and isset($form_state['values']['genus'])) {
-    $abbreviation   = $form_state['values']['abbreviation'];
-    $genus        = $form_state['values']['genus'];
+    $abbreviation = $form_state['values']['abbreviation'];
+    $genus = $form_state['values']['genus'];
     $species = $form_state['values']['species'];
-    $common_name  = $form_state['values']['common_name'];
-    $description     = $form_state['values']['comment'];
+    $common_name = $form_state['values']['common_name'];
+    $description = $form_state['values']['comment'];
     if ($chado_version > 1.2) {
       $infraspecific_name = $form_state['values']['infraspecific_name'];
-      $type_id  = $form_state['values']['type_id'];
+      $type_id = $form_state['values']['type_id'];
     }
   }
   // If we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array.
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $abbreviation   = $form_state['input']['abbreviation'];
-    $genus        = $form_state['input']['genus'];
+    $abbreviation = $form_state['input']['abbreviation'];
+    $genus = $form_state['input']['genus'];
     $species = $form_state['input']['species'];
-    $common_name  = $form_state['input']['common_name'];
-    $description     = $form_state['input']['comment'];
+    $common_name = $form_state['input']['common_name'];
+    $description = $form_state['input']['comment'];
     if ($chado_version > 1.2) {
       $infraspecific_name = $form_state['input']['infraspecific_name'];
-      $type_id  = $form_state['input']['type_id'];
+      $type_id = $form_state['input']['type_id'];
     }
   }
 
-  $form['genus'] = array(
+  $form['genus'] = [
     '#type' => 'textfield',
     '#title' => t('Genus'),
     '#required' => TRUE,
     '#default_value' => $genus,
-  );
-  $form['species'] = array(
+  ];
+  $form['species'] = [
     '#type' => 'textfield',
     '#title' => t('Species'),
     '#required' => TRUE,
     '#default_value' => $species,
-  );
+  ];
   // The infraspecific and type_id fields are new to Chado v1.3.
   if ($chado_version > 1.2) {
 
-    $options = array('0' => 'Select a rank');
-    $cv = tripal_get_cv(array('name' => 'taxonomic_rank'));
+    $options = ['0' => 'Select a rank'];
+    $cv = tripal_get_cv(['name' => 'taxonomic_rank']);
     if (!$cv) {
       drupal_set_message('The taxonomic_rank vocabulary cannot be found, thus selects for "rank" are not available.', 'warning');
     }
@@ -211,78 +212,84 @@ function chado_organism_form($node, $form_state) {
       // Unfortunately the taxonomic_rank vocabulary is not properly organized
       // such that we only include terms below 'species'. Therefore we will
       // just list them here and hope we haven't missed one.
-      $valid_terms = array('subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
-      foreach  ($terms as $cvterm_id => $name) {
+      $valid_terms = [
+        'subspecies',
+        'varietas',
+        'subvariety',
+        'forma',
+        'subforma',
+      ];
+      foreach ($terms as $cvterm_id => $name) {
         if (in_array($name, $valid_terms)) {
           $options[$cvterm_id] = $name;
         }
       }
     }
 
-    $form['type_id']= array(
+    $form['type_id'] = [
       '#type' => 'select',
       '#title' => t('Infraspecific Rank'),
       '#options' => $options,
       '#default_value' => $type_id,
       '#description' => t('The scientific name for any taxon
         below the rank of species. This field is used for constructing the
-        full infraspecific name for the organism.')
-    );
+        full infraspecific name for the organism.'),
+    ];
 
-    $form['infraspecific_name']= array(
+    $form['infraspecific_name'] = [
       '#type' => 'textfield',
       '#title' => t('Infraspecific Name'),
       '#default_value' => $infraspecific_name,
-      '#description'   => t("The infraspecific name for this organism. When
+      '#description' => t("The infraspecific name for this organism. When
           diplaying the full taxonomic name, this field is appended to the
           genus, species and rank."),
-    );
+    ];
   }
-  $form['abbreviation']= array(
+  $form['abbreviation'] = [
     '#type' => 'textfield',
     '#title' => t('Abbreviation'),
     '#default_value' => $abbreviation,
     '#descriptoin' => t('A short abbreviation for this species (e.g. O.sativa)'),
-  );
-  $form['common_name']= array(
+  ];
+  $form['common_name'] = [
     '#type' => 'textfield',
     '#title' => t('Common Name'),
     '#default_value' => $common_name,
-  );
-  $form['description']= array(
+  ];
+  $form['description'] = [
     '#type' => 'text_format',
     '#rows' => 15,
     '#title' => t('Description'),
     '#default_value' => $description,
-  );
+  ];
 
-  $form['organism_image']= array(
+  $form['organism_image'] = [
     '#type' => 'managed_file',
     '#title' => t('Organism Image'),
     '#description' => t('Add an image to display for this organism.'),
     '#progress_indicator' => 'bar',
     '#upload_location' => 'public://tripal/tripal_organism/images/',
-  );
+  ];
 
   // PROPERTIES FORM
   //---------------------------------------------
   $prop_cv = tripal_get_default_cv('organismprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  $details = array(
+  $details = [
     'property_table' => 'organismprop',
     'chado_id' => $organism_id,
-    'cv_id' => $cv_id
-  );
+    'cv_id' => $cv_id,
+  ];
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
-  $details = array(
+  $details = [
     'linking_table' => 'organism_dbxref',
     'base_foreign_key' => 'organism_id',
-    'base_key_value' => $organism_id
-  );
+    'base_key_value' => $organism_id,
+  ];
   // Adds the form elements to your current form.
   chado_add_node_form_dbxrefs($form, $form_state, $details);
 
@@ -304,7 +311,7 @@ function chado_organism_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if(property_exists($node, "op") and $node->op != 'Save') {
+  if (property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
@@ -315,12 +322,12 @@ function chado_organism_validate($node, $form, &$form_state) {
   }
 
   // remove any white space around values
-  $node->genus        = property_exists($node, 'genus') ? trim($node->genus) : '';
-  $node->species      = property_exists($node, 'species') ? trim($node->species) : '';
+  $node->genus = property_exists($node, 'genus') ? trim($node->genus) : '';
+  $node->species = property_exists($node, 'species') ? trim($node->species) : '';
   $node->abbreviation = property_exists($node, 'abbreviation') ? trim($node->abbreviation) : '';
-  $node->common_name  = property_exists($node, 'common_name') ? trim($node->common_name) : '';
-  $node->type_id  = property_exists($node, 'type_id') ? trim($node->type_id) : '';
-  $node->infraspecific_name  = property_exists($node, 'infraspecific_name') ? trim($node->infraspecific_name) : '';
+  $node->common_name = property_exists($node, 'common_name') ? trim($node->common_name) : '';
+  $node->type_id = property_exists($node, 'type_id') ? trim($node->type_id) : '';
+  $node->infraspecific_name = property_exists($node, 'infraspecific_name') ? trim($node->infraspecific_name) : '';
 
   if ($node->type_id and !$node->infraspecific_name) {
     form_set_error('infraspecific_name', "If a rank is provided an infraspecific name must also be provided.");
@@ -339,29 +346,33 @@ function chado_organism_validate($node, $form, &$form_state) {
         species = :species AND NOT
         organism_id = :organism_id
     ";
-    $args = array(':genus' => $node->genus, ':species' => $node->species, ':organism_id' => $node->organism_id);
+    $args = [
+      ':genus' => $node->genus,
+      ':species' => $node->species,
+      ':organism_id' => $node->organism_id,
+    ];
     $result = chado_query($sql, $args)->fetchObject();
     if ($result) {
       form_set_error('genus', t("Update cannot proceed. The organism genus
         '$node->genus' and species '$node->species' is already present in the database."));
       tripal_report_error('tripal_organism', TRIPAL_WARNING,
         'Update organism: genus and species already exists: %values',
-        array('%values' => "genus = $node->genus, species = $node->species"));
+        ['%values' => "genus = $node->genus, species = $node->species"]);
     }
   }
   // Validating for an insert
   else {
-    $values = array(
+    $values = [
       'genus' => $node->genus,
       'species' => $node->species,
-    );
-    $organism = chado_select_record('organism', array('organism_id'), $values);
+    ];
+    $organism = chado_select_record('organism', ['organism_id'], $values);
     if (sizeof($organism) > 0) {
       form_set_error('genus', 'Cannot add the organism with this genus and species.
         The organism already exists.');
       tripal_report_error('tripal_organism', TRIPAL_WARNING,
         'Insert organism: genus and species already exists: %values',
-        array('%values' => "genus = $node->genus, species = $node->species"));
+        ['%values' => "genus = $node->genus, species = $node->species"]);
     }
   }
 }
@@ -370,8 +381,8 @@ function chado_organism_validate($node, $form, &$form_state) {
  *  Implements hook_insert().
  *
  *  When a new chado_organism node is created we also need to add information
- *  to our chado_organism table.  This function is called on insert of a new node
- *  of type 'chado_organism' and inserts the necessary information.
+ *  to our chado_organism table.  This function is called on insert of a new
+ * node of type 'chado_organism' and inserts the necessary information.
  *
  * @ingroup tripal_legacy_organism
  */
@@ -385,23 +396,23 @@ function chado_organism_insert($node) {
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'organism_id')) {
     // remove any white space around values
-    $node->genus        = trim($node->genus);
-    $node->species      = trim($node->species);
+    $node->genus = trim($node->genus);
+    $node->species = trim($node->species);
     $node->abbreviation = trim($node->abbreviation);
-    $node->common_name  = trim($node->common_name);
-    $node->description  = trim($node->description['value']);
+    $node->common_name = trim($node->common_name);
+    $node->description = trim($node->description['value']);
     if ($chado_version > 1.2) {
-      $node->type_id  = trim($node->type_id);
-      $node->infraspecific_name  = trim($node->infraspecific_name);
+      $node->type_id = trim($node->type_id);
+      $node->infraspecific_name = trim($node->infraspecific_name);
     }
 
-    $values = array(
-      'genus'        => $node->genus,
-      'species'      => $node->species,
+    $values = [
+      'genus' => $node->genus,
+      'species' => $node->species,
       'abbreviation' => $node->abbreviation,
-      'common_name'  => $node->common_name,
-      'comment'      => $node->description,
-    );
+      'common_name' => $node->common_name,
+      'comment' => $node->description,
+    ];
     if ($chado_version > 1.2) {
       if ($node->type_id) {
         $values['type_id'] = $node->type_id;
@@ -415,27 +426,34 @@ function chado_organism_insert($node) {
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
       tripal_report_error('tripal_organism', TRIPAL_ERROR, 'Insert Organism: Unable to create organism where values:%values',
-      array('%values' => print_r($values, TRUE)));
+        ['%values' => print_r($values, TRUE)]);
       return;
     }
     $organism_id = $organism['organism_id'];
 
     if ($organism_id) {
       // * Properties Form *
-      $details = array(
-        'property_table' => 'organismprop',   // the name of the prop table
-        'base_table' => 'organism',           // the name of your chado base table
-        'foreignkey_name' => 'organism_id',   // the name of the key in your base table
-        'foreignkey_value' => $organism_id    // the value of the example_id key
-      );
+      $details = [
+        'property_table' => 'organismprop',
+        // the name of the prop table
+        'base_table' => 'organism',
+        // the name of your chado base table
+        'foreignkey_name' => 'organism_id',
+        // the name of the key in your base table
+        'foreignkey_value' => $organism_id
+        // the value of the example_id key
+      ];
       chado_update_node_form_properties($node, $details);
 
       // * Additional DBxrefs Form *
-      $details = array(
-        'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
-        'foreignkey_name' => 'organism_id',     // the name of the key in your base table
-        'foreignkey_value' => $organism_id      // the value of the organism_id key
-      );
+      $details = [
+        'linking_table' => 'organism_dbxref',
+        // the name of your _dbxref table
+        'foreignkey_name' => 'organism_id',
+        // the name of the key in your base table
+        'foreignkey_value' => $organism_id
+        // the value of the organism_id key
+      ];
       chado_update_node_form_dbxrefs($node, $details);
 
     }
@@ -471,11 +489,11 @@ function chado_organism_update($node) {
   $chado_version = chado_get_version(TRUE);
 
   // remove any white space around values
-  $node->genus        = trim($node->genus);
-  $node->species      = trim($node->species);
+  $node->genus = trim($node->genus);
+  $node->species = trim($node->species);
   $node->abbreviation = trim($node->abbreviation);
-  $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description['value']);
+  $node->common_name = trim($node->common_name);
+  $node->description = trim($node->description['value']);
   if ($chado_version > 1.2) {
     $node->type_id = trim($node->type_id);
     $node->infraspecific_name = trim($node->infraspecific_name);
@@ -487,51 +505,58 @@ function chado_organism_update($node) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
-  $match = array(
+  $match = [
     'organism_id' => $organism_id,
-  );
-  $values = array(
+  ];
+  $values = [
     'genus' => $node->genus,
     'species' => $node->species,
     'abbreviation' => $node->abbreviation,
     'common_name' => $node->common_name,
-    'comment' => $node->description
-  );
-    if ($chado_version > 1.2) {
-      if ($node->type_id) {
-        $values['type_id'] = $node->type_id;
-      }
-      else {
-        $values['type_id'] = '__NULL__';
-      }
-      if ($node->infraspecific_name) {
-        $values['infraspecific_name'] = $node->infraspecific_name;
-      }
-      else {
-        $values['infraspecific_name'] = '__NULL__';
-      }
+    'comment' => $node->description,
+  ];
+  if ($chado_version > 1.2) {
+    if ($node->type_id) {
+      $values['type_id'] = $node->type_id;
     }
+    else {
+      $values['type_id'] = '__NULL__';
+    }
+    if ($node->infraspecific_name) {
+      $values['infraspecific_name'] = $node->infraspecific_name;
+    }
+    else {
+      $values['infraspecific_name'] = '__NULL__';
+    }
+  }
 
   $org_status = chado_update_record('organism', $match, $values);
-  if ( $node->organism_image != '' ) {
+  if ($node->organism_image != '') {
     chado_organism_add_image($node);
   }
 
   // * Properties Form *
-  $details = array(
-    'property_table' => 'organismprop',   // the name of the prop table
-    'base_table' => 'organism',           // the name of your chado base table
-    'foreignkey_name' => 'organism_id',   // the name of the key in your base table
-    'foreignkey_value' => $organism_id    // the value of the example_id key
-  );
+  $details = [
+    'property_table' => 'organismprop',
+    // the name of the prop table
+    'base_table' => 'organism',
+    // the name of your chado base table
+    'foreignkey_name' => 'organism_id',
+    // the name of the key in your base table
+    'foreignkey_value' => $organism_id
+    // the value of the example_id key
+  ];
   chado_update_node_form_properties($node, $details);
 
   // * Additional DBxrefs Form *
-  $details = array(
-    'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
-    'foreignkey_name' => 'organism_id',     // the name of the key in your base table
-    'foreignkey_value' => $organism_id      // the value of the organism_id key
-  );
+  $details = [
+    'linking_table' => 'organism_dbxref',
+    // the name of your _dbxref table
+    'foreignkey_name' => 'organism_id',
+    // the name of the key in your base table
+    'foreignkey_value' => $organism_id
+    // the value of the organism_id key
+  ];
   chado_update_node_form_dbxrefs($node, $details);
 }
 
@@ -546,7 +571,7 @@ function chado_organism_add_image($node) {
   // If there is already an organism image, then remove it it if
   // no other modules are using it
   $fid = db_select('file_usage', 'fu')
-    ->fields('fu', array('fid'))
+    ->fields('fu', ['fid'])
     ->condition('module', 'tripal_organism')
     ->condition('type', 'organism_image')
     ->condition('id', $node->nid)
@@ -586,29 +611,30 @@ function chado_organism_delete($node) {
 
   // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
   $sql_del = "DELETE FROM {chado_organism} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
 
   // Test dependency before deleting from chado database. If a library or
   // feature depends on this organism, don't delete it
 
   $sql = "SELECT feature_id FROM {feature} WHERE organism_id = :organism_id";
-  $check_feature = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  $check_feature = chado_query($sql, [':organism_id' => $organism_id])->fetchObject();
   $sql = "SELECT library_id FROM {library} WHERE organism_id = :organism_id";
-  $check_lib = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  $check_lib = chado_query($sql, [':organism_id' => $organism_id])->fetchObject();
   $sql = "SELECT stock_id FROM {stock} WHERE organism_id = :organism_id";
-  $check_stock = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  $check_stock = chado_query($sql, [':organism_id' => $organism_id])->fetchObject();
 
   if (!$check_lib && !$check_feature && !$check_stock) {
-    chado_delete_record('organism', array('organism_id' => $organism_id));
+    chado_delete_record('organism', ['organism_id' => $organism_id]);
   }
   else {
     drupal_set_message(t("Warning: other data depends on this organism. The organism page was removed from this site but the organism was removed from Chado."), 'warning');
   }
 }
+
 /**
  *  Implements hook_load().
  *
@@ -630,7 +656,7 @@ function chado_organism_load($nodes) {
     }
 
     // build the organism variable
-    $values = array('organism_id' => $organism_id);
+    $values = ['organism_id' => $organism_id];
     $organism = chado_generate_var('organism', $values);
 
 
@@ -665,9 +691,9 @@ function tripal_organism_node_presave($node) {
       // not see any field values from the form, we assume this fucntion
       // is being called for syncing, so we must set the title accordingly
       if (property_exists($node, 'genus')) {
-        $node->title = $node->genus  . " " . $node->species;
+        $node->title = $node->genus . " " . $node->species;
         if (property_exists($node, 'type_id')) {
-          $cvterm = tripal_get_cvterm(array('cvterm_id' => $node->type_id));
+          $cvterm = tripal_get_cvterm(['cvterm_id' => $node->type_id]);
           if ($cvterm) {
             $node->title .= $cvterm->name . " " . $node->infraspecific_name;
           }
@@ -695,31 +721,31 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
 
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_organism_base'] = array(
+        $node->content['tripal_organism_base'] = [
           '#theme' => 'tripal_organism_base',
           '#node' => $node,
-          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_id' => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
-        );
-        $node->content['tripal_organism_properties'] = array(
+        ];
+        $node->content['tripal_organism_properties'] = [
           '#theme' => 'tripal_organism_properties',
           '#node' => $node,
-          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_id' => 'properties',
           '#tripal_toc_title' => 'Properties',
-        );
-        $node->content['tripal_organism_references'] = array(
+        ];
+        $node->content['tripal_organism_references'] = [
           '#theme' => 'tripal_organism_references',
           '#node' => $node,
-          '#tripal_toc_id'    => 'references',
+          '#tripal_toc_id' => 'references',
           '#tripal_toc_title' => 'Cross References',
-        );
+        ];
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_organism_teaser'] = array(
+        $node->content['tripal_organism_teaser'] = [
           '#theme' => 'tripal_organism_teaser',
           '#node' => $node,
-        );
+        ];
       }
       break;
   }
@@ -738,7 +764,7 @@ function tripal_organism_node_insert($node) {
 
       // find the organism and add in the details
       $organism_id = chado_get_id_from_nid('organism', $node->nid);
-      $values = array('organism_id' => $organism_id);
+      $values = ['organism_id' => $organism_id];
       $organism = chado_generate_var('organism', $values);
       $node->organism = $organism;
 

@@ -8,52 +8,53 @@
 
 /**
  * Implementation of hook_node_info().
- * This node_info, is a simple node that describes the functionallity of the module.
+ * This node_info, is a simple node that describes the functionallity of the
+ * module.
  *
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_node_info() {
 
-  return array(
-    'chado_contact' => array(
-      'name'        => t('Contact'),
-      'base'        => 'chado_contact',
+  return [
+    'chado_contact' => [
+      'name' => t('Contact'),
+      'base' => 'chado_contact',
       'description' => t('A contact from the Chado database'),
-      'has_title'   => TRUE,
-      'locked'      => TRUE,
-      'chado_node_api' => array(
+      'has_title' => TRUE,
+      'locked' => TRUE,
+      'chado_node_api' => [
         'base_table' => 'contact',
         'hook_prefix' => 'chado_contact',
-        'record_type_title' => array(
+        'record_type_title' => [
           'singular' => t('Contact'),
-          'plural' => t('Contacts')
-        ),
-        'sync_filters' => array(
+          'plural' => t('Contacts'),
+        ],
+        'sync_filters' => [
           'type_id' => FALSE,
-          'organism_id' => FALSE
-        ),
-      )
-    ),
-  );
+          'organism_id' => FALSE,
+        ],
+      ],
+    ],
+  ];
 }
 
 /**
  * Implementation of hook_form().
  *
- *  @parm $node
+ * @parm $node
  *    The node that is created when the database is initialized
  *
- *  @parm $form_state
- *    The state of the form, that has the user entered information that is neccessary for, setting
- *    up the database tables for the contact
+ * @parm $form_state
+ *    The state of the form, that has the user entered information that is
+ *   neccessary for, setting up the database tables for the contact
  *
- *  @return $form
+ * @return $form
  *    The information that was enterd allong with
  *
  * @ingroup tripal_legacy_contact
  */
 function chado_contact_form(&$node, $form_state) {
-  $form = array();
+  $form = [];
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing contact
@@ -63,9 +64,9 @@ function chado_contact_form(&$node, $form_state) {
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
-  $contact_id  = null;
-  $type_id     = 0;
-  $contactname       = '';
+  $contact_id = NULL;
+  $type_id = 0;
+  $contactname = '';
   $description = '';
 
   // if we are editing an existing node then the contact is already part of the node
@@ -74,8 +75,8 @@ function chado_contact_form(&$node, $form_state) {
     $contact_id = $contact->contact_id;
 
     // get form defaults
-    $type_id     = $contact->type_id->cvterm_id;
-    $contactname       = $contact->name;
+    $type_id = $contact->type_id->cvterm_id;
+    $contactname = $contact->name;
 
     // get the contact default values.  When this module was first created
     // the contact description was incorrectly stored in the $node->body field.
@@ -96,30 +97,30 @@ function chado_contact_form(&$node, $form_state) {
     }
     if (!$description) {
       $contactprop = chado_get_property(
-        array('table' => 'contact', 'id' => $contact->contact_id),
-        array('type_name' => 'contact_description', 'cv_name' => 'tripal_contact')
+        ['table' => 'contact', 'id' => $contact->contact_id],
+        ['type_name' => 'contact_description', 'cv_name' => 'tripal_contact']
       );
       $description = (isset($contactprop->value)) ? $contactprop->value : '';
     }
 
     // set the contact_id in the form
-    $form['contact_id'] = array(
+    $form['contact_id'] = [
       '#type' => 'value',
       '#value' => $contact->contact_id,
-    );
+    ];
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $type_id     = $form_state['values']['type_id'];
-    $contactname       = $form_state['values']['contactname'];
+    $type_id = $form_state['values']['type_id'];
+    $contactname = $form_state['values']['contactname'];
     $description = $form_state['values']['description'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $type_id     = $form_state['input']['type_id'];
-    $contactname       = $form_state['input']['contactname'];
+    $type_id = $form_state['input']['type_id'];
+    $contactname = $form_state['input']['contactname'];
     $description = $form_state['input']['description'];
   }
 
@@ -153,41 +154,41 @@ function chado_contact_form(&$node, $form_state) {
   else {
     $contact_types = tripal_get_cvterm_default_select_options('contact', 'type_id', 'contact types');
   }
-  $form['type_id'] = array(
+  $form['type_id'] = [
     '#type' => 'select',
     '#title' => t('Contact Type'),
     '#options' => $contact_types,
     '#required' => TRUE,
     '#default_value' => $type_id,
-  );
+  ];
 
-  $form['contactname']= array(
-    '#type'          => 'textfield',
-    '#title'         => t('Contact Name'),
-    '#description'   => t('Enter the name of this contact'),
-    '#required'      => TRUE,
+  $form['contactname'] = [
+    '#type' => 'textfield',
+    '#title' => t('Contact Name'),
+    '#description' => t('Enter the name of this contact'),
+    '#required' => TRUE,
     '#default_value' => $contactname,
-    '#maxlength'     => 255,
-  );
+    '#maxlength' => 255,
+  ];
 
-  $form['description']= array(
-    '#type'          => 'text_format',
-    '#title'         => t('Contact Description'),
-    '#description'   => t('A brief description of the contact'),
-    '#required'      => TRUE,
+  $form['description'] = [
+    '#type' => 'text_format',
+    '#title' => t('Contact Description'),
+    '#description' => t('A brief description of the contact'),
+    '#required' => TRUE,
     '#default_value' => $description,
-  );
+  ];
 
   // Properties Form
   // ----------------------------------
   $prop_cv = tripal_get_default_cv('contactprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  $select_options = array();
+  $select_options = [];
 
   // the Tripal contact vocabulary is heirarchical so if that vocab is default we
   // want to use the subset of terms not under the type 'Contact Type' for our
   // properties list.
-  if($prop_cv->name == 'tripal_contact') {
+  if ($prop_cv->name == 'tripal_contact') {
     // Need to pass in our own select_options since we use cvtermpath to filter ours
     $select_options[] = 'Select a Property';
     $sql = "
@@ -211,27 +212,34 @@ function chado_contact_form(&$node, $form_state) {
     }
   }
 
-  $details = array(
+  $details = [
     'property_table' => 'contactprop',
     'chado_id' => $contact_id,
     'cv_id' => $cv_id,
     'select_options' => $select_options,
-  );
+  ];
   chado_add_node_form_properties($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('contact_relationship', 'type_id');
   $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
-  $details = array(
-    'relationship_table' => 'contact_relationship', // the name of the _relationship table
-    'base_table' => 'contact',                      // the name of your chado base table
-    'base_foreign_key' => 'contact_id',             // the name of the key in your base chado table
-    'base_key_value' => $contact_id,                // the value of example_id for this record
-    'nodetype' => 'contact',                        // the human-readable name of your node type
-    'cv_id' => $cv_id,                              // the cv.cv_id of the cv governing contact_relationship.type_id
-    'base_name_field' => 'name',                    // the base table field you want to be used as the name
-  );
+  $details = [
+    'relationship_table' => 'contact_relationship',
+    // the name of the _relationship table
+    'base_table' => 'contact',
+    // the name of your chado base table
+    'base_foreign_key' => 'contact_id',
+    // the name of the key in your base chado table
+    'base_key_value' => $contact_id,
+    // the value of example_id for this record
+    'nodetype' => 'contact',
+    // the human-readable name of your node type
+    'cv_id' => $cv_id,
+    // the cv.cv_id of the cv governing contact_relationship.type_id
+    'base_name_field' => 'name',
+    // the base table field you want to be used as the name
+  ];
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);
 
@@ -250,7 +258,7 @@ function chado_contact_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if(property_exists($node, "op") and $node->op != 'Save') {
+  if (property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
@@ -266,14 +274,14 @@ function chado_contact_validate($node, $form, &$form_state) {
   // Validating for an update
   if (!is_null($node->nid)) {
     // get the existing node
-    $values = array('contact_id' => $node->contact_id);
-    $result = chado_select_record('contact', array('*'), $values);
+    $values = ['contact_id' => $node->contact_id];
+    $result = chado_select_record('contact', ['*'], $values);
     $contact = $result[0];
 
     // if the name has changed make sure it doesn't conflict with an existing name
     if ($contact->name != $node->contactname) {
-      $values = array('name' => $node->contactname);
-      $result = chado_select_record('contact', array('contact_id'), $values);
+      $values = ['name' => $node->contactname];
+      $result = chado_select_record('contact', ['contact_id'], $values);
       if ($result and count($result) > 0) {
         form_set_error('contactname', 'Cannot update the contact with this contact name. A contact with this name already exists.');
         return;
@@ -283,10 +291,10 @@ function chado_contact_validate($node, $form, &$form_state) {
   // Validating for an insert
   else {
     // The unique constraint for the chado contact table is: name
-    $values = array(
+    $values = [
       'name' => $node->contactname,
-    );
-    $contact = chado_select_record('contact', array('contact_id'), $values);
+    ];
+    $contact = chado_select_record('contact', ['contact_id'], $values);
     if ($contact and count($contact) > 0) {
       form_set_error('contactname', 'Cannot add the contact with this name. A contact with these values already exists.');
       return;
@@ -299,32 +307,33 @@ function chado_contact_validate($node, $form, &$form_state) {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
+ * @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet
+ *   exist, the type of node to be created
  *
- *  @param $op
+ * @param $op
  *  The operation to be performed
  *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
+ * @param $account
+ *  A user object representing the user for whom the operation is to be
+ *   performed
  *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
+ * @return
+ *  If the permission for the specified operation is not set then return FALSE.
+ *   If the permission is set then return NULL as this allows other modules to
+ *   disable access.  The only exception is when the $op == 'create'.  We will
+ *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_legacy_contact
  */
-function tripal_contact_node_access($node, $op, $account ) {
+function tripal_contact_node_access($node, $op, $account) {
 
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
   }
 
-  if($node_type == 'chado_contact') {
+  if ($node_type == 'chado_contact') {
     if ($op == 'create') {
       if (!user_access('create chado_contact content', $account)) {
         return NODE_ACCESS_DENY;
@@ -352,14 +361,15 @@ function tripal_contact_node_access($node, $op, $account ) {
 }
 
 
-
 /**
  * Implements of hook_insert().
  *
- * This function inserts user entered information pertaining to the contact instance into the
- * 'contactauthor', 'contactprop', 'chado_contact', 'contact' talble of the database.
+ * This function inserts user entered information pertaining to the contact
+ * instance into the
+ * 'contactauthor', 'contactprop', 'chado_contact', 'contact' talble of the
+ * database.
  *
- *  @parm $node
+ * @parm $node
  *    Then node which contains the information stored within the node-ID
  *
  * @ingroup tripal_legacy_contact
@@ -377,43 +387,45 @@ function chado_contact_insert($node) {
 
 
     // insert and then get the newly inserted contact record
-    $values = array(
-      'name'           => $node->contactname,
-      'description'    => '',
-      'type_id'        => $node->type_id,
-    );
+    $values = [
+      'name' => $node->contactname,
+      'description' => '',
+      'type_id' => $node->type_id,
+    ];
     $contact = chado_insert_record('contact', $values);
     if (!$contact) {
       drupal_set_message(t('Unable to add contact.', 'warning'));
       tripal_report_error('tripal_contact', TRIPAL_ERROR,
         'Insert contact: Unable to create contact where values: %values',
-        array('%values' => print_r($values, TRUE)));
+        ['%values' => print_r($values, TRUE)]);
       return;
     }
     $contact_id = $contact['contact_id'];
 
-      // Add the description property
+    // Add the description property
     $properties = chado_retrieve_node_form_properties($node);
-    $contact_descrip_id = tripal_get_cvterm(array(
+    $contact_descrip_id = tripal_get_cvterm([
       'name' => 'contact_description',
-      'cv_id' => array('name' =>  'tripal_contact')
-    ));
+      'cv_id' => ['name' => 'tripal_contact'],
+    ]);
     $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
 
     // * Properties Form *
-    $details = array(
+    $details = [
       'property_table' => 'contactprop',
       'base_table' => 'contact',
       'foreignkey_name' => 'contact_id',
-      'foreignkey_value' => $contact_id
-    );
+      'foreignkey_value' => $contact_id,
+    ];
     chado_update_node_form_properties($node, $details, $properties);
 
     // * Relationships Form *
-    $details = array(
-      'relationship_table' => 'contact_relationship',  // name of the _relationship table
-      'foreignkey_value' => $contact_id                // value of the contact_id key
-    );
+    $details = [
+      'relationship_table' => 'contact_relationship',
+      // name of the _relationship table
+      'foreignkey_value' => $contact_id
+      // value of the contact_id key
+    ];
     chado_update_node_form_relationships($node, $details);
   }
   else {
@@ -452,48 +464,50 @@ function chado_contact_update($node) {
   $node->contactname = trim($node->contactname);
   $node->description = trim($node->description['value']);
 
-  $contact_id = chado_get_id_from_nid('contact', $node->nid) ;
+  $contact_id = chado_get_id_from_nid('contact', $node->nid);
 
   // update the contact record
-  $match = array(
+  $match = [
     'contact_id' => $contact_id,
-  );
-  $values = array(
+  ];
+  $values = [
     'name' => $node->contactname,
     'description' => '',
-    'type_id' => $node->type_id
-  );
+    'type_id' => $node->type_id,
+  ];
   $status = chado_update_record('contact', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating contact", "error");
     tripal_report_error('tripal_contact', TRIPAL_ERROR,
-      "Error updating contact", array());
+      "Error updating contact", []);
     return;
   }
 
   // Add the description property
   $properties = chado_retrieve_node_form_properties($node);
-  $contact_descrip_id = tripal_get_cvterm(array(
+  $contact_descrip_id = tripal_get_cvterm([
     'name' => 'contact_description',
-    'cv_id' => array('name' => 'tripal_contact')
-  ));
+    'cv_id' => ['name' => 'tripal_contact'],
+  ]);
   $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
 
   // now add in the properties by first removing any the contact
   // already has and adding the ones we have
-  $details = array(
+  $details = [
     'property_table' => 'contactprop',
     'base_table' => 'contact',
     'foreignkey_name' => 'contact_id',
-    'foreignkey_value' => $contact_id
-  );
+    'foreignkey_value' => $contact_id,
+  ];
   chado_update_node_form_properties($node, $details, $properties);
 
   // * Relationships Form *
-  $details = array(
-    'relationship_table' => 'contact_relationship',  // name of the _relationship table
-    'foreignkey_value' => $contact_id                // value of the contact_id key
-  );
+  $details = [
+    'relationship_table' => 'contact_relationship',
+    // name of the _relationship table
+    'foreignkey_value' => $contact_id
+    // value of the contact_id key
+  ];
   chado_update_node_form_relationships($node, $details);
 }
 
@@ -522,22 +536,22 @@ function chado_contact_load($nodes) {
     }
 
     // get the contact
-    $values = array('contact_id' => $contact_id);
+    $values = ['contact_id' => $contact_id];
     $contact = chado_generate_var('contact', $values);
 
     // get the contact description from the contactprop table and replace
     // the contact.description field with this one (we don't use the contact.description
     // field because it is only 255 characters (too small)).
-    $values = array(
+    $values = [
       'contact_id' => $contact->contact_id,
-      'type_id' => array(
+      'type_id' => [
         'name' => 'contact_description',
-      ),
-    );
-    $options = array(
+      ],
+    ];
+    $options = [
       'return_array' => 1,
-      'include_fk' => array('type_id' => 1),
-    );
+      'include_fk' => ['type_id' => 1],
+    ];
     $description = chado_generate_var('contactprop', $values, $options);
     if (count($description) == 1) {
       $description = chado_expand_var($description, 'field', 'contactprop.value');
@@ -554,11 +568,11 @@ function chado_contact_load($nodes) {
 /**
  * Implements hook_delete().
  *
- * This function takes a node and if the delete button has been chosen by the user, the contact
- * and it's details will be removed.Following,given the node-ID, the instance will be deleted from
- * the 'chado_contact' table.
+ * This function takes a node and if the delete button has been chosen by the
+ * user, the contact and it's details will be removed.Following,given the
+ * node-ID, the instance will be deleted from the 'chado_contact' table.
  *
- *  @parm $node
+ * @parm $node
  *    Then node which contains the information stored within the node-ID
  *
  * @ingroup tripal_legacy_contact
@@ -576,15 +590,15 @@ function chado_contact_delete(&$node) {
   // Remove data from {chado_contact}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_contact} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
 
   // Remove data from contact and contactprop tables of chado database as well
-  chado_query("DELETE FROM {contactprop} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
-  chado_query("DELETE FROM {contact} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
+  chado_query("DELETE FROM {contactprop} WHERE contact_id = :contact_id", [':contact_id' => $contact_id]);
+  chado_query("DELETE FROM {contact} WHERE contact_id = :contact_id", [':contact_id' => $contact_id]);
 }
 
 
@@ -598,39 +612,39 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
     case 'chado_contact':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_contact_base'] = array(
+        $node->content['tripal_contact_base'] = [
           '#theme' => 'tripal_contact_base',
           '#node' => $node,
-          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_id' => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
-        );
-        $node->content['tripal_contact_properties'] = array(
+        ];
+        $node->content['tripal_contact_properties'] = [
           '#theme' => 'tripal_contact_properties',
           '#node' => $node,
-          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_id' => 'properties',
           '#tripal_toc_title' => 'Properties',
-        );
+        ];
         if (module_exists('tripal_pub')) {
-          $node->content['tripal_contact_publications'] = array(
+          $node->content['tripal_contact_publications'] = [
             '#theme' => 'tripal_contact_publications',
             '#node' => $node,
-            '#tripal_toc_id'    => 'publications',
+            '#tripal_toc_id' => 'publications',
             '#tripal_toc_title' => 'Publications',
-          );
+          ];
         }
-        $node->content['tripal_contact_relationships'] = array(
+        $node->content['tripal_contact_relationships'] = [
           '#theme' => 'tripal_contact_relationships',
           '#node' => $node,
-          '#tripal_toc_id'    => 'relationships',
+          '#tripal_toc_id' => 'relationships',
           '#tripal_toc_title' => 'Relationships',
-        );
+        ];
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_contact_teaser'] = array(
+        $node->content['tripal_contact_teaser'] = [
           '#theme' => 'tripal_contact_teaser',
           '#node' => $node,
-        );
+        ];
       }
       break;
   }
@@ -650,8 +664,10 @@ function tripal_contact_node_presave($node) {
         // set the title
         $node->title = $node->contactname;
       }
-      else if (property_exists($node, 'contact')) {
-        $node->title = $node->contact->name;
+      else {
+        if (property_exists($node, 'contact')) {
+          $node->title = $node->contact->name;
+        }
       }
       break;
   }
@@ -672,7 +688,7 @@ function tripal_contact_node_insert($node) {
       $contact_id = chado_get_id_from_nid('contact', $node->nid);
 
       // get the contact
-      $values = array('contact_id' => $contact_id);
+      $values = ['contact_id' => $contact_id];
       $contact = chado_generate_var('contact', $values);
       $node->contact = $contact;
 

@@ -27,7 +27,7 @@
 function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
   // from 'Abstract' to 'Title/Abstract'
-  for($i = 1; $i <= $num_criteria; $i++) {
+  for ($i = 1; $i <= $num_criteria; $i++) {
     $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
   }
 
@@ -51,8 +51,8 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
 
   for ($i = 1; $i <= $num_criteria; $i++) {
-    $search_terms =  trim($form_state['values']["search_terms-$i"]);
-    $scope =  $form_state['values']["scope-$i"];
+    $search_terms = trim($form_state['values']["search_terms-$i"]);
+    $scope = $form_state['values']["scope-$i"];
     if ($scope == 'id' and !preg_match('/^PMID:\d+$/', $search_terms)) {
       form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
     }
@@ -82,8 +82,9 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
   // separated by a '+' symbol.
   $num_criteria = $search_array['num_criteria'];
   $days = NULL;
-  if (isset($search_array['days']))
+  if (isset($search_array['days'])) {
     $days = $search_array['days'];
+  }
 
   $search_str = '';
 
@@ -154,19 +155,19 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
   // now initialize the query
   $results = tripal_pub_PMID_search_init($search_str, $num_to_retrieve);
   $total_records = $results['Count'];
-  $query_key     = $results['QueryKey'];
-  $web_env       = $results['WebEnv'];
+  $query_key = $results['QueryKey'];
+  $web_env = $results['WebEnv'];
 
   // initialize the pager
   $start = $page * $num_to_retrieve;
 
   // if we have no records then return an empty array
   if ($total_records == 0) {
-    return array(
+    return [
       'total_records' => $total_records,
-      'search_str'    => $search_str,
-      'pubs'          => array(),
-    );
+      'search_str' => $search_str,
+      'pubs' => [],
+    ];
   }
 
   // now get the list of PMIDs from the initialized search
@@ -174,18 +175,18 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
 
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
-  $pubs = array();
+  $pubs = [];
   foreach ($pmids as $pmid) {
     // now retrieve the individual record
-    $pub_xml = tripal_pub_PMID_fetch($query_key, $web_env, 'null', 'xml', 0, 1, array('id' => $pmid));
-    $pub     = tripal_pub_PMID_parse_pubxml($pub_xml);
-    $pubs[]  = $pub;
+    $pub_xml = tripal_pub_PMID_fetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
+    $pub = tripal_pub_PMID_parse_pubxml($pub_xml);
+    $pubs[] = $pub;
   }
-  return array(
+  return [
     'total_records' => $total_records,
-    'search_str'    => $search_str,
-    'pubs'          => $pubs,
-  );
+    'search_str' => $search_str,
+    'pubs' => $pubs,
+  ];
 }
 
 /**
@@ -202,7 +203,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_PMID_search_init($search_str, $retmax){
+function tripal_pub_PMID_search_init($search_str, $retmax) {
 
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
@@ -210,14 +211,14 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
     "db=Pubmed" .
     "&retmax=$retmax" .
-    "&usehistory=y".
+    "&usehistory=y" .
     "&term=" . urlencode($search_str);
 
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
     tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform Pubmed query. Cannot connect to Entrez.",
-              array());
+      []);
     return 0;
   }
 
@@ -231,7 +232,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   $xml->xml($query_xml);
 
   // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id
-  $result = array();
+  $result = [];
   while ($xml->read()) {
     $element = $xml->name;
 
@@ -287,21 +288,21 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
  * @ingroup tripal_pub
  */
 function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
-  $retmod = 'null', $start = 0, $limit = 10, $args = array()){
+                               $retmod = 'null', $start = 0, $limit = 10, $args = []) {
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
-  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?".
+  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
     "rettype=$rettype" .
     "&retmode=$retmod" .
     "&retstart=$start" .
     "&retmax=$limit" .
     "&db=Pubmed" .
-    "&query_key=$query_key".
+    "&query_key=$query_key" .
     "&WebEnv=$web_env";
 
   foreach ($args as $key => $value) {
-    if(is_array($value)) {
+    if (is_array($value)) {
       $fetch_url .= "&$key=";
       foreach ($value as $item) {
         $fetch_url .= "$item,";
@@ -316,11 +317,11 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
     tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform PubMed query: %fetch_url.",
-              array('%fetch_url' => $fetch_url));
+      ['%fetch_url' => $fetch_url]);
     return '';
   }
   $results = '';
-  if($rfh) {
+  if ($rfh) {
     while (!feof($rfh)) {
       $results .= fread($rfh, 255);
     }
@@ -351,7 +352,7 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
  * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_pubxml($pub_xml) {
-  $pub = array();
+  $pub = [];
 
   if (!$pub_xml) {
     return $pub;
@@ -367,7 +368,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       switch ($element) {
         case 'ERROR':
           $xml->read(); // get the value for this element
-          tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Error: %err", array('%err' => $xml->value));
+          tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Error: %err", ['%err' => $xml->value]);
           break;
         case 'PMID':
           // thre are multiple places where a PMID is present in the XML and
@@ -377,7 +378,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
           // just skip it.  Examples of other PMIDs are in the articles that
           // cite this one.
           $xml->read(); // get the value for this element
-          if(!array_key_exists('Publication Dbxref', $pub)) {
+          if (!array_key_exists('Publication Dbxref', $pub)) {
             $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
           }
           break;
@@ -612,27 +613,27 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
           $xml->read();
           $value = $xml->value;
 
-          $identifiers = array(
+          $identifiers = [
             'name' => $value,
-            'cv_id' => array(
+            'cv_id' => [
               'name' => 'tripal_pub',
-            )
-          );
-          $options = array('case_insensitive_columns' => array('name'));
+            ],
+          ];
+          $options = ['case_insensitive_columns' => ['name']];
           $pub_cvterm = tripal_get_cvterm($identifiers, $options);
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
-            $identifiers = array(
-              'synonym' => array(
+            $identifiers = [
+              'synonym' => [
                 'name' => $value,
-                'cv_name' => 'tripal_pub'
-              )
-            );
+                'cv_name' => 'tripal_pub',
+              ],
+            ];
             $pub_cvterm = tripal_get_cvterm($identifiers, $options);
             if (!$pub_cvterm) {
               tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
                 'Cannot find a valid vocabulary term for the publication type: "%term".',
-                array('%term' => $value));
+                ['%term' => $value]);
             }
           }
           else {
@@ -719,7 +720,7 @@ function tripal_pub_PMID_parse_pagination($xml, &$pub) {
       switch ($element) {
         case 'MedlinePgn':
           $xml->read();
-          if(trim($xml->value)) {
+          if (trim($xml->value)) {
             $pub['Pages'] = $xml->value;
           }
           break;
@@ -799,7 +800,7 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
 
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'JournalIssue'){
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'JournalIssue') {
       // if we're at the </JournalIssue> element then we're done
       return;
     }
@@ -856,12 +857,12 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
  * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_date($xml, $element_name) {
-  $date = array();
+  $date = [];
 
   while ($xml->read()) {
     $element = $xml->name;
 
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == $element_name){
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == $element_name) {
       // if we're at the </$element_name> then we're done
       return $date;
     }
@@ -910,9 +911,9 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
   while ($xml->read()) {
     $element = $xml->name;
 
-    if ($xml->nodeType == XMLReader::END_ELEMENT){
+    if ($xml->nodeType == XMLReader::END_ELEMENT) {
       // if we're at the </AuthorList> element then we're done with the article...
-      if($element == 'AuthorList') {
+      if ($element == 'AuthorList') {
         // build the author list before returning
         $authors = '';
         foreach ($pub['Author List'] as $author) {
@@ -934,7 +935,7 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
       }
       // if we're at the end </Author> element then we're done with the author and we can
       // start a new one.
-      if($element == 'Author') {
+      if ($element == 'Author') {
         $num_authors++;
       }
     }
@@ -989,7 +990,7 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
  * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_get_language($lang_abbr) {
-  $languages = array(
+  $languages = [
     'afr' => 'Afrikaans',
     'alb' => 'Albanian',
     'amh' => 'Amharic',
@@ -1051,6 +1052,6 @@ function tripal_pub_remote_search_get_language($lang_abbr) {
     'urd' => 'Urdu',
     'vie' => 'Vietnamese',
     'wel' => 'Welsh',
-  );
+  ];
   return $languages[strtolower($lang_abbr)];
 }

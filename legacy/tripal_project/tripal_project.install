@@ -16,7 +16,7 @@ function tripal_project_disable() {
   require_once("tripal_project.views_default.inc");
   $views = tripal_project_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_project_disable() {
  * @ingroup tripal_legacy_project
  */
 function tripal_project_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_project'] = array(
+      $requirements ['tripal_project'] = [
         'title' => "tripal_project",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -71,25 +71,25 @@ function tripal_project_uninstall() {
  * @ingroup tripal_legacy_project
  */
 function tripal_project_schema() {
-  $schema['chado_project'] = array(
-    'fields' => array(
-      'nid' => array(
+  $schema['chado_project'] = [
+    'fields' => [
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-      ),
-      'project_id' => array(
+      ],
+      'vid' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'project_id' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-    ),
-    'primary key' => array('nid', 'vid', 'project_id'),
-  );
+      ],
+    ],
+    'primary key' => ['nid', 'vid', 'project_id'],
+  ];
   return $schema;
 }
 
@@ -123,13 +123,13 @@ function tripal_project_add_cvterms() {
   // database. This CV term is used to keep track of the project
   // description in the projectprop table.
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'Project Description',
-      'definition'  => 'Description of a project',
+      'definition' => 'Description of a project',
       'cv_name' => 'project_property',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 }

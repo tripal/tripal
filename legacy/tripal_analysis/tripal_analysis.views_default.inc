@@ -13,7 +13,7 @@
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -104,57 +104,57 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
     'program' => 'program',
     'sourcename' => 'sourcename',
     'num_features' => 'num_features',
     'timeexecuted' => 'timeexecuted',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'program' => array(
+    ],
+    'program' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'sourcename' => array(
+    ],
+    'sourcename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'num_features' => array(
+    ],
+    'num_features' => [
       'separator' => '',
-    ),
-    'timeexecuted' => array(
+    ],
+    'timeexecuted' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Analysis',
     'path-1' => 'node/add/tripal-analysis',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'text';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -244,11 +244,11 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['filters']['program']['expose']['label'] = 'Program Name Contains';
   $handler->display->display_options['filters']['program']['expose']['operator'] = 'program_op';
   $handler->display->display_options['filters']['program']['expose']['identifier'] = 'program';
-  $handler->display->display_options['filters']['program']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['program']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Analysis: Sourcename */
   $handler->display->display_options['filters']['sourcename']['id'] = 'sourcename';
   $handler->display->display_options['filters']['sourcename']['table'] = 'analysis';

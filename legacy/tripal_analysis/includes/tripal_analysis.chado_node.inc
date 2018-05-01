@@ -15,27 +15,27 @@
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_node_info() {
-  $nodes = array();
-  $nodes['chado_analysis'] = array(
-    'name'        => t('Analysis'),
-    'base'        => 'chado_analysis',
+  $nodes = [];
+  $nodes['chado_analysis'] = [
+    'name' => t('Analysis'),
+    'base' => 'chado_analysis',
     'description' => t('An analysis'),
-    'has_title'   => TRUE,
-    'locked'      => TRUE,
-    'chado_node_api' => array(
+    'has_title' => TRUE,
+    'locked' => TRUE,
+    'chado_node_api' => [
       'base_table' => 'analysis',
       'hook_prefix' => 'chado_analysis',
-      'record_type_title' => array(
+      'record_type_title' => [
         'singular' => t('Analysis'),
-        'plural' => t('Analyses')
-      ),
-      'sync_filters' => array(
+        'plural' => t('Analyses'),
+      ],
+      'sync_filters' => [
         'type_id' => FALSE,
         'organism_id' => FALSE,
-        'checkboxes' => array('name'),
-      ),
-    )
-  );
+        'checkboxes' => ['name'],
+      ],
+    ],
+  ];
   return $nodes;
 }
 
@@ -51,6 +51,7 @@ function chado_analysis_chado_node_sync_form($form, &$form_state) {
   }
   return $form;
 }
+
 /**
  * Implements hook_form().
  * When editing or creating a new node of type 'chado_analysis' we need
@@ -59,7 +60,7 @@ function chado_analysis_chado_node_sync_form($form, &$form_state) {
  * @ingroup tripal_legacy_analysis
  */
 function chado_analysis_form($node, &$form_state) {
-  $form = array();
+  $form = [];
 
   // Default values can come in the following ways:
   //
@@ -70,18 +71,18 @@ function chado_analysis_form($node, &$form_state) {
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
-  $analysis_id    = null;
-  $analysisname   = '';
-  $program        = '';
+  $analysis_id = NULL;
+  $analysisname = '';
+  $program = '';
   $programversion = '';
-  $algorithm      = '';
-  $sourcename     = '';
-  $sourceversion  = '';
-  $sourceuri      = '';
-  $timeexecuted   = '';
-  $description    = '';
-  $d_removed      = array(); // lists removed properties
-  $num_new        = 0;  // the number of new rows
+  $algorithm = '';
+  $sourcename = '';
+  $sourceversion = '';
+  $sourceuri = '';
+  $timeexecuted = '';
+  $description = '';
+  $d_removed = []; // lists removed properties
+  $num_new = 0;  // the number of new rows
 
   // if we are editing an existing node then the analysis is already part of the node
   if (property_exists($node, 'analysis')) {
@@ -90,62 +91,62 @@ function chado_analysis_form($node, &$form_state) {
     $analysis_id = $analysis->analysis_id;
 
     // get form defaults
-    $analysisname   = $analysis->name;
-    $program        = $analysis->program;
+    $analysisname = $analysis->name;
+    $program = $analysis->program;
     $programversion = $analysis->programversion;
-    $algorithm      = $analysis->algorithm;
-    $sourcename     = $analysis->sourcename;
-    $sourceversion  = $analysis->sourceversion;
-    $sourceuri      = $analysis->sourceuri;
-    $timeexecuted   = $analysis->timeexecuted;
-    $description    = $analysis->description;
-    $analysis_type  = $node->type;
+    $algorithm = $analysis->algorithm;
+    $sourcename = $analysis->sourcename;
+    $sourceversion = $analysis->sourceversion;
+    $sourceuri = $analysis->sourceuri;
+    $timeexecuted = $analysis->timeexecuted;
+    $description = $analysis->description;
+    $analysis_type = $node->type;
 
 
     // set the analysis_id in the form
-    $form['analysis_id'] = array(
+    $form['analysis_id'] = [
       '#type' => 'value',
       '#value' => $analysis->analysis_id,
-    );
+    ];
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $analysisname   = $form_state['values']['analysisname'];
-    $program        = $form_state['values']['program'];
+    $analysisname = $form_state['values']['analysisname'];
+    $program = $form_state['values']['program'];
     $programversion = $form_state['values']['programversion'];
-    $algorithm      = $form_state['values']['algorithm'];
-    $sourcename     = $form_state['values']['sourcename'];
-    $sourceversion  = $form_state['values']['sourceversion'];
-    $sourceuri      = $form_state['values']['sourceuri'];
-    $timeexecuted   = $form_state['values']['timeexecuted'];
-    $description    = $form_state['values']['description'];
-    $d_removed      = $form_state['values']['removed'];
-    $num_new        = $form_state['values']['num_new'] ? $form_state['values']['num_new'] : 0;
-    $analysis_type  = $form_state['values']['analysis_type'];
+    $algorithm = $form_state['values']['algorithm'];
+    $sourcename = $form_state['values']['sourcename'];
+    $sourceversion = $form_state['values']['sourceversion'];
+    $sourceuri = $form_state['values']['sourceuri'];
+    $timeexecuted = $form_state['values']['timeexecuted'];
+    $description = $form_state['values']['description'];
+    $d_removed = $form_state['values']['removed'];
+    $num_new = $form_state['values']['num_new'] ? $form_state['values']['num_new'] : 0;
+    $analysis_type = $form_state['values']['analysis_type'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $analysisname   = $form_state['input']['analysisname'];
-    $program        = $form_state['input']['program'];
+    $analysisname = $form_state['input']['analysisname'];
+    $program = $form_state['input']['program'];
     $programversion = $form_state['input']['programversion'];
-    $algorithm      = $form_state['input']['algorithm'];
-    $sourcename     = $form_state['input']['sourcename'];
-    $sourceversion  = $form_state['input']['sourceversion'];
-    $sourceuri      = $form_state['input']['sourceuri'];
-    $timeexecuted   = $form_state['input']['timeexecuted'];
-    $description    = $form_state['input']['description'];
-    $d_removed      = isset($form_state['input']['removed']) ? $form_state['input']['removed'] : array();
-    $num_new        = isset($form_state['input']['num_new']) ? $form_state['input']['num_new'] : 0;
-    $analysis_type  = isset($form_state['input']['analysis_type']) ? $form_state['input']['analysis_type'] : '';
+    $algorithm = $form_state['input']['algorithm'];
+    $sourcename = $form_state['input']['sourcename'];
+    $sourceversion = $form_state['input']['sourceversion'];
+    $sourceuri = $form_state['input']['sourceuri'];
+    $timeexecuted = $form_state['input']['timeexecuted'];
+    $description = $form_state['input']['description'];
+    $d_removed = isset($form_state['input']['removed']) ? $form_state['input']['removed'] : [];
+    $num_new = isset($form_state['input']['num_new']) ? $form_state['input']['num_new'] : 0;
+    $analysis_type = isset($form_state['input']['analysis_type']) ? $form_state['input']['analysis_type'] : '';
   }
 
-  $form['title']= array(
+  $form['title'] = [
     '#type' => 'value',
     '#default_value' => $node->title,
-  );
-  $form['instructions'] = array(
+  ];
+  $form['instructions'] = [
     '#markup' => t('When adding any type of data it is good to associate it with
         an analysis so that site visitors can identify the source of the data including
         necessary materials and methods.  The fields below imply that all analyses
@@ -153,52 +154,52 @@ function chado_analysis_form($node, &$form_state) {
         from an external source or an analysis pipeline with multipel software components.
         In these cases, provide values for the fields below that best makes sense
      '),
-  );
-  $form['analysisname']= array(
+  ];
+  $form['analysisname'] = [
     '#type' => 'textfield',
     '#title' => t('Analysis Name'),
     '#required' => TRUE,
     '#default_value' => $analysisname,
     '#description' => t("This should be a brief name that
        describes the analysis succintly. This name will helps the user find analyses."),
-  );
-  $form['program']= array(
+  ];
+  $form['program'] = [
     '#type' => 'textfield',
     '#title' => t('Program, Pipeline Name or Method Name'),
     '#required' => TRUE,
     '#default_value' => $program,
     '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package, provide a very brief description of the pipeline or method."),
-  );
-  $form['programversion']= array(
+  ];
+  $form['programversion'] = [
     '#type' => 'textfield',
     '#title' => t('Program, Pipeline  or Method Version'),
     '#required' => TRUE,
     '#default_value' => $programversion,
     '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available or applicable."),
-  );
-  $form['algorithm']= array(
+  ];
+  $form['algorithm'] = [
     '#type' => 'textfield',
     '#title' => t('Algorithm'),
     '#required' => FALSE,
     '#default_value' => $algorithm,
     '#description' => t("Algorithm name, e.g. blast."),
-  );
-  $form['sourcename']= array(
+  ];
+  $form['sourcename'] = [
     '#type' => 'textfield',
     '#title' => t('Source Name'),
     '#required' => TRUE,
     '#default_value' => $sourcename,
     '#description' => t('The name of the source data.  This could be a file name, data set name or a
          small description for how the data was collected.  For long descriptions use the description field below'),
-  );
-  $form['sourceversion']= array(
+  ];
+  $form['sourceversion'] = [
     '#type' => 'textfield',
     '#title' => t('Source Version'),
     '#required' => FALSE,
     '#default_value' => $sourceversion,
     '#description' => t('If the source dataset has a version, include it here'),
-  );
-  $form['sourceuri']= array(
+  ];
+  $form['sourceuri'] = [
     '#type' => 'textfield',
     '#title' => t('Source URI'),
     '#required' => FALSE,
@@ -206,7 +207,7 @@ function chado_analysis_form($node, &$form_state) {
     '#description' => t("This is a permanent URL or URI for the source of the analysis.
        Someone could recreate the analysis directly by going to this URI and
        fetching the source data (e.g. the blast database, or the training model)."),
-  );
+  ];
 
   // Get time saved in chado
   $default_time = $timeexecuted;
@@ -216,21 +217,21 @@ function chado_analysis_form($node, &$form_state) {
   // If the time is not set, use current time
   if (!$default_time) {
     $default_time = REQUEST_TIME;
-    $year  = format_date($default_time, 'custom', 'Y');
+    $year = format_date($default_time, 'custom', 'Y');
     $month = format_date($default_time, 'custom', 'n');
-    $day   = format_date($default_time, 'custom', 'j');
+    $day = format_date($default_time, 'custom', 'j');
   }
-  $form['timeexecuted']= array(
+  $form['timeexecuted'] = [
     '#type' => 'date',
     '#title' => t('Time Executed'),
     '#required' => TRUE,
-    '#default_value' => array(
-       'year' => $year,
-       'month' => $month,
-       'day' => $day,
-    ),
-  );
-  $form['description']= array(
+    '#default_value' => [
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
+    ],
+  ];
+  $form['description'] = [
     '#type' => 'text_format',
     '#rows' => 15,
     '#title' => t('Materials & Methods (Description and/or Program Settings)'),
@@ -239,7 +240,7 @@ function chado_analysis_form($node, &$form_state) {
     '#description' => t('Please provide all necessary information to allow
        someone to recreate the analysis, including materials and methods
        for collection of the source data and performing the analysis'),
-  );
+  ];
 
   /*
   // get node types from analysis extension modules
@@ -270,13 +271,16 @@ function chado_analysis_form($node, &$form_state) {
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/loaders/chado_cv/cvterm/add") . ".");
   $prop_cv = tripal_get_default_cv('analysisprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  $details = array(
-    'property_table' => 'analysisprop',       // the name of the prop table
-    'chado_id' => $analysis_id,               // the value of analysis_id for this record
-    'cv_id' => $cv_id,                        // the cv.cv_id of the cv governing analysisprop.type_id
+  $details = [
+    'property_table' => 'analysisprop',
+    // the name of the prop table
+    'chado_id' => $analysis_id,
+    // the value of analysis_id for this record
+    'cv_id' => $cv_id,
+    // the cv.cv_id of the cv governing analysisprop.type_id
     'fieldset_title' => 'Properties',
-    'additional_instructions' => $instructions
-  );
+    'additional_instructions' => $instructions,
+  ];
   chado_add_node_form_properties($form, $form_state, $details);
 
   return $form;
@@ -307,7 +311,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if ($node->op != 'Save') {
     return;
   }
 
@@ -330,14 +334,14 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   if (!is_null($node->nid)) {
 
     // get the existing node
-    $values = array('analysis_id' => $node->analysis_id);
-    $result = chado_select_record('analysis', array('*'), $values);
+    $values = ['analysis_id' => $node->analysis_id];
+    $result = chado_select_record('analysis', ['*'], $values);
     $analysis = $result[0];
 
     // if the name has changed make sure it doesn't conflict with an existing name
     if ($analysis->name != $node->analysisname) {
-      $values = array('name' => $node->analysisname);
-      $result = chado_select_record('analysis', array('analysis_id'), $values);
+      $values = ['name' => $node->analysisname];
+      $result = chado_select_record('analysis', ['analysis_id'], $values);
       if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
         return;
@@ -347,13 +351,13 @@ function tripal_analysis_validate($node, $form, &$form_state) {
     // if the unique constraint has changed check to make sure it doesn't conflict with an
     // existing record
     if ($analysis->program != $node->program or $analysis->programversion != $node->programversion or
-       $analysis->sourcename != $node->sourcename) {
-      $values = array(
+      $analysis->sourcename != $node->sourcename) {
+      $values = [
         'program' => $node->program,
         'programversion' => $node->programversion,
         'sourcename' => $node->sourcename,
-      );
-      $result = chado_select_record('analysis', array('analysis_id'), $values);
+      ];
+      $result = chado_select_record('analysis', ['analysis_id'], $values);
       if ($result and count($result) > 0) {
         if ($analysis->program != $node->program) {
           $field = 'program';
@@ -372,12 +376,12 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   }
   // Validating for an insert
   else {
-    $values = array(
+    $values = [
       'program' => $node->program,
       'programversion' => $node->programversion,
       'sourcename' => $node->sourcename,
-    );
-    $analysis = chado_select_record('analysis', array('analysis_id'), $values);
+    ];
+    $analysis = chado_select_record('analysis', ['analysis_id'], $values);
     if ($analysis and count($analysis) > 0) {
       form_set_error('program', 'Cannot add the analysis with this program,
         program version and source name. An analysis with these values already exists.');
@@ -387,8 +391,8 @@ function tripal_analysis_validate($node, $form, &$form_state) {
     // make sure we have a unique analysis name. This is not a requirement
     // for the analysis table but we use the analysis name for the Drupal node
     // title, so it should be unique
-    $values = array('name' => $node->analysisname);
-    $result = chado_select_record('analysis', array('analysis_id'), $values);
+    $values = ['name' => $node->analysisname];
+    $result = chado_select_record('analysis', ['analysis_id'], $values);
     if ($result and count($result) > 0) {
       form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
       return;
@@ -413,7 +417,7 @@ function chado_analysis_insert($node) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
-  $node->description  = trim($node->description['value']);
+  $node->description = trim($node->description['value']);
 
   // if there is an analysis_id in the $node object then this must be a sync so
   // we can skip adding the analysis as it is already there, although
@@ -421,40 +425,40 @@ function chado_analysis_insert($node) {
   if (!property_exists($node, 'analysis_id')) {
 
     // Create a timestamp so we can insert it into the chado database
-    $time  = $node->timeexecuted;
+    $time = $node->timeexecuted;
     $month = $time['month'];
-    $day   = $time['day'];
-    $year  = $time['year'];
+    $day = $time['day'];
+    $year = $time['year'];
     $timestamp = $month . '/' . $day . '/' . $year;
 
     // Insert and then get the newly inserted analysis record
-    $values = array(
-      'name'           => $node->analysisname,
-      'description'    => $node->description,
-      'program'        => $node->program,
+    $values = [
+      'name' => $node->analysisname,
+      'description' => $node->description,
+      'program' => $node->program,
       'programversion' => $node->programversion,
-      'algorithm'      => $node->algorithm,
-      'sourcename'     => $node->sourcename,
-      'sourceversion'  => $node->sourceversion,
-      'sourceuri'      => $node->sourceuri,
-      'timeexecuted'   => $timestamp
-    );
+      'algorithm' => $node->algorithm,
+      'sourcename' => $node->sourcename,
+      'sourceversion' => $node->sourceversion,
+      'sourceuri' => $node->sourceuri,
+      'timeexecuted' => $timestamp,
+    ];
     $analysis = chado_insert_record('analysis', $values);
     if (!$analysis) {
       drupal_set_message(t('Unable to add analysis.'), 'warning');
       tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
-        array('%values' => print_r($values, TRUE)));
+        ['%values' => print_r($values, TRUE)]);
       return;
     }
     $analysis_id = $analysis['analysis_id'];
 
     // now add in the properties
-    $details = array(
+    $details = [
       'property_table' => 'analysisprop',
       'base_table' => 'analysis',
       'foreignkey_name' => 'analysis_id',
-      'foreignkey_value' => $analysis_id
-    );
+      'foreignkey_value' => $analysis_id,
+    ];
     chado_update_node_form_properties($node, $details);
   }
   else {
@@ -495,14 +499,14 @@ function chado_analysis_delete($node) {
 
   // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
   $sql_del = "DELETE FROM {chado_analysis} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
 
   //Remove from analysis and analysisprop tables of chado database as well
-  chado_query("DELETE FROM {analysis} WHERE analysis_id = :analysis_id", array(':analysis_id' => $analysis_id));
+  chado_query("DELETE FROM {analysis} WHERE analysis_id = :analysis_id", [':analysis_id' => $analysis_id]);
 }
 
 /**
@@ -519,7 +523,7 @@ function chado_analysis_update($node) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
-  $node->description  = trim($node->description['value']);
+  $node->description = trim($node->description['value']);
 
   // Create a timestamp so we can insert it into the chado database
   $time = $node->timeexecuted;
@@ -530,36 +534,36 @@ function chado_analysis_update($node) {
 
   // update the record in Chado
   $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
-  $match = array(
+  $match = [
     'analysis_id' => $node->analysis_id,
-  );
-  $values = array(
-    'name'           => $node->analysisname,
-    'description'    => $node->description,
-    'program'        => $node->program,
+  ];
+  $values = [
+    'name' => $node->analysisname,
+    'description' => $node->description,
+    'program' => $node->program,
     'programversion' => $node->programversion,
-    'algorithm'      => $node->algorithm,
-    'sourcename'     => $node->sourcename,
-    'sourceversion'  => $node->sourceversion,
-    'sourceuri'      => $node->sourceuri,
-    'timeexecuted'   => $timestamp,
-    'analysis_id'    => $analysis_id
-  );
+    'algorithm' => $node->algorithm,
+    'sourcename' => $node->sourcename,
+    'sourceversion' => $node->sourceversion,
+    'sourceuri' => $node->sourceuri,
+    'timeexecuted' => $timestamp,
+    'analysis_id' => $analysis_id,
+  ];
   $status = chado_update_record('analysis', $match, $values);
   if (!$status) {
     drupal_set_message(t('Unable to update analysis.', 'warning'));
     tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Update analysis: Unable to update analysis where values: %values',
-    array('%values' => print_r($values, TRUE)));
+      ['%values' => print_r($values, TRUE)]);
   }
 
   // now add in the properties by first removing any the analysis
   // already has and adding the ones we have
-  $details = array(
+  $details = [
     'property_table' => 'analysisprop',
     'base_table' => 'analysis',
     'foreignkey_name' => 'analysis_id',
-    'foreignkey_value' => $analysis_id
-  );
+    'foreignkey_value' => $analysis_id,
+  ];
   chado_update_node_form_properties($node, $details);
 }
 
@@ -583,7 +587,7 @@ function chado_analysis_load($nodes) {
     }
 
     // build the analysis variable
-    $values = array('analysis_id' => $analysis_id);
+    $values = ['analysis_id' => $analysis_id];
     $analysis = chado_generate_var('analysis', $values);
 
     // add in the description field
@@ -600,21 +604,22 @@ function chado_analysis_load($nodes) {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
+ * @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet
+ *   exist, the type of node to be created
  *
- *  @param $op
+ * @param $op
  *  The operation to be performed
  *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
+ * @param $account
+ *  A user object representing the user for whom the operation is to be
+ *   performed
  *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
+ * @return
+ *  If the permission for the specified operation is not set then return FALSE.
+ *   If the permission is set then return NULL as this allows other modules to
+ *   disable access.  The only exception is when the $op == 'create'.  We will
+ *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_legacy_analysis
  */
@@ -625,7 +630,7 @@ function tripal_analysis_node_access($node, $op, $account) {
     $node_type = $node->type;
   }
 
-  if($node_type == 'chado_analysis') {
+  if ($node_type == 'chado_analysis') {
     if ($op == 'create') {
       if (!user_access('create chado_analysis content', $account)) {
         return NODE_ACCESS_DENY;
@@ -662,25 +667,25 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
     case 'chado_analysis':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_analysis_base'] = array(
+        $node->content['tripal_analysis_base'] = [
           '#theme' => 'tripal_analysis_base',
           '#node' => $node,
-          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_id' => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
-        );
-        $node->content['tripal_analysis_properties'] = array(
+        ];
+        $node->content['tripal_analysis_properties'] = [
           '#theme' => 'tripal_analysis_properties',
           '#node' => $node,
-          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_id' => 'properties',
           '#tripal_toc_title' => 'Properties',
-        );
+        ];
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_analysis_teaser'] = array(
+        $node->content['tripal_analysis_teaser'] = [
           '#theme' => 'tripal_analysis_teaser',
           '#node' => $node,
-        );
+        ];
       }
       break;
   }
@@ -711,12 +716,12 @@ function tripal_analysis_node_presave($node) {
   // modules will use this module as a type of "inherited" class, so we don't know
   // for sure when type of analysis we have.  If this is a sync then
   if (property_exists($node, 'program') and
-      property_exists($node, 'programversion') and
-      property_exists($node, 'sourcename')) {
-    $name           = $node->analysisname;
-    $program        = $node->program;
+    property_exists($node, 'programversion') and
+    property_exists($node, 'sourcename')) {
+    $name = $node->analysisname;
+    $program = $node->program;
     $programversion = $node->programversion;
-    $sourcename     = $node->sourcename;
+    $sourcename = $node->sourcename;
     // now construct the title
     $node->title = "$program ($programversion) $sourcename";
     if ($name) {
@@ -725,17 +730,19 @@ function tripal_analysis_node_presave($node) {
     // reset the type
     //$node->type = $node->analysis_type;
   }
-  else if (property_exists($node, 'analysis')) {
-    $name           = $node->analysis->name;
-    $program        = $node->analysis->program;
-    $programversion = $node->analysis->programversion;
-    $sourcename     = $node->analysis->sourcename;
-    // now construct the title
-    $node->title = "$program ($programversion) $sourcename";
-    if ($name) {
-      $node->title = $name;
+  else {
+    if (property_exists($node, 'analysis')) {
+      $name = $node->analysis->name;
+      $program = $node->analysis->program;
+      $programversion = $node->analysis->programversion;
+      $sourcename = $node->analysis->sourcename;
+      // now construct the title
+      $node->title = "$program ($programversion) $sourcename";
+      if ($name) {
+        $node->title = $name;
+      }
+      //$node->type = $node->analysis_type;
     }
-    //$node->type = $node->analysis_type;
   }
 }
 
@@ -754,7 +761,7 @@ function tripal_analysis_node_insert($node) {
       // we need to simulate one so that the right values are available for
       // the URL to be determined.
       $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
-      $values = array('analysis_id' => $analysis_id);
+      $values = ['analysis_id' => $analysis_id];
       $analysis = chado_generate_var('analysis', $values);
       $node->analysis = $analysis;
 

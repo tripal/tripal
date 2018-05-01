@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_organism
  */
 function tripal_organism_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -61,31 +61,31 @@ function tripal_organism_defaultvalue_user_organisms() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'common_name' => 'common_name',
     'genus' => 'genus',
     'species' => 'species',
     'abbreviation' => 'abbreviation',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'common_name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'genus' => array(
+    ],
+    'genus' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'species' => array(
+    ],
+    'species' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'abbreviation' => array(
+    ],
+    'abbreviation' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -153,11 +153,11 @@ function tripal_organism_defaultvalue_user_organisms() {
   $handler->display->display_options['filters']['common_name']['expose']['operator_id'] = '';
   $handler->display->display_options['filters']['common_name']['expose']['label'] = 'Common Name Contains';
   $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'common_name';
-  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Organism: Genus */
   $handler->display->display_options['filters']['genus']['id'] = 'genus';
   $handler->display->display_options['filters']['genus']['table'] = 'organism';
@@ -167,11 +167,11 @@ function tripal_organism_defaultvalue_user_organisms() {
   $handler->display->display_options['filters']['genus']['expose']['label'] = 'Genus';
   $handler->display->display_options['filters']['genus']['expose']['operator'] = 'genus_op';
   $handler->display->display_options['filters']['genus']['expose']['identifier'] = 'genus';
-  $handler->display->display_options['filters']['genus']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['genus']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Organism: Species */
   $handler->display->display_options['filters']['species']['id'] = 'species';
   $handler->display->display_options['filters']['species']['table'] = 'organism';
@@ -181,11 +181,11 @@ function tripal_organism_defaultvalue_user_organisms() {
   $handler->display->display_options['filters']['species']['expose']['label'] = 'Species';
   $handler->display->display_options['filters']['species']['expose']['operator'] = 'species_op';
   $handler->display->display_options['filters']['species']['expose']['identifier'] = 'species';
-  $handler->display->display_options['filters']['species']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['species']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -235,41 +235,41 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'common_name' => 'common_name',
     'genus' => 'genus',
     'species' => 'species',
     'abbreviation' => 'abbreviation',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'common_name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'genus' => array(
+    ],
+    'genus' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'species' => array(
+    ],
+    'species' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'abbreviation' => array(
+    ],
+    'abbreviation' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Organism',
     'path-1' => 'node/add/tripal_organism',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -350,11 +350,11 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['filters']['common_name']['expose']['operator_id'] = '';
   $handler->display->display_options['filters']['common_name']['expose']['label'] = 'Common Name Contains';
   $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'common_name';
-  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Organism: Genus */
   $handler->display->display_options['filters']['genus']['id'] = 'genus';
   $handler->display->display_options['filters']['genus']['table'] = 'organism';
@@ -364,11 +364,11 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['filters']['genus']['expose']['label'] = 'Genus';
   $handler->display->display_options['filters']['genus']['expose']['operator'] = 'genus_op';
   $handler->display->display_options['filters']['genus']['expose']['identifier'] = 'genus';
-  $handler->display->display_options['filters']['genus']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['genus']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Organism: Species */
   $handler->display->display_options['filters']['species']['id'] = 'species';
   $handler->display->display_options['filters']['species']['table'] = 'organism';
@@ -378,11 +378,11 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['filters']['species']['expose']['label'] = 'Species';
   $handler->display->display_options['filters']['species']['expose']['operator'] = 'species_op';
   $handler->display->display_options['filters']['species']['expose']['identifier'] = 'species';
-  $handler->display->display_options['filters']['species']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['species']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'textfield';
@@ -403,11 +403,11 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'textfield';
-  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = FALSE;
-  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'textfield';
+   * $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = FALSE;
+   * $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }

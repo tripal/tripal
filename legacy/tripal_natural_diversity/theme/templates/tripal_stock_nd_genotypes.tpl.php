@@ -68,25 +68,25 @@ $total_records = count($nd_experiment_genotype_ids);
 $current_page_num = pager_default_initialize($total_records, $num_results_per_page, $stock_pager_id);
 $offset = $num_results_per_page * $current_page_num;
 
-$genotypes = array();
+$genotypes = [];
 if ($total_records > 0) {
 
   // iterate through the nd_experiment_genotype_ids and get the genotype record
-  for ($i = $offset ; $i < $offset + $num_results_per_page; $i++) {
+  for ($i = $offset; $i < $offset + $num_results_per_page; $i++) {
     $nd_experiment_genotype_id = $nd_experiment_genotype_ids[$i];
 
     // expand the nd_experiment record to include the nd_experiment_genotype table
     // there many be many genotypes for a stock so we want to use a pager to limit
     // the results returned
-    $options = array(
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'genotype_id' => array(
+      'include_fk' => [
+        'genotype_id' => [
           'type_id' => 1,
-        )
-      ),
-    );
-    $values = array('nd_experiment_genotype_id' => $nd_experiment_genotype_id);
+        ],
+      ],
+    ];
+    $values = ['nd_experiment_genotype_id' => $nd_experiment_genotype_id];
     $nd_experiment_genotype = chado_generate_var('nd_experiment_genotype', $values);
     $genotype = $nd_experiment_genotype->genotype_id;
     $genotypes[$genotype->genotype_id]['genotype'] = $genotype;
@@ -96,28 +96,29 @@ if ($total_records > 0) {
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($genotypes) > 0) { ?>
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc">
-    The following <?php print number_format($total_records) ?> genotype(s) have been recorded.
-  </div> <?php
+    <div class="tripal_feature-data-block-desc tripal-data-block-desc">
+        The following <?php print number_format($total_records) ?> genotype(s)
+        have been recorded.
+    </div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Name', 'Type', 'Genotype', 'Details', 'Markers', 'Project');
+  $headers = ['Name', 'Type', 'Genotype', 'Details', 'Markers', 'Project'];
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
+  $rows = [];
 
   // iterate through the genotypes and build each row of the resulting table
   foreach ($genotypes as $info) {
-    $genotype         = $info['genotype'];
+    $genotype = $info['genotype'];
     $nd_experiment_id = $info['nd_experiment_id'];
 
     // get the nd_experiment record
-    $nd_experiment = chado_generate_var('nd_experiment', array('nd_experiment_id' => $nd_experiment_id));
+    $nd_experiment = chado_generate_var('nd_experiment', ['nd_experiment_id' => $nd_experiment_id]);
 
     // set some defaults for project and feature names
     $project_names = 'N/A';
@@ -126,7 +127,7 @@ if (count($genotypes) > 0) { ?>
     // build the name for displaying the genotype. Use the uniquename by default
     // unless a name exists
     $name = $genotype->uniquename;
-    if ($genotype->name){
+    if ($genotype->name) {
       $name = $genotype->name;
     }
 
@@ -137,28 +138,28 @@ if (count($genotypes) > 0) { ?>
     }
 
     // build the genotype properties
-    $options = array('return_array' => 1);
+    $options = ['return_array' => 1];
     $genotype = chado_expand_var($genotype, 'table', 'genotypeprop', $options);
     $properties = $genotype->genotypeprop;
     $details = '';
-    if(count($properties) > 0) {
-      foreach ($properties as $property){
-        $details .=  ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
+    if (count($properties) > 0) {
+      foreach ($properties as $property) {
+        $details .= ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
       }
       $details = substr($details, 0, -4); // remove trailing <br>
     }
 
     // get the features as found in the feature_genotype table and if any, add them to the $features array
     // we will later add in the features list for display
-    $features = array();
-    $options = array(
+    $features = [];
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'feature_id' => array(
-          'type_id' => 1
-        )
-      ),
-    );
+      'include_fk' => [
+        'feature_id' => [
+          'type_id' => 1,
+        ],
+      ],
+    ];
     $genotype = chado_expand_var($genotype, 'table', 'feature_genotype', $options);
     $feature_genotypes = $genotype->feature_genotype;
     if (count($feature_genotypes) > 0) {
@@ -175,8 +176,8 @@ if (count($genotypes) > 0) { ?>
     }
 
     // expand the nd_experiment object to incldue the nd_experiment_project table
-    $values = array('nd_experiment_id' => $nd_experiment_id);
-    $options = array('return_array' => 1);
+    $values = ['nd_experiment_id' => $nd_experiment_id];
+    $options = ['return_array' => 1];
     $nd_experiment = chado_expand_var($nd_experiment, 'table', 'nd_experiment_project', $options);
     $nd_experiment_projects = $nd_experiment->nd_experiment_project;
     if (count($nd_experiment_projects) > 0) {
@@ -185,39 +186,39 @@ if (count($genotypes) > 0) { ?>
         $project = $nd_experiment_project->project_id;
         $project_name = $project->name;
         if (property_exists($project, 'nid')) {
-          $project_name = l($project_name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+          $project_name = l($project_name, "node/" . $project->nid, ['attributes' => ['target' => '_blank']]);
         }
         $project_names .= $project_name . '<br>';
       }
       $project_names = substr($project_names, 0, -4); // remove trailing <br>
     }
 
-    $rows[] = array(
+    $rows[] = [
       $name,
       $type,
       $genotype->description,
       $details,
       $feature_names,
       $project_names,
-    );
+    ];
   }
 
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_natural_diversity-table-genotypes',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -232,14 +233,14 @@ if (count($genotypes) > 0) { ?>
   // Drupal won't reset the parameter if it already exists.
   $get = $_GET;
   unset($_GET['pane']);
-  $pager = array(
-    'tags' => array(),
+  $pager = [
+    'tags' => [],
     'element' => $stock_pager_id,
-    'parameters' => array(
-      'pane' => 'genotypes'
-    ),
+    'parameters' => [
+      'pane' => 'genotypes',
+    ],
     'quantity' => $num_results_per_page,
-  );
+  ];
   print theme_pager($pager);
   $_GET = $get;
 }

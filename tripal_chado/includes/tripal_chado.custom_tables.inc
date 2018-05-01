@@ -13,7 +13,7 @@ function tripal_custom_table_admin_view() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -22,7 +22,7 @@ function tripal_custom_table_admin_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_admin_custom_table','default');
+  $view = views_embed_view('tripal_admin_custom_table', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -32,7 +32,7 @@ function tripal_custom_table_admin_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Custom Tables View', 'admin/tripal/storage/chado/custom_tables/views/tables/enable').'</li>';
+    $output .= '<li>' . l('Custom Tables View', 'admin/tripal/storage/chado/custom_tables/views/tables/enable') . '</li>';
     $output .= '</ul>';
   }
 
@@ -50,7 +50,8 @@ function tripal_custom_table_new_page() {
 }
 
 /**
- * A template function which returns markup to display details for the custom table
+ * A template function which returns markup to display details for the custom
+ * table
  *
  * @param $table_id
  *  The unique ID of the custom table
@@ -60,7 +61,7 @@ function tripal_custom_table_view($table_id) {
 
   // get this custom_table details
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-  $results = db_query($sql, array(':table_id' => $table_id));
+  $results = db_query($sql, [':table_id' => $table_id]);
   $custom_table = $results->fetchObject();
 
   // create a table with each row containig stats for
@@ -73,15 +74,15 @@ function tripal_custom_table_view($table_id) {
   $output .= "<table class=\"border-table\">";
   if ($custom_table->table_name) {
     $output .= "  <tr>" .
-    "    <th>Table Name</th>" .
-    "    <td>$custom_table->table_name</td>" .
-    "  </tr>";
+      "    <th>Table Name</th>" .
+      "    <td>$custom_table->table_name</td>" .
+      "  </tr>";
   }
   if ($custom_table->schema) {
     $output .= "  <tr>" .
-    "    <th>Table Field Definitions</th>" .
-    "    <td><pre>" . var_export(unserialize($custom_table->schema), 1) . "</pre></td>" .
-    "  </tr>";
+      "    <th>Table Field Definitions</th>" .
+      "    <td><pre>" . var_export(unserialize($custom_table->schema), 1) . "</pre></td>" .
+      "  </tr>";
   }
 
   // build the URLs using the url function so we can handle installations where
@@ -89,9 +90,9 @@ function tripal_custom_table_view($table_id) {
   $delete_url = url("admin/tripal/storage/chado/custom_tables/delete/$custom_table->table_id");
   $edit_url = url("admin/tripal/storage/chado/custom_tables/edit/$custom_table->table_id");
   $output .= "<tr><th>Actions</th>" .
-            "<td>" .
-            "     <a href='$edit_url'>Edit</a>, " .
-            "     <a href='$delete_url'>Delete</a></td></tr>";
+    "<td>" .
+    "     <a href='$edit_url'>Edit</a>, " .
+    "     <a href='$delete_url'>Delete</a></td></tr>";
   $output .= "</table>";
 
   return $output;
@@ -112,7 +113,7 @@ function tripal_custom_table_view($table_id) {
 function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -130,23 +131,23 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
   // get this requested table
   $default_schema = '';
   $default_force_drop = 0;
-  if (strcmp($action, 'Edit')==0) {
+  if (strcmp($action, 'Edit') == 0) {
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
-    $results = db_query($sql, array(':table_id' => $table_id));
+    $results = db_query($sql, [':table_id' => $table_id]);
     $custom_table = $results->fetchObject();
 
     // if this is a materialized view then don't allow editing with this function
     if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
-      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.", 'error');
+      drupal_set_message("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.", 'error');
       drupal_goto("admin/tripal/storage/chado/custom_tables");
-      return array();
+      return [];
     }
 
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
     // the values from the database
     if (array_key_exists('values', $form_state)) {
-      $default_schema     = $form_state['values']['schema'];
+      $default_schema = $form_state['values']['schema'];
       $default_force_drop = $form_state['values']['force_drop'];
     }
 
@@ -157,24 +158,24 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
   }
 
   // Build the form
-  $form['action'] = array(
+  $form['action'] = [
     '#type' => 'value',
-    '#value' => $action
-  );
+    '#value' => $action,
+  ];
 
-  $form['table_id'] = array(
+  $form['table_id'] = [
     '#type' => 'value',
-    '#value' => $table_id
-  );
+    '#value' => $table_id,
+  ];
 
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#type' => 'fieldset',
     '#title' => 'Instructions',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-  );
-  $form['instructions']['text'] = array(
-    '#type'   => 'item',
+  ];
+  $form['instructions']['text'] = [
+    '#type' => 'item',
     '#markup' => '<p>' . t('At times it is necessary to add a custom table
        to the Chado schema. These are not offically sanctioned tables but may
        be necessary for local data requirements. Avoid creating custom tables
@@ -185,15 +186,15 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
        after existing tables.  If the table already exists it will not be
        modified.  To force dropping and recreation of the table
        click the checkbox below.  Tables are defined using the ' .
-       l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
-         array('attributes' => array('target' => '_blank'))) . '</p>' .
-      '<p>Please note that table names should be all lower-case.</p>'
-    ),
-  );
+        l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
+          ['attributes' => ['target' => '_blank']]) . '</p>' .
+        '<p>Please note that table names should be all lower-case.</p>'
+      ),
+  ];
 
-  $form['instructions']['example']= array(
-      '#type'    => 'item',
-      '#markup'  => "Example library_stock table: <pre>
+  $form['instructions']['example'] = [
+    '#type' => 'item',
+    '#markup' => "Example library_stock table: <pre>
 array (
   'table' => 'library_stock',
   'fields' => array (
@@ -235,22 +236,22 @@ array (
   ),
 )
     </pre>",
-  );
+  ];
 
-  $form['force_drop']= array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Re-create table'),
-    '#description'   => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
+  $form['force_drop'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Re-create table'),
+    '#description' => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
     '#default_value' => $default_force_drop,
-  );
-  $form['schema']= array(
-    '#type'          => 'textarea',
-    '#title'         => t('Schema Array'),
-    '#description'   => t('Please enter the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank'))) . ' compatible array that defines the table.'),
-    '#required'      => FALSE,
+  ];
+  $form['schema'] = [
+    '#type' => 'textarea',
+    '#title' => t('Schema Array'),
+    '#description' => t('Please enter the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', ['attributes' => ['target' => '_blank']]) . ' compatible array that defines the table.'),
+    '#required' => FALSE,
     '#default_value' => $default_schema,
-    '#rows'          => 25,
-  );
+    '#rows' => 25,
+  ];
 
   if ($action == 'Edit') {
     $value = 'Save';
@@ -258,15 +259,15 @@ array (
   if ($action == 'Add') {
     $value = 'Add';
   }
-  $form['submit'] = array(
-    '#type'         => 'submit',
-    '#value'        => t($value),
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t($value),
     '#executes_submit_callback' => TRUE,
-  );
-  $form['cancel'] = array(
-    '#type'   => 'markup',
+  ];
+  $form['cancel'] = [
+    '#type' => 'markup',
     '#markup' => l('Cancel', 'admin/tripal/storage/chado/custom_tables'),
-  );
+  ];
 
   return $form;
 }
@@ -287,7 +288,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
   }
 
   // make sure the array is valid
-  $schema_array = array();
+  $schema_array = [];
   if ($schema) {
     $success = preg_match('/^\s*array/', $schema);
     if (!$success) {
@@ -314,7 +315,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
         // see if the table name has changed. If so, then check to make sure
         // it doesn't already exists. We don't want to drop a table we didn't mean to
         $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-        $results = db_query($sql, array(':table_id' => $table_id));
+        $results = db_query($sql, [':table_id' => $table_id]);
         $ct = $results->fetchObject();
         if ($ct->table_name != $schema_array['table']) {
           $exists = chado_table_exists($schema_array['table']);
@@ -335,7 +336,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
  */
 function tripal_custom_tables_form_submit($form, &$form_state) {
 
-  $ret = array();
+  $ret = [];
   $action = $form_state['values']['action'];
   $table_id = $form_state['values']['table_id'];
   $schema = $form_state['values']['schema'];
@@ -343,11 +344,11 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
 
   $skip_creation = 1;
   if ($force_drop) {
-     $skip_creation = 0;
+    $skip_creation = 0;
   }
 
   // convert the schema into a PHP array
-  $schema_arr = array();
+  $schema_arr = [];
   eval("\$schema_arr = $schema;");
 
 
@@ -372,35 +373,35 @@ function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
 
   // get details about this table entry
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-  $results = db_query($sql, array(':table_id' => $table_id));
+  $results = db_query($sql, [':table_id' => $table_id]);
   $entry = $results->fetchObject();
 
   // if this is a materialized view then don't allow editing with this function
   if ($entry->mview_id) {
-    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
+    drupal_set_message("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
     drupal_goto("admin/tripal/storage/chado/custom_tables");
-    return array();
+    return [];
   }
 
 
-  $form = array();
-  $form['table_id'] = array(
+  $form = [];
+  $form['table_id'] = [
     '#type' => 'value',
-    '#value' => $table_id
-  );
+    '#value' => $table_id,
+  ];
 
-  $form['sure'] = array(
+  $form['sure'] = [
     '#type' => 'markup',
-    '#markup' => '<p>Are you sure you want to delete the "' . $entry->table_name . '" custom table?</p>'
-  );
-  $form['submit'] = array(
-    '#type'         => 'submit',
-    '#value'        => 'Delete',
-  );
-  $form['cancel'] = array(
-    '#type'         => 'submit',
-    '#value'        => 'Cancel',
-  );
+    '#markup' => '<p>Are you sure you want to delete the "' . $entry->table_name . '" custom table?</p>',
+  ];
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => 'Delete',
+  ];
+  $form['cancel'] = [
+    '#type' => 'submit',
+    '#value' => 'Cancel',
+  ];
   return $form;
 }
 
@@ -411,7 +412,7 @@ function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
  * @param $form_state
  */
 function tripal_custom_tables_delete_form_submit($form, &$form_state) {
-  $action   = $form_state['clicked_button']['#value'];
+  $action = $form_state['clicked_button']['#value'];
   $table_id = $form_state['values']['table_id'];
 
   if (strcmp($action, 'Delete') == 0) {

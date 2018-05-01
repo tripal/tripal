@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TripalTermController extends DrupalDefaultEntityController.
  *
@@ -11,7 +12,7 @@ class TripalTermController extends EntityAPIController {
     parent::__construct($entityType);
   }
 
-  public function create(array $values = array()) {
+  public function create(array $values = []) {
     return parent::create($values);
   }
 
@@ -36,8 +37,7 @@ class TripalTermController extends EntityAPIController {
           ->condition('accession', $entity->accession)
           ->execute();
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
       throw $e;
@@ -51,7 +51,7 @@ class TripalTermController extends EntityAPIController {
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
-    $pkeys = array();
+    $pkeys = [];
 
     $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
@@ -63,20 +63,20 @@ class TripalTermController extends EntityAPIController {
       }
       else {
         $invocation = 'entity_update';
-        $pkeys = array('id');
+        $pkeys = ['id'];
       }
 
       // Invoke hook_entity_presave().
       module_invoke_all('entity_presave', $entity, 'TripalTerm');
 
       // Write out the entity record.
-      $record = array(
+      $record = [
         'vocab_id' => $entity->vocab_id,
         'accession' => $entity->accession,
         'name' => $entity->name,
         'created' => $entity->created,
         'changed' => time(),
-      );
+      ];
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
       }
@@ -101,8 +101,7 @@ class TripalTermController extends EntityAPIController {
       module_invoke_all($invocation, $entity, 'TripalTerm');
 
       return $entity;
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_entity', $e);
       drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");

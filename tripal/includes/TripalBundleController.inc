@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The Controller for Tripal data type entities
  */

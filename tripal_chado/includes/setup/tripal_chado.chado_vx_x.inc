@@ -1,36 +1,36 @@
 <?php
 function tripal_chado_add_tripal_gff_temp_table() {
-  $schema = array(
+  $schema = [
     'table' => 'tripal_gff_temp',
-    'fields' => array(
-      'feature_id' => array(
+    'fields' => [
+      'feature_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not null' => TRUE,
-      ),
-      'type_name' => array(
+      ],
+      'type_name' => [
         'type' => 'varchar',
         'length' => '1024',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_gff_temp_idx0' => array('feature_id'),
-      'tripal_gff_temp_idx0' => array('organism_id'),
-      'tripal_gff_temp_idx1' => array('uniquename'),
-    ),
-    'unique keys' => array(
-      'tripal_gff_temp_uq0' => array('feature_id'),
-      'tripal_gff_temp_uq1' => array('uniquename', 'organism_id', 'type_name'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_gff_temp_idx0' => ['feature_id'],
+      'tripal_gff_temp_idx0' => ['organism_id'],
+      'tripal_gff_temp_idx1' => ['uniquename'],
+    ],
+    'unique keys' => [
+      'tripal_gff_temp_uq0' => ['feature_id'],
+      'tripal_gff_temp_uq1' => ['uniquename', 'organism_id', 'type_name'],
+    ],
+  ];
   chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, FALSE);
 }
 
@@ -38,39 +38,39 @@ function tripal_chado_add_tripal_gff_temp_table() {
  *
  */
 function tripal_chado_add_tripal_gffcds_temp_table() {
-  $schema = array(
+  $schema = [
     'table' => 'tripal_gffcds_temp',
-    'fields' => array(
-      'feature_id' => array(
+    'fields' => [
+      'feature_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'parent_id' => array(
+      ],
+      'parent_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'phase' => array(
+      ],
+      'phase' => [
         'type' => 'int',
         'not null' => FALSE,
-      ),
-      'strand' => array(
+      ],
+      'strand' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'fmin' => array(
+      ],
+      'fmin' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'fmax' => array(
+      ],
+      'fmax' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_gff_temp_idx0' => array('feature_id'),
-      'tripal_gff_temp_idx0' => array('parent_id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_gff_temp_idx0' => ['feature_id'],
+      'tripal_gff_temp_idx0' => ['parent_id'],
+    ],
+  ];
   chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL, FALSE);
 }
 
@@ -78,34 +78,34 @@ function tripal_chado_add_tripal_gffcds_temp_table() {
  *
  */
 function tripal_chado_add_tripal_gffprotein_temp_table() {
-  $schema = array(
+  $schema = [
     'table' => 'tripal_gffprotein_temp',
-    'fields' => array(
-      'feature_id' => array(
+    'fields' => [
+      'feature_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'parent_id' => array(
+      ],
+      'parent_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'fmin' => array(
+      ],
+      'fmin' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'fmax' => array(
+      ],
+      'fmax' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_gff_temp_idx0' => array('feature_id'),
-      'tripal_gff_temp_idx0' => array('parent_id'),
-    ),
-    'unique keys' => array(
-      'tripal_gff_temp_uq0' => array('feature_id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_gff_temp_idx0' => ['feature_id'],
+      'tripal_gff_temp_idx0' => ['parent_id'],
+    ],
+    'unique keys' => [
+      'tripal_gff_temp_uq0' => ['feature_id'],
+    ],
+  ];
   chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL, FALSE);
 }
 
@@ -137,9 +137,9 @@ function tripal_chado_add_tripal_obo_temp_table() {
 }
 
 
-
 /**
- * Creates a materialized view that stores the type & number of stocks per organism
+ * Creates a materialized view that stores the type & number of stocks per
+ * organism
  *
  * @ingroup tripal_stock
  */
@@ -147,51 +147,51 @@ function tripal_chado_add_organism_stock_count_mview() {
   $view_name = 'organism_stock_count';
   $comment = 'Stores the type and number of stocks per organism';
 
-  $schema = array(
+  $schema = [
     'description' => $comment,
     'table' => $view_name,
-    'fields' => array(
-      'organism_id' => array(
+    'fields' => [
+      'organism_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'genus' => array(
+      ],
+      'genus' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'species' => array(
+      ],
+      'species' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'common_name' => array(
+      ],
+      'common_name' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
-      ),
-      'num_stocks' => array(
+      ],
+      'num_stocks' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'stock_type' => array(
+      ],
+      'stock_type' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'organism_stock_count_idx1' => array('organism_id'),
-      'organism_stock_count_idx2' => array('cvterm_id'),
-      'organism_stock_count_idx3' => array('stock_type'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'organism_stock_count_idx1' => ['organism_id'],
+      'organism_stock_count_idx2' => ['cvterm_id'],
+      'organism_stock_count_idx3' => ['stock_type'],
+    ],
+  ];
 
   $sql = "
     SELECT
@@ -209,45 +209,44 @@ function tripal_chado_add_organism_stock_count_mview() {
 }
 
 
-
-
 /**
- * Adds a materialized view keeping track of the type of features associated with each library
+ * Adds a materialized view keeping track of the type of features associated
+ * with each library
  *
  * @ingroup tripal_library
  */
-function tripal_chado_add_library_feature_count_mview(){
+function tripal_chado_add_library_feature_count_mview() {
   $view_name = 'library_feature_count';
   $comment = 'Provides count of feature by type that are associated with all libraries';
 
-  $schema = array(
+  $schema = [
     'table' => $view_name,
     'description' => $comment,
-    'fields' => array(
-      'library_id' => array(
+    'fields' => [
+      'library_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-      'num_features' => array(
+      ],
+      'num_features' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'feature_type' => array(
+      ],
+      'feature_type' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'library_feature_count_idx1' => array('library_id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'library_feature_count_idx1' => ['library_id'],
+    ],
+  ];
 
   $sql = "
     SELECT
@@ -265,20 +264,14 @@ function tripal_chado_add_library_feature_count_mview(){
 }
 
 
-
-
-
-
 /**
  *
  */
 
 
-
-
-
 /**
- * Creates a materialized view that stores the type & number of features per organism
+ * Creates a materialized view that stores the type & number of features per
+ * organism
  *
  * @ingroup tripal_feature
  */
@@ -286,51 +279,51 @@ function tripal_chado_add_organism_feature_count_mview() {
   $view_name = 'organism_feature_count';
   $comment = 'Stores the type and number of features per organism';
 
-  $schema = array(
+  $schema = [
     'description' => $comment,
     'table' => $view_name,
-    'fields' => array(
-      'organism_id' => array(
+    'fields' => [
+      'organism_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'genus' => array(
+      ],
+      'genus' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'species' => array(
+      ],
+      'species' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'common_name' => array(
+      ],
+      'common_name' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
-      ),
-      'num_features' => array(
+      ],
+      'num_features' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'feature_type' => array(
+      ],
+      'feature_type' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'organism_feature_count_idx1' => array('organism_id'),
-      'organism_feature_count_idx2' => array('cvterm_id'),
-      'organism_feature_count_idx3' => array('feature_type'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'organism_feature_count_idx1' => ['organism_id'],
+      'organism_feature_count_idx2' => ['cvterm_id'],
+      'organism_feature_count_idx3' => ['feature_type'],
+    ],
+  ];
 
   $sql = "
     SELECT
@@ -349,7 +342,8 @@ function tripal_chado_add_organism_feature_count_mview() {
 
 
 /**
- * Creates a view showing the link between an organism & it's analysis through associated features.
+ * Creates a view showing the link between an organism & it's analysis through
+ * associated features.
  *
  */
 function tripal_chado_add_analysis_organism_mview() {
@@ -368,40 +362,40 @@ function tripal_chado_add_analysis_organism_mview() {
   ";
 
   // the schema array for describing this view
-  $schema = array(
+  $schema = [
     'table' => $view_name,
     'description' => $comment,
-    'fields' => array(
-      'analysis_id' => array(
+    'fields' => [
+      'analysis_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'networkmod_qtl_indx0' => array('analysis_id'),
-      'networkmod_qtl_indx1' => array('organism_id'),
-    ),
-    'foreign keys' => array(
-      'analysis' => array(
+      ],
+    ],
+    'indexes' => [
+      'networkmod_qtl_indx0' => ['analysis_id'],
+      'networkmod_qtl_indx1' => ['organism_id'],
+    ],
+    'foreign keys' => [
+      'analysis' => [
         'table' => 'analysis',
-        'columns' => array(
+        'columns' => [
           'analysis_id' => 'analysis_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   // add the view
   tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment, FALSE);
@@ -416,40 +410,40 @@ function tripal_chado_add_analysis_organism_mview() {
 function tripal_chado_add_db2cv_mview_mview() {
   $mv_name = 'db2cv_mview';
   $comment = 'A table for quick lookup of the vocabularies and the databases they are associated with.';
-  $schema = array(
+  $schema = [
     'table' => $mv_name,
     'description' => $comment,
-    'fields' => array (
-      'cv_id' => array (
+    'fields' => [
+      'cv_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'cvname' => array (
+        'not null' => TRUE,
+      ],
+      'cvname' => [
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
-      ),
-      'db_id' => array (
+        'not null' => TRUE,
+      ],
+      'db_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'dbname' => array (
+        'not null' => TRUE,
+      ],
+      'dbname' => [
         'type' => 'varchar',
         'length' => '255',
-        'not null' => true,
-      ),
-      'num_terms' => array (
+        'not null' => TRUE,
+      ],
+      'num_terms' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-    ),
-    'indexes' => array (
-      'cv_id_idx'  => array ('cv_id'),
-      'cvname_idx'    => array ('cvname'),
-      'db_id_idx' => array ('db_id'),
-      'dbname_idx'    => array ('db_id'),
-    ),
-  );
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'cv_id_idx' => ['cv_id'],
+      'cvname_idx' => ['cvname'],
+      'db_id_idx' => ['db_id'],
+      'dbname_idx' => ['db_id'],
+    ],
+  ];
 
   $sql = "
    SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
@@ -465,6 +459,7 @@ function tripal_chado_add_db2cv_mview_mview() {
   // Create the MView
   tripal_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
 }
+
 /**
  * Add a materialized view of root terms for all chado cvs.
  *
@@ -474,36 +469,36 @@ function tripal_chado_add_db2cv_mview_mview() {
 function tripal_chado_add_cv_root_mview_mview() {
   $mv_name = 'cv_root_mview';
   $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
-  $schema = array(
+  $schema = [
     'table' => $mv_name,
     'description' => $comment,
-    'fields' => array(
-      'name' => array(
+    'fields' => [
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'cv_id' => array(
+      ],
+      'cv_id' => [
         'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'cv_name' => array(
+      ],
+      'cv_name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'cv_root_mview_indx1' => array('cvterm_id'),
-      'cv_root_mview_indx2' => array('cv_id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'cv_root_mview_indx1' => ['cvterm_id'],
+      'cv_root_mview_indx2' => ['cv_id'],
+    ],
+  ];
 
   $sql = "
     SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name

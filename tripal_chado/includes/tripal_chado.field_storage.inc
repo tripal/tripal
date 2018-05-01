@@ -4,18 +4,18 @@
  * Implements hook_field_storage_info().
  */
 function tripal_chado_field_storage_info() {
-  return array(
-    'field_chado_storage' => array(
+  return [
+    'field_chado_storage' => [
       'label' => t('Chado'),
       'description' => t('Stores fields in the local Chado database.'),
-      'settings' => array(),
+      'settings' => [],
       // The logo_url key is supported by Tripal. It's not a Drupal key. It's
       // used for adding a logo or picture for the data store to help make it
       // more easily recognized on the  field_ui_field_overview_form. Ideally
       // the URL should point to a relative path on the local Drupal site.
       'logo_url' => url(drupal_get_path('module', 'tripal') . '/theme/images/250px-ChadoLogo.png'),
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -24,20 +24,23 @@ function tripal_chado_field_storage_info() {
 function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Get the bundle and the term for this entity.
-  $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
+  $term = entity_load('TripalTerm', ['id' => $entity->term_id]);
   $term = reset($term);
 
   // Convert the Tripal term entity into the appropriate record in Chado.
-  $dbxref = tripal_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
-  $cvterm = tripal_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
+  $dbxref = tripal_get_dbxref([
+    'accession' => $term->accession,
+    'db_id' => ['name' => $term->vocab->vocabulary],
+  ]);
+  $cvterm = tripal_get_cvterm(['dbxref_id' => $dbxref->dbxref_id]);
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
   $type_field = $entity->chado_column;
-  $record     = $entity->chado_record;
-  $record_id  = $entity->chado_record_id;
-  $linker     = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
+  $record = $entity->chado_record;
+  $record_id = $entity->chado_record_id;
+  $linker = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
   $base_schema = chado_get_schema($base_table);
   $base_pkey = $base_schema['primary key'][0];
 
@@ -63,10 +66,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     // Add the record to the proper chado entity table
     $chado_entity_table = chado_get_bundle_entity_table($bundle);
     $record_id = db_insert($chado_entity_table)
-      ->fields(array(
+      ->fields([
         'entity_id' => $entity->id,
-        'record_id' => $base_record_id
-      ))
+        'record_id' => $base_record_id,
+      ])
       ->execute();
     if (!$record_id) {
       throw new Exception('Unable to insert new Chado entity.');
@@ -150,10 +153,10 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
 
     // Before inserting, we want to make sure the record does not
     // already exist.  Using the unique constraint check for a matching record.
-    $options = array('is_duplicate' => TRUE);
-    $is_duplicate = chado_select_record($table_name, array('*'), $values, $options);
-    if($is_duplicate) {
-      $record = chado_select_record($table_name, array('*'), $values);
+    $options = ['is_duplicate' => TRUE];
+    $is_duplicate = chado_select_record($table_name, ['*'], $values, $options);
+    if ($is_duplicate) {
+      $record = chado_select_record($table_name, ['*'], $values);
       return $record[0]->$pkey;
     }
 
@@ -196,7 +199,7 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
  * entity.
  */
 function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
-    $fields, $options) {
+                                             $fields, $options) {
 
 
   // Itereate through the entities and add in the Chado record.
@@ -212,10 +215,10 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
       // Get the base table and record id for the fields of this entity.
       $base_table = $entity->chado_table;
       $type_field = $entity->chado_column;
-      $record_id  = $entity->chado_record_id;
+      $record_id = $entity->chado_record_id;
     }
     else {
-      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
       $base_table = $bundle->data_table;
       $type_field = $bundle->type_column;
 
@@ -227,7 +230,7 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
         ->execute()
         ->fetchObject();
       if ($details) {
-        $record_id  = isset($details->record_id) ? $details->record_id : '';
+        $record_id = isset($details->record_id) ? $details->record_id : '';
       }
       $entity->chado_table = $base_table;
       $entity->chado_record_id = $record_id;
@@ -239,8 +242,8 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
       $pkey_field = $schema['primary key'][0];
 
       // Get the base record if one exists
-      $columns = array('*');
-      $match = array($pkey_field => $record_id);
+      $columns = ['*'];
+      $match = [$pkey_field => $record_id];
       $record = chado_generate_var($base_table, $match);
       $entity->chado_record = $record;
     }
@@ -254,7 +257,7 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
  * their values to the entity.
  */
 function tripal_chado_field_storage_load($entity_type, $entities, $age,
-    $fields, $options) {
+                                         $fields, $options) {
 
   $load_current = $age == FIELD_LOAD_CURRENT;
   global $language;
@@ -263,13 +266,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   foreach ($entities as $id => $entity) {
     $base_table = $entity->chado_table;
     $type_field = $entity->chado_column;
-    $record_id  = $entity->chado_record_id;
+    $record_id = $entity->chado_record_id;
     $record = $entity->chado_record;
     $schema = chado_get_schema($base_table);
 
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.
-    $tables = array();
+    $tables = [];
     foreach ($fields as $field_id => $ids) {
 
       // By the time this hook runs, the relevant field definitions have been
@@ -293,7 +296,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 
       // Skip fields that don't map to a Chado table.
       if (!array_key_exists('settings', $instance) or
-          !array_key_exists('chado_table', $instance['settings'])) {
+        !array_key_exists('chado_table', $instance['settings'])) {
         continue;
       }
 
@@ -315,8 +318,8 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           // function we must go one more level deeper to get the value
           if (is_object($record->$field_column)) {
             $fkey_column = $field_column;
-            foreach($schema['foreign keys'] as $table => $fk_details) {
-              foreach($fk_details['columns'] as $lfkey => $rfkey) {
+            foreach ($schema['foreign keys'] as $table => $fk_details) {
+              foreach ($fk_details['columns'] as $lfkey => $rfkey) {
                 if ($lfkey == $field_column) {
                   $fkey_column = $rfkey;
                 }
@@ -338,7 +341,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         tripal_load_include_field_class($field_type);
         if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
           $tfield = new $field_type($field, $instance);
-          $tfield->load($entity, array('record' => $record));
+          $tfield->load($entity, ['record' => $record]);
         }
         // For text fields that were not handled by a TripalField class we
         // want to automatically expand those fields.
@@ -348,8 +351,10 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
             // Text fields that have a text_processing == 1 setting need a
             // special 'format' element too:
-            if (array(key_exists('text_processing', $instance['settings']) and
-                $instance['settings']['text_processing'] == 1)) {
+            if ([
+              key_exists('text_processing', $instance['settings']) and
+              $instance['settings']['text_processing'] == 1,
+            ]) {
               // TODO: we need a way to write the format back to the
               // instance settings if the user changes it when using the form.
               $entity->{$field_name}['und'][0]['format'] = array_key_exists('format', $instance['settings']) ? $instance['settings']['format'] : 'full_html';
@@ -368,19 +373,20 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         tripal_load_include_field_class($field_type);
         if (class_exists($field_type) && method_exists($field_type, 'load')) {
           $tfield = new $field_type($field, $instance);
-          $tfield->load($entity, array('record' => $record));
+          $tfield->load($entity, ['record' => $record]);
         }
       }
 
     } // end: foreach ($fields as $field_id => $ids) {
   } // end: foreach ($entities as $id => $entity) {
 }
+
 /**
  * Merges the values of all fields into a single array keyed by table name.
  */
 function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity) {
-  $all_fields = array();
-  $base_fields = array();
+  $all_fields = [];
+  $base_fields = [];
 
   // Iterate through all of the fields and organize them into a
   // new fields array keyed by the table name
@@ -404,7 +410,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
-    $temp = array();
+    $temp = [];
     foreach ($items as $delta => $item) {
 
       // A field may have multiple items. The field can use items
@@ -412,7 +418,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
       // to chado tables and fields.
       $value_set = FALSE;
       foreach ($item as $item_name => $value) {
-        $matches = array();
+        $matches = [];
         if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
           $table_name = $matches[1];
           $column_name = $matches[2];
@@ -432,7 +438,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
       // chado-[table_name]__[field name] naming schema then check if a 'value'
       // item is present and if so use that for the table column value.
       if (!$value_set and array_key_exists('value', $items[$delta]) and
-          !is_array($items[$delta]['value'])) {
+        !is_array($items[$delta]['value'])) {
         // If this field belongs to the base table then we just add
         // those values in... there's no delta.
         if ($base_table == $chado_table) {
@@ -462,9 +468,9 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
 function tripal_chado_field_storage_query($query) {
 
   // Initialize the result array.
-  $result = array(
-    'TripalEntity' => array()
-  );
+  $result = [
+    'TripalEntity' => [],
+  ];
 
   // There must always be an entity filter that includes the bundle. Otherwise
   // it would be too overwhelming to search every table of every content type
@@ -472,7 +478,7 @@ function tripal_chado_field_storage_query($query) {
   if (!array_key_exists('bundle', $query->entityConditions)) {
     return $result;
   }
-  $bundle = tripal_load_bundle_entity(array('name' => $query->entityConditions['bundle']));
+  $bundle = tripal_load_bundle_entity(['name' => $query->entityConditions['bundle']]);
   if (!$bundle) {
     return;
   }
@@ -484,7 +490,7 @@ function tripal_chado_field_storage_query($query) {
 
   // Initialize the Query object.
   $cquery = chado_db_select($data_table, 'base');
-  $cquery->fields('base', array($pkey));
+  $cquery->fields('base', [$pkey]);
 
   // Iterate through all the conditions and add to the filters array
   // a chado_select_record compatible set of filters.
@@ -507,11 +513,13 @@ function tripal_chado_field_storage_query($query) {
       // associated with the bundle then skip it.
       if (array_key_exists('bundle', $query->entityConditions)) {
         if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
-            !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
+          !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
           continue;
         }
-        else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
-          continue;
+        else {
+          if ($query->entityConditions['bundle']['value'] != $bundle_name) {
+            continue;
+          }
         }
       }
 
@@ -535,7 +543,7 @@ function tripal_chado_field_storage_query($query) {
           // passed as $condition['column'].
           $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
 
-          $matches = array();
+          $matches = [];
           $key = $condition['value'];
           $op = '=';
           if (preg_match('/^(.+);(.+)$/', $key, $matches)) {
@@ -572,7 +580,7 @@ function tripal_chado_field_storage_query($query) {
             default:
               $op = '=';
           }
-          $cquery->condition('base.' . $base_field , $key, $op);
+          $cquery->condition('base.' . $base_field, $key, $op);
         }
         if ($chado_table != $base_table) {
           // TODO: I don't think we'll get here because linker fields will
@@ -587,8 +595,8 @@ function tripal_chado_field_storage_query($query) {
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
   $cquery->join($chado_entity_table, 'CE', "CE.record_id = base.$pkey");
   $cquery->join('tripal_entity', 'TE', "CE.entity_id = TE.id");
-  $cquery->fields('CE', array('entity_id'));
-  $cquery->fields('TE', array('bundle'));
+  $cquery->fields('CE', ['entity_id']);
+  $cquery->fields('TE', ['bundle']);
   if (array_key_exists('start', $query->range)) {
     $cquery->range($query->range['start'], $query->range['length']);
   }
@@ -655,7 +663,7 @@ function tripal_chado_field_storage_query($query) {
   foreach ($query->order as $index => $sort) {
     // Add in property ordering.
     if ($sort['type'] == 'property') {
-       // TODO: support ordering by bundle properties.
+      // TODO: support ordering by bundle properties.
     }
     // Add in filter ordering
     if ($sort['type'] == 'field') {
@@ -680,11 +688,13 @@ function tripal_chado_field_storage_query($query) {
         // associated with the bundle then skip it.
         if (array_key_exists('bundle', $query->entityConditions)) {
           if (strtolower($query->entityConditions['bundle']['operator']) == 'in' and
-              !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
+            !array_key_exists($bundle_name, $query->entityConditions['bundle']['value'])) {
             continue;
           }
-          else if ($query->entityConditions['bundle']['value'] != $bundle_name) {
-            continue;
+          else {
+            if ($query->entityConditions['bundle']['value'] != $bundle_name) {
+              continue;
+            }
           }
         }
 
@@ -693,7 +703,10 @@ function tripal_chado_field_storage_query($query) {
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
         if (tripal_load_include_field_class($field_type)) {
           $field_obj = new $field_type($field, $instance);
-          $field_obj->queryOrder($cquery, array('column' => $column, 'direction' => $direction));
+          $field_obj->queryOrder($cquery, [
+            'column' => $column,
+            'direction' => $direction,
+          ]);
         }
         // There is no class so do our best to order the data by this field
         else {
@@ -701,14 +714,14 @@ function tripal_chado_field_storage_query($query) {
           $chado_table = $instance['settings']['chado_table'];
           $table_column = tripal_get_chado_semweb_column($chado_table, $column);
           if ($table_column) {
-             if ($chado_table == $base_table) {
-               $cquery->orderBy('base.' . $table_column, $direction);
-             }
-             else {
-               // TODO: how do we handle a field that doesn't map to the base table.
-               // We would expect that all of these would be custom field and
-               // the ChadoField::queryOrder() function would be implemented.
-             }
+            if ($chado_table == $base_table) {
+              $cquery->orderBy('base.' . $table_column, $direction);
+            }
+            else {
+              // TODO: how do we handle a field that doesn't map to the base table.
+              // We would expect that all of these would be custom field and
+              // the ChadoField::queryOrder() function would be implemented.
+            }
           }
           else {
             // TODO: handle when the name can't be matched to a table column.
@@ -718,8 +731,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-// dpm($cquery->__toString());
-// dpm($cquery->getArguments());
+  // dpm($cquery->__toString());
+  // dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 
@@ -729,9 +742,9 @@ function tripal_chado_field_storage_query($query) {
   }
 
   // If this is not a count query then return the results.
-  $result = array();
+  $result = [];
   while ($record = $records->fetchObject()) {
-    $ids = array($record->entity_id, 0, $record->bundle);
+    $ids = [$record->entity_id, 0, $record->bundle];
     $result['TripalEntity'][$record->entity_id] = entity_create_stub_entity('TripalEntity', $ids);
   }
   return $result;
@@ -744,15 +757,15 @@ function tripal_chado_field_storage_query($query) {
  * This is a Tripal added hook to the field storage API.
  */
 function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
-    $term, &$submit_disabled) {
+                                                        $term, &$submit_disabled) {
 
   $selected_term_id = (is_object($term)) ? $term->cvterm_id : NULL;
 
   // Initialize the form.
-  $form = array();
+  $form = [];
 
   // Get the form default values.
-  $default = array(
+  $default = [
     'table' => '',
     'has_all' => 'No',
     'use_cvterm' => 'cv',
@@ -762,73 +775,73 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
     'type_column' => '',
     'prop_term_name' => '',
     'prop_term_value' => '',
-  );
+  ];
   if (array_key_exists('base_chado_table', $form_state['values'])
-      and $form_state['values']['base_chado_table']) {
+    and $form_state['values']['base_chado_table']) {
     $default['table'] = $form_state['values']['base_chado_table'];
   }
   else {
-    $mapped_table = chado_get_cvterm_mapping(array('cvterm_id' => $selected_term_id));
+    $mapped_table = chado_get_cvterm_mapping(['cvterm_id' => $selected_term_id]);
     if ($mapped_table) {
       $default['table'] = $mapped_table->chado_table;
     }
   }
   if (array_key_exists('chado_table_has_all', $form_state['values'])
-      and $form_state['values']['chado_table_has_all']) {
+    and $form_state['values']['chado_table_has_all']) {
     $default['has_all'] = $form_state['values']['chado_table_has_all'];
   }
   if (array_key_exists('chado_type_use_linker', $form_state['values'])
-      and $form_state['values']['chado_type_use_linker']) {
+    and $form_state['values']['chado_type_use_linker']) {
     $default['use_linker'] = $form_state['values']['chado_type_use_linker'];
   }
   if (array_key_exists('chado_type_use_prop', $form_state['values'])
-      and $form_state['values']['chado_type_use_prop']) {
+    and $form_state['values']['chado_type_use_prop']) {
     $default['use_prop'] = $form_state['values']['chado_type_use_prop'];
   }
   if (array_key_exists('type_column', $form_state['values'])
-      and $form_state['values']['type_column']) {
+    and $form_state['values']['type_column']) {
     $default['type_column'] = $form_state['values']['type_column'];
   }
   if (array_key_exists('prop_term_name', $form_state['values'])
-      and $form_state['values']['prop_term_name']) {
+    and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
   }
   if (array_key_exists('prop_term_value', $form_state['values'])
-      and $form_state['values']['prop_term_value']) {
+    and $form_state['values']['prop_term_value']) {
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
   }
   if (array_key_exists('chado_type_use_cv', $form_state['values'])
-      and $form_state['values']['chado_type_use_cv']) {
+    and $form_state['values']['chado_type_use_cv']) {
     $default['use_cvterm'] = $form_state['values']['chado_type_use_cv'];
   }
   if (array_key_exists('chado_type_cv_id', $form_state['values'])
-      and $form_state['values']['chado_type_cv_id']) {
+    and $form_state['values']['chado_type_cv_id']) {
     $default['cv_id'] = $form_state['values']['chado_type_cv_id'];
   }
 
-  $form['selected_cvterm_id'] = array(
+  $form['selected_cvterm_id'] = [
     '#type' => 'value',
     '#value' => $selected_term_id,
-  );
+  ];
 
   $base_tables = chado_get_base_tables();
-  $options = array(0 => '-- Select table --');
+  $options = [0 => '-- Select table --'];
   foreach ($base_tables AS $tablename) {
     $options[$tablename] = $tablename;
   }
-  $form['base_chado_table'] = array(
+  $form['base_chado_table'] = [
     '#type' => 'select',
     '#title' => 'Chado table',
     '#options' => $options,
     '#description' => 'Select the Chado table into which the primary records for this content type will be stored.',
     '#default_value' => $default['table'],
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
   $form_state['input']['base_chado_table'] = $default['table'];
 
   // Return now if the user hasn't provided a table.
@@ -842,7 +855,7 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
   // If the selected base table is 'cvterm' then handle it specially.
   if ($default['table'] == 'cvterm') {
     tripal_chado_field_storage_bundle_mapping_form_add_cvterm($form,
-        $form_state, $term, $default);
+      $form_state, $term, $default);
     if ($default['use_cvterm'] == 'cv' and $default['cv_id']) {
       $submit_disabled = FALSE;
     }
@@ -854,7 +867,7 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
 
   // Ask the user if all of the records in the default table are of one type.
   tripal_chado_field_storage_bundle_mapping_form_add_allrecs($form,
-      $form_state, $term, $default);
+    $form_state, $term, $default);
 
   // If all the records in the table are of this type then we're done.
   if ($default['has_all'] == 'Yes') {
@@ -865,7 +878,7 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
   // If this table has a field that maps to a cvterm record then we want
   // to ask if the user wants to use that field.
   tripal_chado_field_storage_bundle_mapping_form_add_type($form,
-      $form_state, $term, $default);
+    $form_state, $term, $default);
 
   // If the type_column is set then we're done!  We know the deafult table
   // and column to map this data type.
@@ -876,15 +889,15 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
 
   // Let's set the names of the linker and prop table for use below.
   $linker_table = $default['table'] . '_cvterm';
-  $prop_table = $default['table']. 'prop';
+  $prop_table = $default['table'] . 'prop';
   $linker_exists = chado_table_exists($linker_table);
   $prop_exists = chado_table_exists($prop_table);
 
   // Ask the user if they want to use a linker table if it exists.
-  if($prop_exists) {
+  if ($prop_exists) {
 
     tripal_chado_field_storage_bundle_mapping_form_add_prop($form,
-        $form_state, $term, $prop_table, $default);
+      $form_state, $term, $prop_table, $default);
 
     // If the user wants to use the property table then we're done!
     if ($default['use_prop'] == 'Yes') {
@@ -895,7 +908,7 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
     // Ask if the user wants to use the linker table if it exists.
     if ($linker_exists) {
       tripal_chado_field_storage_bundle_mapping_form_add_linker($form,
-          $form_state, $term, $linker_table, $default);
+        $form_state, $term, $linker_table, $default);
 
       // If the user wants to use the linker table then we're done!
       if ($default['use_linker'] == 'Yes') {
@@ -907,21 +920,23 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
   }
   // A prop table doesn't exist then ask the user if they want
   // to use the linker table to associate records.
-  else if ($linker_exists) {
-    tripal_chado_field_storage_bundle_mapping_form_add_prop($form,
+  else {
+    if ($linker_exists) {
+      tripal_chado_field_storage_bundle_mapping_form_add_prop($form,
         $form_state, $term, $prop_table, $default);
 
-    // If the user wants to use the linker table then we're done!
-    if ($default['use_linker'] == 'Yes') {
-      $submit_disabled = FALSE;
-      return $form;
+      // If the user wants to use the linker table then we're done!
+      if ($default['use_linker'] == 'Yes') {
+        $submit_disabled = FALSE;
+        return $form;
+      }
     }
   }
 
-  $form['notice'] = array(
+  $form['notice'] = [
     '#type' => 'item',
-    '#markup' => '<font color="red">Unfortunately, the options selected above do not allow for mapping of this content type to records in Chado.</font>'
-  );
+    '#markup' => '<font color="red">Unfortunately, the options selected above do not allow for mapping of this content type to records in Chado.</font>',
+  ];
   return $form;
 }
 
@@ -929,14 +944,14 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
  *
  */
 function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
-    &$form_state, $term, &$default){
+                                                                 &$form_state, $term, &$default) {
 
   $term_name = $term->name;
 
   // Get the list of columns in the default table.
   $schema = chado_get_schema($default['table']);
-  $column_options = array('none' => '--None--');
-  $cvt_fkeys = (isset($schema['foreign keys']['cvterm'])) ? array_keys($schema['foreign keys']['cvterm']['columns']) : array();
+  $column_options = ['none' => '--None--'];
+  $cvt_fkeys = (isset($schema['foreign keys']['cvterm'])) ? array_keys($schema['foreign keys']['cvterm']['columns']) : [];
   foreach ($schema['fields'] as $column_name => $column_details) {
     if (in_array($column_name, $cvt_fkeys)) {
       $column_options[$column_name] = $column_name;
@@ -950,7 +965,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
   }
 
   $default_column = !empty($default['type_column']) ? $default['type_column'] : 'type_id';
-  $form['type_column'] = array(
+  $form['type_column'] = [
     '#type' => 'select',
     '#title' => 'Type Column',
     '#options' => $column_options,
@@ -960,13 +975,13 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
       if you the type can be identified using a property or linker table.
       Only fields that have a foreign key to the cvterm table will be listed.',
     '#default_value' => $default_column,
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 
   // Set the default value so we can short circuit the form.
   $default['type_column'] = $default_column;
@@ -979,127 +994,128 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
  *
  */
 function tripal_chado_field_storage_bundle_mapping_form_add_allrecs(&$form,
-    &$form_state, $term, $default) {
+                                                                    &$form_state, $term, $default) {
 
   $term_name = $term->name;
 
   // Form elements to determine if all records in base table are of this type.
-  $form['chado_table_has_all'] = array(
+  $form['chado_table_has_all'] = [
     '#type' => 'radios',
-    '#options' => array(
+    '#options' => [
       'Yes' => 'Yes',
-      'No' => 'No'
-    ),
+      'No' => 'No',
+    ],
     '#title' => 'Are all records in the "' . $default['table'] .
-      '" table of type "'. $term_name . '"?',
+      '" table of type "' . $term_name . '"?',
     '#description' => 'Select "No" if the "' .
       $default['table'] . '" table houses more than just data of type "' .
       $term_name . '".',
     '#default_value' => $default['has_all'],
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 }
 
 /**
  *
  */
 function tripal_chado_field_storage_bundle_mapping_form_add_linker(&$form,
-    &$form_state, $term, $linker_table, $default){
+                                                                   &$form_state, $term, $linker_table, $default) {
 
-  $form['chado_type_use_linker'] = array(
+  $form['chado_type_use_linker'] = [
     '#type' => 'radios',
     '#title' => 'Do you want to use the "' . $linker_table . '" table
       to distinguish between content types?',
-    '#options' => array(
+    '#options' => [
       'Yes' => 'Yes',
-      'No' => 'No'
-    ),
+      'No' => 'No',
+    ],
     '#description' => t('Sometimes records can be distringuished
       using a linker table, especially if there is no column
       in the specified Chado table to identify the
       record type. In these cases the linker table can be used.'),
     '#default_value' => $default['use_linker'],
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 }
+
 /**
  *
  */
 function tripal_chado_field_storage_bundle_mapping_form_add_prop(&$form,
-    &$form_state, $term, $prop_table, $default){
+                                                                 &$form_state, $term, $prop_table, $default) {
 
-  $form['chado_type_use_prop'] = array(
+  $form['chado_type_use_prop'] = [
     '#type' => 'radios',
     '#title' => 'Do you want to use the "' . $prop_table . '" table
       to distinguish between content types?',
-    '#options' => array(
+    '#options' => [
       'Yes' => 'Yes',
-      'No' => 'No'
-    ),
+      'No' => 'No',
+    ],
     '#description' => t('Sometimes records can be distringuished
       using a value in property table, especially if there is no column
       in the specified Chado table to identify the
       record type. In these cases the property table can be used.'),
     '#default_value' => $default['use_prop'],
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 
   if ($default['use_prop'] == 'Yes') {
     $prop_term_name = $default['prop_term_name'];
     $prop_term_value = $default['prop_term_value'];
 
-    $form['prop_term_name'] = array(
-      '#title'       => t('Property Type'),
-      '#type'        => 'textfield',
+    $form['prop_term_name'] = [
+      '#title' => t('Property Type'),
+      '#type' => 'textfield',
       '#description' => t('The content type "' . $term->name . '" must be
           associated with a property type.  The property type must be the
           name of a term in a controlled vocabulary and the controlled
           vocabulary should already be loaded into Tripal. Please select
           the property type that will be used to identify records of this
           type'),
-      '#required'    => TRUE,
+      '#required' => TRUE,
       '#default_value' => $prop_term_name,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-    );
-    $form['prop_term_select_button'] = array(
+    ];
+    $form['prop_term_select_button'] = [
       '#type' => 'submit',
       '#value' => t('Lookup Term'),
       '#name' => 'select_prop_cvterm',
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "tripal_admin_add_type_form_ajax_callback",
         'wrapper' => "tripal-vocab-select-form",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
     // If the term has been provided by the user then we want to search for
     // matching terms in the database and let them select among any matches.
     if ($prop_term_name) {
-      $form['prop_terms_list'] = array(
+      $form['prop_terms_list'] = [
         '#type' => 'fieldset',
         '#title' => t('Matching Terms'),
         '#description' => t('Please select the term the best matches the
-          property type.')
-      );
-      $match = array(
+          property type.'),
+      ];
+      $match = [
         'name' => $prop_term_name,
-      );
-      $pterms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+      ];
+      $pterms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
       $pterms = chado_expand_var($pterms, 'field', 'cvterm.definition');
       $num_terms = 0;
 
@@ -1109,31 +1125,31 @@ function tripal_chado_field_storage_bundle_mapping_form_add_prop(&$form,
         // Save the user a click by setting the default value as 1 if there's
         // only one matching term.
         $default = FALSE;
-        $attrs = array();
+        $attrs = [];
         if ($num_terms == 0 and count($pterms) == 1) {
           $default = TRUE;
-          $attrs = array('checked' => 'checked');
+          $attrs = ['checked' => 'checked'];
         }
         $term_element_name = 'prop_term-' . $pterm->cvterm_id;
-        $form['prop_terms_list'][$term_element_name] = array(
+        $form['prop_terms_list'][$term_element_name] = [
           '#type' => 'checkbox',
-          '#title' =>  $pterm->name,
+          '#title' => $pterm->name,
           '#default_value' => $default,
           '#attributes' => $attrs,
           '#description' => '<b>Vocabulary:</b> ' . $pterm->cv_id->name . ' (' . $pterm->dbxref_id->db_id->name . ') ' . $pterm->cv_id->definition .
             '<br><b>Term: </b> ' . $pterm->dbxref_id->db_id->name . ':' . $pterm->dbxref_id->accession . '.  ' .
             '<br><b>Definition:</b>  ' . $pterm->definition,
-          '#ajax' => array(
+          '#ajax' => [
             'callback' => "tripal_admin_add_type_form_ajax_callback",
             'wrapper' => "tripal-vocab-select-form",
             'effect' => 'fade',
-            'method' => 'replace'
-          ),
-        );
+            'method' => 'replace',
+          ],
+        ];
         $num_terms++;
       }
 
-      $form['prop_term_value'] = array(
+      $form['prop_term_value'] = [
         '#type' => 'textfield',
         '#title' => 'Property Value',
         '#description' => t('All properties have a type and a value.  Above you
@@ -1142,7 +1158,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_prop(&$form,
             type "' . $term->name . '".'),
         '#default_value' => $prop_term_value,
         '#required' => TRUE,
-      );
+      ];
     }
   }
 }
@@ -1151,16 +1167,16 @@ function tripal_chado_field_storage_bundle_mapping_form_add_prop(&$form,
  *
  */
 function tripal_chado_field_storage_bundle_mapping_form_add_cvterm(&$form,
-    &$form_state, $term, &$default){
+                                                                   &$form_state, $term, &$default) {
 
-  $form['chado_type_use_cv'] = array(
+  $form['chado_type_use_cv'] = [
     '#type' => 'radios',
     '#title' => 'How do you want to distinguish the "' . $term->name . '" records
       within the cvterm table?',
-    '#options' => array(
+    '#options' => [
       'cv' => 'All records that belong to a single controlled vocabulary?',
-      'parent' => 'All child records of the specified term?'
-    ),
+      'parent' => 'All child records of the specified term?',
+    ],
     '#description' => t('Records in the cvterm table are often not used for content
         types. The records in the cvterm table are meant to be vocabulary terms.
         However, there are times when records in the cvterm table can be
@@ -1171,36 +1187,37 @@ function tripal_chado_field_storage_bundle_mapping_form_add_cvterm(&$form,
         distinguish the records or 2) to use all children records of the
         selected term.  Please select the appropriate value for this case.'),
     '#default_value' => $default['use_cvterm'],
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
   if ($default['use_cvterm'] == 'cv') {
     $cvs = tripal_get_cv_select_options();
-    $form['chado_type_cv_id'] = array(
+    $form['chado_type_cv_id'] = [
       '#type' => select,
       '#options' => $cvs,
       '#title' => t('Select a controlled vocabulary'),
       '#default_value' => $default['cv_id'],
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "tripal_admin_add_type_form_ajax_callback",
         'wrapper' => "tripal-vocab-select-form",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
   }
 
 }
+
 /**
  * Implements hook_field_stoage_bundle_mapping_form_validate().
  */
 function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_state) {
   // Get the form values
-  $default = array(
+  $default = [
     'table' => '',
     'has_all' => 'No',
     'use_cvterm' => 'cv',
@@ -1210,60 +1227,62 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     'type_column' => '',
     'prop_term_name' => '',
     'prop_term_value' => '',
-  );
+  ];
   if (array_key_exists('base_chado_table', $form_state['values'])
-      and $form_state['values']['base_chado_table']) {
+    and $form_state['values']['base_chado_table']) {
     $default['table'] = $form_state['values']['base_chado_table'];
   }
   if (array_key_exists('chado_table_has_all', $form_state['values'])
-      and $form_state['values']['chado_table_has_all']) {
+    and $form_state['values']['chado_table_has_all']) {
     $default['has_all'] = $form_state['values']['chado_table_has_all'];
   }
   if (array_key_exists('chado_type_use_linker', $form_state['values'])
-      and $form_state['values']['chado_type_use_linker']) {
+    and $form_state['values']['chado_type_use_linker']) {
     $default['use_linker'] = $form_state['values']['chado_type_use_linker'];
   }
   if (array_key_exists('chado_type_use_prop', $form_state['values'])
-      and $form_state['values']['chado_type_use_prop']) {
+    and $form_state['values']['chado_type_use_prop']) {
     $default['use_prop'] = $form_state['values']['chado_type_use_prop'];
   }
   if (array_key_exists('type_column', $form_state['values'])
-      and $form_state['values']['type_column']) {
+    and $form_state['values']['type_column']) {
     $default['type_column'] = $form_state['values']['type_column'];
   }
   if (array_key_exists('prop_term_name', $form_state['values'])
-      and $form_state['values']['prop_term_name']) {
+    and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
 
     // Make sure we have only one property cvterm selected
     $num_selected = 0;
     foreach ($form_state['values'] as $key => $value) {
-      $matches = array();
+      $matches = [];
       if (preg_match("/^prop_term-(\d+)$/", $key, $matches) and
-          $form_state['values']['prop_term-' . $matches[1]]) {
+        $form_state['values']['prop_term-' . $matches[1]]) {
         $cvterm_id = $matches[1];
-        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $term = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
         $num_selected++;
       }
     }
     if ($num_selected == 0) {
       form_set_error('', 'Please select at least one property term.');
     }
-    else if ($num_selected > 1) {
-      form_set_error('prop_term-' . $cvterm_id, 'Please select only one property term from the list below.');
+    else {
+      if ($num_selected > 1) {
+        form_set_error('prop_term-' . $cvterm_id, 'Please select only one property term from the list below.');
+      }
     }
     $form_state['prop_term'] = $term;
   }
   if (array_key_exists('prop_term_value', $form_state['values'])
-      and $form_state['values']['prop_term_value']) {
+    and $form_state['values']['prop_term_value']) {
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
   }
   if (array_key_exists('chado_type_use_cv', $form_state['values'])
-      and $form_state['values']['chado_type_use_cv']) {
+    and $form_state['values']['chado_type_use_cv']) {
     $default['use_cvterm'] = $form_state['values']['chado_type_use_cv'];
   }
   if (array_key_exists('chado_type_cv_id', $form_state['values'])
-      and $form_state['values']['chado_type_cv_id']) {
+    and $form_state['values']['chado_type_cv_id']) {
     $default['cv_id'] = $form_state['values']['chado_type_cv_id'];
   }
 
@@ -1272,6 +1291,7 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     form_set_error('base_chado_table', 'Please select a default table.');
   }
 }
+
 /**
  * Implements hook_field_stoage_bundle_mapping_form_submit().
  *
@@ -1279,10 +1299,10 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
  * variable that is passed by reference.
  */
 function tripal_chado_field_storage_bundle_mapping_form_submit($form,
-    &$form_state, $term, &$storage_args) {
+                                                               &$form_state, $term, &$storage_args) {
 
   // Get the form values
-  $default = array(
+  $default = [
     'table' => '',
     'has_all' => 'No',
     'use_cvterm' => '',
@@ -1292,41 +1312,41 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     'type_column' => '',
     'prop_term_name' => '',
     'prop_term_value' => '',
-  );
+  ];
   if (array_key_exists('base_chado_table', $form_state['values'])
-      and $form_state['values']['base_chado_table']) {
+    and $form_state['values']['base_chado_table']) {
     $default['table'] = $form_state['values']['base_chado_table'];
   }
   if (array_key_exists('chado_table_has_all', $form_state['values'])
-      and $form_state['values']['chado_table_has_all']) {
+    and $form_state['values']['chado_table_has_all']) {
     $default['has_all'] = $form_state['values']['chado_table_has_all'];
   }
   if (array_key_exists('chado_type_use_linker', $form_state['values'])
-      and $form_state['values']['chado_type_use_linker']) {
+    and $form_state['values']['chado_type_use_linker']) {
     $default['use_linker'] = $form_state['values']['chado_type_use_linker'];
   }
   if (array_key_exists('chado_type_use_prop', $form_state['values'])
-      and $form_state['values']['chado_type_use_prop']) {
+    and $form_state['values']['chado_type_use_prop']) {
     $default['use_prop'] = $form_state['values']['chado_type_use_prop'];
   }
   if (array_key_exists('type_column', $form_state['values'])
-      and $form_state['values']['type_column']) {
+    and $form_state['values']['type_column']) {
     $default['type_column'] = $form_state['values']['type_column'];
   }
   if (array_key_exists('prop_term_name', $form_state['values'])
-      and $form_state['values']['prop_term_name']) {
+    and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
   }
   if (array_key_exists('prop_term_value', $form_state['values'])
-      and $form_state['values']['prop_term_value']) {
+    and $form_state['values']['prop_term_value']) {
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
   }
   if (array_key_exists('chado_type_use_cv', $form_state['values'])
-      and $form_state['values']['chado_type_use_cv']) {
+    and $form_state['values']['chado_type_use_cv']) {
     $default['use_cvterm'] = $form_state['values']['chado_type_use_cv'];
   }
   if (array_key_exists('chado_type_cv_id', $form_state['values'])
-      and $form_state['values']['chado_type_cv_id']) {
+    and $form_state['values']['chado_type_cv_id']) {
     $default['cv_id'] = $form_state['values']['chado_type_cv_id'];
   }
 
@@ -1362,21 +1382,25 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   // If the user indicated they wanted to use the prop table then we'll
   // set the storage args and return.
-  else if ($default['use_prop'] == 'Yes') {
-    $storage_args['data_table'] = $default['table'];
-    $storage_args['type_linker_table'] = $default['table'] . 'prop';
-    $storage_args['type_column'] = 'type_id';
-    $storage_args['type_id'] = $form_state['prop_term']->cvterm_id;
-    $storage_args['type_value'] = $default['prop_term_value'];
-  }
+  else {
+    if ($default['use_prop'] == 'Yes') {
+      $storage_args['data_table'] = $default['table'];
+      $storage_args['type_linker_table'] = $default['table'] . 'prop';
+      $storage_args['type_column'] = 'type_id';
+      $storage_args['type_id'] = $form_state['prop_term']->cvterm_id;
+      $storage_args['type_value'] = $default['prop_term_value'];
+    }
 
-  // If the user indicated they wanted to use the linker tables then we'll
-  // set the storage args and return.
-  else if ($default['use_linker'] == 'Yes') {
-    $storage_args['data_table'] = $default['table'];
-    $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
-    $storage_args['type_linker_table'] = $default['table'] . '_cvterm';
-    $storage_args['type_column'] = 'cvterm_id';
+    // If the user indicated they wanted to use the linker tables then we'll
+    // set the storage args and return.
+    else {
+      if ($default['use_linker'] == 'Yes') {
+        $storage_args['data_table'] = $default['table'];
+        $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
+        $storage_args['type_linker_table'] = $default['table'] . '_cvterm';
+        $storage_args['type_column'] = 'cvterm_id';
+      }
+    }
   }
 }
 

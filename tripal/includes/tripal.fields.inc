@@ -11,6 +11,7 @@ function tripal_field_create_instance($instance) {
     return $field->createInstance();
   }
 }
+
 /**
  * Implements hook_field_info().
  *
@@ -22,7 +23,7 @@ function tripal_field_create_instance($instance) {
  */
 function tripal_field_info() {
 
-  $info = array();
+  $info = [];
   $field_types = tripal_get_field_types();
   foreach ($field_types as $field_type) {
     $info[$field_type] = $field_type::info();
@@ -68,13 +69,14 @@ function tripal_field_info_alter(&$info) {
  * Implements hook_field_widget_info();
  */
 function tripal_field_widget_info() {
-  $info = array();
+  $info = [];
   $widgets = tripal_get_field_widgets();
   foreach ($widgets as $widget) {
     $info[$widget] = $widget::info();
   }
   return $info;
 }
+
 /**
  * Implements hook_field_widget_info_alter();
  */
@@ -86,7 +88,7 @@ function tripal_field_widget_info_alter(&$info) {
  * Implements hook_field_views_data();
  */
 function tripal_field_views_data($field) {
-  $data = array();
+  $data = [];
 
   $field_type = $field['type'];
   $field_types = tripal_get_field_types();
@@ -101,8 +103,8 @@ function tripal_field_views_data($field) {
 
       // Fields should be associated with the bundle's term identifier
       // (i.e. [vocab]__[accession].
-      $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+      $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+      $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
       $view_base_id = $term->vocab->vocabulary . '__' . $term->accession;
 
       $data += $tfield->viewsData($view_base_id);
@@ -116,7 +118,7 @@ function tripal_field_views_data($field) {
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {
-  $info = array();
+  $info = [];
   $formatters = tripal_get_field_formatters();
   foreach ($formatters as $formatter) {
     $info[$formatter] = $formatter::info();
@@ -144,47 +146,47 @@ function tripal_bundle_create($bundle, $args) {
 
   // Add the field, unless it already exists.
   if (!field_info_field($field_name)) {
-    $field = field_create_field(array(
+    $field = field_create_field([
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
       'locked' => FALSE,
-      'storage' => array(
-        'type' => 'tripal_no_storage'
-      ),
-    ));
+      'storage' => [
+        'type' => 'tripal_no_storage',
+      ],
+    ]);
   }
 
 
   // Add an instance of the field to the bundle.
   if (!field_info_instance($bundle->type, $field_name, $bundle->name)) {
-    $instance = field_create_instance(array(
+    $instance = field_create_instance([
       'field_name' => $field_name,
       'entity_type' => 'TripalEntity',
       'bundle' => $bundle->name,
       'label' => 'Resource Type',
       'description' => 'The resource type',
       'required' => FALSE,
-      'settings' => array(
+      'settings' => [
         'auto_attach' => TRUE,
         'term_vocabulary' => 'rdfs',
         'term_accession' => 'type',
         'term_name' => 'type',
-      ),
-      'widget' => array(
+      ],
+      'widget' => [
         'type' => 'rdfs__type_widget',
-        'settings' => array(
+        'settings' => [
           'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
+        ],
+      ],
+      'display' => [
+        'default' => [
           'label' => 'inline',
           'type' => 'rdfs__type_formatter',
-          'settings' => array(),
-        ),
-      ),
-    ));
+          'settings' => [],
+        ],
+      ],
+    ]);
   }
 }
 
@@ -192,7 +194,7 @@ function tripal_bundle_create($bundle, $args) {
  * Implements hook_field_formatter_view().
  */
 function tripal_field_formatter_view($entity_type, $entity, $field,
-    $instance, $langcode, $items, $display) {
+                                     $instance, $langcode, $items, $display) {
 
   // Don't show any fields that don't have a controlled vocabulary term in
   // the database.
@@ -203,15 +205,16 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     tripal_set_message(t("The controlled vocabulary term, ':term (:term_name)', assigned to the
         field, ':field', is not in the database. The field cannot be shown.
         Please add the term and the field will appear below. ",
-        array(':field' => $field['field_name'],
-              ':term' => $vocabulary . ":" . $accession,
-              ':term_name' => $instance['settings']['term_name']
-        )),
-        TRIPAL_WARNING);
+      [
+        ':field' => $field['field_name'],
+        ':term' => $vocabulary . ":" . $accession,
+        ':term_name' => $instance['settings']['term_name'],
+      ]),
+      TRIPAL_WARNING);
     return;
   }
 
-  $element = array();
+  $element = [];
   $formatter_class = $display['type'];
   $is_loaded = tripal_load_include_field_class($formatter_class);
   if ($is_loaded) {
@@ -265,12 +268,12 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
     // For rows in the tables that aren't fields, just add an empty value
     // for the storage column.
     if (!$field) {
-      $form['fields'][$field_name][] = array(
+      $form['fields'][$field_name][] = [
         '#markup' => '',
-      );
-      $form['fields'][$field_name][] = array(
+      ];
+      $form['fields'][$field_name][] = [
         '#markup' => '',
-      );
+      ];
       continue;
     }
     $term_info = '';
@@ -278,9 +281,9 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
       $term = tripal_get_term_details($instance['settings']['term_vocabulary'], $instance['settings']['term_accession']);
       $term_info = $term['name'] . ' (' . $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'] . ')';
     }
-    $form['fields'][$field_name][] = array(
+    $form['fields'][$field_name][] = [
       '#markup' => $term_info,
-    );
+    ];
 
     $storage_type = $field['storage']['type'];
     $storage_label = array_key_exists('label', $storage_info[$storage_type]) ? $storage_info[$storage_type]['label'] : '';
@@ -289,25 +292,25 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
     }
     if (array_key_exists('logo_url', $storage_info[$storage_type])) {
       $logo_url = $storage_info[$storage_type]['logo_url'];
-      $form['fields'][$field_name][] = array(
+      $form['fields'][$field_name][] = [
         '#markup' => '<img class="form-field-ui-field-overview-storage-logo" src="' . $logo_url . '">',
-      );
+      ];
     }
     else {
-      $form['fields'][$field_name][] = array(
+      $form['fields'][$field_name][] = [
         '#markup' => $storage_label,
-      );
+      ];
     }
   }
-  $form['note'] = array(
-    '#markup' =>  '* Fields attached to this content type can use various
+  $form['note'] = [
+    '#markup' => '* Fields attached to this content type can use various
       storage backends. Please be sure when you add new fields that the
       storage backend is appropriate. For example, if you use Chado, and you
       want all biological content to be stored in Chado, be sure that the
       respective fields are "supported by" Chado.',
-  );
+  ];
 
-  $form['#submit'] = array_merge(array('tripal_form_field_ui_field_overview_form_submit'), $form['#submit']);
+  $form['#submit'] = array_merge(['tripal_form_field_ui_field_overview_form_submit'], $form['#submit']);
 }
 
 /**
@@ -317,7 +320,7 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
 function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
   $form_values = $form_state['values']['fields'];
   $admin_path = _field_ui_bundle_admin_path('TripalEntity', $form['#bundle']);
-  $destinations = array();
+  $destinations = [];
 
   // If the form Field UI form is adding a new field to the bundle we want
   // to preempt Drupal from creating the field in it's field_sql_storage
@@ -331,7 +334,7 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
         $module = $type::$module;
 
         $function = $module . '_bundle_create_user_field';
-        $bundle = tripal_load_bundle_entity(array('name' => $form['#bundle']));
+        $bundle = tripal_load_bundle_entity(['name' => $form['#bundle']]);
         $field_name = $form_values['_add_new_field']['field_name'];
 
         // If the module implements the hook then we'll have it create the
@@ -345,40 +348,40 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
           $new_field = $form_values['_add_new_field'];
 
           // Create the field.
-          $field = array(
+          $field = [
             'field_name' => $new_field['field_name'],
             'type' => $new_field['type'],
             'cardinality' => FIELD_CARDINALITY_UNLIMITED, // @hard-coded
             'locked' => FALSE,
-            'storage' => array(
-              'type' => $type::$default_settings['storage']
-            ),
-          );
+            'storage' => [
+              'type' => $type::$default_settings['storage'],
+            ],
+          ];
           field_create_field($field);
 
           // Then create the instance.
-          $instance =  array(
+          $instance = [
             'field_name' => $new_field['field_name'],
             'entity_type' => $bundle->type,
             'bundle' => $bundle->name,
             'label' => $new_field['label'],
             'description' => $type::$default_description,
             'required' => FALSE,
-            'settings' => array(
+            'settings' => [
               'auto_attach' => $type::$default_instance_settings['auto_attach'],
-            ),
-            'widget' => array(
+            ],
+            'widget' => [
               'type' => $new_field['widget_type'],
-              'settings' => array(),
-            ),
-            'display' => array(
-              'default' => array(
+              'settings' => [],
+            ],
+            'display' => [
+              'default' => [
                 'label' => 'hidden',
                 'type' => $type::$default_formatter,
-                'settings' => array(),
-              ),
-            ),
-          );
+                'settings' => [],
+              ],
+            ],
+          ];
           field_create_instance($instance);
         }
         $destinations[] = $admin_path . '/fields/' . $field_name . '/field-shcef';
@@ -392,9 +395,11 @@ function tripal_form_field_ui_field_overview_form_submit($form, &$form_state) {
         unset($form_state['values']['fields']['_add_new_field']);
         drupal_set_message('Please set the controlled vocabulary that best describes the data of this field. See the "Controlled Vocabulary Term" section below.', 'warning');
       }
-    }
-    catch (Exception $e) {
-      drupal_set_message(t('There was a problem creating field %label: !message', array('%label' => $instance['label'], '!message' => $e->getMessage())), 'error');
+    } catch (Exception $e) {
+      drupal_set_message(t('There was a problem creating field %label: !message', [
+        '%label' => $instance['label'],
+        '!message' => $e->getMessage(),
+      ]), 'error');
     }
 
     if ($destinations) {
@@ -445,6 +450,7 @@ function tripal_field_instance_settings_form($field, $instance) {
     return $field->instanceSettingsForm();
   }
 }
+
 /**
  * Validates the TripalField instance settings form.
  *
@@ -485,7 +491,7 @@ function tripal_field_instance_settings_form_alter(&$form, $form_state) {
   // function.  To make it work we have to add a process function. Inisde
   // of that process function is where the form additions get added that use
   // Ajax.
-  $form['field_term'][$language->language][0]['#process'] = array('tripal_field_instance_settings_form_alter_process');
+  $form['field_term'][$language->language][0]['#process'] = ['tripal_field_instance_settings_form_alter_process'];
   $form['#submit'][] = 'tripal_field_instance_settings_form_submit';
 }
 
@@ -505,7 +511,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
   $term_name = '';
   $term = NULL;
   if (array_key_exists('settings', $instance) and
-      array_key_exists('term_vocabulary', $instance['settings'])) {
+    array_key_exists('term_vocabulary', $instance['settings'])) {
     $vocabulary = $instance['settings']['term_vocabulary'];
     $accession = $instance['settings']['term_accession'];
     $term_name = $instance['settings']['term_name'];
@@ -513,49 +519,49 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
   }
 
   // Construct a table for the vocabulary information.
-  $headers = array();
-  $rows = array();
-  $rows[] = array(
-    array(
+  $headers = [];
+  $rows = [];
+  $rows[] = [
+    [
       'data' => 'Vocabulary',
       'header' => TRUE,
       'width' => '20%',
-    ),
-    $term['vocabulary']['name'] . ' (' . $vocabulary. ') ' . $term['vocabulary']['description']
-  );
-  $rows[] = array(
-    array(
+    ],
+    $term['vocabulary']['name'] . ' (' . $vocabulary . ') ' . $term['vocabulary']['description'],
+  ];
+  $rows[] = [
+    [
       'data' => 'Term',
       'header' => TRUE,
       'width' => '20%',
-    ),
-    $vocabulary . ':' . $accession
-  );
-  $rows[] = array(
-    array(
+    ],
+    $vocabulary . ':' . $accession,
+  ];
+  $rows[] = [
+    [
       'data' => 'Name',
       'header' => TRUE,
       'width' => '20%',
-    ),
-    $term['name']
-  );
-  $rows[] = array(
-    array(
+    ],
+    $term['name'],
+  ];
+  $rows[] = [
+    [
       'data' => 'Definition',
       'header' => TRUE,
       'width' => '20%',
-    ),
-    $term['definition']
-  );
-  $table = array(
+    ],
+    $term['definition'],
+  ];
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => [],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
 
   $description = t('All fields attached to a Tripal-based content type must
         be associated with a controlled vocabulary term.  Please use caution
@@ -566,50 +572,50 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
         be associated with a controlled vocabulary term. This field mapping is
         required and cannot be changed');
   }
-  $element['term_vocabulary'] = array(
+  $element['term_vocabulary'] = [
     '#type' => 'value',
     '#value' => $vocabulary,
-  );
-  $element['term_name'] = array(
+  ];
+  $element['term_name'] = [
     '#type' => 'value',
     '#value' => $term_name,
-  );
-  $element['term_accession'] = array(
+  ];
+  $element['term_accession'] = [
     '#type' => 'value',
     '#value' => $accession,
-  );
-  $element['field_term'] = array(
+  ];
+  $element['field_term'] = [
     '#type' => 'fieldset',
     '#title' => 'Controlled Vocabulary Term',
     '#description' => $description,
     '#prefix' => '<div id = "tripal-field-term-fieldset">',
     '#suffix' => '</div>',
-  );
-  $element['field_term']['details'] = array(
+  ];
+  $element['field_term']['details'] = [
     '#type' => 'item',
     '#title' => 'Current Term',
     '#markup' => theme_table($table),
-  );
+  ];
 
   // If this field mapping is fixed then don't let the user change it.
   if (!array_key_exists('term_fixed', $instance['settings']) or $instance['settings']['term_fixed'] != TRUE) {
-    $element['field_term']['new_name'] = array(
+    $element['field_term']['new_name'] = [
       '#type' => 'textfield',
       '#title' => 'Change the term',
       // TODO: This autocomplete path should not use Chado.
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-    );
-    $element['field_term']['select_button'] = array(
+    ];
+    $element['field_term']['select_button'] = [
       '#type' => 'button',
       '#value' => t('Lookup Term'),
       '#name' => 'select_cvterm',
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "tripal_fields_select_term_form_ajax_callback",
         'wrapper' => "tripal-field-term-fieldset",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
   }
 
   // If a new term name has been specified by the user then give some extra
@@ -622,44 +628,44 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
     $term_name = array_key_exists('input', $form_state) ? $form_state['input']['new_name'] : '';
   }
   if ($term_name) {
-    $element['field_term']['instructions'] = array(
+    $element['field_term']['instructions'] = [
       '#type' => 'item',
       '#title' => 'Matching terms',
       '#markup' => t('Please select the term the best matches the
         content type you want to associate with this field. If the same term exists in
-        multiple vocabularies you will see more than one option below.')
-    );
-    $match = array(
+        multiple vocabularies you will see more than one option below.'),
+    ];
+    $match = [
       'name' => $term_name,
-    );
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    ];
+    $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     $num_terms = 0;
     foreach ($terms as $term) {
       // Save the user a click, by setting the default value as 1 if there's
       // only one matching term.
       $default = FALSE;
-      $attrs = array();
+      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
         $default = TRUE;
-        $attrs = array('checked' => 'checked');
+        $attrs = ['checked' => 'checked'];
       }
-      $element['field_term']['term-' . $term->cvterm_id] = array(
+      $element['field_term']['term-' . $term->cvterm_id] = [
         '#type' => 'checkbox',
-        '#title' =>  $term->name,
+        '#title' => $term->name,
         '#default_value' => $default,
         '#attributes' => $attrs,
         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-        '<br><b>Definition:</b>  ' . $term->definition,
-      );
+          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+          '<br><b>Definition:</b>  ' . $term->definition,
+      ];
       $num_terms++;
     }
     if ($num_terms == 0) {
-      $element['field_term']['none'] = array(
+      $element['field_term']['none'] = [
         '#type' => 'item',
-        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
-      );
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>',
+      ];
     }
   }
   $element['#element_validate'][] = 'tripal_field_instance_settings_form_alter_validate';
@@ -672,6 +678,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
 function tripal_fields_select_term_form_ajax_callback($form, $form_state) {
   return $form['field_term'];
 }
+
 /**
  * Validate our custom instance settings form fields.
  */
@@ -698,21 +705,21 @@ function tripal_field_instance_settings_form_alter_validate($form, &$form_state)
     $selected_term = FALSE;
     foreach ($form_state['input'] as $key => $value) {
 
-      $matches = array();
+      $matches = [];
 
       if (preg_match("/^term-(\d+)$/", $key, $matches) and
-          $form_state['input']['term-' . $matches[1]]) {
+        $form_state['input']['term-' . $matches[1]]) {
         $cvterm_id = $matches[1];
         // TODO: this should not call a Chado function, but the autocomplete
         // currently uses chado cvterm IDs.
-        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $term = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
         if ($term) {
           $form_state['values']['instance']['settings']['term_vocabulary'] = $term->dbxref_id->db_id->name;
           $form_state['values']['instance']['settings']['term_accession'] = $term->dbxref_id->accession;
           $form_state['values']['instance']['settings']['term_name'] = $term->name;
           $selected_term = TRUE;
           $num_selected++;
-          $has_default =  TRUE;
+          $has_default = TRUE;
         }
       }
     }
@@ -727,11 +734,12 @@ function tripal_field_instance_settings_form_alter_validate($form, &$form_state)
     }
     if (!$has_default) {
       form_set_error('new_name', 'Fields attached to this content type must ' .
-          'be associated with a controlled vocabulary term. Please ' .
-          'provide one below.');
+        'be associated with a controlled vocabulary term. Please ' .
+        'provide one below.');
     }
   }
 }
+
 /**
  * Custom submit function for instance settings form.
  */
@@ -793,7 +801,7 @@ function tripal_field_formatter_settings_summary($field, $instance, $view_mode) 
  * Implements hook_field_formatter_settings_form().
  */
 function tripal_field_formatter_settings_form($field, $instance,
-    $view_mode, $form, &$form_state) {
+                                              $view_mode, $form, &$form_state) {
 
   $formatter_class = $instance['display']['default']['type'];
   if (tripal_load_include_field_class($formatter_class)) {
@@ -809,15 +817,15 @@ function tripal_field_formatter_settings_form($field, $instance,
  * Implements hook_field_widget_form().
  */
 function tripal_field_widget_form(&$form, &$form_state, $field,
-    $instance, $langcode, $items, $delta, $element) {
+                                  $instance, $langcode, $items, $delta, $element) {
 
-   $widget_class = $instance['widget']['type'];
-   tripal_load_include_field_class($widget_class);
-   if (class_exists($widget_class)) {
-     $widget = new $widget_class($field, $instance);
-     $widget->form($element, $form, $form_state, $langcode, $items, $delta, $element);
-   }
-   return $element;
+  $widget_class = $instance['widget']['type'];
+  tripal_load_include_field_class($widget_class);
+  if (class_exists($widget_class)) {
+    $widget = new $widget_class($field, $instance);
+    $widget->form($element, $form, $form_state, $langcode, $items, $delta, $element);
+  }
+  return $element;
 }
 
 
@@ -828,7 +836,7 @@ function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
 
   if (array_key_exists('#field_name', $element)) {
     $field_name = $element['#field_name'];
-    $matches = array();
+    $matches = [];
 
     if (preg_match('/(.+?)__(.+?)$/', $field_name, $matches)) {
       $tablename = $matches[1];
@@ -850,7 +858,7 @@ function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
       // add our own theme_wrapper to replace the one added by the date
       // module.
       if (array_key_exists($colname, $schema['fields']) and $schema['fields'][$colname]['type'] == 'datetime') {
-        $element['#theme_wrappers'] = array('tripal_chado_date_combo');
+        $element['#theme_wrappers'] = ['tripal_chado_date_combo'];
       }
     }
   }
@@ -860,13 +868,13 @@ function tripal_field_widget_form_alter(&$element, &$form_state, $context) {
  * Implements hook_field_validate()
  */
 function tripal_field_validate($entity_type, $entity, $field, $instance,
-    $langcode, $items, &$errors) {
+                               $langcode, $items, &$errors) {
 
-   $field_type = $field['type'];
-   if (tripal_load_include_field_class($field_type)) {
-     $tfield = new $field_type($field, $instance);
-     $tfield->validate($entity_type, $entity, $langcode, $items, $errors);
-   }
+  $field_type = $field['type'];
+  if (tripal_load_include_field_class($field_type)) {
+    $tfield = new $field_type($field, $instance);
+    $tfield->validate($entity_type, $entity, $langcode, $items, $errors);
+  }
 }
 
 /**
@@ -910,7 +918,7 @@ function tripal_field_is_empty($item, $field) {
 
   // If there is a value field but there's nothing in it, the the field is
   // empty.
-  if (array_key_exists('value', $item) and empty($item['value'])){
+  if (array_key_exists('value', $item) and empty($item['value'])) {
     return TRUE;
   }
 

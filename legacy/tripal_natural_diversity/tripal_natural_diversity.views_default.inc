@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_views_default_views() {
-  $views = array();
+  $views = [];
 
   // Experiment Listing
   $view = tripal_natural_diversity_defaultview_admin_natdiv_exp();
@@ -70,21 +70,21 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
     'description' => 'description',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -121,7 +121,7 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'nd_geolocation';
   $handler->display->display_options['filters']['description']['field'] = 'description';
-  $handler->display->display_options['filters']['description']['value'] = array();
+  $handler->display->display_options['filters']['description']['value'] = [];
   $handler->display->display_options['filters']['description']['group'] = '0';
   $handler->display->display_options['filters']['description']['exposed'] = TRUE;
   $handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
@@ -147,11 +147,11 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }
@@ -191,36 +191,36 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'description' => 'description',
     'latitude' => 'latitude',
     'longitude' => 'longitude',
     'altitude' => 'altitude',
     'geodetic_datum' => 'geodetic_datum',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'description';
-  $handler->display->display_options['style_options']['info'] = array(
-    'description' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'description' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'latitude' => array(
+    ],
+    'latitude' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'longitude' => array(
+    ],
+    'longitude' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'altitude' => array(
+    ],
+    'altitude' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'geodetic_datum' => array(
+    ],
+    'geodetic_datum' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -261,11 +261,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['filters']['geodetic_datum']['exposed'] = TRUE;
   $handler->display->display_options['filters']['geodetic_datum']['expose']['label'] = 'Geodetic Datum';
   $handler->display->display_options['filters']['geodetic_datum']['expose']['identifier'] = 'geodetic_datum';
-  $handler->display->display_options['filters']['geodetic_datum']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['geodetic_datum']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Nd Geolocation: Latitude */
   $handler->display->display_options['filters']['latitude']['id'] = 'latitude';
   $handler->display->display_options['filters']['latitude']['table'] = 'nd_geolocation';
@@ -275,11 +275,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['filters']['latitude']['exposed'] = TRUE;
   $handler->display->display_options['filters']['latitude']['expose']['label'] = 'Latitude';
   $handler->display->display_options['filters']['latitude']['expose']['identifier'] = 'latitude';
-  $handler->display->display_options['filters']['latitude']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['latitude']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Nd Geolocation: Longitude */
   $handler->display->display_options['filters']['longitude']['id'] = 'longitude';
   $handler->display->display_options['filters']['longitude']['table'] = 'nd_geolocation';
@@ -289,11 +289,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['filters']['longitude']['exposed'] = TRUE;
   $handler->display->display_options['filters']['longitude']['expose']['label'] = 'Longitude';
   $handler->display->display_options['filters']['longitude']['expose']['identifier'] = 'longitude';
-  $handler->display->display_options['filters']['longitude']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['longitude']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Nd Geolocation: Altitude */
   $handler->display->display_options['filters']['altitude']['id'] = 'altitude';
   $handler->display->display_options['filters']['altitude']['table'] = 'nd_geolocation';
@@ -303,11 +303,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['filters']['altitude']['exposed'] = TRUE;
   $handler->display->display_options['filters']['altitude']['expose']['label'] = 'Altitude';
   $handler->display->display_options['filters']['altitude']['expose']['identifier'] = 'altitude';
-  $handler->display->display_options['filters']['altitude']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['altitude']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Nd Geolocation: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'nd_geolocation';
@@ -317,11 +317,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['filters']['description']['exposed'] = TRUE;
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -402,11 +402,11 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
   $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Nd Reagent: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'nd_reagent';
@@ -418,11 +418,11 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
@@ -442,11 +442,11 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }
@@ -482,16 +482,16 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -518,11 +518,11 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

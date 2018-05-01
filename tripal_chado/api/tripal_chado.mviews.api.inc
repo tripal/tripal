@@ -1,21 +1,23 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) to manage materialized views in Chado.
+ * Provides an application programming interface (API) to manage materialized
+ *   views in Chado.
  */
 
 /**
  * @defgroup tripal_mviews_api Chado Materalized Views
  * @ingroup tripal_chado_api
  * @{
- * Provides an application programming interface (API) to manage materialized views in Chado.
- * The Perl-based chado comes with an interface for managing materialzed views.  This
- * API provides an alternative Drupal-based method.
+ * Provides an application programming interface (API) to manage materialized
+ *   views in Chado. The Perl-based chado comes with an interface for managing
+ *   materialzed views.  This API provides an alternative Drupal-based method.
  * @}
  */
 
 /**
- * Add a materialized view to the chado database to help speed data access. This
+ * Add a materialized view to the chado database to help speed data access.
+ * This
  * function supports the older style where postgres column specifications
  * are provided using the $mv_table, $mv_specs and $indexed variables. It also
  * supports the newer preferred method where the materialized view is described
@@ -24,7 +26,8 @@
  * @param $name
  *   The name of the materialized view.
  * @param $modulename
- *   The name of the module submitting the materialized view (e.g. 'tripal_library')
+ *   The name of the module submitting the materialized view (e.g.
+ *   'tripal_library')
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
  *   this variable should contain the array or a string representation of the
@@ -43,9 +46,9 @@
 function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
 
   if (!array_key_exists('table', $mv_schema)) {
-     tripal_report_error('tripal_chado', TRIPAL_ERROR,
-       'Must have a table name when creating an mview.', array());
-     return NULL;
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      'Must have a table name when creating an mview.', []);
+    return NULL;
   }
 
   $mv_table = $mv_schema['table'];
@@ -53,9 +56,9 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
   // see if the mv_table name already exsists
   $mview_id = db_query(
     'SELECT mview_id FROM {tripal_mviews} WHERE name = :name',
-    array(':name' => $name))->fetchField();
+    [':name' => $name])->fetchField();
 
-  if(!$mview_id) {
+  if (!$mview_id) {
     $transaction = db_transaction();
     try {
       // Create a new record
@@ -83,27 +86,26 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
         // create the table
         chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id, $redirect);
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_chado', $e);
       $error = _drupal_decode_exception($e);
       drupal_set_message(t("Could not create the materialized view %table_name: %message.",
-      array('%table_name' => $name, '%message' => $error['!message'])), 'error');
+        ['%table_name' => $name, '%message' => $error['!message']]), 'error');
       return FALSE;
     }
-    drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
+    drupal_set_message(t("Materialized view '%name' created", ['%name' => $name]));
     return TRUE;
   }
   else {
-    drupal_set_message(t("Materialized view, $name, already exists. Skipping creation.", array('%name' => $name)));
+    drupal_set_message(t("Materialized view, $name, already exists. Skipping creation.", ['%name' => $name]));
     return FALSE;
   }
 }
 
 /**
- * Edits a materialized view to the chado database to help speed data access. This
- * function supports the older style where postgres column specifications
+ * Edits a materialized view to the chado database to help speed data access.
+ * This function supports the older style where postgres column specifications
  * are provided using the $mv_table, $mv_specs and $indexed variables. It also
  * supports the newer preferred method where the materialized view is described
  * using the Drupal Schema API array.
@@ -113,9 +115,11 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
  * @param $name
  *   The name of the materialized view.
  * @param $modulename
- *   The name of the module submitting the materialized view (e.g. 'tripal_library')
+ *   The name of the module submitting the materialized view (e.g.
+ *   'tripal_library')
  * @param $mv_table
- *   The name of the table to add to chado. This is the table that can be queried.
+ *   The name of the table to add to chado. This is the table that can be
+ *   queried.
  * @param $mv_specs
  *   The table definition
  * @param $indexed
@@ -133,12 +137,12 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
  * @ingroup tripal_mviews_api
  */
 function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-  $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
+                           $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
 
   $transaction = db_transaction();
   try {
     // get the table name from the schema array
-    $schema_arr = array();
+    $schema_arr = [];
     if ($mv_schema) {
       // get the schema from the mv_specs and use it to add the custom table
       eval("\$schema_arr = $mv_schema;");
@@ -146,15 +150,15 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     }
 
     $record = new stdClass();
-    $record->mview_id    = $mview_id;
-    $record->name        = $name;
-    $record->modulename  = $modulename;
-    $record->query       = $query;
+    $record->mview_id = $mview_id;
+    $record->name = $name;
+    $record->modulename = $modulename;
+    $record->query = $query;
     $record->last_update = 0;
-    $record->status      = '';
-    $record->comment     = $comment;
-    $record->mv_schema   = $mv_schema;
-    $record->mv_table    = $mv_table;
+    $record->status = '';
+    $record->comment = $comment;
+    $record->mv_schema = $mv_schema;
+    $record->mv_table = $mv_table;
 
     // update the record to the tripal_mviews table
     drupal_write_record('tripal_mviews', $record, 'mview_id');
@@ -164,18 +168,18 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     // just save the updated SQL.
     $create_table = 1;
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
-    $results = db_query($sql, array(':mview_id' => $mview_id));
+    $results = db_query($sql, [':mview_id' => $mview_id]);
     $mview = $results->fetchObject();
     if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table) {
       chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id);
-        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
+      drupal_set_message(t("Materialized view '%name' created", ['%name' => $name]));
     }
     else {
       $message = "View '%name' updated.  All records remain. ";
       if ($query != $mview->query) {
         $message .= "Please repopulate the view to use the updated query.";
       }
-      drupal_set_message(t($message, array('%name' => $name)));
+      drupal_set_message(t($message, ['%name' => $name]));
     }
 
     // construct the indexes SQL if needed
@@ -190,13 +194,12 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       }
     }
 
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('tripal_chado', $e);
     $error = _drupal_decode_exception($e);
     drupal_set_message(t("Could not update materialized view '%table_name': %message.",
-    array('%table_name' => $mv_table, '%message' => $error['!message'])), 'error');
+      ['%table_name' => $mv_table, '%message' => $error['!message']]), 'error');
     return FALSE;
   }
 }
@@ -215,7 +218,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
 function tripal_get_mview_id($view_name) {
   if (db_table_exists('tripal_mviews')) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
-    $results = db_query($sql, array(':name' => $view_name));
+    $results = db_query($sql, [':name' => $view_name]);
     $mview = $results->fetchObject();
     if ($mview) {
       return $mview->mview_id;
@@ -238,7 +241,7 @@ function chado_get_mview_table_names() {
   $sql = "SELECT name FROM {tripal_mviews}";
   $resource = db_query($sql);
 
-  $tables = array();
+  $tables = [];
   foreach ($resource as $r) {
     $tables[$r->name] = $r->name;
   }
@@ -264,13 +267,13 @@ function tripal_refresh_mview($mview_id) {
 
   // get this mview details
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
-  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $results = db_query($sql, [':mview_id' => $mview_id]);
   $mview = $results->fetchObject();
 
   // add a job to populate the mview
-  $args = array("$mview_id");
+  $args = ["$mview_id"];
   tripal_add_job("Populate materialized view '$mview->name'", 'tripal_chado',
-     'tripal_populate_mview', $args, $user->uid);
+    'tripal_populate_mview', $args, $user->uid);
 
 }
 
@@ -286,10 +289,10 @@ function tripal_refresh_mview($mview_id) {
 function tripal_get_mviews() {
 
   $results = db_select('tripal_mviews', 'tm')
-    ->fields('tm', array('mview_id', 'name'))
+    ->fields('tm', ['mview_id', 'name'])
     ->execute();
 
-  $list = array();
+  $list = [];
   while ($mview = $results->fetchObject()) {
     $list[] = $mview;
   }
@@ -315,7 +318,7 @@ function tripal_delete_mview($mview_id) {
 
   // get this mview details
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
-  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $results = db_query($sql, [':mview_id' => $mview_id]);
   $mview = $results->fetchObject();
 
   // if op is to delete then do so
@@ -331,10 +334,10 @@ function tripal_delete_mview($mview_id) {
     $sql = "DROP TABLE {" . $mview->mv_table . "}";
     $success = chado_query($sql);
     if ($success) {
-      drupal_set_message(t("Materialized view, %name, deleted.", array('%name' => $mview->name)));
+      drupal_set_message(t("Materialized view, %name, deleted.", ['%name' => $mview->name]));
     }
     else {
-      drupal_set_message(t("Problem deleting materialized view, %name.", array('%name' => $mview->name)), 'error');
+      drupal_set_message(t("Problem deleting materialized view, %name.", ['%name' => $mview->name]), 'error');
     }
   }
 }
@@ -352,7 +355,7 @@ function tripal_delete_mview($mview_id) {
  */
 function tripal_populate_mview($mview_id) {
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
-  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $results = db_query($sql, [':mview_id' => $mview_id]);
   $mview = $results->fetchObject();
   if ($mview) {
     // execute the query inside a transaction so that it doesn't destroy existing data
@@ -375,11 +378,10 @@ function tripal_populate_mview($mview_id) {
       }
       // if not success then throw an error
       else {
-        throw new Exception("ERROR populating the materialized view ". $mview->mv_table . ". See Drupal's recent log entries for details.");
+        throw new Exception("ERROR populating the materialized view " . $mview->mv_table . ". See Drupal's recent log entries for details.");
       }
       chado_set_active($previous_db);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       chado_set_active($previous_db);
       // print and save the error message

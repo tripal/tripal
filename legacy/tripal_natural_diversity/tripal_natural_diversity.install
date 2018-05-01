@@ -16,7 +16,7 @@ function tripal_natural_diversity_disable() {
   require_once("tripal_natural_diversity.views_default.inc");
   $views = tripal_natural_diversity_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_natural_diversity_disable() {
  * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_natural_diversity'] = array(
+      $requirements ['tripal_natural_diversity'] = [
         'title' => "tripal_natural_diversity",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -67,39 +67,39 @@ function tripal_natural_diversity_uninstall() {
  *
  * @ingroup tripal_legacy_natural_diversity
  */
-function tripal_natural_diversity_add_cvterms(){
+function tripal_natural_diversity_add_cvterms() {
 
   // add cvterms for the nd_experiment_types
   tripal_insert_cvterm(
-    array(
-     'name' => 'Genotyping',
-     'definition' => 'An experiment where genotypes of individuals are identified.',
-     'cv_name' => 'nd_experiment_types',
-     'is_relationship' => 0,
-     'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+    [
+      'name' => 'Genotyping',
+      'definition' => 'An experiment where genotypes of individuals are identified.',
+      'cv_name' => 'nd_experiment_types',
+      'is_relationship' => 0,
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'Phenotyping',
       'definition' => 'An experiment where phenotypes of individuals are identified.',
       'cv_name' => 'nd_experiment_types',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 
   tripal_insert_cvterm(
-    array(
+    [
       'name' => 'Location',
       'definition' => 'The name of the location.',
       'cv_name' => 'nd_geolocation_property',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
-    ),
-    array('update_existing' => TRUE)
+      'db_name' => 'tripal',
+    ],
+    ['update_existing' => TRUE]
   );
 }

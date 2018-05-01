@@ -13,27 +13,27 @@
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_node_info() {
-  $nodes = array();
+  $nodes = [];
 
-  $nodes['chado_feature'] = array(
-    'name'        => t('Feature'),
-    'base'        => 'chado_feature',
+  $nodes['chado_feature'] = [
+    'name' => t('Feature'),
+    'base' => 'chado_feature',
     'description' => t('A feature from the chado database'),
-    'has_title'   => TRUE,
-    'locked'      => TRUE,
-    'chado_node_api' => array(
+    'has_title' => TRUE,
+    'locked' => TRUE,
+    'chado_node_api' => [
       'base_table' => 'feature',
       'hook_prefix' => 'chado_feature',
-      'record_type_title' => array(
+      'record_type_title' => [
         'singular' => t('Feature'),
-        'plural' => t('Features')
-      ),
-      'sync_filters' => array(
+        'plural' => t('Features'),
+      ],
+      'sync_filters' => [
         'type_id' => TRUE,
-        'organism_id' => TRUE
-      ),
-    )
-  );
+        'organism_id' => TRUE,
+      ],
+    ],
+  ];
   return $nodes;
 }
 
@@ -44,7 +44,7 @@ function tripal_feature_node_info() {
  */
 function chado_feature_form($node, &$form_state) {
 
-  $form = array();
+  $form = [];
 
   // Default values can come in the following ways:
   //
@@ -55,121 +55,121 @@ function chado_feature_form($node, &$form_state) {
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
-  $feature      = null;
-  $feature_id   = null;
-  $uniquename   = '';
-  $fname        = '';
+  $feature = NULL;
+  $feature_id = NULL;
+  $uniquename = '';
+  $fname = '';
   $feature_type = '';
-  $organism_id  = '';
-  $residues     = '';
-  $is_obsolete  = '';
-  $analyses     = '';
-  $references   = '';
-  $synonyms     = '';
+  $organism_id = '';
+  $residues = '';
+  $is_obsolete = '';
+  $analyses = '';
+  $references = '';
+  $synonyms = '';
 
   // if we are editing an existing node then the feature is already part of the node
   if (property_exists($node, 'feature')) {
     $feature = $node->feature;
     $feature = chado_expand_var($feature, 'field', 'feature.residues');
-    $feature_id   = $feature->feature_id;
-    $uniquename   = $feature->uniquename;
-    $fname        = $feature->name;
+    $feature_id = $feature->feature_id;
+    $uniquename = $feature->uniquename;
+    $fname = $feature->name;
     $feature_type = $feature->type_id->name;
-    $organism_id  = $feature->organism_id->organism_id;
-    $residues     = $feature->residues;
-    $is_obsolete  = $feature->is_obsolete;
+    $organism_id = $feature->organism_id->organism_id;
+    $residues = $feature->residues;
+    $is_obsolete = $feature->is_obsolete;
 
     // get the synonyms from a previous post
     $synonyms = '';
-    if(property_exists($node, 'synonyms')) {
+    if (property_exists($node, 'synonyms')) {
       $synonyms = $node->synonyms;
     }
 
     // get synonyms from the database if we don't already have them
     if (!$synonyms) {
-      $options = array('return_array' => 1);
+      $options = ['return_array' => 1];
       $feature = chado_expand_var($feature, 'table', 'feature_synonym', $options);
-      $feature_synonyms = (isset($feature->feature_synonym)) ? $feature->feature_synonym : array();
+      $feature_synonyms = (isset($feature->feature_synonym)) ? $feature->feature_synonym : [];
       foreach ($feature_synonyms as $index => $synonym) {
         $synonyms .= $synonym->synonym_id->name . "\n";
       }
     }
     // keep track of the feature id
-    $form['feature_id'] = array(
+    $form['feature_id'] = [
       '#type' => 'value',
       '#value' => $feature_id,
-    );
+    ];
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state) and isset($form_state['values']['uniquename'])) {
-    $uniquename   = $form_state['values']['uniquename'];
-    $fname        = $form_state['values']['fname'];
+    $uniquename = $form_state['values']['uniquename'];
+    $fname = $form_state['values']['fname'];
     $feature_type = $form_state['values']['feature_type'];
-    $organism_id  = $form_state['values']['organism_id'];
-    $residues     = $form_state['values']['residues'];
-    $is_obsolete  = $form_state['values']['is_obsolete'];
-    $synonyms     = $form_state['values']['synonyms'];
+    $organism_id = $form_state['values']['organism_id'];
+    $residues = $form_state['values']['residues'];
+    $is_obsolete = $form_state['values']['is_obsolete'];
+    $synonyms = $form_state['values']['synonyms'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $uniquename   = $form_state['input']['uniquename'];
-    $fname        = $form_state['input']['fname'];
+    $uniquename = $form_state['input']['uniquename'];
+    $fname = $form_state['input']['fname'];
     $feature_type = $form_state['input']['feature_type'];
-    $organism_id  = $form_state['input']['organism_id'];
-    $residues     = $form_state['input']['residues'];
-    $is_obsolete  = array_key_exists('is_obsolete', $form_state['input']) ? $form_state['input']['is_obsolete'] : FALSE;
-    $synonyms     = $form_state['input']['synonyms'];
+    $organism_id = $form_state['input']['organism_id'];
+    $residues = $form_state['input']['residues'];
+    $is_obsolete = array_key_exists('is_obsolete', $form_state['input']) ? $form_state['input']['is_obsolete'] : FALSE;
+    $synonyms = $form_state['input']['synonyms'];
   }
 
-  $form['fname']= array(
+  $form['fname'] = [
     '#type' => 'textfield',
     '#title' => t('Feature Name'),
     '#required' => TRUE,
     '#default_value' => $fname,
     '#description' => t('Enter the name used by humans to refer to this feature.'),
-    '#maxlength' => 255
-  );
-  $form['uniquename']= array(
+    '#maxlength' => 255,
+  ];
+  $form['uniquename'] = [
     '#type' => 'textfield',
     '#title' => t('Unique Feature Name'),
     '#required' => TRUE,
     '#default_value' => $uniquename,
     '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
-    '#maxlength' => 255
-  );
+    '#maxlength' => 255,
+  ];
 
   //$type_options = tripal_get_cvterm_default_select_options('feature', 'type_id', 'feature types');
   //$type_options[0] = 'Select a Type';
   $type_cv = tripal_get_default_cv('feature', 'type_id');
   $cv_id = $type_cv->cv_id;
 
-  $form['feature_type'] = array(
-   '#title'       => t('Feature Type'),
-   '#type'        => 'textfield',
-   '#description' => t("Choose the feature type."),
-   '#required'    => TRUE,
-   '#default_value' => $feature_type,
-   '#autocomplete_path' => "aadmin/tripal/storage/chado/auto_name/cvterm/$cv_id",
-  );
+  $form['feature_type'] = [
+    '#title' => t('Feature Type'),
+    '#type' => 'textfield',
+    '#description' => t("Choose the feature type."),
+    '#required' => TRUE,
+    '#default_value' => $feature_type,
+    '#autocomplete_path' => "aadmin/tripal/storage/chado/auto_name/cvterm/$cv_id",
+  ];
 
   // get the list of organisms
   $sql = "SELECT * FROM {Organism} ORDER BY genus, species";
   $org_rset = chado_query($sql);
-  $organisms = array();
+  $organisms = [];
   $organisms[''] = '';
   while ($organism = $org_rset->fetchObject()) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
-  $form['organism_id'] = array(
-    '#title'       => t('Organism'),
-    '#type'        => t('select'),
+  $form['organism_id'] = [
+    '#title' => t('Organism'),
+    '#type' => t('select'),
     '#description' => t("Choose the organism with which this feature is associated"),
-    '#required'    => TRUE,
+    '#required' => TRUE,
     '#default_value' => $organism_id,
-    '#options'     => $organisms,
-  );
+    '#options' => $organisms,
+  ];
 
   // Get synonyms
   $syn_text = '';
@@ -183,66 +183,72 @@ function chado_feature_form($node, &$form_state) {
       $syn_text = $synonyms;
     }
   }
-  $form['synonyms']= array(
+  $form['synonyms'] = [
     '#type' => 'textarea',
     '#title' => t('Synonyms'),
     '#required' => FALSE,
     '#default_value' => $syn_text,
     '#description' => t('Enter alternate names (synonmys) for this feature to help in searching and identification. You may enter as many alternate names as needed each on different lines.'),
-  );
+  ];
 
-  $form['residues']= array(
+  $form['residues'] = [
     '#type' => 'textarea',
     '#title' => t('Residues'),
     '#required' => FALSE,
     '#default_value' => $residues,
     '#description' => t('Enter the nucelotide sequences for this feature'),
-  );
+  ];
 
   $checked = '';
   if ($is_obsolete == 't') {
     $checked = '1';
   }
-  $form['is_obsolete']= array(
+  $form['is_obsolete'] = [
     '#type' => 'checkbox',
     '#title' => t('Is Obsolete'),
     '#required' => FALSE,
     '#default_value' => $checked,
     '#description' => t('Check this box if this sequence should be retired'),
-  );
+  ];
 
   // PROPERTIES FORM
   //---------------------------------------------
   $prop_cv = tripal_get_default_cv('featureprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  $details = array(
-    'property_table' => 'featureprop',      // the name of the prop table
-    'chado_id' => $feature_id,              // the value of feature_id for this record
-    'cv_id' => $cv_id                       // the cv.cv_id of the cv governing featureprop.type_id
-  );
+  $details = [
+    'property_table' => 'featureprop',
+    // the name of the prop table
+    'chado_id' => $feature_id,
+    // the value of feature_id for this record
+    'cv_id' => $cv_id
+    // the cv.cv_id of the cv governing featureprop.type_id
+  ];
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
-  $details = array(
-    'linking_table' => 'feature_dbxref',  // the name of the _dbxref table
-    'base_foreign_key' => 'feature_id',   // the name of the key in your base chado table
-    'base_key_value' => $feature_id       // the value of feature_id for this record
-  );
+  $details = [
+    'linking_table' => 'feature_dbxref',
+    // the name of the _dbxref table
+    'base_foreign_key' => 'feature_id',
+    // the name of the key in your base chado table
+    'base_key_value' => $feature_id
+    // the value of feature_id for this record
+  ];
   chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
   $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
-  $details = array(
+  $details = [
     'relationship_table' => 'feature_relationship',
     'base_table' => 'feature',
     'base_foreign_key' => 'feature_id',
     'base_key_value' => $feature_id,
     'nodetype' => 'feature',
-    'cv_id' => $cv_id
-  );
+    'cv_id' => $cv_id,
+  ];
   chado_add_node_form_relationships($form, $form_state, $details);
 
   return $form;
@@ -265,7 +271,7 @@ function chado_feature_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if(property_exists($node, "op") and $node->op != 'Save') {
+  if (property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
@@ -276,19 +282,19 @@ function chado_feature_validate($node, $form, &$form_state) {
   }
 
   // remove surrounding white-space on submitted values
-  $node->uniquename   = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
-  $node->fname        = property_exists($node, 'fname') ? trim($node->fname) : '';
+  $node->uniquename = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $node->fname = property_exists($node, 'fname') ? trim($node->fname) : '';
   $node->feature_type = property_exists($node, 'feature_type') ? trim($node->feature_type) : '';
-  $node->residues     = property_exists($node, 'residues') ? trim($node->residues) : '';
+  $node->residues = property_exists($node, 'residues') ? trim($node->residues) : '';
 
   // Validating for an update
   if (property_exists($node, 'nid')) {
 
     // make sure the feature type is a real sequence ontology term
-    $type = tripal_get_cvterm(array(
+    $type = tripal_get_cvterm([
       'name' => $node->feature_type,
-      'cv_id' => array('name' =>'sequence')
-    ));
+      'cv_id' => ['name' => 'sequence'],
+    ]);
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
@@ -307,8 +313,12 @@ function chado_feature_validate($node, $form, &$form_state) {
           CVT.name         = :cvtname AND
           NOT f.feature_id = :feature_id
       ";
-      $args = array(':uname' => $node->uniquename, ':organism_id' => $node->organism_id,
-        ':cvtname' => $node->feature_type, ':feature_id' => $node->feature_id);
+      $args = [
+        ':uname' => $node->uniquename,
+        ':organism_id' => $node->organism_id,
+        ':cvtname' => $node->feature_type,
+        ':feature_id' => $node->feature_id,
+      ];
       $result = chado_query($sql, $args)->fetchObject();
       if ($result) {
         form_set_error('uniquename', t("Feature update cannot proceed. The feature name '$node->uniquename' is not unique for this organism. Please provide a unique name for this feature."));
@@ -319,10 +329,10 @@ function chado_feature_validate($node, $form, &$form_state) {
   else {
 
     // make sure the feature type is a real sequence ontology term
-    $type = tripal_get_cvterm(array(
+    $type = tripal_get_cvterm([
       'name' => $node->feature_type,
-      'cv_id' => array('name' => 'sequence')
-    ));
+      'cv_id' => ['name' => 'sequence'],
+    ]);
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
@@ -338,7 +348,11 @@ function chado_feature_validate($node, $form, &$form_state) {
         F.organism_id = :organism_id AND
         CVT.name      = :cvtname
     ";
-    $args = array(':name' => $node->uniquename, ':organism_id' => $node->organism_id, ':cvtname' => $node->feature_type);
+    $args = [
+      ':name' => $node->uniquename,
+      ':organism_id' => $node->organism_id,
+      ':cvtname' => $node->feature_type,
+    ];
 
     $result = chado_query($sql, $args)->fetchObject();
     if ($result) {
@@ -352,21 +366,22 @@ function chado_feature_validate($node, $form, &$form_state) {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
+ * @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet
+ *   exist, the type of node to be created
  *
- *  @param $op
+ * @param $op
  *  The operation to be performed
  *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
+ * @param $account
+ *  A user object representing the user for whom the operation is to be
+ *   performed
  *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
+ * @return
+ *  If the permission for the specified operation is not set then return FALSE.
+ *   If the permission is set then return NULL as this allows other modules to
+ *   disable access.  The only exception is when the $op == 'create'.  We will
+ *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_legacy_feature
  */
@@ -376,7 +391,7 @@ function tripal_feature_node_access($node, $op, $account) {
     $node_type = $node->type;
   }
 
-  if($node_type == 'chado_feature') {
+  if ($node_type == 'chado_feature') {
     if ($op == 'create') {
       if (!user_access('create chado_feature content', $account)) {
         return NODE_ACCESS_DENY;
@@ -420,10 +435,10 @@ function chado_feature_insert($node) {
   // we can skip adding the feature as it is already there, although
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'feature_id')) {
-    $node->uniquename   = trim($node->uniquename);
-    $node->fname        = trim($node->fname);
+    $node->uniquename = trim($node->uniquename);
+    $node->fname = trim($node->fname);
     $node->feature_type = trim($node->feature_type);
-    $node->residues     = trim($node->residues);
+    $node->residues = trim($node->residues);
 
     // remove spaces, newlines from residues
     $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
@@ -433,15 +448,15 @@ function chado_feature_insert($node) {
     }
 
     // get the feature type id
-    $values = array(
-        'cv_id' => array(
-            'name' => 'sequence'
-        ),
-        'name' => $node->feature_type
-    );
-    $type = chado_select_record('cvterm', array('cvterm_id'), $values);
+    $values = [
+      'cv_id' => [
+        'name' => 'sequence',
+      ],
+      'name' => $node->feature_type,
+    ];
+    $type = chado_select_record('cvterm', ['cvterm_id'], $values);
 
-    $values = array(
+    $values = [
       'organism_id' => $node->organism_id,
       'name' => $node->fname,
       'uniquename' => $node->uniquename,
@@ -449,13 +464,13 @@ function chado_feature_insert($node) {
       'seqlen' => drupal_strlen($residues),
       'is_obsolete' => $obsolete,
       'type_id' => $type[0]->cvterm_id,
-      'md5checksum' => md5($residues)
-    );
+      'md5checksum' => md5($residues),
+    ];
     $feature = chado_insert_record('feature', $values);
     if (!$feature) {
       drupal_set_message(t('Unable to add feature.'), 'warning');
       tripal_report_error('tripal_feature', TRIPAL_WARNING, 'Insert feature: Unable to create feature where values: %values',
-      array('%values' => print_r($values, TRUE)));
+        ['%values' => print_r($values, TRUE)]);
       return;
     }
     $feature_id = $feature['feature_id'];
@@ -464,27 +479,34 @@ function chado_feature_insert($node) {
     chado_feature_add_synonyms($node->synonyms, $feature_id);
 
     // * Properties Form *
-    $details = array(
-      'property_table' => 'featureprop',   // the name of the prop table
-      'base_table' => 'feature',           // the name of your chado base table
-      'foreignkey_name' => 'feature_id',   // the name of the key in your base table
-      'foreignkey_value' => $feature_id    // the value of the feature_id key
-    );
+    $details = [
+      'property_table' => 'featureprop',
+      // the name of the prop table
+      'base_table' => 'feature',
+      // the name of your chado base table
+      'foreignkey_name' => 'feature_id',
+      // the name of the key in your base table
+      'foreignkey_value' => $feature_id
+      // the value of the feature_id key
+    ];
     chado_update_node_form_properties($node, $details);
 
     // * Additional DBxrefs Form *
-    $details = array(
-      'linking_table' => 'feature_dbxref',   // the name of your _dbxref table
-      'foreignkey_name' => 'feature_id',     // the name of the key in your base table
-      'foreignkey_value' => $feature_id      // the value of the feature_id key
-    );
+    $details = [
+      'linking_table' => 'feature_dbxref',
+      // the name of your _dbxref table
+      'foreignkey_name' => 'feature_id',
+      // the name of the key in your base table
+      'foreignkey_value' => $feature_id
+      // the value of the feature_id key
+    ];
     chado_update_node_form_dbxrefs($node, $details);
 
     // * Relationships Form *
-    $details = array(
+    $details = [
       'relationship_table' => 'feature_relationship',
-      'foreignkey_value' => $feature_id
-    );
+      'foreignkey_value' => $feature_id,
+    ];
     chado_update_node_form_relationships($node, $details);
 
   }
@@ -511,10 +533,10 @@ function chado_feature_insert($node) {
  */
 function chado_feature_update($node) {
 
-  $node->uniquename   = trim($node->uniquename);
-  $node->fname        = trim($node->fname);
+  $node->uniquename = trim($node->uniquename);
+  $node->fname = trim($node->fname);
   $node->feature_type = trim($node->feature_type);
-  $node->residues     = trim($node->residues);
+  $node->residues = trim($node->residues);
 
 
   $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
@@ -524,21 +546,21 @@ function chado_feature_update($node) {
   }
 
   // get the feature type id
-  $values = array(
-    'cv_id' => array(
-      'name' => 'sequence'
-    ),
-    'name' => $node->feature_type
-  );
-  $type = chado_select_record('cvterm', array('cvterm_id'), $values);
+  $values = [
+    'cv_id' => [
+      'name' => 'sequence',
+    ],
+    'name' => $node->feature_type,
+  ];
+  $type = chado_select_record('cvterm', ['cvterm_id'], $values);
 
-  $feature_id = chado_get_id_from_nid('feature', $node->nid) ;
+  $feature_id = chado_get_id_from_nid('feature', $node->nid);
 
   if (sizeof($type) > 0) {
-    $match = array(
+    $match = [
       'feature_id' => $feature_id,
-    );
-    $values = array(
+    ];
+    $values = [
       'organism_id' => $node->organism_id,
       'name' => $node->fname,
       'uniquename' => $node->uniquename,
@@ -546,44 +568,51 @@ function chado_feature_update($node) {
       'seqlen' => drupal_strlen($residues),
       'is_obsolete' => $obsolete,
       'type_id' => $type[0]->cvterm_id,
-      'md5checksum' => md5($residues)
-    );
-    $options = array('return_record' => TRUE);
+      'md5checksum' => md5($residues),
+    ];
+    $options = ['return_record' => TRUE];
     $status = chado_update_record('feature', $match, $values, $options);
 
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
 
     // * Properties Form *
-    $details = array(
-      'property_table' => 'featureprop',   // the name of the prop table
-      'base_table' => 'feature',           // the name of your chado base table
-      'foreignkey_name' => 'feature_id',   // the name of the key in your base table
-      'foreignkey_value' => $feature_id    // the value of the feature_id key
-    );
+    $details = [
+      'property_table' => 'featureprop',
+      // the name of the prop table
+      'base_table' => 'feature',
+      // the name of your chado base table
+      'foreignkey_name' => 'feature_id',
+      // the name of the key in your base table
+      'foreignkey_value' => $feature_id
+      // the value of the feature_id key
+    ];
     chado_update_node_form_properties($node, $details);
 
     // * Additional DBxrefs Form *
-    $details = array(
-      'linking_table' => 'feature_dbxref',   // the name of your _dbxref table
-      'foreignkey_name' => 'feature_id',     // the name of the key in your base table
-      'foreignkey_value' => $feature_id      // the value of the feature_id key
-    );
+    $details = [
+      'linking_table' => 'feature_dbxref',
+      // the name of your _dbxref table
+      'foreignkey_name' => 'feature_id',
+      // the name of the key in your base table
+      'foreignkey_value' => $feature_id
+      // the value of the feature_id key
+    ];
     chado_update_node_form_dbxrefs($node, $details);
 
     // * Relationships Form *
-    $details = array(
+    $details = [
       'relationship_table' => 'feature_relationship',
-      'foreignkey_value' => $feature_id
-    );
+      'foreignkey_value' => $feature_id,
+    ];
     chado_update_node_form_relationships($node, $details);
 
   }
   else {
     drupal_set_message(t('Unable to update feature.'), 'warning');
     tripal_report_error('tripal_feature', TRIPAL_WARNING,
-     'Update feature: Unable to update feature where values: %values',
-     array('%values' => print_r($values, TRUE))
+      'Update feature: Unable to update feature where values: %values',
+      ['%values' => print_r($values, TRUE)]
     );
   }
 
@@ -597,7 +626,7 @@ function chado_feature_update($node) {
  */
 function chado_feature_delete($node) {
 
-  $feature_id  = chado_get_id_from_nid('feature', $node->nid);
+  $feature_id = chado_get_id_from_nid('feature', $node->nid);
 
   // If we don't have a feature id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
@@ -607,11 +636,11 @@ function chado_feature_delete($node) {
 
   // Remove the drupal content.
   $sql_del = "DELETE FROM {chado_feature} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
 
 
   // Remove data from feature tables of chado database.  This will
@@ -622,16 +651,16 @@ function chado_feature_delete($node) {
   // the chado_query function can handle this problem so we specificall delete
   // from that table to prevent the error. The same problem exists for the
   // frange.featuregroup table
-  $previous_db = chado_set_active('chado') ;
-  db_query("DELETE FROM frange.featuregroup WHERE subject_id = :feature_id", array(':feature_id' => $feature_id));
-  db_query("DELETE FROM frange.featuregroup WHERE object_id = :feature_id", array(':feature_id' => $feature_id));
-  db_query("DELETE FROM frange.featuregroup WHERE group_id = :feature_id", array(':feature_id' => $feature_id));
-  db_query("DELETE FROM frange.featuregroup WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
+  $previous_db = chado_set_active('chado');
+  db_query("DELETE FROM frange.featuregroup WHERE subject_id = :feature_id", [':feature_id' => $feature_id]);
+  db_query("DELETE FROM frange.featuregroup WHERE object_id = :feature_id", [':feature_id' => $feature_id]);
+  db_query("DELETE FROM frange.featuregroup WHERE group_id = :feature_id", [':feature_id' => $feature_id]);
+  db_query("DELETE FROM frange.featuregroup WHERE srcfeature_id = :feature_id", [':feature_id' => $feature_id]);
   chado_set_active($previous_db);
 
-  chado_query("DELETE FROM {featureloc} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
-  chado_query("DELETE FROM {featureloc} WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
-  chado_query("DELETE FROM {feature} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
+  chado_query("DELETE FROM {featureloc} WHERE feature_id = :feature_id", [':feature_id' => $feature_id]);
+  chado_query("DELETE FROM {featureloc} WHERE srcfeature_id = :feature_id", [':feature_id' => $feature_id]);
+  chado_query("DELETE FROM {feature} WHERE feature_id = :feature_id", [':feature_id' => $feature_id]);
 
   drupal_set_message(t("The feature and all associated data were removed"));
 }
@@ -651,14 +680,14 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
   // separate synomys by carriage returns
   $synonyms = preg_replace("/[\n\r]+/", " ", $synonyms);
   // split the synonyms into an array based on a space as the delimieter
-  $syn_array = array();
+  $syn_array = [];
   $syn_array = explode(" ", $synonyms);
 
 
   // remove any old synonyms
   $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = :feature_id";
-  if (!chado_query($feature_syn_dsql, array(':feature_id' => $feature_id))) {
-    tripal_report_error('tripal_feature', TRIPAL_ERROR, "Could not remove synonyms from feature. ", array());
+  if (!chado_query($feature_syn_dsql, [':feature_id' => $feature_id])) {
+    tripal_report_error('tripal_feature', TRIPAL_ERROR, "Could not remove synonyms from feature. ", []);
     return;
   }
 
@@ -677,7 +706,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
     // if so then don't add it again. it messes up drupal if the insert fails.
     // It is possible for the accession number to be present and not the feature
     $synonym_sql = "SELECT synonym_id FROM {synonym} WHERE name = :name";
-    $synonym = chado_query($synonym_sql, array(':name' => $syn))->fetchObject();
+    $synonym = chado_query($synonym_sql, [':name' => $syn])->fetchObject();
     if (!$synonym) {
       $synonym_isql = "
         INSERT INTO {synonym} (name, synonym_sgml, type_id)
@@ -688,22 +717,29 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
            WHERE CV.name = 'feature_property' and CVT.name = 'synonym')
           )
       ";
-      if (!chado_query($synonym_isql, array(':name' => $syn, ':synonym_sgml' => $syn))) {
-        tripal_report_error('tripal_feature', "Could not add synonym. ", array(), TRIPAL_WARNING);
+      if (!chado_query($synonym_isql, [
+        ':name' => $syn,
+        ':synonym_sgml' => $syn,
+      ])) {
+        tripal_report_error('tripal_feature', "Could not add synonym. ", [], TRIPAL_WARNING);
         return;
       }
       // now get the synonym we just added
       $synonym_sql = "SELECT synonym_id FROM {synonym} WHERE name = :name";
-      $synonym = chado_query($synonym_sql, array(':name' => $syn))->fetchObject();
+      $synonym = chado_query($synonym_sql, [':name' => $syn])->fetchObject();
     }
 
     // now add in our new sysnonym
     $feature_syn_isql = "
       INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id)
       VALUES (:synonym_id, :feature_id, :pub_id)";
-    $args = array(':synonym_id' => $synonym->synonym_id, ':feature_id' => $feature_id, ':pub_id'=> 1);
+    $args = [
+      ':synonym_id' => $synonym->synonym_id,
+      ':feature_id' => $feature_id,
+      ':pub_id' => 1,
+    ];
     if (!chado_query($feature_syn_isql, $args)) {
-      tripal_report_error('tripal_feature', "Could not associate synonym with feature. ", array(), TRIPAL_WARNING);
+      tripal_report_error('tripal_feature', "Could not associate synonym with feature. ", [], TRIPAL_WARNING);
       return;
     }
   }
@@ -730,7 +766,7 @@ function chado_feature_load($nodes) {
     }
 
     // build the feature variable
-    $values = array('feature_id' => $feature_id);
+    $values = ['feature_id' => $feature_id];
     $feature = chado_generate_var('feature', $values);
     $nodes[$nid]->feature = $feature;
 
@@ -761,22 +797,27 @@ function tripal_feature_node_presave($node) {
       $name = '';
       $uname = '';
       $type = '';
-      $organism_id = null;
-      if(property_exists($node, 'uniquename')) {
+      $organism_id = NULL;
+      if (property_exists($node, 'uniquename')) {
         $organism_id = $node->organism_id;
-        $name        = $node->name;
-        $uname       = $node->uniquename;
-        $type        = $node->feature_type;
+        $name = $node->name;
+        $uname = $node->uniquename;
+        $type = $node->feature_type;
       }
-      else if (property_exists($node, 'feature')) {
-        $organism_id = $node->feature->organism_id;
-        $name        = $node->feature->name;
-        $uname       = $node->feature->uniquename;
-        $type        = $node->feature->cvtname;
+      else {
+        if (property_exists($node, 'feature')) {
+          $organism_id = $node->feature->organism_id;
+          $name = $node->feature->name;
+          $uname = $node->feature->uniquename;
+          $type = $node->feature->cvtname;
+        }
       }
 
-      $values = array('organism_id' => $organism_id);
-      $organism = chado_select_record('organism', array('genus', 'species'), $values);
+      $values = ['organism_id' => $organism_id];
+      $organism = chado_select_record('organism', [
+        'genus',
+        'species',
+      ], $values);
       $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
 
       break;
@@ -799,7 +840,7 @@ function tripal_feature_node_insert($node) {
       // we need to simulate one so that the right values are available for
       // the URL to be determined.
       $feature_id = chado_get_id_from_nid('feature', $node->nid);
-      $node->feature = chado_generate_var('feature', array('feature_id' => $feature_id));
+      $node->feature = chado_generate_var('feature', ['feature_id' => $feature_id]);
 
       // Now use the API to set the path.
       chado_set_node_url($node);
@@ -844,93 +885,93 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
     case 'chado_feature':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_feature_alignments'] = array(
+        $node->content['tripal_feature_alignments'] = [
           '#theme' => 'tripal_feature_alignments',
           '#node' => $node,
-          '#tripal_toc_id'    => 'alignments',
+          '#tripal_toc_id' => 'alignments',
           '#tripal_toc_title' => 'Alignments',
-        );
-        $node->content['tripal_feature_analyses'] = array(
+        ];
+        $node->content['tripal_feature_analyses'] = [
           '#theme' => 'tripal_feature_analyses',
           '#node' => $node,
-          '#tripal_toc_id'    => 'analyses',
+          '#tripal_toc_id' => 'analyses',
           '#tripal_toc_title' => 'Analyses',
-        );
-        $node->content['tripal_feature_base'] = array(
+        ];
+        $node->content['tripal_feature_base'] = [
           '#theme' => 'tripal_feature_base',
           '#node' => $node,
-          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_id' => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
-        );
-        $node->content['tripal_feature_properties'] = array(
+        ];
+        $node->content['tripal_feature_properties'] = [
           '#theme' => 'tripal_feature_properties',
           '#node' => $node,
-          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_id' => 'properties',
           '#tripal_toc_title' => 'Properties',
-        );
-        $node->content['tripal_feature_publications'] = array(
+        ];
+        $node->content['tripal_feature_publications'] = [
           '#theme' => 'tripal_feature_publications',
           '#node' => $node,
-          '#tripal_toc_id'    => 'publications',
+          '#tripal_toc_id' => 'publications',
           '#tripal_toc_title' => 'Publications',
-        );
-        $node->content['tripal_feature_references'] = array(
+        ];
+        $node->content['tripal_feature_references'] = [
           '#theme' => 'tripal_feature_references',
           '#node' => $node,
-          '#tripal_toc_id'    => 'references',
+          '#tripal_toc_id' => 'references',
           '#tripal_toc_title' => 'Cross References',
-        );
-        $node->content['tripal_feature_relationships'] = array(
+        ];
+        $node->content['tripal_feature_relationships'] = [
           '#theme' => 'tripal_feature_relationships',
           '#node' => $node,
-          '#tripal_toc_id'    => 'relationships',
+          '#tripal_toc_id' => 'relationships',
           '#tripal_toc_title' => 'Relationships',
-        );
-        $node->content['tripal_feature_seqence'] = array(
+        ];
+        $node->content['tripal_feature_seqence'] = [
           '#theme' => 'tripal_feature_sequence',
           '#node' => $node,
-          '#tripal_toc_id'    => 'sequences',
+          '#tripal_toc_id' => 'sequences',
           '#tripal_toc_title' => 'Sequences',
-        );
-        $node->content['tripal_feature_synonyms'] = array(
+        ];
+        $node->content['tripal_feature_synonyms'] = [
           '#theme' => 'tripal_feature_synonyms',
           '#node' => $node,
-          '#tripal_toc_id'    => 'synonyms',
+          '#tripal_toc_id' => 'synonyms',
           '#tripal_toc_title' => 'Synonyms',
-        );
-        $node->content['tripal_feature_terms'] = array(
+        ];
+        $node->content['tripal_feature_terms'] = [
           '#theme' => 'tripal_feature_terms',
           '#node' => $node,
-          '#tripal_toc_id'    => 'terms',
+          '#tripal_toc_id' => 'terms',
           '#tripal_toc_title' => 'Annotated Terms',
-        );
+        ];
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_feature_teaser'] = array(
+        $node->content['tripal_feature_teaser'] = [
           '#theme' => 'tripal_feature_teaser',
           '#node' => $node,
-        );
+        ];
       }
       break;
     case 'chado_organism':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_organism_feature_counts'] = array(
+        $node->content['tripal_organism_feature_counts'] = [
           '#theme' => 'tripal_organism_feature_counts',
           '#node' => $node,
-          '#tripal_toc_id'    => 'feature_counts',
+          '#tripal_toc_id' => 'feature_counts',
           '#tripal_toc_title' => 'Feature Summary',
-        );
-        $node->content['tripal_organism_feature_browser'] = array(
+        ];
+        $node->content['tripal_organism_feature_browser'] = [
           '#theme' => 'tripal_organism_feature_browser',
           '#node' => $node,
-          '#tripal_toc_id'    => 'feature_browser',
+          '#tripal_toc_id' => 'feature_browser',
           '#tripal_toc_title' => 'Feature Browser',
-        );
+        ];
       }
       break;
-      // TODO: handle these node types. Should we also have a feature browser?
+    // TODO: handle these node types. Should we also have a feature browser?
     case 'chado_library':
       break;
     case 'chado_stock':

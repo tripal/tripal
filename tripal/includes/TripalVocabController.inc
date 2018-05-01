@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TripalVocabController extends DrupalDefaultEntityController.
  *
@@ -11,7 +12,7 @@ class TripalVocabController extends EntityAPIController {
     parent::__construct($entity_type);
   }
 
-  public function create(array $values = array()) {
+  public function create(array $values = []) {
     $this->vocabulary = array_key_exists('vocabulary', $values) ? $values['vocabulary'] : '';
     return parent::create($values);
   }
@@ -39,8 +40,7 @@ class TripalVocabController extends EntityAPIController {
       db_delete('tripal_term')
         ->condition('id', $ids)
         ->execute();
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
       throw $e;
@@ -54,7 +54,7 @@ class TripalVocabController extends EntityAPIController {
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
-    $pkeys = array();
+    $pkeys = [];
 
     $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
@@ -66,18 +66,18 @@ class TripalVocabController extends EntityAPIController {
       }
       else {
         $invocation = 'entity_update';
-        $pkeys = array('id');
+        $pkeys = ['id'];
       }
 
       // Invoke hook_entity_presave().
       module_invoke_all('entity_presave', $entity, 'TripalTerm');
 
       // Write out the entity record.
-      $record = array(
+      $record = [
         'vocabulary' => $entity->vocabulary,
         'created' => $entity->created,
         'changed' => time(),
-      );
+      ];
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
       }
@@ -102,8 +102,7 @@ class TripalVocabController extends EntityAPIController {
       module_invoke_all($invocation, $entity, 'TripalTerm');
 
       return $record;
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_entity', $e);
       drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");

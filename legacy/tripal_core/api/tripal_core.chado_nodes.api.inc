@@ -1,35 +1,39 @@
 <?php
 /**
  * @file
- * API to handle much of the common functionality implemented when creating a drupal node type.
+ * API to handle much of the common functionality implemented when creating a
+ *   drupal node type.
  */
 
 /**
  * @defgroup tripal_legacy_chado_node_api Legacy Chado Nodes
  * @ingroup tripal_legacy_api
  * @{
- * Many Tripal modules implement Drupal node types as a means of displaying chado
- * records individually through Drupal as a single web page. In order to do this, many of
- * the same drupal hooks are implemented and the code between modules is actually quite
- * similar. This API aims to abstract much of the common functionality in order to make
- * it easier for new Tripal modules to implement drupal node types and to centralize the
- * maintenance effort as much as possible.
+ * Many Tripal modules implement Drupal node types as a means of displaying
+ *   chado records individually through Drupal as a single web page. In order
+ *   to do this, many of the same drupal hooks are implemented and the code
+ *   between modules is actually quite similar. This API aims to abstract much
+ *   of the common functionality in order to make it easier for new Tripal
+ *   modules to implement drupal node types and to centralize the maintenance
+ *   effort as much as possible.
  *
  * A generic sync form has been created. See chado_node_sync_form() for
  * instructions on how to implement this form in your module.
  *
- * Many of the base chado tables also have associated prop, _dbxref and _relationship
- * tables. Generic mini-forms have been created to help you handle these forms. To
- * implement this functionality you call the mini-form from your module node form and
- * then call the associated update functions from both your hook_insert and hook_update.
- * The functions of interest are as follows:
+ * Many of the base chado tables also have associated prop, _dbxref and
+ *   _relationship tables. Generic mini-forms have been created to help you
+ *   handle these forms. To implement this functionality you call the mini-form
+ *   from your module node form and then call the associated update functions
+ *   from both your hook_insert and hook_update. The functions of interest are
+ *   as follows:
  *   - chado_add_node_form_properties() and chado_update_node_form_properties()
  *     to provide an interface for adding/removing properties
  *   - chado_add_node_form_dbxrefs() and chado_update_node_form_dbxrefs()
- *     to provide an interface for adding/removing additional database references
- *   - chado_add_node_form_relationships() and chado_update_node_form_relationships()
- *     to provide an interface for adding/removing relationships between chado records
- *     from your base table
+ *     to provide an interface for adding/removing additional database
+ *   references
+ *   - chado_add_node_form_relationships() and
+ *   chado_update_node_form_relationships() to provide an interface for
+ *   adding/removing relationships between chado records from your base table
  * @}
  */
 
@@ -60,7 +64,7 @@ function chado_get_id_from_nid($table, $nid, $linking_table = NULL) {
   }
 
   $sql = "SELECT " . $table . "_id as id FROM {$linking_table} WHERE nid = :nid";
-  return db_query($sql, array(':nid' => $nid))->fetchField();
+  return db_query($sql, [':nid' => $nid])->fetchField();
 }
 
 /**
@@ -82,7 +86,7 @@ function chado_get_id_from_nid($table, $nid, $linking_table = NULL) {
  * @return
  *   The nid of the associated node
  *
- *  @ingroup tripal_legacy_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
   if (empty($linking_table)) {
@@ -90,7 +94,7 @@ function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
   }
 
   $sql = "SELECT nid FROM {" . $linking_table . "} WHERE " . $table . "_id = :" . $table . "_id";
-  return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
+  return db_query($sql, [":" . $table . "_id" => $id])->fetchField();
 }
 
 /**
@@ -106,7 +110,7 @@ function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
  * @return
  *    The name of the chado base table for the specified content type
  *
- *  @ingroup tripal_legacy_chado_node_api
+ * @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_get_base_table($content_type, $module = FALSE) {
 
@@ -141,18 +145,19 @@ function chado_node_get_base_table($content_type, $module = FALSE) {
 /**
  * Validate the Triggering element from a node form.
  *
- * We are going to inspect the post to determine what PHP knows is the triggering
- * element and if it doesn't agree with Drupal then we are actually going to
- * change it in Drupal.
+ * We are going to inspect the post to determine what PHP knows is the
+ * triggering element and if it doesn't agree with Drupal then we are actually
+ * going to change it in Drupal.
  *
  * This fixes an obscure bug triggered when a property is added and then
  * a relationship removed, Drupal thinks the first property remove button was
- * clicked and instead removes a property (not a relationship) and renders the new
- * property table in the relationship table page space.
+ * clicked and instead removes a property (not a relationship) and renders the
+ * new property table in the relationship table page space.
  *
  * NOTE: Many Drupal issues state that this problem is solved if the #name
- * of the button is unique (which it is in our case) but we are still experiencing
- * incorrectly determined triggering elements so we need to handle it ourselves.
+ * of the button is unique (which it is in our case) but we are still
+ * experiencing incorrectly determined triggering elements so we need to handle
+ * it ourselves.
  */
 function chado_validate_node_form_triggering_element($form, &$form_state) {
 
@@ -180,7 +185,7 @@ function chado_add_node_form_subtables_add_button_validate($form, &$form_state) 
   if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
     $subsection = $matches[1];
 
-    switch($subsection) {
+    switch ($subsection) {
       case 'properties':
         chado_add_node_form_properties_add_button_validate($form, $form_state);
         break;
@@ -209,7 +214,7 @@ function chado_add_node_form_subtables_add_button_submit($form, &$form_state) {
   if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
     $subsection = $matches[1];
 
-     switch($subsection) {
+    switch ($subsection) {
       case 'properties':
         chado_add_node_form_properties_add_button_submit($form, $form_state);
         break;
@@ -232,9 +237,10 @@ function chado_add_node_form_subtables_add_button_submit($form, &$form_state) {
  * Supported subtables: Properties, Relationships, Additional DBxrefs.
  *
  * Since Removing isn't associated with any user input the only thing we
- * need to validate is that Drupal has determined the triggering element correctly.
- * That said, we will call each subtables associated validate function just incase
- * there is some case-specific validation we do not know of or have not anticipated.
+ * need to validate is that Drupal has determined the triggering element
+ * correctly. That said, we will call each subtables associated validate
+ * function just incase there is some case-specific validation we do not know
+ * of or have not anticipated.
  *
  * @param array $form
  * @param array $form_state
@@ -252,7 +258,7 @@ function chado_add_node_form_subtables_remove_button_validate($form, &$form_stat
   if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
     $subsection = $matches[1];
 
-      switch($subsection) {
+    switch ($subsection) {
       case 'properties':
         chado_add_node_form_properties_remove_button_validate($form, $form_state);
         break;
@@ -281,7 +287,7 @@ function chado_add_node_form_subtables_remove_button_submit($form, &$form_state)
   if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
     $subsection = $matches[1];
 
-    switch($subsection) {
+    switch ($subsection) {
       case 'properties':
         chado_add_node_form_properties_remove_button_submit($form, $form_state);
         break;
@@ -318,7 +324,7 @@ function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
   if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
     $subsection = $matches[1];
 
-    switch($subsection) {
+    switch ($subsection) {
       case 'properties':
         return $form['properties']['property_table'];
         break;
@@ -338,83 +344,87 @@ function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
  */
 
 /**
- * Generic Sync Form to aid in sync'ing (create drupal nodes linking to chado content)
- * any chado node type.
+ * Generic Sync Form to aid in sync'ing (create drupal nodes linking to chado
+ * content) any chado node type.
  *
  * To use this you need to add a call to it from your hook_menu() and
- * add some additional information to your hook_node_info(). The Following code gives an
- * example of how this might be done:
+ * add some additional information to your hook_node_info(). The Following code
+ * gives an example of how this might be done:
+ *
  * @code
-
-  function modulename_menu() {
-
-    //  the machine name of your module
-    $module_name = 'tripal_example';
-
-    // the base specified in hook_node_info
-    $node_type = 'chado_example';
-
-    // This menu item will be a tab on the admin/tripal/legacy/tripal_example page
-    // that is not selected by default
-    $items['admin/tripal/legacy/tripal_example/sync'] = array(
-      'title' => ' Sync',
-      'description' => 'Sync examples from Chado with Drupal',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('chado_node_sync_form', $module_name, $node_type),
-      'access arguments' => array('administer tripal examples'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 0
-    );
-
-    return $items;
-  }
-
-  function modulename_node_info() {
-    return array(
-      'chado_example' => array(
-        'name' => t('example'),
-        'base' => 'chado_example',
-        'description' => t('A Chado example is a collection of material that can be sampled and have experiments performed on it.'),
-        'has_title' => TRUE,
-        'locked' => TRUE,
-
-        // this is what differs from the regular Drupal-documented hook_node_info()
-        'chado_node_api' => array(
-          'base_table' => 'example',            // The name of the chado base table
-          'hook_prefix' => 'chado_example',     // Usually the name of the node type
-          'linking_table' => 'chado_example',   // Specifies the linking table used
-                                                // to map records to Drupal nodes.
-                                                // if 'linking_table' is not specified
-                                                // it defaults to the node_type name.
-          'record_type_title' => array(
-            'singular' => t('Example'),         // Singular human-readable title
-            'plural' => t('Examples')           // Plural human-readable title
-          ),
-          'sync_filters' => array( // filters for syncing
-            'type_id'     => TRUE,     // TRUE if there is an example.type_id field
-            'organism_id' => TRUE,     // TRUE if there is an example.organism_id field
-            'checkboxes'  => array('name')  // If the 'checkboxes' key is present then the
-                                            // value must be an array of column names in
-                                            // base table. The values from these columns will
-                                            // be retreived, contentated with a space delimeter
-                                            // and provided in a list of checkboxes
-                                            // for the user to choose which to sync.
-          ),
-        )
-      ),
-    );
-  }
+ *
+ * function modulename_menu() {
+ *
+ * //  the machine name of your module
+ * $module_name = 'tripal_example';
+ *
+ * // the base specified in hook_node_info
+ * $node_type = 'chado_example';
+ *
+ * // This menu item will be a tab on the admin/tripal/legacy/tripal_example
+ *   page
+ * // that is not selected by default
+ * $items['admin/tripal/legacy/tripal_example/sync'] = array(
+ * 'title' => ' Sync',
+ * 'description' => 'Sync examples from Chado with Drupal',
+ * 'page callback' => 'drupal_get_form',
+ * 'page arguments' => array('chado_node_sync_form', $module_name, $node_type),
+ * 'access arguments' => array('administer tripal examples'),
+ * 'type' => MENU_LOCAL_TASK,
+ * 'weight' => 0
+ * );
+ *
+ * return $items;
+ * }
+ *
+ * function modulename_node_info() {
+ * return array(
+ * 'chado_example' => array(
+ * 'name' => t('example'),
+ * 'base' => 'chado_example',
+ * 'description' => t('A Chado example is a collection of material that can be
+ *   sampled and have experiments performed on it.'),
+ * 'has_title' => TRUE,
+ * 'locked' => TRUE,
+ *
+ * // this is what differs from the regular Drupal-documented hook_node_info()
+ * 'chado_node_api' => array(
+ * 'base_table' => 'example',            // The name of the chado base table
+ * 'hook_prefix' => 'chado_example',     // Usually the name of the node type
+ * 'linking_table' => 'chado_example',   // Specifies the linking table used
+ * // to map records to Drupal nodes.
+ * // if 'linking_table' is not specified
+ * // it defaults to the node_type name.
+ * 'record_type_title' => array(
+ * 'singular' => t('Example'),         // Singular human-readable title
+ * 'plural' => t('Examples')           // Plural human-readable title
+ * ),
+ * 'sync_filters' => array( // filters for syncing
+ * 'type_id'     => TRUE,     // TRUE if there is an example.type_id field
+ * 'organism_id' => TRUE,     // TRUE if there is an example.organism_id field
+ * 'checkboxes'  => array('name')  // If the 'checkboxes' key is present then
+ *   the
+ * // value must be an array of column names in
+ * // base table. The values from these columns will
+ * // be retreived, contentated with a space delimeter
+ * // and provided in a list of checkboxes
+ * // for the user to choose which to sync.
+ * ),
+ * )
+ * ),
+ * );
+ * }
  * @endcode
  *
- * For more information on how you can override some of this behaviour while still
- * benifiting from as much of the common architecture as possible see the following
- * functions: hook_chado_node_sync_create_new_node(), hook_chado_node_sync_form(),
- * hook_chado_node_sync_select_query().
+ * For more information on how you can override some of this behaviour while
+ *   still benifiting from as much of the common architecture as possible see
+ *   the following functions: hook_chado_node_sync_create_new_node(),
+ *   hook_chado_node_sync_form(), hook_chado_node_sync_select_query().
  *
  * @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_sync_form($form, &$form_state) {
-  $form = array();
+  $form = [];
 
   if (isset($form_state['build_info']['args'][0])) {
     $module = $form_state['build_info']['args'][0];
@@ -433,56 +443,56 @@ function chado_node_sync_form($form, &$form_state) {
     $form_state['chado_node_api'] = $args;
   }
 
-  $form['linking_table'] = array(
+  $form['linking_table'] = [
     '#type' => 'hidden',
-    '#value' => $linking_table
-  );
+    '#value' => $linking_table,
+  ];
 
-  $form['node_type'] = array(
+  $form['node_type'] = [
     '#type' => 'hidden',
-    '#value' => $node_type
-  );
+    '#value' => $node_type,
+  ];
 
   // define the fieldsets
-  $form['sync'] = array(
+  $form['sync'] = [
     '#type' => 'fieldset',
     '#title' => 'Sync ' . $args['record_type_title']['plural'],
     '#descrpition' => '',
-  );
+  ];
 
-  $form['sync']['description'] = array(
-  '#type' => 'item',
-  '#value' => t("%title_plural of the types listed ".
-     "below in the %title_singular Types box will be synced (leave blank to sync all types). You may limit the ".
-     "%title_plural to be synced by a specific organism. Depending on the ".
-     "number of %title_plural in the chado database this may take a long ".
-     "time to complete. ",
-     array(
-      '%title_singular' => $args['record_type_title']['singular'],
-      '%title_plural' => $args['record_type_title']['plural']
-    )),
-  );
+  $form['sync']['description'] = [
+    '#type' => 'item',
+    '#value' => t("%title_plural of the types listed " .
+      "below in the %title_singular Types box will be synced (leave blank to sync all types). You may limit the " .
+      "%title_plural to be synced by a specific organism. Depending on the " .
+      "number of %title_plural in the chado database this may take a long " .
+      "time to complete. ",
+      [
+        '%title_singular' => $args['record_type_title']['singular'],
+        '%title_plural' => $args['record_type_title']['plural'],
+      ]),
+  ];
 
   if ($args['sync_filters']['type_id']) {
-    $form['sync']['type_ids'] = array(
-      '#title'       => t('%title_singular Types',
-         array(
+    $form['sync']['type_ids'] = [
+      '#title' => t('%title_singular Types',
+        [
           '%title_singular' => $args['record_type_title']['singular'],
-          '%title_plural' => $args['record_type_title']['plural']
-      )),
-      '#type'        => 'textarea',
+          '%title_plural' => $args['record_type_title']['plural'],
+        ]),
+      '#type' => 'textarea',
       '#description' => t("Enter the names of the %title_singular types to sync. " .
-         "Leave blank to sync all %title_plural. Separate each type with a comma ".
-         "or new line. Pages for these %title_singular ".
-         "types will be created automatically for %title_plural that exist in the ".
-         "chado database. The names must match ".
-         "exactly (spelling and case) with terms in the ontologies",
-         array(
+        "Leave blank to sync all %title_plural. Separate each type with a comma " .
+        "or new line. Pages for these %title_singular " .
+        "types will be created automatically for %title_plural that exist in the " .
+        "chado database. The names must match " .
+        "exactly (spelling and case) with terms in the ontologies",
+        [
           '%title_singular' => strtolower($args['record_type_title']['singular']),
-          '%title_plural' => strtolower($args['record_type_title']['plural'])
-        )),
+          '%title_plural' => strtolower($args['record_type_title']['plural']),
+        ]),
       '#default_value' => (isset($form_state['values']['type_id'])) ? $form_state['values']['type_id'] : '',
-    );
+    ];
   }
 
   // get the list of organisms
@@ -493,17 +503,17 @@ function chado_node_sync_form($form, &$form_state) {
     foreach ($results as $organism) {
       $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
     }
-    $form['sync']['organism_id'] = array(
-      '#title'       => t('Organism'),
-      '#type'        => t('select'),
+    $form['sync']['organism_id'] = [
+      '#title' => t('Organism'),
+      '#type' => t('select'),
       '#description' => t("Choose the organism for which %title_plural types set above will be synced.",
-         array(
+        [
           '%title_singular' => $args['record_type_title']['singular'],
-          '%title_plural' => $args['record_type_title']['plural']
-        )),
-      '#options'     => $organisms,
+          '%title_plural' => $args['record_type_title']['plural'],
+        ]),
+      '#options' => $organisms,
       '#default_value' => (isset($form_state['values']['organism_id'])) ? $form_state['values']['organism_id'] : 0,
-    );
+    ];
   }
   // get the list of organisms
   if (array_key_exists('checkboxes', $args['sync_filters'])) {
@@ -515,29 +525,29 @@ function chado_node_sync_form($form, &$form_state) {
     // we can't proceed, otherwise, generate the checkboxes
     if (array_key_exists('primary key', $table_info) and count($table_info['primary key']) == 1) {
       $pkey = $table_info['primary key'][0];
-      $columns  = $args['sync_filters']['checkboxes'];
+      $columns = $args['sync_filters']['checkboxes'];
       $select_cols = '';
       foreach ($columns as $column) {
         $select_cols .= $base_table . '.' . $column . "|| ' ' ||";
       }
       // Remove trailing || ' ' ||
       $select_cols = substr($select_cols, 0, -9);
-      $base_table_id  = $base_table . '_id';
+      $base_table_id = $base_table . '_id';
 
-      $select = array($base_table . '.' . $pkey, $select_cols . ' as value');
-      $joins = array();
-      $where_clauses = array();
-      $where_args = array();
+      $select = [$base_table . '.' . $pkey, $select_cols . ' as value'];
+      $joins = [];
+      $where_clauses = [];
+      $where_args = [];
 
       // Allow module to update the query.
       $hook_query_alter = $node_type . '_chado_node_sync_select_query';
       if (function_exists($hook_query_alter)) {
-        $update = call_user_func($hook_query_alter, array(
+        $update = call_user_func($hook_query_alter, [
           'select' => $select,
           'joins' => $joins,
           'where_clauses' => $where_clauses,
           'where_args' => $where_args,
-        ));
+        ]);
         // Now add in any new changes
         if ($update and is_array($update)) {
           $select = $update['select'];
@@ -551,13 +561,13 @@ function chado_node_sync_form($form, &$form_state) {
       // so that if no criteria are specified we only get those items that have not
       // yet been synced.
       $query = "SELECT " . implode(', ', $select) . ' ' .
-               'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-               "  LEFT JOIN [" . $linking_table . "] CT ON CT.$base_table_id = $base_table.$base_table_id " .
-               "WHERE CT.$base_table_id IS NULL";
+        'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' ' .
+        "  LEFT JOIN [" . $linking_table . "] CT ON CT.$base_table_id = $base_table.$base_table_id " .
+        "WHERE CT.$base_table_id IS NULL";
 
       // extend the where clause if needed
       $where = '';
-      $sql_args = array();
+      $sql_args = [];
       foreach ($where_clauses as $category => $items) {
         $where .= ' AND (';
         foreach ($items as $item) {
@@ -574,71 +584,71 @@ function chado_node_sync_form($form, &$form_state) {
       $query .= " ORDER BY $base_table." . implode(", $base_table.", $columns);
       $results = chado_query($query, $sql_args);
 
-      $values = array();
+      $values = [];
       foreach ($results as $result) {
         $values[$result->$pkey] = $result->value;
       }
       if (count($values) > 0) {
-        $form['sync']['ids'] = array(
-          '#title'         => 'Avaliable ' . $args['record_type_title']['plural'],
-          '#type'          => 'checkboxes',
-          '#options'       => $values,
-          '#default_value' => (isset($form_state['values']['ids'])) ? $form_state['values']['ids'] : array(),
-          '#suffix'        => '</div><br>',
-          '#prefix'        => t("The following  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
-              array(
+        $form['sync']['ids'] = [
+          '#title' => 'Avaliable ' . $args['record_type_title']['plural'],
+          '#type' => 'checkboxes',
+          '#options' => $values,
+          '#default_value' => (isset($form_state['values']['ids'])) ? $form_state['values']['ids'] : [],
+          '#suffix' => '</div><br>',
+          '#prefix' => t("The following  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
+              [
                 '%title_singular' => strtolower($args['record_type_title']['singular']),
-                '%title_plural'   => strtolower($args['record_type_title']['plural'])
-              )) . '<div style="height: 200px; overflow: scroll">',
-        );
+                '%title_plural' => strtolower($args['record_type_title']['plural']),
+              ]) . '<div style="height: 200px; overflow: scroll">',
+        ];
       }
       else {
-        $form['sync']['no_ids'] = array(
-          '#markup' => "<p>There are no " .  strtolower($args['record_type_title']['plural']) . " to sync.</p>",
-        );
+        $form['sync']['no_ids'] = [
+          '#markup' => "<p>There are no " . strtolower($args['record_type_title']['plural']) . " to sync.</p>",
+        ];
       }
     }
   }
   // if we provide a list of checkboxes we shouldn't need a max_sync
   else {
-    $form['sync']['max_sync'] = array(
+    $form['sync']['max_sync'] = [
       '#type' => 'textfield',
       '#title' => t('Maximum number of records to Sync'),
       '#description' => t('Leave this field empty to sync all records, regardless of number'),
       '#default_value' => (isset($form_state['values']['max_sync'])) ? $form_state['values']['max_sync'] : '',
-    );
+    ];
   }
 
-  $form['sync']['button'] = array(
+  $form['sync']['button'] = [
     '#type' => 'submit',
     '#value' => t('Sync ' . $args['record_type_title']['plural']),
     '#weight' => 3,
-  );
+  ];
 
 
-  $form['cleanup'] = array(
+  $form['cleanup'] = [
     '#type' => 'fieldset',
-    '#title' => t('Clean Up')
-  );
-  $form['cleanup']['description'] = array(
+    '#title' => t('Clean Up'),
+  ];
+  $form['cleanup']['description'] = [
     '#markup' => t("<p>With Drupal and chado residing in different databases " .
-        "it is possible that nodes in Drupal and " . strtolower($args['record_type_title']['plural']) . " in Chado become " .
-        "\"orphaned\".  This can occur if a node in Drupal is " .
-        "deleted but the corresponding chado records is not and/or vice " .
-        "versa. Click the button below to resolve these discrepancies.</p>"),
+      "it is possible that nodes in Drupal and " . strtolower($args['record_type_title']['plural']) . " in Chado become " .
+      "\"orphaned\".  This can occur if a node in Drupal is " .
+      "deleted but the corresponding chado records is not and/or vice " .
+      "versa. Click the button below to resolve these discrepancies.</p>"),
     '#weight' => -10,
-  );
-  $form['cleanup']['cleanup_batch_size'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Batch Size'),
-      '#description' => t('The number of records to analyze together in a batch. If you are having memory issues you might want to decrease this number.'),
-      '#default_value' => variable_get('chado_node_api_cleanup_batch_size', 25000),
-  );
-  $form['cleanup']['button'] = array(
+  ];
+  $form['cleanup']['cleanup_batch_size'] = [
+    '#type' => 'textfield',
+    '#title' => t('Batch Size'),
+    '#description' => t('The number of records to analyze together in a batch. If you are having memory issues you might want to decrease this number.'),
+    '#default_value' => variable_get('chado_node_api_cleanup_batch_size', 25000),
+  ];
+  $form['cleanup']['button'] = [
     '#type' => 'submit',
     '#value' => 'Clean up orphaned ' . strtolower($args['record_type_title']['plural']),
     '#weight' => 2,
-  );
+  ];
 
   // Allow each module to alter this form as needed
   $hook_form_alter = $args['hook_prefix'] . '_chado_node_sync_form';
@@ -693,13 +703,13 @@ function chado_node_sync_form_submit($form, $form_state) {
     }
 
     // Get the types separated into a consistent string
-    $types = array();
+    $types = [];
     if (isset($form_state['values']['type_ids'])) {
       // seperate by new line or comma.
       $temp_types = preg_split("/[,\n\r]+/", $form_state['values']['type_ids']);
 
       // remove any extra spacing around the types
-      for($i = 0; $i < count($temp_types); $i++) {
+      for ($i = 0; $i < count($temp_types); $i++) {
         // skip empty types
         if (trim($temp_types[$i]) == '') {
           continue;
@@ -709,8 +719,8 @@ function chado_node_sync_form_submit($form, $form_state) {
     }
 
     // Get the ids to be synced
-    $ids = array();
-    if (array_key_exists('ids', $form_state['values'])){
+    $ids = [];
+    if (array_key_exists('ids', $form_state['values'])) {
       foreach ($form_state['values']['ids'] as $id => $selected) {
         if ($selected) {
           $ids[] = $id;
@@ -720,20 +730,20 @@ function chado_node_sync_form_submit($form, $form_state) {
 
     // get the organism to be synced
     $organism_id = FALSE;
-    if (array_key_exists('organism_id',  $form_state['values'])) {
+    if (array_key_exists('organism_id', $form_state['values'])) {
       $organism_id = $form_state['values']['organism_id'];
     }
 
     // Job Arguments
-    $job_args = array(
+    $job_args = [
       'base_table' => $base_table,
       'max_sync' => (!empty($form_state['values']['max_sync'])) ? $form_state['values']['max_sync'] : FALSE,
       'organism_id' => $organism_id,
       'types' => $types,
       'ids' => $ids,
       'linking_table' => $linking_table,
-      'node_type' => $node_type
-    );
+      'node_type' => $node_type,
+    ];
 
     $title = "Sync " . $args['record_type_title']['plural'];
     tripal_add_job($title, $module, 'chado_node_sync_records', $job_args, $user->uid);
@@ -743,7 +753,12 @@ function chado_node_sync_form_submit($form, $form_state) {
     $base_table = $form_state['chado_node_api']['base_table'];
     $linking_table = $form_state['values']['linking_table'];
     $node_type = $form_state['values']['node_type'];
-    $job_args = array($base_table, $form_state['values']['cleanup_batch_size'], $linking_table, $node_type);
+    $job_args = [
+      $base_table,
+      $form_state['values']['cleanup_batch_size'],
+      $linking_table,
+      $node_type,
+    ];
     variable_set('chado_node_api_cleanup_batch_size', $form_state['values']['cleanup_batch_size']);
     tripal_add_job($form_state['values']['op'], $module, 'chado_cleanup_orphaned_nodes', $job_args, $user->uid);
   }
@@ -755,7 +770,8 @@ function chado_node_sync_form_submit($form, $form_state) {
  * @param $base_table
  *   The name of the Chado table containing the record that should be synced
  * @param $max_sync
- *   Optional: A numeric value to indicate the maximum number of records to sync.
+ *   Optional: A numeric value to indicate the maximum number of records to
+ *   sync.
  * @param $organism_id
  *   Optional: Limit the list of records to be synced to only those that
  *   are associated with this organism_id. If the record is not assocaited
@@ -784,8 +800,8 @@ function chado_node_sync_form_submit($form, $form_state) {
  * @ingroup tripal_legacy_chado_node_api
  */
 function chado_node_sync_records($base_table, $max_sync = FALSE,
-    $organism_id = FALSE, $types = array(), $ids = array(),
-    $linking_table = FALSE, $node_type = FALSE, $job_id = NULL) {
+                                 $organism_id = FALSE, $types = [], $ids = [],
+                                 $linking_table = FALSE, $node_type = FALSE, $job_id = NULL) {
 
   global $user;
   $base_table_id = $base_table . '_id';
@@ -800,20 +816,20 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   print "\nSync'ing $base_table records.  ";
 
   // START BUILDING QUERY TO GET ALL RECORD FROM BASE TABLE THAT MATCH
-  $select = array("$base_table.*");
-  $joins = array();
-  $where_clauses = array();
-  $where_args = array();
+  $select = ["$base_table.*"];
+  $joins = [];
+  $where_clauses = [];
+  $where_args = [];
 
   // If types are supplied then handle them
   $restrictions = '';
   if (count($types) > 0) {
-    $restrictions .= "  Type(s): " . implode(', ',$types) . "\n";
+    $restrictions .= "  Type(s): " . implode(', ', $types) . "\n";
 
     $select[] = 'cvterm.name as cvtname';
     $joins[] = "LEFT JOIN {cvterm} cvterm ON $base_table.type_id = cvterm.cvterm_id";
     foreach ($types as $type) {
-      $sanitized_type = str_replace(' ','_',$type);
+      $sanitized_type = str_replace(' ', '_', $type);
       $where_clauses['type'][] = "cvterm.name = :type_name_$sanitized_type";
       $where_args['type'][":type_name_$sanitized_type"] = $type;
     }
@@ -830,7 +846,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
 
   // If Organism is supplied
   if ($organism_id) {
-    $organism = chado_select_record('organism', array('*'), array('organism_id' => $organism_id));
+    $organism = chado_select_record('organism', ['*'], ['organism_id' => $organism_id]);
     $restrictions .= "  Organism: " . $organism[0]->genus . " " . $organism[0]->species . "\n";
 
     $select[] = 'organism.*';
@@ -842,12 +858,12 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   // Allow module to add to query
   $hook_query_alter = $node_type . '_chado_node_sync_select_query';
   if (function_exists($hook_query_alter)) {
-    $update = call_user_func($hook_query_alter, array(
+    $update = call_user_func($hook_query_alter, [
       'select' => $select,
       'joins' => $joins,
       'where_clauses' => $where_clauses,
       'where_args' => $where_args,
-    ));
+    ]);
     // Now add in any new changes
     if ($update and is_array($update)) {
       $select = $update['select'];
@@ -861,13 +877,13 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   // yet been synced.
   $query = "
     SELECT " . implode(', ', $select) . ' ' .
-    'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
+    'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' ' .
     "  LEFT JOIN [" . $linking_table . "] CT ON CT.$base_table_id = $base_table.$base_table_id " .
     "WHERE CT.$base_table_id IS NULL ";
 
   // extend the where clause if needed
   $where = '';
-  $sql_args = array();
+  $sql_args = [];
   foreach ($where_clauses as $category => $items) {
     $where .= ' AND (';
     foreach ($items as $item) {
@@ -911,8 +927,8 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   $i = 0;
   $transaction = db_transaction();
   print "\nNOTE: Syncing is performed using a database transaction. \n" .
-      "If the sync fails or is terminated prematurely then the entire set of \n" .
-      "synced items is rolled back and will not be found in the database\n\n";
+    "If the sync fails or is terminated prematurely then the entire set of \n" .
+    "synced items is rolled back and will not be found in the database\n\n";
   try {
     $percent = 0;
     foreach ($results as $record) {
@@ -920,13 +936,13 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
       if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", (($i + 1) / $count) * 100);
         print "Syncing $base_table " . ($i + 1) . " of $count (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-        tripal_set_job_progress($job_id, intval(($i/$count)*100));
+        tripal_set_job_progress($job_id, intval(($i / $count) * 100));
       }
 
       // Check if the record is already in the chado linking table
       // (ie: check to see if it is already linked to a node).
       $result = db_select($linking_table, 'lnk')
-        ->fields('lnk',array('nid'))
+        ->fields('lnk', ['nid'])
         ->condition($base_table_id, $record->{$base_table_id}, '=')
         ->execute()
         ->fetchObject();
@@ -948,8 +964,8 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
         }
 
         // Validate and Save New Node
-        $form = array();
-        $form_state = array();
+        $form = [];
+        $form_state = [];
         node_validate($new_node, $form, $form_state);
 
         if (!form_get_errors()) {
@@ -959,15 +975,13 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
           node_save($node);
         }
         else {
-          throw new Exception(t("Failed to insert $base_table: %title", array('%title' => $new_node->title)));
+          throw new Exception(t("Failed to insert $base_table: %title", ['%title' => $new_node->title]));
         }
       }
       $i++;
     }
     print "\n\nComplete!\n";
-  }
-
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('trp-fsync', $e);
@@ -1001,7 +1015,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
  * @ingroup tripal_legacy_chado_node_api
  */
 function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
-    $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
+                                      $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
 
   // The max number of records either as nodes or linked records.
   $count = 0;
@@ -1019,10 +1033,10 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
   // Find the number nodes of type chado_$table and find the number of entries
   // in chado_$table; keep the larger of the two numbers.
   $dsql = "SELECT COUNT(*) FROM {node} WHERE type = :node_type";
-  $ndat = db_query($dsql, array(':node_type' => $node_type));
+  $ndat = db_query($dsql, [':node_type' => $node_type]);
   $temp = $ndat->fetchObject();
   $ncount = $temp->count;
-  $clsql= "SELECT COUNT(*) FROM {" . $linking_table . "}";
+  $clsql = "SELECT COUNT(*) FROM {" . $linking_table . "}";
   $cdat = db_query($clsql);
   $clcount = $cdat->fetchObject();
   if ($ncount < $clcount) {
@@ -1041,10 +1055,9 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
     for ($i = 0; $i < $m; $i++) {
       $offset = ($nentries * $i);
       chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries, $offset,
-          $linking_table, $node_type);
+        $linking_table, $node_type);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('trp-fsync', $e);
@@ -1067,15 +1080,15 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
  * @ingroup tripal_legacy_chado_node_api
  */
 function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
-    $offset, $linking_table, $node_type) {
+                                           $offset, $linking_table, $node_type) {
 
   $count = 0;
 
   // Retrieve all of the entries in the linker table for a given node type
   // and place into an array.
   print "Verifying $linking_table records...\n";
-  $cnodes = array();
-  $clsql= "
+  $cnodes = [];
+  $clsql = "
     SELECT *
     FROM {" . $linking_table . "} LT
     ORDER BY LT.nid LIMIT $nentries OFFSET $offset";
@@ -1104,23 +1117,26 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
 
       // See if the node exits, if not remove the entry from linking table table.
       $nsql = "SELECT * FROM {node} WHERE nid = :nid AND type = :node_type";
-      $results = db_query($nsql, array(':nid' => $linker->nid, ':node_type' => $node_type));
+      $results = db_query($nsql, [
+        ':nid' => $linker->nid,
+        ':node_type' => $node_type,
+      ]);
       $node = $results->fetchObject();
       if (!$node) {
         $deleted++;
-        db_query("DELETE FROM {" . $linking_table . "} WHERE nid = :nid", array(':nid' => $linker->nid));
+        db_query("DELETE FROM {" . $linking_table . "} WHERE nid = :nid", [':nid' => $linker->nid]);
         //print "$linking_table missing node.... DELETING where nid=".$linker->nid." $linking_table entry.\n";
       }
 
       // Does record in chado exists, if not remove entry from $linking_table.
       $table_id = $table . "_id";
       $lsql = "SELECT * FROM {" . $table . "} where " . $table_id . " = :chado_id";
-      $results = chado_query($lsql, array(":chado_id" => $linker->$table_id));
+      $results = chado_query($lsql, [":chado_id" => $linker->$table_id]);
       $record = $results->fetchObject();
       if (!$record) {
         $deleted++;
         $sql = "DELETE FROM {" . $linking_table . "} WHERE " . $table_id . " = :chado_id";
-        db_query($sql, array(":chado_id" => $linker->$table_id));
+        db_query($sql, [":chado_id" => $linker->$table_id]);
         //print "$linking_table missing $table.... DELETING where $table_id=".$linker->$table_id." $linking_table entry.\n";
       }
       $i++;
@@ -1141,8 +1157,8 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
     LIMIT $nentries OFFSET $offset
   ";
 
-  $dsql_args = array(':node_type' => $node_type);
-  $nodes = array();
+  $dsql_args = [':node_type' => $node_type];
+  $nodes = [];
   $res = db_query($dsql, $dsql_args);
   $count = 0;
   foreach ($res as $node) {
@@ -1169,21 +1185,21 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
 
       // check to see if the node has a corresponding entry
       // in the $linking_table table. If not then delete the node.
-       $csql = "SELECT * FROM {" . $linking_table . "} WHERE nid = :nid ";
-       $results = db_query($csql, array(':nid' => $node->nid));
-       $link = $results->fetchObject();
-       if (!$link) {
-         // Checking node_access creates a memory leak. Commenting out for now
-         // assuming that this code can only be run by a site administrator
-         // anyway.
-//         if (node_access('delete', $node)) {
-           $deleted++;
-           node_delete($node->nid);
-//         }
-//         else {
-//           print "\nNode missing in $linking_table table.... but cannot delete due to improper permissions (node $node->nid)\n";
-//         }
-       }
+      $csql = "SELECT * FROM {" . $linking_table . "} WHERE nid = :nid ";
+      $results = db_query($csql, [':nid' => $node->nid]);
+      $link = $results->fetchObject();
+      if (!$link) {
+        // Checking node_access creates a memory leak. Commenting out for now
+        // assuming that this code can only be run by a site administrator
+        // anyway.
+        //         if (node_access('delete', $node)) {
+        $deleted++;
+        node_delete($node->nid);
+        //         }
+        //         else {
+        //           print "\nNode missing in $linking_table table.... but cannot delete due to improper permissions (node $node->nid)\n";
+        //         }
+      }
       $i++;
     }
     $percent = sprintf("%.2f", ($i / $count) * 100);
@@ -1201,9 +1217,9 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
  * Note: For your own module, replace hook in the function name with the
  * machine-name of your chado node type (ie: chado_feature).
  *
- * @param $new_node:
+ * @param $new_node :
  *   a basic new node object
- * @param $record:
+ * @param $record :
  *   the record object from chado specifying the biological data for this node
  *
  * @return
@@ -1257,11 +1273,11 @@ function hook_chado_node_sync_form($form, &$form_state) {
  *
  * @ingroup tripal_legacy_chado_node_api
  */
-function hook_chado_node_sync_form_submit ($form, $form_state) {
+function hook_chado_node_sync_form_submit($form, $form_state) {
 
   global $user;
 
-  $job_args = array(
+  $job_args = [
     // The base chado table (ie: feature).
     $base_table,
     // The maximum number of records to sync or FALSE for sync all that match.
@@ -1269,12 +1285,12 @@ function hook_chado_node_sync_form_submit ($form, $form_state) {
     // The organism_id to restrict records to or FALSE if not to restrict by organism_id.
     $organism_id,
     // A string with the cvterm.name of the types to restrict to separated by |||
-    $types
-  );
+    $types,
+  ];
 
   // You should register a tripal job
   tripal_add_job(
-    // The title of the job -be descriptive.
+  // The title of the job -be descriptive.
     $title,
     // The name of your module.
     $module,

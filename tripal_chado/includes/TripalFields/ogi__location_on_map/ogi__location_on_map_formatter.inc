@@ -1,11 +1,12 @@
 <?php
 
 class ogi__location_on_map_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Location on Map';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('ogi__location_on_map');
+  public static $field_types = ['ogi__location_on_map'];
 
   /**
    *
@@ -13,8 +14,8 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $rows = array();
-    $headers = array('Map', 'Position', 'Map Description');
+    $rows = [];
+    $headers = ['Map', 'Position', 'Map Description'];
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
@@ -23,35 +24,35 @@ class ogi__location_on_map_formatter extends ChadoFieldFormatter {
       $map_name = $item['value']['data:1274']['schema:name'];
       $map_desc = $item['value']['data:1274']['schema:description'];
       $position = $item['value']['SIO:000056'];
-      $rows[] = array(
+      $rows[] = [
         $map_name,
         $position,
-        $map_desc
-      );
+        $map_desc,
+      ];
     }
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
+    $table = [
       'header' => $headers,
       'rows' => $rows,
-      'attributes' => array(
+      'attributes' => [
         'id' => 'tripal_feature-table-map-positions',
-        'class' => 'tripal-data-table'
-      ),
+        'class' => 'tripal-data-table',
+      ],
       'sticky' => FALSE,
       'caption' => '',
-      'colgroups' => array(),
+      'colgroups' => [],
       'empty' => 'This are no positions on any maps.',
-    );
+    ];
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
     if (count($items) > 0) {
-      $element[0] = array(
+      $element[0] = [
         '#type' => 'markup',
         '#markup' => theme_table($table),
-      );
+      ];
     }
   }
 }

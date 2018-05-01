@@ -8,44 +8,44 @@
  * Implements hook_schema().
  */
 function tripal_ds_schema() {
-  $schema['tripal_ds'] = array(
+  $schema['tripal_ds'] = [
     'description' => t('Table that contains the Tripal Pane fieldsets.'),
 
-    'fields' => array(
-      'id' => array(
+    'fields' => [
+      'id' => [
         'type' => 'serial',
         'not null' => TRUE,
         'description' => 'The primary identifier for a group',
         'no export' => TRUE,
-      ),
-      'tripal_ds_field_label' => array(
+      ],
+      'tripal_ds_field_label' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
         'description' => 'The label of this Tripal Pane.',
-      ),
-      'tripal_ds_field_name' => array(
+      ],
+      'tripal_ds_field_name' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
         'description' => 'The name of this Tripal Pane.',
-      ),
-      'bundle' => array(
+      ],
+      'bundle' => [
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
-        'default' => ''
-      ),
-      'weight' => array(
+        'default' => '',
+      ],
+      'weight' => [
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
-      ),
-    ),
-    'primary key' => array('id'),
-  );
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
   return $schema;
 }
 
@@ -53,18 +53,18 @@ function tripal_ds_schema() {
 /**
  * Implements hook_disable().
  */
-function tripal_ds_disable(){
+function tripal_ds_disable() {
   //Check if any tripal panes currently exist.
   //Grab all the bundles to cycle through them.
-  $entities_with_tripal_panes = array();
+  $entities_with_tripal_panes = [];
   $bundles = db_select('tripal_bundle', 'tb')
     ->fields('tb')
     ->execute()
     ->fetchAll();
-  foreach($bundles as $bundles => $bundle){
+  foreach ($bundles as $bundles => $bundle) {
     $field_groups = field_group_info_groups('TripalEntity', $bundle->name);
-    foreach($field_groups['default'] as $field_names => $field_name){
-      if($field_name->format_type == 'tripalpane'){
+    foreach ($field_groups['default'] as $field_names => $field_name) {
+      if ($field_name->format_type == 'tripalpane') {
         array_push($entities_with_tripal_panes, $bundle->label);
         continue 2;
       }
@@ -77,7 +77,7 @@ function tripal_ds_disable(){
     $output .= '<li> ' . $item . '</li>';
   }
   $output .= '</ul>';
-  if(!empty($entities_with_tripal_panes)){
+  if (!empty($entities_with_tripal_panes)) {
     drupal_set_message($output, 'warning');
   }
 }
@@ -87,15 +87,14 @@ function tripal_ds_disable(){
  */
 function tripal_ds_update_7300() {
   try {
-    db_add_field('tripal_ds', 'weight', array(
+    db_add_field('tripal_ds', 'weight', [
       'type' => 'int',
       'not null' => TRUE,
       'default' => 1,
-    ));
-  }
-  catch (\PDOException $e) {
+    ]);
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }

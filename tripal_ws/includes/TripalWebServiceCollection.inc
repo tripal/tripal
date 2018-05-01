@@ -51,7 +51,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
 
     // Initialize private member variables.
     $this->params = $params;
-    $this->members = array();
+    $this->members = [];
 
     // Add some terms to the context.
     $this->addContextItem('Collection', 'hydra:Collection');
@@ -126,7 +126,14 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
       // Save any parameters provided by the user
       $saved_params = '';
       foreach ($this->params as $pkey => $pval) {
-        if (in_array($pkey, array('page', 'limit', 'first', 'last', 'next', 'prev'))) {
+        if (in_array($pkey, [
+          'page',
+          'limit',
+          'first',
+          'last',
+          'next',
+          'prev',
+        ])) {
           continue;
         }
         $saved_params .= '&' . $pkey . '=' . $pval;
@@ -138,19 +145,34 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
       $limit = $this->itemsPerPage;
 
       if ($this->totalItems > 0) {
-        $data['view'] = array(
-          '@id' => $this->service_path . '?' . implode('&', array_merge(array("page=$page", "limit=$limit"))) . $saved_params,
+        $data['view'] = [
+          '@id' => $this->service_path . '?' . implode('&', array_merge([
+              "page=$page",
+              "limit=$limit",
+            ])) . $saved_params,
           '@type' => 'PartialCollectionView',
-          'first' => $this->service_path . '?' . implode('&', array_merge(array("page=1", "limit=$limit"))) . $saved_params,
-          'last' => $this->service_path . '?' . implode('&', array_merge(array("page=$total_pages", "limit=$limit"))) . $saved_params,
-        );
+          'first' => $this->service_path . '?' . implode('&', array_merge([
+              "page=1",
+              "limit=$limit",
+            ])) . $saved_params,
+          'last' => $this->service_path . '?' . implode('&', array_merge([
+              "page=$total_pages",
+              "limit=$limit",
+            ])) . $saved_params,
+        ];
         $prev = $page - 1;
         $next = $page + 1;
         if ($prev > 0) {
-          $data['view']['previous'] = $this->service_path .'?' . implode('&', array("page=$prev", "limit=$limit")) . $saved_params;
+          $data['view']['previous'] = $this->service_path . '?' . implode('&', [
+              "page=$prev",
+              "limit=$limit",
+            ]) . $saved_params;
         }
         if ($next < $total_pages) {
-          $data['view']['next'] = $this->service_path . '?' . implode('&', array("page=$next", "limit=$limit")) . $saved_params;
+          $data['view']['next'] = $this->service_path . '?' . implode('&', [
+              "page=$next",
+              "limit=$limit",
+            ]) . $saved_params;
         }
       }
     }
@@ -158,7 +180,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
       $data['totalItems'] = count($this->members);
     }
 
-    $member_data = array();
+    $member_data = [];
     foreach ($this->members as $key => $member) {
       $member_data[] = $member->getData();
     }

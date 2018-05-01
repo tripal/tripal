@@ -4,8 +4,8 @@
  * A basic template for model entities
  *
  * Available variables:
- * - $content: An array of comment items. Use render($content) to print them all, or
- *   print a subset such as render($content['field_example']). Use
+ * - $content: An array of comment items. Use render($content) to print them
+ *   all, or print a subset such as render($content['field_example']). Use
  *   hide($content['field_example']) to temporarily suppress the printing of a
  *   given element.
  * - $title: The title of the entity
@@ -13,7 +13,8 @@
  * - $page: TRUE if this is the main view page $url points too.
  * - $classes: String of classes that can be used to style contextually through
  *   CSS. It can be manipulated through the variable $classes_array from
- *   preprocess functions. By default the following classes are available, where
+ *   preprocess functions. By default the following classes are available,
+ *   where
  *   the parts enclosed by {} are replaced by the appropriate values:
  *   - entity-profile
  *   - model-{TYPE}
@@ -28,7 +29,7 @@
  */
 ?>
 <div class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
-  <div class="content"<?php print $content_attributes; ?>><?php
-    print render($content);?>
-  </div>
+    <div class="content"<?php print $content_attributes; ?>><?php
+      print render($content); ?>
+    </div>
 </div>

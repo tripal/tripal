@@ -30,9 +30,9 @@ require_once 'includes/tripal_contact.chado_node.inc';
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_views_api() {
-  return array(
-      'api' => 3.0,
-  );
+  return [
+    'api' => 3.0,
+  ];
 }
 
 /**
@@ -41,72 +41,76 @@ function tripal_contact_views_api() {
  * gives the outline for the main menu of the Tripal-contact module
  *
  * @return
- *   An array of menu items that is visible within the Drupal Menu, returned as soon
- *   as the program is ran
+ *   An array of menu items that is visible within the Drupal Menu, returned as
+ *   soon as the program is ran
  *
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_menu() {
 
-  $items = array();
+  $items = [];
 
-  $items['admin/tripal/legacy/tripal_contact']= array(
+  $items['admin/tripal/legacy/tripal_contact'] = [
     'title' => 'Contacts',
     'description' => ('Model persons, institutes, groups, organizations, etc.'),
     'page callback' => 'tripal_contact_admin_contact_view',
-    'access arguments' => array('administer tripal contact'),
-    'type' => MENU_NORMAL_ITEM
-  );
+    'access arguments' => ['administer tripal contact'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-  $items['admin/tripal/legacy/tripal_contact/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_contact/configuration'] = [
     'title' => 'Settings',
     'description' => 'Integration of Chado contacts.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_contact_admin'),
-    'access arguments' => array('administer tripal contact'),
+    'page arguments' => ['tripal_contact_admin'],
+    'access arguments' => ['administer tripal contact'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
+    'weight' => 5,
+  ];
 
-  $items['admin/tripal/legacy/tripal_contact/help']= array(
+  $items['admin/tripal/legacy/tripal_contact/help'] = [
     'title' => 'Help',
     'description' => ('Help with the contact module.'),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_contact_help'),
-    'access arguments' => array('administer tripal contact'),
+    'page arguments' => ['tripal_contact_help'],
+    'access arguments' => ['administer tripal contact'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
-  $items['admin/tripal/legacy/tripal_contact/sync'] = array(
+  $items['admin/tripal/legacy/tripal_contact/sync'] = [
     'title' => ' Sync',
     'description' => 'Sync contacts in Chado with Drupal',
     'page callback' => 'drupal_get_form',
     // 'page arguments' => array('tripal_contact_sync_form'),
-    'page arguments' => array('chado_node_sync_form', 'tripal_contact', 'chado_contact'),
-    'access arguments' => array('administer tripal contact'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_contact',
+      'chado_contact',
+    ],
+    'access arguments' => ['administer tripal contact'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
+    'weight' => 0,
+  ];
 
-  $items['admin/tripal/legacy/tripal_contact/chado_contact_toc'] = array(
+  $items['admin/tripal/legacy/tripal_contact/chado_contact_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for contact nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_contact'),
-    'access arguments' => array('administer tripal contact'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_contact'],
+    'access arguments' => ['administer tripal contact'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_contact/contact/auto_name/%'] = array(
+  $items['admin/tripal/legacy/tripal_contact/contact/auto_name/%'] = [
     'page callback' => 'tripal_autocomplete_contact',
-    'page arguments' => array(6),
-    'access arguments' => array('administer tripal contact'),
+    'page arguments' => [6],
+    'access arguments' => ['administer tripal contact'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
@@ -117,14 +121,14 @@ function tripal_contact_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_contact_search_biological_data_views() {
-  return array(
-    'tripal_contact_user_contacts' => array(
+  return [
+    'tripal_contact_user_contacts' => [
       'machine_name' => 'tripal_contact_user_contacts',
       'human_name' => 'Contacts',
       'description' => 'Information about persons, institutes, groups, organizations, etc.',
-      'link' => 'chado/contact'
-    ),
-  );
+      'link' => 'chado/contact',
+    ],
+  ];
 }
 
 /**
@@ -139,53 +143,54 @@ function tripal_contact_search_biological_data_views() {
 function tripal_contact_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_contact' => array(
+  $items = [
+    'node__chado_contact' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_contact_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_contact_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_contact_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_contact_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_contact_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_contact_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_contact_relationships' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_contact_relationships' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_contact_relationships',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_contact_publications' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_contact_publications' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_contact_publications',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_contact_help' => array(
+    ],
+    'tripal_contact_help' => [
       'template' => 'tripal_contact_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
-    'tripal_contact_teaser' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_contact_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_contact_teaser',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
   return $items;
 }
+
 /**
  * Implement hook_permission().
  *
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_permission() {
-  return array(
+  return [
     /*
     'access chado_contact content' => array(
       'title' => t('View Contacts'),
@@ -208,7 +213,7 @@ function tripal_contact_permission() {
       'description' => t('Allow users to administer all contacts.'),
     ),
     */
-  );
+  ];
 }
 
 /**

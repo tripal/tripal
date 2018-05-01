@@ -1,22 +1,22 @@
 <?php
 
 function tripal_chado_install() {
-//   // The foreign key specification doesn't really add one to the
-//   // Drupal schema, it is just used internally, but we want one.
-//   db_query('
-//       ALTER TABLE {tripal_custom_tables}
-//       ADD CONSTRAINT tripal_custom_tables_fk1
-//       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-//       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-//   ');
+  //   // The foreign key specification doesn't really add one to the
+  //   // Drupal schema, it is just used internally, but we want one.
+  //   db_query('
+  //       ALTER TABLE {tripal_custom_tables}
+  //       ADD CONSTRAINT tripal_custom_tables_fk1
+  //       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
+  //       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+  //   ');
 
   if (chado_is_installed()) {
     // For an upgraded site we need to move some vocabulary terms over
     // to the new 'local' vocabulary:
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'local',
       'description' => variable_get('site_name', 'This site.'),
-    ));
+    ]);
 
     // Move the library properties out of the tripal database and into the
     // local database.
@@ -48,77 +48,78 @@ function tripal_chado_install() {
  */
 function tripal_chado_uninstall() {
 
-//   // Drop the foreign key between tripal_custom_tables and tripal_mviews
-//   // so that Drupal can then drop the tables
-//   db_query('
-//     ALTER TABLE {tripal_custom_tables}
-//     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
-//   ');
+  //   // Drop the foreign key between tripal_custom_tables and tripal_mviews
+  //   // so that Drupal can then drop the tables
+  //   db_query('
+  //     ALTER TABLE {tripal_custom_tables}
+  //     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
+  //   ');
 
   variable_set('tripal_chado_is_prepared', FALSE);
 }
 
-function tripal_chado_chado_semweb_schema(){
-  return array(
-    'fields' => array(
-      'chado_semweb_id' => array(
+function tripal_chado_chado_semweb_schema() {
+  return [
+    'fields' => [
+      'chado_semweb_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'chado_table' => array(
+        'not null' => TRUE,
+      ],
+      'chado_table' => [
         'type' => 'varchar',
         'length ' => 128,
-        'not null' => TRUE
-      ),
-      'chado_column' => array(
+        'not null' => TRUE,
+      ],
+      'chado_column' => [
         'type' => 'text',
         'length ' => 128,
-        'not null' => TRUE
-      ),
-      'cvterm_id' => array(
+        'not null' => TRUE,
+      ],
+      'cvterm_id' => [
         'type' => 'int',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'chado_semweb_id',
-    ),
-    'indexes' => array(
-      'chado_semweb_id_idx1' => array('cvterm_id'),
-      'chado_semweb_id_idx2' => array('chado_column'),
-      'chado_semweb_id_idx3' => array('chado_table'),
-    ),
-    'unique keys' => array(
-      'chado_semweb_uq1' => array('chado_table', 'chado_column'),
-    ),
-  );
+    ],
+    'indexes' => [
+      'chado_semweb_id_idx1' => ['cvterm_id'],
+      'chado_semweb_id_idx2' => ['chado_column'],
+      'chado_semweb_id_idx3' => ['chado_table'],
+    ],
+    'unique keys' => [
+      'chado_semweb_uq1' => ['chado_table', 'chado_column'],
+    ],
+  ];
 }
 
 /**
  * Table definition for the tripal_cv_obo table
+ *
  * @param $schema
  */
 function tripal_chado_tripal_cv_obo_schema() {
-  return array(
-    'fields' => array(
-      'obo_id' => array(
+  return [
+    'fields' => [
+      'obo_id' => [
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE
-      ),
-      'name' => array(
+        'not null' => TRUE,
+      ],
+      'name' => [
         'type' => 'varchar',
-        'length' => 255
-      ),
-      'path'  => array(
+        'length' => 255,
+      ],
+      'path' => [
         'type' => 'varchar',
-        'length' => 1024
-      ),
-    ),
-    'indexes' => array(
-      'tripal_cv_obo_idx1' => array('obo_id'),
-    ),
-    'primary key' => array('obo_id'),
-  );
+        'length' => 1024,
+      ],
+    ],
+    'indexes' => [
+      'tripal_cv_obo_idx1' => ['obo_id'],
+    ],
+    'primary key' => ['obo_id'],
+  ];
 }
 
 /**
@@ -148,8 +149,7 @@ function tripal_chado_schema() {
     try {
       tripal_chado_upgrade_v2_v3_pre_enable();
       variable_set('tripal_v2_upgrade_v3_check_chado', TRUE);
-    }
-    catch(Exception $e) {
+    } catch (Exception $e) {
       watchdog_exception('tripal_chado', $e);
     }
   }
@@ -193,41 +193,41 @@ function tripal_chado_schema() {
       // This makes an assumption about the name of the linking table.
       // @todo: Switch to chado_get_bundle_entity_table($bundle).
       $chado_entity_table = 'chado_' . $bundle_name;
-      $schema[$chado_entity_table] = array(
+      $schema[$chado_entity_table] = [
         'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle_name . '.',
-        'fields' => array(
-          'mapping_id' => array(
+        'fields' => [
+          'mapping_id' => [
             'type' => 'serial',
-            'not null' => TRUE
-          ),
-          'entity_id' => array(
+            'not null' => TRUE,
+          ],
+          'entity_id' => [
             'description' => 'The unique entity id.',
             'type' => 'int',
             'not null' => TRUE,
-          ),
-          'record_id' => array(
+          ],
+          'record_id' => [
             'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
             'type' => 'int',
             'not null' => TRUE,
-          ),
-          'nid' => array(
+          ],
+          'nid' => [
             'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
             'type' => 'int',
-          )
-        ),
-        'primary key' => array(
+          ],
+        ],
+        'primary key' => [
           'mapping_id',
-        ),
-        'indexes' => array(
-          'record_id' => array('record_id'),
-          'entity_id' => array('entity_id'),
-          'nid' => array('nid'),
-        ),
-        'unique keys' => array(
-          'table_record' => array('record_id'),
-          'entity_id' => array('entity_id'),
-        ),
-      );
+        ],
+        'indexes' => [
+          'record_id' => ['record_id'],
+          'entity_id' => ['entity_id'],
+          'nid' => ['nid'],
+        ],
+        'unique keys' => [
+          'table_record' => ['record_id'],
+          'entity_id' => ['entity_id'],
+        ],
+      ];
     }
   }
 
@@ -306,11 +306,13 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_obo_id_idx'")->fetchField()) {
       $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx RENAME TO tripal_cv_obo_obo_id_idx2";
     }
-    else if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
-      $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_obo_id_idx2";
-    }
     else {
-      $sql = "CREATE INDEX tripal_cv_obo_obo_id_idx2 ON tripal_cv_obo2 USING btree (obo_id)";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_tripal_cv_obo_idx1_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_obo_tripal_cv_obo_idx1_idx RENAME TO tripal_cv_obo_obo_id_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_cv_obo_obo_id_idx2 ON tripal_cv_obo2 USING btree (obo_id)";
+      }
     }
     db_query($sql);
     if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
@@ -342,6 +344,7 @@ function tripal_chado_upgrade_v2_v3_pre_enable() {
     db_query($sql);
   }
 }
+
 /**
  * This function should be executed only one time during upgrade of v2 to v3.
  */
@@ -404,6 +407,7 @@ function tripal_chado_upgrade_v2_v3_enable() {
     db_query($sql);
   }
 }
+
 /**
  * @section
  * Schema Definitions.
@@ -415,232 +419,235 @@ function tripal_chado_upgrade_v2_v3_enable() {
  */
 function tripal_chado_tripal_pub_import_schema() {
 
-  return array(
-    'fields' => array(
-      'pub_import_id' => array(
+  return [
+    'fields' => [
+      'pub_import_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'name' => array(
+        'not null' => TRUE,
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
-        'not null' => TRUE
-      ),
-      'criteria' => array(
+        'not null' => TRUE,
+      ],
+      'criteria' => [
         'type' => 'text',
         'size' => 'normal',
         'not null' => TRUE,
-        'description' => 'Contains a serialized PHP array containing the search criteria'
-      ),
-      'disabled'  => array(
+        'description' => 'Contains a serialized PHP array containing the search criteria',
+      ],
+      'disabled' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not NULL' => TRUE,
-        'default' => 0
-      ),
-      'do_contact'  => array(
+        'default' => 0,
+      ],
+      'do_contact' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not NULL' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array('pub_import_id'),
-    'indexes' => array(
-      'name' => array('name')
-    ),
-  );
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['pub_import_id'],
+    'indexes' => [
+      'name' => ['name'],
+    ],
+  ];
 }
+
 /**
  * Describes the Tripal Custom Tables (tripal_custom_tables) table
- * This keeps track of tables created by Tripal and stored in chado that may or may not
- * also be materialized views.
+ * This keeps track of tables created by Tripal and stored in chado that may or
+ * may not also be materialized views.
  *
  * @ingroup tripal
  */
 function tripal_chado_tripal_custom_tables_schema() {
-  return array(
-    'fields' => array(
-      'table_id' => array(
+  return [
+    'fields' => [
+      'table_id' => [
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not NULL' => TRUE
-      ),
-      'table_name' => array(
+        'not NULL' => TRUE,
+      ],
+      'table_name' => [
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
-      ),
-      'schema' => array(
+        'not NULL' => TRUE,
+      ],
+      'schema' => [
         'type' => 'text',
-        'not NULL' => TRUE
-      ),
-      'mview_id' => array(
+        'not NULL' => TRUE,
+      ],
+      'mview_id' => [
         'type' => 'int',
-        'not NULL' => FALSE
-      )
-    ),
-    'indexes' => array(
-      'table_id' => array('table_id'),
-    ),
-    'primary key' => array('table_id'),
-    'foreign keys' => array(
-      'tripal_mviews' => array(
+        'not NULL' => FALSE,
+      ],
+    ],
+    'indexes' => [
+      'table_id' => ['table_id'],
+    ],
+    'primary key' => ['table_id'],
+    'foreign keys' => [
+      'tripal_mviews' => [
         'table' => 'tripal_mviews',
-        'columns' => array(
-          'mview_id' => 'mview_id'
-        ),
-      ),
-    ),
-  );
+        'columns' => [
+          'mview_id' => 'mview_id',
+        ],
+      ],
+    ],
+  ];
 }
+
 /**
  * Describes the Tripal Materialized View (tripal_mviews) table
- * This table keeps track of all materialized views created by Tripal and stored in chado
+ * This table keeps track of all materialized views created by Tripal and
+ * stored in chado
  *
  * @ingroup tripal
  */
 function tripal_chado_tripal_mviews_schema() {
-  return array(
-    'fields' => array(
-      'mview_id' => array(
+  return [
+    'fields' => [
+      'mview_id' => [
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not NULL' => TRUE
-      ),
-      'name' => array(
+        'not NULL' => TRUE,
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
-      ),
-      'modulename' => array(
+        'not NULL' => TRUE,
+      ],
+      'modulename' => [
         'type' => 'varchar',
         'length' => 50,
         'not NULL' => TRUE,
-        'description' => 'The module name that provides the callback for this job'
-      ),
-      'mv_table' => array(
+        'description' => 'The module name that provides the callback for this job',
+      ],
+      'mv_table' => [
         'type' => 'varchar',
         'length' => 128,
-        'not NULL' => FALSE
-      ),
-      'mv_specs' => array(
+        'not NULL' => FALSE,
+      ],
+      'mv_specs' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-      'mv_schema' => array(
+        'not NULL' => FALSE,
+      ],
+      'mv_schema' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-      'indexed' => array(
+        'not NULL' => FALSE,
+      ],
+      'indexed' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-      'query' => array(
+        'not NULL' => FALSE,
+      ],
+      'query' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => TRUE
-      ),
-      'special_index' => array(
+        'not NULL' => TRUE,
+      ],
+      'special_index' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-      'last_update' => array(
+        'not NULL' => FALSE,
+      ],
+      'last_update' => [
         'type' => 'int',
         'not NULL' => FALSE,
-        'description' => 'UNIX integer time'
-      ),
-      'status'        => array(
+        'description' => 'UNIX integer time',
+      ],
+      'status' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-      'comment' => array(
+        'not NULL' => FALSE,
+      ],
+      'comment' => [
         'type' => 'text',
         'size' => 'normal',
-        'not NULL' => FALSE
-      ),
-    ),
-    'indexes' => array(
-      'mview_id' => array('mview_id')
-    ),
-    'unique keys' => array(
-      'mv_table' => array('mv_table'),
-      'mv_name' => array('name'),
-    ),
-    'primary key' => array('mview_id'),
-  );
+        'not NULL' => FALSE,
+      ],
+    ],
+    'indexes' => [
+      'mview_id' => ['mview_id'],
+    ],
+    'unique keys' => [
+      'mv_table' => ['mv_table'],
+      'mv_name' => ['name'],
+    ],
+    'primary key' => ['mview_id'],
+  ];
 }
 
 /**
- * Links Biological Data Entities to the chado "base" table the data is stored in.
- * This is where we would specify that a particular gene maps to the record in the
- * chado.feature table with a feature_id=2432;
+ * Links Biological Data Entities to the chado "base" table the data is stored
+ * in. This is where we would specify that a particular gene maps to the record
+ * in the chado.feature table with a feature_id=2432;
  */
 function tripal_chado_chado_bundle_schema() {
 
-  $schema = array(
+  $schema = [
     'description' => 'Describes how a bundle maps data to Chado',
-    'fields' => array(
-      'chado_bundle_id' => array(
+    'fields' => [
+      'chado_bundle_id' => [
         'description' => 'The primary identifier for this table.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'bundle_id' => array(
+      ],
+      'bundle_id' => [
         'description' => 'The unique entity id.',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'data_table' => array(
+      ],
+      'data_table' => [
         'description' => 'The table in Chado that this term services (e.g. feature, stock, library, etc.)',
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'type_linker_table' => array(
+      ],
+      'type_linker_table' => [
         'description' => 'If a linker table (e.g. cvterm/prop) is needed to uniquely identify a content type then that table name is provided here.',
         'type' => 'varchar',
         'length' => 128,
         'not null' => FALSE,
         'default' => '',
-      ),
-      'type_column' => array(
+      ],
+      'type_column' => [
         'description' => 'The column in the data table or linker table that distinguishes the data type. This must be in a foreign key relationship to the cvterm table.',
         'type' => 'varchar',
         'length' => 128,
         'not null' => FALSE,
         'default' => '',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'type_value' => array(
+      ],
+      'type_value' => [
         'description' => 'If a property table is used for a linker, then the value that should be matched to identify this content type is stored here.',
         'type' => 'text',
         'not null' => FALSE,
         'default' => '',
-      )
-    ),
-    'indexes' => array(
-      'bundle_id' => array('bundle_id'),
-      'data_table' => array('data_table'),
-    ),
-    'unique keys' => array(
-      'record' => array('bundle_id'),
-    ),
-    'primary key' => array('chado_bundle_id'),
-  );
+      ],
+    ],
+    'indexes' => [
+      'bundle_id' => ['bundle_id'],
+      'data_table' => ['data_table'],
+    ],
+    'unique keys' => [
+      'record' => ['bundle_id'],
+    ],
+    'primary key' => ['chado_bundle_id'],
+  ];
   return $schema;
 }
 
@@ -650,45 +657,46 @@ function tripal_chado_chado_bundle_schema() {
  */
 function tripal_chado_chado_cvterm_mapping_schema() {
 
-  $schema = array (
+  $schema = [
     'table' => 'chado_cvterm_mapping',
-    'fields' => array (
-      'mapping_id' => array(
+    'fields' => [
+      'mapping_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'cvterm_id' => array (
+        'not null' => TRUE,
+      ],
+      'cvterm_id' => [
         'type' => 'int',
-        'not null' => TRUE
-      ),
-      'chado_table' => array (
+        'not null' => TRUE,
+      ],
+      'chado_table' => [
         'type' => 'varchar',
         'length' => 128,
-        'not null' => TRUE
-      ),
-      'chado_field' => array (
+        'not null' => TRUE,
+      ],
+      'chado_field' => [
         'type' => 'varchar',
         'length' => 128,
-        'not null' => FALSE
-      ),
-    ),
-    'primary key' => array (
-      0 => 'mapping_id'
-    ),
-    'unique key' => array(
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => [
+      0 => 'mapping_id',
+    ],
+    'unique key' => [
       'cvterm_id',
-    ),
-    'indexes' => array(
-      'tripal_cvterm2table_idx1' => array('cvterm_id'),
-      'tripal_cvterm2table_idx2' => array('chado_table'),
-      'tripal_cvterm2table_idx3' => array('chado_table', 'chado_field'),
-    ),
-  );
+    ],
+    'indexes' => [
+      'tripal_cvterm2table_idx1' => ['cvterm_id'],
+      'tripal_cvterm2table_idx2' => ['chado_table'],
+      'tripal_cvterm2table_idx3' => ['chado_table', 'chado_field'],
+    ],
+  ];
   return $schema;
 }
 
 /**
- * Fixes the phase on the tripal_gffcds_temp table used for importing GFF files, and fixes the db.name term mapping.
+ * Fixes the phase on the tripal_gffcds_temp table used for importing GFF
+ * files, and fixes the db.name term mapping.
  *
  */
 function tripal_chado_update_7300() {
@@ -697,17 +705,16 @@ function tripal_chado_update_7300() {
       chado_query("ALTER TABLE {tripal_gffcds_temp} ALTER COLUMN phase DROP NOT NULL;");
     }
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:1048',
       'name' => 'Database ID',
       'cv_name' => 'EDAM',
       'definition' => 'An identifier of a biological or bioinformatics database.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('db', 'name', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not fix phase on tripal_gffcds_temp table: '. $error);
+    throw new DrupalUpdateException('Could not fix phase on tripal_gffcds_temp table: ' . $error);
   }
 }
 
@@ -721,13 +728,13 @@ function tripal_chado_update_7301() {
     $transaction = db_transaction();
     $query = db_select('chado_bundle', 'CB');
     $query->join('tripal_bundle', 'TB', 'TB.id = CB.bundle_id');
-    $query->fields('CB', array('data_table'));
-    $query->fields('TB', array('name'));
+    $query->fields('CB', ['data_table']);
+    $query->fields('TB', ['name']);
     $cbundles = $query->execute();
 
     // If the table for the bundle doesn't exist then create one, and then
     // move all of the records from the chado_entity table to it.
-    while($cbundle = $cbundles->fetchObject()) {
+    while ($cbundle = $cbundles->fetchObject()) {
       $cbundle_table = chado_get_bundle_entity_table($cbundle);
 
       if (!db_table_exists($cbundle_table)) {
@@ -742,53 +749,51 @@ function tripal_chado_update_7301() {
               INNER JOIN {tripal_entity} TE ON CE.entity_id = TE.id
             WHERE TE.bundle = :bundle
         ";
-        db_query($sql, array(':bundle' => $cbundle->name));
+        db_query($sql, [':bundle' => $cbundle->name]);
       }
     }
 
     // Now remove the chado_entity table.
     db_drop_table('chado_entity');
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
 /**
  * Corrections to the EDAM database.
  */
-function tripal_chado_update_7302(){
+function tripal_chado_update_7302() {
   try {
     // Add the term for the field.
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'format',
       'description' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. ',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
-    ));
-    tripal_insert_db(array(
+    ]);
+    tripal_insert_db([
       'name' => 'operation',
       'description' => 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
-    ));
-    tripal_insert_db(array(
+    ]);
+    tripal_insert_db([
       'name' => 'topic',
       'description' => 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
-    ));
+    ]);
     tripal_insert_cv(
       'EDAM',
       'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
     );
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -802,11 +807,10 @@ function tripal_chado_update_7303() {
       module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup');
       tripal_chado_fix_v1_3_custom_tables();
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -815,182 +819,181 @@ function tripal_chado_update_7303() {
  */
 function tripal_chado_update_7304() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'SIO:001080',
       'name' => 'vocabulary',
       'cv_name' => 'SIO',
       'definition' => 'A vocabulary is a collection of terms.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:2976',
       'name' => 'Protein sequence',
       'cv_name' => 'EDAM',
       'definition' => 'One or more protein sequences, possibly with associated annotation.',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'local:fmin',
       'name' => 'minimal boundary',
       'definition' => 'The leftmost, minimal boundary in the linear range ' .
-      'represented by the feature location. Sometimes this is called ' .
-      'start although this is confusing because it does not necessarily ' .
-      'represent the 5-prime coordinate.',
+        'represented by the feature location. Sometimes this is called ' .
+        'start although this is confusing because it does not necessarily ' .
+        'represent the 5-prime coordinate.',
       'cv_name' => 'local',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'local:fmax',
       'name' => 'maximal boundary',
       'definition' => 'The rightmost, maximal boundary in the linear range ' .
-      'represented by the featureloc. Sometimes this is called end although ' .
-      'this is confusing because it does not necessarily represent the ' .
-      '3-prime coordinate',
+        'represented by the featureloc. Sometimes this is called end although ' .
+        'this is confusing because it does not necessarily represent the ' .
+        '3-prime coordinate',
       'cv_name' => 'local',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:2336',
       'name' => 'Translation phase specification',
       'cv_name' => 'EDAM',
       'definition' => 'Phase for translation of DNA (0, 1 or 2) relative to a fragment of the coding sequence.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('featureloc', 'phase', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:3002',
       'name' => 'Annotation track',
       'cv_name' => 'EDAM',
       'definition' => 'Annotation of one particular positional feature on a ' .
         'biomolecular (typically genome) sequence, suitable for import and ' .
         'display in a genome browser. Synonym: Sequence annotation track.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('featureloc', 'srcfeature_id', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Adding missing cv/db details and cvterms.
  */
 function tripal_chado_update_7305() {
   try {
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'rdfs',
       'description' => 'Resource Description Framework Schema',
       'url' => 'https://www.w3.org/TR/rdf-schema/',
       'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_{accession}',
-    ));
+    ]);
     tripal_insert_cv('rdfs', 'Resource Description Framework Schema');
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'SO',
       'description' => 'The sequence ontology.',
       'url' => 'http://www.sequenceontology.org/',
       'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
-    ));
+    ]);
     tripal_insert_cv('sequence', 'The sequence ontology.');
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'TAXRANK',
       'description' => 'A vocabulary of taxonomic ranks (species, family, phylum, etc)',
       'url' => 'http://www.obofoundry.org/ontology/taxrank.html',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
-    ));
+    ]);
     tripal_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
       'url' => 'http://www.w3.org/ns/hydra/core',
       'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
-    ));
+    ]);
     tripal_insert_cv(
       'hydra',
       'A Vocabulary for Hypermedia-Driven Web APIs.'
     );
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'dc',
       'description' => 'DCMI Metadata Terms.',
       'url' => 'http://purl.org/dc/dcmitype/',
       'urlprefix' => 'http://purl.org/dc/terms/{accession}',
-    ));
+    ]);
     tripal_insert_cv(
       'dc',
       'DCMI Metadata Terms.'
     );
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'dc:Service',
       'name' => 'Service',
       'cv_name' => 'dc',
       'definition' => 'A system that provides one or more functions.',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:Collection',
       'name' => 'Collection',
       'cv_name' => 'hydra',
       'definition' => 'A collection holding references to a number of related resources.',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:member',
       'name' => 'member',
       'cv_name' => 'hydra',
       'definition' => 'A member of the collection',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:description',
       'name' => 'description',
       'cv_name' => 'hydra',
       'definition' => 'A description.',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:totalItems',
       'name' => 'totalItems',
       'cv_name' => 'hydra',
       'definition' => 'The total number of items referenced by a collection.',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:title',
       'name' => 'title',
       'cv_name' => 'hydra',
       'definition' => 'A title, often used along with a description.',
-    ));
-    $name = tripal_insert_cvterm(array(
+    ]);
+    $name = tripal_insert_cvterm([
       'id' => 'hydra:PartialCollectionView',
       'name' => 'PartialCollectionView',
       'cv_name' => 'hydra',
       'definition' => 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'schema:ItemPage',
       'name' => 'ItemPage',
       'cv_name' => 'schema',
       'definition' => 'A page devoted to a single item, such as a particular product or hotel.',
-    ));
+    ]);
     global $base_path;
 
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'null',
       'description' => 'No online database.',
       'url' => $base_path . 'cv/lookup/null',
-      'urlprefix' => $base_path. 'cv/lookup/{db}/{accession}',
-    ));
-    tripal_insert_db(array(
+      'urlprefix' => $base_path . 'cv/lookup/{db}/{accession}',
+    ]);
+    tripal_insert_db([
       'name' => 'local',
       'description' => 'Terms created for this site.',
       'url' => $base_path . 'cv/lookup/local',
       'urlprefix' => $base_path . 'cv/lookup/{db}/{accession}',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'local:rank',
       'name' => 'rank',
       'definition' => 'A taxonmic rank',
       'cv_name' => 'local',
-    ));
+    ]);
 
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -999,16 +1002,15 @@ function tripal_chado_update_7305() {
  */
 function tripal_chado_update_7306() {
   try {
-    $identifier = array(
-      'cv_id' => array('name' => 'EDAM'),
-      'name' => 'Map'
-    );
+    $identifier = [
+      'cv_id' => ['name' => 'EDAM'],
+      'name' => 'Map',
+    ];
     $cvterm = tripal_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1017,16 +1019,15 @@ function tripal_chado_update_7306() {
  */
 function tripal_chado_update_7307() {
   try {
-    $identifier = array(
-      'cv_id' => array('name' => 'tripal_pub'),
-      'name' => 'Publication'
-    );
+    $identifier = [
+      'cv_id' => ['name' => 'tripal_pub'],
+      'name' => 'Publication',
+    ];
     $cvterm = tripal_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1035,39 +1036,38 @@ function tripal_chado_update_7307() {
  */
 function tripal_chado_update_7308() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'IAO:0000129',
       'name' => 'version number',
       'cv_name' => 'IAO',
       'definition' => 'A version number is an ' .
-      'information content entity which is a sequence of characters ' .
-      'borne by part of each of a class of manufactured products or its ' .
-      'packaging and indicates its order within a set of other products ' .
-      'having the same name.',
-    ));
+        'information content entity which is a sequence of characters ' .
+        'borne by part of each of a class of manufactured products or its ' .
+        'packaging and indicates its order within a set of other products ' .
+        'having the same name.',
+    ]);
     tripal_associate_chado_semweb_term('analysis', 'sourceversion', $term);
     tripal_associate_chado_semweb_term(NULL, 'version', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'schema:name',
       'name' => 'name',
       'cv_name' => 'schema',
       'definition' => 'The name of the item.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('analysis', 'sourcename', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:2091',
       'name' => 'Accession',
       'cv_name' => 'EDAM',
       'definition' => 'A persistent (stable) and unique identifier, typically identifying an object (entry) from a database.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('dbxref', 'accession', $term);
 
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1076,12 +1076,12 @@ function tripal_chado_update_7308() {
  */
 function tripal_chado_update_7309() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'SIO:001166',
       'name' => 'annotation',
       'cv_name' => 'SIO',
       'definition' => 'An annotation is a written explanatory or critical description, or other in-context information (e.g., pattern, motif, link), that has been associated with data or other types of information.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('feature_cvterm', 'cvterm_id', $term);
     tripal_associate_chado_semweb_term('analysis_cvterm', 'cvterm_id', $term);
     tripal_associate_chado_semweb_term('cell_line_cvterm', 'cvterm_id', $term);
@@ -1094,57 +1094,57 @@ function tripal_chado_update_7309() {
     tripal_associate_chado_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
 
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'SIO:000281',
       'name' => 'negation',
       'cv_name' => 'SIO',
       'definition' => 'NOT is a logical operator in that has the value true if its operand is false.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('feature_cvterm', 'is_not', $term);
     tripal_associate_chado_semweb_term('analysis_cvterm', 'is_not', $term);
     tripal_associate_chado_semweb_term('organism_cvterm', 'is_not', $term);
     tripal_associate_chado_semweb_term('stock_cvterm', 'is_not', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Adds the 'OBCS' and rank order term.
  */
 function tripal_chado_update_7310() {
   try {
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'OBCS',
       'description' => 'Ontology of Biological and Clinical Statistics.',
       'url' => 'https://github.com/obcs/obcs',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
-    ));
+    ]);
     tripal_insert_cv(
-        'OBCS',
-        'Ontology of Biological and Clinical Statistics.'
+      'OBCS',
+      'Ontology of Biological and Clinical Statistics.'
     );
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'OBCS:0000117',
       'name' => 'rank order',
       'cv_name' => 'OBCS',
       'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term(NULL, 'rank', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Fix a mistake with the association of the term with featureloc.fmin.
  */
 function tripal_chado_update_7311() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'local:fmin',
       'name' => 'minimal boundary',
       'definition' => 'The leftmost, minimal boundary in the linear range ' .
@@ -1152,38 +1152,37 @@ function tripal_chado_update_7311() {
         'start although this is confusing because it does not necessarily ' .
         'represent the 5-prime coordinate.',
       'cv_name' => 'local',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Associates a local term with the pub.miniref column.
  */
 function tripal_chado_update_7312() {
   try {
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'local:miniref',
       'name' => 'Mini-ref',
       'definition' => 'A small in-house unique identifier for a publication.',
       'cv_name' => 'local',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('pub', 'miniref', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'schema:url',
       'name' => 'url',
       'cv_name' => 'schema',
       'definition' => 'URL of the item.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('db', 'url', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1192,14 +1191,13 @@ function tripal_chado_update_7312() {
  */
 function tripal_chado_update_7313() {
   try {
-    $cv = tripal_get_cv(array('name' => 'tripal_pub'));
+    $cv = tripal_get_cv(['name' => 'tripal_pub']);
     tripal_update_cvtermpath($cv->cv_id);
-    $cv = tripal_get_cv(array('name' => 'tripal_contact'));
+    $cv = tripal_get_cv(['name' => 'tripal_contact']);
     tripal_update_cvtermpath($cv->cv_id);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1208,36 +1206,35 @@ function tripal_chado_update_7313() {
  */
 function tripal_chado_update_7314() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'name' => 'Reference Feature',
       'definition' => 'A genomic or genetic feature on which other features are mapped.',
       'cv_name' => 'local',
       'is_relationship' => 0,
-      'db_name' => 'local'
-    ));
+      'db_name' => 'local',
+    ]);
     tripal_associate_chado_semweb_term('featurepos', 'map_feature_id', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Fixes a mistake with the schema:additionalType term.
  */
 function tripal_chado_update_7315() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'schema:additionalType',
       'name' => 'additionalType',
       'cv_name' => 'schema',
       'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.',
-    ));
-    chado_delete_record('cv', array('name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'));
-  }
-  catch (\PDOException $e) {
+    ]);
+    chado_delete_record('cv', ['name' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.']);
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1246,16 +1243,15 @@ function tripal_chado_update_7315() {
  */
 function tripal_chado_update_7316() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'SIO:001323',
       'name' => 'email address',
       'cv_name' => 'SIO',
       'definition' => 'an email address is an identifier to send mail to particular electronic mailbox.',
-    ));
-  }
-  catch (\PDOException $e) {
+    ]);
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1264,26 +1260,25 @@ function tripal_chado_update_7316() {
  */
 function tripal_chado_update_7317() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'OBI:0100026',
       'name' => 'organism',
       'cv_name' => 'obi',
       'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('biomaterial', 'taxon_id', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'local:contact',
       'name' => 'contact',
       'definition' => 'An entity (e.g. individual or organization) through ' .
-      'whom a person can gain access to information, favors, ' .
-      'influential people, and the like.',
+        'whom a person can gain access to information, favors, ' .
+        'influential people, and the like.',
       'cv_name' => 'local',
-    ));
+    ]);
     tripal_associate_chado_semweb_term('biomaterial', 'biosourceprovider_id', $term);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1292,23 +1287,22 @@ function tripal_chado_update_7317() {
  */
 function tripal_chado_update_7318() {
   try {
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'sep',
       'description' => 'Sample processing and separation techniques.',
       'url' => 'http://psidev.info/index.php?q=node/312',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
-    ));
-    tripal_insert_cv('sep','A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
-    $term = tripal_insert_cvterm(array(
+    ]);
+    tripal_insert_cv('sep', 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
+    $term = tripal_insert_cvterm([
       'id' => 'sep:00195',
       'name' => 'biological sample',
       'cv_name' => 'sep',
       'definition' => 'A biological sample analysed by a particular technology.',
-    ));
-  }
-  catch (\PDOException $e) {
+    ]);
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1318,16 +1312,15 @@ function tripal_chado_update_7318() {
  */
 function tripal_chado_update_7319() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'operation:2945',
       'name' => 'Analysis',
       'cv_name' => 'EDAM',
       'definition' => 'Apply analytical methods to existing data of a specific type.',
-    ));
-  }
-  catch (\PDOException $e) {
+    ]);
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1335,59 +1328,61 @@ function tripal_chado_update_7319() {
  * Adding Phylogenetic Tree content type.
  */
 function tripal_chado_update_7320() {
-    try {
+  try {
     // Associate the Analysis term with the analysis_id of the phylotree table.
-    $term = tripal_get_cvterm(array('id' => 'operation:2945'));
+    $term = tripal_get_cvterm(['id' => 'operation:2945']);
     tripal_associate_chado_semweb_term('phylotree', 'analysis_id', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = tripal_insert_cvterm([
       'id' => 'data:0872',
       'name' => 'Phylogenetic tree',
       'cv_name' => 'EDAM',
       'definition' => 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'data:3272',
       'name' => 'Species tree',
       'cv_name' => 'EDAM',
       'definition' => 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'data:3271',
       'name' => 'Gene tree',
       'cv_name' => 'EDAM',
       'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
-    ));
-    $term = tripal_insert_cvterm(array(
+    ]);
+    $term = tripal_insert_cvterm([
       'id' => 'operation:0567',
       'name' => 'Phylogenetic tree visualisation',
       'cv_name' => 'EDAM',
       'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
-    ));
+    ]);
 
     // Create the 'Phylogenetic tree' content type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'data',
       'accession' => '0872',
       'term_name' => 'Phylogenetic tree',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'phylotree',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'data',
+      'accession' => '0872',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
         throw new Exception($error['!message']);
       }
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 
@@ -1396,77 +1391,77 @@ function tripal_chado_update_7320() {
  */
 function tripal_chado_update_7321() {
   try {
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'TPUB',
       'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => '/cv/lookup/TPUB',
       'urlprefix' => '/cv/lookup/TPUB/{accession}',
-    ));
+    ]);
     tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'rdf',
       'description' => 'Resource Description Framework',
       'url' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns',
       'urlprefix' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-    ));
+    ]);
     tripal_insert_cv(
       'rdf',
       'Resource Description Framework'
     );
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'rdfs',
       'description' => 'Resource Description Framework Schema',
       'url' => 'https://www.w3.org/TR/rdf-schema/',
       'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
-    ));
-    tripal_insert_db(array(
+    ]);
+    tripal_insert_db([
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
       'url' => 'http://www.w3.org/ns/hydra/core',
       'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
-    ));
+    ]);
     tripal_insert_cv(
       'hydra',
       'A Vocabulary for Hypermedia-Driven Web APIs.'
     );
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Fixing the SWO, TPUB and TContact vocabulary URLs
  */
 function tripal_chado_update_7322() {
   try {
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'TPUB',
       'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => 'cv/lookup/TPUB',
       'urlprefix' => 'cv/lookup/TPUB/{accession}',
-    ));
-    tripal_insert_db(array(
+    ]);
+    tripal_insert_db([
       'name' => 'TContact',
       'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => 'cv/lookup/TContact',
       'urlprefix' => 'cv/lookup/TContact/{accession}',
-    ));
+    ]);
     tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
-    tripal_insert_db(array(
+    tripal_insert_db([
       'name' => 'SWO',
       'description' => 'Software Ontology',
       'url' => 'http://purl.obolibrary.org/obo/swo',
       'urlprefix' => 'http://www.ebi.ac.uk/swo/',
-    ));
-  }
-  catch (\PDOException $e) {
+    ]);
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Adding the db2cv materialized view.
  */
@@ -1482,12 +1477,12 @@ function tripal_chado_update_7323() {
     drupal_set_message('Populating materialized view cv_root_mview...');
     $mview_id = tripal_get_mview_id('cv_root_mview');
     tripal_populate_mview($mview_id);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
+
 /**
  * Updating the db2cv materialized view.
  */
@@ -1506,10 +1501,9 @@ function tripal_chado_update_7324() {
       $mview_id = tripal_get_mview_id('db2cv_mview');
       tripal_populate_mview($mview_id);
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not perform update: '. $error);
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
   }
 }
 

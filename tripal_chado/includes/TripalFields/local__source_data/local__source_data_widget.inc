@@ -1,11 +1,12 @@
 <?php
 
 class local__source_data_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Data Source';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('local__source_data');
+  public static $field_types = ['local__source_data'];
 
   /**
    *
@@ -35,55 +36,55 @@ class local__source_data_widget extends ChadoFieldWidget {
     // Set defaults based on incoming form state (happens on a failed form
     // submit).
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $sourcename = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourcename'];
       $sourceversion = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceversion'];
       $sourceuri = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri'];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => $sourcename,
-    );
-    $widget['chado-analysis__sourcename'] = array(
+    ];
+    $widget['chado-analysis__sourcename'] = [
       '#type' => 'value',
       '#value' => $sourcename,
-    );
-    $widget['chado-analysis__sourceversion'] = array(
+    ];
+    $widget['chado-analysis__sourceversion'] = [
       '#type' => 'value',
       '#value' => $sourceversion,
-    );
-    $widget['chado-analysis__sourceuri'] = array(
+    ];
+    $widget['chado-analysis__sourceuri'] = [
       '#type' => 'value',
       '#value' => $sourceuri,
-    );
+    ];
 
-    $widget['source_data'] = array(
+    $widget['source_data'] = [
       '#type' => 'fieldset',
       '#title' => $this->instance['label'],
       '#description' => $this->instance['description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
-    $widget['source_data']['sourcename'] = array(
+    ];
+    $widget['source_data']['sourcename'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source Name',
       '#description' => 'The name of the source where data was obtained for this analysis.',
       '#default_value' => $sourcename,
       '#required' => $element['#required'],
-    );
-    $widget['source_data']['sourceversion'] = array(
+    ];
+    $widget['source_data']['sourceversion'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source Version',
       '#description' => 'The version number of the data source (if applicable).',
       '#default_value' => $sourceversion,
-    );
-    $widget['source_data']['sourceuri'] = array(
+    ];
+    $widget['source_data']['sourceuri'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source URI',
       '#description' => 'The URI (e.g. web URL) where the source data can be retreived.',
       '#default_value' => $sourceuri,
-    );
+    ];
 
   }
 

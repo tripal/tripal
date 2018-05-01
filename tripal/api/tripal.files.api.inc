@@ -43,10 +43,10 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
     $data_dir = tripal_get_files_dir() . "/$module_name";
     if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
       $message = "Cannot create directory $data_dir. This module may not " .
-                 "behave correctly without this directory.  Please  create " .
-                 "the directory manually or fix the problem and reinstall.";
+        "behave correctly without this directory.  Please  create " .
+        "the directory manually or fix the problem and reinstall.";
       drupal_set_message(check_plain(t($message)), 'error');
-      tripal_report_error('tripal', TRIPAL_ERROR, $message, array());
+      tripal_report_error('tripal', TRIPAL_ERROR, $message, []);
     }
   }
   else {
@@ -59,7 +59,7 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
     if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
       $message = "Can not create directory $sub_dir. ";
       drupal_set_message(check_plain(t($message)), 'error');
-      tripal_report_error('tripal', TRIPAL_ERROR, $message, array());
+      tripal_report_error('tripal', TRIPAL_ERROR, $message, []);
     }
   }
 }
@@ -113,7 +113,7 @@ function tripal_get_files_dir($module_name = FALSE) {
  */
 function tripal_get_files_stream($module_name = FALSE) {
   // Build the directory path.
-  $stream =  'public://tripal';
+  $stream = 'public://tripal';
 
   // If a module name is provided then append the module directory.
   if ($module_name) {

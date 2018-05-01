@@ -2,7 +2,8 @@
 
 /**
  * @file
- * Handles install, uninstall, disable and enable functionality including database tables.
+ * Handles install, uninstall, disable and enable functionality including
+ *   database tables.
  *
  * @ingroup tripal_legacy_contact
  */
@@ -19,7 +20,7 @@ function tripal_contact_disable() {
   require_once("tripal_contact.views_default.inc");
   $views = tripal_contact_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -30,15 +31,15 @@ function tripal_contact_disable() {
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_contact'] = array(
+      $requirements ['tripal_contact'] = [
         'title' => "tripal_contact",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -57,7 +58,7 @@ function tripal_contact_install() {
   // Add loading of the the tripal contact ontology to the job queue.
   $obo_path = '{tripal_contact}/files/tcontact.obo';
   $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
+  tripal_submit_obo_job(['obo_id' => $obo_id]);
 
   // Add cvterms for relationship types.
   tripal_contact_add_cvs();
@@ -107,8 +108,8 @@ function tripal_contact_add_cvs() {
 
   // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
   tripal_insert_cv(
-   'tripal_contact',
-   'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+    'tripal_contact',
+    'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
   );
 
   // add the cv for contact relationships
@@ -134,35 +135,35 @@ function tripal_contact_add_cvterms() {
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_schema() {
-  $schema['chado_contact'] = array(
-    'fields' => array(
-      'vid' => array(
+  $schema['chado_contact'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'nid' => array(
+        'default' => 0,
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'contact_id' => array(
+        'default' => 0,
+      ],
+      'contact_id' => [
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
-      )
-    ),
-    'indexes' => array(
-      'contact_id' => array('contact_id')
-    ),
-    'unique keys' => array(
-      'nid_vid' => array('nid', 'vid'),
-      'vid' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+        'default' => 0,
+      ],
+    ],
+    'indexes' => [
+      'contact_id' => ['contact_id'],
+    ],
+    'unique keys' => [
+      'nid_vid' => ['nid', 'vid'],
+      'vid' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
   return $schema;
 }
 

@@ -21,11 +21,11 @@ function tripal_extensions_form($form, &$form_state = NULL) {
   $tab = array_key_exists('tab', $_GET) ? $_GET['tab'] : '';
 
   // Get any filters by categories.
-  $filters = array();
+  $filters = [];
   if (array_key_exists('values', $form_state)) {
     foreach ($form_state['values'] as $key => $value) {
       // Get the category to be filtered on.
-      $matches = array();
+      $matches = [];
       if (preg_match('/^categories-(.*?)$/', $key, $matches)) {
         if ($value == 'any') {
           continue;
@@ -36,17 +36,17 @@ function tripal_extensions_form($form, &$form_state = NULL) {
   }
 
   // Parse the items into an array indexed by type and compatible versions.
-  $extensions = array();
-  $types = array();
-  $type_ids = array();
-  $categories = array();
-  $cvs = array();
-  $tvs = array();
+  $extensions = [];
+  $types = [];
+  $type_ids = [];
+  $categories = [];
+  $cvs = [];
+  $tvs = [];
   foreach ($xml->channel->item as $extension) {
     // Get the type of extension, convert that into a machine-readable name,
     // and build the array of types.
     $type = (string) $extension->category;
-    $type_id = preg_replace('/[^\w]/','_', strtolower($type));
+    $type_id = preg_replace('/[^\w]/', '_', strtolower($type));
     $type_ids[$type] = $type_id;
     if (!in_array($type_id, $types)) {
       $types[$type] = 1;
@@ -63,10 +63,10 @@ function tripal_extensions_form($form, &$form_state = NULL) {
     // Tripal versions, then the chado versions and organize the elements
     // accordintly.
     $tvs_temp = preg_split('/, /', (string) $extension->children($namespace)->tripal_version);
-    foreach($tvs_temp as $tv) {
+    foreach ($tvs_temp as $tv) {
       $tvs[$tv] = 1;
       $cvs_temp = preg_split('/, /', (string) $extension->children($namespace)->chado_version);
-      foreach($cvs_temp as $cv) {
+      foreach ($cvs_temp as $cv) {
         $cvs[$cv] = 1;
 
         // Keep track of the categories this item has been assigned.
@@ -83,7 +83,7 @@ function tripal_extensions_form($form, &$form_state = NULL) {
         }
 
         // Index the items by type, tripal version and chado version.
-        $item = array();
+        $item = [];
         foreach ($extension->children() as $child) {
           $item[$child->getName()] = (string) $child;
         }
@@ -132,16 +132,16 @@ function tripal_extensions_form($form, &$form_state = NULL) {
   }
 
   // Add the instructions.
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#type' => 'item',
     '#markup' => t('This page will help you find extensions that are available
       for Tripal.  Select an extension type from the vertical tabs. The content
       of this page is constructed from an RSS feed provided by tripal.info.
       There may be no content if the tripal.info site is unavailable. The RSS
-      feed will be cached for one hour.')
-  );
+      feed will be cached for one hour.'),
+  ];
   // Add the filters fieldset.
-  $form['filters'] = array(
+  $form['filters'] = [
     '#type' => 'fieldset',
     '#title' => 'Filters',
     '#description' => t('You can filter which extensions are visible by
@@ -150,7 +150,7 @@ function tripal_extensions_form($form, &$form_state = NULL) {
       and Chado verions are shown.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-  );
+  ];
   $summary_message = 'Currently showing extensions compatible with ';
   if ($tripal_version != 'any' and $chado_version != 'any') {
     $summary_message .= "<strong>Tripal $tripal_version</strong> and <strong>Chado $chado_version</strong>.";
@@ -164,75 +164,75 @@ function tripal_extensions_form($form, &$form_state = NULL) {
   elseif ($tripal_version == 'any' and $chado_version == 'any') {
     $summary_message .= "<strong>any Tripal</strong> version and <strong>any Chado</strong> version.";
   }
-  $form['filter_summary'] = array(
+  $form['filter_summary'] = [
     '#type' => 'item',
     '#markup' => $summary_message,
-  );
+  ];
 
   // Add the Tripal version select box.
-  $options = array();
+  $options = [];
   $options['any'] = '--Any--';
   foreach ($tvs as $tv) {
     $options[$tv] = $tv;
   }
-  $form['filters']['tv'] = array(
+  $form['filters']['tv'] = [
     '#type' => 'select',
     '#title' => 'Tripal',
     '#options' => $options,
     '#default_value' => $tripal_version,
-    '#ajax'  => array(
+    '#ajax' => [
       'callback' => "tripal_extensions_form_ajax_callback",
-      'wrapper'  => 'tripal_extensions',
-      'effect'   => 'fade',
-      'method'   => 'replace',
-    ),
+      'wrapper' => 'tripal_extensions',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ],
     '#prefix' => '<div style="float: left;">',
-    '#suffix' => '</div>'
-  );
+    '#suffix' => '</div>',
+  ];
 
   // Add the Chado version select box.
-  $options = array();
+  $options = [];
   $options['any'] = '--Any--';
   foreach ($cvs as $cv) {
     $options[$cv] = $cv;
   }
-  $form['filters']['cv'] = array(
+  $form['filters']['cv'] = [
     '#type' => 'select',
     '#title' => 'Chado',
     '#options' => $options,
     '#default_value' => $chado_version,
-    '#ajax'  => array(
+    '#ajax' => [
       'callback' => "tripal_extensions_form_ajax_callback",
-      'wrapper'  => 'tripal_extensions',
-      'effect'   => 'fade',
-      'method'   => 'replace',
-    ),
+      'wrapper' => 'tripal_extensions',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ],
     '#prefix' => '<div style="float: left; padding-left: 10px">',
-    '#suffix' => '</div>'
-  );
+    '#suffix' => '</div>',
+  ];
 
   // Add the vertical tabs
-  $form['extensions'] = array(
+  $form['extensions'] = [
     '#type' => 'vertical_tabs',
     '#default_tab' => $tab,
-  );
+  ];
 
   // Add the fieldsets for each type
   foreach ($types as $type) {
-    $form[$type] = array(
-      '#id'          => $type_ids[$type],
-      '#type'        => 'fieldset',
-      '#title'       => $type . 's',
-      '#collapsed'   => TRUE,
+    $form[$type] = [
+      '#id' => $type_ids[$type],
+      '#type' => 'fieldset',
+      '#title' => $type . 's',
+      '#collapsed' => TRUE,
       '#collapsible' => TRUE,
-      '#group'       => 'extensions',
-    );
+      '#group' => 'extensions',
+    ];
   }
 
   // Iterate through all of the extensions and add them to the form.
-  $compatible_extensions = array();
+  $compatible_extensions = [];
   if (array_key_exists($tripal_version, $extensions) and
-      array_key_exists($chado_version, $extensions[$tripal_version])) {
+    array_key_exists($chado_version, $extensions[$tripal_version])) {
     $compatible_extensions = $extensions[$tripal_version][$chado_version];
   }
   tripal_extension_form_add_extensions($form, $form_state,
@@ -242,10 +242,10 @@ function tripal_extensions_form($form, &$form_state = NULL) {
 
   foreach ($types as $type) {
     if (count(element_children($form[$type])) == 0) {
-      $form[$type]['empty'] = array(
+      $form[$type]['empty'] = [
         '#type' => 'item',
         '#markup' => '<strong>There are no matching ' . strtolower($type) . '(s).</strong>',
-      );
+      ];
     }
   }
 
@@ -262,8 +262,8 @@ function tripal_extensions_form($form, &$form_state = NULL) {
  * function.
  */
 function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
-  $categories, $tripal_version, $chado_version, $my_tripal_version,
-  $my_chado_version, $type_ids, $namespace, $filters) {
+                                              $categories, $tripal_version, $chado_version, $my_tripal_version,
+                                              $my_chado_version, $type_ids, $namespace, $filters) {
 
   // Iterate through the extensions. We will add a pager for
   // each type of extension, and display only those that should appear
@@ -273,15 +273,15 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
     $total_items = count($extensions);
 
     // Indicate how many matching extensions were found
-    $form[$type]['total_found'] = array(
+    $form[$type]['total_found'] = [
       '#type' => 'item',
       '#markup' => '<strong>Found ' . $total_items . ' matching ' . strtolower($type) . '(s)</strong>',
-    );
+    ];
 
     // Add the category select box;
     $cats = array_keys($categories[$tripal_version][$chado_version][$type]);
     sort($cats);
-    $options = array();
+    $options = [];
     $options['any'] = '--Any--';
     foreach ($cats as $cat) {
       $options[$cat] = $cat;
@@ -295,18 +295,18 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
     if (array_key_exists('values', $form_state) and array_key_exists('categories-' . $type_ids[$type], $form_state['values'])) {
       $default_filter = $form_state['values']['categories-' . $type_ids[$type]];
     }
-    $form[$type]['filters']['categories-' . $type_ids[$type]] = array(
+    $form[$type]['filters']['categories-' . $type_ids[$type]] = [
       '#type' => 'select',
       '#title' => 'Filter by Category',
       '#options' => $options,
       '#default_value' => $default_filter,
-      '#ajax'  => array(
+      '#ajax' => [
         'callback' => "tripal_extensions_form_ajax_callback",
-        'wrapper'  => 'tripal_extensions',
-        'effect'   => 'fade',
-        'method'   => 'replace',
-      ),
-    );
+        'wrapper' => 'tripal_extensions',
+        'effect' => 'fade',
+        'method' => 'replace',
+      ],
+    ];
 
     // Initialize pager and gets current page
     $num_per_page = 5;
@@ -314,7 +314,7 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
 
     // Gets first record and last record to show
     $start = ($page) * $num_per_page;
-    $end = ($start + $num_per_page < $total_items)? $start + $num_per_page : $total_items;
+    $end = ($start + $num_per_page < $total_items) ? $start + $num_per_page : $total_items;
     // Iterate through each of the elements and add them to the form if
     // they are within the page
     $extension_index = 0;
@@ -350,8 +350,8 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
       switch ($type) {
         case 'Bulk Loader Template':
           if (module_exists('tripal_bulk_loader')) {
-            $blk_id = db_select('tripal_bulk_loader_template' ,'tblt')
-              ->fields('tblt', array('template_id'))
+            $blk_id = db_select('tripal_bulk_loader_template', 'tblt')
+              ->fields('tblt', ['template_id'])
               ->condition('name', $extension['title'])
               ->execute()
               ->fetchField();
@@ -368,7 +368,7 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
           break;
         case 'Extension Module':
           if (array_key_exists('drupal_project', $extension[$namespace]) and
-              module_exists($extension[$namespace]['drupal_project'])) {
+            module_exists($extension[$namespace]['drupal_project'])) {
             $is_installed = '<li>A module with this name is already installed.</li>';
           }
           break;
@@ -385,7 +385,7 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
           // Since it doesn't have a drupal project name is it in a sandbox?
           if (!preg_match('/www.drupal.org\/sandbox/', $extension[$namespace]['home_page'])) {
             $project = t("<li>This module does not appear to be available as a " .
-              "full Drupal project and thus cannot ".
+              "full Drupal project and thus cannot " .
               "be downloaded here. You may have to manually download it.</li>");
           }
           else {
@@ -407,10 +407,10 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
 
       // If the user click's the button to import the extension then we
       // need the item in the submit function so we can process the import.
-      $form[$type]['extension-' . $guid] = array(
+      $form[$type]['extension-' . $guid] = [
         '#type' => 'value',
         '#value' => $extension,
-      );
+      ];
 
       $notices = '';
       if ($is_installed) {
@@ -419,12 +419,12 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
       $warnings = '';
       if ($project or $other) {
         $warnings = '<div class="messages warning"><ul>' .
-          $project .  ' ' .
+          $project . ' ' .
           $other . '</ul></div>';
       }
       $errors = '';
       if ($incompatible) {
-        $errors = '<div class="messages error"><ul>' . $incompatible .  '</ul></div>';
+        $errors = '<div class="messages error"><ul>' . $incompatible . '</ul></div>';
       }
 
       $state = '';
@@ -433,51 +433,51 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
       }
 
       // Create the form elements that we'll later theme into tables.
-      $form[$type][$guid]['header'] = array(
+      $form[$type][$guid]['header'] = [
         '#markup' => l($extension['title'], $extension['link']),
-      );
-      $form[$type][$guid]['details'] = array(
+      ];
+      $form[$type][$guid]['details'] = [
         '#markup' => "" .
-        "<strong>Type:</strong> " . $type . "</br>" .
-        "<strong>Categories: </strong>" . $extension[$namespace]['categories'] . "</br>" .
-        "<strong>Authors: </strong>" . $extension[$namespace]['authors'] . "</br>" .
-        $state .
-        "<strong>Chado compatible versions: </strong>" . $extension[$namespace]['chado_version'] . "</br>" .
-        "<strong>Tripal compatible versions: </strong>" . $extension[$namespace]['tripal_version'] . "</br>" .
-        $home_page .
-        "<strong>tripal.info Page: </strong>" . l($extension['link'], $extension['link']) . "</br>" .
-        $notices .
-        $warnings .
-        $errors .
-        "<p>" . $extension['description'] . "</p>",
-      );
+          "<strong>Type:</strong> " . $type . "</br>" .
+          "<strong>Categories: </strong>" . $extension[$namespace]['categories'] . "</br>" .
+          "<strong>Authors: </strong>" . $extension[$namespace]['authors'] . "</br>" .
+          $state .
+          "<strong>Chado compatible versions: </strong>" . $extension[$namespace]['chado_version'] . "</br>" .
+          "<strong>Tripal compatible versions: </strong>" . $extension[$namespace]['tripal_version'] . "</br>" .
+          $home_page .
+          "<strong>tripal.info Page: </strong>" . l($extension['link'], $extension['link']) . "</br>" .
+          $notices .
+          $warnings .
+          $errors .
+          "<p>" . $extension['description'] . "</p>",
+      ];
       // Add an import button to each of types that can support import.
       switch ($type) {
         case 'Bulk Loader Template':
           if (!$incompatible and !$is_installed and !$project) {
-            $form[$type][$guid]['import'] = array(
+            $form[$type][$guid]['import'] = [
               '#type' => 'submit',
               '#value' => "Import Loader",
               '#name' => "import-" . $guid,
-            );
+            ];
           }
           break;
         case 'Materialized View':
           if (!$incompatible and !$is_installed and !$project) {
-            $form[$type][$guid]['import'] = array(
+            $form[$type][$guid]['import'] = [
               '#type' => 'submit',
               '#value' => "Import MView",
               '#name' => "import-" . $guid,
-            );
+            ];
           }
           break;
         case 'Extension Module':
           if (!$incompatible and !$is_installed and !$project) {
-            $form[$type][$guid]['import'] = array(
+            $form[$type][$guid]['import'] = [
               '#type' => 'submit',
               '#value' => "Download Module",
               '#name' => "import-" . $guid,
-            );
+            ];
           }
           break;
         default:
@@ -488,16 +488,16 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
     }
 
     // Now create and theme the pager.
-    $pager = array(
-      'tags' => array(),
+    $pager = [
+      'tags' => [],
       'element' => $type_index,
-      'parameters' => array(
+      'parameters' => [
         'tab' => $type_ids[$type],
         'cv' => $chado_version,
         'tv' => $tripal_version,
-      ),
+      ],
       'quantity' => $num_per_page,
-    );
+    ];
 
     // now add the category filters to the params array
     foreach ($filters as $filter_id => $value) {
@@ -508,12 +508,12 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
     // "system/ajax", so we need to reset that
     $pager = theme('pager', $pager);
     global $base_path;
-    $pager = str_replace($base_path . "system/ajax", "", $pager) ;
+    $pager = str_replace($base_path . "system/ajax", "", $pager);
 
-    $form[$type]['pager'] = array(
+    $form[$type]['pager'] = [
       '#type' => 'item',
       '#markup' => $pager,
-    );
+    ];
     $type_index++;
   }
 }
@@ -534,21 +534,21 @@ function tripal_extensions_form_submit($form, &$form_state) {
     $type = $extension['category'];
     switch ($type) {
       case 'Bulk Loader Template':
-        $options = array(
+        $options = [
           'template_name' => $extension['title'],
           'template_array' => $extension[$namespace]['bulkldr_export'],
           'strict' => TRUE,
-        );
-        $errors = array();
-        $warnings = array();
+        ];
+        $errors = [];
+        $warnings = [];
         $success = tripal_insert_bulk_loader_template($options, $errors, $warnings);
         if ($success) {
           drupal_set_message("Bulk loader succesfully added.");
         }
         else {
-          drupal_set_message("Error importing this bulk loader.",  'error');
+          drupal_set_message("Error importing this bulk loader.", 'error');
           if (count($errors) > 0) {
-            foreach($errors as $field => $message) {
+            foreach ($errors as $field => $message) {
               drupal_set_message($message, 'error');
             }
           }
@@ -564,7 +564,7 @@ function tripal_extensions_form_submit($form, &$form_state) {
         // TODO: security issue!! Before using 'eval' on this string
         // we should make sure the array is valid and there is no hidden
         // PHP code.
-        $schema_array = array();
+        $schema_array = [];
         $success = eval("\$schema_array = $mview_schema;");
         $error = chado_validate_custom_table_schema($schema_array);
         if ($error) {
@@ -596,8 +596,7 @@ function tripal_extensions_form_submit($form, &$form_state) {
               $directory = _update_manager_extract_directory();
               try {
                 $archive = update_manager_archive_extract($local_cache, $directory);
-              }
-              catch (Exception $e) {
+              } catch (Exception $e) {
                 drupal_set_message('Cannot extract the file. Please check
                   permissions in the modules directory', 'error');
                 return;
@@ -611,23 +610,22 @@ function tripal_extensions_form_submit($form, &$form_state) {
               $project_location = $directory . '/' . $project;
               try {
                 $updater = Updater::factory($project_location);
-              }
-              catch (Exception $e) {
+              } catch (Exception $e) {
                 drupal_set_message($e->getMessage(), 'error');
                 return;
               }
               $project_real_location = drupal_realpath($project_location);
-              $arguments = array(
+              $arguments = [
                 'project' => $project,
                 'updater_name' => get_class($updater),
                 'local_url' => $project_real_location,
-              );
+              ];
               module_load_include('inc', 'update', 'update.authorize');
               $filetransfer = new FileTransferLocal(DRUPAL_ROOT);
-              call_user_func_array('update_authorize_run_install', array_merge(array($filetransfer), $arguments));
+              call_user_func_array('update_authorize_run_install', array_merge([$filetransfer], $arguments));
 
               drupal_set_message('It appears the module was downloaded and
-                extracted. You can now ' . l('enable this module'. 'admin/modules') . '.');
+                extracted. You can now ' . l('enable this module' . 'admin/modules') . '.');
             }
           }
         }
@@ -650,36 +648,36 @@ function tripal_extensions_form_submit($form, &$form_state) {
  * @param $variables
  */
 function theme_tripal_extensions_form_tables($variables) {
-   $element = $variables['element'];
-   $headers = array(
-     array(
-       'data' => drupal_render($element['header']),
-       'colspan' => 2,
-     )
-   );
-   $button = array_key_exists('import', $element) ? drupal_render($element['import']) : '&nbsp;';
-   $rows = array(
-     array(
-       array(
-         'data' => drupal_render($element['details']),
-       ),
-       array(
-         'data' => $button,
-         'width' => '5%',
-         'align' => 'right',
-       ),
-     ),
-   );
+  $element = $variables['element'];
+  $headers = [
+    [
+      'data' => drupal_render($element['header']),
+      'colspan' => 2,
+    ],
+  ];
+  $button = array_key_exists('import', $element) ? drupal_render($element['import']) : '&nbsp;';
+  $rows = [
+    [
+      [
+        'data' => drupal_render($element['details']),
+      ],
+      [
+        'data' => $button,
+        'width' => '5%',
+        'align' => 'right',
+      ],
+    ],
+  ];
 
-   $table = array(
-     'header' => $headers,
-     'rows' => $rows,
-     'attributes' => array(),
-     'sticky' => FALSE,
-     'caption' => '',
-     'colgroups' => array(),
-     'empty' => '',
-   );
+  $table = [
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => [],
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => [],
+    'empty' => '',
+  ];
 
   return theme_table($table);
 }
@@ -750,13 +748,13 @@ function tripal_extensions_get_latest_module_version($project_name) {
 
     // Convert the 'extra' part to a numeric value that will let us compare
     // the ranks of the release versions.
-    $extra_rank = array(
+    $extra_rank = [
       'unstable' => 1,
       'alpha' => 2,
       'beta' => 3,
       'rc' => 4,
-    );
-    $matches = array();
+    ];
+    $matches = [];
     $this_extra = 0;
     if (preg_match('/^(.*?)(\d+)$/', $release['field_release_version_extra'], $matches)) {
       $this_extra = $extra_rank[$matches[1]] . "." . $matches[2];

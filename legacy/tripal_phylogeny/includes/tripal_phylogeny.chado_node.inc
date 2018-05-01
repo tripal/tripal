@@ -14,30 +14,30 @@
  * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_node_info() {
-  $nodes = array();
-  $nodes['chado_phylotree'] = array(
-    'name'        => t('Phylotree'),
-    'base'        => 'chado_phylotree',
+  $nodes = [];
+  $nodes['chado_phylotree'] = [
+    'name' => t('Phylotree'),
+    'base' => 'chado_phylotree',
     'description' => t('A phylotree from the chado database'),
-    'has_title'   => TRUE,
-    'locked'      => TRUE,
-    'chado_node_api' => array(
+    'has_title' => TRUE,
+    'locked' => TRUE,
+    'chado_node_api' => [
       'base_table' => 'phylotree',
       'hook_prefix' => 'chado_phylotree',
-      'record_type_title' => array(
+      'record_type_title' => [
         'singular' => t('Phylotree'),
-        'plural' => t('Phylotrees')
-      ),
+        'plural' => t('Phylotrees'),
+      ],
 
       /* sync_filters: tripal is hardcoded to look for this
        sync_filter settings: type_id and organism_id. (phylotree does
        not have organism_id but need to set it false anyways. */
-      'sync_filters' => array(
+      'sync_filters' => [
         'type_id' => FALSE,
-        'organism_id' => FALSE
-      ),
-    )
-  );
+        'organism_id' => FALSE,
+      ],
+    ],
+  ];
   return $nodes;
 }
 
@@ -49,59 +49,61 @@ function tripal_phylogeny_node_info() {
  */
 function tripal_phylogeny_node_view($node, $view_mode, $langcode) {
 
-  if($node->type != 'chado_phylotree') { return; }
+  if ($node->type != 'chado_phylotree') {
+    return;
+  }
 
-  switch($view_mode) {
-  case 'full':
-    $node->content['tripal_phylogeny_base'] = array(
-      '#theme' => 'tripal_phylogeny_base',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'base',
-      '#tripal_toc_title' => 'Overview',
-      '#weight' => -100,
-    );
-    $node->content['tripal_phylogeny_phylogram'] = array(
-      '#theme' => 'tripal_phylogeny_phylogram',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'phylotree_phylogram',
-      '#tripal_toc_title' => 'Phylogram',
-      '#weight' => -90,
-    );
-    $node->content['tripal_phylogeny_taxonomic_tree'] = array(
-      '#theme' => 'tripal_phylogeny_taxonomic_tree',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'tripal_phylogeny_taxonomic_tree',
-      '#tripal_toc_title' => 'Taxonomic Tree',
-      '#weight' => -80,
-    );
-    $node->content['tripal_phylogeny_organisms'] = array(
-      '#theme' => 'tripal_phylogeny_organisms',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'phylotree_organisms',
-      '#tripal_toc_title' => 'Organisms',
-      '#weight' => -70,
-    );
-    $node->content['tripal_phylogeny_references'] = array(
-      '#theme' => 'tripal_phylogeny_references',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'phylotree_references',
-      '#tripal_toc_title' => 'Cross References',
-    );
-     $node->content['tripal_phylogeny_analysis'] = array(
-      '#theme' => 'tripal_phylogeny_analysis',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'phylotree_analysis',
-      '#tripal_toc_title' => 'Analysis',
-    );
-    break;
+  switch ($view_mode) {
+    case 'full':
+      $node->content['tripal_phylogeny_base'] = [
+        '#theme' => 'tripal_phylogeny_base',
+        '#node' => $node,
+        '#tripal_toc_id' => 'base',
+        '#tripal_toc_title' => 'Overview',
+        '#weight' => -100,
+      ];
+      $node->content['tripal_phylogeny_phylogram'] = [
+        '#theme' => 'tripal_phylogeny_phylogram',
+        '#node' => $node,
+        '#tripal_toc_id' => 'phylotree_phylogram',
+        '#tripal_toc_title' => 'Phylogram',
+        '#weight' => -90,
+      ];
+      $node->content['tripal_phylogeny_taxonomic_tree'] = [
+        '#theme' => 'tripal_phylogeny_taxonomic_tree',
+        '#node' => $node,
+        '#tripal_toc_id' => 'tripal_phylogeny_taxonomic_tree',
+        '#tripal_toc_title' => 'Taxonomic Tree',
+        '#weight' => -80,
+      ];
+      $node->content['tripal_phylogeny_organisms'] = [
+        '#theme' => 'tripal_phylogeny_organisms',
+        '#node' => $node,
+        '#tripal_toc_id' => 'phylotree_organisms',
+        '#tripal_toc_title' => 'Organisms',
+        '#weight' => -70,
+      ];
+      $node->content['tripal_phylogeny_references'] = [
+        '#theme' => 'tripal_phylogeny_references',
+        '#node' => $node,
+        '#tripal_toc_id' => 'phylotree_references',
+        '#tripal_toc_title' => 'Cross References',
+      ];
+      $node->content['tripal_phylogeny_analysis'] = [
+        '#theme' => 'tripal_phylogeny_analysis',
+        '#node' => $node,
+        '#tripal_toc_id' => 'phylotree_analysis',
+        '#tripal_toc_title' => 'Analysis',
+      ];
+      break;
 
-  case 'teaser':
-    $node->content['tripal_phylogeny_teaser'] = array(
-      '#theme' => 'tripal_phylogeny_teaser',
-      '#node' => $node,
-    );
-    break;
-    }
+    case 'teaser':
+      $node->content['tripal_phylogeny_teaser'] = [
+        '#theme' => 'tripal_phylogeny_teaser',
+        '#node' => $node,
+      ];
+      break;
+  }
 }
 
 /**
@@ -111,7 +113,7 @@ function tripal_phylogeny_node_view($node, $view_mode, $langcode) {
  */
 function chado_phylotree_form($node, &$form_state) {
 
-  $form = array();
+  $form = [];
 
   // Default values can come in the following ways:
   //
@@ -122,30 +124,30 @@ function chado_phylotree_form($node, &$form_state) {
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
-  $phylotree     = null;
-  $phylotree_id  = null;
-  $tree_name     = '';
-  $leaf_type     = '';
-  $analysis_id   = '';
-  $dbxref        = '';
-  $comment       = '';
+  $phylotree = NULL;
+  $phylotree_id = NULL;
+  $tree_name = '';
+  $leaf_type = '';
+  $analysis_id = '';
+  $dbxref = '';
+  $comment = '';
   $tree_required = TRUE;
-  $tree_file     = '';
-  $name_re      = '';
+  $tree_file = '';
+  $name_re = '';
   $match = '';
 
   // If we are editing an existing node then the phylotree is already part of the node.
   if (property_exists($node, 'phylotree')) {
-    $phylotree      = $node->phylotree;
-    $phylotree      = chado_expand_var($phylotree, 'field', 'phylotree.comment');
-    $phylotree_id   = $phylotree->phylotree_id;
-    $tree_name      = $phylotree->name;
-    $leaf_type      = $phylotree->type_id ? $phylotree->type_id->name : '';
-    $comment        = $phylotree->comment;
-    $analysis_id    = $phylotree->analysis_id ? $phylotree->analysis_id->analysis_id : '';
-    $dbxref         = $phylotree->dbxref_id->db_id->name . ":" . $phylotree->dbxref_id->accession;
-    $name_re        = $phylotree->tripal_variables->phylotree_name_re;
-    $match          = $phylotree->tripal_variables->phylotree_use_uniquename;
+    $phylotree = $node->phylotree;
+    $phylotree = chado_expand_var($phylotree, 'field', 'phylotree.comment');
+    $phylotree_id = $phylotree->phylotree_id;
+    $tree_name = $phylotree->name;
+    $leaf_type = $phylotree->type_id ? $phylotree->type_id->name : '';
+    $comment = $phylotree->comment;
+    $analysis_id = $phylotree->analysis_id ? $phylotree->analysis_id->analysis_id : '';
+    $dbxref = $phylotree->dbxref_id->db_id->name . ":" . $phylotree->dbxref_id->accession;
+    $name_re = $phylotree->tripal_variables->phylotree_name_re;
+    $match = $phylotree->tripal_variables->phylotree_use_uniquename;
 
     // If the dbxref is the null db then hide it.
     if ($phylotree->dbxref_id->db_id->name == 'null') {
@@ -168,151 +170,151 @@ function chado_phylotree_form($node, &$form_state) {
     }
 
     // The tree file is not a required input field when editing the node.
-    $tree_required  = FALSE;
+    $tree_required = FALSE;
 
     // Keep track of the phylotree id.
-    $form['phylotree_id'] = array(
+    $form['phylotree_id'] = [
       '#type' => 'value',
       '#value' => $phylotree_id,
-    );
+    ];
   }
   // If we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values.
   if (array_key_exists('values', $form_state) and isset($form_state['values']['tree_name'])) {
-    $tree_name    = $form_state['values']['tree_name'];
-    $leaf_type    = $form_state['values']['leaf_type'];
-    $analysis_id  = $form_state['values']['analysis_id'];
-    $dbxref       = $form_state['values']['dbxref'];
-    $comment      = $form_state['values']['description'];
+    $tree_name = $form_state['values']['tree_name'];
+    $leaf_type = $form_state['values']['leaf_type'];
+    $analysis_id = $form_state['values']['analysis_id'];
+    $dbxref = $form_state['values']['dbxref'];
+    $comment = $form_state['values']['description'];
   }
   // If we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array.
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $tree_name    = $form_state['input']['tree_name'];
-    $leaf_type    = $form_state['input']['leaf_type'];
-    $analysis_id  = $form_state['input']['analysis_id'];
-    $comment      = $form_state['input']['description'];
-    $dbxref       = $form_state['input']['dbxref'];
+    $tree_name = $form_state['input']['tree_name'];
+    $leaf_type = $form_state['input']['leaf_type'];
+    $analysis_id = $form_state['input']['analysis_id'];
+    $comment = $form_state['input']['description'];
+    $dbxref = $form_state['input']['dbxref'];
   }
 
-  $form['tree_name']= array(
+  $form['tree_name'] = [
     '#type' => 'textfield',
     '#title' => t('Tree Name'),
     '#required' => TRUE,
     '#default_value' => $tree_name,
     '#description' => t('Enter the name used to refer to this phylogenetic tree.'),
-    '#maxlength' => 255
-  );
+    '#maxlength' => 255,
+  ];
 
   $type_cv = tripal_get_default_cv('phylotree', 'type_id');
-  $so_cv  = tripal_get_cv(array('name' => 'sequence'));
+  $so_cv = tripal_get_cv(['name' => 'sequence']);
   $cv_id = $so_cv->cv_id;
   if (!$so_cv) {
     drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
         Please import the Sequence Ontology before adding a tree.', 'error');
   }
 
-  $form['leaf_type'] = array(
-    '#title'       => t('Tree Type'),
-    '#type'        => 'textfield',
+  $form['leaf_type'] = [
+    '#title' => t('Tree Type'),
+    '#type' => 'textfield',
     '#description' => t("Choose the tree type. The type is
         a valid Sequence Ontology (SO) term. For example, trees derived
         from protein sequences should use the SO term 'polypeptide'.
         Alternatively, a phylotree can be used for representing a taxonomic
         tree. In this case, the word 'taxonomy' should be used."),
-    '#required'    => TRUE,
+    '#required' => TRUE,
     '#default_value' => $leaf_type,
     '#autocomplete_path' => "admin/tripal/legacy/tripal_cv/cvterm/auto_name/$cv_id",
-  );
+  ];
 
   // Get the list of analyses.
   $sql = "SELECT * FROM {analysis} ORDER BY name";
   $arset = chado_query($sql);
-  $analyses = array();
+  $analyses = [];
   $analyses[''] = '';
   while ($analysis = $arset->fetchObject()) {
     $analyses[$analysis->analysis_id] = $analysis->name;
   }
-  $form['analysis_id'] = array(
-    '#title'         => t('Analysis'),
-    '#type'          => 'select',
-    '#description'   => t("Choose the analysis from which this phylogenetic tree was derived"),
-    '#required'      => TRUE,
+  $form['analysis_id'] = [
+    '#title' => t('Analysis'),
+    '#type' => 'select',
+    '#description' => t("Choose the analysis from which this phylogenetic tree was derived"),
+    '#required' => TRUE,
     '#default_value' => $analysis_id,
-    '#options'       => $analyses,
-  );
+    '#options' => $analyses,
+  ];
 
-  $form['dbxref'] = array(
-    '#title'       => t('Database Cross-Reference'),
-    '#type'        => 'textfield',
+  $form['dbxref'] = [
+    '#title' => t('Database Cross-Reference'),
+    '#type' => 'textfield',
     '#description' => t("Enter a database cross-reference of the form
         [DB name]:[accession]. The database name must already exist in the
         database. If the accession does not exist it is automatically added."),
-    '#required'    => FALSE,
+    '#required' => FALSE,
     '#default_value' => $dbxref,
-  );
+  ];
 
-  $form['description']= array(
+  $form['description'] = [
     '#type' => 'textarea',
     '#title' => t('Description'),
     '#required' => TRUE,
     '#default_value' => $comment,
     '#description' => t('Enter a description for this tree.'),
-  );
+  ];
 
   $upload_location = tripal_get_files_stream('tripal_phylogeny');
-  $form['tree_file'] = array(
+  $form['tree_file'] = [
     '#type' => 'fieldset',
     '#title' => t('Tree File Import'),
     '#collapsible' => FALSE,
-  );
+  ];
 
   $description = t('Please provide a file in the Newick format that contains
       the nodes of this tree.');
   if ($tree_file) {
-    $form['tree_file']['curr_file'] = array(
+    $form['tree_file']['curr_file'] = [
       '#type' => 'item',
       '#title' => 'Current Tree File',
       '#markup' => $tree_file,
-    );
+    ];
     $description = t('Please provide a file in the Newick format that
         contains the nodes of this tree.  Please note that uploading a new
         file will overwrite the current tree.');
   }
-  $form['tree_file']['tree_file'] = array(
+  $form['tree_file']['tree_file'] = [
     '#type' => 'managed_file',
     '#title' => t('New Tree File'),
     '#description' => $description,
     '#upload_location' => $upload_location,
-    '#upload_validators' => array(
-        // We don't want to require a specific file extension so leave the array empty.
-       'file_validate_extensions' => array(),
-        // The following is for checking the Newick file format.
-       'chado_phylotree_validate_newick_format' => array(),
-    ),
+    '#upload_validators' => [
+      // We don't want to require a specific file extension so leave the array empty.
+      'file_validate_extensions' => [],
+      // The following is for checking the Newick file format.
+      'chado_phylotree_validate_newick_format' => [],
+    ],
     '#required' => $tree_required,
-  );
+  ];
 
-  $form['tree_file']['name_re'] = array(
-      '#title' => t('Feature Name Regular Expression'),
-      '#type' => 'textfield',
-      '#description' => t('If this is a phylogenetic (non taxonomic) tree, then
+  $form['tree_file']['name_re'] = [
+    '#title' => t('Feature Name Regular Expression'),
+    '#type' => 'textfield',
+    '#description' => t('If this is a phylogenetic (non taxonomic) tree, then
           the tree nodes will be automatically associated with features. However,
           if the nodes in the tree file are not exactly as the names of features
           but have enough information to uniquely identify the feature then you
           may provide a regular expression that the importer will use to extract
           the feature names from the node names.'),
-      '#default_value' => $name_re,
-  );
-  $form['tree_file']['match'] = array(
-      '#title' => t('Use Unique Feature Name'),
-      '#type' => 'checkbox',
-      '#description' => t('If this is a phylogenetic (non taonomic tree) and the nodes ' .
-          'should match the unique name of the feature rather than the name of the feautre ' .
-          'then select this box. If unselected the loader will try to match the feature ' .
-          'using the feature name.'),
-      '#default_value' => $match,
-  );
+    '#default_value' => $name_re,
+  ];
+  $form['tree_file']['match'] = [
+    '#title' => t('Use Unique Feature Name'),
+    '#type' => 'checkbox',
+    '#description' => t('If this is a phylogenetic (non taonomic tree) and the nodes ' .
+      'should match the unique name of the feature rather than the name of the feautre ' .
+      'then select this box. If unselected the loader will try to match the feature ' .
+      'using the feature name.'),
+    '#default_value' => $match,
+  ];
 
   return $form;
 }
@@ -326,7 +328,7 @@ function chado_phylotree_form($node, &$form_state) {
 function chado_phylotree_validate_newick_format(stdClass $file) {
   // An array of strings where each string represents a unique error
   // when examining the file.
-  $errors = array();
+  $errors = [];
 
   // TODO: check the newick file format for errors.
 
@@ -352,8 +354,8 @@ function chado_phylotree_validate($node, $form, &$form_state) {
   }
 
   // Remove surrounding white-space on submitted values.
-  $node->tree_name  = trim($node->tree_name);
-  $node->description   = trim($node->description);
+  $node->tree_name = trim($node->tree_name);
+  $node->description = trim($node->description);
   $node->dbxref = trim($node->dbxref);
 
   // if this is a delete then don't validate
@@ -361,19 +363,19 @@ function chado_phylotree_validate($node, $form, &$form_state) {
     return;
   }
 
-  $errors = array();
-  $warnings = array();
-  $options = array(
-    'name'         => $node->tree_name,
-    'description'  => $node->description,
-    'analysis_id'  => $node->analysis_id,
-    'leaf_type'    => $node->leaf_type,
-    'tree_file'    => $node->tree_file,
-    'format'       => 'newick',
-    'dbxref'       => $node->dbxref,
-    'match'        => $node->match,
-    'name_re'      => $node->name_re,
-  );
+  $errors = [];
+  $warnings = [];
+  $options = [
+    'name' => $node->tree_name,
+    'description' => $node->description,
+    'analysis_id' => $node->analysis_id,
+    'leaf_type' => $node->leaf_type,
+    'tree_file' => $node->tree_file,
+    'format' => 'newick',
+    'dbxref' => $node->dbxref,
+    'match' => $node->match,
+    'name_re' => $node->name_re,
+  ];
   // If we have a node id already then this is an update:
   if ($node->nid) {
     $options['phylotree_id'] = $node->phylotree_id;
@@ -385,7 +387,7 @@ function chado_phylotree_validate($node, $form, &$form_state) {
 
   // Now set form errors if any errors were detected.
   if (count($errors) > 0) {
-    foreach($errors as $field => $message) {
+    foreach ($errors as $field => $message) {
       if ($field == 'name') {
         $field = 'tree_name';
       }
@@ -394,11 +396,12 @@ function chado_phylotree_validate($node, $form, &$form_state) {
   }
   // Add any warnings if any were detected
   if (count($warnings) > 0) {
-    foreach($warnings as $field => $message) {
+    foreach ($warnings as $field => $message) {
       drupal_set_message($message, 'warning');
     }
   }
 }
+
 /**
  * Implements hook_node_presave(). Acts on all node content types.
  *
@@ -420,8 +423,10 @@ function tripal_phylogeny_node_presave($node) {
         // set the title
         $node->title = $node->tree_name;
       }
-      else if (property_exists($node, 'phylotree')) {
-        $node->title = $node->phylotree->name;
+      else {
+        if (property_exists($node, 'phylotree')) {
+          $node->title = $node->phylotree->name;
+        }
       }
       break;
   }
@@ -439,7 +444,7 @@ function tripal_phylogeny_node_insert($node) {
     case 'chado_phylotree':
 
       $phylotree_id = chado_get_id_from_nid('phylotree', $node->nid);
-      $values = array('phylotree_id' => $phylotree_id);
+      $values = ['phylotree_id' => $phylotree_id];
       $phylotree = chado_generate_var('phylotree', $values);
       $phylotree = chado_expand_var($phylotree, 'field', 'phylotree.comment');
       $node->phylotree = $phylotree;
@@ -466,7 +471,7 @@ function tripal_phylogeny_node_update($node) {
     case 'chado_phylotree':
 
       $phylotree_id = chado_get_id_from_nid('phylotree', $node->nid);
-      $values = array('phylotree_id' => $phylotree_id);
+      $values = ['phylotree_id' => $phylotree_id];
       $phylotree = chado_generate_var('phylotree', $values);
       $phylotree = chado_expand_var($phylotree, 'field', 'phylotree.comment');
       $node->phylotree = $phylotree;
@@ -512,9 +517,9 @@ function chado_phylotree_chado_node_default_url_format() {
 function chado_phylotree_insert($node) {
   global $user;
 
-  $node->tree_name   = trim($node->tree_name);
+  $node->tree_name = trim($node->tree_name);
   $node->description = trim($node->description);
-  $node->dbxref      = trim($node->dbxref);
+  $node->dbxref = trim($node->dbxref);
 
   // if there is a phylotree_id in the $node object then this must
   // be a sync (not an insert) so we can skip adding the phylotree as it is
@@ -522,19 +527,19 @@ function chado_phylotree_insert($node) {
   // insert.
   $phylotree_id = NULL;
   if (!property_exists($node, 'phylotree_id')) {
-    $options = array(
-      'name'         => $node->tree_name,
-      'description'  => $node->description,
-      'analysis_id'  => $node->analysis_id,
-      'leaf_type'    => $node->leaf_type,
-      'tree_file'    => $node->tree_file,
-      'format'       => 'newick',
-      'dbxref'       => $node->dbxref,
-      'match'        => $node->match,
-      'name_re'      => $node->name_re,
-    );
-    $errors = array();
-    $warnings = array();
+    $options = [
+      'name' => $node->tree_name,
+      'description' => $node->description,
+      'analysis_id' => $node->analysis_id,
+      'leaf_type' => $node->leaf_type,
+      'tree_file' => $node->tree_file,
+      'format' => 'newick',
+      'dbxref' => $node->dbxref,
+      'match' => $node->match,
+      'name_re' => $node->name_re,
+    ];
+    $errors = [];
+    $warnings = [];
     if (tripal_insert_phylotree($options, $errors, $warnings)) {
       $phylotree_id = $options['phylotree_id'];
 
@@ -546,8 +551,8 @@ function chado_phylotree_insert($node) {
     else {
       drupal_set_message(t('Unable to insert phylotree.'), 'error');
       tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
-          'Insert phylotree: Unable to insert phylotree where values: %values',
-          array('%values' => print_r($options, TRUE))
+        'Insert phylotree: Unable to insert phylotree where values: %values',
+        ['%values' => print_r($options, TRUE)]
       );
     }
   }
@@ -576,26 +581,26 @@ function chado_phylotree_update($node) {
 
   global $user;
 
-  $node->tree_name  = trim($node->tree_name);
-  $node->description   = trim($node->description);
+  $node->tree_name = trim($node->tree_name);
+  $node->description = trim($node->description);
   $node->dbxref = trim($node->dbxref);
 
   // Get the phylotree_id for this node.
-  $phylotree_id = chado_get_id_from_nid('phylotree', $node->nid) ;
+  $phylotree_id = chado_get_id_from_nid('phylotree', $node->nid);
 
 
-  $options = array(
+  $options = [
     'phylotree_id' => $node->phylotree_id,
-    'name'         => $node->tree_name,
-    'description'  => $node->description,
-    'analysis_id'  => $node->analysis_id,
-    'leaf_type'    => $node->leaf_type,
-    'tree_file'    => $node->tree_file,
-    'format'       => 'newick',
-    'dbxref'       => $node->dbxref,
-    'match'        => $node->match,
-    'name_re'      => $node->name_re,
-  );
+    'name' => $node->tree_name,
+    'description' => $node->description,
+    'analysis_id' => $node->analysis_id,
+    'leaf_type' => $node->leaf_type,
+    'tree_file' => $node->tree_file,
+    'format' => 'newick',
+    'dbxref' => $node->dbxref,
+    'match' => $node->match,
+    'name_re' => $node->name_re,
+  ];
 
   $success = tripal_update_phylotree($phylotree_id, $options);
 
@@ -603,7 +608,7 @@ function chado_phylotree_update($node) {
     drupal_set_message("Unable to update phylotree.", "error");
     tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
       'Update phylotree: Unable to update phylotree where values: %values',
-      array('%values' => print_r($options, TRUE))
+      ['%values' => print_r($options, TRUE)]
     );
     return;
   }
@@ -614,6 +619,7 @@ function chado_phylotree_update($node) {
   tripal_add_node_variable($node->nid, 'phylotree_use_uniquename', $node->match);
   tripal_add_node_variable($node->nid, 'phylotree_tree_file', $node->tree_file);
 }
+
 /**
  *  Implements hook_load().
  *
@@ -635,7 +641,7 @@ function chado_phylotree_load($nodes) {
     }
 
     // Build the Chado variable for the phylotree.
-    $values = array('phylotree_id' => $phylotree_id);
+    $values = ['phylotree_id' => $phylotree_id];
     $phylotree = chado_generate_var('phylotree', $values);
     $nodes[$nid]->phylotree = $phylotree;
 
@@ -680,16 +686,16 @@ function chado_phylotree_delete(&$node) {
   // Remove data from {chado_phylotree}, {node} and {node_revisions} tables of
   // drupal database
   $sql_del = "DELETE FROM {chado_phylotree} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  db_query($sql_del, [':nid' => $node->nid, ':vid' => $node->vid]);
 
   // Remove data from phylotree and phylotreeprop tables of chado
   // database as well
 
-  chado_query("DELETE FROM {phylotree} WHERE phylotree_id = :phylotree_id", array(':phylotree_id' => $phylotree_id));
+  chado_query("DELETE FROM {phylotree} WHERE phylotree_id = :phylotree_id", [':phylotree_id' => $phylotree_id]);
 
 }
 
@@ -698,21 +704,22 @@ function chado_phylotree_delete(&$node) {
  *
  * This hook allows node modules to limit access to the node types they define.
  *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
+ * @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet
+ *   exist, the type of node to be created
  *
- *  @param $op
+ * @param $op
  *  The operation to be performed
  *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
+ * @param $account
+ *  A user object representing the user for whom the operation is to be
+ *   performed
  *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
+ * @return
+ *  If the permission for the specified operation is not set then return FALSE.
+ *   If the permission is set then return NULL as this allows other modules to
+ *   disable access.  The only exception is when the $op == 'create'.  We will
+ *   always return TRUE if the permission is set.
  *
  * @ingroup tripal_legacy_phylogeny
  */
@@ -723,7 +730,7 @@ function chado_phylotree_node_access($node, $op, $account) {
     $node_type = $node->type;
   }
 
-  if($node_type == 'chado_phylotree') {
+  if ($node_type == 'chado_phylotree') {
     if ($op == 'create') {
       if (!user_access('create chado_phylotree content', $account)) {
         return NODE_ACCESS_DENY;
@@ -757,6 +764,7 @@ function chado_phylotree_node_access($node, $op, $account) {
  *  this organism.
  *
  * @param int phylotree_id
+ *
  * @return array
  * @ingroup tripal_legacy_phylogeny
  */
@@ -772,10 +780,10 @@ function phylotree_feature_summary($phylotree_id) {
     GROUP BY o.organism_id
   ";
 
-  $args = array(':phylotree_id' => $phylotree_id);
+  $args = [':phylotree_id' => $phylotree_id];
   $result = chado_query($sql, $args);
-  $summary = array();
-  foreach($result as $r) {
+  $summary = [];
+  foreach ($result as $r) {
     $summary[$r->abbreviation] = $r->count;
   }
   return $summary;

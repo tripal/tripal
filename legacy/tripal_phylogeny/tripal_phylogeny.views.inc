@@ -1,6 +1,6 @@
 <?php
 /**
- *  @file
+ * @file
  *  This file contains the basic functions for views integration of
  *  chado/tripal phylogeny tables
  */
@@ -17,7 +17,7 @@
  * @ingroup tripal_legacy_phylogeny
  */
 function tripal_phylogeny_views_handlers() {
-  return array(
+  return [
 
-  );
+  ];
 }

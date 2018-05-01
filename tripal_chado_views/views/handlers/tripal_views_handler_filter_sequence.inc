@@ -18,12 +18,12 @@ class tripal_views_handler_filter_sequence extends views_handler_filter {
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-    $this->value_form = array(
-       '#type' => 'sequence_combo',
-       '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
-       '#default_value' => $this->value,
-       '#multiple' => FALSE,
-    );
+    $this->value_form = [
+      '#type' => 'sequence_combo',
+      '#title' => t('%label', ['%label' => $this->options['expose']['label']]),
+      '#default_value' => $this->value,
+      '#multiple' => FALSE,
+    ];
     $form['value'] = &$this->value_form;
   }
 

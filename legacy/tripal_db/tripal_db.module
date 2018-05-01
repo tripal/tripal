@@ -8,11 +8,11 @@
  * @defgroup tripal_legacy_db Legacy Database Reference Module
  * @ingroup tripal_legacy_modules
  * @{
- * Provides functions for managing chado database references which link chado content, such
- * as features and stocks, to records/pages in external databases/websites. For example,
- * you might have a feature record in your site which is also in the NCBI website and by
- * adding a database refrence to your feature, an automatic link to the content at NCBI
- * is created.
+ * Provides functions for managing chado database references which link chado
+ *   content, such as features and stocks, to records/pages in external
+ *   databases/websites. For example, you might have a feature record in your
+ *   site which is also in the NCBI website and by adding a database refrence
+ *   to your feature, an automatic link to the content at NCBI is created.
  * @}
  */
 
@@ -25,40 +25,46 @@ require_once 'api/tripal_db.DEPRECATED.inc';
  * @ingroup tripal_legacy_db
  */
 function tripal_db_menu() {
-  $items = array();
+  $items = [];
 
-  $items['admin/tripal/legacy/tripal_db/views/dbs/enable'] = array(
+  $items['admin/tripal/legacy/tripal_db/views/dbs/enable'] = [
     'title' => 'Enable Database Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_db_admin_dbs', 'admin/tripal/legacy/tripal_db'),
-    'access arguments' => array('administer db cross-references'),
+    'page arguments' => [
+      'tripal_db_admin_dbs',
+      'admin/tripal/legacy/tripal_db',
+    ],
+    'access arguments' => ['administer db cross-references'],
     'type' => MENU_CALLBACK,
-  );
-  $items['admin/tripal/legacy/tripal_db/views/dbxrefs/enable'] = array(
+  ];
+  $items['admin/tripal/legacy/tripal_db/views/dbxrefs/enable'] = [
     'title' => 'Enable Reference Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_db_admin_dbxrefs', 'admin/tripal/legacy/tripal_db'),
-    'access arguments' => array('administer db cross-references'),
+    'page arguments' => [
+      'tripal_db_admin_dbxrefs',
+      'admin/tripal/legacy/tripal_db',
+    ],
+    'access arguments' => ['administer db cross-references'],
     'type' => MENU_CALLBACK,
-  );
-  $items['admin/tripal/legacy/tripal_db/dbxref/auto_name/%/%'] = array(
+  ];
+  $items['admin/tripal/legacy/tripal_db/dbxref/auto_name/%/%'] = [
     'page callback' => 'tripal_db_dbxref_accession_autocomplete',
-    'page arguments' => array(6, 7),
-    'access arguments' => array('administer db cross-references'),
+    'page arguments' => [6, 7],
+    'access arguments' => ['administer db cross-references'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
 
 /**
  * Implements hook_help().
- (
+ * (
  * Purpose: Adds a help page to the module list
  */
-function tripal_db_help ($path, $arg) {
+function tripal_db_help($path, $arg) {
   if ($path == 'admin/help#tripal_db') {
-    return theme('tripal_db_help', array());
+    return theme('tripal_db_help', []);
   }
 }
 
@@ -72,12 +78,12 @@ function tripal_db_help ($path, $arg) {
  * @ingroup tripal_legacy_db
  */
 function tripal_db_permission() {
-  return array(
-    'administer db cross-references' => array(
+  return [
+    'administer db cross-references' => [
       'title' => t('Administer External Database Cross-references.'),
       'description' => t('Allows the user to add, edit or delete external databases references stored in the Chado database.'),
-    ),
-  );
+    ],
+  ];
 }
 
 /**
@@ -90,7 +96,7 @@ function tripal_db_permission() {
  * @ingroup tripal_legacy_db
  */
 function tripal_db_views_api() {
-  return array('api' => 3.0);
+  return ['api' => 3.0];
 }
 
 /**
@@ -104,13 +110,13 @@ function tripal_db_views_api() {
  */
 function tripal_db_theme($existing, $type, $theme, $path) {
 
- $items = array(
-    'tripal_db_help' => array(
+  $items = [
+    'tripal_db_help' => [
       'template' => 'tripal_db_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    )
-  );
+      'variables' => [NULL],
+      'path' => "$path/theme/templates",
+    ],
+  ];
   return $items;
 }
 
@@ -131,7 +137,7 @@ function tripal_db_theme($existing, $type, $theme, $path) {
  */
 function tripal_db_dbxref_accession_autocomplete($db_id, $string = '') {
   if (!$db_id) {
-    return drupal_json_output(array());
+    return drupal_json_output([]);
   }
   $sql = "
     SELECT dbxref_id, accession
@@ -140,8 +146,11 @@ function tripal_db_dbxref_accession_autocomplete($db_id, $string = '') {
     ORDER by accession
     LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, array(':db_id' => $db_id, ':accession' => $string . '%'));
-  $items = array();
+  $results = chado_query($sql, [
+    ':db_id' => $db_id,
+    ':accession' => $string . '%',
+  ]);
+  $items = [];
   foreach ($results as $ref) {
     $items[$ref->accession] = $ref->accession;
   }

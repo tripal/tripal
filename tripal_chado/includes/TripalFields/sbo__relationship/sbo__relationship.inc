@@ -24,7 +24,7 @@ class sbo__relationship extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SBO',
     // The name of the term.
@@ -43,15 +43,15 @@ class sbo__relationship extends ChadoField {
     'auto_attach' => FALSE,
     // Settings to help the site admin control how relationship types and
     // valid subject/objects can be selected by the user.
-    'relationships' => array(
+    'relationships' => [
       'option1_vocabs' => '',
       'option2_vocab' => '',
       'option2_parent' => '',
       'relationship_types' => '',
-    ),
+    ],
     // The number of items to show on a page.
     'items_per_page' => 10,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'sbo__relationship_widget';
@@ -65,6 +65,7 @@ class sbo__relationship extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -77,15 +78,15 @@ class sbo__relationship extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => FALSE,
-        'elements' => array(
-          'SIO:000493' => array(
+        'elements' => [
+          'SIO:000493' => [
             'searchable' => FALSE,
             'name' => 'relationship_clause',
             'label' => 'Relationship Clause',
@@ -94,93 +95,93 @@ class sbo__relationship extends ChadoField {
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'local:relationship_subject' => array(
+          ],
+          'local:relationship_subject' => [
             'searchable' => FALSE,
             'name' => 'relationship_subject',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:complexType',
             'readonly' => FALSE,
             'required' => TRUE,
-            'elements' => array(
-              'rdfs:type' => array(
+            'elements' => [
+              'rdfs:type' => [
                 'name' => 'type',
                 'searchable' => TRUE,
                 'label' => 'Relationship Subject Type',
                 'help' => 'The subject\'s data type in a relationship clause',
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'operations' => ['eq', 'ne', 'contains', 'starts'],
                 'sortable' => TRUE,
                 'type' => 'xs:string',
                 'readonly' => FALSE,
                 'required' => TRUE,
-              ),
-              'schema:name' => array(
+              ],
+              'schema:name' => [
                 'name' => 'name',
                 'searchable' => TRUE,
                 'label' => 'Relationship Subject Name',
                 'help' => 'The subject\'s name in a relationship clause',
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'operations' => ['eq', 'ne', 'contains', 'starts'],
                 'sortable' => TRUE,
                 'type' => 'xs:string',
                 'readonly' => FALSE,
                 'required' => TRUE,
-              ),
-              'entity' => array(
+              ],
+              'entity' => [
                 'searchable' => FALSE,
                 'sortable' => FALSE,
-              )
-            ),
-          ),
-          'local:relationship_type' => array(
+              ],
+            ],
+          ],
+          'local:relationship_type' => [
             'searchable' => TRUE,
             'name' => 'relationship_type',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          'local:relationship_object' => array(
+          ],
+          'local:relationship_object' => [
             'searchable' => FALSE,
             'name' => 'relationship_object',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:complexType',
             'readonly' => FALSE,
             'required' => TRUE,
-            'elements' => array(
-              'rdfs:type' => array(
+            'elements' => [
+              'rdfs:type' => [
                 'searchable' => TRUE,
                 'name' => 'object_type',
                 'label' => 'Relationship Object Type',
                 'help' => 'The objects\'s data type in a relationship clause',
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'operations' => ['eq', 'ne', 'contains', 'starts'],
                 'sortable' => TRUE,
                 'type' => 'xs:string',
                 'readonly' => FALSE,
                 'required' => TRUE,
-              ),
-              'schema:name' => array(
+              ],
+              'schema:name' => [
                 'searchable' => TRUE,
                 'name' => 'object_name',
                 'label' => 'Relationship Object Name',
                 'help' => 'The objects\'s name in a relationship clause',
-                'operations' => array('eq', 'ne', 'contains', 'starts'),
+                'operations' => ['eq', 'ne', 'contains', 'starts'],
                 'sortable' => TRUE,
                 'type' => 'xs:string',
                 'readonly' => FALSE,
                 'required' => TRUE,
-              ),
-              'entity' => array(
+              ],
+              'entity' => [
                 'searchable' => FALSE,
                 'sortable' => FALSE,
-              )
-            ),
-          ),
-        ),
-      )
-    );
+              ],
+            ],
+          ],
+        ],
+      ],
+    ];
   }
 
   private function loadRelationship($relationship, &$entity, $delta) {
@@ -289,18 +290,18 @@ class sbo__relationship extends ChadoField {
         $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
     }
 
-    $entity->{$field_name}['und'][$delta]['value'] = array(
-      'local:relationship_subject' => array(
+    $entity->{$field_name}['und'][$delta]['value'] = [
+      'local:relationship_subject' => [
         'rdfs:type' => $subject_type,
         'schema:name' => $subject_name,
-      ),
+      ],
       'local:relationship_type' => $relationship->type_id->name,
-      'local:relationship_object' => array(
+      'local:relationship_object' => [
         'rdfs:type' => $object_type,
         'schema:name' => $object_name,
         'entity' => 'TripalEntity:' . $entity->id,
-      )
-    );
+      ],
+    ];
 
     // If the subject or object have a unqiuename then add that in for refernce.
     if (property_exists($relationship->$subject_id_key, 'uniquename')) {
@@ -329,8 +330,8 @@ class sbo__relationship extends ChadoField {
     // The above relationship will be shown both on marker and variant pages
     // and as such both subject and object names need to be shown.
     $clause = 'The ' . $subject_type . ', ' .
-        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
-        $object_type . ', ' . $object_name . '.';
+      $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' the ' .
+      $object_type . ', ' . $object_name . '.';
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
     // Adding a label allows us to provide a single text value for the
@@ -346,7 +347,7 @@ class sbo__relationship extends ChadoField {
     // For the widget to work properly we will preform values.
     $entity->{$field_name}['und'][$delta]['type_name'] = $relationship->type_id->name;
     $entity->{$field_name}['und'][$delta]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$subject_pkey . ']';
-    $entity->{$field_name}['und'][$delta]['object_name'] = $object_name  . ' [id: ' . $relationship->$object_id_key->$object_pkey . ']';
+    $entity->{$field_name}['und'][$delta]['object_name'] = $object_name . ' [id: ' . $relationship->$object_id_key->$object_pkey . ']';
     if (array_key_exists('value', $schema['fields'])) {
       $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__value'] = $relationship->value;
     }
@@ -354,7 +355,8 @@ class sbo__relationship extends ChadoField {
       $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__rank'] = $relationship->rank;
     }
   }
- /**
+
+  /**
    *
    * @see TripalField::load()
    */
@@ -362,7 +364,7 @@ class sbo__relationship extends ChadoField {
     $settings = $this->field['settings'];
 
     $record = $entity->chado_record;
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -393,7 +395,7 @@ class sbo__relationship extends ChadoField {
     }
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $subject_id_key => '',
@@ -405,7 +407,7 @@ class sbo__relationship extends ChadoField {
       'object_name' => '',
       'subject_name' => '',
       'type_name' => '',
-    );
+    ];
 
     // If the table has rank and value fields then add those to the default
     // value array.
@@ -422,24 +424,24 @@ class sbo__relationship extends ChadoField {
     }
 
     // Expand the object to include the relationships.
-    $options = array(
+    $options = [
       'return_array' => 1,
       // we don't want to fully recurse we only need information about the
       // relationship type and the object and subject
-      'include_fk' => array(
+      'include_fk' => [
         'type_id' => 1,
-        $object_id_key => array(
+        $object_id_key => [
           'type_id' => 1,
-        ),
-        $subject_id_key  => array(
+        ],
+        $subject_id_key => [
           'type_id' => 1,
-        ),
-      ),
-    );
+        ],
+      ],
+    ];
     $rel_table = $base_table . '_relationship';
     $schema = chado_get_schema($rel_table);
     if (array_key_exists('rank', $schema['fields'])) {
-      $options['order_by'] = array('rank' => 'ASC');
+      $options['order_by'] = ['rank' => 'ASC'];
     }
     $record = chado_expand_var($record, 'table', $rel_table, $options);
     if (!$record->$rel_table) {
@@ -481,8 +483,8 @@ class sbo__relationship extends ChadoField {
     // Bulid the list of expected elements that will be provided.
     $field_term_id = $this->getFieldTermID();
     $rel_subject = $field_term_id . ',local:relationship_subject';
-    $rel_subject_type =  $rel_subject . ',' . 'rdfs:type';
-    $rel_subject_name =  $rel_subject . ',' . 'schema:name';
+    $rel_subject_type = $rel_subject . ',' . 'rdfs:type';
+    $rel_subject_name = $rel_subject . ',' . 'schema:name';
     $rel_subject_identifier = $rel_subject . ',' . 'data:0842';
     $rel_type = $field_term_id . ',local:relationship_type';
     $rel_object = $field_term_id . ',local:relationship_object';
@@ -531,9 +533,9 @@ class sbo__relationship extends ChadoField {
     // Filter by relationship type
     if ($condition['column'] == 'relationship.relationship_type') {
       // This filter commented out because it's way to slow...
-//       $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id OR base.$bpkey = $alias.object_id");
-//       $this->queryJoinOnce($query, 'cvterm', 'RelTypeCVT', "RelTypeCVT.cvterm_id = $alias.type_id");
-//       $query->condition("RelTypeCVT.name", $condition['value'], $operator);
+      //       $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id OR base.$bpkey = $alias.object_id");
+      //       $this->queryJoinOnce($query, 'cvterm', 'RelTypeCVT', "RelTypeCVT.cvterm_id = $alias.type_id");
+      //       $query->condition("RelTypeCVT.name", $condition['value'], $operator);
     }
   }
 
@@ -593,15 +595,15 @@ class sbo__relationship extends ChadoField {
   public function instanceSettingsForm() {
     $element = parent::instanceSettingsForm();
 
-    $element['items_per_page'] = array(
+    $element['items_per_page'] = [
       '#type' => 'textfield',
       '#title' => 'Items per Page',
       '#description' => t('The number of items that should appear on each page.  A pager is provided if more than this number of items exist.'),
       '#default_value' => $this->instance['settings']['items_per_page'],
-    );
+    ];
 
     //$element = parent::instanceSettingsForm();
-    $element['relationships'] = array(
+    $element['relationships'] = [
       '#type' => 'fieldset',
       '#title' => 'Allowed Relationship Types',
       '#description' => t('There are three ways that relationship types
@@ -611,7 +613,7 @@ class sbo__relationship extends ChadoField {
           term for the relationship type.'),
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
-    );
+    ];
     //     $element['instructions'] = array(
     //       '#type' => 'item',
     //       '#markup' => 'You may provide a list of terms that will be available in a select box
@@ -619,7 +621,7 @@ class sbo__relationship extends ChadoField {
     //         following value is set.'
     //     );
     $vocs = tripal_get_cv_select_options();
-    $element['relationships']['option1'] = array(
+    $element['relationships']['option1'] = [
       '#type' => 'item',
       '#title' => 'Option #1',
       '#description' => t('Use this option to limit the vocabularies that a user .
@@ -627,16 +629,16 @@ class sbo__relationship extends ChadoField {
         the vocabulary can be used for the relationship type. You may select
         more than one vocabulary.'),
 
-    );
-    $element['relationships']['option1_vocabs'] = array(
+    ];
+    $element['relationships']['option1_vocabs'] = [
       '#type' => 'select',
       '#multiple' => TRUE,
       '#options' => $vocs,
       '#size' => 6,
       '#default_value' => $this->instance['settings']['relationships']['option1_vocabs'],
       // TODO add ajax here so that the relationship autocomplete below works
-    );
-    $element['relationships']['option2'] = array(
+    ];
+    $element['relationships']['option2'] = [
       '#type' => 'item',
       '#title' => '<b>Option #2</b>',
       '#description' => 'Some vocabularies are heirarchichal (an ontology). Within this
@@ -644,42 +646,43 @@ class sbo__relationship extends ChadoField {
          wish to limit the list of terms that a user can use for the relationship type,
          you can provide the parent term here.  Then, only that term\'s children will
          be avilable for use as a relationship type.',
-    );
-    $element['relationships']['option2_vocab'] = array(
+    ];
+    $element['relationships']['option2_vocab'] = [
       '#type' => 'select',
       '#description' => 'Specify Default Vocabulary',
       '#multiple' => FALSE,
       '#options' => $vocs,
       '#default_value' => $this->instance['settings']['relationships']['option2_vocab'],
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "sbo__relationship_instance_settings_form_ajax_callback",
         'wrapper' => 'relationships-option2-parent',
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
-    $element['relationships']['option2_parent'] = array(
+        'method' => 'replace',
+      ],
+    ];
+    $element['relationships']['option2_parent'] = [
       '#type' => 'textfield',
       '#description' => 'Specify a Heirarchical Parent Term',
       '#default_value' => $this->instance['settings']['relationships']['option2_parent'],
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
       '#prefix' => '<div id=relationships-option2-parent>',
-      '#suffix' => '</div>'
-    );
-    $element['relationships']['option3'] = array(
+      '#suffix' => '</div>',
+    ];
+    $element['relationships']['option3'] = [
       '#type' => 'item',
       '#title' => 'Option #3',
       '#description' => 'Provide terms separated by a new line. The term provided should be
         unique and distinguishable by the name. You can use a bar | to separate a vocabulary
         and a term to allow more specific assignment.',
-    );
-    $element['relationships']['relationship_types'] = array(
+    ];
+    $element['relationships']['relationship_types'] = [
       '#type' => 'textarea',
       '#default_value' => $this->instance['settings']['relationships']['relationship_types'],
-    );
+    ];
 
     return $element;
   }
+
   /**
    *
    * @param unknown $form
@@ -688,7 +691,7 @@ class sbo__relationship extends ChadoField {
   public function instanceSettingsFormValidate($form, &$form_state) {
     // Get relationships settings
     $settings = $form_state['values']['instance']['settings']['relationships'];
-    $form_state['values']['instance']['settings']['relationships']['relationship_types']= trim($settings['relationship_types']);
+    $form_state['values']['instance']['settings']['relationships']['relationship_types'] = trim($settings['relationship_types']);
 
     // Make sure only one option is selected
     $option1test = $settings['option1_vocabs'];
@@ -696,8 +699,8 @@ class sbo__relationship extends ChadoField {
     $option2 = (isset($settings['option2_vocab']) && $settings['option2_vocab']) || $settings['option2_parent'];
     $option3 = isset($settings['relationship_types']) && trim($settings['relationship_types']);
     if ($option1 && ($option2 || $option3) == 1 ||
-        $option2 && ($option1 || $option3) == 1 ||
-        $option3 && ($option1 || $option2) == 1) {
+      $option2 && ($option1 || $option3) == 1 ||
+      $option3 && ($option1 || $option2) == 1) {
       form_set_error("instance][settings][relationships", t("Only one option is allowed to limit the relationship types."));
       return;
     }
@@ -705,16 +708,16 @@ class sbo__relationship extends ChadoField {
     // For option3, make sure the supplied types are valid cvterms
     if ($option3) {
       $rel_types = explode(PHP_EOL, $settings['relationship_types']);
-      foreach($rel_types AS $type) {
-        $type =  trim($type);
+      foreach ($rel_types AS $type) {
+        $type = trim($type);
         // Ignore empty lines
         if ($type == '') {
           continue;
         }
         // Find the matching cvterm
         $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
-        $results = chado_query($sql, array(':name' => $type));
-        $terms = array();
+        $results = chado_query($sql, [':name' => $type]);
+        $terms = [];
         while ($obj = $results->fetchObject()) {
           $terms[] = $obj;
         }
@@ -725,10 +728,13 @@ class sbo__relationship extends ChadoField {
           if (strpos($type, '|')) {
             $tmp = explode('|', $type, 2);
             $type = trim($tmp[1]);
-            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-            if($cv) {
+            $cv = tripal_get_cv(['name' => trim($tmp[0])]);
+            if ($cv) {
               $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
+              $results = chado_query($sql, [
+                ':name' => $type,
+                ':cv_id' => $cv->cv_id,
+              ]);
               while ($obj = $results->fetchObject()) {
                 $terms[] = $obj;
               }
@@ -739,32 +745,37 @@ class sbo__relationship extends ChadoField {
           }
           if (count($terms) != 1) {
             $message = "The term '@type' can not be found.";
-            $token = array('@type' => $type);
+            $token = ['@type' => $type];
             if ($cv) {
-              $message =  "The term '@type' can not be found within the vocabulary '@vocab'.";
+              $message = "The term '@type' can not be found within the vocabulary '@vocab'.";
               $token['@vocab'] = $cv;
             }
             form_set_error("instance][settings][relationships][relationship_types",
-                t($message, $token));
+              t($message, $token));
           }
         }
-        else if (count($terms) > 1) {
-          // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
-          if (strpos($type, '|')) {
-            $tmp = explode('|', $type, 2);
-            $type = trim($tmp[1]);
-            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
-            if ($cv) {
-              $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
-              $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
-              while ($obj = $results->fetchObject()) {
-                $terms[] = $obj;
+        else {
+          if (count($terms) > 1) {
+            // If a type matches more than one term, parse it as 'vocabulary|cvterm' and try again
+            if (strpos($type, '|')) {
+              $tmp = explode('|', $type, 2);
+              $type = trim($tmp[1]);
+              $cv = tripal_get_cv(['name' => trim($tmp[0])]);
+              if ($cv) {
+                $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
+                $results = chado_query($sql, [
+                  ':name' => $type,
+                  ':cv_id' => $cv->cv_id,
+                ]);
+                while ($obj = $results->fetchObject()) {
+                  $terms[] = $obj;
+                }
               }
             }
-          }
-          if(count($terms) != 1) {
-            form_set_error("instance][settings][relationships][relationship_types",
-              t("The term '@type' matches more than one term. Please specify its vocabulary in the format of 'vocabulary|@type'.", array('@type' => $type)));
+            if (count($terms) != 1) {
+              form_set_error("instance][settings][relationships][relationship_types",
+                t("The term '@type' matches more than one term. Please specify its vocabulary in the format of 'vocabulary|@type'.", ['@type' => $type]));
+            }
           }
         }
       }
@@ -774,27 +785,27 @@ class sbo__relationship extends ChadoField {
     if ($option2) {
       $cv_id = $settings['option2_vocab'];
       $supertype = $settings['option2_parent'];
-      $term = tripal_get_cvterm(array(
+      $term = tripal_get_cvterm([
         'name' => trim($supertype),
         'cv_id' => $cv_id,
-      ));
+      ]);
       // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
       // a cvterm, try cvtermsynonym
       if (!$term) {
         $synonym = tripal_get_cvterm(
-            array(
-              'synonym' => array(
-                'name' => trim($supertype),
-              )
-            )
-            );
+          [
+            'synonym' => [
+              'name' => trim($supertype),
+            ],
+          ]
+        );
         if ($synonym && $synonym->cv_id->cv_id == $cv_id) {
           $term = $synonym;
         }
       }
       if (!isset($term->cvterm_id)) {
         form_set_error("instance][settings][relationships][option2_parent",
-            t("The term '@type' is not a valid term for the vocabulary selected.", array('@type' => $supertype)));
+          t("The term '@type' is not a valid term for the vocabulary selected.", ['@type' => $supertype]));
       }
     }
   }
@@ -830,8 +841,10 @@ class sbo__relationship extends ChadoField {
       if (preg_match('/^subject_.*id/', $lcolum)) {
         $subject_id_key = $lcolum;
       }
-      else if (preg_match('/^object_.*id/', $lcolum)) {
-        $object_id_key = $lcolum;
+      else {
+        if (preg_match('/^object_.*id/', $lcolum)) {
+          $object_id_key = $lcolum;
+        }
       }
     }
 
@@ -853,22 +866,22 @@ class sbo__relationship extends ChadoField {
       // Make sure we have values for all of the fields.
       $form_error = FALSE;
       if (!$type_name && !$type_id) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'error' => 'sbo__relationship',
           'message' => t("Please provide the type of relationship."),
-        );
+        ];
       }
       if ($entity and !$subject_name) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'error' => 'sbo__relationship',
           'message' => t("Please provide the subject of the relationship."),
-        );
+        ];
       }
       if ($entity and !$object_name) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'error' => 'sbo__relationship',
           'message' => t("Please provide the object of the relationship."),
-        );
+        ];
       }
       if ($form_error) {
         continue;
@@ -880,33 +893,33 @@ class sbo__relationship extends ChadoField {
       // later we will pull it out.
       $subject_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
-      $matches = array();
+      $matches = [];
       if ($entity) {
-        if(preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-          $subject_id =  $matches[1];
-          $values = array($fkey_rcolumn => $subject_id);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+          $subject_id = $matches[1];
+          $values = [$fkey_rcolumn => $subject_id];
+          $subject = chado_select_record($base_table, [$fkey_rcolumn], $values);
           if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
-            );
+            ];
           }
         }
         else {
-          $values = array('uniquename' => $subject_name);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+          $values = ['uniquename' => $subject_name];
+          $subject = chado_select_record($base_table, [$fkey_rcolumn], $values);
           if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
               'message' => t("The subject record cannot be found. Please check spelling."),
-            );
+            ];
           }
           elseif (count($subject) > 1) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
               'message' => t("The subject is not unique and therefore the relationship cannot be made."),
-            );
+            ];
           }
         }
       }
@@ -914,33 +927,33 @@ class sbo__relationship extends ChadoField {
       // Now check for a matching object.
       $object_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
-      $matches = array();
+      $matches = [];
       if ($entity) {
         if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
           $object_id = $matches[1];
-          $values = array($fkey_rcolumn => $object_id);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+          $values = [$fkey_rcolumn => $object_id];
+          $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
           if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
-            );
+            ];
           }
         }
         else {
-          $values = array('uniquename' => $object_name);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+          $values = ['uniquename' => $object_name];
+          $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
           if (count($object) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
               'message' => t("The object record cannot be found. Please check spelling."),
-            );;
+            ];;
           }
           elseif (count($object) > 1) {
-            $errors[$field_name][$delta]['und'][] = array(
+            $errors[$field_name][$delta]['und'][] = [
               'error' => 'sbo__relationship',
-              'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
-            );
+              'message' => t("The object is not unique and therefore the relationship cannot be made."),
+            ];
           }
         }
       }
@@ -948,24 +961,23 @@ class sbo__relationship extends ChadoField {
       // Make sure that either our object or our subject refers to the base record.
       if ($entity) {
         $chado_record_id = $entity->chado_record_id;
-        if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-          $errors[$field_name][$delta]['und'][] = array(
+        if ($object_id != $chado_record_id and $subject_id != $chado_record_id) {
+          $errors[$field_name][$delta]['und'][] = [
             'error' => 'sbo__relationship',
-            'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
-          );
+            'message' => t("Either the subject or the object in the relationship must refer to this record."),
+          ];
         }
 
         // Make sure that the object and subject are not both the same thing.
         if ($object_id == $subject_id) {
-          $errors[$field_name][$delta]['und'][] = array(
+          $errors[$field_name][$delta]['und'][] = [
             'error' => 'sbo__relationship',
-            'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
-          );
+            'message' => t("The subject and the object in the relationship cannot both refer to the same record."),
+          ];
         }
       }
     }
   }
-
 
 
   /**

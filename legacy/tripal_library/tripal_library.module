@@ -29,7 +29,7 @@ require_once 'includes/tripal_library.chado_node.inc';
  * @ingroup tripal_legacy_library
  */
 function tripal_library_permission() {
-  return array(
+  return [
     /*
     'access chado_library content' => array(
       'title' => t('View Libraries'),
@@ -52,7 +52,7 @@ function tripal_library_permission() {
       'description' => t('Allow users to administer all libraries.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -65,65 +65,72 @@ function tripal_library_permission() {
  * @ingroup tripal_legacy_library
  */
 function tripal_library_menu() {
-  $items = array();
+  $items = [];
   // The administative settings menu
 
-  $items['admin/tripal/legacy/tripal_library'] = array(
+  $items['admin/tripal/legacy/tripal_library'] = [
     'title' => 'Libraries',
     'description' => 'Any biological library. Examples of genomic libraries include BAC, cDNA, FOSMID, etc.',
     'page callback' => 'tripal_library_admin_libraries_listing',
-    'access arguments' => array('administer tripal library'),
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
-  $items['admin/tripal/legacy/tripal_library/help'] = array(
+  $items['admin/tripal/legacy/tripal_library/help'] = [
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_library_help'),
-    'access arguments' => array('administer tripal library'),
+    'page arguments' => ['tripal_library_help'],
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
-  $items['admin/tripal/legacy/tripal_library/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_library/configuration'] = [
     'title' => 'Settings',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_library_admin'),
-    'access arguments' => array('administer tripal library'),
+    'page arguments' => ['tripal_library_admin'],
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
-  $items['admin/tripal/legacy/tripal_library/sync'] = array(
+    'weight' => 5,
+  ];
+  $items['admin/tripal/legacy/tripal_library/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_library', 'chado_library'),
-    'access arguments' => array('administer tripal library'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_library',
+      'chado_library',
+    ],
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
+    'weight' => 2,
+  ];
 
-  $items['admin/tripal/legacy/tripal_library/chado_library_toc'] = array(
+  $items['admin/tripal/legacy/tripal_library/chado_library_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for library nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_library'),
-    'access arguments' => array('administer tripal library'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_library'],
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_library/views/libraries/enable'] = array(
+  $items['admin/tripal/legacy/tripal_library/views/libraries/enable'] = [
     'title' => 'Enable Library Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_library_admin_libraries', 'admin/tripal/legacy/tripal_library'),
-    'access arguments' => array('administer tripal library'),
+    'page arguments' => [
+      'tripal_library_admin_libraries',
+      'admin/tripal/legacy/tripal_library',
+    ],
+    'access arguments' => ['administer tripal library'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
@@ -134,14 +141,14 @@ function tripal_library_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_library_search_biological_data_views() {
-  return array(
-    'tripal_library_user_library' => array(
+  return [
+    'tripal_library_user_library' => [
       'machine_name' => 'tripal_library_user_library',
       'human_name' => 'Libraries',
       'description' => 'Biological library including BAC, cDNA, FOSMID, etc.',
-      'link' => 'chado/library'
-    ),
-  );
+      'link' => 'chado/library',
+    ],
+  ];
 }
 
 /**
@@ -154,9 +161,9 @@ function tripal_library_search_biological_data_views() {
  * @ingroup tripal_legacy_library
  */
 function tripal_library_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -171,78 +178,78 @@ function tripal_library_views_api() {
 function tripal_library_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_library' => array(
+  $items = [
+    'node__chado_library' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
+    ],
 
     // tripal_library templates
-    'tripal_library_base' => array(
-      'variables' => array('node' => NULL),
+    'tripal_library_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_features' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_features' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_features',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_publications' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_publications' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_publications',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_references' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_references',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_synonyms' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_synonyms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_synonyms',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_terms' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_library_terms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_terms',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_library_help' => array(
+    ],
+    'tripal_library_help' => [
       'template' => 'tripal_library_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // teaser
-    'tripal_library_teaser' => array(
-      'variables' => array('node' => NULL),
+    'tripal_library_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_library_teaser',
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // tripal_organism templates
-    'tripal_organism_libraries' => array(
-      'variables' => array('node' => NULL),
+    'tripal_organism_libraries' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_organism_libraries',
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // tripal_feature templates
-    'tripal_feature_libraries' => array(
-      'variables' => array('node' => NULL),
+    'tripal_feature_libraries' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_libraries',
       'path' => "$path/theme/templates",
-    ),
+    ],
 
-  );
+  ];
   return $items;
 }
 
@@ -252,9 +259,9 @@ function tripal_library_theme($existing, $type, $theme, $path) {
  *
  * @ingroup tripal_legacy_library
  */
-function tripal_library_help ($path, $arg) {
+function tripal_library_help($path, $arg) {
   if ($path == 'admin/help#tripal_library') {
-    return theme('tripal_library_help', array());
+    return theme('tripal_library_help', []);
   }
 }
 

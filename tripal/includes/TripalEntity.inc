@@ -1,9 +1,11 @@
 <?php
+
 /**
  * A class the controller will use for instantiating the TripalEntity entity.
  */
 class TripalEntity extends Entity {
-  public function __construct($values = array(), $entity_type) {
+
+  public function __construct($values = [], $entity_type) {
     parent::__construct($values, $entity_type);
   }
 
@@ -12,7 +14,7 @@ class TripalEntity extends Entity {
   }
 
   protected function defaultUri() {
-    return array('path' => 'TripalEntity/' . $this->id);
+    return ['path' => 'TripalEntity/' . $this->id];
   }
 
 }

@@ -29,9 +29,9 @@ require_once 'includes/tripal_project.chado_node.inc';
  * @ingroup tripal_legacy_project
  */
 function tripal_project_views_api() {
-  return array(
-      'api' => 3.0,
-  );
+  return [
+    'api' => 3.0,
+  ];
 }
 
 /**
@@ -40,64 +40,71 @@ function tripal_project_views_api() {
  * @ingroup tripal_legacy_project
  */
 function tripal_project_menu() {
-  $items = array();
+  $items = [];
 
-  $items[ 'admin/tripal/legacy/tripal_project' ]= array(
+  $items['admin/tripal/legacy/tripal_project'] = [
     'title' => 'Projects',
     'description' => ('A project. Can be used for grouping data such as with the natural diversity module data.'),
     'page callback' => 'tripal_project_admin_project_view',
-    'access arguments' => array('administer tripal project'),
-    'type' => MENU_NORMAL_ITEM
-  );
+    'access arguments' => ['administer tripal project'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-  $items['admin/tripal/legacy/tripal_project/help']= array(
+  $items['admin/tripal/legacy/tripal_project/help'] = [
     'title' => 'Help',
     'description' => ("Basic Description of Tripal Project Module Functionality."),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_project_help'),
-    'access arguments' => array('administer tripal project'),
+    'page arguments' => ['tripal_project_help'],
+    'access arguments' => ['administer tripal project'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 6
-  );
+    'weight' => 6,
+  ];
 
-  $items['admin/tripal/legacy/tripal_project/configuration']= array(
+  $items['admin/tripal/legacy/tripal_project/configuration'] = [
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_project_admin'),
-    'access arguments' => array('administer tripal project'),
+    'page arguments' => ['tripal_project_admin'],
+    'access arguments' => ['administer tripal project'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 4
-  );
+    'weight' => 4,
+  ];
 
-  $items['admin/tripal/legacy/tripal_project/sync'] = array(
+  $items['admin/tripal/legacy/tripal_project/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for projects stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_project', 'chado_project'),
-    'access arguments' => array('administer tripal project'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_project',
+      'chado_project',
+    ],
+    'access arguments' => ['administer tripal project'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
+    'weight' => 0,
+  ];
 
-  $items['admin/tripal/legacy/tripal_project/chado_project_toc'] = array(
+  $items['admin/tripal/legacy/tripal_project/chado_project_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for project nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_project'),
-    'access arguments' => array('administer tripal project'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_project'],
+    'access arguments' => ['administer tripal project'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_project/views/projects/enable'] = array(
+  $items['admin/tripal/legacy/tripal_project/views/projects/enable'] = [
     'title' => 'Enable Project Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/legacy/tripal_project'),
-    'access arguments' => array('administer tripal project'),
+    'page arguments' => [
+      'tripal_project_admin_projects',
+      'admin/tripal/legacy/tripal_project',
+    ],
+    'access arguments' => ['administer tripal project'],
     'type' => MENU_CALLBACK,
-  );
+  ];
   return $items;
 }
 
@@ -107,14 +114,14 @@ function tripal_project_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_project_search_biological_data_views() {
-  return array(
-    'tripal_project_user_projects' => array(
+  return [
+    'tripal_project_user_projects' => [
       'machine_name' => 'tripal_project_user_projects',
       'human_name' => 'Projects',
       'description' => 'A project. Can be used for grouping data such as with the natural diversity module data.',
-      'link' => 'chado/project'
-    ),
-  );
+      'link' => 'chado/project',
+    ],
+  ];
 }
 
 /**
@@ -123,22 +130,23 @@ function tripal_project_search_biological_data_views() {
  *
  * @ingroup tripal_legacy_project
  */
-function tripal_project_help ($path, $arg) {
+function tripal_project_help($path, $arg) {
   if ($path == 'admin/help#tripal_project') {
-    return theme('tripal_project_help', array());
+    return theme('tripal_project_help', []);
   }
 }
 
 /**
  * Implements hook_permission()
  *
- *  This function sets the permission for the user to access the information in the database.
- *  This includes creating, inserting, deleting and updating of information in the database
+ *  This function sets the permission for the user to access the information in
+ * the database. This includes creating, inserting, deleting and updating of
+ * information in the database
  *
  * @ingroup tripal_legacy_project
  */
 function tripal_project_permission() {
-  return array(
+  return [
     /*
     'access chado_project content' => array(
       'title' => t('View Projects'),
@@ -161,7 +169,7 @@ function tripal_project_permission() {
       'description' => t('Allow users to administer all projects.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -176,49 +184,49 @@ function tripal_project_permission() {
 function tripal_project_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_project' => array(
+  $items = [
+    'node__chado_project' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_project_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_contact' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_contact' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_contact',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_publications' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_publications' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_publications',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_relationships' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_relationships' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_relationships',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_teaser' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_project_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_project_teaser',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_project_help' => array(
-      'variables' =>  array(NULL),
+    ],
+    'tripal_project_help' => [
+      'variables' => [NULL],
       'template' => 'tripal_project_help',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
   return $items;
 }
 

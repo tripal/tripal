@@ -26,7 +26,7 @@ class sbo__database_cross_reference extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SBO',
     // The name of the term.
@@ -37,7 +37,7 @@ class sbo__database_cross_reference extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'sbo__database_cross_reference_widget';
@@ -51,6 +51,7 @@ class sbo__database_cross_reference extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -67,16 +68,16 @@ class sbo__database_cross_reference extends ChadoField {
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
     $dburl_term = tripal_get_chado_semweb_term('db', 'url');
 
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'label' => 'Cross Reference',
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => FALSE,
-        'elements' => array(
-          $dbname_term => array(
+        'elements' => [
+          $dbname_term => [
             'searchable' => TRUE,
             'label' => 'Cross Reference Database Name',
             'help' => 'The name of the remote database that houses the cross reference.',
@@ -84,8 +85,8 @@ class sbo__database_cross_reference extends ChadoField {
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $accession_term => array(
+          ],
+          $accession_term => [
             'searchable' => TRUE,
             'label' => 'Cross Reference Database Accession',
             'help' => 'The unique accession (identifier) in the database that houses the cross reference.',
@@ -93,8 +94,8 @@ class sbo__database_cross_reference extends ChadoField {
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $dburl_term => array(
+          ],
+          $dburl_term => [
             'searchable' => FALSE,
             'label' => 'Cross Reference Database URL',
             'help' => 'The URL of the database that houses the cross reference.',
@@ -102,11 +103,12 @@ class sbo__database_cross_reference extends ChadoField {
             'type' => 'xs:anyURI',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -130,17 +132,17 @@ class sbo__database_cross_reference extends ChadoField {
     $dburl_term = tripal_get_chado_semweb_term('db', 'url');
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_rcolumn,
       'chado-' . $field_table . '__dbxref_id' => '',
       'db_id' => '',
       'accession' => '',
-    );
+    ];
 
     $linker_table = $base_table . '_dbxref';
-    $options = array('return_array' => 1);
+    $options = ['return_array' => 1];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
     if (count($record->$linker_table) > 0) {
       $i = 0;
@@ -154,18 +156,18 @@ class sbo__database_cross_reference extends ChadoField {
         }
 
         $URL = tripal_get_dbxref_url($dbxref);
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
+        $entity->{$field_name}['und'][$i] = [
+          'value' => [
             $dbname_term => $dbxref->db_id->name,
             $accession_term => $dbxref->accession,
             $dburl_term => $URL,
-          ),
+          ],
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
           'chado-' . $field_table . '__dbxref_id' => $dbxref->dbxref_id,
           'db_id' => $dbxref->db_id->db_id,
           'accession' => $dbxref->accession,
-        );
+        ];
         $i++;
       }
     }
@@ -274,22 +276,22 @@ class sbo__database_cross_reference extends ChadoField {
       // we borrow the code from the 'form_error' function and append the field
       // so that the proper field is highlighted on error.
       if (!$db_id) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database must be provided for the cross reference."),
           'error' => 'sbo__database_cross_reference',
-        );
+        ];
       }
       if ($db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',
-        );
+        ];
       }
       if (!$db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database and the accession must both be provided."),
           'error' => 'sbo__database_cross_reference',
-        );
+        ];
       }
     }
   }

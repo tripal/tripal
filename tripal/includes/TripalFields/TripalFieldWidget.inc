@@ -1,11 +1,12 @@
 <?php
 
 class TripalFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Tripal Field.';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('no_widget');
+  public static $field_types = ['no_widget'];
 
 
   /**
@@ -39,10 +40,10 @@ class TripalFieldWidget {
    */
   public static function info() {
     $class = get_called_class();
-    return array(
+    return [
       'label' => $class::$default_label,
       'field types' => $class::$field_types,
-    );
+    ];
   }
 
   /**
@@ -102,13 +103,13 @@ class TripalFieldWidget {
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
     $widget['#field'] = $this->field;
     $widget['#instance'] = $this->instance;
-    $widget['#element_validate'] = array('tripal_field_widget_form_validate');
+    $widget['#element_validate'] = ['tripal_field_widget_form_validate'];
     $widget['#theme'] = 'tripal_field_default';
   }
 
@@ -144,21 +145,21 @@ class TripalFieldWidget {
    * chado.feature_synonym table.  This insert occurs in the widgetFormSubmit
    * function.
    *
-   *  @param $entity_type
+   * @param $entity_type
    *    The type of $entity.
-   *  @param $entity
+   * @param $entity
    *    The entity for the operation.
-   *  @param $field
+   * @param $field
    *    The field structure for the operation.
-   *  @param $instance
+   * @param $instance
    *    The instance structure for $field on $entity's bundle.
-   *  @param $langcode
+   * @param $langcode
    *    The language associated with $items.
-   *  @param $items
+   * @param $items
    *    $entity->{$field['field_name']}[$langcode], or an empty array if unset.
-   *  @param $form
+   * @param $form
    *    The submitted form array.
-   *  @param $form_state.
+   * @param $form_state .
    *    The form state array.
    */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {

@@ -16,7 +16,7 @@ function tripal_pub_disable() {
   require_once("tripal_pub.views_default.inc");
   $views = tripal_pub_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_pub_disable() {
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_pub'] = array(
+      $requirements ['tripal_pub'] = [
         'title' => "tripal_pub",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -52,7 +52,7 @@ function tripal_pub_install() {
   // add loading of the the tripal pub ontology to the job queue
   $obo_path = '{tripal_pub}/files/tpub.obo';
   $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
+  tripal_submit_obo_job(['obo_id' => $obo_id]);
 
   tripal_pub_add_cvs();
   tripal_pub_add_cvterms();
@@ -92,75 +92,76 @@ function tripal_pub_enable() {
  */
 function tripal_pub_schema() {
 
-  $schema['chado_pub'] = array(
-    'fields' => array(
-      'vid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE, 'default' => 0
-      ),
-      'nid' => array(
+  $schema['chado_pub'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'pub_id' => array(
+        'default' => 0,
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'sync_date' => array(
+        'default' => 0,
+      ],
+      'sync_date' => [
         'type' => 'int',
         'not null' => FALSE,
-        'description' => 'UNIX integer sync date/time'
-      ),
-    ),
-    'indexes' => array(
-      'pub_id' => array('pub_id')
-    ),
-    'unique keys' => array(
-      'nid_vid' => array('nid', 'vid'),
-      'vid' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+        'description' => 'UNIX integer sync date/time',
+      ],
+    ],
+    'indexes' => [
+      'pub_id' => ['pub_id'],
+    ],
+    'unique keys' => [
+      'nid_vid' => ['nid', 'vid'],
+      'vid' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
 
-  $schema['tripal_pub_import'] = array(
-    'fields' => array(
-      'pub_import_id' => array(
+  $schema['tripal_pub_import'] = [
+    'fields' => [
+      'pub_import_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'name' => array(
+        'not null' => TRUE,
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 255,
-        'not null' => TRUE
-      ),
-      'criteria' => array(
+        'not null' => TRUE,
+      ],
+      'criteria' => [
         'type' => 'text',
         'size' => 'normal',
         'not null' => TRUE,
-        'description' => 'Contains a serialized PHP array containing the search criteria'
-      ),
-      'disabled'  => array(
+        'description' => 'Contains a serialized PHP array containing the search criteria',
+      ],
+      'disabled' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not NULL' => TRUE,
-        'default' => 0
-      ),
-      'do_contact'  => array(
+        'default' => 0,
+      ],
+      'do_contact' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not NULL' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array('pub_import_id'),
-    'indexes' => array(
-      'name' => array('name')
-    ),
-  );
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['pub_import_id'],
+    'indexes' => [
+      'name' => ['name'],
+    ],
+  ];
 
   return $schema;
 }
@@ -217,7 +218,8 @@ function tripal_pub_schema() {
 } */
 
 /**
- * This is the required update for tripal_pub when upgrading from Drupal core API 6.x.
+ * This is the required update for tripal_pub when upgrading from Drupal core
+ * API 6.x.
  *
  */
 function tripal_pub_update_7200() {
@@ -229,32 +231,31 @@ function tripal_pub_update_7200() {
     if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
-        ->fields(array(
+        ->fields([
           'name' => 'tripal_pub',
-          'definition' => 'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
-        ))
+          'definition' => 'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.',
+        ])
         ->execute();
     }
     // use the new pub_property CV we just added
     db_insert('tripal_cv_defaults')
-      ->fields(array(
+      ->fields([
         'table_name' => 'pub',
         'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
+        'cv_id' => $cv_id,
+      ])
       ->execute();
     // use the new pub_property CV we just added
     db_insert('tripal_cv_defaults')
-      ->fields(array(
+      ->fields([
         'table_name' => 'pubprop',
         'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
+        'cv_id' => $cv_id,
+      ])
       ->execute();
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add pub_property vocabulary: '. $error);
+    throw new DrupalUpdateException('Failed to add pub_property vocabulary: ' . $error);
   }
 
   // add the pub_property CV
@@ -263,16 +264,15 @@ function tripal_pub_update_7200() {
     if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
-        ->fields(array(
+        ->fields([
           'name' => 'pub_property',
-          'definition' => 'Contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-        ))
+          'definition' => 'Contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.',
+        ])
         ->execute();
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add pub_property vocabulary: '. $error);
+    throw new DrupalUpdateException('Failed to add pub_property vocabulary: ' . $error);
   }
 
   // add the pub_type CV
@@ -281,16 +281,15 @@ function tripal_pub_update_7200() {
     if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'pub_type',
-        'definition' => 'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-      ))
-      ->execute();
+        ->fields([
+          'name' => 'pub_type',
+          'definition' => 'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.',
+        ])
+        ->execute();
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add pub_type vocabulary: '. $error);
+    throw new DrupalUpdateException('Failed to add pub_type vocabulary: ' . $error);
   }
 
   // add the pub_relationship CV
@@ -299,24 +298,23 @@ function tripal_pub_update_7200() {
     if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'pub_relationship',
-        'definition' => 'Contains types of relationships between publications.'
-      ))
-      ->execute();
+        ->fields([
+          'name' => 'pub_relationship',
+          'definition' => 'Contains types of relationships between publications.',
+        ])
+        ->execute();
     }
     // use the new pub_property CV we just added
     db_insert('tripal_cv_defaults')
-      ->fields(array(
+      ->fields([
         'table_name' => 'pub_relationship',
         'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
+        'cv_id' => $cv_id,
+      ])
       ->execute();
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add pub_relationship vocabulary: '. $error);
+    throw new DrupalUpdateException('Failed to add pub_relationship vocabulary: ' . $error);
   }
 }
 
@@ -325,12 +323,12 @@ function tripal_pub_update_7200() {
  * other modules whose updates must be run prior to this one.
  */
 function tripal_pub_update_dependencies() {
-  $dependencies = array();
+  $dependencies = [];
 
   // the tripal_cv update 7200 must run prior to update 7200 of this module
-  $dependencies['tripal_pub'][7200] = array(
-    'tripal_cv' => 7200
-  );
+  $dependencies['tripal_pub'][7200] = [
+    'tripal_cv' => 7200,
+  ];
 
   return $dependencies;
 }
@@ -345,7 +343,7 @@ function tripal_pub_update_7201() {
   // to keep from error messages appear, we will drop the FK if it already
   // exists and then re-add it.
   try {
-    $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', array(':constraint' => 'pubauthor_contact_pubauthor_id_fkey'))->fetchField();
+    $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', [':constraint' => 'pubauthor_contact_pubauthor_id_fkey'])->fetchField();
     if ($fkey_exists) {
       db_query('
         ALTER TABLE chado.pubauthor_contact
@@ -368,12 +366,12 @@ function tripal_pub_update_7201() {
       FOREIGN KEY (contact_id) REFERENCES chado.contact (contact_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+    throw new DrupalUpdateException('Failed to update foriegn key: ' . $error);
   }
 }
+
 /**
  * Updates path of tripal_pub OBO to be relative.
  */
@@ -387,9 +385,8 @@ function tripal_pub_update_7202() {
     // Add in the updated path.
     $obo_path = '{tripal_pub}/files/tpub.obo';
     $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to update tripal_pub OBO path: '. $error);
+    throw new DrupalUpdateException('Failed to update tripal_pub OBO path: ' . $error);
   }
 }

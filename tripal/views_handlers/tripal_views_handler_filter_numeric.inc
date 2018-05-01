@@ -5,44 +5,44 @@ class tripal_views_handler_filter_numeric extends tripal_views_handler_filter {
   var $always_multiple = TRUE;
 
   function operators() {
-    $operators = array(
-      '<' => array(
+    $operators = [
+      '<' => [
         'title' => t('Is less than'),
         'method' => 'op_simple',
         'short' => t('<'),
         'values' => 1,
-      ),
-      '<=' => array(
+      ],
+      '<=' => [
         'title' => t('Is less than or equal to'),
         'method' => 'op_simple',
         'short' => t('<='),
         'values' => 1,
-      ),
-      '=' => array(
+      ],
+      '=' => [
         'title' => t('Is equal to'),
         'method' => 'op_simple',
         'short' => t('='),
         'values' => 1,
-      ),
-      '!=' => array(
+      ],
+      '!=' => [
         'title' => t('Is not equal to'),
         'method' => 'op_simple',
         'short' => t('!='),
         'values' => 1,
-      ),
-      '>=' => array(
+      ],
+      '>=' => [
         'title' => t('Is greater than or equal to'),
         'method' => 'op_simple',
         'short' => t('>='),
         'values' => 1,
-      ),
-      '>' => array(
+      ],
+      '>' => [
         'title' => t('Is greater than'),
         'method' => 'op_simple',
         'short' => t('>'),
         'values' => 1,
-      ),
-    );
+      ],
+    ];
 
     return $operators;
   }
@@ -64,11 +64,13 @@ class tripal_views_handler_filter_numeric extends tripal_views_handler_filter {
   }
 
 
-
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['expose']['contains']['required'] = array('default' => FALSE, 'bool' => TRUE);
+    $options['expose']['contains']['required'] = [
+      'default' => FALSE,
+      'bool' => TRUE,
+    ];
 
     return $options;
   }
@@ -77,7 +79,7 @@ class tripal_views_handler_filter_numeric extends tripal_views_handler_filter {
    * Build strings from the operators() for 'select' options
    */
   function operator_options($which = 'title') {
-    $options = array();
+    $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
     }
@@ -105,7 +107,7 @@ class tripal_views_handler_filter_numeric extends tripal_views_handler_filter {
   }
 
   function operator_values($values = 1) {
-    $options = array();
+    $options = [];
     foreach ($this->operators() as $id => $info) {
       if (isset($info['values']) && $info['values'] == $values) {
         $options[] = $id;
@@ -141,29 +143,29 @@ class tripal_views_handler_filter_numeric extends tripal_views_handler_filter {
     }
 
     if ($which == 'all' || $which == 'value') {
-      $form['value'] = array(
+      $form['value'] = [
         '#type' => 'textfield',
         '#title' => t('Value'),
         '#size' => 30,
         '#default_value' => $this->value,
-      );
+      ];
       if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier])) {
         $form_state['input'][$identifier] = $this->value;
       }
 
       if ($which == 'all') {
-        $form['value'] += array(
-          '#dependency' => array($source => $this->operator_values(1)),
-        );
+        $form['value'] += [
+          '#dependency' => [$source => $this->operator_values(1)],
+        ];
       }
     }
 
     if (!isset($form['value'])) {
       // Ensure there is something in the 'value'.
-      $form['value'] = array(
+      $form['value'] = [
         '#type' => 'value',
-        '#value' => NULL
-      );
+        '#value' => NULL,
+      ];
     }
   }
 
