@@ -5,9 +5,9 @@
  */
 
 /**
- * This filter ensures that when a page is first loaded, there are no results (ie: the
- * query is not run). This imitates an advanced search form allowing users to fist
- * enter other filter values and then retrieve results.
+ * This filter ensures that when a page is first loaded, there are no results
+ * (ie: the query is not run). This imitates an advanced search form allowing
+ * users to fist enter other filter values and then retrieve results.
  *
  * @ingroup tripal_views
  */
@@ -25,29 +25,29 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
    */
   function options_form(&$form, &$form_state) {
 
-    $form['msg'] = array(
+    $form['msg'] = [
       '#type' => 'item',
       '#markup' => t('This filter ensures that when the page is first loaded, there are no results '
-        .'(query is not run). This imitates an advanced search form allowing users to first enter '
-        .'filter values and then retrieve results. This is especially suited for views with a very '
-        .'large number of results if left unfiltered since it removes the long load time before '
-        .'even allowing users the ability to filter down the results.')
-    );
+        . '(query is not run). This imitates an advanced search form allowing users to first enter '
+        . 'filter values and then retrieve results. This is especially suited for views with a very '
+        . 'large number of results if left unfiltered since it removes the long load time before '
+        . 'even allowing users the ability to filter down the results.'),
+    ];
 
-    $form['apply_button'] = array(
+    $form['apply_button'] = [
       '#type' => 'item',
       '#title' => t('Apply Button Text'),
       '#markup' => t('This can now to be changed through the Views UI in the "Advanced" '
-        . 'area by clicking "Settings" for the "Exposed Form Style" when the style is "Basic".')
-    );
+        . 'area by clicking "Settings" for the "Exposed Form Style" when the style is "Basic".'),
+    ];
 
-    $form['no_results_text'] = array(
+    $form['no_results_text'] = [
       '#type' => 'item',
       '#title' => t('Header Text before Search'),
       '#markup' => t('When the view is first loaded (before any filters are applied), '
         . 'the "No Results Behaviour" textare added in the "Advanced" are of the Views '
         . 'UI will be shown to the user.'),
-    );
+    ];
 
   }
 

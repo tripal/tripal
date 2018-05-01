@@ -1,6 +1,7 @@
 <?php
 
 class TripalCSVDownloader extends TripalFieldDownloader {
+
   /**
    * Sets the label shown to the user describing this formatter.  It
    * should be a short identifier. Use the $full_label for a more
@@ -34,7 +35,7 @@ class TripalCSVDownloader extends TripalFieldDownloader {
   protected function formatEntity($entity) {
     $bundle_name = $entity->bundle;
     $site = !property_exists($entity, 'site_id') ? 'local' : $entity->site_id;
-    $col = array();
+    $col = [];
 
     // Iterate through all of the printable fields and add the value to
     // the row.
@@ -86,18 +87,18 @@ class TripalCSVDownloader extends TripalFieldDownloader {
         // TODO: What to do with fields that have multiple values?
       }
     }
-    return array(implode(",", $col));
+    return [implode(",", $col)];
   }
 
   /**
    * @see TripalFieldDownloader::getHeader()
    */
   protected function getHeader() {
-    $row = array();
+    $row = [];
     foreach ($this->printable_fields as $accession => $label) {
       $row[] = $label;
     }
-    return array(implode(",", $row));
+    return [implode(",", $row)];
   }
 
 }

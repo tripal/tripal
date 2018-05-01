@@ -24,7 +24,7 @@ class chado_linker__prop extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'local',
     // The name of the term.
@@ -43,7 +43,7 @@ class chado_linker__prop extends ChadoField {
     'base_table' => '',
     // The number of default rows to show. The default is 1.
     'rows' => 1,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'chado_linker__prop_widget';
@@ -70,14 +70,14 @@ class chado_linker__prop extends ChadoField {
 
     $vocabulary = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
-    $cvterm = tripal_get_cvterm(array(
-      'dbxref_id' => array(
-        'db_id' => array(
+    $cvterm = tripal_get_cvterm([
+      'dbxref_id' => [
+        'db_id' => [
           'name' => $vocabulary,
-        ),
+        ],
         'accession' => $accession,
-      ),
-    ));
+      ],
+    ]);
     $cvterm_id = $cvterm->cvterm_id;
 
     // Get the FK that links to the base record.
@@ -91,37 +91,37 @@ class chado_linker__prop extends ChadoField {
 
     // Set some defaults for the empty record.
     $chado_record = $entity->chado_record;
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->$fkey_lcolumn,
       'chado-' . $field_table . '__value' => '',
       'chado-' . $field_table . '__type_id' => $cvterm_id,
       'chado-' . $field_table . '__rank' => '',
-    );
+    ];
 
     // Get the properties associated with this record for the given type.
-    $columns = array('*');
-    $match = array(
+    $columns = ['*'];
+    $match = [
       $fkey_lcolumn => $chado_record->{$fkey_lcolumn},
       'type_id' => $cvterm_id,
-    );
-    $options = array(
+    ];
+    $options = [
       'return_array' => TRUE,
-      'order_by' => array('rank' => 'ASC')
-    );
+      'order_by' => ['rank' => 'ASC'],
+    ];
     $properties = chado_select_record($field_table, $columns, $match, $options);
     for ($i = 0; $i < count($properties); $i++) {
       $property = $properties[$i];
       foreach ($schema['fields'] as $fname => $details) {
-        $entity->{$field_name}['und'][$i] = array(
+        $entity->{$field_name}['und'][$i] = [
           'value' => $property->value,
           'chado-' . $field_table . '__' . $pkey => $property->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $property->$fkey_lcolumn,
           'chado-' . $field_table . '__value' => $property->value,
           'chado-' . $field_table . '__type_id' => $property->type_id,
           'chado-' . $field_table . '__rank' => $property->rank,
-        );
+        ];
       }
     }
   }
@@ -141,7 +141,7 @@ class chado_linker__prop extends ChadoField {
     $vocab = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
 
-    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+    $cvterm = tripal_get_cvterm(['id' => $vocab . ':' . $accession]);
 
     $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey");
     $query->condition("$alias.type_id", $cvterm->cvterm_id);
@@ -163,7 +163,7 @@ class chado_linker__prop extends ChadoField {
     $vocab = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
 
-    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+    $cvterm = tripal_get_cvterm(['id' => $vocab . ':' . $accession]);
 
     $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey AND $alias.type_id = $cvterm->cvterm_id", "LEFT OUTER");
     $query->orderBy("$alias.value", $order['direction']);

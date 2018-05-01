@@ -1,6 +1,6 @@
 <?php
 /**
- *  @file
+ * @file
  *  This file contains the basic functions for views integration of
  *  chado/tripal feature tables
  */
@@ -17,14 +17,14 @@
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_handlers() {
-  return array(
-    'info' => array(
+  return [
+    'info' => [
       'path' => drupal_get_path('module', 'tripal_feature') . '/views_handlers',
-    ),
-    'handlers' => array(
-      'views_handler_field_residues' => array(
+    ],
+    'handlers' => [
+      'views_handler_field_residues' => [
         'parent' => 'views_handler_field',
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 }

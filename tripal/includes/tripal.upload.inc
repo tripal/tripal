@@ -11,12 +11,12 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
 
   if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
     $message = 'Could not access the directory on the server for storing this file.';
-    watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-    drupal_json_output(array(
-      'status'  => 'failed',
+    watchdog('tripal', $message, [], WATCHDOG_ERROR);
+    drupal_json_output([
+      'status' => 'failed',
       'message' => $message,
       'file_id' => '',
-    ));
+    ]);
     return;
   }
 
@@ -24,19 +24,19 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   // is allowed to stop the upload as needed.
   $hook_name = $module . '_file_upload_check';
   if (function_exists($hook_name)) {
-    $details = array(
+    $details = [
       'filename' => $filename,
       'file_size' => $file_size,
       'chunk_size' => $chunk_size,
-    );
+    ];
     $message = '';
     $status = $hook_name($action, $details, $message);
     if ($status === FALSE) {
-      drupal_json_output(array(
+      drupal_json_output([
         'status' => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));
+      ]);
       return;
     }
   }
@@ -54,8 +54,10 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
       break;
   }
 }
+
 /**
  * Merges all chunks into a single file
+ *
  * @param unknown $filename
  */
 function tripal_file_upload_merge($filename, $type, $user_dir) {
@@ -82,7 +84,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
 
     // Open the new merged file.
     $merge_fh = fopen($merge_file, "w");
-    if ($merge_fh){
+    if ($merge_fh) {
       if (flock($merge_fh, LOCK_EX)) {
         $chunks_written = $log['chunks_written'];
         $max_chunk = max(array_keys($chunks_written));
@@ -133,7 +135,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
   // deal with it.
   if ($status != 'failed') {
     $function = $module . '_handle_uploaded_file';
-    if(function_exists($function)) {
+    if (function_exists($function)) {
       $file_id = $function($filename, $merge_file, $type);
       if ($file_id) {
         $file = file_load($file_id);
@@ -157,14 +159,15 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
   }
 
   if ($status == 'failed') {
-    watchdog('tripal', $message, array(), WATCHDOG_ERROR);
+    watchdog('tripal', $message, [], WATCHDOG_ERROR);
   }
-  drupal_json_output(array(
-    'status'  => $status,
+  drupal_json_output([
+    'status' => $status,
     'message' => $message,
     'file_id' => $file_id,
-  ));
+  ]);
 }
+
 /**
  * Checks the size of a chunk to see if is fully uploaded.
  *
@@ -199,12 +202,13 @@ function tripal_file_upload_verify($filename, $chunk, $user_dir) {
     }
   }
 
-  drupal_json_output(array(
+  drupal_json_output([
     'status' => 'success',
     'message' => '',
-    'curr_chunk'  => $i,
-  ));
+    'curr_chunk' => $i,
+  ]);
 }
+
 /**
  * Saves the contents of the file being sent to the server.
  *
@@ -246,6 +250,7 @@ function tripal_file_upload_put($filename, $chunk, $user_dir) {
   $log['chunks_written'][$chunk] = $size;
   tripal_file_upoad_write_log($temp_dir, $log);
 }
+
 /**
  * Reads the upload log file.
  *
@@ -277,12 +282,13 @@ function tripal_file_upload_read_log($temp_dir) {
     fclose($fh);
   }
   if (!is_array($log)) {
-    $log = array(
-      'chunks_written' => array(),
-    );
+    $log = [
+      'chunks_written' => [],
+    ];
   }
   return $log;
 }
+
 /**
  * Writes the upload log file.
  *
@@ -302,9 +308,9 @@ function tripal_file_upoad_write_log($temp_dir, $log) {
   $log_file = $temp_dir . '/tripal_upload.log';
 
   if (!$log or !is_array($log)) {
-    $log = array(
-      'chunks_written' => array(),
-    );
+    $log = [
+      'chunks_written' => [],
+    ];
   }
 
   // Get the last chunk read

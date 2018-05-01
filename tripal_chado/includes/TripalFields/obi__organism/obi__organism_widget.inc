@@ -6,7 +6,7 @@ class obi__organism_widget extends ChadoFieldWidget {
   public static $default_label = 'Organism';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('obi__organism');
+  public static $field_types = ['obi__organism'];
 
 
   /**
@@ -35,12 +35,12 @@ class obi__organism_widget extends ChadoFieldWidget {
       $organism_id = $items[0][$linker_field];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
     $options = tripal_get_organism_select_options(FALSE);
-    $widget[$linker_field] = array(
+    $widget[$linker_field] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -49,7 +49,7 @@ class obi__organism_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
+    ];
   }
 
   /**

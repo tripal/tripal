@@ -6,19 +6,19 @@
  * @param unknown $form_state
  */
 function tripal_admin_data_collection_form($form, &$form_state) {
-  $form = array();
+  $form = [];
 
-  $options = array(0 => t('Disabled'), 1 => t('Enabled'));
-  $form['enabled'] = array(
+  $options = [0 => t('Disabled'), 1 => t('Enabled')];
+  $form['enabled'] = [
     '#type' => 'radios',
     '#title' => t('Activate Data Collections'),
     '#options' => $options,
     '#description' => t('Data collections allow users to save results of search queries for later download or use by other tools.'),
     '#default_value' => variable_get('tripal_data_collections_enabled', 1),
     '#required' => TRUE,
-  );
+  ];
 
-  $form['lifespan'] = array(
+  $form['lifespan'] = [
     '#type' => 'textfield',
     '#title' => t('Collection Lifespan'),
     '#description' => t('Enter the number of days that data collections exist.  
@@ -27,12 +27,12 @@ function tripal_admin_data_collection_form($form, &$form_state) {
        sites Drupal cron executes.'),
     '#default_value' => variable_get('tripal_data_collections_lifespan', 30),
     '#required' => TRUE,
-  );
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Save changes'),
-  );
+  ];
 
   return $form;
 }
@@ -44,7 +44,7 @@ function tripal_admin_data_collection_form_validate($form, &$form_state) {
   $enable = $form_state['values']['enabled'];
   $lifespan = $form_state['values']['lifespan'];
 
-  if (!preg_match('/^\d+$/',  $lifespan)) {
+  if (!preg_match('/^\d+$/', $lifespan)) {
     form_set_error('filespan', 'Please provide a valid numeric value for the number of hours collections exist.');
   }
   else {
@@ -53,6 +53,7 @@ function tripal_admin_data_collection_form_validate($form, &$form_state) {
     }
   }
 }
+
 /**
  * Sumbit function for the tripal_admin_data_collection_form form.
  */
@@ -132,6 +133,7 @@ function tripal_vocabulary_import_form_validate($form, &$form_state) {
   }
   return $form;
 }
+
 /**
  *
  * @param $form

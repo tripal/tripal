@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_cv
  */
 function tripal_cv_views_default_views() {
-  $views = array();
+  $views = [];
 
   return $views;
 }

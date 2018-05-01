@@ -23,20 +23,20 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
    * @see TripalFieldDownloader::format()
    */
   protected function formatEntity($entity) {
-    $lines = array();
+    $lines = [];
     $site = !property_exists($entity, 'site_id') ? 'local' : $entity->site_id;
     $bundle_name = $entity->bundle;
 
     // Holds the list of sequence identifiers that will be used to build the
     // definition line.
-    $identifiers = array(
+    $identifiers = [
       'identifier' => '',
       'name' => '',
       'accession' => '',
-    );
+    ];
     // Holds the list of non identifiers that will be used in the definitino
     // line.
-    $others = array();
+    $others = [];
     // Holds the sequence string for the FASTA item.
     $residues = '';
 
@@ -63,36 +63,48 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
           $identifiers['identifier'] = $value;
         }
         // Add in the non-unique name for this sequence to the defline.
-        else if ($accession == 'schema:name') {
-          $identifiers['name'] = $value;
-        }
-        // Add in the local site accession for this sequence to the defline.
-        else if ($accession == 'data:2091') {
-          $identifiers['accession'] = $value;
-        }
-        // Add in the sequence coordinataes to the defline.
-        else if ($accession == 'data:2012') {
-          $others[$instance['label']] =  $value["data:3002"] . ':' . $value["local:fmin"] . '-' . $value["local:fmax"] . $value["data:0853"];
-        }
-        // Get the nuclotide sequence.
-        else if ($accession == 'data:2044') {
-          $residues = $entity->{$field_name}['und'][0]['value'];
-        }
-        // Skip the protein sequence if it exists.
-        else if ($accession == 'data:2976') {
-          // do nothing.
-        }
-        // Add in the organism.
-        else if ($accession == 'OBI:0100026') {
-          //$others[$instance['label']] = strip_tags($value['rdfs:label']);
-        }
-        // All other fields add them to the others list.
         else {
-          if (!is_array($value)) {
-            $others[$instance['label']] = $value;
+          if ($accession == 'schema:name') {
+            $identifiers['name'] = $value;
           }
+          // Add in the local site accession for this sequence to the defline.
           else {
-            // TODO: What to do with fields that are arrays?
+            if ($accession == 'data:2091') {
+              $identifiers['accession'] = $value;
+            }
+            // Add in the sequence coordinataes to the defline.
+            else {
+              if ($accession == 'data:2012') {
+                $others[$instance['label']] = $value["data:3002"] . ':' . $value["local:fmin"] . '-' . $value["local:fmax"] . $value["data:0853"];
+              }
+              // Get the nuclotide sequence.
+              else {
+                if ($accession == 'data:2044') {
+                  $residues = $entity->{$field_name}['und'][0]['value'];
+                }
+                // Skip the protein sequence if it exists.
+                else {
+                  if ($accession == 'data:2976') {
+                    // do nothing.
+                  }
+                  // Add in the organism.
+                  else {
+                    if ($accession == 'OBI:0100026') {
+                      //$others[$instance['label']] = strip_tags($value['rdfs:label']);
+                    }
+                    // All other fields add them to the others list.
+                    else {
+                      if (!is_array($value)) {
+                        $others[$instance['label']] = $value;
+                      }
+                      else {
+                        // TODO: What to do with fields that are arrays?
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -108,9 +120,9 @@ class TripalNucFASTADownloader extends TripalFieldDownloader {
     }
     else {
       $defline = ">";
-      $defline .= $identifiers['identifier'] ?  $identifiers['identifier'] . ' ' : '';
-      $defline .= $identifiers['name'] ?  $identifiers['name'] . ' ' : '';
-      $defline .= $identifiers['accession'] ?  $identifiers['accession'] . ' ' : '';
+      $defline .= $identifiers['identifier'] ? $identifiers['identifier'] . ' ' : '';
+      $defline .= $identifiers['name'] ? $identifiers['name'] . ' ' : '';
+      $defline .= $identifiers['accession'] ? $identifiers['accession'] . ' ' : '';
 
       foreach ($others as $k => $v) {
         if ($v) {

@@ -15,7 +15,7 @@ class sio__vocabulary extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SIO',
     // The name of the term.
@@ -26,7 +26,7 @@ class sio__vocabulary extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'sio__vocabulary_widget';
@@ -61,10 +61,10 @@ class sio__vocabulary extends ChadoField {
       // Get the field values.
       $cv_id = $values['chado-' . $field_table . '__cv_id'];
       if (!$cv_id or $cv_id == 0) {
-        $errors[$field_name]['und'][0][] = array(
-          'message' =>  t("Please specify a vocabulary."),
-          'error' => 'chado-' . $field_table . '__cv_id'
-        );
+        $errors[$field_name]['und'][0][] = [
+          'message' => t("Please specify a vocabulary."),
+          'error' => 'chado-' . $field_table . '__cv_id',
+        ];
       }
     }
   }
@@ -83,9 +83,9 @@ class sio__vocabulary extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-    );
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     if ($record) {
       $cv = $record->cv_id;

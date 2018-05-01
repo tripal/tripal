@@ -56,9 +56,11 @@
  * @endcode
  *
  *
- * 2)  Edit the theme/js/[module_name].js and in the "Drupal.behaviors.[module]"
+ * 2)  Edit the theme/js/[module_name].js and in the
+ *   "Drupal.behaviors.[module]"
  * section add a JQuery show function to the form that converts the table
- * created in the Drupal form to a TripalUploader table.  The 'table_id' must be
+ * created in the Drupal form to a TripalUploader table.  The 'table_id' must
+ *   be
  * the same as the 'id' attribute set for the table in the Drupal code above.
  * The 'submit_id' must be the id of the upload button added in the Drupal
  * code above.  The 'category' for the files.  This is the category that
@@ -90,7 +92,8 @@
  * file by querying for the file category for the current project.
  *
  * @code
- *   $seq_files = TripalFeature::getFilesByTypes($user->uid, array('sequence_file'), $project_id);
+ *   $seq_files = TripalFeature::getFilesByTypes($user->uid,
+ *   array('sequence_file'), $project_id);
  * @endcode
  *
  * 4) If the 'target_id' was used in array for step #2 above, then the
@@ -126,7 +129,7 @@
  *
  * @ingroup tripal_upload_api
  */
-function hook_file_upload_check($action, $details, &$message){
+function hook_file_upload_check($action, $details, &$message) {
   switch ($action) {
     case 'save':
       // Place code here when chunks are being saved.

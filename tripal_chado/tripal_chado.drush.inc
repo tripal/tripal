@@ -46,76 +46,76 @@ function tripal_chado_drush_help($command) {
  * @ingroup tripal_drush
  */
 function tripal_chado_drush_command() {
-  $items = array();
+  $items = [];
 
-  $items['trp-refresh-mview'] = array(
+  $items['trp-refresh-mview'] = [
     'description' => dt('Refreshes the contents of the specified materialized view.'),
-    'arguments' => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'By Materialized View ID' => 'drush trp-refresh-mview --mview=5',
-      'By Table Name' => 'drush trp-refresh-mview --table=organism_feature_count'
-    ),
-    'options' => array(
+      'By Table Name' => 'drush trp-refresh-mview --table=organism_feature_count',
+    ],
+    'options' => [
       'mview' => dt('The ID of the materialized view to update'),
       'table' => dt('The name of the materialized view table to update.'),
-    ),
-  );
+    ],
+  ];
 
-  $items['trp-get-cversion'] = array(
+  $items['trp-get-cversion'] = [
     'description' => dt('Returns the current installed version of Chado.'),
-    'arguments' => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard Example' => 'drush trp-get-cversion',
-    ),
-  );
-  $items['trp-get-table'] = array(
+    ],
+  ];
+  $items['trp-get-table'] = [
     'description' => dt('Returns a table description in Drupal Schema API format.'),
-    'arguments' => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'By Table Name' => 'drush trp-get-table --table=feature',
-      'By Section' => 'drush trp-get-table --table=feature --section=fields'
-    ),
-    'options' => array(
-      'table' => array(
+      'By Section' => 'drush trp-get-table --table=feature --section=fields',
+    ],
+    'options' => [
+      'table' => [
         'description' => dt('The name of the table. The table can be a true Chado table or a custom Chado table.'),
         'required' => TRUE,
-      ),
+      ],
       'section' => dt('Only return the specified section of the schema array. Possible sections include: description, fields, primary key, unique keys, foreign keys, indexes, referring_tables.'),
-    ),
-  );
+    ],
+  ];
 
   // Drush commands for publications
-  $items['trp-import-pubs'] = array(
+  $items['trp-import-pubs'] = [
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
-    'options' => array(
+    'options' => [
       'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
       'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
       'update' => dt("Set to 'Y' to update existing pubs.  By default only new pubs are inserted."),
-      'username' => array(
+      'username' => [
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-      ),
-    ),
-    'examples' => array(
+      ],
+    ],
+    'examples' => [
       'Standard example' => 'drush tripal-pubs-import',
       'Standard example' => 'drush -l http://[site url] tripal-pubs-import --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
       'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',
-    ),
-  );
-  $items['trp-update-pubs'] = array(
+    ],
+  ];
+  $items['trp-update-pubs'] = [
     'description' => dt('Updates publication information for publications with a supported database cross-reference.'),
-    'options' => array(
+    'options' => [
       'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642)'),
       'db' => dt('The database name (e.g. PMID or AGL)'),
-    ),
-    'examples' => array(
+    ],
+    'examples' => [
       'Standard example' => 'drush tripal-pubs-update',
       'Create contacts during update' => 'drush tripal-pubs-update --create_contacts=1',
       'Update a single record' => 'drush tripal-pubs-update --dbxref=PMID:23582642',
-      'Update all records for a single database' => 'drush tripal-pubs-update --db=PMID'
-    ),
-  );
+      'Update all records for a single database' => 'drush tripal-pubs-update --db=PMID',
+    ],
+  ];
 
   return $items;
 }
@@ -134,7 +134,7 @@ function drush_tripal_chado_trp_import_pubs() {
 
   drush_tripal_set_user($uname);
 
-  if($update == 'Y') {
+  if ($update == 'Y') {
     $update = TRUE;
   }
   else {
@@ -172,7 +172,7 @@ function drush_tripal_chado_trp_update_pubs() {
 function drush_tripal_chado_set_user($username) {
   if ($username) {
     $sql = "SELECT uid FROM {users} WHERE name = :name";
-    $results = db_query($sql, array(':name' => $username));
+    $results = db_query($sql, [':name' => $username]);
     $u = $results->fetchObject();
     if (!$u) {
       drush_print('ERROR: Please provide a valid username (--username argument) for running this job.');
@@ -189,14 +189,13 @@ function drush_tripal_chado_set_user($username) {
 }
 
 
-
 /**
  * Updates the specified materialized view
  *
  * @ingroup tripal_drush
  */
 function drush_tripal_chado_trp_refresh_mview() {
-  $mview_id   = drush_get_option('mview');
+  $mview_id = drush_get_option('mview');
   $table_name = drush_get_option('table');
 
   // Either table_name or mview is required
@@ -204,12 +203,12 @@ function drush_tripal_chado_trp_refresh_mview() {
     if ($table_name) {
       // if table_name supplied use that to get mview_id
       $sql = "SELECT mview_id FROM {tripal_mviews} WHERE mv_table = :mv_table";
-      $results = db_query($sql, array(':mv_table' => $table_name));
+      $results = db_query($sql, [':mv_table' => $table_name]);
       $r = $resuls->fetchObject();
       if (!$r->mview_id) {
         drush_set_error('No Materialized View associated with that table_name.');
       }
-      $mview_id=$r->mview_id;
+      $mview_id = $r->mview_id;
     }
     else {
       drush_set_error('Plese provide one option of --mview or --table.');

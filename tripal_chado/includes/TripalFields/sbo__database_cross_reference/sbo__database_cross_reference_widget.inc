@@ -1,11 +1,12 @@
 <?php
 
 class sbo__database_cross_reference_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Cross reference';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sbo__database_cross_reference');
+  public static $field_types = ['sbo__database_cross_reference'];
 
   /**
    *
@@ -44,7 +45,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $fkey_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey];
       $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
@@ -52,43 +53,43 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
     }
 
-    $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
-    $widget['#suffix'] =  "</span>";
+    $widget['#prefix'] = "<span id='$field_name-dbxref--db-id-$delta'>";
+    $widget['#suffix'] = "</span>";
 
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
+    $widget['chado-' . $field_table . '__' . $pkey] = [
       '#type' => 'value',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $field_table . '__' . $fkey] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $fkey] = [
       '#type' => 'value',
       '#default_value' => $fkey_value,
-    );
-    $widget['chado-' . $field_table . '__dbxref_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__dbxref_id'] = [
       '#type' => 'value',
       '#default_value' => $dbxref_id,
-    );
+    ];
     $options = tripal_get_db_select_options();
-    $widget['db_id'] = array(
+    $widget['db_id'] = [
       '#type' => 'select',
       '#title' => t('Database'),
       '#options' => $options,
       '#required' => $element['#required'],
       '#default_value' => $db_id,
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "sbo__database_cross_reference_widget_form_ajax_callback",
         'wrapper' => "$field_name-dbxref--db-id-$delta",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
     $schema = chado_get_schema('dbxref');
-    $widget['accession'] = array(
+    $widget['accession'] = [
       '#type' => 'textfield',
       '#title' => t('Accession'),
       '#default_value' => $accession,
@@ -97,7 +98,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       '#size' => 15,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
       '#disabled' => $db_id ? FALSE : TRUE,
-    );
+    ];
   }
 
   /**
@@ -134,7 +135,10 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     // has selected a new dbxref record and we need to update the hidden
     // value accordingly.
     if ($db_id and $accession) {
-      $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+      $dbxref = chado_generate_var('dbxref', [
+        'db_id' => $db_id,
+        'accession' => $accession,
+      ]);
       if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
@@ -150,10 +154,10 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"secondary-dbxref-widget\">
         <div class=\"secondary-dbxref-widget-item\">" .
-          drupal_render($element['db_id']) . "
+      drupal_render($element['db_id']) . "
         </div>
         <div class=\"secondary-dbxref-widget-item\">" .
-          drupal_render($element['accession']) . "
+      drupal_render($element['accession']) . "
         </div>
       </div>
     ";

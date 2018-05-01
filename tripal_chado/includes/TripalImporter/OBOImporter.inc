@@ -31,7 +31,7 @@ class OBOImporter extends TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = array('obo');
+  public static $file_types = ['obo'];
 
 
   /**
@@ -72,14 +72,14 @@ class OBOImporter extends TripalImporter {
   /**
    * Indicates the methods that the file uploader will support.
    */
-  public static $methods = array(
+  public static $methods = [
     // Allow the user to upload a file to the server.
     'file_upload' => FALSE,
     // Allow the user to provide the path on the Tripal server for the file.
     'file_local' => FALSE,
     // Allow the user to provide a remote URL for the file.
     'file_remote' => FALSE,
-  );
+  ];
 
   /**
    * Be default, all loaders are automaticlly added to the Admin >
@@ -97,7 +97,7 @@ class OBOImporter extends TripalImporter {
    *
    * @var array
    */
-  private $newcvs = array();
+  private $newcvs = [];
 
 
   /**
@@ -109,7 +109,7 @@ class OBOImporter extends TripalImporter {
     $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
     $results = db_query($sql);
 
-    $obos = array();
+    $obos = [];
     $obos[] = 'Select a Vocabulary';
     foreach ($results as $obo) {
       $obos[$obo->obo_id] = $obo->name;
@@ -121,7 +121,7 @@ class OBOImporter extends TripalImporter {
     }
 
 
-    $form['instructions']['info'] = array(
+    $form['instructions']['info'] = [
       '#type' => 'item',
       '#markup' => t('This page allows you to load vocabularies and ontologies
         that are in OBO format. Once loaded, the terms from these
@@ -129,33 +129,33 @@ class OBOImporter extends TripalImporter {
         You may use the form below to either reload a vocabulary that is already
         loaded (as when new updates to that vocabulary are available) or load a new
         vocabulary.'),
-    );
+    ];
 
-    $form['obo_existing'] = array(
+    $form['obo_existing'] = [
       '#type' => 'fieldset',
       '#title' => t('Use a Saved Ontology OBO Reference'),
       '#prefix' => '<span id="obo-existing-fieldset">',
-      '#suffix' => '</span>'
-    );
+      '#suffix' => '</span>',
+    ];
 
-    $form['obo_existing']['existing_instructions']= array(
+    $form['obo_existing']['existing_instructions'] = [
       '#type' => 'item',
       '#markup' => t('The vocabularies listed in the select box below have bene pre-populated
         upon installation of Tripal or have been previously loaded.  Select one to edit
         its settings or submit for loading.  You may reload any vocabulary that has
         already been loaded to retrieve any new updates.'),
-    );
+    ];
 
-    $form['obo_existing']['obo_id'] = array(
+    $form['obo_existing']['obo_id'] = [
       '#title' => t('Ontology OBO File Reference'),
       '#type' => 'select',
       '#options' => $obos,
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => 'tripal_cv_obo_form_ajax_callback',
         'wrapper' => 'obo-existing-fieldset',
-      ),
-      '#description' => t('Select a vocabulary to import.')
-    );
+      ],
+      '#description' => t('Select a vocabulary to import.'),
+    ];
 
     // If the user has selected an OBO ID then get the form elements for
     // updating.
@@ -165,7 +165,7 @@ class OBOImporter extends TripalImporter {
       $uobo_file = '';
 
       $vocab = db_select('tripal_cv_obo', 't')
-        ->fields('t', array('name', 'path'))
+        ->fields('t', ['name', 'path'])
         ->condition('obo_id', $obo_id)
         ->execute()
         ->fetchObject();
@@ -175,7 +175,7 @@ class OBOImporter extends TripalImporter {
       }
       else {
         $uobo_file = trim($vocab->path);
-        $matches = array();
+        $matches = [];
         if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
           $modpath = drupal_get_path('module', $matches[1]);
           $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
@@ -187,26 +187,26 @@ class OBOImporter extends TripalImporter {
       unset($form_state['input']['uobo_url']);
       unset($form_state['input']['uobo_file']);
 
-      $form['obo_existing']['uobo_name']= array(
-        '#type'          => 'textfield',
-        '#title'         => t('Vocabulary Name'),
-        '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
+      $form['obo_existing']['uobo_name'] = [
+        '#type' => 'textfield',
+        '#title' => t('Vocabulary Name'),
+        '#description' => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
                              list above for use again later.'),
-        '#default_value'  => $uobo_name,
-      );
+        '#default_value' => $uobo_name,
+      ];
 
-      $form['obo_existing']['uobo_url']= array(
-        '#type'          => 'textfield',
-        '#title'         => t('Remote URL'),
-        '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
+      $form['obo_existing']['uobo_url'] = [
+        '#type' => 'textfield',
+        '#title' => t('Remote URL'),
+        '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
                              (e.g. http://www.obofoundry.org/ro/ro.obo)'),
         '#default_value' => $uobo_url,
-      );
+      ];
 
-      $form['obo_existing']['uobo_file']= array(
-        '#type'          => 'textfield',
-        '#title'         => t('Local File'),
-        '#description'   => t('Please enter the file system path for an OBO
+      $form['obo_existing']['uobo_file'] = [
+        '#type' => 'textfield',
+        '#title' => t('Local File'),
+        '#description' => t('Please enter the file system path for an OBO
           definition file. If entering a path relative to
           the Drupal installation you may use a relative path that excludes the
           Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
@@ -214,45 +214,45 @@ class OBOImporter extends TripalImporter {
           Otherwise, please provide the full path on the filesystem.  The path
           must be accessible to the web server on which this Drupal instance is running.'),
         '#default_value' => $uobo_file,
-      );
-      $form['obo_existing']['update_obo_details'] = array(
+      ];
+      $form['obo_existing']['update_obo_details'] = [
         '#type' => 'submit',
         '#value' => 'Update Ontology Details',
-        '#name' => 'update_obo_details'
-      );
+        '#name' => 'update_obo_details',
+      ];
     }
 
-    $form['obo_new'] = array(
+    $form['obo_new'] = [
       '#type' => 'fieldset',
       '#title' => t('Add a New Ontology OBO Reference'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
-    );
+    ];
 
-    $form['obo_new']['path_instructions']= array(
+    $form['obo_new']['path_instructions'] = [
       '#value' => t('Provide the name and path for the OBO file.  If the vocabulary OBO file
                      is stored local to the server provide a file name. If the vocabulry is stored remotely,
                      provide a URL.  Only provide a URL or a local file, not both.'),
-    );
+    ];
 
-    $form['obo_new']['obo_name']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('New Vocabulary Name'),
-      '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
+    $form['obo_new']['obo_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('New Vocabulary Name'),
+      '#description' => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
                              list above for use again later. Additionally, if a default namespace is not provided in the OBO
                              header this name will be used as the default_namespace.'),
-    );
+    ];
 
-    $form['obo_new']['obo_url']= array(
-      '#type'          => 'textfield',
-      '#title'         => t('Remote URL'),
-      '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
+    $form['obo_new']['obo_url'] = [
+      '#type' => 'textfield',
+      '#title' => t('Remote URL'),
+      '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
                              (e.g. http://www.obofoundry.org/ro/ro.obo)'),
-    );
+    ];
 
-    $form['obo_new']['obo_file']= array(
-      '#type'  => 'textfield',
-      '#title'  => t('Local File'),
+    $form['obo_new']['obo_file'] = [
+      '#type' => 'textfield',
+      '#title' => t('Local File'),
       '#description' => t('Please enter the file system path for an OBO
           definition file. If entering a path relative to
           the Drupal installation you may use a relative path that excludes the
@@ -260,81 +260,85 @@ class OBOImporter extends TripalImporter {
           that Drupal relative paths have no preceeding slash.
           Otherwise, please provide the full path on the filesystem.  The path
           must be accessible to the web server on which this Drupal instance is running.'),
-    );
+    ];
 
     return $form;
   }
+
   /**
    * @see TripalImporter::formSubmit()
    */
   public function formSubmit($form, &$form_state) {
-    $obo_id    = $form_state['values']['obo_id'];
-    $obo_name  = trim($form_state['values']['obo_name']);
-    $obo_url   = trim($form_state['values']['obo_url']);
-    $obo_file  = trim($form_state['values']['obo_file']);
-    $uobo_name  = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
-    $uobo_url   = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
-    $uobo_file  = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
+    $obo_id = $form_state['values']['obo_id'];
+    $obo_name = trim($form_state['values']['obo_name']);
+    $obo_url = trim($form_state['values']['obo_url']);
+    $obo_file = trim($form_state['values']['obo_file']);
+    $uobo_name = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
+    $uobo_url = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
+    $uobo_file = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
 
     // If the user requested to alter the details then do that.
     if ($form_state['clicked_button']['#name'] == 'update_obo_details') {
       $form_state['rebuild'] = TRUE;
       $success = db_update('tripal_cv_obo')
-        ->fields(array(
+        ->fields([
           'name' => $uobo_name,
           'path' => $uobo_url ? $uobo_url : $uobo_file,
-        ))
+        ])
         ->condition('obo_id', $obo_id)
         ->execute();
       if ($success) {
-        drupal_set_message(t("The vocabulary !vocab has been updated.", array('!vocab' => $uobo_name)));
+        drupal_set_message(t("The vocabulary !vocab has been updated.", ['!vocab' => $uobo_name]));
       }
       else {
-        drupal_set_message(t("The vocabulary !vocab could not be updated.", array('!vocab' => $uobo_name)), 'error');
+        drupal_set_message(t("The vocabulary !vocab could not be updated.", ['!vocab' => $uobo_name]), 'error');
       }
 
     }
-    else if (!empty($obo_name)) {
-      $obo_id = db_insert('tripal_cv_obo')
-        ->fields(array(
-          'name' => $obo_name,
-          'path' => $obo_url ? $obo_url : $obo_file,
-        ))
-        ->execute();
+    else {
+      if (!empty($obo_name)) {
+        $obo_id = db_insert('tripal_cv_obo')
+          ->fields([
+            'name' => $obo_name,
+            'path' => $obo_url ? $obo_url : $obo_file,
+          ])
+          ->execute();
 
         // Add the obo_id to the form_state vaules.
         $form_state['values']['obo_id'] = $obo_id;
 
-      if ($obo_id) {
-        drupal_set_message(t("The vocabulary !vocab has been added.", array('!vocab' => $obo_name)));
-      }
-      else {
-        $form_state['rebuild'] = TRUE;
-        drupal_set_message(t("The vocabulary !vocab could not be added.", array('!vocab' => $obo_name)), 'error');
+        if ($obo_id) {
+          drupal_set_message(t("The vocabulary !vocab has been added.", ['!vocab' => $obo_name]));
+        }
+        else {
+          $form_state['rebuild'] = TRUE;
+          drupal_set_message(t("The vocabulary !vocab could not be added.", ['!vocab' => $obo_name]), 'error');
+        }
       }
     }
   }
+
   /**
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $obo_id    = $form_state['values']['obo_id'];
-    $obo_name  = trim($form_state['values']['obo_name']);
-    $obo_url   = trim($form_state['values']['obo_url']);
-    $obo_file  = trim($form_state['values']['obo_file']);
-    $uobo_name  = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
-    $uobo_url   = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
-    $uobo_file  = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
+    $obo_id = $form_state['values']['obo_id'];
+    $obo_name = trim($form_state['values']['obo_name']);
+    $obo_url = trim($form_state['values']['obo_url']);
+    $obo_file = trim($form_state['values']['obo_file']);
+    $uobo_name = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
+    $uobo_url = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
+    $uobo_file = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
 
     // Make sure if the name is changed it doesn't conflict with another OBO.
     if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
-        $form_state['clicked_button']['#name'] == 'update_load_obo') {
+      $form_state['clicked_button']['#name'] == 'update_load_obo') {
       // Get the current record
       $vocab = db_select('tripal_cv_obo', 't')
-      ->fields('t', array('obo_id', 'name', 'path'))
-      ->condition('name', $uobo_name)
-      ->execute()
-      ->fetchObject();
+        ->fields('t', ['obo_id', 'name', 'path'])
+        ->condition('name', $uobo_name)
+        ->execute()
+        ->fetchObject();
       if ($vocab and $vocab->obo_id != $obo_id) {
         form_set_error('uobo_name', 'The vocabulary name must be different from existing vocabularies');
       }
@@ -355,10 +359,10 @@ class OBOImporter extends TripalImporter {
     if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
       // Get the current record
       $vocab = db_select('tripal_cv_obo', 't')
-      ->fields('t', array('obo_id', 'name', 'path'))
-      ->condition('name', $obo_name)
-      ->execute()
-      ->fetchObject();
+        ->fields('t', ['obo_id', 'name', 'path'])
+        ->condition('name', $obo_name)
+        ->execute()
+        ->fetchObject();
       if ($vocab) {
         form_set_error('obo_name', 'The vocabulary name must be different from existing vocabularies');
       }
@@ -377,6 +381,7 @@ class OBOImporter extends TripalImporter {
       }
     }
   }
+
   /**
    * @see TripalImporter::run()
    *
@@ -401,6 +406,7 @@ class OBOImporter extends TripalImporter {
 
     $this->loadOBO_v1_2_id($obo);
   }
+
   /**
    * @see TripalImporter::postRun()
    *
@@ -419,18 +425,22 @@ class OBOImporter extends TripalImporter {
     // Upate the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->newcvs as $namespace => $cvid) {
-      $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
+      $this->logMessage("- Loading paths for @vocab", ['@vocab' => $namespace]);
       tripal_update_cvtermpath($cvid);
     }
   }
+
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
    * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
-   * compatible format.  This function is typically executed via the Tripal jobs
+   * compatible format.  This function is typically executed via the Tripal
+   * jobs
    * management after a user submits a job via the Load Onotloies form.
    *
    * @param $obo_id
-   *   An obo_id from the tripal_cv_obo file that specifies which OBO file to import
+   *   An obo_id from the tripal_cv_obo file that specifies which OBO file to
+   *   import
+   *
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2_id($obo) {
@@ -444,8 +454,8 @@ class OBOImporter extends TripalImporter {
 
     // if the reference is for a remote URL then run the URL processing function
     if (preg_match("/^https:\/\//", $obo->path) or
-        preg_match("/^http:\/\//", $obo->path) or
-        preg_match("/^ftp:\/\//", $obo->path)) {
+      preg_match("/^http:\/\//", $obo->path) or
+      preg_match("/^ftp:\/\//", $obo->path)) {
       $this->loadOBO_v1_2_url($obo->name, $obo->path, 0);
     }
     // if the reference is for a local file then run the file processing function
@@ -470,12 +480,14 @@ class OBOImporter extends TripalImporter {
 
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
-   * specifying the filename and path of the OBO. It requires that the file be in OBO v1.2
-   * compatible format.  This function is typically executed via the Tripal jobs
-   * management after a user submits a job via the Load Onotloies form.
+   * specifying the filename and path of the OBO. It requires that the file be
+   * in OBO v1.2 compatible format.  This function is typically executed via
+   * the Tripal jobs management after a user submits a job via the Load
+   * Onotloies form.
    *
    * @param $obo_name
-   *   The name of the OBO (typially the ontology or controlled vocabulary name)
+   *   The name of the OBO (typially the ontology or controlled vocabulary
+   *   name)
    * @param $file
    *   The path on the file system where the ontology can be found
    * @param $is_new
@@ -494,12 +506,14 @@ class OBOImporter extends TripalImporter {
 
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
-   * specifying the remote URL of the OBO. It requires that the file be in OBO v1.2
-   * compatible format.  This function is typically executed via the Tripal jobs
-   * management after a user submits a job via the Load Onotloies form.
+   * specifying the remote URL of the OBO. It requires that the file be in OBO
+   * v1.2 compatible format.  This function is typically executed via the
+   * Tripal jobs management after a user submits a job via the Load Onotloies
+   * form.
    *
    * @param $obo_name
-   *   The name of the OBO (typially the ontology or controlled vocabulary name)
+   *   The name of the OBO (typially the ontology or controlled vocabulary
+   *   name)
    * @param $url
    *   The remote URL of the OBO file.
    * @param $is_new
@@ -517,8 +531,8 @@ class OBOImporter extends TripalImporter {
     $obo_fh = fopen($temp, "w");
     if (!$url_fh) {
       throw new Exception("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
-          " if you are unable to download the file you may manually downlod the OBO file and use the web interface to " .
-          " specify the location of the file on your server.");
+        " if you are unable to download the file you may manually downlod the OBO file and use the web interface to " .
+        " specify the location of the file on your server.");
 
     }
     while (!feof($url_fh)) {
@@ -551,8 +565,8 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2($file, $obo_name) {
-    $header = array();
-    $ret = array();
+    $header = [];
+    $ret = [];
 
     // Empty the temp table.
     $sql = "DELETE FROM {tripal_obo_temp}";
@@ -609,18 +623,17 @@ class OBOImporter extends TripalImporter {
         }
         $defaultcv = tripal_insert_cv(strtoupper($results), '');
         $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
-      }
-      catch (Exception $e) {
+      } catch (Exception $e) {
         watchdog_exception('OBOImporter no such accession found in EBI Ontology Search', $e);
       }
-    
+
       if (empty($defaultcv)) {
         throw new Exception("Could not find a namespace for this OBO file: $file");
       }
       $this->logMessage("This OBO is missing the 'default-namespace' header. It " .
         "is not possible to determine which vocabulary terms without a 'namespace' key " .
         "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
-        array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
+        ['!vocab' => $defaultcv->name], TRIPAL_WARNING);
     }
     // Add any typedefs to the vocabulary first.
     $this->logMessage("Step 2: Loading type defs...");
@@ -635,8 +648,8 @@ class OBOImporter extends TripalImporter {
   }
 
   /**
-   * OBO files are divided into a typedefs terms section and vocabulary terms section.
-   * This function loads the typedef terms from the OBO.
+   * OBO files are divided into a typedefs terms section and vocabulary terms
+   * section. This function loads the typedef terms from the OBO.
    *
    * @param $defaultcv
    *   A database object containing a record from the cv table for the
@@ -728,6 +741,7 @@ class OBOImporter extends TripalImporter {
    *   An array representing the cvterm.
    * @param $defaultcv
    *   The name of the default controlled vocabulary
+   *
    * @is_relationship
    *   Set to 1 if this term is a relationship term
    * @default_db
@@ -741,9 +755,9 @@ class OBOImporter extends TripalImporter {
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
-   // construct the term array for sending to the tripal_chado_add_cvterm function
+    // construct the term array for sending to the tripal_chado_add_cvterm function
     // for adding a new cvterm
-    $t = array();
+    $t = [];
     $t['id'] = $term['id'][0];
     $t['name'] = $term['name'][0];
     if (array_key_exists('def', $term)) {
@@ -760,16 +774,16 @@ class OBOImporter extends TripalImporter {
     }
 
     // Check that the default_cv is in the cv table.
-    $sql =  "
+    $sql = "
       SELECT CV.name 
       FROM {cv} CV 
       WHERE CV.name = '$defaultcv'
     ";
     $results = chado_query($sql)->fetchObject();
-    if (!$results){
+    if (!$results) {
       //The controlled vocabulary is not in the cv term table and needs to be added.
       $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
-      if (!empty($ontology_info)){
+      if (!empty($ontology_info)) {
         if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
           $results = $ontology_info['config']['annotations']['default-namespace'];
         }
@@ -778,19 +792,19 @@ class OBOImporter extends TripalImporter {
         }
         $cv_returned = tripal_insert_cv($results[0], '');
         // If name && definition are both empty then look up the term from the ontology you just loaded.
-        if($cv_returned) {
+        if ($cv_returned) {
           $defaultcv = $cv_returned;
         }
       }
     }
- 
+
 
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
     $t['db_name'] = $default_db;
 
     // add the cvterm
-    $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
+    $cvterm = tripal_insert_cvterm($t, ['update_existing' => TRUE]);
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
     }
@@ -801,7 +815,7 @@ class OBOImporter extends TripalImporter {
       DELETE FROM {cvterm_relationship} CVTR
       WHERE CVTR.subject_id = :cvterm_id
     ";
-    chado_query($sql, array(':cvterm_id' => $cvterm->cvterm_id));
+    chado_query($sql, [':cvterm_id' => $cvterm->cvterm_id]);
 
     if (array_key_exists('namespace', $term)) {
       $this->newcvs[$term['namespace'][0]] = $cvterm->cv_id;
@@ -946,6 +960,7 @@ class OBOImporter extends TripalImporter {
    * @param $defaultcv
    *   A database object containing a record from the cv table for the
    *   default controlled vocabulary
+   *
    * @object_is_relationship
    *   Set to 1 if this term is a relationship term
    * @default_db
@@ -954,25 +969,25 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function addRelationship($cvterm, $defaultcv, $rel,
-      $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
+                                   $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
     // If an accession was passed we need to see if we can find the actual label.
     if (strpos($rel, ':')) {
-      $pair = explode(":", $rel);    
+      $pair = explode(":", $rel);
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       if (is_numeric($accession_num)) {
         $results = $this->oboEbiLookup($rel, 'query');
         if (!empty($results)) {
-          if (array_key_exists('docs', $results)){
-            if(!empty($results['docs'])) {
+          if (array_key_exists('docs', $results)) {
+            if (!empty($results['docs'])) {
               $rel = $results['docs']['label'];
             }
             else {
               // The first search doesn't work, so let's try a broader one.
               $results = $this->oboEbiLookup($rel, 'query-non-local');
               if (!empty($results)) {
-                if (array_key_exists('docs', $results)){
-                  if(!empty($results['docs'])) {
+                if (array_key_exists('docs', $results)) {
+                  if (!empty($results['docs'])) {
                     $accession = $rel;
                     $accession_underscore = str_replace(":", "_", $accession);
                     foreach ($results['docs'] as $item) {
@@ -990,77 +1005,77 @@ class OBOImporter extends TripalImporter {
           }
         }
       }
-    }    
+    }
     // Make sure the relationship cvterm exists.
-    $term = array(
+    $term = [
       'name' => $rel,
       'id' => "$default_db:$rel",
       'definition' => '',
       'is_obsolete' => 0,
       'cv_name' => $defaultcv,
       'is_relationship' => TRUE,
-      'db_name' => $default_db
-    );
-    $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+      'db_name' => $default_db,
+    ];
+    $relcvterm = tripal_insert_cvterm($term, ['update_existing' => FALSE]);
 
     if (!$relcvterm) {
       // If the relationship term couldn't be found in the default_db provided
       // then do on more check to find it in the relationship ontology
-      $term = array(
+      $term = [
         'name' => $rel,
         'id' => "OBO_REL:$rel",
         'definition' => '',
         'is_obsolete' => 0,
         'cv_name' => $defaultcv,
         'is_relationship' => TRUE,
-        'db_name' => 'OBO_REL'
-      );
-      $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+        'db_name' => 'OBO_REL',
+      ];
+      $relcvterm = tripal_insert_cvterm($term, ['update_existing' => FALSE]);
       if (!$relcvterm) {
         throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
       }
     }
-  
+
     // Get the object term.
     $oterm = $this->getTerm($objname);
     if (!$oterm) {
       throw new Exception("Could not find object term $objname\n");
     }
 
-    $objterm = array();
-    $objterm['id']            = $oterm['id'][0];
-    $objterm['name']          = $oterm['name'][0];
+    $objterm = [];
+    $objterm['id'] = $oterm['id'][0];
+    $objterm['name'] = $oterm['name'][0];
     if (array_key_exists('def', $oterm)) {
-      $objterm['definition']           = $oterm['def'][0];
+      $objterm['definition'] = $oterm['def'][0];
     }
     if (array_key_exists('subset', $oterm)) {
-      $objterm['subset']      = $oterm['subset'][0];
+      $objterm['subset'] = $oterm['subset'][0];
     }
     if (array_key_exists('namespace', $oterm)) {
-      $objterm['namespace']   = $oterm['namespace'][0];
+      $objterm['namespace'] = $oterm['namespace'][0];
     }
     if (array_key_exists('is_obsolete', $oterm)) {
       $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
     }
 
-    $objterm['cv_name' ] = $defaultcv;
+    $objterm['cv_name'] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
 
-    $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
+    $objcvterm = tripal_insert_cvterm($objterm, ['update_existing' => TRUE]);
     if (!$objcvterm) {
       throw new Exception("Cannot add cvterm " . $oterm['name'][0]);
     }
 
     // check to see if the cvterm_relationship already exists, if not add it
-    $values = array(
-      'type_id'    => $relcvterm->cvterm_id,
+    $values = [
+      'type_id' => $relcvterm->cvterm_id,
       'subject_id' => $cvterm->cvterm_id,
-      'object_id'  => $objcvterm->cvterm_id
-    );
-    $result = chado_select_record('cvterm_relationship', array('*'), $values);
+      'object_id' => $objcvterm->cvterm_id,
+    ];
+    $result = chado_select_record('cvterm_relationship', ['*'], $values);
     if (count($result) == 0) {
-      $options = array('return_record' => FALSE);
+      $options = ['return_record' => FALSE];
       $success = chado_insert_record('cvterm_relationship', $values, $options);
       if (!$success) {
         throw new Exception("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
@@ -1079,8 +1094,8 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function getTerm($id) {
-    $values = array('id' => $id);
-    $result = chado_select_record('tripal_obo_temp', array('stanza'), $values);
+    $values = ['id' => $id];
+    $result = chado_select_record('tripal_obo_temp', ['stanza'], $values);
     if (count($result) == 0) {
       return FALSE;
     }
@@ -1091,7 +1106,8 @@ class OBOImporter extends TripalImporter {
    * Adds the synonyms to a term
    *
    * @param term
-   *   An array representing the cvterm. It must have a 'synonym' key/value pair.
+   *   An array representing the cvterm. It must have a 'synonym' key/value
+   *   pair.
    * @param cvterm
    *   The database object of the cvterm to which the synonym will be added.
    *
@@ -1101,8 +1117,8 @@ class OBOImporter extends TripalImporter {
 
     // make sure we have a 'synonym_type' vocabulary
     $syncv = tripal_insert_cv(
-        'synonym_type',
-        'A local vocabulary added for synonym types.'
+      'synonym_type',
+      'A local vocabulary added for synonym types.'
     );
 
     // now add the synonyms
@@ -1118,44 +1134,44 @@ class OBOImporter extends TripalImporter {
         }
 
         // make sure the synonym type exists in the 'synonym_type' vocabulary
-        $values = array(
+        $values = [
           'name' => $scope,
-          'cv_id' => array(
+          'cv_id' => [
             'name' => 'synonym_type',
-          ),
-        );
+          ],
+        ];
         $syntype = tripal_get_cvterm($values);
 
         // if it doesn't exist then add it
         if (!$syntype) {
           // build a 'term' object so we can add the missing term
-          $term = array(
+          $term = [
             'name' => $scope,
             'id' => "synonym_type:$scope",
             'definition' => '',
             'is_obsolete' => 0,
             'cv_name' => $syncv->name,
-            'is_relationship' => FALSE
-          );
-          $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+            'is_relationship' => FALSE,
+          ];
+          $syntype = tripal_insert_cvterm($term, ['update_existing' => TRUE]);
           if (!$syntype) {
             throw new Exception("Cannot add synonym type: internal:$scope");
           }
         }
 
         // make sure the synonym doesn't already exists
-        $values = array(
+        $values = [
           'cvterm_id' => $cvterm->cvterm_id,
-          'synonym' => $def
-        );
-        $results = chado_select_record('cvtermsynonym', array('*'), $values);
+          'synonym' => $def,
+        ];
+        $results = chado_select_record('cvtermsynonym', ['*'], $values);
         if (count($results) == 0) {
-          $values = array(
+          $values = [
             'cvterm_id' => $cvterm->cvterm_id,
             'synonym' => $def,
-            'type_id' => $syntype->cvterm_id
-          );
-          $options = array('return_record' => FALSE);
+            'type_id' => $syntype->cvterm_id,
+          ];
+          $options = ['return_record' => FALSE];
           $success = chado_insert_record('cvtermsynonym', $values, $options);
           if (!$success) {
             throw new Exception("Failed to insert the synonym for term: $cvterm->name ($def)");
@@ -1167,15 +1183,15 @@ class OBOImporter extends TripalImporter {
         // just change it so it won't mess up our splitting and then set it back
         // later.
         /**
-        $synonym = preg_replace('/(".*?),\s(.*?")/','$1,_$2',$synonym);
-        $dbxrefs = preg_split("/, /",preg_replace('/^.*\[(.*?)\]$/','\1',$synonym));
-        foreach ($dbxrefs as $dbxref) {
-        $dbxref = preg_replace('/,_/',", ",$dbxref);
-        if ($dbxref) {
-        $this->addCvtermDbxref($syn,$dbxref);
-        }
-        }
-        */
+         * $synonym = preg_replace('/(".*?),\s(.*?")/','$1,_$2',$synonym);
+         * $dbxrefs = preg_split("/, /",preg_replace('/^.*\[(.*?)\]$/','\1',$synonym));
+         * foreach ($dbxrefs as $dbxref) {
+         * $dbxref = preg_replace('/,_/',", ",$dbxref);
+         * if ($dbxref) {
+         * $this->addCvtermDbxref($syn,$dbxref);
+         * }
+         * }
+         */
       }
     }
 
@@ -1195,7 +1211,7 @@ class OBOImporter extends TripalImporter {
    */
   private function parse($obo_file, &$header) {
     $in_header = 1;
-    $stanza = array();
+    $stanza = [];
     $default_db = '';
     $line_num = 0;
     $num_read = 0;
@@ -1235,11 +1251,11 @@ class OBOImporter extends TripalImporter {
         // store the stanza we just finished reading
         if (sizeof($stanza) > 0) {
           // add the term to the temp table
-          $values = array(
+          $values = [
             'id' => $stanza['id'][0],
             'stanza' => base64_encode(serialize($stanza)),
             'type' => $type,
-          );
+          ];
           $success = chado_insert_record('tripal_obo_temp', $values);
           if (!$success) {
             throw new Exception("Cannot insert stanza into temporary table.");
@@ -1250,7 +1266,7 @@ class OBOImporter extends TripalImporter {
         $type = preg_replace('/^\s*\[\s*(.+?)\s*\]\s*$/', '\1', $line);
 
         // start fresh with a new array
-        $stanza = array();
+        $stanza = [];
         continue;
       }
 
@@ -1261,7 +1277,7 @@ class OBOImporter extends TripalImporter {
       $value = ltrim(rtrim($pair[1]));// remove surrounding spaces
 
       // if this is the ID then look for the default DB
-      $matches = array();
+      $matches = [];
       if ($tag == 'id' and preg_match('/^(.+?):.*$/', $value, $matches)) {
         $default_db = $matches[1];
       }
@@ -1269,24 +1285,24 @@ class OBOImporter extends TripalImporter {
       $value = preg_replace("/\|-\|-\|/", "\:", $value);
       if ($in_header) {
         if (!array_key_exists($tag, $header)) {
-          $header[$tag] = array();
+          $header[$tag] = [];
         }
         $header[$tag][] = $value;
       }
       else {
         if (!array_key_exists($tag, $stanza)) {
-          $stanza[$tag] = array();
+          $stanza[$tag] = [];
         }
         $stanza[$tag][] = $value;
       }
     }
     // now add the last term in the file
     if (sizeof($stanza) > 0) {
-      $values = array(
+      $values = [
         'id' => $stanza['id'][0],
         'stanza' => base64_encode(serialize($stanza)),
         'type' => $type,
-      );
+      ];
       chado_insert_record('tripal_obo_temp', $values);
       if (!$success) {
         throw new Exception("Cannot insert stanza into temporary table.");
@@ -1324,7 +1340,7 @@ class OBOImporter extends TripalImporter {
     }
 
     // add the database
-    $db = tripal_insert_db(array('name' => $dbname));
+    $db = tripal_insert_db(['name' => $dbname]);
     if (!$db) {
       throw new Exception("Cannot find database '$dbname' in Chado.");
     }
@@ -1336,13 +1352,13 @@ class OBOImporter extends TripalImporter {
     }
 
     // finally add the cvterm_dbxref but first check to make sure it exists
-    $values = array(
+    $values = [
       'cvterm_id' => $cvterm->cvterm_id,
       'dbxref_id' => $dbxref->dbxref_id,
-    );
-    $result = chado_select_record('cvterm_dbxref', array('*'), $values);
+    ];
+    $result = chado_select_record('cvterm_dbxref', ['*'], $values);
     if (count($result) == 0) {
-      $ins_options = array('return_record' => FALSE);
+      $ins_options = ['return_record' => FALSE];
       $result = chado_insert_record('cvterm_dbxref', $values, $ins_options);
       if (!$result) {
         throw new Exception("Cannot add cvterm_dbxref: $xref");
@@ -1375,21 +1391,21 @@ class OBOImporter extends TripalImporter {
     }
 
     // get the property type cvterm.  If it doesn't exist then we want to add it
-    $values = array(
+    $values = [
       'name' => $property,
       'cv_id' => $cv->cv_id,
-    );
-    $results = chado_select_record('cvterm', array('*'), $values);
+    ];
+    $results = chado_select_record('cvterm', ['*'], $values);
     if (count($results) == 0) {
-      $term = array(
+      $term = [
         'name' => $property,
         'id' => "internal:$property",
         'definition' => '',
         'is_obsolete' => 0,
         'cv_name' => $cv->name,
         'is_relationship' => FALSE,
-      );
-      $cvproptype = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+      ];
+      $cvproptype = tripal_insert_cvterm($term, ['update_existing' => FALSE]);
       if (!$cvproptype) {
         throw new Exception("Cannot add cvterm property: internal:$property");
       }
@@ -1400,7 +1416,7 @@ class OBOImporter extends TripalImporter {
 
     // remove any properties that currently exist for this term.  We'll reset them
     if ($rank == 0) {
-      $values = array('cvterm_id' => $cvterm->cvterm_id);
+      $values = ['cvterm_id' => $cvterm->cvterm_id];
       $success = chado_delete_record('cvtermprop', $values);
       if (!$success) {
         throw new Exception("Could not remove existing properties to update property $property for term\n");
@@ -1408,13 +1424,13 @@ class OBOImporter extends TripalImporter {
     }
 
     // now add the property
-    $values = array(
+    $values = [
       'cvterm_id' => $cvterm->cvterm_id,
       'type_id' => $cvproptype->cvterm_id,
       'value' => $value,
       'rank' => $rank,
-    );
-    $options = array('return_record' => FALSE);
+    ];
+    $options = ['return_record' => FALSE];
     $result = chado_insert_record('cvtermprop', $values, $options);
     if (!$result) {
       throw new Exception("Could not add property $property for term\n");
@@ -1436,27 +1452,27 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addDbxref($db_id, $accession, $version='', $description='') {
+  private function addDbxref($db_id, $accession, $version = '', $description = '') {
 
     // check to see if the dbxref exists if not, add it
-    $values = array(
+    $values = [
       'db_id' => $db_id,
       'accession' => $accession,
-    );
-    $result = chado_select_record('dbxref', array('dbxref_id'), $values);
+    ];
+    $result = chado_select_record('dbxref', ['dbxref_id'], $values);
     if (count($result) == 0) {
-      $ins_values = array(
-        'db_id'       => $db_id,
-        'accession'   => $accession,
-        'version'     => $version,
+      $ins_values = [
+        'db_id' => $db_id,
+        'accession' => $accession,
+        'version' => $version,
         'description' => $description,
-      );
-      $ins_options = array('return_record' => FALSE);
+      ];
+      $ins_options = ['return_record' => FALSE];
       $result = chado_insert_record('dbxref', $ins_values, $ins_options);
       if (!$result) {
         throw new Exception("Failed to insert the dbxref record $accession");
       }
-      $result = chado_select_record('dbxref', array('dbxref_id'), $values);
+      $result = chado_select_record('dbxref', ['dbxref_id'], $values);
     }
     return $result[0];
   }
@@ -1479,36 +1495,36 @@ class OBOImporter extends TripalImporter {
     $ontology = strtolower($parts[0]);
     $ontology = preg_replace('/\s+/', '', $ontology);
     if ($type_of_search == 'ontology') {
-      $options = array();
+      $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
       $response = drupal_http_request($full_url, $options);
-      if(!empty($response)){
+      if (!empty($response)) {
         $response = drupal_json_decode($response->data);
       }
     }
     elseif ($type_of_search == 'term') {
       //The IRI of the terms, this value must be double URL encoded
-      $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':' , '_', $accession)));
-      $options = array();
+      $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
+      $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
       $response = drupal_http_request($full_url, $options);
-      if(!empty($response)){
+      if (!empty($response)) {
         $response = drupal_json_decode($response->data);
       }
     }
-    elseif($type_of_search == 'query') {    
-      $options = array();
+    elseif ($type_of_search == 'query') {
+      $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
       $response = drupal_http_request($full_url, $options);
-      if(!empty($response)){
+      if (!empty($response)) {
         $response = drupal_json_decode($response->data);
       }
     }
-    elseif($type_of_search == 'query-non-local') {    
-      $options = array();
+    elseif ($type_of_search == 'query-non-local') {
+      $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
       $response = drupal_http_request($full_url, $options);
-      if(!empty($response)){
+      if (!empty($response)) {
         $response = drupal_json_decode($response->data);
       }
     }

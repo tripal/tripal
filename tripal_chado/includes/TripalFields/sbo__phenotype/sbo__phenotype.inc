@@ -26,7 +26,7 @@ class sbo__phenotype extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SBO',
     // The name of the term.
@@ -37,7 +37,7 @@ class sbo__phenotype extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'sbo__phenotype_widget';
@@ -51,6 +51,7 @@ class sbo__phenotype extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -62,16 +63,17 @@ class sbo__phenotype extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'ne', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'ne', 'contains', 'starts'],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -92,40 +94,40 @@ class sbo__phenotype extends ChadoField {
 
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
       $field_table . '__' . $pkey => '',
       $field_table . '__' . $fkey_lcolumn => '',
       $field_table . '__' . 'phenotype_id' => '',
       // Ignore the synonym_sgml column for now.
-    );
+    ];
 
     $linker_table = $base_table . '_phenotype';
-    $options = array(
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'phenotype_id' => array(
-          'attr_id' => array(
-            'dbxref_id' => array(
+      'include_fk' => [
+        'phenotype_id' => [
+          'attr_id' => [
+            'dbxref_id' => [
               'db_id' => TRUE,
-            ),
-          ),
-        ),
+            ],
+          ],
+        ],
         $fkey_lcolumn => TRUE,
-      ),
-    );
+      ],
+    ];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
     $phenotype_linkers = $record->$linker_table;
     if ($phenotype_linkers) {
       foreach ($phenotype_linkers as $i => $phenotype_linker) {
         $phenotype = $phenotype_linker->phenotype_id;
-        $entity->{$field_name}['und'][$i]['value']['type'] =  $phenotype->attr_id->name;
-        $entity->{$field_name}['und'][$i]['value']['name'] =  $phenotype->name;
+        $entity->{$field_name}['und'][$i]['value']['type'] = $phenotype->attr_id->name;
+        $entity->{$field_name}['und'][$i]['value']['name'] = $phenotype->name;
         if ($phenotype->cvalue_id) {
-          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->cvalue_id->name;
+          $entity->{$field_name}['und'][$i]['value']['value'] = $phenotype->cvalue_id->name;
         }
         else {
-          $entity->{$field_name}['und'][$i]['value']['value'] =  $phenotype->value;
+          $entity->{$field_name}['und'][$i]['value']['value'] = $phenotype->value;
         }
 
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $phenotype_linker->$pkey;

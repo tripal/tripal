@@ -13,7 +13,7 @@ function tripal_organism_admin_organism_view() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -22,7 +22,7 @@ function tripal_organism_admin_organism_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_organism_admin_organisms','default');
+  $view = views_embed_view('tripal_organism_admin_organisms', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -32,7 +32,7 @@ function tripal_organism_admin_organism_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Organisms View', 'admin/tripal/legacy/tripal_organism/views/organisms/enable').'</li>';
+    $output .= '<li>' . l('Organisms View', 'admin/tripal/legacy/tripal_organism/views/organisms/enable') . '</li>';
     $output .= '</ul>';
   }
 
@@ -46,38 +46,40 @@ function tripal_organism_admin_organism_view() {
  */
 function tripal_organism_admin() {
 
-  $form = array();
+  $form = [];
 
   // If your module is using the Chado Node: Title & Path API to allow custom titles
   // for your node type then you need to add the configuration form for this functionality.
-  $details = array(
-    'module' => 'tripal_organism',       // the name of the MODULE implementing the content type
-    'content_type' => 'chado_organism',   // the name of the content type
-      // An array of options to use under "Page Titles"
-      // the key should be the token and the value should be the human-readable option
-    'options' => array(
+  $details = [
+    'module' => 'tripal_organism',
+    // the name of the MODULE implementing the content type
+    'content_type' => 'chado_organism',
+    // the name of the content type
+    // An array of options to use under "Page Titles"
+    // the key should be the token and the value should be the human-readable option
+    'options' => [
       '[organism.name]' => 'Organism Name Only',
-        // there should always be one options matching the unique constraint.
-      '[organism.genus] [organism.species]' => 'Unique Contraint: The scientific name'
-    ),
+      // there should always be one options matching the unique constraint.
+      '[organism.genus] [organism.species]' => 'Unique Contraint: The scientific name',
+    ],
     // the token indicating the unique constraint in the options array
-    'unique_option' => '[organism.genus] [organism.species]'
-  );
+    'unique_option' => '[organism.genus] [organism.species]',
+  ];
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
   // URL ALIAS
-  $details = array(
+  $details = [
     'module' => 'tripal_organism',
     'content_type' => 'chado_organism',
-    'options' => array(
+    'options' => [
       '/organism/[organism.organism_id]' => 'Organism ID',
       '/organism/[organism.abbreviation]' => 'The abbreviation for the organism',
       '/organism/[organism.common_name]' => 'The common name of the organism',
-      '/organism/[organism.genus]/[organism.species]' => 'Unique Contraint: the scientific name.'
-    ),
-  );
+      '/organism/[organism.genus]/[organism.species]' => 'Unique Contraint: the scientific name.',
+    ],
+  ];
 
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit

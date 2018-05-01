@@ -12,7 +12,7 @@
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -48,12 +48,12 @@ function tripal_contact_defaultvalue_user_contacts() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/contact';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Contacts',
     'description' => 'Contacts can be persons, institutes, groups, or organizations.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Change the permission
@@ -107,48 +107,48 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
     'name_1' => 'name_1',
     'description' => 'description',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name_1' => array(
+    ],
+    'name_1' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 0,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Contact',
     'path-1' => 'node/add/tripal-contact',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -224,11 +224,11 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
   $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Contact: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'contact';
@@ -240,11 +240,11 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Contact: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'contact';
@@ -256,11 +256,11 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
@@ -281,10 +281,10 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
   return $view;
 }

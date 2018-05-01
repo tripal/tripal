@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_project
  */
 function tripal_project_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_project_defaultvalue_user_projects() {
 
   // Change the path
   $view->display['page']->display_options['path'] = 'chado/project';
-  $view->display['page']->display_options['menu'] = array(
+  $view->display['page']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Projects',
     'description' => 'A project. Can be used for grouping data such as with the natural diversity module data.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page']->display_options['tab_options']);
 
   // Change the permission
@@ -102,74 +102,74 @@ function tripal_project_defaultview_admin_projects() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'nid' => 'nid',
     'name' => 'name',
     'description' => 'description',
     'delete_node' => 'delete_node',
     'edit_node' => 'edit_node',
     'nothing' => 'nothing',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'nid' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'nid' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'delete_node' => array(
+    ],
+    'delete_node' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'edit_node' => array(
+    ],
+    'edit_node' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'nothing' => array(
+    ],
+    'nothing' => [
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Project',
     'path-1' => 'node/add/tripal-project',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* Relationship: Project: Project => Node */
   $handler->display->display_options['relationships']['project_id']['id'] = 'project_id';
   $handler->display->display_options['relationships']['project_id']['table'] = 'chado_project';
@@ -238,11 +238,11 @@ function tripal_project_defaultview_admin_projects() {
   $handler->display->display_options['filters']['name']['expose']['operator_id'] = '';
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Project: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'project';
@@ -254,11 +254,11 @@ function tripal_project_defaultview_admin_projects() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');

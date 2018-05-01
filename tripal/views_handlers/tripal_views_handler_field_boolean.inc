@@ -1,11 +1,13 @@
 <?php
+
 class tripal_views_handler_field_boolean extends tripal_views_handler_field {
+
   function option_definition() {
     $options = parent::option_definition();
-    $options['type'] = array('default' => 'yes-no');
-    $options['type_custom_true'] = array('default' => '', 'translatable' => TRUE);
-    $options['type_custom_false'] = array('default' => '', 'translatable' => TRUE);
-    $options['not'] = array('definition bool' => 'reverse');
+    $options['type'] = ['default' => 'yes-no'];
+    $options['type_custom_true'] = ['default' => '', 'translatable' => TRUE];
+    $options['type_custom_false'] = ['default' => '', 'translatable' => TRUE];
+    $options['not'] = ['definition bool' => 'reverse'];
 
     return $options;
   }
@@ -13,16 +15,16 @@ class tripal_views_handler_field_boolean extends tripal_views_handler_field {
   function init(&$view, &$options) {
     parent::init($view, $options);
 
-    $default_formats = array(
-      'yes-no' => array(t('Yes'), t('No')),
-      'true-false' => array(t('True'), t('False')),
-      'on-off' => array(t('On'), t('Off')),
-      'enabled-disabled' => array(t('Enabled'), t('Disabled')),
-      'boolean' => array(1, 0),
-      'unicode-yes-no' => array('✔', '✖'),
-    );
-    $output_formats = isset($this->definition['output formats']) ? $this->definition['output formats'] : array();
-    $custom_format = array('custom' => array(t('Custom')));
+    $default_formats = [
+      'yes-no' => [t('Yes'), t('No')],
+      'true-false' => [t('True'), t('False')],
+      'on-off' => [t('On'), t('Off')],
+      'enabled-disabled' => [t('Enabled'), t('Disabled')],
+      'boolean' => [1, 0],
+      'unicode-yes-no' => ['✔', '✖'],
+    ];
+    $output_formats = isset($this->definition['output formats']) ? $this->definition['output formats'] : [];
+    $custom_format = ['custom' => [t('Custom')]];
     $this->formats = array_merge($default_formats, $output_formats, $custom_format);
   }
 
@@ -31,41 +33,41 @@ class tripal_views_handler_field_boolean extends tripal_views_handler_field {
       $options[$key] = implode('/', $item);
     }
 
-    $form['type'] = array(
+    $form['type'] = [
       '#type' => 'select',
       '#title' => t('Output format'),
       '#options' => $options,
       '#default_value' => $this->options['type'],
-    );
+    ];
 
-    $form['type_custom_true'] = array(
+    $form['type_custom_true'] = [
       '#type' => 'textfield',
       '#title' => t('Custom output for TRUE'),
       '#default_value' => $this->options['type_custom_true'],
-      '#states' => array(
-        'visible' => array(
-          'select[name="options[type]"]' => array('value' => 'custom'),
-        ),
-      ),
-    );
+      '#states' => [
+        'visible' => [
+          'select[name="options[type]"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
 
-    $form['type_custom_false'] = array(
+    $form['type_custom_false'] = [
       '#type' => 'textfield',
       '#title' => t('Custom output for FALSE'),
       '#default_value' => $this->options['type_custom_false'],
-      '#states' => array(
-        'visible' => array(
-          'select[name="options[type]"]' => array('value' => 'custom'),
-        ),
-      ),
-    );
+      '#states' => [
+        'visible' => [
+          'select[name="options[type]"]' => ['value' => 'custom'],
+        ],
+      ],
+    ];
 
-    $form['not'] = array(
+    $form['not'] = [
       '#type' => 'checkbox',
       '#title' => t('Reverse'),
       '#description' => t('If checked, true will be displayed as false.'),
       '#default_value' => $this->options['not'],
-    );
+    ];
     parent::options_form($form, $form_state);
   }
 
@@ -78,11 +80,13 @@ class tripal_views_handler_field_boolean extends tripal_views_handler_field {
     if ($this->options['type'] == 'custom') {
       return $value ? filter_xss_admin($this->options['type_custom_true']) : filter_xss_admin($this->options['type_custom_false']);
     }
-    else if (isset($this->formats[$this->options['type']])) {
-      return $value ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
-    }
     else {
-      return $value ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
+      if (isset($this->formats[$this->options['type']])) {
+        return $value ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
+      }
+      else {
+        return $value ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
+      }
     }
   }
 }

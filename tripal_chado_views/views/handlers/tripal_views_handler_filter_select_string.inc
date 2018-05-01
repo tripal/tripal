@@ -5,8 +5,8 @@
  */
 
 /**
- * This Handler provides a generic select list for any chado field that is a string
- *  The select list includes all distinct values for that field.
+ * This Handler provides a generic select list for any chado field that is a
+ * string The select list includes all distinct values for that field.
  *
  * @ingroup tripal_views
  */
@@ -50,29 +50,29 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['values_form_type'] = array(
+    $options['values_form_type'] = [
       'default' => 'textfield',
-      'export' => TRUE
-    );
-    $options['select_multiple'] = array(
+      'export' => TRUE,
+    ];
+    $options['select_multiple'] = [
       'default' => FALSE,
       'bool' => TRUE,
-      'export' => TRUE
-    );
-    $options['select_optional'] = array(
+      'export' => TRUE,
+    ];
+    $options['select_optional'] = [
       'default' => FALSE,
       'bool' => TRUE,
-      'export' => TRUE
-    );
-    $options['show_all'] = array(
+      'export' => TRUE,
+    ];
+    $options['show_all'] = [
       'default' => FALSE,
       'bool' => TRUE,
-      'export' => TRUE
-    );
-    $options['max_length'] = array(
+      'export' => TRUE,
+    ];
+    $options['max_length'] = [
       'default' => 40,
-      'export' => TRUE
-    );
+      'export' => TRUE,
+    ];
 
     return $options;
   }
@@ -82,7 +82,8 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    * Override this function in extended handlers to easily change option list.
    *
    * @return
-   *   An array of options where the key is the value of this field in the database
+   *   An array of options where the key is the value of this field in the
+   *   database
    */
   function get_select_options() {
 
@@ -103,7 +104,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     if (!$max_length) {
       $max_length = 40;
     }
-    $options = array();
+    $options = [];
     if ($this->options['select_optional']) {
       $options['All'] = '--Any--';
     }
@@ -126,8 +127,8 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
   function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
-    $where = array();
-    $values = array();
+    $where = [];
+    $values = [];
 
     $table = (is_null($table)) ? $this->table : $table;
 
@@ -136,8 +137,8 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     // from whcih the values in the drop box will be slected and
     // we only want to use non-exposed fields because these are not
     // available to the user to edit--they're fixed.
-    $where = array();
-    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
+    $where = [];
+    $filters = (is_array($this->view->filter)) ? $this->view->filter : [];
     $placeholder_prefix = 'arg';
     $i = 0;
     foreach ($filters as $filter_name => $details) {
@@ -147,24 +148,24 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
         $value = $details->value;
         if (is_array($details->value) AND isset($details->value['value'])) {
-         $value = $details->value['value'];
+          $value = $details->value['value'];
         }
 
         // Generate the current placeholder.
         if ($generic_placeholder) {
-          $placeholder = ':'.$placeholder_prefix.$i;
+          $placeholder = ':' . $placeholder_prefix . $i;
         }
         else {
           $placeholder = $details->real_field;
         }
 
         // we only want to filter on the table we're getting the list from
-        if (strcmp($details->table, $table)==0 AND !empty($value)) {
+        if (strcmp($details->table, $table) == 0 AND !empty($value)) {
 
           // If the value is an array then use IN instead of the choosen operator.
           if (is_array($value)) {
-              $where[] = "$details->field IN ($placeholder)";
-              $values[$placeholder] = $value;
+            $where[] = "$details->field IN ($placeholder)";
+            $values[$placeholder] = $value;
           }
           // Otherwise, just use the operator choosen by the admin.
           else {
@@ -175,10 +176,10 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       }
     }
 
-    return array(
+    return [
       'where_clauses' => $where,
-      'arguments' => $values
-    );
+      'arguments' => $values,
+    ];
   }
 
   /**
@@ -187,50 +188,50 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   function extra_options_form(&$form, &$form_state) {
     parent::extra_options_form($form, $form_state);
 
-    $form['values_form_type'] = array(
+    $form['values_form_type'] = [
       '#type' => 'radios',
       '#title' => t('Filter Type'),
-      '#options' => array(
+      '#options' => [
         'textfield' => 'Text Field',
         'select' => 'Drop-Down Box',
-      ),
+      ],
       '#default_value' => $this->options['values_form_type'],
-    );
+    ];
 
-    $form['show_all'] = array(
+    $form['show_all'] = [
       '#type' => 'checkbox',
       '#title' => t('Show All'),
       '#description' => t('When selected all terms from the controlled vocaulbary used by the table will be shown where the default is to only show those that are used.'),
       '#default_value' => $this->options['show_all'],
-    );
+    ];
 
-    $form['select_multiple'] = array(
+    $form['select_multiple'] = [
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
       '#description' => t('Allows more then one option to be selected.'),
       '#default_value' => $this->options['select_multiple'],
-    );
+    ];
 
-    $form['select_optional'] = array(
+    $form['select_optional'] = [
       '#type' => 'checkbox',
       '#title' => t('Optional'),
       '#description' => t('Adds --Any-- to the available options.'),
       '#default_value' => $this->options['select_optional'],
-    );
+    ];
 
-    $form['max_length'] = array(
+    $form['max_length'] = [
       '#type' => 'textfield',
       '#title' => t('Max Width'),
       '#description' => t('Specify the maximum width of the select box'),
       '#default_value' => $this->options['max_length'],
-    );
+    ];
 
-    $form['note'] = array(
+    $form['note'] = [
       '#type' => 'markup',
-      '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then '.
-                    'the values shown in the drop box will only include those from rows that are not filtered.'),
+      '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then ' .
+        'the values shown in the drop box will only include those from rows that are not filtered.'),
 
-    );
+    ];
 
     return $form;
 
@@ -269,12 +270,12 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     if (preg_match('/select/', $this->options['values_form_type'])) {
 
       //Select List
-      $form['value'] = array(
-          '#type' => 'select',
-          '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
-          '#options' => $this->get_select_options(),
-          '#default_value' => $this->value,
-      );
+      $form['value'] = [
+        '#type' => 'select',
+        '#title' => t('%label', ['%label' => $this->options['expose']['label']]),
+        '#options' => $this->get_select_options(),
+        '#default_value' => $this->value,
+      ];
 
       if ($this->options['select_multiple']) {
         $form['value']['#multiple'] = TRUE;
@@ -282,11 +283,11 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     }
     else {
 
-      $form['value'] = array(
+      $form['value'] = [
         '#type' => 'textfield',
-        '#title' => t('%label', array('%label' => $this->options['expose']['label'])),
+        '#title' => t('%label', ['%label' => $this->options['expose']['label']]),
         '#default_value' => $this->value,
-      );
+      ];
 
     }
   }

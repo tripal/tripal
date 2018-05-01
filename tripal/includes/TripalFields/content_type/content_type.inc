@@ -12,7 +12,7 @@ class content_type extends TripalField {
   // or the instanceSettingsForm() functions then you need to be sure that
   // any settings you want those functions to manage are listed in this
   // array.
-  public static $default_settings = array();
+  public static $default_settings = [];
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -23,7 +23,7 @@ class content_type extends TripalField {
    * @see TripalField::load()
    */
   public function load($entity) {
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
     $entity->{$this->field['field_name']}['und'][0]['value'] = $bundle->label;
   }
 
@@ -33,10 +33,10 @@ class content_type extends TripalField {
   public function formatterView(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
+      $element[$delta] = [
         '#type' => 'markup',
         '#markup' => $item['value'],
-      );
+      ];
     }
   }
 
@@ -45,9 +45,9 @@ class content_type extends TripalField {
    */
   public function widgetForm(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::widgetForm($widget, $form, $form_state, $langcode, $items, $delta, $element);
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
   }
 }

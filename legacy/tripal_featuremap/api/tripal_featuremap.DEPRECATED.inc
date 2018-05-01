@@ -1,13 +1,14 @@
 <?php
 /**
  * @file
- * Wrapper functions to provide backwards compatibility for the tripal featuremap api
+ * Wrapper functions to provide backwards compatibility for the tripal
+ *   featuremap api
  */
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_property().
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from
+ *   now. This function has been replaced by chado_get_property().
  *
  * @see chado_get_property().
  */
@@ -17,26 +18,26 @@ function tripal_featuremap_get_property($featuremap_id, $property) {
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_featuremap_get_property',
-      '%new_function' => 'chado_get_property'
-    )
+    [
+      '%old_function' => 'tripal_featuremap_get_property',
+      '%new_function' => 'chado_get_property',
+    ]
   );
-  $record = array(
+  $record = [
     'table' => 'featuremap',
     'id' => $featuremap_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => $property,
     'cv_name' => 'featuremap_property',
-  );
+  ];
   return chado_get_property($record, $property);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_property().
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from
+ *   now. This function has been replaced by chado_insert_property().
  *
  * @see chado_insert_property().
  */
@@ -46,30 +47,30 @@ function tripal_featuremap_insert_property($featuremap_id, $property, $value, $u
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_featuremap_insert_property',
-      '%new_function' => 'chado_insert_property'
-    )
+    [
+      '%old_function' => 'tripal_featuremap_insert_property',
+      '%new_function' => 'chado_insert_property',
+    ]
   );
-  $record = array(
+  $record = [
     'table' => 'featuremap',
     'id' => $featuremap_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => $property,
     'cv_name' => 'featuremap_property',
     'value' => $value,
-  );
-  $options = array(
+  ];
+  $options = [
     'update_if_present' => $update_if_present,
-  );
+  ];
   return chado_insert_property($record, $property, $options);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_update_property().
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from
+ *   now. This function has been replaced by chado_update_property().
  *
  * @see chado_update_property().
  */
@@ -79,30 +80,30 @@ function tripal_featuremap_update_property($featuremap_id, $property, $value, $i
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_featuremap_update_property',
-      '%new_function' => 'chado_update_property'
-    )
+    [
+      '%old_function' => 'tripal_featuremap_update_property',
+      '%new_function' => 'chado_update_property',
+    ]
   );
-  $record = array(
+  $record = [
     'table' => 'featuremap',
     'id' => $featuremap_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => $property,
     'cv_name' => 'featuremap_property',
     'value' => $value,
-  );
-  $options = array(
+  ];
+  $options = [
     'insert_if_missing' => $insert_if_missing,
-  );
+  ];
   return chado_update_property($record, $property, $options);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_delete_property().
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from
+ *   now. This function has been replaced by chado_delete_property().
  *
  * @see chado_delete_property().
  */
@@ -112,28 +113,28 @@ function tripal_featuremap_delete_property($featuremap_id, $property) {
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_featuremap_delete_property',
-      '%new_function' => 'chado_delete_property'
-    )
+    [
+      '%old_function' => 'tripal_featuremap_delete_property',
+      '%new_function' => 'chado_delete_property',
+    ]
   );
-  
-  $record = array(
+
+  $record = [
     'table' => 'featuremap',
     'id' => $featuremap_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => $property,
     'cv_name' => 'featuremap_property',
-  );
+  ];
 
   return chado_delete_property($record, $property);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_associate_dbxref().
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from
+ *   now. This function has been replaced by chado_associate_dbxref().
  *
  * @see chado_associate_dbxref().
  */
@@ -143,16 +144,16 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
     'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_featuremap_add_featuremap_dbxref',
-      '%new_function' => 'chado_associate_dbxref'
-    )
+    [
+      '%old_function' => 'tripal_featuremap_add_featuremap_dbxref',
+      '%new_function' => 'chado_associate_dbxref',
+    ]
   );
 
   // break apart the dbxref
   $dbname = '';
   $accession = '';
-  if(preg_match('/^(.*?):(.*?)$/', $featuremap_dbxref, $matches)) {
+  if (preg_match('/^(.*?):(.*?)$/', $featuremap_dbxref, $matches)) {
     $dbname = $matches[1];
     $accession = $matches[2];
   }
@@ -161,20 +162,20 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
   }
 
   // check to see if the featuremap_dbxref record already exist
-  $values = array(
-    'dbxref_id' => array(
+  $values = [
+    'dbxref_id' => [
       'accession' => $accession,
-      'db_id' => array(
+      'db_id' => [
         'name' => $dbname,
-      ),
-    ),
+      ],
+    ],
     'featuremap_id' => $featuremap_id,
-  );
-  $options = array('statement_name' => 'sel_featuremapdbxref_dbpu');
-  $results = chado_select_record('featuremap_dbxref', array('*'), $values, $options);
+  ];
+  $options = ['statement_name' => 'sel_featuremapdbxref_dbpu'];
+  $results = chado_select_record('featuremap_dbxref', ['*'], $values, $options);
 
   // if the featuremap_dbxref record  exist then we don't need to re-add it.
-  if(count($results) > 0) {
+  if (count($results) > 0) {
     return $results[0];
   }
 
@@ -182,14 +183,14 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
   $db = tripal_db_add_db($dbname);
 
   // get the database cross-reference
-  $dbxvalues = array(
+  $dbxvalues = [
     'accession' => $accession,
     'db_id' => $db->db_id,
-  );
-  $dbxoptions = array('statement_name' => 'sel_dbxref_acdb');
-  $results = chado_select_record('dbxref', array('dbxref_id'), $dbxvalues, $dbxoptions);
+  ];
+  $dbxoptions = ['statement_name' => 'sel_dbxref_acdb'];
+  $results = chado_select_record('dbxref', ['dbxref_id'], $dbxvalues, $dbxoptions);
   // if the accession doesn't exist then add it
-  if(count($results) == 0){
+  if (count($results) == 0) {
     $dbxref = tripal_db_add_dbxref($db->db_id, $accession);
   }
   else {
@@ -197,11 +198,11 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
   }
 
   // now add the record
-  $options = array('statement_name' => 'ins_featuremapdbxref_dbpu');
+  $options = ['statement_name' => 'ins_featuremapdbxref_dbpu'];
   $results = chado_insert_record('featuremap_dbxref', $values, $options);
   if (!$results) {
     tripal_report_error('t_featuremap', TRIPAL_ERROR, "Cannot add map dbxref: %db:%accession.",
-      array('%db' => $dbname, '%accession' => $accession));
+      ['%db' => $dbname, '%accession' => $accession]);
     return FALSE;
   }
   return $results;

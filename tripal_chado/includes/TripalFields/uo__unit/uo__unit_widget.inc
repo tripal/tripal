@@ -6,7 +6,7 @@ class uo__unit_widget extends ChadoFieldWidget {
   public static $default_label = 'Unit';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('uo__unit');
+  public static $field_types = ['uo__unit'];
 
 
   /**
@@ -27,14 +27,14 @@ class uo__unit_widget extends ChadoFieldWidget {
       $unittype_id = $items[0]['chado-' . $field_table . '__unittype_id'];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-    $cv = tripal_get_cv(array('name' => 'featuremap_units'));
+    ];
+    $cv = tripal_get_cv(['name' => 'featuremap_units']);
     $options = tripal_get_cvterm_select_options($cv->cv_id);
     unset($options[0]);
-    $widget['chado-' . $field_table . '__unittype_id'] = array(
+    $widget['chado-' . $field_table . '__unittype_id'] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -44,7 +44,7 @@ class uo__unit_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
+    ];
   }
 
   /**

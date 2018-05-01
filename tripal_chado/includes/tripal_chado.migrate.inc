@@ -9,56 +9,56 @@
  * @param $form_state
  */
 function tripal_chado_migrate_form($form, &$form_state) {
-  $form['overview_vert_tabs'] = array(
-    '#type' => 'vertical_tabs'
-  );
+  $form['overview_vert_tabs'] = [
+    '#type' => 'vertical_tabs',
+  ];
 
   $form['overview_vert_tabs']['#default_tab'] = key_exists('tripal_migrate_current_tab', $_SESSION) ? $_SESSION['tripal_migrate_current_tab'] : 'edit-step1';
 
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#type' => 'item',
     '#markup' => t('Here you may migrate Tripal v2 content types to Tripal v3
         content types. The migration process is divided into four steps that
         allow you to migrate your site as your own pace. Please click each
         step below for details as to the purpose of the step. When all steps
         are completed your site will be fully Tripal v3 compatible.'),
-    '#weight' => -100
-  );
+    '#weight' => -100,
+  ];
 
   // Step 1
-  $form['step1'] = array(
+  $form['step1'] = [
     '#type' => 'fieldset',
     '#title' => 'Step1',
     '#description' => '<b>Enable Legacy Support</b>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#group' => 'overview_vert_tabs'
-  );
+    '#group' => 'overview_vert_tabs',
+  ];
   global $base_url;
   $mod_url = '/admin/modules';
-  $form['step1']['step1_content'] = array(
+  $form['step1']['step1_content'] = [
     '#markup' => 'Tripal legacy modules are needed to support the display of Tripal v2
       content types. Review and ' . l('enable modules', $mod_url) . ' in the \'Tripal v2 Legacy\' category
       for legacy content support. Only content types for enabled legacy
-      moodules can be migrated'
-  );
+      moodules can be migrated',
+  ];
 
   // Step 2
-  $form['step2'] = array(
+  $form['step2'] = [
     '#type' => 'fieldset',
     '#title' => 'Step2',
     '#description' => '<b>Migrate Content</b>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#group' => 'overview_vert_tabs'
-  );
-  $form['step2']['step2_container'] = array(
+    '#group' => 'overview_vert_tabs',
+  ];
+  $form['step2']['step2_container'] = [
     '#type' => 'container',
     '#collapsible' => FALSE,
     '#prefix' => '<div id="tripal-chado-migrate-form-step2">',
-    '#suffix' => '</div>'
-  );
-  $form['step2']['step2_container']['instructions'] = array(
+    '#suffix' => '</div>',
+  ];
+  $form['step2']['step2_container']['instructions'] = [
     '#type' => 'item',
     '#markup' => t('Here you can migrate Tripal v2 content types to Tripal v3
         content types.  This will not destroy or remove existing Tripal v2 pages
@@ -69,7 +69,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         Once customization is completed a subsequent step will allow you to
         swap out Tripal v2 pages for the newer Tripal v3 pages. If you would like to
         use Trial v3 web services you must migrate content types.'),
-  );
+  ];
 
   $tv2_content_type = 'all';
   if (array_key_exists('values', $form_state)) {
@@ -77,19 +77,19 @@ function tripal_chado_migrate_form($form, &$form_state) {
   }
 
   $tv2_options = tripal_chado_get_tripal_v2_content_type_options(TRUE);
-  $form['step2']['step2_container']['tv2_content_type'] = array(
+  $form['step2']['step2_container']['tv2_content_type'] = [
     '#type' => 'select',
     '#title' => 'Tripal v2 Content Type',
     '#description' => t('Select the Tripal v2 content type to migrate.'),
     '#options' => $tv2_options,
     '#default_value' => $tv2_content_type,
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
       'wrapper' => "tripal-chado-migrate-form-step2",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 
   // Add a review button that allows reviewing migratable content types
   if ($tv2_content_type != 'all') {
@@ -98,155 +98,167 @@ function tripal_chado_migrate_form($form, &$form_state) {
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
 
-    $form['step2']['step2_container']['tv3_content_type'] = array(
+    $form['step2']['step2_container']['tv3_content_type'] = [
       '#type' => 'fieldset',
       '#title' => 'Tripal v3 Content Type',
       '#description' => "Click the 'Get Tripal v3 Types' button to retrieve a list of Tripal v3
         content types to which this Tripal v2 type can be converted. This may take a while
         depending on the size of your database.  The number of items to be converted is
-        shown beside the type."
-    );
-    $form['step2']['step2_container']['tv3_content_type']['get_v3_type_btn'] = array(
+        shown beside the type.",
+    ];
+    $form['step2']['step2_container']['tv3_content_type']['get_v3_type_btn'] = [
       '#type' => 'button',
       '#name' => 'get_v3_type_btn',
       '#value' => "Get Tripal v3 Types",
-      '#ajax' => array(
+      '#ajax' => [
         'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
         'wrapper' => "tripal-chado-migrate-form-step2",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
 
     $no_data = TRUE;
     if ($form_state['clicked_button']['#name'] == 'get_v3_type_btn') {
 
       // Migrate all
-      $form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all'] = array(
+      $form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all'] = [
         '#type' => 'checkbox',
-        '#title' => 'Migrate All'
-      );
+        '#title' => 'Migrate All',
+      ];
       // Migrate selection only
       if ($table == 'organism') {
         $sql =
-           "SELECT count(*)
+          "SELECT count(*)
             FROM {organism} O
             INNER JOIN [chado_organism] CO ON O.organism_id = CO.organism_id
           ";
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
           $key = urldecode('tv3_content_type--OBI--0100026--organism');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
+          $form['step2']['step2_container']['tv3_content_type'][$key] = [
             '#type' => 'checkbox',
             '#title' => 'Organism (' . $org_count . ')',
-          );
+          ];
           $no_data = FALSE;
         }
       }
-      else if ($table == 'analysis') {
-        $sql =
-        "SELECT count(*)
+      else {
+        if ($table == 'analysis') {
+          $sql =
+            "SELECT count(*)
           FROM {analysis} A
           INNER JOIN [chado_analysis] CA ON A.analysis_id = CA.analysis_id
          ";
-        $ana_count = chado_query($sql)->fetchField();
-        if ($ana_count > 0) {
-          $key  = urlencode('tv3_content_type--operation--2945--analysis');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => 'Analysis (' . $ana_count . ')',
-          );
-          $no_data = FALSE;
+          $ana_count = chado_query($sql)->fetchField();
+          if ($ana_count > 0) {
+            $key = urlencode('tv3_content_type--operation--2945--analysis');
+            $form['step2']['step2_container']['tv3_content_type'][$key] = [
+              '#type' => 'checkbox',
+              '#title' => 'Analysis (' . $ana_count . ')',
+            ];
+            $no_data = FALSE;
+          }
         }
-      }
-      else if ($table == 'project') {
-        $sql =
-          "SELECT count(*)
+        else {
+          if ($table == 'project') {
+            $sql =
+              "SELECT count(*)
            FROM {project} P
            INNER JOIN [chado_project] CP ON P.project_id = CP.project_id
           ";
-        $proj_count = chado_query($sql)->fetchField();
-        if ($proj_count > 0) {
-          $key = urlencode('tv3_content_type--local--project--project');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => 'Project (' . $proj_count . ')',
-          );
-          $no_data = FALSE;
-        }
-      }
-      else if ($table == 'featuremap') {
-        $sql =
-          "SELECT count(*)
+            $proj_count = chado_query($sql)->fetchField();
+            if ($proj_count > 0) {
+              $key = urlencode('tv3_content_type--local--project--project');
+              $form['step2']['step2_container']['tv3_content_type'][$key] = [
+                '#type' => 'checkbox',
+                '#title' => 'Project (' . $proj_count . ')',
+              ];
+              $no_data = FALSE;
+            }
+          }
+          else {
+            if ($table == 'featuremap') {
+              $sql =
+                "SELECT count(*)
             FROM {featuremap} M
             INNER JOIN [chado_featuremap] CM ON M.featuremap_id = CM.featuremap_id
           ";
-        $map_count = chado_query($sql)->fetchField();
-        if ($map_count > 0) {
-          $key = urlencode('tv3_content_type--data--1274--map');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => 'Map (' . $map_count . ')',
-          );
-          $no_data = FALSE;
-        }
-      }
-      else if ($table == 'pub') {
-        $sql =
-          "SELECT count(*)
+              $map_count = chado_query($sql)->fetchField();
+              if ($map_count > 0) {
+                $key = urlencode('tv3_content_type--data--1274--map');
+                $form['step2']['step2_container']['tv3_content_type'][$key] = [
+                  '#type' => 'checkbox',
+                  '#title' => 'Map (' . $map_count . ')',
+                ];
+                $no_data = FALSE;
+              }
+            }
+            else {
+              if ($table == 'pub') {
+                $sql =
+                  "SELECT count(*)
            FROM {pub} P
            INNER JOIN [chado_pub] CP ON P.pub_id = CP.pub_id
          ";
-        $proj_count = chado_query($sql)->fetchField();
-        if ($proj_count > 0) {
-          $key = urlencode('tv3_content_type--TPUB--0000002--Publication');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => 'Publication (' . $proj_count . ')',
-          );
-          $no_data = FALSE;
-        }
-      }
-      else if ($table == 'biomaterial') {
-        $sql =
-        "SELECT count(*)
+                $proj_count = chado_query($sql)->fetchField();
+                if ($proj_count > 0) {
+                  $key = urlencode('tv3_content_type--TPUB--0000002--Publication');
+                  $form['step2']['step2_container']['tv3_content_type'][$key] = [
+                    '#type' => 'checkbox',
+                    '#title' => 'Publication (' . $proj_count . ')',
+                  ];
+                  $no_data = FALSE;
+                }
+              }
+              else {
+                if ($table == 'biomaterial') {
+                  $sql =
+                    "SELECT count(*)
            FROM {biomaterial} B
            INNER JOIN [chado_biomaterial] CB ON B.biomaterial_id = CB.biomaterial_id
           ";
-        $bm_count = chado_query($sql)->fetchField();
-        if ($bm_count > 0) {
-          $key = urlencode('tv3_content_type--sep--1095--biological sample');
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => 'Biomaterial (' . $bm_count . ')',
-          );
-          $no_data = FALSE;
-        }
-      }
-      else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
-        // Get all Tripal v2 node types from the chad_* linking table
-        $sql =
-            "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
+                  $bm_count = chado_query($sql)->fetchField();
+                  if ($bm_count > 0) {
+                    $key = urlencode('tv3_content_type--sep--1095--biological sample');
+                    $form['step2']['step2_container']['tv3_content_type'][$key] = [
+                      '#type' => 'checkbox',
+                      '#title' => 'Biomaterial (' . $bm_count . ')',
+                    ];
+                    $no_data = FALSE;
+                  }
+                }
+                else {
+                  if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
+                    // Get all Tripal v2 node types from the chad_* linking table
+                    $sql =
+                      "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
               FROM {" . $table . "} T
               INNER JOIN [" . $tv2_content_type . "] CT ON T.$pkey = CT.$pkey
               INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
               INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
               INNER JOIN {db} ON db.db_id = X.db_id
               GROUP BY V.name, X.accession, db.name";
-        $tv3_content_types = chado_query($sql);
-        while($tv3_content_type = $tv3_content_types->fetchObject()) {
-          // We need to store vocabulary/accession/type for each checkbox in the key becuase
-          // the value only allows 1 or 0
-          $key = urlencode(
-            'tv3_content_type--' .
-            $tv3_content_type->vocabulary . '--' .
-            $tv3_content_type->accession . '--' .
-            $tv3_content_type->type);
-          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
-            '#type' => 'checkbox',
-            '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
-          );
-          $no_data = FALSE;
+                    $tv3_content_types = chado_query($sql);
+                    while ($tv3_content_type = $tv3_content_types->fetchObject()) {
+                      // We need to store vocabulary/accession/type for each checkbox in the key becuase
+                      // the value only allows 1 or 0
+                      $key = urlencode(
+                        'tv3_content_type--' .
+                        $tv3_content_type->vocabulary . '--' .
+                        $tv3_content_type->accession . '--' .
+                        $tv3_content_type->type);
+                      $form['step2']['step2_container']['tv3_content_type'][$key] = [
+                        '#type' => 'checkbox',
+                        '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
+                      ];
+                      $no_data = FALSE;
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
       if ($no_data) {
@@ -257,11 +269,11 @@ function tripal_chado_migrate_form($form, &$form_state) {
   }
   // Migrate button
   if ($tv2_content_type == 'all' || key_exists('tv3_migrate_all', $form['step2']['step2_container']['tv3_content_type'])) {
-    $form['step2']['step2_container']['migrate_btn'] = array(
+    $form['step2']['step2_container']['migrate_btn'] = [
       '#type' => 'submit',
       '#name' => 'migrate_btn',
       '#value' => "Migrate $tv2_options[$tv2_content_type]",
-    );
+    ];
     // Disable the migration if all have been done
     if (count($tv2_options) == 1 && key_exists('all', $tv2_options)) {
       $form['step2']['step2_container']['migrate_btn']['#disabled'] = 1;
@@ -269,15 +281,15 @@ function tripal_chado_migrate_form($form, &$form_state) {
   }
 
   // Step 3
-  $form['step3'] = array(
+  $form['step3'] = [
     '#type' => 'fieldset',
     '#title' => 'Step3',
     '#description' => '<b>Use Legacy Templates (optional)</b>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#group' => 'overview_vert_tabs'
-  );
-  $form['step3']['instructions'] = array(
+    '#group' => 'overview_vert_tabs',
+  ];
+  $form['step3']['instructions'] = [
     '#type' => 'item',
     '#markup' => t('Once content types have been migrated you have the option
         to use the Tripal v2 display templates.  Tripal v3 allows you to
@@ -286,9 +298,9 @@ function tripal_chado_migrate_form($form, &$form_state) {
         considerable Tripal v2 customizations that you do not
         want to lose you can use the legacy templates by checking the box
         for the desired content types below.'),
-  );
+  ];
   // Get a list of enabled legacy modules with tv2 templates
-  $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+  $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', []);
   $info = module_invoke_all('node_info');
   $options = tripal_chado_get_tripal_v2_content_type_options(FALSE, TRUE);
   foreach ($options AS $type_name => $type_label) {
@@ -297,28 +309,28 @@ function tripal_chado_migrate_form($form, &$form_state) {
     if ($type_name != 'all' and !key_exists($type_name, $info)) {
       $title .= " <strong>(please enable the $type_name legacy module).</strong>";
     }
-    $form ['step3']['legacy_template--' . $type_name] = array (
+    $form ['step3']['legacy_template--' . $type_name] = [
       '#type' => 'checkbox',
       '#title' => $title,
       '#default_value' => key_exists('legacy_template--' . $type_name, $enabled_templates) ? $enabled_templates['legacy_template--' . $type_name] : 0,
-    );
+    ];
   }
-  $form['step3']['save_btn'] = array(
+  $form['step3']['save_btn'] = [
     '#type' => 'submit',
     '#name' => 'save_enabled_template_btn',
     '#value' => "Save",
-  );
+  ];
 
   // Step 4
-  $form['step4'] = array(
+  $form['step4'] = [
     '#type' => 'fieldset',
     '#title' => 'Step4',
     '#description' => '<b>Complete Migration</b>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#group' => 'overview_vert_tabs'
-  );
-  $form['step4']['instructions'] = array(
+    '#group' => 'overview_vert_tabs',
+  ];
+  $form['step4']['instructions'] = [
     '#type' => 'item',
     '#markup' => t('This step allows you to fully switch to Tripal v3 pages.
         You can move URLs and titles from Tripal v2 pages to their
@@ -330,40 +342,40 @@ function tripal_chado_migrate_form($form, &$form_state) {
         verified you can finally delete the Tripal v2 pages to free space.
         Deleting the Tripal v2 content will not delete the data in Chado.
         The page is simply removed from the site.'),
-  );
-  $form['step4']['warning'] = array(
+  ];
+  $form['step4']['warning'] = [
     '#type' => 'item',
     '#markup' => tripal_set_message('Any of the following options cannot be
         undone. Also, please be sure you have migrated all
         desired content types in Step 2 prior to deleting the Tripal v2
-        contents.', TRIPAL_WARNING, array('return_html' => TRUE)),
-  );
-  $opt_complete_migration = array (
+        contents.', TRIPAL_WARNING, ['return_html' => TRUE]),
+  ];
+  $opt_complete_migration = [
     'cp_title' => 'Copy Title over to Tripal v3 Content',
     'mv_url' => 'Migrate URL Alias to Tripal v3 Content',
     'unpublish' => 'Unpublish Tripal v2 Content',
     'delete' => 'Delete Tripal v2 Content',
-  );
+  ];
   if (count($tv2_options) == 1 && key_exists('all', $tv2_options)) {
-    $form['step4']['complete'] = array(
-      '#markup' => 'Migration completed. All content have been migrated.'
-    );
+    $form['step4']['complete'] = [
+      '#markup' => 'Migration completed. All content have been migrated.',
+    ];
   }
   else {
     foreach ($tv2_options AS $opt_key => $opt) {
-      $form['step4'][$opt_key . '_title'] = array(
-        '#markup' => "<b>$opt</b>"
-      );
-      $form['step4']['complete_migration--' . $opt_key] = array(
+      $form['step4'][$opt_key . '_title'] = [
+        '#markup' => "<b>$opt</b>",
+      ];
+      $form['step4']['complete_migration--' . $opt_key] = [
         '#type' => 'checkboxes',
         '#options' => $opt_complete_migration,
-      );
+      ];
     }
-    $form['step4']['submit_btn'] = array(
+    $form['step4']['submit_btn'] = [
       '#type' => 'submit',
       '#name' => 'complete_migration_btn',
       '#value' => "Submit",
-    );
+    ];
   }
   return $form;
 }
@@ -389,7 +401,7 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
   // Store the legacy template setting in a Drupal variable
   if ($form_state['clicked_button']['#name'] == 'save_enabled_template_btn') {
     $values = $form_state['values'];
-    $enabled_templates = array();
+    $enabled_templates = [];
     foreach ($values AS $key => $value) {
       if (preg_match('/^legacy_template--/', $key)) {
         $enabled_templates[$key] = $value;
@@ -400,126 +412,131 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
     $_SESSION['tripal_migrate_current_tab'] = 'edit-step3';
   }
   // Complete migration
-  else if ($form_state['clicked_button']['#name'] == 'complete_migration_btn') {
-    $values = $form_state['values'];
-    $config = array (
-      'delete' => array(),
-      'unpublish' => array(),
-      'cp_title' => array(),
-      'mv_url' => array()
-    );
-    $all = array();
-    $all_types = array();
-    // Gather checked checkboxes and store in the $config array
-    foreach ($values AS $key => $value) {
-      if (preg_match('/^complete_migration--/', $key)) {
-        $type = str_replace('complete_migration--', '', $key);
-        if ($type != 'all') {
-          array_push($all_types, $type);
-        }
-        foreach ($value AS $key_op => $op) {
-          if ($type == 'all') {
-            if ($op) {
-              array_push($all, $key_op);
-            }
+  else {
+    if ($form_state['clicked_button']['#name'] == 'complete_migration_btn') {
+      $values = $form_state['values'];
+      $config = [
+        'delete' => [],
+        'unpublish' => [],
+        'cp_title' => [],
+        'mv_url' => [],
+      ];
+      $all = [];
+      $all_types = [];
+      // Gather checked checkboxes and store in the $config array
+      foreach ($values AS $key => $value) {
+        if (preg_match('/^complete_migration--/', $key)) {
+          $type = str_replace('complete_migration--', '', $key);
+          if ($type != 'all') {
+            array_push($all_types, $type);
           }
-          else {
-            if ($op) {
-              array_push($config[$key_op], $type);
+          foreach ($value AS $key_op => $op) {
+            if ($type == 'all') {
+              if ($op) {
+                array_push($all, $key_op);
+              }
+            }
+            else {
+              if ($op) {
+                array_push($config[$key_op], $type);
+              }
             }
           }
         }
       }
-    }
-    foreach($all AS $a) {
-      $config[$a] = $all_types;
-    }
-    // Submit jobs to complete the migration
-    global $user;
-    $includes = array(
-      module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
-    );
+      foreach ($all AS $a) {
+        $config[$a] = $all_types;
+      }
+      // Submit jobs to complete the migration
+      global $user;
+      $includes = [
+        module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
+      ];
 
-    if (count($config['cp_title']) > 0) {
-      $args = array($config['cp_title']);
-      tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado',
+      if (count($config['cp_title']) > 0) {
+        $args = [$config['cp_title']];
+        tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado',
           'tripal_chado_copy_title_for_selected_types', $args, $user->uid, 10, $includes);
-    }
-    if (count($config['mv_url']) > 0) {
-      $args = array($config['mv_url']);
-      tripal_add_job(" Migrate URL Alias to Tripal v3 Content ", 'tripal_chado',
+      }
+      if (count($config['mv_url']) > 0) {
+        $args = [$config['mv_url']];
+        tripal_add_job(" Migrate URL Alias to Tripal v3 Content ", 'tripal_chado',
           'tripal_chado_migrate_url_alias_for_selected_types', $args, $user->uid, 10, $includes);
-    }
-    if (count($config['unpublish']) > 0) {
-      $args = array($config['unpublish']);
-      tripal_add_job(" Unpublish Tripal v2 Content ", 'tripal_chado',
+      }
+      if (count($config['unpublish']) > 0) {
+        $args = [$config['unpublish']];
+        tripal_add_job(" Unpublish Tripal v2 Content ", 'tripal_chado',
           'tripal_chado_unpublish_selected_types', $args, $user->uid, 10, $includes);
-    }
-    if (count($config['delete']) > 0) {
-      $args = array($config['delete']);
-      tripal_add_job("Delete Tripal v2 Content ", 'tripal_chado',
+      }
+      if (count($config['delete']) > 0) {
+        $args = [$config['delete']];
+        tripal_add_job("Delete Tripal v2 Content ", 'tripal_chado',
           'tripal_chado_delete_selected_types', $args, $user->uid, 10, $includes);
+      }
+      $_SESSION['tripal_migrate_current_tab'] = 'edit-step4';
+      return;
     }
-    $_SESSION['tripal_migrate_current_tab'] = 'edit-step4';
-    return;
-  }
-  // Migrate tv2 content to tv3 content
-  else if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
-    global $user;
-    $values = $form_state['values'];
-    $tv2_content_type = $form_state['values']['tv2_content_type'];
-    $tv3_content_type = array();
-    foreach ($values AS $key => $value) {
-      if ($tv2_content_type != 'all') {
-        $key = urldecode($key);
-        if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
-            ($value == 1 || $values['tv3_migrate_all'] == 1)) {
-          $vocabulary = $matches[1];
-          $accession = $matches[2];
-          $type = $matches[3];
-          $table = str_replace('chado_', '', $tv2_content_type);
-          $tv3_content_type [] = array(
-            'vocabulary' => $vocabulary,
-            'accession' => $accession,
-            'term_name' => $type,
-            'storage_args' => array (
-              'data_table' => $table,
-              'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
-            )
-          );
+    // Migrate tv2 content to tv3 content
+    else {
+      if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
+        global $user;
+        $values = $form_state['values'];
+        $tv2_content_type = $form_state['values']['tv2_content_type'];
+        $tv3_content_type = [];
+        foreach ($values AS $key => $value) {
+          if ($tv2_content_type != 'all') {
+            $key = urldecode($key);
+            if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
+              ($value == 1 || $values['tv3_migrate_all'] == 1)) {
+              $vocabulary = $matches[1];
+              $accession = $matches[2];
+              $type = $matches[3];
+              $table = str_replace('chado_', '', $tv2_content_type);
+              $tv3_content_type [] = [
+                'vocabulary' => $vocabulary,
+                'accession' => $accession,
+                'term_name' => $type,
+                'storage_args' => [
+                  'data_table' => $table,
+                  'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : '',
+                ],
+              ];
+            }
+          }
         }
+        // Submit a job to migrate content
+        global $user;
+        $args = [
+          [
+            'tv2_content_type' => $tv2_content_type,
+            'tv3_content_type' => $tv3_content_type,
+          ],
+        ];
+        $includes = [
+          module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
+        ];
+        if ($tv2_content_type == 'all' || count($tv3_content_type) != 0) {
+          return tripal_add_job("Migrate $tv2_content_type Tripal v2 content.",
+            'tripal_chado', 'tripal_chado_migrate_records', $args, $user->uid, 10, $includes);
+        }
+        else {
+          return drupal_set_message('Nothing to do. All data have been migrated or no data for migration.');
+        }
+        $_SESSION['tripal_migrate_current_tab'] = 'edit-step2';
       }
     }
-    // Submit a job to migrate content
-    global $user;
-    $args = array(
-      array(
-        'tv2_content_type' => $tv2_content_type,
-        'tv3_content_type' => $tv3_content_type
-      )
-    );
-    $includes = array(
-      module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
-    );
-    if ($tv2_content_type == 'all' || count($tv3_content_type) != 0) {
-      return tripal_add_job("Migrate $tv2_content_type Tripal v2 content.",
-        'tripal_chado', 'tripal_chado_migrate_records', $args, $user->uid, 10, $includes);
-    }
-    else {
-      return drupal_set_message('Nothing to do. All data have been migrated or no data for migration.');
-    }
-    $_SESSION['tripal_migrate_current_tab'] = 'edit-step2';
   }
 }
 
 /**
  * Ajax call back that returns the entire form
  *
- * The callback is triggered by ajax elements on the form which leads to the update of
- * entire form according to the values set on the form
+ * The callback is triggered by ajax elements on the form which leads to the
+ * update of entire form according to the values set on the form
  *
  * @param $form
  * @param $form_state
+ *
  * @return $form
  */
 function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
@@ -532,9 +549,11 @@ function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
  * @param boolean $all_option
  *   Include an 'all' option in the returned array
  * @param boolean $has_template
- *   Return TV2 content types only if it has a base template. This will exclude TV2 content
- *   types such as Blast/Kegg/Interpro/Unigene which are all converted into the TV3
+ *   Return TV2 content types only if it has a base template. This will exclude
+ *   TV2 content types such as Blast/Kegg/Interpro/Unigene which are all
+ *   converted into the TV3
  *   'Analysis' entity type
+ *
  * @return string[]
  *  Return a string array keyed by the node type
  */
@@ -547,7 +566,7 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
   ";
   $result = db_query($sql);
   // Store 'chado_*' tables that has at least one node
-  $tables = array();
+  $tables = [];
   while ($field = $result->fetchField()) {
     $count = db_query("SELECT count(*) FROM $field LIMIT 1")->fetchField();
     if ($count != 0) {
@@ -557,10 +576,10 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
 
   // List all available Tripal v2 content types
   $result = db_select('node_type', 'nt')
-    ->fields('nt', array('type', 'name', 'description'))
+    ->fields('nt', ['type', 'name', 'description'])
     ->condition('type', 'chado_%', 'LIKE')
     ->execute();
-  $options = array();
+  $options = [];
   if ($all_option) {
     $options['all'] = 'All';
   }
@@ -588,7 +607,7 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
  * @param $migration
  * @param $job_id
  */
- function tripal_chado_migrate_records($migration, $job_id = NULL) {
+function tripal_chado_migrate_records($migration, $job_id = NULL) {
   $tv2_content_type = $migration['tv2_content_type'];
   $tv3_content_type = $migration['tv3_content_type'];
 
@@ -618,6 +637,7 @@ function tripal_chado_migrate_all_types() {
   $types = tripal_chado_migrate_map_types($tv2_content_types);
   tripal_chado_migrate_selected_types($types);
 }
+
 /**
  * Map all tv2_content_type to tv3_content_type
  *
@@ -625,76 +645,82 @@ function tripal_chado_migrate_all_types() {
  * return $tv3_content_type
  */
 function tripal_chado_migrate_map_types($tv2_content_types) {
-  $types = array();
-  foreach($tv2_content_types AS $tv2_content_type => $value) {
+  $types = [];
+  foreach ($tv2_content_types AS $tv2_content_type => $value) {
     $table = str_replace('chado_', '', $tv2_content_type);
     $schema = chado_get_schema($table);
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
 
     if ($table == 'organism') {
-      array_push($types, array(
+      array_push($types, [
         'vocabulary' => 'OBI',
         'accession' => '0100026',
         'term_name' => 'organism',
-        'storage_args' => array (
-          'data_table' => $table
-        )
-      ));
+        'storage_args' => [
+          'data_table' => $table,
+        ],
+      ]);
     }
-    else if ($table == 'analysis') {
-      array_push($types, array(
-        'vocabulary' => 'operation',
-        'accession' => '2945',
-        'term_name' => 'Analysis',
-        'storage_args' => array (
-          'data_table' => $table
-        )
-      ));
-    }
-    else if ($table == 'project') {
-      array_push($types, array(
-        'vocabulary' => 'local',
-        'accession' => 'project',
-        'term_name' => 'project',
-        'storage_args' => array (
-          'data_table' => $table
-        )
-      ));
-    }
-    else if ($table == 'featuremap') {
-      array_push($types, array(
-        'vocabulary' => 'data',
-        'accession' => '1274',
-        'term_name' => 'map',
-        'storage_args' => array (
-          'data_table' => $table
-        )
-    ));
-  }
-  else if ($table == 'pub') {
-    array_push($types, array(
-      'vocabulary' => 'TPUB',
-      'accession' => '0000002',
-      'term_name' => 'Publication',
-      'storage_args' => array (
-        'data_table' => $table
-      )
-    ));
-  }
-  else if ($table == 'biomaterial') {
-    array_push($types, array(
-      'vocabulary' => 'sep',
-      'accession' => '1095',
-      'term_name' => 'biological sample',
-      'storage_args' => array (
-        'data_table' => $table
-      )
-    ));
-  }
-  else if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
-      // Get all Tripal v2 node types from the chad_* linking table
-      $sql = "
+    else {
+      if ($table == 'analysis') {
+        array_push($types, [
+          'vocabulary' => 'operation',
+          'accession' => '2945',
+          'term_name' => 'Analysis',
+          'storage_args' => [
+            'data_table' => $table,
+          ],
+        ]);
+      }
+      else {
+        if ($table == 'project') {
+          array_push($types, [
+            'vocabulary' => 'local',
+            'accession' => 'project',
+            'term_name' => 'project',
+            'storage_args' => [
+              'data_table' => $table,
+            ],
+          ]);
+        }
+        else {
+          if ($table == 'featuremap') {
+            array_push($types, [
+              'vocabulary' => 'data',
+              'accession' => '1274',
+              'term_name' => 'map',
+              'storage_args' => [
+                'data_table' => $table,
+              ],
+            ]);
+          }
+          else {
+            if ($table == 'pub') {
+              array_push($types, [
+                'vocabulary' => 'TPUB',
+                'accession' => '0000002',
+                'term_name' => 'Publication',
+                'storage_args' => [
+                  'data_table' => $table,
+                ],
+              ]);
+            }
+            else {
+              if ($table == 'biomaterial') {
+                array_push($types, [
+                  'vocabulary' => 'sep',
+                  'accession' => '1095',
+                  'term_name' => 'biological sample',
+                  'storage_args' => [
+                    'data_table' => $table,
+                  ],
+                ]);
+              }
+              else {
+                if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
+                  // Get all Tripal v2 node types from the chad_* linking table
+                  $sql = "
         SELECT V.name AS type, X.accession, db.name AS vocabulary
         FROM {" . $table . "} T
           INNER JOIN [" . $tv2_content_type . "] CT ON T.$pkey = CT.$pkey
@@ -703,22 +729,29 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
           INNER JOIN {db} ON db.db_id = X.db_id
           GROUP BY V.name, X.accession, db.name
           ";
-      $tv3_content_types = chado_query($sql);
-      while($tv3_content_type = $tv3_content_types->fetchObject()) {
-        array_push($types, array(
-          'vocabulary' => $tv3_content_type->vocabulary,
-          'accession' => $tv3_content_type->accession,
-          'term_name' => $tv3_content_type->type,
-          'storage_args' => array (
-            'data_table' => $table,
-            'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : ''
-          )
-        ));
+                  $tv3_content_types = chado_query($sql);
+                  while ($tv3_content_type = $tv3_content_types->fetchObject()) {
+                    array_push($types, [
+                      'vocabulary' => $tv3_content_type->vocabulary,
+                      'accession' => $tv3_content_type->accession,
+                      'term_name' => $tv3_content_type->type,
+                      'storage_args' => [
+                        'data_table' => $table,
+                        'type_column' => db_field_exists('chado.' . $table, 'type_id') ? 'type_id' : '',
+                      ],
+                    ]);
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
   return $types;
 }
+
 /**
  * Migrate only selected Tripal v2 content types
  *
@@ -742,10 +775,10 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     $bundle_name = 'bio_data_' . $term->id;
 
     // Publish records for the bundle
-    $value = array(
+    $value = [
       'sync_node' => 1,
-      'bundle_name' => $bundle_name
-    );
+      'bundle_name' => $bundle_name,
+    ];
     tripal_chado_publish_records($value);
 
     // Migrate Resource Titles/Blocks or Resource Links if available
@@ -762,11 +795,12 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
 /**
  * Delete selected Tripal v2 content
  *
- * Delete all records from chado_* table then call the cleanup orphan nodes function
+ * Delete all records from chado_* table then call the cleanup orphan nodes
+ * function
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_delete_selected_types($tv2_content_types = array(), $job_id) {
+function tripal_chado_delete_selected_types($tv2_content_types = [], $job_id) {
   foreach ($tv2_content_types AS $type) {
     $sql = "DELETE FROM $type";
     db_query($sql);
@@ -777,11 +811,12 @@ function tripal_chado_delete_selected_types($tv2_content_types = array(), $job_i
 /**
  * Unpublish selected Tripal v2 content
  *
- * Set status = 0 (unpublished) for all nodes of selected Tripal v2 content types
+ * Set status = 0 (unpublished) for all nodes of selected Tripal v2 content
+ * types
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_unpublish_selected_types($tv2_content_types = array(), $job_id) {
+function tripal_chado_unpublish_selected_types($tv2_content_types = [], $job_id) {
   foreach ($tv2_content_types AS $type) {
     $sql = "UPDATE node SET status = 0 WHERE nid IN (SELECT nid FROM $type)";
     db_query($sql);
@@ -797,11 +832,11 @@ function tripal_chado_unpublish_selected_types($tv2_content_types = array(), $jo
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_copy_title_for_selected_types($tv2_content_types = array(), $job_id) {
+function tripal_chado_copy_title_for_selected_types($tv2_content_types = [], $job_id) {
   foreach ($tv2_content_types AS $type) {
     $chado_table = str_replace('chado_', '', $type);
     $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
-    foreach($bio_data_tables AS $bio_data_table) {
+    foreach ($bio_data_tables AS $bio_data_table) {
       $sql = "SELECT nid, entity_id FROM $bio_data_table WHERE nid IN (SELECT nid FROM $type)";
       $result = db_query($sql);
       while ($entity = $result->fetchObject()) {
@@ -809,9 +844,10 @@ function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()
             UPDATE tripal_entity
             SET title = (SELECT title FROM node WHERE nid = :nid)
             WHERE id = :entity_id";
-        db_query($usql, array(
-          ':nid' => $entity->nid,
-          ':entity_id' => $entity->entity_id)
+        db_query($usql, [
+            ':nid' => $entity->nid,
+            ':entity_id' => $entity->entity_id,
+          ]
         );
       }
     }
@@ -825,18 +861,18 @@ function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()
  *
  * @param unknown $tv2_content_types
  */
-function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = array(), $job_id) {
+function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = [], $job_id) {
   foreach ($tv2_content_types AS $type) {
     $chado_table = str_replace('chado_', '', $type);
     $bio_data_tables = tripal_chado_migrate_get_biodata_tables($chado_table);
-    foreach($bio_data_tables AS $bio_data_table) {
+    foreach ($bio_data_tables AS $bio_data_table) {
       $sql = "SELECT nid, entity_id FROM $bio_data_table WHERE nid IN (SELECT nid FROM $type)";
       $result = db_query($sql);
       while ($entity = $result->fetchObject()) {
         $usql = "
             UPDATE url_alias
             SET source = 'bio_data/" . $entity->entity_id .
-            "' WHERE source = 'node/" . $entity->nid . "'";
+          "' WHERE source = 'node/" . $entity->nid . "'";
         db_query($usql);
       }
     }
@@ -849,13 +885,13 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
  * Migrate images for all chado_organism
  *
  */
-function tripal_chado_migrate_organism_images ($bundle_name) {
+function tripal_chado_migrate_organism_images($bundle_name) {
   // Get all organism entities
   $bio_data_table = array_pop(tripal_chado_migrate_get_biodata_tables('organism'));
   $results =
     db_select($bio_data_table, 'ce')
-    ->fields('ce', array('entity_id', 'record_id', 'nid'))
-    ->execute();
+      ->fields('ce', ['entity_id', 'record_id', 'nid'])
+      ->execute();
 
   // Iterate through each organism entity
   while ($organism = $results->fetchObject()) {
@@ -864,28 +900,28 @@ function tripal_chado_migrate_organism_images ($bundle_name) {
 
     // check if there is a file record for the organism node
     $fid = db_select('file_usage', 'fu')
-    ->fields('fu', array('fid'))
-    ->condition('module', 'tripal_organism')
-    ->condition('type', 'organism_image')
-    ->condition('id', $nid)
-    ->execute()
-    ->fetchField();
+      ->fields('fu', ['fid'])
+      ->condition('module', 'tripal_organism')
+      ->condition('type', 'organism_image')
+      ->condition('id', $nid)
+      ->execute()
+      ->fetchField();
     // check if the image was added using the old interface.
     if (!$fid) {
       $sql =
-         "SELECT genus,species,nid
+        "SELECT genus,species,nid
           FROM {organism} O
           INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id
           WHERE O.organism_id = :organism_id";
-      $chado_org = chado_query($sql, array(':organism_id' => $organism->record_id))->fetchObject();
+      $chado_org = chado_query($sql, [':organism_id' => $organism->record_id])->fetchObject();
 
       if ($chado_org) {
         $base_path = realpath('.');
         $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
-        $image_name =  $chado_org->genus . "_" . $chado_org->species . ".jpg";
+        $image_name = $chado_org->genus . "_" . $chado_org->species . ".jpg";
         $image_path = "$base_path/$image_dir/$image_name";
         // image files are stored as 'genus_species.jpg'
-        $file =NULL;
+        $file = NULL;
         if (file_exists($image_path)) {
           $handle = fopen($image_path, 'r');
           $file = file_save_data($handle, "public://$image_name");
@@ -901,14 +937,14 @@ function tripal_chado_migrate_organism_images ($bundle_name) {
             fclose($handle);
           }
         }
-        if($file){
-            tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id, $bundle_name);
+        if ($file) {
+          tripal_chado_migrate_organism_image_add_file($file->fid, $entity_id, $bundle_name);
         }
       }
     }
     else {
       // If there is an image, add it to the organism entity
-        tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle_name);
+      tripal_chado_migrate_organism_image_add_file($fid, $entity_id, $bundle_name);
     }
 
   }
@@ -920,7 +956,7 @@ function tripal_chado_migrate_organism_images ($bundle_name) {
  *
  * @param unknown $fid
  */
-function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle_name) {
+function tripal_chado_migrate_organism_image_add_file($fid, $entity_id, $bundle_name) {
   if ($fid && $entity_id) {
     $file = file_load($fid);
     // Add a record to the file_usage table
@@ -940,15 +976,15 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle
     entity_get_controller('TripalEntity')->resetCache(array($entity_id));
     */
     // Add a record to the field_data_data__image table
-    $values = array(
-        'entity_type' => 'TripalEntity',
-        'bundle' => $bundle_name,
-        'entity_id' => $entity_id,
-        'revision_id' => $entity_id,
-        'language' => 'und',
-        'delta' => 0,
-        'data__image_fid' => $fid,
-    );
+    $values = [
+      'entity_type' => 'TripalEntity',
+      'bundle' => $bundle_name,
+      'entity_id' => $entity_id,
+      'revision_id' => $entity_id,
+      'language' => 'und',
+      'delta' => 0,
+      'data__image_fid' => $fid,
+    ];
     drupal_write_record('field_data_data__image', $values);
   }
 }
@@ -962,15 +998,15 @@ function tripal_chado_migrate_organism_image_add_file ($fid, $entity_id, $bundle
  * @return
  *   Return all chado_biodata_* table names mapping to a chado_table
  */
-function tripal_chado_migrate_get_biodata_tables ($chado_table) {
+function tripal_chado_migrate_get_biodata_tables($chado_table) {
   // To find the bundle_table, check if type_column is used for the chado_table
   $query = db_select('chado_bundle', 'cb');
   $query->join('tripal_bundle', 'tb', 'tb.id = cb.bundle_id');
-  $query->fields('cb', array('data_table'));
-  $query->fields('tb', array('name'));
+  $query->fields('cb', ['data_table']);
+  $query->fields('tb', ['name']);
   $query->condition('cb.data_table', $chado_table);
   $bundles = $query->execute();
-  $tables = array();
+  $tables = [];
   while ($bundle = $bundles->fetchObject()) {
     array_push($tables, 'chado_' . $bundle->name);
   }
@@ -984,8 +1020,8 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
   }
   $entites =
     db_select('chado_' . $bundle_name, 'B')
-    ->fields('B', array('nid'))
-    ->execute();
+      ->fields('B', ['nid'])
+      ->execute();
   while ($nid = $entites->fetchField()) {
     // Only the latest revision is migrated
     $sql = "
@@ -1010,7 +1046,7 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
       GROUP BY entity_id, delta
       ORDER BY RT.delta
     ";
-    $results = db_query($sql, array(':nid' => $nid));
+    $results = db_query($sql, [':nid' => $nid]);
     while ($resource = $results->fetchObject()) {
       $title = $resource->field_resource_titles_value;
       $content = $resource->field_resource_blocks_value;
@@ -1018,53 +1054,52 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
       $nid = $resource->entity_id;
       $entity_id =
         db_select('chado_' . $bundle_name, 'B')
-        ->fields('B', array('entity_id'))
-        ->condition('nid', $nid)
-        ->execute()
-        ->fetchField()
-       ;
+          ->fields('B', ['entity_id'])
+          ->condition('nid', $nid)
+          ->execute()
+          ->fetchField();
       // field name: (can not be longer than 32 chars)
       // bio_data_<i>_resource_<title to lower case/space replaced with _/first 10 chars>
       $field_name = $bundle_name . '_rsc_' . substr(preg_replace('/\s+/', '_', strtolower($title)), 0, 15);
       // Create a field if it does not exist
       if (!field_info_field($field_name)) {
-        field_create_field(array(
+        field_create_field([
           'field_name' => $field_name,
           'type' => 'text',
           'cardinality' => 1,
           'locked' => FALSE,
-          'storage' => array(
+          'storage' => [
             'type' => 'field_sql_storage',
-          ),
-          'settings' => array(
+          ],
+          'settings' => [
             'max_length' => 10485760,
-            'text_processing' => 1
-          )
-        ));
+            'text_processing' => 1,
+          ],
+        ]);
       }
       // Create field instance for the bundle if it does not exist
       if (!field_info_instance('TripalEntity', $field_name, $bundle_name)) {
-        field_create_instance(array(
+        field_create_instance([
           'field_name' => $field_name,
           'entity_type' => 'TripalEntity',
           'bundle' => $bundle_name,
           'label' => $title,
-          'widget' => array(
+          'widget' => [
             'type' => 'text_textarea',
-          ),
-          'display' => array(
-            'default' => array(
+          ],
+          'display' => [
+            'default' => [
               'label' => 'hidden',
-            ),
-          ),
-          'settings' => array(
+            ],
+          ],
+          'settings' => [
             'text_processing' => 1,
             'format' => 'full_html',
             'term_vocabulary' => 'schema',
             'term_name' => 'comment',
             'term_accession' => 'comment',
-          ),
-        ));
+          ],
+        ]);
       }
       // Migrate the field content
       $ftable = 'field_data_' . $field_name;
@@ -1077,7 +1112,7 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
           VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
         ";
         db_query($sql,
-          array (
+          [
             ':entity_type' => 'TripalEntity',
             ':bundle' => $bundle_name,
             ':entity_id' => $entity_id,
@@ -1085,15 +1120,15 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
             ':language' => 'und',
             ':delta' => 0,
             ':value' => $content,
-            ':format' => 'full_html'
-          )
+            ':format' => 'full_html',
+          ]
         );
         $rsql = "
         INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $fvalue, $fformat)
         VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :value, :format)
         ";
         db_query($rsql,
-          array (
+          [
             ':entity_type' => 'TripalEntity',
             ':bundle' => $bundle_name,
             ':entity_id' => $entity_id,
@@ -1101,8 +1136,8 @@ function tripal_chado_migrate_resource_blocks($bundle_name) {
             ':language' => 'und',
             ':delta' => 0,
             ':value' => $content,
-            ':format' => 'full_html'
-          )
+            ':format' => 'full_html',
+          ]
         );
       } catch (\PDOException $e) {
         $error = $e->getMessage();
@@ -1118,9 +1153,9 @@ function tripal_chado_migrate_resource_links($bundle_name) {
     return;
   }
   $entites =
-  db_select('chado_' . $bundle_name, 'B')
-  ->fields('B', array('nid'))
-  ->execute();
+    db_select('chado_' . $bundle_name, 'B')
+      ->fields('B', ['nid'])
+      ->execute();
   while ($nid = $entites->fetchField()) {
     // Only the latest revision is migrated
     $sql = "
@@ -1139,7 +1174,7 @@ function tripal_chado_migrate_resource_links($bundle_name) {
       GROUP BY entity_id, delta
       ORDER BY RT.delta
     ";
-    $results = db_query($sql, array(':nid' => $nid));
+    $results = db_query($sql, [':nid' => $nid]);
     while ($resource = $results->fetchObject()) {
       $values = explode('|', $resource->field_resource_links_value);
       $title = $values[0];
@@ -1147,52 +1182,52 @@ function tripal_chado_migrate_resource_links($bundle_name) {
       $delta = $resource->delta;
       $nid = $resource->entity_id;
       $entity_id =
-      db_select('chado_' . $bundle_name, 'B')
-        ->fields('B', array('entity_id'))
-        ->condition('nid', $nid)
-        ->execute()
-        ->fetchField();
+        db_select('chado_' . $bundle_name, 'B')
+          ->fields('B', ['entity_id'])
+          ->condition('nid', $nid)
+          ->execute()
+          ->fetchField();
 
       // field name: (can not be longer than 32 chars)
       // bio_data_<i>_resource_<title to lower case/space replaced with _/first 10 chars>
       $field_name = $bundle_name . '_resource_links';
       // Create a field if it does not exist
       if (!field_info_field($field_name)) {
-        field_create_field(array(
+        field_create_field([
           'field_name' => $field_name,
           'type' => 'link_field',
           'cardinality' => FIELD_CARDINALITY_UNLIMITED,
           'locked' => FALSE,
-          'storage' => array(
+          'storage' => [
             'type' => 'field_sql_storage',
-          ),
-          'settings' => array(
-          )
-        ));
+          ],
+          'settings' => [
+          ],
+        ]);
       }
       // Create field instance for the bundle if it does not exist.
       if (!field_info_instance('TripalEntity', $field_name, $bundle_name)) {
-        field_create_instance(array(
+        field_create_instance([
           'field_name' => $field_name,
           'entity_type' => 'TripalEntity',
           'bundle' => $bundle_name,
           'label' => 'Links',
-          'widget' => array(
+          'widget' => [
             'type' => 'link_field',
-          ),
-          'display' => array(
-            'default' => array(
+          ],
+          'display' => [
+            'default' => [
               'label' => 'hidden',
-            ),
-          ),
-          'settings' => array(
+            ],
+          ],
+          'settings' => [
             'term_vocabulary' => 'schema',
             'term_name' => 'url',
             'term_accession' => 'url',
             'absolute_url' => 0,
-            'validate_url' => 0
-          ),
-        ));
+            'validate_url' => 0,
+          ],
+        ]);
       }
       // Migrate the field content
       $ftable = 'field_data_' . $field_name;
@@ -1205,7 +1240,7 @@ function tripal_chado_migrate_resource_links($bundle_name) {
         VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
         ";
         db_query($sql,
-          array (
+          [
             ':entity_type' => 'TripalEntity',
             ':bundle' => $bundle_name,
             ':entity_id' => $entity_id,
@@ -1213,15 +1248,15 @@ function tripal_chado_migrate_resource_links($bundle_name) {
             ':language' => 'und',
             ':delta' => $delta,
             ':url' => $link,
-            ':title' => $title
-          )
+            ':title' => $title,
+          ]
         );
         $rsql = "
         INSERT INTO $frtable (entity_type, bundle, entity_id, revision_id, language, delta, $furl, $ftitle)
         VALUES (:entity_type, :bundle, :entity_id, :revision_id, :language, :delta, :url, :title)
         ";
         db_query($rsql,
-          array (
+          [
             ':entity_type' => 'TripalEntity',
             ':bundle' => $bundle_name,
             ':entity_id' => $entity_id,
@@ -1229,8 +1264,8 @@ function tripal_chado_migrate_resource_links($bundle_name) {
             ':language' => 'und',
             ':delta' => $delta,
             ':url' => $link,
-            ':title' => $title
-          )
+            ':title' => $title,
+          ]
         );
       } catch (\PDOException $e) {
         $error = $e->getMessage();

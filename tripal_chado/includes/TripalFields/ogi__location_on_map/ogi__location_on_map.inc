@@ -24,7 +24,7 @@ class ogi__location_on_map extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'OGI',
     // The name of the term.
@@ -35,7 +35,7 @@ class ogi__location_on_map extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'ogi__location_on_map_widget';
@@ -49,6 +49,7 @@ class ogi__location_on_map extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -69,21 +70,21 @@ class ogi__location_on_map extends ChadoField {
     $ref_feature_id = tripal_get_chado_semweb_term('feature', 'uniquename');
     $ref_feature_type = 'rdfs:type';
 
-    return array(
-      $field_term => array(
+    return [
+      $field_term => [
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          $map_term => array(
+        'elements' => [
+          $map_term => [
             'searchable' => FALSE,
             'sortable' => FALSE,
             'type' => 'xs:complexType',
             'readonly' => TRUE,
             'required' => FALSE,
-            'elements' => array(
-              $name_term => array(
+            'elements' => [
+              $name_term => [
                 'label' => 'Map Name',
                 'help' => 'The name of the map.',
                 'searchable' => TRUE,
@@ -91,8 +92,8 @@ class ogi__location_on_map extends ChadoField {
                 'type' => 'xs:string',
                 'readonly' => TRUE,
                 'required' => FALSE,
-              ),
-              $description_term => array(
+              ],
+              $description_term => [
                 'label' => 'Map Description',
                 'help' => 'A description of the map.',
                 'searchable' => TRUE,
@@ -100,21 +101,21 @@ class ogi__location_on_map extends ChadoField {
                 'type' => 'xs:string',
                 'readonly' => TRUE,
                 'required' => FALSE,
-              ),
-              'entity' => array(
+              ],
+              'entity' => [
                 'searchable' => FALSE,
                 'sortable' => FALSE,
-              ),
-            ),
-          ),
-          $ref_feature_term => array(
+              ],
+            ],
+          ],
+          $ref_feature_term => [
             'searchable' => FALSE,
             'sortable' => FALSE,
             'type' => 'xs:complexType',
             'readonly' => TRUE,
             'required' => FALSE,
-            'elements' => array(
-              $ref_feature_name => array(
+            'elements' => [
+              $ref_feature_name => [
                 'label' => 'Map Reference Feature Name',
                 'help' => 'The genomic or genetic feature Nameof the map on which this feature is mapped.',
                 'searchable' => TRUE,
@@ -122,8 +123,8 @@ class ogi__location_on_map extends ChadoField {
                 'type' => 'xs:string',
                 'readonly' => TRUE,
                 'required' => FALSE,
-              ),
-              $ref_feature_id=> array(
+              ],
+              $ref_feature_id => [
                 'label' => 'Map Reference Feature Identifier',
                 'help' => 'The genomic or genetic feature of the map on which this feature is mapped.',
                 'searchable' => TRUE,
@@ -131,8 +132,8 @@ class ogi__location_on_map extends ChadoField {
                 'type' => 'xs:string',
                 'readonly' => TRUE,
                 'required' => FALSE,
-              ),
-              $ref_feature_type=> array(
+              ],
+              $ref_feature_type => [
                 'label' => 'Map Reference Feature Type',
                 'help' => 'The type of genomic or genetic feature of the map on which this feature is mapped.',
                 'searchable' => TRUE,
@@ -140,10 +141,10 @@ class ogi__location_on_map extends ChadoField {
                 'type' => 'xs:string',
                 'readonly' => TRUE,
                 'required' => FALSE,
-              ),
-            ),
-          ),
-          $mappos_term => array(
+              ],
+            ],
+          ],
+          $mappos_term => [
             'label' => 'Map Reference Position',
             'help' => 'Maps may use different coordinate systems. This indicates the type of coordinate.',
             'searchable' => TRUE,
@@ -151,10 +152,10 @@ class ogi__location_on_map extends ChadoField {
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -173,9 +174,9 @@ class ogi__location_on_map extends ChadoField {
 
     // Reference sequence details.
     $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
-    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' . tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' . tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' . 'rdfs:type';
 
     $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id");
 
@@ -205,6 +206,7 @@ class ogi__location_on_map extends ChadoField {
       $query->condition($alias . '_mapref_cvterm.name', $condition['value'], $operator);
     }
   }
+
   /**
    * @see ChadoField::queryOrder()
    */
@@ -220,9 +222,9 @@ class ogi__location_on_map extends ChadoField {
 
     // Reference sequence details.
     $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
-    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' . tripal_get_chado_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' . tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' . 'rdfs:type';
 
     $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id", 'LEFT OUTER');
 
@@ -252,6 +254,7 @@ class ogi__location_on_map extends ChadoField {
       $query->orderBy($alias . '_mapref_cvterm.name', $order['direction']);
     }
   }
+
   /**
    *
    * @see TripalField::load()
@@ -276,21 +279,22 @@ class ogi__location_on_map extends ChadoField {
     $ref_feature_type = 'rdfs:type';
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-    );
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     // Add the featurepos records to our $record.
-    $options = array('return_array' => TRUE,
-      'include_fk' => array(
-        'map_feature_id' => array(
+    $options = [
+      'return_array' => TRUE,
+      'include_fk' => [
+        'map_feature_id' => [
           'type_id' => 1,
-        ),
-        'feature_id' => array(
-          'type_id' => 1
-        ),
-      ),
-    );
+        ],
+        'feature_id' => [
+          'type_id' => 1,
+        ],
+      ],
+    ];
     $feature = chado_expand_var($record, 'table', 'featurepos', $options);
 
     // Iterate through the positions and add them to our values.
@@ -298,20 +302,20 @@ class ogi__location_on_map extends ChadoField {
     if (isset($feature->featurepos->feature_id)) {
       foreach ($feature->featurepos->feature_id AS $featurepos) {
         // Get details about the map
-        $featuremap = chado_generate_var('featuremap', array('featuremap_id' => $featurepos->featuremap_id));
-        $entity->{$field_name}['und'][$i]['value'] = array (
+        $featuremap = chado_generate_var('featuremap', ['featuremap_id' => $featurepos->featuremap_id]);
+        $entity->{$field_name}['und'][$i]['value'] = [
           // Map.
-          $map_term => array(
+          $map_term => [
             $name_term => $featuremap->name,
             $description_term => $featuremap->description,
-          ),
-          $ref_feature_term => array(
+          ],
+          $ref_feature_term => [
             $ref_feature_name => $featurepos->map_feature_id->name,
             $ref_feature_id => $featurepos->map_feature_id->uniquename,
             $ref_feature_type => $featurepos->map_feature_id->type_id->name,
-          ),
-          $mappos_term => $featurepos->mappos
-        );
+          ],
+          $mappos_term => $featurepos->mappos,
+        ];
         if (property_exists($featuremap, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value'][$map_term]['entity'] = 'TripalEntity:' . $featuremap->entity_id;
         }

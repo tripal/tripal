@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_library
  */
 function tripal_library_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_library_defaultvalue_user_library() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/library';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Libraries',
     'description' => 'Biological library including BAC, cDNA, FOSMID, etc.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Change the permission
@@ -106,58 +106,58 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'uniquename' => 'uniquename',
     'name_1' => 'name_1',
     'common_name' => 'common_name',
     'name' => 'name',
     'is_obsolete' => 'is_obsolete',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'uniquename';
-  $handler->display->display_options['style_options']['info'] = array(
-    'uniquename' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name_1' => array(
+    ],
+    'name_1' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'common_name' => array(
+    ],
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'is_obsolete' => array(
+    ],
+    'is_obsolete' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Library',
     'path-1' => 'node/add/tripal-library',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -253,11 +253,11 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['filters']['common_name']['expose']['label'] = 'Organism';
   $handler->display->display_options['filters']['common_name']['expose']['operator'] = 'common_name_op';
   $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'organism_common_name';
-  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Library: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'library';
@@ -268,11 +268,11 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
   $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
@@ -293,11 +293,11 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }

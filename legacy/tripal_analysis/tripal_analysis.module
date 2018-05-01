@@ -40,68 +40,72 @@ function tripal_analysis_init() {
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_menu() {
-  $items = array();
+  $items = [];
   // Tripal Analysis administrative settings
 
-  $items['admin/tripal/legacy/tripal_analysis'] = array(
+  $items['admin/tripal/legacy/tripal_analysis'] = [
     'title' => 'Analyses',
     'description' => 'A bioinformatics analysis producing features.',
     'page callback' => 'tripal_analysis_admin_analysis_view',
-    'access arguments' => array('administer tripal analysis'),
+    'access arguments' => ['administer tripal analysis'],
     'type' => MENU_NORMAL_ITEM,
-  );
+  ];
 
-  $items['admin/tripal/legacy/tripal_analysis/help'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/help'] = [
     'title' => 'Help',
     'description' => "A description of the Tripal Analysis module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_analysis_help'),
-    'access arguments' => array('administer tripal analysis'),
+    'page arguments' => ['tripal_analysis_help'],
+    'access arguments' => ['administer tripal analysis'],
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
-  );
+  ];
 
-  $items['admin/tripal/legacy/tripal_analysis/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/configuration'] = [
     'title' => 'Settings',
     'description' => 'Settings for the displays of analysis results.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_analysis_admin'),
-    'access arguments' => array('administer tripal analysis'),
+    'page arguments' => ['tripal_analysis_admin'],
+    'access arguments' => ['administer tripal analysis'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
+    'weight' => 5,
+  ];
 
-  $items['admin/tripal/legacy/tripal_analysis/sync'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/sync'] = [
     'title' => ' Sync',
     'description' => 'Create pages on this site for analyses stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_analysis', 'chado_analysis'),
-    'access arguments' => array('administer tripal analysis'),
+    'page arguments' => [
+      'chado_node_sync_form',
+      'tripal_analysis',
+      'chado_analysis',
+    ],
+    'access arguments' => ['administer tripal analysis'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
-  );
-  $items['admin/tripal/legacy/tripal_analysis/delete'] = array(
-      'title' => ' Delete',
-      'description' => 'Delete multiple analyses from Chado',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_analysis_delete_form'),
-      'access arguments' => array('administer tripal feature'),
-      'type' => MENU_LOCAL_TASK,
-      'file path' => drupal_get_path('module', 'tripal_analysis'),
-      'file' =>  'includes/tripal_analysis.delete.inc',
-      'weight' => 2
-  );
-  $items['admin/tripal/legacy/tripal_analysis/chado_analysis_toc'] = array(
+    'weight' => 1,
+  ];
+  $items['admin/tripal/legacy/tripal_analysis/delete'] = [
+    'title' => ' Delete',
+    'description' => 'Delete multiple analyses from Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_analysis_delete_form'],
+    'access arguments' => ['administer tripal feature'],
+    'type' => MENU_LOCAL_TASK,
+    'file path' => drupal_get_path('module', 'tripal_analysis'),
+    'file' => 'includes/tripal_analysis.delete.inc',
+    'weight' => 2,
+  ];
+  $items['admin/tripal/legacy/tripal_analysis/chado_analysis_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for analysis nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_analysis'),
-    'access arguments' => array('administer tripal analysis'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_analysis'],
+    'access arguments' => ['administer tripal analysis'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
   return $items;
 }
@@ -112,14 +116,14 @@ function tripal_analysis_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_analysis_search_biological_data_views() {
-  return array(
-    'tripal_analysis_user_analyses' => array(
+  return [
+    'tripal_analysis_user_analyses' => [
       'machine_name' => 'tripal_analysis_user_analyses',
       'human_name' => 'Analyses',
       'description' => 'Bioinformatics analyses which often produces features.',
-      'link' => 'chado/analysis'
-    ),
-  );
+      'link' => 'chado/analysis',
+    ],
+  ];
 }
 
 /**
@@ -128,9 +132,9 @@ function tripal_analysis_search_biological_data_views() {
  *
  * @ingroup tripal_legacy_analysis
  */
-function tripal_analysis_help ($path, $arg) {
+function tripal_analysis_help($path, $arg) {
   if ($path == 'admin/help#tripal_analysis') {
-    return theme('tripal_analysis_help', array());
+    return theme('tripal_analysis_help', []);
   }
 }
 
@@ -144,7 +148,7 @@ function tripal_analysis_help ($path, $arg) {
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_permission() {
-  return array(
+  return [
     /*
     'access chado_analysis content' => array(
       'title' => t('View Analyses'),
@@ -167,7 +171,7 @@ function tripal_analysis_permission() {
       'description' => t('Allow users to administer all analyses.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -180,45 +184,46 @@ function tripal_analysis_permission() {
 function tripal_analysis_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
-    'node__chado_analysis' => array(
+  $items = [
+    'node__chado_analysis' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_analysis_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_analysis_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_analysis_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_analysis_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_analysis_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_analysis_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_analysis_teaser' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_analysis_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_analysis_teaser',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_analysis_help' => array(
+    ],
+    'tripal_analysis_help' => [
       'template' => 'tripal_analysis_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
+    ],
 
     // tripal_feature theme
-    'tripal_feature_analyses' => array(
+    'tripal_feature_analyses' => [
       'template' => 'tripal_feature_analyses',
-      'variables' =>  array('node' => NULL),
+      'variables' => ['node' => NULL],
       'path' => "$path/theme/templates",
-    ),
+    ],
 
-  );
+  ];
 
   return $items;
 }
+
 /**
  * Implements hook_views_api().
  * Essentially this hook tells drupal that there is views support for
@@ -228,9 +233,9 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
  * @ingroup tripal_legacy_analysis
  */
 function tripal_analysis_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -259,9 +264,9 @@ function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
  */
 function tripal_register_analysis_child($modulename) {
   $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
-  if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
+  if (!db_query($sql, [':modname' => $modulename])->fetchField()) {
     $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
-    db_query($sql, array(':modname' => $modulename));
+    db_query($sql, [':modname' => $modulename]);
   }
 }
 
@@ -276,7 +281,7 @@ function tripal_register_analysis_child($modulename) {
 function tripal_unregister_analysis_child($modulename) {
   if (db_table_exists('tripal_analysis')) {
     $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
-    db_query($sql, array(':modname' => $modulename));
+    db_query($sql, [':modname' => $modulename]);
   }
 }
 

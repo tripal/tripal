@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  */
@@ -17,11 +18,11 @@ class TripalVocabViewsController extends EntityDefaultViewsController {
 
 
     // Join the term to it's entity type.
-    $data['tripal_vocab']['table']['join']['tripal_term'] = array(
+    $data['tripal_vocab']['table']['join']['tripal_term'] = [
       'handler' => 'views_join',
       'left_field' => 'vocab_id',
       'field' => 'id',
-    );
+    ];
 
     // It is not intended that the following fields will every be used by the
     // end-user.

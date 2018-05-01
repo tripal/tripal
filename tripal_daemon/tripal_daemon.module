@@ -12,14 +12,14 @@ require_once('includes/tripal_daemon.blocks.inc');
  * Registers our Daemon with the Daemon API
  */
 function tripal_daemon_daemon_api_info() {
-  $daemon = array();
+  $daemon = [];
 
-  $daemon['tripal_daemon'] = array(
+  $daemon['tripal_daemon'] = [
     'machine_name' => 'tripal_daemon',
     'name' => 'Tripal Job Daemon',
     'module' => 'tripal_daemon',
     'class' => 'TripalDaemon',
-  );
+  ];
 
   return $daemon;
 }

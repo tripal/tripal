@@ -13,6 +13,7 @@ function tripal_core_install() {
 
 
 }
+
 /**
  * Implementation of hook_schema().
  *
@@ -49,10 +50,10 @@ function tripal_core_uninstall() {
 
   // drop the foreign key between tripal_custom_tables and tripal_mviews
   // so that Drupal can then drop the tables
-//   db_query('
-//     ALTER TABLE {tripal_custom_tables}
-//     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
-//   ');
+  //   db_query('
+  //     ALTER TABLE {tripal_custom_tables}
+  //     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
+  //   ');
 }
 
 /**
@@ -64,7 +65,7 @@ function tripal_core_uninstall() {
  * @ingroup tripal_legacy_core
  */
 function tripal_core_get_schemas() {
-  $schema = array();
+  $schema = [];
 
   // Get all the various schema parts and join them together
   $temp = tripal_core_get_tripal_toc_schema();
@@ -83,53 +84,53 @@ function tripal_core_get_schemas() {
  *
  */
 function tripal_core_get_tripal_toc_schema() {
-  $schema = array();
-  $schema['tripal_toc'] = array(
-    'fields' => array(
-      'toc_item_id' => array(
+  $schema = [];
+  $schema['tripal_toc'] = [
+    'fields' => [
+      'toc_item_id' => [
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE
-      ),
-      'node_type' => array(
+        'not null' => TRUE,
+      ],
+      'node_type' => [
         'type' => 'varchar',
         'length' => 32,
-        'not null' => TRUE
-      ),
-      'key' => array(
+        'not null' => TRUE,
+      ],
+      'key' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ),
-      'title' => array(
+      ],
+      'title' => [
         'type' => 'varchar',
         'length' => 255,
-        'not null' => FALSE
-      ),
-      'weight' => array(
+        'not null' => FALSE,
+      ],
+      'weight' => [
         'type' => 'int',
-        'not null' => FALSE
-      ),
-      'hide' => array(
+        'not null' => FALSE,
+      ],
+      'hide' => [
         'type' => 'int',
         'size' => 'tiny',
         'not null' => FALSE,
         'default' => 0,
-      ),
-      'nid' => array(
+      ],
+      'nid' => [
         'type' => 'int',
         'not null' => FALSE,
-      )
-    ),
-    'indexes' => array(
-      'tripal_toc_idx1' => array('node_type', 'key'),
-      'tripal_toc_idx2' => array('node_type', 'key', 'nid'),
-    ),
-    'unique keys' => array(
-      'tripal_toc_uq1' => array('node_type', 'key', 'nid'),
-    ),
-    'primary key' => array('toc_item_id'),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_toc_idx1' => ['node_type', 'key'],
+      'tripal_toc_idx2' => ['node_type', 'key', 'nid'],
+    ],
+    'unique keys' => [
+      'tripal_toc_uq1' => ['node_type', 'key', 'nid'],
+    ],
+    'primary key' => ['toc_item_id'],
+  ];
 
   return $schema;
 }
@@ -138,62 +139,62 @@ function tripal_core_get_tripal_toc_schema() {
  *
  */
 function tripal_core_get_tripal_vars_schema() {
-  $schema = array();
+  $schema = [];
 
-  $schema['tripal_node_variables'] = array(
+  $schema['tripal_node_variables'] = [
     'description' => 'This table is used for storing any type of variable such as ' .
-      'a property or setting that should be associated with a Tripal managed Drupal node.  This table is '.
+      'a property or setting that should be associated with a Tripal managed Drupal node.  This table is ' .
       'meant to store non-biological information only. All biological data should be housed ' .
       'in the Chado tables. Be aware that any data stored here will not be made visible ' .
       'through services such as Tripal Web Services and therefore can be a good place to ' .
       'hide application specific settings.',
-    'fields' => array (
-      'node_variable_id' => array (
+    'fields' => [
+      'node_variable_id' => [
         'type' => 'serial',
         'not null' => TRUE,
-      ),
-      'nid' => array (
+      ],
+      'nid' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'variable_id' => array (
+      ],
+      'variable_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'value' => array (
+      ],
+      'value' => [
         'type' => 'text',
         'not null' => FALSE,
-      ),
-      'rank' => array (
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-      ),
-    ),
-    'primary key' => array (
+      ],
+    ],
+    'primary key' => [
       0 => 'node_variable_id',
-    ),
-    'unique keys' => array (
-      'tripal_node_variables_c1' => array (
+    ],
+    'unique keys' => [
+      'tripal_node_variables_c1' => [
         0 => 'nid',
         1 => 'variable_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array (
-      'tripal_node_variables_idx1' => array (
+      ],
+    ],
+    'indexes' => [
+      'tripal_node_variables_idx1' => [
         0 => 'variable_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'tripal_variables' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'tripal_variables' => [
         'table' => 'tripal_variables',
-        'columns' => array (
+        'columns' => [
           'variable_id' => 'variable_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   return $schema;
 }

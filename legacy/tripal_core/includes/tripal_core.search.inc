@@ -9,26 +9,27 @@
 /**
  * Implements hook_search_include_chado_fields().
  *
- * This hook allows Tripal Admin/modules to specify which chado fields should be indexed
- * for searching in a simple manner.
+ * This hook allows Tripal Admin/modules to specify which chado fields should
+ * be indexed for searching in a simple manner.
  *
  * @return
- *   An array of chado fields you would like available for indexing. Each element should
- *   be the name of the table followed by the field and separated by a period. For example.
- *   feature.uniquename to indicate the uniquename field from the feature table.
+ *   An array of chado fields you would like available for indexing. Each
+ *   element should be the name of the table followed by the field and
+ *   separated by a period. For example. feature.uniquename to indicate the
+ *   uniquename field from the feature table.
  */
 function tripal_core_search_include_chado_fields() {
-  return array(
+  return [
     'organism.genus',
     'organism.species',
-  );
+  ];
 }
 
 /**
  * Implements hook_entity_property_info_alter().
  *
- * This is where we actually add the properties to the node entity in order to indicate
- * which chado fields should be indexed.
+ * This is where we actually add the properties to the node entity in order to
+ * indicate which chado fields should be indexed.
  */
 function tripal_core_entity_property_info_alter(&$info) {
 
@@ -60,21 +61,21 @@ function tripal_core_entity_property_info_alter(&$info) {
         $machine_name = $n['chado_node_api']['base_table'] . '.' . $field_name;
 
         // Try to create a readable label.
-        $label = ucwords(str_replace(array('.','_'),' ',$machine_name));
+        $label = ucwords(str_replace(['.', '_'], ' ', $machine_name));
 
         // We want to add all name fields and any fields previously indicated to be indexed.
         if (preg_match('/name/', $field_name) OR in_array($machine_name, $fields_to_include)) {
 
-          if (!isset($info['node']['bundles'][ $n['base'] ]['properties'][$machine_name])) {
-            $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name] = array(
+          if (!isset($info['node']['bundles'][$n['base']]['properties'][$machine_name])) {
+            $info['node']['bundles'][$n['base']]['properties'][$machine_name] = [
               'label' => $label,
               'description' => (isset($details['description'])) ? $details['description'] : '',
               'type' => ($details['type'] == 'varchar') ? 'text' : $details['type'],
               'schema field' => '[' . $machine_name . ']',
               // The following getter callback is a generic function that can retrieve
               // values for any chado field.
-              'getter callback' => 'tripal_search_chado_token_getter_callback'
-            );
+              'getter callback' => 'tripal_search_chado_token_getter_callback',
+            ];
           }
         }
       }
@@ -90,7 +91,7 @@ function tripal_core_entity_property_info_alter(&$info) {
 
           // Try to create a readable label.
           $label = $table . ' (' . $machine_name . ')';
-          if (preg_match('/(\w+)_id/',$left_field,$matches)) {
+          if (preg_match('/(\w+)_id/', $left_field, $matches)) {
             // Key only field.
             $key_label = ucwords(str_replace('_', ' ', $matches[1]));
 
@@ -106,7 +107,7 @@ function tripal_core_entity_property_info_alter(&$info) {
           // First, create the key version. This is best used for facets since it
           // won't/can't be tokenized along with the other fields. This will be shared
           // among node types to facillitate use as a facet.
-          $info['node']['properties'][$table . '.' . $right_field .' key'] = array(
+          $info['node']['properties'][$table . '.' . $right_field . ' key'] = [
             'label' => $key_label . ' (All Content Types)',
             'description' => (isset($field_details['description'])) ? $field_details['description'] : '',
             'type' => 'text',
@@ -116,23 +117,23 @@ function tripal_core_entity_property_info_alter(&$info) {
             'schema field' => $format,
             // The following getter callback is a generic function that can retrieve
             // values for any chado foreign key.
-            'getter callback' => 'tripal_search_chado_token_across_nodetypes_getter_callback'
-          );
+            'getter callback' => 'tripal_search_chado_token_across_nodetypes_getter_callback',
+          ];
 
           $pretoken = '[' . $n['chado_node_api']['base_table'] . '.' . $left_field . '>' . $table . '.' . $right_field . ']';
           $format = chado_node_get_readable_format($pretoken);
 
           // Add a more readable version that will be tokenized so users can
           // search for fruitfly and get all features with that as an organism.
-          $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name .' expanded'] = array(
+          $info['node']['bundles'][$n['base']]['properties'][$machine_name . ' expanded'] = [
             'label' => $label . ' (Expanded)',
             'description' => (isset($field_details['description'])) ? $field_details['description'] : '',
             'type' => 'text',
             'schema field' => $format,
             // The following getter callback is a generic function that can retrieve
             // values for any chado foreign key.
-            'getter callback' => 'tripal_search_chado_token_getter_callback'
-          );
+            'getter callback' => 'tripal_search_chado_token_getter_callback',
+          ];
         }
       }
     }
@@ -143,32 +144,40 @@ function tripal_core_entity_property_info_alter(&$info) {
 }
 
 /**
- * Allows tripal admin to alter entity property information after it has. This is currently
- * being used to indicate chado fields to be indexed for search.
+ * Allows tripal admin to alter entity property information after it has. This
+ * is currently being used to indicate chado fields to be indexed for search.
  *
- * NOTE: If you simply need to add a field to be indexed, use hook_search_include_chado_fields()
- * which provides the much easier method of simply listing fields to include.
+ * NOTE: If you simply need to add a field to be indexed, use
+ * hook_search_include_chado_fields() which provides the much easier method of
+ * simply listing fields to include.
  *
- * This function is most useful if you want to change the way the value is retrieved
- * (done by changing the 'getter callback') or add your own custom computed field.
+ * This function is most useful if you want to change the way the value is
+ * retrieved
+ * (done by changing the 'getter callback') or add your own custom computed
+ * field.
  */
-function hook_tripal_search_properties_alter(&$info) { }
+function hook_tripal_search_properties_alter(&$info) {
+}
 
 /**
  * Implements a getter callback for chado token formats.
  *
  * A chado token format is a string containing chado tokens.
  *
- * Chado tokens are expected to follow the format of tokens auto-generated using
- *   chado_node_generate_tokens(). For example, [feature.uniquename] indicates you
- *   should return the uniquename of a feature node and [feature.organism_id>organism.species]
- *   indicates you should return the organism genus of the feature node.
+ * Chado tokens are expected to follow the format of tokens auto-generated
+ * using
+ *   chado_node_generate_tokens(). For example, [feature.uniquename] indicates
+ * you should return the uniquename of a feature node and
+ * [feature.organism_id>organism.species] indicates you should return the
+ * organism genus of the feature node.
  *
- * The chado token format must be stored in the 'schema field' when defining the property in
- *  hook_entity_property_info() in order for this getter to work.
+ * The chado token format must be stored in the 'schema field' when defining
+ * the property in hook_entity_property_info() in order for this getter to
+ * work.
  *
  * @param $data
- *   The entity object (in our case the node we need to retrieve feature properties for).
+ *   The entity object (in our case the node we need to retrieve feature
+ *   properties for).
  * @param $options
  * @param $field_name
  *   The machine name for the entity property.
@@ -185,14 +194,16 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
       $format = $info['schema field'];
 
       // Determine our base table so we know if this is even the right node type.
-      if (preg_match('/\[(\w+)\.(\w+)/',$format, $matches)) {
+      if (preg_match('/\[(\w+)\.(\w+)/', $format, $matches)) {
         $base_table = $matches[1];
         $field_name = $matches[2];
 
         // For some weird reason nodes of all types are trying to get a value for fields
         // that we defined as specific to a given node type (ie: bundle). As such we need
         // this check here to ensure this field is actually for this node type.
-        if (!isset($data->{$base_table})) return NULL;
+        if (!isset($data->{$base_table})) {
+          return NULL;
+        }
 
         $format = tripal_core_get_token_value_for_property($base_table, $field_name, $format, $data, $info);
         return $format;
@@ -203,7 +214,7 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
           'tripal_search',
           TRIPAL_ERROR,
           'Unable to extract the base table from the format (:format) for :field because it didn\'t match the expected format: [tablename.field...',
-          array(':field' => $field_name, ':format' => $format)
+          [':field' => $field_name, ':format' => $format]
         );
         return NULL;
       }
@@ -213,7 +224,7 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
         'tripal_search',
         TRIPAL_ERROR,
         'Unable to get value for :field because the schema field was not set.',
-        array(':field' => $field_name)
+        [':field' => $field_name]
       );
       return NULL;
     }
@@ -224,7 +235,8 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
  * Implements a getter callback for foreign keys collon between content types.
  *
  * @param $data
- *   The entity object (in our case the node we need to retrieve feature properties for).
+ *   The entity object (in our case the node we need to retrieve feature
+ *   properties for).
  * @param $options
  * @param $field_name
  *   The machine name for the entity property.
@@ -239,7 +251,7 @@ function tripal_search_chado_token_across_nodetypes_getter_callback($data, $opti
   // First, make sure this is a chado node.
   // Assumption #1: All chado node types are prefixed with chado_
   if (isset($data->nid)) {
-    if (preg_match('/^chado_(\w+)/',$data->type,$matches)) {
+    if (preg_match('/^chado_(\w+)/', $data->type, $matches)) {
       if (isset($info['schema field'])) {
 
         // Assumption #2: The base table is the suffix of the node type.
@@ -258,7 +270,7 @@ function tripal_search_chado_token_across_nodetypes_getter_callback($data, $opti
           'tripal_search',
           TRIPAL_ERROR,
           'Unable to extract the base table from the format (:format) for :field because it didn\'t match the expected format: [tablename.field...',
-          array(':field' => $field_name, ':format' => $format)
+          [':field' => $field_name, ':format' => $format]
         );
       }
     }
@@ -267,7 +279,7 @@ function tripal_search_chado_token_across_nodetypes_getter_callback($data, $opti
         'tripal_search',
         TRIPAL_ERROR,
         'Unable to get value for :field because the schema field was not set.',
-        array(':field' => $field_name)
+        [':field' => $field_name]
       );
     }
   }
@@ -290,25 +302,27 @@ function tripal_core_get_token_value_for_property($base_table, $field_name, $for
         'tripal_search',
         TRIPAL_NOTICE,
         'Returned static text for :field since there were no tokens in the supplied format: :format',
-        array(':field' => $field_name, ':format' => $format)
+        [':field' => $field_name, ':format' => $format]
       );
       return $format;
     }
 
     // Get the value of each token.
-    $null_tokens = array();
+    $null_tokens = [];
     foreach ($used_tokens as $token) {
-      $token_info = array(
-          'name' => $info['label'],
-          'table' => $base_table,
-          'field' => $field_name,
-          'token' => $token,
-          'description' => $info['description'],
-          'location' => chado_node_get_location_from_token($token),
-      );
+      $token_info = [
+        'name' => $info['label'],
+        'table' => $base_table,
+        'field' => $field_name,
+        'token' => $token,
+        'description' => $info['description'],
+        'location' => chado_node_get_location_from_token($token),
+      ];
 
-      $value = chado_get_token_value($token_info, $data, array('supress_errors' => TRUE));
-      if (empty($value)) $null_tokens[] = $token;
+      $value = chado_get_token_value($token_info, $data, ['supress_errors' => TRUE]);
+      if (empty($value)) {
+        $null_tokens[] = $token;
+      }
 
       // And sub it in to the format.
       $format = str_replace($token, $value, $format);
@@ -316,14 +330,16 @@ function tripal_core_get_token_value_for_property($base_table, $field_name, $for
 
     // If none of the tokens had values then this node doesn't have this field.
     // As such we return null so the search api doesn't bother indexing an empty format.
-    if (sizeof($used_tokens) == sizeof($null_tokens)) return NULL;
+    if (sizeof($used_tokens) == sizeof($null_tokens)) {
+      return NULL;
+    }
   }
   else {
     tripal_report_error(
       'tripal_search',
       TRIPAL_NOTICE,
       'Returned static text for :field since there were no tokens of a recognized format in the supplied format: :format',
-      array(':field' => $field_name, ':format' => $format)
+      [':field' => $field_name, ':format' => $format]
     );
   }
 
@@ -334,12 +350,12 @@ function tripal_core_get_token_value_for_property($base_table, $field_name, $for
  * Implements hook_modules_enabled().
  *
  * This hook is called when ANY module is enabled. This allows us to update the
- * the search api "Default node index" when any Tripal module is enabled thus allowing us
- * to catch new node types right after they're created.
+ * the search api "Default node index" when any Tripal module is enabled thus
+ * allowing us to catch new node types right after they're created.
  */
 function tripal_core_modules_enabled($modules) {
   if (module_exists('search_api')) {
-    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', array(':name' => 'default_node_index'))->fetchField();
+    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', [':name' => 'default_node_index'])->fetchField();
     if ($index_enabled) {
       tripal_search_update_default_index();
     }
@@ -355,14 +371,14 @@ function tripal_core_modules_enabled($modules) {
  * This function should be called whenever new nodes might have been
  * added to ensure that their fields are added as well.
  *
- * We should only modify the default node index if it has no database service yet.
- * That way we ensure we don't override user changes!
+ * We should only modify the default node index if it has no database service
+ * yet. That way we ensure we don't override user changes!
  */
 function tripal_search_update_default_index() {
 
   // First we need the index object for the "Default node index".
   $index_id = db_query('SELECT id FROM search_api_index WHERE machine_name=:name',
-    array(':name' => 'default_node_index'))->fetchField();
+    [':name' => 'default_node_index'])->fetchField();
   if (!$index_id) {
     // ERROR
     return FALSE;
@@ -370,7 +386,7 @@ function tripal_search_update_default_index() {
   $index = search_api_index_load($index_id);
 
   // Collect all the fields already added to the search index.
-  $changes = array('options' => $index->options);
+  $changes = ['options' => $index->options];
 
   // Now we only want to update the index if it's both enabled and has no server indicated.
   // That way we can be reasonably sure that it was been untouched by admin users.
@@ -394,7 +410,7 @@ function tripal_search_update_default_index() {
 
             // Furthermore if this is a name then we want to add a boost to ensure it carries
             // more weight in the search results.
-            if (preg_match('/name/',$field_name)) {
+            if (preg_match('/name/', $field_name)) {
               $changes['options']['fields'][$field_name]['boost'] = '3.0';
             }
           }
@@ -406,18 +422,18 @@ function tripal_search_update_default_index() {
     // We also want to enable highlighting to ensure an excerpt is generated since this
     // will be used in the default search view distributed with Tripal.
     if (!isset($index->options['processors']['search_api_highlighting'])) {
-      $changes['options']['processors']['search_api_highlighting'] = array(
+      $changes['options']['processors']['search_api_highlighting'] = [
         'status' => 1,
         'weight' => 35,
-        'settings' => array(
+        'settings' => [
           'prefix' => '<strong>',
           'suffix' => '</strong>',
           'excerpt' => 1,
           'excerpt_length' => 256,
-          'exclude_fields' => array(),
+          'exclude_fields' => [],
           'highlight' => 'always',
-        ),
-      );
+        ],
+      ];
     }
     else {
       $changes['options']['processors']['search_api_highlighting']['status'] = 1;

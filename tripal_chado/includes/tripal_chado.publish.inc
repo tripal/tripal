@@ -14,31 +14,31 @@ function tripal_chado_publish_form($form, &$form_state) {
     ->fields('tb')
     ->orderBy('label', 'ASC')
     ->execute();
-  $bundle_ids = array();
+  $bundle_ids = [];
   $bundle_ids[] = 'Select a Content Type';
   while ($bundle = $bundles->fetchObject()) {
     $bundle_ids[$bundle->name] = $bundle->label;
   }
 
-  $form['bundle_name'] = array(
+  $form['bundle_name'] = [
     '#type' => 'select',
     '#title' => 'Content Type',
     '#description' => t('Select a content type to publish.  Only data that
       is mapped to the selected vocabulary term will be published.'),
     '#options' => $bundle_ids,
     '#default_value' => $bundle_name,
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => "tripal_chado_publish_form_ajax_callback",
       'wrapper' => "tripal-chado-publish-form",
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
 
   // If the user has selected a content type, then we need to
   // show some filters.
   if ($bundle_name) {
-    $form['filters'] = array(
+    $form['filters'] = [
       '#type' => 'fieldset',
       '#title' => 'Filters',
       '#description' => t('Please provide any filters for limiting
@@ -47,13 +47,13 @@ function tripal_chado_publish_form($form, &$form_state) {
           type, leave all filters blank.'),
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
-    );
+    ];
 
     // Get the list of fields and their widgets
     $fields = field_info_field_map();
     foreach ($fields as $field_name => $details) {
       if (array_key_exists('TripalEntity', $details['bundles']) and
-          in_array($bundle_name, $details['bundles']['TripalEntity'])) {
+        in_array($bundle_name, $details['bundles']['TripalEntity'])) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
@@ -74,7 +74,7 @@ function tripal_chado_publish_form($form, &$form_state) {
         $description = field_filter_xss($instance['description']);
         $parents = array_key_exists('#parents', $form) ? $form['#parents'] : '';
         $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
-        $element = array(
+        $element = [
           '#entity_type' => $instance['entity_type'],
           '#entity' => NULL,
           '#bundle' => $instance['bundle'],
@@ -82,44 +82,44 @@ function tripal_chado_publish_form($form, &$form_state) {
           '#language' => $langcode,
           '#field_parents' => $parents,
           '#columns' => array_keys($field['columns']),
-          '#title' =>  $title,
+          '#title' => $title,
           '#description' => $description,
           '#required' => FALSE,
           '#delta' => 0,
-        );
+        ];
 
         // Now call the widget callback function to let the module adjust the
         // element as needed.
         $function = $instance['widget']['module'] . '_field_widget_form';
-        $items = array();
+        $items = [];
         $delta = 0;
         $element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
 
         // None of these fields are required, so turn off that setting.
         $element['#required'] = FALSE;
 
-        $form['filters'][$field_name] =  array(
+        $form['filters'][$field_name] = [
           '#type' => 'container',
-          '#attributes' => array(
-            'class' => array(
+          '#attributes' => [
+            'class' => [
               'field-type-' . drupal_html_class($field['type']),
               'field-name-' . drupal_html_class($field_name),
               'field-widget-' . drupal_html_class($instance['widget']['type']),
-            ),
-          ),
+            ],
+          ],
           '#weight' => $instance['widget']['weight'],
           '#tree' => TRUE,
-          $langcode => array(
-            0 => $element
-          )
-        );
+          $langcode => [
+            0 => $element,
+          ],
+        ];
       }
     }
-    $form['publish_btn'] = array(
+    $form['publish_btn'] = [
       '#type' => 'submit',
       '#name' => 'publish_btn',
       '#value' => 'Publish',
-    );
+    ];
   }
 
   $form['#prefix'] = '<div id="tripal-chado-publish-form">';
@@ -144,36 +144,37 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
     $langcode = 'und';
 
     $bundle_name = $form_state['values']['bundle_name'];
-    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
     // Iterate through any filters and add those to the arguments
-    $filters = array();
+    $filters = [];
     $fields = field_info_field_map();
     foreach ($fields as $field_name => $details) {
       if (array_key_exists('TripalEntity', $details['bundles']) and
-          in_array($bundle_name, $details['bundles']['TripalEntity']) and
-          array_key_exists($field_name, $form_state['values']) and
-          array_key_exists('value', $form_state['values'][$field_name][$langcode][0])) {
+        in_array($bundle_name, $details['bundles']['TripalEntity']) and
+        array_key_exists($field_name, $form_state['values']) and
+        array_key_exists('value', $form_state['values'][$field_name][$langcode][0])) {
         $value = $form_state['values'][$field_name][$langcode][0]['value'];
         if ($value) {
           $filters[$field_name] = $value;
         }
       }
     }
-    $args = array(
-      array(
+    $args = [
+      [
         'bundle_name' => $bundle_name,
         'filters' => $filters,
-      ),
-    );
-    $includes = array(
+      ],
+    ];
+    $includes = [
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
-    );
+    ];
     return tripal_add_job("Publish " . $bundle->label . " records.",
-       'tripal_chado', 'tripal_chado_publish_records', $args,
-       $user->uid, 10, $includes);
+      'tripal_chado', 'tripal_chado_publish_records', $args,
+      $user->uid, 10, $includes);
   }
 }
+
 /**
  *
  */

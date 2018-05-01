@@ -9,7 +9,7 @@ class TripalFieldQuery extends EntityFieldQuery {
   /**
    * Holds a list of fields that should be included in the results
    */
-  protected $includes = array();
+  protected $includes = [];
 
   /**
    * Overrides the EntityFieldQuery::execute() function.
@@ -33,7 +33,7 @@ class TripalFieldQuery extends EntityFieldQuery {
       }
 
       // Initialize the results array.
-      $results = array();
+      $results = [];
 
       // Iterate through the field storage types and call each one.
       foreach ($this->field_storage as $storage_type => $storage_module) {
@@ -49,9 +49,9 @@ class TripalFieldQuery extends EntityFieldQuery {
         // If other results already exist then we want to find the intersection
         // of the two and only save those.
         else {
-          $intersection = array(
-            'TripalEntity' => array(),
-          );
+          $intersection = [
+            'TripalEntity' => [],
+          ];
           foreach ($st_results['TripalEntity'] as $entity_id => $stub) {
             if (array_key_exists($entity_id, $results['TripalEntity'])) {
               $intersection['TripalEntity'][$entity_id] = $stub;
@@ -102,7 +102,7 @@ class TripalFieldQuery extends EntityFieldQuery {
     // If there are no field conditions and sorts, and no execute callback
     // then we default to querying entity tables in SQL.
     if (empty($this->fields)) {
-      return array($this, 'propertyQuery');
+      return [$this, 'propertyQuery'];
     }
 
     if ($storage) {

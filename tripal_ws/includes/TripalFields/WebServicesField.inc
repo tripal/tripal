@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -21,13 +22,14 @@ class WebServicesField extends TripalField {
 
   // The default description for this field.
   public static $default_description = '';
-/*
-  // The default widget for this field.
-  public static $default_widget = '';
 
-  // The default formatter for this field.
-  public static $default_formatter = '';
-*/
+  /*
+    // The default widget for this field.
+    public static $default_widget = '';
+  
+    // The default formatter for this field.
+    public static $default_formatter = '';
+  */
   // The module that manages this field.
   public static $module = 'tripal_ws';
 
@@ -36,7 +38,7 @@ class WebServicesField extends TripalField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'field_tripal_ws_storage',
     // It is expected that all fields set a 'value' in the load() function.
     // In many cases, the value may be an associative array of key/value pairs.
@@ -44,8 +46,8 @@ class WebServicesField extends TripalField {
     // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
     // function that are supported by the query() function should be
     // listed here.
-    'searchable_keys' => array(),
-  );
+    'searchable_keys' => [],
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -54,7 +56,7 @@ class WebServicesField extends TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -70,13 +72,13 @@ class WebServicesField extends TripalField {
     // should have auto_attach set to FALSE so tha their values can be
     // attached asynchronously.
     'auto_attach' => FALSE,
-  );
+  ];
 
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
   // fields can only be created programmatically with field_create_field()
   // and field_create_instance().
- // public static $no_ui = FALSE;
+  // public static $no_ui = FALSE;
 
   // A boolean specifying that the field will not contain any data. This
   // should exclude the field from web services or downloads.  An example
@@ -85,7 +87,7 @@ class WebServicesField extends TripalField {
   //public static $no_data = FALSE;
 
 
- /**
+  /**
    * Loads the field values from the underlying data store.
    *
    * @param $entity

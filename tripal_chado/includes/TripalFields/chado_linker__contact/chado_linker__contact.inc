@@ -25,7 +25,7 @@ class chado_linker__contact extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'local',
     // The name of the term.
@@ -36,7 +36,7 @@ class chado_linker__contact extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'chado_linker__contact_widget';
@@ -50,6 +50,7 @@ class chado_linker__contact extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -66,51 +67,52 @@ class chado_linker__contact extends ChadoField {
     $name_term = tripal_get_chado_semweb_term('contact', 'name');
     $description_term = tripal_get_chado_semweb_term('contact', 'description');
 
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
         'type' => 'xs:complexType',
         'readonly' => FALSE,
-        'elements' => array(
-          $type_term => array(
+        'elements' => [
+          $type_term => [
             'searchable' => TRUE,
             'label' => 'Contact Type',
             'help' => 'The type of contact',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $name_term => array(
+          ],
+          $name_term => [
             'searchable' => TRUE,
             'label' => 'Contact Name',
             'help' => 'The name of the contact.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $description_term => array(
+          ],
+          $description_term => [
             'searchable' => TRUE,
             'label' => 'Contact Description',
             'help' => 'A descriptoin of the contact.',
-            'operations' => array('contains'),
+            'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'entity' => array(
+          ],
+          'entity' => [
             'searchable' => FALSE,
-          ),
-        ),
-      )
-    );
+          ],
+        ],
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -138,45 +140,45 @@ class chado_linker__contact extends ChadoField {
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
       'chado-' . $field_table . '__' . 'contact_id' => '',
       // Ignore the synonym_sgml column for now.
-    );
+    ];
 
     $linker_table = $base_table . '_contact';
-    $options = array(
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'contact_id' => array(
-          'type_id' => array(
-            'dbxref_id' => array(
+      'include_fk' => [
+        'contact_id' => [
+          'type_id' => [
+            'dbxref_id' => [
               'db_id' => TRUE,
-            ),
-          ),
-        ),
+            ],
+          ],
+        ],
         $fkey_lcolumn => TRUE,
-      ),
-    );
+      ],
+    ];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
     $contact_linkers = $record->$linker_table;
     if ($contact_linkers) {
       foreach ($contact_linkers as $i => $contact_linker) {
         $contact = $contact_linker->contact_id;
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
+        $entity->{$field_name}['und'][$i] = [
+          'value' => [
             $type_term => $contact->type_id ? $contact->type_id->name : '',
             $name_term => $contact->name,
             $description_term => $contact->description,
-          ),
+          ],
           // Add elements that are not part of the values but used by
           // the chado storage back-end for saving values.
           'chado-' . $field_table . '__' . $pkey => $contact_linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
-          'chado-' . $field_table . '__' . 'contact_id' => $contact->contact_id
-        );
+          'chado-' . $field_table . '__' . 'contact_id' => $contact->contact_id,
+        ];
 
         if (property_exists($contact, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
@@ -213,7 +215,7 @@ class chado_linker__contact extends ChadoField {
 
     // Search by the contact name
     if ($condition['column'] == $field_term_id or
-        $condition['column'] == $field_term_id . ',' . $name_term) {
+      $condition['column'] == $field_term_id . ',' . $name_term) {
       $query->condition("$calias.name", $condition['value'], $operator);
     }
     // Search on the contact description.
@@ -254,7 +256,7 @@ class chado_linker__contact extends ChadoField {
 
     // Search by the contact name
     if ($order['column'] == $field_term_id or
-        $order['column'] == $field_term_id . ',' . $name_term) {
+      $order['column'] == $field_term_id . ',' . $name_term) {
       $query->orderBy("$calias.name", $order['direction']);
     }
     // Search on the contact description.
@@ -271,7 +273,6 @@ class chado_linker__contact extends ChadoField {
 }
 
 
-
 /**
  * An Ajax callback for the pub widget.
  */
@@ -282,6 +283,7 @@ function chado_linker__contact_widget_form_ajax_callback($form, $form_state) {
 
   return $form[$field_name]['und'][$delta];
 }
+
 /**
  * Theme function for the pub widget.
  *
@@ -298,10 +300,10 @@ function theme_chado_linker__contact_widget($variables) {
   $layout = "
       <div class=\"pub-widget\">
         <div class=\"pub-widget-item\">" .
-        drupal_render($element['name']) . "
+    drupal_render($element['name']) . "
         </div>
       </div>
     ";
 
-        return $layout;
+  return $layout;
 }

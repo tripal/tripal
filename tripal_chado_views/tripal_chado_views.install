@@ -32,8 +32,7 @@ function tripal_chado_views_schema() {
     try {
       tripal_chado_views_upgrade_v2_v3_pre_enable();
       variable_set('tripal_v2_upgrade_v3_check_chado_views', TRUE);
-    }
-    catch(Exception $e) {
+    } catch (Exception $e) {
       watchdog_exception('tripal_chado_views', $e);
     }
   }
@@ -50,7 +49,7 @@ function tripal_chado_views_schema() {
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_get_schemas() {
-  $schema = array();
+  $schema = [];
 
   $temp = tripal_chado_views_views_schema();
   foreach ($temp as $table => $arr) {
@@ -77,230 +76,232 @@ function tripal_chado_views_enable() {
  *
  * Tables include:
  *   - tripal_views: main table for views integration setups
- *   - tripal_views_field: keeps track of all fields related to a given views integration setup
- *   - tripal_views_join: keeps track of joins between the current views integration setup
- *       and other tables.
- *   - tripal_views_handlers: keeps track of which handlers to use for a given field
+ *   - tripal_views_field: keeps track of all fields related to a given views
+ * integration setup
+ *   - tripal_views_join: keeps track of joins between the current views
+ * integration setup and other tables.
+ *   - tripal_views_handlers: keeps track of which handlers to use for a given
+ * field
  *
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_views_schema() {
-  $schema = array();
-  $schema['tripal_views'] = array(
+  $schema = [];
+  $schema['tripal_views'] = [
     'description' => 'contains the setups, their materialized view id and base table name that was used.',
-    'fields' => array(
-      'setup_id' => array(
+    'fields' => [
+      'setup_id' => [
         'description' => 'the id of the setup',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'mview_id' => array(
+      ],
+      'mview_id' => [
         'description' => 'the materialized view used for this setup',
         'type' => 'int',
         'unsigned' => TRUE,
-      ),
-      'base_table' => array(
-         'description' => 'either TRUE (1) or FALSE (0) depending on whether the current table should be a bast table of a View',
-         'type' => 'int',
-         'not null ' => TRUE,
-         'default' => 1
-      ),
-      'table_name' => array(
+      ],
+      'base_table' => [
+        'description' => 'either TRUE (1) or FALSE (0) depending on whether the current table should be a bast table of a View',
+        'type' => 'int',
+        'not null ' => TRUE,
+        'default' => 1,
+      ],
+      'table_name' => [
         'description' => 'the table name being integrated.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'priority' => array(
+      ],
+      'priority' => [
         'description' => 'when there are 2+ entries for the same table, the entry with the lightest (drupal-style) priority is used.',
         'type' => 'int',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'description' => 'Human readable name of this setup',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'comment' => array(
+      ],
+      'comment' => [
         'description' => 'add notes about this views setup',
         'type' => 'text',
         'size' => 'normal',
         'not null' => FALSE,
         'default' => '',
-      ),
-    ),
-    'unique_keys' => array(
-      'setup_id' => array('setup_id'),
-      'priority' => array('table_name', 'priority'),
-    ),
-    'indexes' => array(
-      'priority' => array('table_name', 'priority'),
-    ),
-    'primary key' => array('setup_id'),
-  );
+      ],
+    ],
+    'unique_keys' => [
+      'setup_id' => ['setup_id'],
+      'priority' => ['table_name', 'priority'],
+    ],
+    'indexes' => [
+      'priority' => ['table_name', 'priority'],
+    ],
+    'primary key' => ['setup_id'],
+  ];
 
-  $schema['tripal_views_field'] = array(
+  $schema['tripal_views_field'] = [
     'description' => 'keep track of fields available for a given table',
-    'fields' => array(
-      'setup_id' => array(
+    'fields' => [
+      'setup_id' => [
         'description' => 'the id of the setup',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'column_name' => array(
+      ],
+      'column_name' => [
         'description' => 'the name of the field in the database',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'description' => 'the human-readable name of the field',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'description' => 'A short description of the field -seen under the field in the views UI',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'type' => array(
+      ],
+      'type' => [
         'description' => 'the database type of this field (ie: int, varchar)',
         'type' => 'varchar',
         'length' => '50',
         'not null' => TRUE,
-      ),
-    ),
-    'primary key' => array('setup_id', 'column_name')
-  );
+      ],
+    ],
+    'primary key' => ['setup_id', 'column_name'],
+  ];
 
-  $schema['tripal_views_join'] = array(
+  $schema['tripal_views_join'] = [
     'description' => 'coordinate the joining of tables',
-    'fields' => array(
-      'view_join_id' => array(
+    'fields' => [
+      'view_join_id' => [
         'description' => 'the id of the join',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'setup_id' => array(
+      ],
+      'setup_id' => [
         'description' => 'setup id from tripal_views table',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'base_table' => array(
-         'description' => 'the name of the base table',
+      ],
+      'base_table' => [
+        'description' => 'the name of the base table',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-        ),
-      'base_field' => array(
+      ],
+      'base_field' => [
         'description' => 'the name of the base table column that will be joined',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'left_table' => array(
+      ],
+      'left_table' => [
         'description' => 'the table on which to perform a left join',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'left_field' => array(
+      ],
+      'left_field' => [
         'description' => 'the column on which to perform a left join',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'handler' => array(
+      ],
+      'handler' => [
         'description' => 'the name of the handler',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'relationship_handler' => array(
+      ],
+      'relationship_handler' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-        'default' => 'views_handler_relationship'
-      ),
-      'relationship_only' => array(
+        'default' => 'views_handler_relationship',
+      ],
+      'relationship_only' => [
         'type' => 'int',
         'not null ' => TRUE,
-        'default' => 0
-      ),
-      'arguments' => array(
+        'default' => 0,
+      ],
+      'arguments' => [
         'description' => 'arguments that may get passed to the handler',
         'type' => 'text',
         'size' => 'normal',
-      ),
-    ),
-    'unique_keys' => array(
-      'setup_id' => array('view_join_id'),
-    ),
-    'primary key' => array('view_join_id'),
-  );
+      ],
+    ],
+    'unique_keys' => [
+      'setup_id' => ['view_join_id'],
+    ],
+    'primary key' => ['view_join_id'],
+  ];
 
-  $schema['tripal_views_handlers'] = array(
+  $schema['tripal_views_handlers'] = [
     'description' => 'in formation for views: column and views handler name',
-    'fields' => array(
-      'handler_id' => array(
+    'fields' => [
+      'handler_id' => [
         'description' => 'the id of the handler',
         'type' => 'serial',
-         'unsigned' => TRUE,
-         'not null' => TRUE,
-        ),
-      'setup_id' => array(
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'setup_id' => [
         'description' => 'setup id from the tripal_views table',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'column_name' => array(
+      ],
+      'column_name' => [
         'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'handler_type' => array(
+      ],
+      'handler_type' => [
         'description' => 'identifies the type of hander (e.g. field, filter, sort, argument, relationship, etc.)',
         'type' => 'varchar',
         'length' => '50',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'handler_name' => array(
+      ],
+      'handler_name' => [
         'description' => 'the name of the handler',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'arguments' => array(
+      ],
+      'arguments' => [
         'description' => 'arguments that may get passed to the handler',
         'type' => 'text',
         'size' => 'normal',
         'not null' => FALSE,
         'default' => '',
-      ),
-    ),
-    'unique_keys' => array(
-       'setup_id' => array('handler_id'),
-    ),
-    'primary key' => array('handler_id'),
-  );
+      ],
+    ],
+    'unique_keys' => [
+      'setup_id' => ['handler_id'],
+    ],
+    'primary key' => ['handler_id'],
+  ];
 
   return $schema;
 }
@@ -377,6 +378,7 @@ function tripal_chado_views_upgrade_v2_v3_pre_enable() {
     db_query($sql);
   }
 }
+
 /**
  * This function should be executed only one time during upgrade of v2 to v3.
  */

@@ -21,16 +21,16 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
     $type_id = $storage_args['type_id'];
   }
   else {
-    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-    $vocab = tripal_load_vocab_entity(array('vocab_id' => $term->vocab_id));
-    $cvterm = chado_generate_var('cvterm', array(
-      'dbxref_id' => array(
-        'db_id' => array(
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
+    $vocab = tripal_load_vocab_entity(['vocab_id' => $term->vocab_id]);
+    $cvterm = chado_generate_var('cvterm', [
+      'dbxref_id' => [
+        'db_id' => [
           'name' => $vocab->vocabulary,
-        ),
-        'accession' => $term->accession
-      ),
-    ));
+        ],
+        'accession' => $term->accession,
+      ],
+    ]);
     $type_id = $cvterm->cvterm_id;
   }
 
@@ -42,11 +42,11 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
     ->execute()
     ->fetchObject();
   if (!$chado_bundle) {
-    $record = array(
+    $record = [
       'bundle_id' => $bundle->id,
       'data_table' => $storage_args['data_table'],
       'type_id' => $type_id,
-    );
+    ];
     if (array_key_exists('type_linker_table', $storage_args)) {
       $record['type_linker_table'] = $storage_args['type_linker_table'];
     }
@@ -75,41 +75,41 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
 function tripal_chado_create_bundle_table($bundle) {
 
   // Now create the table where the bundle's records will go
-  $schema = array(
+  $schema = [
     'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle->name . '.',
-    'fields' => array(
-      'mapping_id' => array(
+    'fields' => [
+      'mapping_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'entity_id' => array(
+        'not null' => TRUE,
+      ],
+      'entity_id' => [
         'description' => 'The unique entity id.',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'record_id' => array(
+      ],
+      'record_id' => [
         'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
         'type' => 'int',
         'not null' => TRUE,
-      ),
-      'nid' => array(
+      ],
+      'nid' => [
         'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
         'type' => 'int',
-      )
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       'mapping_id',
-    ),
-    'indexes' => array(
-      'record_id' => array('record_id'),
-      'entity_id' => array('entity_id'),
-      'nid' => array('nid'),
-    ),
-    'unique keys' => array(
-      'table_record' => array('record_id'),
-      'entity_id' => array('entity_id'),
-    ),
-  );
+    ],
+    'indexes' => [
+      'record_id' => ['record_id'],
+      'entity_id' => ['entity_id'],
+      'nid' => ['nid'],
+    ],
+    'unique keys' => [
+      'table_record' => ['record_id'],
+      'entity_id' => ['entity_id'],
+    ],
+  ];
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
   db_create_table($chado_entity_table, $schema);
 }

@@ -10,16 +10,16 @@
 function tripal_chado_pub_search_admin_form($form, &$form_state) {
   // -----------------------------------------
   // add in the fields for selecting which fields are used when search for pubs
-  $form['searching'] = array(
+  $form['searching'] = [
     '#type' => 'fieldset',
     '#title' => t('Searching Options'),
     '#description' => t("The list of checkboxes below indicate which fields a user
       can search with when using the publication search tool.  Check the fields that you want
       to allow users to search with.  Click the 'Save configuration' button below to save changes."),
-  );
+  ];
 
   // get publication properties list
-  $properties = array();
+  $properties = [];
   $properties[] = 'Any Field';
   $sql = "
     SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
@@ -36,19 +36,20 @@ function tripal_chado_pub_search_admin_form($form, &$form_state) {
   while ($prop = $prop_types->fetchObject()) {
     $properties[$prop->cvterm_id] = $prop->name;
   }
-  $form['allowed_search_fields'] = array(
-    '#type'    => 'checkboxes',
+  $form['allowed_search_fields'] = [
+    '#type' => 'checkboxes',
     '#options' => $properties,
-    '#default_value' => variable_get('tripal_pub_allowed_search_fields', array()),
-  );
+    '#default_value' => variable_get('tripal_pub_allowed_search_fields', []),
+  ];
 
-  $form['button'] = array(
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => 'Save configuration',
     '#name' => 'sumbit',
-  );
+  ];
   return $form;
 }
+
 /**
  *
  */
@@ -63,8 +64,10 @@ function tripal_chado_pub_search_admin_form_submit($form, &$form_state) {
   variable_set('tripal_pub_allowed_search_fields', $allowed_fields);
   drupal_set_message('Changes saved.');
 }
+
 /**
- * The page that contains the publication search form and the results for the search
+ * The page that contains the publication search form and the results for the
+ * search
  *
  * @ingroup tripal_pub
  */
@@ -83,106 +86,106 @@ function tripal_chado_pub_search_page() {
 
   // retrieve any results
   if (array_key_exists('tripal_chado_pub_search_form', $_SESSION) and
-      $_SESSION['tripal_chado_pub_search_form']['perform_search']) {
-        $num_criteria = $_SESSION['tripal_chado_pub_search_form']['num_criteria'];
-        $from_year    = $_SESSION['tripal_chado_pub_search_form']['from_year'];
-        $to_year      = $_SESSION['tripal_chado_pub_search_form']['to_year'];
+    $_SESSION['tripal_chado_pub_search_form']['perform_search']) {
+    $num_criteria = $_SESSION['tripal_chado_pub_search_form']['num_criteria'];
+    $from_year = $_SESSION['tripal_chado_pub_search_form']['from_year'];
+    $to_year = $_SESSION['tripal_chado_pub_search_form']['to_year'];
 
-        $search_array = array();
-        $search_array['num_criteria'] = $num_criteria;
-        $search_array['from_year']    = $from_year;
-        $search_array['to_year']      = $to_year;
-        for ($i = 0; $i <= $num_criteria; $i++) {
-          $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['search_terms'];
-          $search_array['criteria'][$i]['scope']        = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope'];
-          $search_array['criteria'][$i]['mode']         = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode'];
-          $search_array['criteria'][$i]['operation']    = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation'];
+    $search_array = [];
+    $search_array['num_criteria'] = $num_criteria;
+    $search_array['from_year'] = $from_year;
+    $search_array['to_year'] = $to_year;
+    for ($i = 0; $i <= $num_criteria; $i++) {
+      $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['search_terms'];
+      $search_array['criteria'][$i]['scope'] = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope'];
+      $search_array['criteria'][$i]['mode'] = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode'];
+      $search_array['criteria'][$i]['operation'] = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation'];
+    }
+
+    // get the list of publications from the remote database using the search criteria.
+    $page = isset($_GET['page']) ? $_GET['page'] : '0';
+    $offset = $page * $limit;
+    $total_records = 0;
+    $pubs = tripal_search_publications($search_array, $offset, $limit, $total_records);
+    pager_default_initialize($total_records, $limit, 0);
+
+    // iterate through the results and construct the table displaying the publications
+    $rows = [];
+    $i = $page * $limit + 1;
+    foreach ($pubs as $pub) {
+      // get the citation for this publication
+      $values = [
+        'pub_id' => $pub->pub_id,
+        'type_id' => [
+          'name' => 'Citation',
+        ],
+      ];
+      $citation_rec = chado_generate_var('pubprop', $values);
+      $citation_rec = chado_expand_var($citation_rec, 'field', 'pubprop.value');
+
+      // if we have the citation then use it, otherwise, just use the title
+      $title = htmlspecialchars($pub->title);
+      $result = $title;
+      $link = NULL;
+
+      // tripal v2 link (node)
+      if (module_exists('tripal_pub')) {
+        $nid = chado_get_nid_from_id('pub', $pub->pub_id);
+        if ($nid) {
+          $link = "/node/$nid";
         }
-
-        // get the list of publications from the remote database using the search criteria.
-        $page = isset($_GET['page']) ? $_GET['page'] : '0';
-        $offset = $page * $limit;
-        $total_records = 0;
-        $pubs = tripal_search_publications($search_array, $offset, $limit, $total_records);
-        pager_default_initialize($total_records, $limit, 0);
-
-        // iterate through the results and construct the table displaying the publications
-        $rows = array();
-        $i = $page * $limit + 1;
-        foreach ($pubs as $pub) {
-          // get the citation for this publication
-          $values = array(
-            'pub_id' => $pub->pub_id,
-            'type_id' => array(
-              'name' => 'Citation',
-            ),
-          );
-          $citation_rec = chado_generate_var('pubprop', $values);
-          $citation_rec = chado_expand_var($citation_rec, 'field', 'pubprop.value');
-
-          // if we have the citation then use it, otherwise, just use the title
-          $title = htmlspecialchars($pub->title);
-          $result = $title;
-          $link = NULL;
-
-          // tripal v2 link (node)
-          if (module_exists('tripal_pub')) {
-            $nid = chado_get_nid_from_id ('pub', $pub->pub_id);
-            if ($nid) {
-              $link = "/node/$nid";
-            }
-          }
-          // try tripal v3 link (entity), if it exists, update the link to entity
-          $entity_id = chado_get_record_entity_by_table('pub', $pub->pub_id);
-          if ($entity_id) {
-            $link = "/bio_data/$entity_id";
-          }
-
-          if ($link) {
-            $result = l($title , $link, array('attributes' => array('target' => '_blank')));
-          }
-          if ($citation_rec->value) {
-            $citation = htmlspecialchars($citation_rec->value);
-            $result .= '<br>' . $citation;
-          }
-          $rows[] = array(
-            number_format($i) . ".",
-            $pub->pyear,
-            $result
-          );
-          $i++;
-        }
-
-        $headers = array('', 'Year', 'Reference');
-        $table = array(
-          'header' => $headers,
-          'rows' => $rows,
-          'attributes' => array(
-            'id' => 'tripal-pub-search-results-table',
-            'border' => '0',
-            'class' => array('tripal-data-table')
-          ),
-          'sticky' => TRUE,
-          'caption' => '',
-          'colgroups' => array(),
-          'empty' => 'No publications found',
-        );
-        $results = theme_table($table);
-
-        // generate the pager
-        $pager = array(
-          'tags' => array(),
-          'element' => 0,
-          'parameters' => array(),
-          'quantity' => $limit,
-        );
-        $pager = theme_pager($pager);
-
-        // join all to form the results
-        $output .= "<p><b>Found " . number_format($total_records) .
-        " Results</b></br>" . $results . $pager;
       }
-      return $output;
+      // try tripal v3 link (entity), if it exists, update the link to entity
+      $entity_id = chado_get_record_entity_by_table('pub', $pub->pub_id);
+      if ($entity_id) {
+        $link = "/bio_data/$entity_id";
+      }
+
+      if ($link) {
+        $result = l($title, $link, ['attributes' => ['target' => '_blank']]);
+      }
+      if ($citation_rec->value) {
+        $citation = htmlspecialchars($citation_rec->value);
+        $result .= '<br>' . $citation;
+      }
+      $rows[] = [
+        number_format($i) . ".",
+        $pub->pyear,
+        $result,
+      ];
+      $i++;
+    }
+
+    $headers = ['', 'Year', 'Reference'];
+    $table = [
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => [
+        'id' => 'tripal-pub-search-results-table',
+        'border' => '0',
+        'class' => ['tripal-data-table'],
+      ],
+      'sticky' => TRUE,
+      'caption' => '',
+      'colgroups' => [],
+      'empty' => 'No publications found',
+    ];
+    $results = theme_table($table);
+
+    // generate the pager
+    $pager = [
+      'tags' => [],
+      'element' => 0,
+      'parameters' => [],
+      'quantity' => $limit,
+    ];
+    $pager = theme_pager($pager);
+
+    // join all to form the results
+    $output .= "<p><b>Found " . number_format($total_records) .
+      " Results</b></br>" . $results . $pager;
+  }
+  return $output;
 }
 
 /**
@@ -214,45 +217,45 @@ function tripal_chado_pub_search_form($form, &$form_state) {
   }
   if (array_key_exists('tripal_chado_pub_search_form', $_SESSION)) {
     $num_criteria = $_SESSION['tripal_chado_pub_search_form']['num_criteria'] ? $_SESSION['tripal_chado_pub_search_form']['num_criteria'] : $num_criteria;
-    $from_year    = $_SESSION['tripal_chado_pub_search_form']['from_year']    ? $_SESSION['tripal_chado_pub_search_form']['from_year']    : '';
-    $to_year      = $_SESSION['tripal_chado_pub_search_form']['to_year']      ? $_SESSION['tripal_chado_pub_search_form']['to_year']      : '';
+    $from_year = $_SESSION['tripal_chado_pub_search_form']['from_year'] ? $_SESSION['tripal_chado_pub_search_form']['from_year'] : '';
+    $to_year = $_SESSION['tripal_chado_pub_search_form']['to_year'] ? $_SESSION['tripal_chado_pub_search_form']['to_year'] : '';
   }
   if (array_key_exists('values', $form_state)) {
-    $from_year    = $form_state['values']['from_year']    ? $form_state['values']['from_year']    : $from_year;
-    $to_year      = $form_state['values']['to_year']      ? $form_state['values']['to_year']      : $to_year;
+    $from_year = $form_state['values']['from_year'] ? $form_state['values']['from_year'] : $from_year;
+    $to_year = $form_state['values']['to_year'] ? $form_state['values']['to_year'] : $to_year;
   }
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $from_year    = $form_state['input']['from_year']    ? $form_state['input']['from_year']    : $from_year;
-    $to_year      = $form_state['input']['to_year']      ? $form_state['input']['to_year']      : $to_year;
+    $from_year = $form_state['input']['from_year'] ? $form_state['input']['from_year'] : $from_year;
+    $to_year = $form_state['input']['to_year'] ? $form_state['input']['to_year'] : $to_year;
   }
 
   if (array_key_exists('triggering_element', $form_state) and
-      $form_state['triggering_element']['#name'] == 'add') {
-        $num_criteria++;
+    $form_state['triggering_element']['#name'] == 'add') {
+    $num_criteria++;
   }
   if (array_key_exists('triggering_element', $form_state) and
-      $form_state['triggering_element']['#name'] == 'remove') {
-        $num_criteria--;
+    $form_state['triggering_element']['#name'] == 'remove') {
+    $num_criteria--;
   }
 
   $form_state['storage']['num_criteria'] = $num_criteria;
 
-  $form['admin-instructions'] = array(
-    '#markup'  =>  tripal_set_message(
-        t('Administrators, you can select the fields with which a user can use to search, by checking the desired fields on the ' .
-        l('Publication Search Settings Page', 'admin/tripal/storage/chado/pub-search-config', array('attributes' => array('target' => '_blank'))) . '
+  $form['admin-instructions'] = [
+    '#markup' => tripal_set_message(
+      t('Administrators, you can select the fields with which a user can use to search, by checking the desired fields on the ' .
+        l('Publication Search Settings Page', 'admin/tripal/storage/chado/pub-search-config', ['attributes' => ['target' => '_blank']]) . '
       in the section titled "Search Options".  The selected fields will appear in the dropdowns below.'),
       TRIPAL_INFO,
-      array('return_html' => 1)),
-  );
-  $form['instructions'] = array(
-    '#markup'  =>  t('To search for publications enter keywords in the text boxes below.
+      ['return_html' => 1]),
+  ];
+  $form['instructions'] = [
+    '#markup' => t('To search for publications enter keywords in the text boxes below.
     You can limit your search by selecting the field in the dropdown box. Click the
     add and remove buttons to add additional fields for searching. '),
-  );
+  ];
 
   // get publication properties list
-  $properties = array();
+  $properties = [];
   $properties[] = 'Any Field';
   $sql = "
     SELECT DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
@@ -265,15 +268,15 @@ function tripal_chado_pub_search_form($form, &$form_state) {
       NOT CVTS.is_obsolete = 1
     ORDER BY CVTS.name ASC
   ";
-  $allowed_fields = variable_get('tripal_pub_allowed_search_fields', array());
+  $allowed_fields = variable_get('tripal_pub_allowed_search_fields', []);
   $prop_types = chado_query($sql);
   foreach ($prop_types as $prop) {
-    if(array_key_exists($prop->cvterm_id, $allowed_fields) and $allowed_fields[$prop->cvterm_id] > 0) {
+    if (array_key_exists($prop->cvterm_id, $allowed_fields) and $allowed_fields[$prop->cvterm_id] > 0) {
       $properties[$prop->cvterm_id] = $prop->name;
     }
   }
 
-  for($i = 1; $i <= $num_criteria; $i++) {
+  for ($i = 1; $i <= $num_criteria; $i++) {
     $search_terms = '';
     $scope = '';
     $operation = '';
@@ -282,21 +285,21 @@ function tripal_chado_pub_search_form($form, &$form_state) {
     // first populate defaults using any values in the SESSION variable
     if (array_key_exists('tripal_chado_pub_search_form', $_SESSION)) {
       $search_terms = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['search_terms'] ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['search_terms'] : $search_terms;
-      $scope        = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope']        ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope']        : $scope;
-      $mode         = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode']         ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode']         : $mode;
-      $operation    = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation']    ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation']    : $operation;
+      $scope = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope'] ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['scope'] : $scope;
+      $mode = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode'] ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['mode'] : $mode;
+      $operation = $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation'] ? $_SESSION['tripal_chado_pub_search_form']['criteria'][$i]['operation'] : $operation;
     }
     if (array_key_exists('values', $form_state)) {
       $search_terms = array_key_exists("search_terms-$i", $form_state['values']) ? $form_state['values']["search_terms-$i"] : $search_terms;
-      $scope        = array_key_exists("scope-$i", $form_state['values'])        ? $form_state['values']["scope-$i"]        : $scope;
-      $mode         = array_key_exists("mode-$i", $form_state['values'])         ? $form_state['values']["mode-$i"]         : $mode;
-      $operation    = array_key_exists("operation-$i", $form_state['values'])    ? $form_state['values']["operation-$i"]    : $operation;
+      $scope = array_key_exists("scope-$i", $form_state['values']) ? $form_state['values']["scope-$i"] : $scope;
+      $mode = array_key_exists("mode-$i", $form_state['values']) ? $form_state['values']["mode-$i"] : $mode;
+      $operation = array_key_exists("operation-$i", $form_state['values']) ? $form_state['values']["operation-$i"] : $operation;
     }
     if (array_key_exists('input', $form_state)) {
       $search_terms = array_key_exists("search_terms-$i", $form_state['input']) ? $form_state['input']["search_terms-$i"] : $search_terms;
-      $scope        = array_key_exists("scope-$i", $form_state['input'])        ? $form_state['input']["scope-$i"]        : $scope;
-      $mode         = array_key_exists("mode-$i", $form_state['input'])         ? $form_state['input']["mode-$i"]         : $mode;
-      $operation    = array_key_exists("operation-$i", $form_state['input'])    ? $form_state['input']["operation-$i"]    : $operation;
+      $scope = array_key_exists("scope-$i", $form_state['input']) ? $form_state['input']["scope-$i"] : $scope;
+      $mode = array_key_exists("mode-$i", $form_state['input']) ? $form_state['input']["mode-$i"] : $mode;
+      $operation = array_key_exists("operation-$i", $form_state['input']) ? $form_state['input']["operation-$i"] : $operation;
     }
 
     // default to searching the title and abstract
@@ -304,17 +307,17 @@ function tripal_chado_pub_search_form($form, &$form_state) {
       $scope = 'abstract';
     }
 
-    $form['criteria'][$i]["search_terms-$i"] = array(
-      '#type'          => 'textfield',
+    $form['criteria'][$i]["search_terms-$i"] = [
+      '#type' => 'textfield',
       '#default_value' => $search_terms,
-      '#required'      => FALSE,
-    );
-    $form['criteria'][$i]["scope-$i"] = array(
-      '#type'          => 'select',
-      '#options'       => $properties,
+      '#required' => FALSE,
+    ];
+    $form['criteria'][$i]["scope-$i"] = [
+      '#type' => 'select',
+      '#options' => $properties,
       '#default_value' => $scope,
-      '#attributes' => array('class' => array('tripal-pub-search-form-scope-select')),
-    );
+      '#attributes' => ['class' => ['tripal-pub-search-form-scope-select']],
+    ];
     /*
      $form['criteria'][$i]["mode-$i"] = array(
      '#type'          => 'select',
@@ -327,28 +330,29 @@ function tripal_chado_pub_search_form($form, &$form_state) {
      );*/
 
     if ($i > 1) {
-      $form['criteria'][$i]["operation-$i"] = array(
-        '#type'          => 'select',
-        '#options'       => array(
+      $form['criteria'][$i]["operation-$i"] = [
+        '#type' => 'select',
+        '#options' => [
           'AND' => 'AND',
-          'OR'  => 'OR',
-          'NOT' => 'NOT'),
+          'OR' => 'OR',
+          'NOT' => 'NOT',
+        ],
         '#default_value' => $operation,
-      );
+      ];
     }
     if ($i == $num_criteria) {
-      if($i > 1) {
-        $form['criteria'][$i]["remove-$i"] = array(
-          '#type'  => 'button',
-          '#name'  => 'remove',
+      if ($i > 1) {
+        $form['criteria'][$i]["remove-$i"] = [
+          '#type' => 'button',
+          '#name' => 'remove',
           '#value' => t('Remove'),
-          '#ajax' => array(
+          '#ajax' => [
             'callback' => "tripal_pubs_search_form_ajax_update",
-            'wrapper'  => 'tripal-pub-search-form-criteria',
-            'effect'   => 'fade',
-            'method'   => 'replace',
-            'prevent'  => 'click'
-          ),
+            'wrapper' => 'tripal-pub-search-form-criteria',
+            'effect' => 'fade',
+            'method' => 'replace',
+            'prevent' => 'click',
+          ],
           // When this button is clicked, the form will be validated and submitted.
           // Therefore, we set custom submit and validate functions to override the
           // default form submit.  In the validate function we set the form_state
@@ -356,22 +360,22 @@ function tripal_chado_pub_search_form($form, &$form_state) {
           // but we need it or Drupal will run the default validate anyway.
           // we also set #limit_validation_errors to empty so fields that
           // are required that don't have values won't generate warnings.
-          '#submit'   => array('tripal_chado_pub_search_form_ajax_button_submit'),
-          '#validate' => array('tripal_chado_pub_search_form_ajax_button_validate'),
-          '#limit_validation_errors' => array(),
-        );
+          '#submit' => ['tripal_chado_pub_search_form_ajax_button_submit'],
+          '#validate' => ['tripal_chado_pub_search_form_ajax_button_validate'],
+          '#limit_validation_errors' => [],
+        ];
       }
-      $form['criteria'][$i]["add-$i"] = array(
-        '#type'  => 'button',
-        '#name'  => 'add',
+      $form['criteria'][$i]["add-$i"] = [
+        '#type' => 'button',
+        '#name' => 'add',
         '#value' => t('Add'),
-        '#ajax' => array(
+        '#ajax' => [
           'callback' => "tripal_pubs_search_form_ajax_update",
-          'wrapper'  => 'tripal-pub-search-form-criteria',
-          'effect'   => 'fade',
-          'method'   => 'replace',
-          'prevent'  => 'click'
-        ),
+          'wrapper' => 'tripal-pub-search-form-criteria',
+          'effect' => 'fade',
+          'method' => 'replace',
+          'prevent' => 'click',
+        ],
         // When this button is clicked, the form will be validated and submitted.
         // Therefore, we set custom submit and validate functions to override the
         // default form submit.  In the validate function we set the form_state
@@ -379,42 +383,42 @@ function tripal_chado_pub_search_form($form, &$form_state) {
         // but we need it or Drupal will run the default validate anyway.
         // we also set #limit_validation_errors to empty so fields that
         // are required that don't have values won't generate warnings.
-        '#submit'   => array('tripal_chado_pub_search_form_ajax_button_submit'),
-        '#validate' => array('tripal_chado_pub_search_form_ajax_button_validate'),
-        '#limit_validation_errors' => array(),
-      );
+        '#submit' => ['tripal_chado_pub_search_form_ajax_button_submit'],
+        '#validate' => ['tripal_chado_pub_search_form_ajax_button_validate'],
+        '#limit_validation_errors' => [],
+      ];
     }
   }
-  $form['criteria']["date"] = array(
-    '#type'          => 'select',
-    '#options'       => array('Years' => 'Years'),
-    '#attributes'    => array('class' => array('tripal-pub-search-form-scope-select')),
-  );
-  $form['criteria']["from_year"] = array(
-    '#type'          => 'textfield',
+  $form['criteria']["date"] = [
+    '#type' => 'select',
+    '#options' => ['Years' => 'Years'],
+    '#attributes' => ['class' => ['tripal-pub-search-form-scope-select']],
+  ];
+  $form['criteria']["from_year"] = [
+    '#type' => 'textfield',
     '#default_value' => $from_year,
-    '#required'      => FALSE,
-    '#title'         => 'from',
-    '#size'          => 4,
-    '#maxlength'     => 4,
-  );
-  $form['criteria']["to_year"] = array(
-    '#type'          => 'textfield',
+    '#required' => FALSE,
+    '#title' => 'from',
+    '#size' => 4,
+    '#maxlength' => 4,
+  ];
+  $form['criteria']["to_year"] = [
+    '#type' => 'textfield',
     '#default_value' => $to_year,
-    '#required'      => FALSE,
-    '#title'         => 'to',
-    '#size'          => 4,
-    '#maxlength'     => 4,
-  );
+    '#required' => FALSE,
+    '#title' => 'to',
+    '#size' => 4,
+    '#maxlength' => 4,
+  ];
 
-  $form['search'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Search'),
-  );
-  $form['reset'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Reset'),
-  );
+  $form['search'] = [
+    '#type' => 'submit',
+    '#value' => t('Search'),
+  ];
+  $form['reset'] = [
+    '#type' => 'submit',
+    '#value' => t('Reset'),
+  ];
 
   $form['criteria']['#theme'] = 'tripal_chado_pub_search_setup_form_elements';
 
@@ -422,10 +426,10 @@ function tripal_chado_pub_search_form($form, &$form_state) {
 }
 
 /**
- * This function is used to rebuild the form if an ajax call is made vai a button.
- * The button causes the form to be submitted. We don't want this so we override
- * the validate and submit routines on the form button. Therefore, this function
- * only needs to tell Drupal to rebuild the form
+ * This function is used to rebuild the form if an ajax call is made vai a
+ * button. The button causes the form to be submitted. We don't want this so we
+ * override the validate and submit routines on the form button. Therefore,
+ * this function only needs to tell Drupal to rebuild the form
  *
  * @ingroup tripal_pub
  */
@@ -434,7 +438,8 @@ function tripal_chado_pub_search_form_ajax_button_submit() {
 }
 
 /**
- * This function is just a dummy to override the default form submit on ajax calls for buttons
+ * This function is just a dummy to override the default form submit on ajax
+ * calls for buttons
  *
  * @ingroup tripal_pub
  */
@@ -449,25 +454,25 @@ function tripal_chado_pub_search_form_ajax_button_validate() {
  */
 function tripal_chado_pub_search_form_validate($form, &$form_state) {
   $num_criteria = $form_state['storage']['num_criteria'];
-  $from_year    = $form_state['values']['from_year'];
-  $to_year      = $form_state['values']['to_year'];
-  $op           = $form_state['values']['op'];
+  $from_year = $form_state['values']['from_year'];
+  $to_year = $form_state['values']['to_year'];
+  $op = $form_state['values']['op'];
 
   // no need to vlaidate on a reset
   if ($op == 'Reset') {
     return;
   }
 
-  if($from_year and !$to_year) {
+  if ($from_year and !$to_year) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
   }
-  if(!$from_year and $to_year) {
+  if (!$from_year and $to_year) {
     form_set_error('from_year', 'Please provide a 4-digit year.');
   }
-  if($from_year and !preg_match('/\d\d\d\d/' , $from_year)) {
+  if ($from_year and !preg_match('/\d\d\d\d/', $from_year)) {
     form_set_error('from_year', 'Please provide a 4-digit year.');
   }
-  if($to_year and !preg_match('/\d\d\d\d/' , $to_year)) {
+  if ($to_year and !preg_match('/\d\d\d\d/', $to_year)) {
     form_set_error('to_year', 'Please provide a 4-digit year.');
   }
 }
@@ -479,12 +484,12 @@ function tripal_chado_pub_search_form_validate($form, &$form_state) {
  */
 function tripal_chado_pub_search_form_submit($form, &$form_state) {
   $num_criteria = $form_state['storage']['num_criteria'];
-  $from_year    = $form_state['values']['from_year'];
-  $to_year      = $form_state['values']['to_year'];
-  $op           = $form_state['values']['op'];
+  $from_year = $form_state['values']['from_year'];
+  $to_year = $form_state['values']['to_year'];
+  $op = $form_state['values']['op'];
 
   // set the session variables
-  if($op == 'Search') {
+  if ($op == 'Search') {
     $_SESSION['tripal_chado_pub_search_form']['num_criteria'] = $num_criteria;
     unset($_SESSION['tripal_chado_pub_search_form']['criteria']);
     for ($i = 0; $i <= $num_criteria; $i++) {
@@ -493,29 +498,29 @@ function tripal_chado_pub_search_form_submit($form, &$form_state) {
       $mode = 'Contains';
       $operation = '';
       if (array_key_exists("search_terms-$i", $form_state['values'])) {
-        $search_terms =  trim($form_state['values']["search_terms-$i"]);
+        $search_terms = trim($form_state['values']["search_terms-$i"]);
       }
       if (array_key_exists("scope-$i", $form_state['values'])) {
-        $scope =  $form_state['values']["scope-$i"];
+        $scope = $form_state['values']["scope-$i"];
       }
       if (array_key_exists("operation-$i", $form_state['values'])) {
-        $operation =  $form_state['values']["operation-$i"];
+        $operation = $form_state['values']["operation-$i"];
       }
       //$mode =  $form_state['values']["mode-$i"];
 
-      $_SESSION['tripal_chado_pub_search_form']['criteria'][$i] = array(
+      $_SESSION['tripal_chado_pub_search_form']['criteria'][$i] = [
         'search_terms' => $search_terms,
         'scope' => $scope,
         'mode' => $mode,
-        'operation' => $operation
-      );
+        'operation' => $operation,
+      ];
 
     }
     $_SESSION['tripal_chado_pub_search_form']['from_year'] = $from_year;
     $_SESSION['tripal_chado_pub_search_form']['to_year'] = $to_year;
     $_SESSION['tripal_chado_pub_search_form']['perform_search'] = 1;
   }
-  if($op == 'Reset') {
+  if ($op == 'Reset') {
     unset($_SESSION['tripal_chado_pub_search_form']);
   }
 }
@@ -543,55 +548,55 @@ function tripal_pubs_search_form_ajax_update($form, $form_state) {
 function theme_tripal_chado_pub_search_setup_form_elements($variables) {
   $form = $variables['form'];
 
-  $rows = array();
+  $rows = [];
   // put each criteria element in a single table row
   foreach ($form as $i => $element) {
-    if(is_numeric($i)) {
-      $rows[] = array(
+    if (is_numeric($i)) {
+      $rows[] = [
         drupal_render($element["operation-$i"]),
         drupal_render($element["scope-$i"]),
         //drupal_render($element["mode-$i"]) .
         drupal_render($element["search_terms-$i"]),
-        array(
+        [
           'data' => drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
           'nowrap' => 'nowrap',
-        ),
-      );
+        ],
+      ];
     }
   }
 
   // add in the from_year and to_year elements as the final row of the table
-  $rows[] = array(
+  $rows[] = [
     '&nbsp;',
     drupal_render($form['date']),
-    array(
+    [
       'data' =>
-      "<div id=\"pub-search-form-dates-row\">
-         <div id=\"pub-search-form-dates\"> ".
-           drupal_render($form['from_year']) .
-           drupal_render($form['to_year']) . "
+        "<div id=\"pub-search-form-dates-row\">
+         <div id=\"pub-search-form-dates\"> " .
+        drupal_render($form['from_year']) .
+        drupal_render($form['to_year']) . "
          </div>
        </div>
       ",
-    ),
-    ''
-  );
+    ],
+    '',
+  ];
 
-  $headers = array();
-  $table = array(
+  $headers = [];
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal-pub-search-form-table',
       'border' => '0',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => TRUE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
-  $results  = '<div id="tripal-pub-search-form-criteria">';
+  ];
+  $results = '<div id="tripal-pub-search-form-criteria">';
   $results .= theme_table($table);
   $results .= '</div>';
   return $results;
@@ -638,15 +643,15 @@ function tripal_search_publications($search_array, $offset, $limit, &$total_reco
 
   // Build the SQL based on the criteria provided by the user
   $select = "SELECT DISTINCT P.* ";
-  $from   = "FROM {pub} P INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id ";
-  $where  = "WHERE (NOT P.title = 'null') ";
-  $order  = "ORDER BY P.pyear DESC, P.title ASC";
-  $args = array();
+  $from = "FROM {pub} P INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id ";
+  $where = "WHERE (NOT P.title = 'null') ";
+  $order = "ORDER BY P.pyear DESC, P.title ASC";
+  $args = [];
   $join = 0;
 
   $num_criteria = $search_array['num_criteria'];
-  $from_year    = $search_array['from_year'];
-  $to_year      = $search_array['to_year'];
+  $from_year = $search_array['from_year'];
+  $to_year = $search_array['to_year'];
 
   for ($i = 1; $i <= $num_criteria; $i++) {
     $value = $search_array['criteria'][$i]['search_terms'];
@@ -655,7 +660,7 @@ function tripal_search_publications($search_array, $offset, $limit, &$total_reco
     $op = $search_array['criteria'][$i]['operation'];
 
     // skip criteria with no values
-    if(!$value) {
+    if (!$value) {
       continue;
     }
 
@@ -672,8 +677,8 @@ function tripal_search_publications($search_array, $offset, $limit, &$total_reco
     }
 
     // get the scope type
-    $values = array('cvterm_id' => $type_id);
-    $cvterm = chado_select_record('cvterm', array('name'), $values);
+    $values = ['cvterm_id' => $type_id];
+    $cvterm = chado_select_record('cvterm', ['name'], $values);
     $type_name = '';
     if (count($cvterm) > 0) {
       $type_name = $cvterm[0]->name;
@@ -730,7 +735,7 @@ function tripal_search_publications($search_array, $offset, $limit, &$total_reco
       $args[":type_id$i"] = $type_id;
     }
   }
-  if($from_year and $to_year) {
+  if ($from_year and $to_year) {
     $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= :from$i AND to_number(P.pyear,'9999') <= :to$i) ";
     $args[":from$i"] = $from_year;
     $args[":to$i"] = $to_year;

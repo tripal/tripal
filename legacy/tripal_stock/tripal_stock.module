@@ -10,14 +10,17 @@
  * @{
  * Integrates the Chado Stock module with Drupal Nodes & Views
  *
- * The Tripal Stock Module provides functionality for adding, editing, deleting and accessing chado
- * stocks. The stock module was designed to store information about stock collections in a
- * laboratory. What is called a stock could also be called a strain or an accession. There is a lot
- * in common between a Drosophila stock and a Saccharomyces strain and an Arabidopsis line. They all
- * come from some taxon, have genotypes, physical locations in the lab, some conceivable
- * relationship with a publication, some conceivable relationship with a sequence feature (such as a
- * transgene), and could be described by some ontology term. For more information about the chado
- * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
+ * The Tripal Stock Module provides functionality for adding, editing, deleting
+ *   and accessing chado stocks. The stock module was designed to store
+ *   information about stock collections in a laboratory. What is called a
+ *   stock could also be called a strain or an accession. There is a lot in
+ *   common between a Drosophila stock and a Saccharomyces strain and an
+ *   Arabidopsis line. They all come from some taxon, have genotypes, physical
+ *   locations in the lab, some conceivable relationship with a publication,
+ *   some conceivable relationship with a sequence feature (such as a
+ *   transgene), and could be described by some ontology term. For more
+ *   information about the chado Stock Module see the GMOD Wiki Page
+ *   (http://gmod.org/wiki/Chado_Stock_Module)
  * @}
  */
 
@@ -36,68 +39,68 @@ require_once 'includes/tripal_stock.chado_node.inc';
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_menu() {
-  $items = array();
+  $items = [];
 
   // the menu link for addressing any stock (by name, uniquename, synonym)
-  $items['stock/%'] = array(
+  $items['stock/%'] = [
     'page callback' => 'tripal_stock_match_stocks_page',
-    'page arguments' => array(1),
-    'access arguments' => array('access chado_stock content'),
+    'page arguments' => [1],
+    'access arguments' => ['access chado_stock content'],
     'type' => MENU_LOCAL_TASK,
-  );
+  ];
 
   //Administrative settings menu-----------------
 
-  $items['admin/tripal/legacy/tripal_stock'] = array(
+  $items['admin/tripal/legacy/tripal_stock'] = [
     'title' => 'Stocks',
     'description' => 'A stock is the physical entities of an organism, either living or preserved.',
     'page callback' => 'tripal_stock_admin_stock_view',
-    'access arguments' => array('administer tripal stock'),
-    'type' => MENU_NORMAL_ITEM
-  );
+    'access arguments' => ['administer tripal stock'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-  $items['admin/tripal/legacy/tripal_stock/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_stock/configuration'] = [
     'title' => 'Settings',
     'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_stock_admin'),
-    'access arguments' => array('administer tripal stock'),
+    'page arguments' => ['tripal_stock_admin'],
+    'access arguments' => ['administer tripal stock'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
+    'weight' => 5,
+  ];
 
-  $items['admin/tripal/legacy/tripal_stock/sync'] = array(
+  $items['admin/tripal/legacy/tripal_stock/sync'] = [
     'title' => ' Sync',
     'description' => 'Sync stocks from Chado with Drupal',
     'page callback' => 'drupal_get_form',
     //'page arguments' => array('tripal_stock_sync_form'),
-    'page arguments' => array('chado_node_sync_form', 'tripal_stock', 'chado_stock'),
-    'access arguments' => array('administer tripal stock'),
+    'page arguments' => ['chado_node_sync_form', 'tripal_stock', 'chado_stock'],
+    'access arguments' => ['administer tripal stock'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
+    'weight' => 0,
+  ];
 
-  $items['admin/tripal/legacy/tripal_stock/chado_stock_toc'] = array(
+  $items['admin/tripal/legacy/tripal_stock/chado_stock_toc'] = [
     'title' => ' TOC',
     'description' => 'Manage the table of contents for stock nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_stock'),
-    'access arguments' => array('administer tripal stock'),
+    'page arguments' => ['tripal_core_content_type_toc_form', 'chado_stock'],
+    'access arguments' => ['administer tripal stock'],
     'type' => MENU_LOCAL_TASK,
-    'file' =>  'includes/tripal_core.toc.inc',
+    'file' => 'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
-    'weight' => 3
-  );
+    'weight' => 3,
+  ];
 
-  $items['admin/tripal/legacy/tripal_stock/help'] = array(
+  $items['admin/tripal/legacy/tripal_stock/help'] = [
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Stock Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_stock_help'),
-    'access arguments' => array('administer tripal stock'),
+    'page arguments' => ['tripal_stock_help'],
+    'access arguments' => ['administer tripal stock'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
   return $items;
 }
@@ -108,14 +111,14 @@ function tripal_stock_menu() {
  * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_stock_search_biological_data_views() {
-  return array(
-    'tripal_stock_user_stocks' => array(
+  return [
+    'tripal_stock_user_stocks' => [
       'machine_name' => 'tripal_stock_user_stocks',
       'human_name' => 'Stocks',
       'description' => 'A stock is the physical entities of an organism, either living or preserved.',
-      'link' => 'chado/stock'
-    ),
-  );
+      'link' => 'chado/stock',
+    ],
+  ];
 }
 
 /**
@@ -155,7 +158,7 @@ function cs_node_load($nid) {
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_permission() {
-  return array(
+  return [
     /*
     'access chado_stock content' => array(
       'title' => t('View Stocks'),
@@ -178,7 +181,7 @@ function tripal_stock_permission() {
       'description' => t('Allow users to administer all stocks.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -194,9 +197,9 @@ function tripal_stock_permission() {
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_views_api() {
-  return array(
+  return [
     'api' => 3.0,
-  );
+  ];
 }
 
 /**
@@ -211,84 +214,84 @@ function tripal_stock_views_api() {
 function tripal_stock_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
+  $items = [
 
     // tripal_stock templates
-    'node__chado_stock' => array(
+    'node__chado_stock' => [
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
       'path' => "$core_path/theme/templates",
-    ),
-    'tripal_stock_base' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_base' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_base',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_properties' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_properties' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_properties',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_publications' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_publications' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_publications',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_references' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_references' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_references',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_relationships' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_relationships' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_relationships',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_synonyms' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_synonyms' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_synonyms',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_collections' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_collections' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_collections',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_collections' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_collections' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_collections',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_phenotypes' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_phenotypes' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_phenotypes',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_locations' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_locations' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_locations',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // tripal_organism templates
-    'tripal_organism_stocks' => array(
-      'variables' => array('node' => NULL),
+    'tripal_organism_stocks' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_organism_stocks',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // help template
-    'tripal_stock_help' => array(
+    'tripal_stock_help' => [
       'template' => 'tripal_stock_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
+    ],
     // themed teaser
-    'tripal_stock_teaser' => array(
-      'variables' => array('node' => NULL),
+    'tripal_stock_teaser' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_teaser',
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
   return $items;
 }
 
@@ -298,11 +301,12 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
  *
  * @ingroup tripal_legacy_stock
  */
-function tripal_stock_help ($path, $arg) {
+function tripal_stock_help($path, $arg) {
   if ($path == 'admin/help#tripal_stock') {
-    return theme('tripal_stock_help', array());
+    return theme('tripal_stock_help', []);
   }
 }
+
 /*
  * Uses the value provided in the $id argument to find all stocks that match
  * that ID by name, stockname or synonym.  If it matches uniquenly to a single
@@ -338,22 +342,22 @@ function tripal_stock_match_stocks_page($id) {
     WHERE
       S.uniquename = :uname or S.name = :name
   ";
-  $results = chado_query($sql, array(':uname' => $id, ':name' => $id));
+  $results = chado_query($sql, [':uname' => $id, ':name' => $id]);
 
   $num_matches = 0;
 
   // iterate through the matches and build the table for showing matches
-  $header = array('Uniquename', 'Name', 'Type', 'Species');
-  $rows = array();
+  $header = ['Uniquename', 'Name', 'Type', 'Species'];
+  $rows = [];
   $curr_match;
   while ($match = $results->fetchObject()) {
     $curr_match = $match;
-    $rows[] = array(
-       $match->uniquename,
-       "<a href=\"" . url("node/". $match->nid) ."\">" . $match->name . "</a>",
-       $match->type_name,
-       '<i>' . $match->genus . ' ' . $match->species . '</i>',
-    );
+    $rows[] = [
+      $match->uniquename,
+      "<a href=\"" . url("node/" . $match->nid) . "\">" . $match->name . "</a>",
+      $match->type_name,
+      '<i>' . $match->genus . ' ' . $match->species . '</i>',
+    ];
     $num_matches++;
   }
 
@@ -366,9 +370,9 @@ function tripal_stock_match_stocks_page($id) {
     return "<p>No stocks matched the given name '$id'</p>";
   }
 
-  $table_attrs = array(
-    'class' => 'tripal-table tripal-table-horz'
-  );
+  $table_attrs = [
+    'class' => 'tripal-table tripal-table-horz',
+  ];
   $output = "<p>The following stocks match the name '$id'.</p>";
   $output .= theme_table($header, $rows, $table_attrs, $caption);
   return $output;
@@ -403,9 +407,9 @@ function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
  */
 function tripal_stock_load_organism_stock_counts($organism) {
 
-  $args = array();
-  $order = array();
-  $names = array();
+  $args = [];
+  $order = [];
+  $names = [];
 
   // build the where clause for the SQL statement if we have a custom term list
   // we'll also keep track of the names the admin provided (if any) and the
@@ -427,7 +431,7 @@ function tripal_stock_load_organism_stock_counts($organism) {
 
       // if the admin specified a new name then store that otherwise use the
       // the default sequence ontology term name
-      if(count($temp2) == 2) {
+      if (count($temp2) == 2) {
         $names[] = rtrim($temp2[1]);
       }
       else {
@@ -454,7 +458,7 @@ function tripal_stock_load_organism_stock_counts($organism) {
   $org_stocks = chado_query($sql, $args);
 
   // iterate through the types
-  $types = array();
+  $types = [];
   while ($type = $org_stocks->fetchObject()) {
     $types[$type->stock_type] = $type;
     // if we don't have an order this means we didn't go through the loop
@@ -466,12 +470,12 @@ function tripal_stock_load_organism_stock_counts($organism) {
   }
 
   // now reorder the types
-  $ordered_types = array();
+  $ordered_types = [];
   foreach ($order as $type) {
     $ordered_types[] = $types[$type];
   }
-  return array(
+  return [
     'types' => $ordered_types,
-    'names' => $names
-  );
+    'names' => $names,
+  ];
 }

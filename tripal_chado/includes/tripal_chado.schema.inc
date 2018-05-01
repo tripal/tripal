@@ -14,6 +14,7 @@
 /**
  * Implements hook_chado_schema_v1_11_analysisfeatureprop()
  * Purpose: To describe the structure of 'analysisfeatureprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -25,63 +26,64 @@
  *
  */
 function tripal_chado_chado_schema_v1_11_analysisfeatureprop() {
-  $description =  array(
+  $description = [
     'table' => 'analysisfeatureprop',
-    'fields' => array(
-      'analysisfeatureprop_id' => array(
+    'fields' => [
+      'analysisfeatureprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'analysisfeature_id' => array(
+      ],
+      'analysisfeature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'analysisfeatureprop_id',
-    ),
-    'unique keys' => array(
-      'analysisfeature_id_type_id_rank' => array(
+    ],
+    'unique keys' => [
+      'analysisfeature_id_type_id_rank' => [
         0 => 'analysisfeature_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'analysisfeature' => array(
+        ],
+      ],
+      'analysisfeature' => [
         'table' => 'analysisfeature',
-        'columns' => array(
+        'columns' => [
           'analysisfeature_id' => 'analysisfeature_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
 
 /**
  * Implements hook_chado_schema_v1_2_tripal_obo_temp()
  * Purpose: To describe the structure of 'tripal_obo_temp' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -92,38 +94,39 @@ function tripal_chado_chado_schema_v1_11_analysisfeatureprop() {
  * @ingroup tripal_chado_v1.2_schema_api
  */
 function tripal_chado_chado_schema_v1_2_tripal_obo_temp() {
-  $schema = array(
+  $schema = [
     'table' => 'tripal_obo_temp',
-    'fields' => array(
-      'id' => array(
+    'fields' => [
+      'id' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'stanza' => array(
+      ],
+      'stanza' => [
         'type' => 'text',
         'not null' => TRUE,
-      ),
-      'type' => array(
+      ],
+      'type' => [
         'type' => 'varchar',
         'length' => '50',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_obo_temp_idx0' => array('id'),
-      'tripal_obo_temp_idx0' => array('type'),
-    ),
-    'unique keys' => array(
-      'tripal_obo_temp_uq0' => array('id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_obo_temp_idx0' => ['id'],
+      'tripal_obo_temp_idx0' => ['type'],
+    ],
+    'unique keys' => [
+      'tripal_obo_temp_uq0' => ['id'],
+    ],
+  ];
   return $schema;
 }
 
 /**
  * Implements hook_chado_schema_v1_3_tripal_obo_temp()
  * Purpose: To describe the structure of 'tripal_obo_temp' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -134,32 +137,32 @@ function tripal_chado_chado_schema_v1_2_tripal_obo_temp() {
  * @ingroup tripal_chado_v1.3_schema_api
  */
 function tripal_chado_chado_schema_v1_3_tripal_obo_temp() {
-  $schema = array(
+  $schema = [
     'table' => 'tripal_obo_temp',
-    'fields' => array(
-      'id' => array(
+    'fields' => [
+      'id' => [
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
-      ),
-      'stanza' => array(
+      ],
+      'stanza' => [
         'type' => 'text',
         'not null' => TRUE,
-      ),
-      'type' => array(
+      ],
+      'type' => [
         'type' => 'varchar',
         'length' => '50',
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_obo_temp_idx0' => array('id'),
-      'tripal_obo_temp_idx0' => array('type'),
-    ),
-    'unique keys' => array(
-      'tripal_obo_temp_uq0' => array('id'),
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_obo_temp_idx0' => ['id'],
+      'tripal_obo_temp_idx0' => ['type'],
+    ],
+    'unique keys' => [
+      'tripal_obo_temp_uq0' => ['id'],
+    ],
+  ];
   return $schema;
 }
 
@@ -176,42 +179,42 @@ function tripal_chado_chado_schema_v1_3_tripal_obo_temp() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment',
-    'fields' => array(
-      'nd_experiment_id' => array(
+    'fields' => [
+      'nd_experiment_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_geolocation_id' => array(
+      ],
+      'nd_geolocation_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_id',
-    ),
-    'foreign keys' => array(
-      'nd_geolocation' => array(
+    ],
+    'foreign keys' => [
+      'nd_geolocation' => [
         'table' => 'nd_geolocation',
-        'columns' => array(
+        'columns' => [
           'nd_geolocation_id' => 'nd_geolocation_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
       'nd_experiment_contact',
       'nd_experiment_dbxref',
       'nd_experiment_genotype',
@@ -220,12 +223,13 @@ function tripal_chado_chado_schema_v1_11_nd_experiment() {
       'nd_experiment_protocol',
       'nd_experiment_pub',
       'nd_experiment_stock',
-      'nd_experimentprop'
-    ),
-  );
+      'nd_experimentprop',
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -238,48 +242,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_contact() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_contact',
-    'fields' => array(
-      'nd_experiment_contact_id' => array(
+    'fields' => [
+      'nd_experiment_contact_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'contact_id' => array(
+      ],
+      'contact_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_contact_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'contact_id' => 'contact_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -292,48 +297,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_contact() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_dbxref() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_dbxref',
-    'fields' => array(
-      'nd_experiment_dbxref_id' => array(
+    'fields' => [
+      'nd_experiment_dbxref_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_dbxref_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'dbxref' => array(
+        ],
+      ],
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -346,48 +352,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_dbxref() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_genotype() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_genotype',
-    'fields' => array(
-      'nd_experiment_genotype_id' => array(
+    'fields' => [
+      'nd_experiment_genotype_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'genotype_id' => array(
+      ],
+      'genotype_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_genotype_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'genotype' => array(
+        ],
+      ],
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype_id' => 'genotype_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -400,48 +407,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_genotype() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_phenotype() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_phenotype',
-    'fields' => array(
-      'nd_experiment_phenotype_id' => array(
+    'fields' => [
+      'nd_experiment_phenotype_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'phenotype_id' => array(
+      ],
+      'phenotype_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_phenotype_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'phenotype' => array(
+        ],
+      ],
+      'phenotype' => [
         'table' => 'phenotype',
-        'columns' => array(
+        'columns' => [
           'phenotype_id' => 'phenotype_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -454,48 +462,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_phenotype() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_project() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_project',
-    'fields' => array(
-      'nd_experiment_project_id' => array(
+    'fields' => [
+      'nd_experiment_project_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'project_id' => array(
+      ],
+      'project_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_project_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'project' => array(
+        ],
+      ],
+      'project' => [
         'table' => 'project',
-        'columns' => array(
+        'columns' => [
           'project_id' => 'project_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -508,48 +517,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_project() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_protocol() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_protocol',
-    'fields' => array(
-      'nd_experiment_protocol_id' => array(
+    'fields' => [
+      'nd_experiment_protocol_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_protocol_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -562,48 +572,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_protocol() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_pub() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_pub',
-    'fields' => array(
-      'nd_experiment_pub_id' => array(
+    'fields' => [
+      'nd_experiment_pub_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_pub_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -616,59 +627,60 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_pub() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_stock() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_stock',
-    'fields' => array(
-      'nd_experiment_stock_id' => array(
+    'fields' => [
+      'nd_experiment_stock_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_stock_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
       'nd_experiment_stock_dbxref',
       'nd_experiment_stockprop',
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -681,55 +693,56 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_stock() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_stockprop() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_stockprop',
-    'fields' => array(
-      'nd_experiment_stockprop_id' => array(
+    'fields' => [
+      'nd_experiment_stockprop_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_experiment_stock_id' => array(
+      ],
+      'nd_experiment_stock_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'varchar',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => 1,
-        'default' => 1
-      ),
-    ),
-    'primary key' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_stockprop_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment_stock' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment_stock' => [
         'table' => 'nd_experiment_stock',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_stock_id' => 'nd_experiment_stock_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
-    ),
-  );
+        ],
+      ],
+    ],
+    'referring_tables' => [
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -742,48 +755,49 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_stockprop() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experiment_stock_dbxref() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experiment_stock_dbxref',
-    'fields' => array(
-      'nd_experiment_stock_dbxref_id' => array(
+    'fields' => [
+      'nd_experiment_stock_dbxref_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_experiment_stock_id' => array(
+      ],
+      'nd_experiment_stock_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experiment_stock_dbxref_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment_stock' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment_stock' => [
         'table' => 'nd_experiment_stock',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_stock_id' => 'nd_experiment_stock_id',
-        ),
-      ),
-      'dbxref' => array(
+        ],
+      ],
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -796,55 +810,56 @@ function tripal_chado_chado_schema_v1_11_nd_experiment_stock_dbxref() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_experimentprop() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_experimentprop',
-    'fields' => array(
-      'nd_experimentprop_id' => array(
+    'fields' => [
+      'nd_experimentprop_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_experiment_id' => array(
+      ],
+      'nd_experiment_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'varchar',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => 1,
-        'default' => 1
-      ),
-    ),
-    'primary key' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_experimentprop_id',
-    ),
-    'foreign keys' => array(
-      'nd_experiment' => array(
+    ],
+    'foreign keys' => [
+      'nd_experiment' => [
         'table' => 'nd_experiment',
-        'columns' => array(
+        'columns' => [
           'nd_experiment_id' => 'nd_experiment_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
-    ),
-  );
+        ],
+      ],
+    ],
+    'referring_tables' => [
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -857,42 +872,43 @@ function tripal_chado_chado_schema_v1_11_nd_experimentprop() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_geolocation() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_reagent',
-    'fields' => array(
-      'nd_geolocation_id' => array(
+    'fields' => [
+      'nd_geolocation_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'description' => array(
-        'type' => 'varchar'
-      ),
-      'latitude' => array(
-        'type' => 'real',
-      ),
-      'longitude' => array(
-        'type' => 'real',
-      ),
-      'altitude' => array(
-        'type' => 'real',
-      ),
-      'geodetic_datum' => array(
+      ],
+      'description' => [
         'type' => 'varchar',
-      ),
-    ),
-    'primary key' => array(
+      ],
+      'latitude' => [
+        'type' => 'real',
+      ],
+      'longitude' => [
+        'type' => 'real',
+      ],
+      'altitude' => [
+        'type' => 'real',
+      ],
+      'geodetic_datum' => [
+        'type' => 'varchar',
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_geolocation_id',
-    ),
-    'referring_tables' => array(
+    ],
+    'referring_tables' => [
       'nd_experiment',
-      'nd_geolocationprop'
-    ),
-  );
+      'nd_geolocationprop',
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -905,55 +921,56 @@ function tripal_chado_chado_schema_v1_11_nd_geolocation() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_geolocationprop() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_geolocationprop',
-    'fields' => array(
-      'nd_geolocationprop_id' => array(
+    'fields' => [
+      'nd_geolocationprop_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_geolocation_id' => array(
+      ],
+      'nd_geolocation_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'varchar',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => 1,
-        'default' => 1
-      ),
-    ),
-    'primary key' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_geolocationprop_id',
-    ),
-    'foreign keys' => array(
-      'nd_geolocation' => array(
+    ],
+    'foreign keys' => [
+      'nd_geolocation' => [
         'table' => 'nd_geolocation',
-        'columns' => array(
+        'columns' => [
           'nd_geolocation_id' => 'nd_geolocation_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
-    ),
-  );
+        ],
+      ],
+    ],
+    'referring_tables' => [
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -966,32 +983,33 @@ function tripal_chado_chado_schema_v1_11_nd_geolocationprop() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_protocol() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_protocol',
-    'fields' => array(
-      'nd_protocol_id' => array(
+    'fields' => [
+      'nd_protocol_id' => [
         'type' => 'serial',
         'not null' => 1,
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'not null' => 1,
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_protocol_id',
-    ),
-    'referring_tables' => array(
+    ],
+    'referring_tables' => [
       'nd_experiment_protocol',
       'nd_protocol_reagent',
-      'nd_protocolprop'
-    ),
-  );
+      'nd_protocolprop',
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -1004,58 +1022,59 @@ function tripal_chado_chado_schema_v1_11_nd_protocol() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_protocol_reagent() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_protocol_reagent',
-    'fields' => array(
-      'nd_protocol_reagent_id' => array(
+    'fields' => [
+      'nd_protocol_reagent_id' => [
         'type' => 'serial',
         'not null' => 1,
-      ),
-      'nd_protocol_id' => array(
+      ],
+      'nd_protocol_id' => [
         'type' => 'int',
         'not null' => 1,
-      ),
-      'nd_reagent_id' => array(
+      ],
+      'nd_reagent_id' => [
         'type' => 'int',
         'not null' => 1,
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => 1,
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_protocol_reagent_id',
-    ),
-    'foreign keys' => array(
-      'nd_protocol' => array(
+    ],
+    'foreign keys' => [
+      'nd_protocol' => [
         'table' => 'nd_protocol',
-        'columns' => array(
+        'columns' => [
           'nd_protocol_id' => 'nd_protocol_id',
-        ),
-      ),
-      'nd_reagent' => array(
+        ],
+      ],
+      'nd_reagent' => [
         'table' => 'nd_reagent',
-        'columns' => array(
+        'columns' => [
           'nd_reagent_id' => 'nd_reagent_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
 
-    ),
-  );
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -1068,55 +1087,56 @@ function tripal_chado_chado_schema_v1_11_nd_protocol_reagent() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_protocolprop() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_protocolprop',
-    'fields' => array(
-      'nd_protocolprop_id' => array(
+    'fields' => [
+      'nd_protocolprop_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_protocol_id' => array(
+      ],
+      'nd_protocol_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'varchar',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => 1,
-        'default' => 1
-      ),
-    ),
-    'primary key' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_protocolprop_id',
-    ),
-    'foreign keys' => array(
-      'nd_protocol' => array(
+    ],
+    'foreign keys' => [
+      'nd_protocol' => [
         'table' => 'nd_protocol',
-        'columns' => array(
+        'columns' => [
           'nd_protocol_id' => 'nd_protocol_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
-    ),
-  );
+        ],
+      ],
+    ],
+    'referring_tables' => [
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -1129,49 +1149,50 @@ function tripal_chado_chado_schema_v1_11_nd_protocolprop() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_reagent() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_reagent',
-    'fields' => array(
-      'nd_reagent_id' => array(
+    'fields' => [
+      'nd_reagent_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => 80,
-        'not null' => TRUE
-      ),
-      'type_id' => array(
+        'not null' => TRUE,
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_reagent_id',
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -1184,50 +1205,51 @@ function tripal_chado_chado_schema_v1_11_nd_reagent() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_reagent_relationship() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_reagent_relationship',
-    'fields' => array(
-      'nd_reagent_relationship_id' => array(
+    'fields' => [
+      'nd_reagent_relationship_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'subject_reagent_id' => array(
+      ],
+      'subject_reagent_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'object_reagent_id' => array(
+      ],
+      'object_reagent_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_reagent_relationship_id',
-    ),
-    'foreign keys' => array(
-      'nd_reagent' => array(
+    ],
+    'foreign keys' => [
+      'nd_reagent' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'subject_reagent_id' => 'nd_reagent_id',
           'object_reagent_id' => 'nd_reagent_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_table()
  *
@@ -1240,52 +1262,52 @@ function tripal_chado_chado_schema_v1_11_nd_reagent_relationship() {
  * @ingroup tripal_schema_api
  */
 function tripal_chado_chado_schema_v1_11_nd_reagentprop() {
-  $description = array();
+  $description = [];
 
-  $description = array(
+  $description = [
     'table' => 'nd_reagentprop',
-    'fields' => array(
-      'nd_reagentprop_id' => array(
+    'fields' => [
+      'nd_reagentprop_id' => [
         'type' => 'serial',
         'not null' => '1',
-      ),
-      'nd_reagent_id' => array(
+      ],
+      'nd_reagent_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not null' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'varchar',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not null' => 1,
-        'default' => 1
-      ),
-    ),
-    'primary key' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => [
       '0' => 'nd_reagentprop_id',
-    ),
-    'foreign keys' => array(
-      'nd_reagent' => array(
+    ],
+    'foreign keys' => [
+      'nd_reagent' => [
         'table' => 'nd_reagent',
-        'columns' => array(
+        'columns' => [
           'nd_reagent_id' => 'nd_reagent_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
-    ),
-  );
+        ],
+      ],
+    ],
+    'referring_tables' => [
+    ],
+  ];
 
   return $description;
 }

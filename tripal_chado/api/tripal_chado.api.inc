@@ -37,22 +37,22 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       "Could not publish record: @error",
-      array('@error' => 'The bundle name must be provided'));
+      ['@error' => 'The bundle name must be provided']);
     return FALSE;
   }
 
   // Get the incoming arguments from the $values array.
   $bundle_name = $values['bundle_name'];
-  $filters = array_key_exists('filters', $values) ? $values['filters'] : array();
+  $filters = array_key_exists('filters', $values) ? $values['filters'] : [];
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
   if (!$bundle) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "Unknown bundle. Could not publish record: @error",
-        array('@error' => 'The bundle name must be provided'));
+      "Unknown bundle. Could not publish record: @error",
+      ['@error' => 'The bundle name must be provided']);
     return FALSE;
   }
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
@@ -64,16 +64,16 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     ->condition('bundle_id', $bundle->id)
     ->execute()
     ->fetchObject();
-  if(!$chado_bundle) {
+  if (!$chado_bundle) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "Cannot find mapping of bundle to Chado tables. Could not publish record.");
+      "Cannot find mapping of bundle to Chado tables. Could not publish record.");
     return FALSE;
   }
 
   $table = $chado_bundle->data_table;
   $type_column = $chado_bundle->type_column;
   $type_linker_table = $chado_bundle->type_linker_table;
-  $cvterm_id  = $chado_bundle->type_id;
+  $cvterm_id = $chado_bundle->type_id;
   $type_value = $chado_bundle->type_value;
 
   // Get the table information for the Chado table.
@@ -81,7 +81,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $pkey_field = $table_schema['primary key'][0];
 
   // Construct the SQL for identifying which records should be published.
-  $args = array();
+  $args = [];
   $select = "SELECT T.$pkey_field as record_id ";
   $from = "
     FROM {" . $table . "} T
@@ -151,8 +151,8 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $fields = field_info_field_map();
   foreach ($fields as $field_name => $details) {
     if (array_key_exists('TripalEntity', $details['bundles']) and
-        in_array($bundle_name, $details['bundles']['TripalEntity']) and
-        in_array($field_name, array_keys($filters))){
+      in_array($bundle_name, $details['bundles']['TripalEntity']) and
+      in_array($field_name, array_keys($filters))) {
       $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
       $chado_table = $instance['settings']['chado_table'];
       $chado_column = $instance['settings']['chado_column'];
@@ -179,13 +179,13 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $transaction = db_transaction();
 
   print "\nNOTE: publishing records is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "is rolled back with no changes to the database\n\n";
+    "If the load fails or is terminated prematurely then the entire set of \n" .
+    "is rolled back with no changes to the database\n\n";
 
   $i = 0;
   printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
   try {
-    while($record = $records->fetchObject()) {
+    while ($record = $records->fetchObject()) {
 
       // update the job status every interval
       if ($i % $interval == 0) {
@@ -198,25 +198,25 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       // First save the tripal_entity record.
       $record_id = $record->record_id;
       $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
+      $entity = $ec->create([
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
         // Add in the Chado details for when the hook_entity_create()
         // is called and our tripal_chado_entity_create() implementation
         // can deal with it.
-        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+        'chado_record' => chado_generate_var($table, [$pkey_field => $record_id]),
         'chado_record_id' => $record_id,
-      ));
+      ]);
       $entity = $entity->save();
       if (!$entity) {
         throw new Exception('Could not create entity.');
       }
 
       // Next save the chado entity record.
-      $entity_record = array(
+      $entity_record = [
         'entity_id' => $entity->id,
         'record_id' => $record_id,
-      );
+      ];
 
       // For the Tv2 to Tv3 migration we want to add the nid to the
       // entity so we can associate the node with the entity.
@@ -226,17 +226,16 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $result = db_insert($chado_entity_table)
         ->fields($entity_record)
         ->execute();
-      if(!$result){
+      if (!$result) {
         throw new Exception('Could not create mapping of entity to Chado record.');
       }
 
       $i++;
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", ['@error' => $error]);
     drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
     return FALSE;
   }
@@ -249,29 +248,30 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
  *
  * @param $base_table
  *    The name of a base table in Chado.
+ *
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  */
 function tripal_get_chado_tokens($base_table) {
 
-  $tokens = array();
+  $tokens = [];
   $table_descrip = chado_get_schema($base_table);
   foreach ($table_descrip['fields'] as $field_name => $field_details) {
 
     $token = '[' . $base_table . '.' . $field_name . ']';
-    $location = implode(' > ',array($base_table, $field_name));
+    $location = implode(' > ', [$base_table, $field_name]);
 
-    $tokens[$token] = array(
-      'name' => ucwords(str_replace('_',' ',$base_table)) . ': ' . ucwords(str_replace('_',' ',$field_name)),
+    $tokens[$token] = [
+      'name' => ucwords(str_replace('_', ' ', $base_table)) . ': ' . ucwords(str_replace('_', ' ', $field_name)),
       'table' => $base_table,
       'field' => $field_name,
       'token' => $token,
       'description' => array_key_exists('description', $field_details) ? $field_details['description'] : '',
-      'location' => $location
-    );
+      'location' => $location,
+    ];
 
-    if (!array_key_exists('description', $field_details) or preg_match('/TODO/',$field_details['description'])) {
-      $tokens[$token]['description'] = 'The '.$field_name.' field of the '.$base_table.' table.';
+    if (!array_key_exists('description', $field_details) or preg_match('/TODO/', $field_details['description'])) {
+      $tokens[$token]['description'] = 'The ' . $field_name . ' field of the ' . $base_table . ' table.';
     }
   }
 
@@ -282,7 +282,7 @@ function tripal_get_chado_tokens($base_table) {
       foreach ($details['columns'] as $left_field => $right_field) {
 
         $sub_token_prefix = $base_table . '.' . $left_field;
-        $sub_location_prefix = implode(' > ',array($base_table, $left_field));
+        $sub_location_prefix = implode(' > ', [$base_table, $left_field]);
 
         $sub_tokens = tripal_get_chado_tokens($table);
         if (is_array($sub_tokens)) {
@@ -346,7 +346,11 @@ function tripal_replace_chado_tokens($string, $record) {
             tripal_report_error('tripal_chado', TRIPAL_WARNING,
               'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
               'to access \'%index\' for the following: \'%var\'.',
-              array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
+              [
+                '%token' => $token,
+                '%index' => $index,
+                '%var' => print_r($var, TRUE),
+              ]
             );
           }
         }

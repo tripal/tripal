@@ -1,6 +1,7 @@
 <?php
 /**
  * Install the tripal stock module including it's content type
+ *
  * @file
  */
 
@@ -16,7 +17,7 @@ function tripal_stock_disable() {
   require_once("tripal_stock.views_default.inc");
   $views = tripal_stock_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +28,15 @@ function tripal_stock_disable() {
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_stock'] = array(
+      $requirements ['tripal_stock'] = [
         'title' => "tripal_stock",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -71,33 +72,33 @@ function tripal_stock_uninstall() {
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_schema() {
-  $schema['chado_stock'] = array(
-    'fields' => array(
-      'vid' => array(
+  $schema['chado_stock'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'nid' => array(
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'stock_id' => array('stock_id'),
-       'nid' => array('nid'),
-    ),
-    'unique' => array(
-      'stock_id' => array('stock_id'),
-    ),
-    'primary key' => array('vid'),
-  );
+      ],
+    ],
+    'indexes' => [
+      'stock_id' => ['stock_id'],
+      'nid' => ['nid'],
+    ],
+    'unique' => [
+      'stock_id' => ['stock_id'],
+    ],
+    'primary key' => ['vid'],
+  ];
 
   return $schema;
 }

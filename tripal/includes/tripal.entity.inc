@@ -10,13 +10,13 @@
  * http://dikini.net/31.08.2010/entities_bundles_fields_and_field_instances
  */
 function tripal_entity_info() {
-  $entities = array();
+  $entities = [];
 
   // The TripalVocab entity is meant to house vocabularies.  It is these
   // vocabs that are used by the TripalTerm entities.  The storage backend
   // is responsible for setting the values of this entity.
   //
-  $entities['TripalVocab'] = array(
+  $entities['TripalVocab'] = [
     // A human readable label to identify our entity.
     'label' => 'Controlled Vocabulary',
     'plural label' => 'Controlled Vocabularies',
@@ -38,9 +38,9 @@ function tripal_entity_info() {
     // entity_keys tells the controller what database fields are used for key
     // functions. It is not required if we don't have bundles or revisions.
     // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
+    'entity keys' => [
       'id' => 'id',
-    ),
+    ],
 
     // Callback function for access to this entity.
     'access callback' => 'tripal_entity_access',
@@ -52,26 +52,26 @@ function tripal_entity_info() {
     'field cache' => TRUE,
 
     // This entity doesn't support bundles.
-    'bundles' => array (),
+    'bundles' => [],
 
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      ),
-    ),
-  );
+    'view modes' => [
+      'full' => [
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ],
+      'teaser' => [
+        'label' => t('Teaser'),
+        'custom settings' => TRUE,
+      ],
+    ],
+  ];
 
   //
   // The TripalTerm entity is meant to house vocabulary terms.  It is these
   // terms that are used by the TripalEntity entities.  The storage backend
   // is responsible for setting the values of this entity.
   //
-  $entities['TripalTerm'] = array(
+  $entities['TripalTerm'] = [
     // A human readable label to identify our entity.
     'label' => 'Controlled Vocabulary Term',
     'plural label' => 'Controlled Vocabulary Terms',
@@ -93,9 +93,9 @@ function tripal_entity_info() {
     // entity_keys tells the controller what database fields are used for key
     // functions. It is not required if we don't have bundles or revisions.
     // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
+    'entity keys' => [
       'id' => 'id',
-    ),
+    ],
 
     // Callback function for access to this entity.
     'access callback' => 'tripal_entity_access',
@@ -104,25 +104,25 @@ function tripal_entity_info() {
     'static cache' => FALSE,
 
     // This entity doesn't support bundles.
-    'bundles' => array (),
+    'bundles' => [],
 
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      ),
-    ),
-  );
+    'view modes' => [
+      'full' => [
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ],
+      'teaser' => [
+        'label' => t('Teaser'),
+        'custom settings' => TRUE,
+      ],
+    ],
+  ];
 
   //
   // The TripalEntity is used for all data. It links data from a storage
   // back-end to a TripalTerm entity.
   //
-  $entities['TripalEntity'] = array (
+  $entities['TripalEntity'] = [
     // A human readable label to identify our entity.
     'label' => 'Tripal Content',
     'plural label' => 'Tripal Content',
@@ -147,13 +147,13 @@ function tripal_entity_info() {
     // entity_keys tells the controller what database fields are used for key
     // functions. It is not required if we don't have bundles or revisions.
     // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array (
+    'entity keys' => [
       'id' => 'id',
-      'bundle' => 'bundle'
-    ),
-    'bundle keys' => array (
-      'bundle' => 'name'
-    ),
+      'bundle' => 'bundle',
+    ],
+    'bundle keys' => [
+      'bundle' => 'name',
+    ],
 
     // Callback function for access to this entity.
     'access callback' => 'tripal_entity_access',
@@ -165,7 +165,7 @@ function tripal_entity_info() {
     'field cache' => TRUE,
 
     // Bundles are added dynamically below.
-    'bundles' => array (),
+    'bundles' => [],
 
     'label callback' => 'tripal_entity_label',
 
@@ -173,43 +173,43 @@ function tripal_entity_info() {
     // (which extends the EntityDefaultUIController). The admin_ui
     // key here is mean to appear on the 'Find Content' page of the
     // administrative menu.
-    'admin ui' => array (
+    'admin ui' => [
       'path' => 'admin/content/bio_data',
       'controller class' => 'TripalEntityUIController',
       'menu wildcard' => '%TripalEntity',
       'file' => 'includes/TripalEntityUIController.inc',
-    ),
-    'view modes' => array (
-      'full' => array (
-        'label' => t ('Full content'),
-        'custom settings' => FALSE
-      ),
-      'teaser' => array (
-        'label' => t ('Teaser'),
-        'custom settings' => TRUE
-      )
-    )
-  );
+    ],
+    'view modes' => [
+      'full' => [
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ],
+      'teaser' => [
+        'label' => t('Teaser'),
+        'custom settings' => TRUE,
+      ],
+    ],
+  ];
 
   // Search integration
   if (module_exists('search')) {
-    $entities['TripalEntity']['view modes'] += array(
-      'search_index' => array(
+    $entities['TripalEntity']['view modes'] += [
+      'search_index' => [
         'label' => t('Search index'),
         'custom settings' => FALSE,
-      ),
-      'search_result' => array(
+      ],
+      'search_result' => [
         'label' => t('Search result highlighting input'),
         'custom settings' => FALSE,
-      ),
-    );
+      ],
+    ];
   }
 
   // The TripalBundle entity is used manage the bundle types.  The 'bundle of'
   // attribute links this to the TripalEntity and allows the UI provided
   // by the entity module to work for each TripalEntity bundle.
   //
-  $entities['TripalBundle'] = array (
+  $entities['TripalBundle'] = [
     'label' => 'Tripal Content Type',
     'entity class' => 'TripalBundle',
     'controller class' => 'TripalBundleController',
@@ -218,21 +218,21 @@ function tripal_entity_info() {
     'fieldable' => FALSE,
     'bundle of' => 'TripalEntity',
     'exportable' => FALSE,
-    'entity keys' => array (
+    'entity keys' => [
       'id' => 'id',
       'name' => 'name',
-      'label' => 'label'
-    ),
+      'label' => 'label',
+    ],
     'access callback' => 'tripal_bundle_access',
     'module' => 'tripal',
     // Enable the entity API's admin UI.
-    'admin ui' => array (
+    'admin ui' => [
       'path' => 'admin/structure/bio_data',
       'controller class' => 'TripalBundleUIController',
       'file' => 'includes/TripalBundleUIController.inc',
       'menu wildcard' => '%TripalBundle',
-    )
-  );
+    ],
+  ];
 
   return $entities;
 }
@@ -241,10 +241,10 @@ function tripal_entity_info() {
  * Implements the Entity URI callback function.
  */
 function tripal_entity_uri($entity) {
-  return array(
+  return [
     'path' => 'bio-data/' . $entity->id,
-    'options' => array(),
-  );
+    'options' => [],
+  ];
 }
 
 /**
@@ -252,7 +252,7 @@ function tripal_entity_uri($entity) {
  *
  * Add in the bundles (entity types) to the TripalEntity entity.
  */
-function tripal_entity_info_alter(&$entity_info){
+function tripal_entity_info_alter(&$entity_info) {
 
   if (array_key_exists('TripalEntity', $entity_info)) {
     // Dynamically add in the bundles. Bundles are alternative groups of fields
@@ -264,21 +264,21 @@ function tripal_entity_info_alter(&$entity_info){
     while ($bundle = $bundles->fetchObject()) {
       $bundle_name = $bundle->name;
       $term_id = $bundle->term_id;
-      $term = entity_load('TripalTerm', array('id' => $term_id));
+      $term = entity_load('TripalTerm', ['id' => $term_id]);
       $term = reset($term);
       $label = preg_replace('/_/', ' ', ucwords($term->name));
 
-      $entity_info['TripalEntity']['bundles'][$bundle_name] = array (
+      $entity_info['TripalEntity']['bundles'][$bundle_name] = [
         'label' => $label,
-        'admin' => array (
+        'admin' => [
           'path' => 'admin/structure/bio_data/manage/%TripalBundle',
           'real path' => 'admin/structure/bio_data/manage/' . $bundle_name,
           'bundle argument' => 4,
-          'access arguments' => array (
-            'manage tripal content types'
-          )
-        )
-      );
+          'access arguments' => [
+            'manage tripal content types',
+          ],
+        ],
+      ];
     }
   }
 }
@@ -293,14 +293,16 @@ function tripal_entity_info_alter(&$entity_info){
  * TripalEntities which may have been missed.
  *
  * Furthermore, there are some pecularities with how TripalFields store their
- * value that causes the default getter callback difficulties in some edge cases.
- * Thus we are overriding that function below.
+ * value that causes the default getter callback difficulties in some edge
+ * cases. Thus we are overriding that function below.
  */
 function tripal_entity_property_info_alter(&$info) {
 
   // Sometimes this function is called when there are no Tripal Entities.
   // Don't bother to do anything in this case.
-  if (!isset($info['TripalEntity']['bundles'])) { return TRUE; }
+  if (!isset($info['TripalEntity']['bundles'])) {
+    return TRUE;
+  }
 
   // For each Tripal Content Type, we want to ensure all attached fields
   // are added to the bundle properties.
@@ -314,7 +316,7 @@ function tripal_entity_property_info_alter(&$info) {
       // is not listed in properties, then add it. We use the full defaults here
       // just in case it's not a TripalField or ChadoField.
       if (!isset($info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name])) {
-        $info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name] = array(
+        $info['TripalEntity']['bundles'][$bundle_name]['properties'][$field_name] = [
           'label' => $field_info['label'],
           'type' => 'text',
           'description' => $field_info['description'],
@@ -325,7 +327,7 @@ function tripal_entity_property_info_alter(&$info) {
           'translatable' => FALSE,
           'field' => TRUE,
           'required' => $field_info['required'],
-        );
+        ];
       }
 
       // Now, if it's a TripalField or a ChadoField, then we want to use a custom
@@ -367,7 +369,7 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
   $langcode = isset($options['language']) ? $options['language']->language : LANGUAGE_NONE;
   $langcode = entity_metadata_field_get_language($entity_type, $entity, $field, $langcode, TRUE);
 
-  $values = array();
+  $values = [];
   if (isset($entity->{$field_name}[$langcode])) {
     // For each value of the field... (this will be multiple if cardinality is > 1).
     foreach ($entity->{$field_name}[$langcode] as $delta => $data) {
@@ -388,8 +390,12 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
         // Just include all the pieces of information seperated by spaces
         // so they are tokenized out later on.
         $tmp = $data['value'];
-        if (isset($tmp['entity'])) { unset($tmp['entity']); }
-        foreach ($tmp as $k => $v) { $tmp[$k] = strip_tags($v); }
+        if (isset($tmp['entity'])) {
+          unset($tmp['entity']);
+        }
+        foreach ($tmp as $k => $v) {
+          $tmp[$k] = strip_tags($v);
+        }
         $curr_val = implode(' ', $tmp);
       }
       else {
@@ -499,8 +505,8 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       if ($instance and array_key_exists('settings', $instance)) {
         $class = '';
         if (array_key_exists('auto_attach', $instance['settings']) and
-            $instance['settings']['auto_attach'] == FALSE and
-            $entity->{$child_name}['#processed'] == FALSE) {
+          $instance['settings']['auto_attach'] == FALSE and
+          $entity->{$child_name}['#processed'] == FALSE) {
           // If the field is empty then try to use ajax to load it.
           $items = field_get_items('TripalEntity', $entity, $child_name);
           if (count($items) == 0 or empty($items[0]['value'])) {
@@ -523,12 +529,12 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
  */
 function tripal_ajax_attach_field($id) {
 
-  $matches = array();
+  $matches = [];
   if (preg_match('/^tripal-entity-(\d+)--(.+)$/', $id, $matches)) {
     $entity_id = $matches[1];
     $field_name = $matches[2];
     $field = field_info_field($field_name);
-    $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, array($field['id']));
+    $result = tripal_load_entity('TripalEntity', [$entity_id], FALSE, [$field['id']]);
     reset($result);
     $entity = $result[$entity_id];
 
@@ -542,9 +548,9 @@ function tripal_ajax_attach_field($id) {
     $element['#label_display'] = 'hidden';
 
     $content = drupal_render($element);
-    return drupal_json_output(array(
+    return drupal_json_output([
       'id' => $id,
-      'content' => $content
-    ));
+      'content' => $content,
+    ]);
   }
 }

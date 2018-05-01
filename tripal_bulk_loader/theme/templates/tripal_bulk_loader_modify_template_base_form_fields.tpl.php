@@ -1,54 +1,63 @@
 <?php
 /**
  * @file
- * Defines how the fields table in the Bulk Loader Template Edit form should be rendered.
+ * Defines how the fields table in the Bulk Loader Template Edit form should be
+ *   rendered.
  *
  * @param $element
  *   The FAPI definition of the records table.
  */
 
 // generate table\
-$record_header = array('class' => array('record'), 'data' => 'Record');
-$header = array($record_header, 'Field Operations', 'Field Name', 'Chado Table', 'Chado Field', 'Field Type', 'Field Settings'); //'Data Column', 'Constant Value', 'Referred Record');
-$rows = array();
+$record_header = ['class' => ['record'], 'data' => 'Record'];
+$header = [
+  $record_header,
+  'Field Operations',
+  'Field Name',
+  'Chado Table',
+  'Chado Field',
+  'Field Type',
+  'Field Settings',
+]; //'Data Column', 'Constant Value', 'Referred Record');
+$rows = [];
 
 // This is an array to keep track of the record => field index as well as the number of fields.
 // It is used to make the record column span all the field rows providing more room for 
 // information and a visual separation between records.
 // Expect: record_id => array(index1, index2, index3)
-$field_record = array();
+$field_record = [];
 
 // Create a row for each sub-element that is not a form-api key (ie: #title).
 foreach (element_children($element) as $key) {
 
   $row_element = &$element[$key];
-  $row = array();
+  $row = [];
 
   // Describe the record.
-  $row[] = array(
-    'class' => array('record'),
+  $row[] = [
+    'class' => ['record'],
     'data' => drupal_render($row_element['record_id']),
-  );
-  if (isset($field_record[ $row_element['record_id']['#markup'] ])) {
-    $field_record[ $row_element['record_id']['#markup'] ][] = $key;
+  ];
+  if (isset($field_record[$row_element['record_id']['#markup']])) {
+    $field_record[$row_element['record_id']['#markup']][] = $key;
   }
   else {
-    $field_record[ $row_element['record_id']['#markup'] ] = array($key);
+    $field_record[$row_element['record_id']['#markup']] = [$key];
   }
 
   // Provide action links to interact with fields.
-  $row[] = array(
-    'class' => array('tbl-action-field-links', 'active'),
+  $row[] = [
+    'class' => ['tbl-action-field-links', 'active'],
     'data' => drupal_render($row_element['edit_submit']) . ' | '
       . drupal_render($row_element['delete_submit']) . '<br />'
-      . drupal_render($row_element['view-record-link'])
-    );
-  
+      . drupal_render($row_element['view-record-link']),
+  ];
+
   // Describe the field.
   $row[] = drupal_render($row_element['field_name']);
   $row[] = drupal_render($row_element['chado_table_name']);
   $row[] = drupal_render($row_element['chado_field_name']);
-  
+
   // Determine the Type
   // Default to data field.
   $type = 'Data Field (Spreadsheet Value)';
@@ -67,22 +76,25 @@ foreach (element_children($element) as $key) {
     $type_class = 'record-referral';
     $value = drupal_render($row_element['foreign_record_id']);
   }
-  $row[] = array('data' => '<img src="'.$icon.'" width=16 height=16 title="'.$type.'"/>', 'class' => array('field-type'));
+  $row[] = [
+    'data' => '<img src="' . $icon . '" width=16 height=16 title="' . $type . '"/>',
+    'class' => ['field-type'],
+  ];
 
   // Finally specify the field value.
 
   $row[] = $value;
-  
+
   // Add this field to the table.
-  $rows[] = array(
-    'class' => array($type_class),
-    'data' => $row
-  );
-    
+  $rows[] = [
+    'class' => [$type_class],
+    'data' => $row,
+  ];
+
 }
 
 // Finally edit the table to make the record span the correct rows.
-foreach($field_record as $record_id => $keys) {
+foreach ($field_record as $record_id => $keys) {
   foreach ($keys as $row_order => $row_key) {
 
     // We want to adjust the first row of this record to have the rowspan.
@@ -100,10 +112,10 @@ foreach($field_record as $record_id => $keys) {
 // Finally print the table.
 print theme(
   'table',
-  array(
+  [
     'header' => $header,
     'rows' => $rows,
     //'attributes' => array('style'=>'table-layout: fixed; width: 100%')
-  )
+  ]
 );
 ?>

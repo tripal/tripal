@@ -24,7 +24,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'TAXRANK',
     // The name of the term.
@@ -35,7 +35,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'HERE_widget';
@@ -49,6 +49,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -64,14 +65,14 @@ class taxrank__infraspecific_taxon extends ChadoField {
     $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
     $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
 
-    return array(
-      $field_term => array(
+    return [
+      $field_term => [
         'sortable' => FALSE,
         'searchable' => TRUE,
         'readonly' => FALSE,
         'type' => 'xs:complexType',
-        'elements' => array(
-          $label_term => array(
+        'elements' => [
+          $label_term => [
             'name' => 'label',
             'sortable' => FALSE,
             'searchable' => TRUE,
@@ -80,8 +81,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'type' => 'xsstring',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $infraspecific_name_term => array(
+          ],
+          $infraspecific_name_term => [
             'name' => 'infraspecific_name',
             'sortable' => TRUE,
             'searchable' => TRUE,
@@ -90,8 +91,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $infraspecific_type_term => array(
+          ],
+          $infraspecific_type_term => [
             'name' => 'infraspecific_rank',
             'sortable' => TRUE,
             'searchable' => TRUE,
@@ -100,16 +101,16 @@ class taxrank__infraspecific_taxon extends ChadoField {
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
    * @see ChadoField::query()
    */
-  public function query($query, $condition){
+  public function query($query, $condition) {
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];
 
@@ -120,7 +121,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
 
     if ($condition['column'] == $label_term or $condition['column'] == $field_term_id) {
       $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id");
-      $query->where("CONCAT(" . $alias . "_cvterm.name, ' ', base.infraspecific_name) $operator :full_name",  array(':full_name' => $condition['value']));
+      $query->where("CONCAT(" . $alias . "_cvterm.name, ' ', base.infraspecific_name) $operator :full_name", [':full_name' => $condition['value']]);
     }
     if ($condition['column'] == $infraspecific_name_term) {
       $query->condition('base.infraspecific_name', $condition['value'], $operator);
@@ -130,6 +131,7 @@ class taxrank__infraspecific_taxon extends ChadoField {
       $query->condition($alias . '_cvterm.name', $condition['value'], $operator);
     }
   }
+
   /**
    * @see ChadoField::queryOrder()
    */
@@ -174,11 +176,11 @@ class taxrank__infraspecific_taxon extends ChadoField {
     $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
       'chado-organism__infraspecific_name' => '',
       'chado-organism__type_id' => '',
-    );
+    ];
 
     if ($record->infraspecific_name) {
       $label = $record->type_id->name . ' ' . $record->infraspecific_name;

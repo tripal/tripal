@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Sequence';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence');
+  public static $field_types = ['data__sequence'];
 
   /**
    * @see TripalFieldFormatter::view()
@@ -19,10 +20,10 @@ class data__sequence_formatter extends ChadoFieldFormatter {
       $content .= wordwrap($items[0]['value'], $num_bases, "<br>", TRUE);
       $content .= '</pre>';
     }
-    $element[0] = array(
+    $element[0] = [
       // We create a render array to produce the desired markup,
       '#type' => 'markup',
       '#markup' => $content,
-    );
+    ];
   }
 }

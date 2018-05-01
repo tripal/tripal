@@ -1,11 +1,12 @@
 <?php
 
 class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Infraspecific Taxon';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('taxrank__infraspecific_taxon');
+  public static $field_types = ['taxrank__infraspecific_taxon'];
 
 
   /**
@@ -30,60 +31,67 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
     }
 
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $type_id = $form_state['values'][$field_name][$langcode][$delta]['infraname']['specific_epithet'];
       $infra_name = $form_state['values'][$field_name][$langcode][$delta]['infraname']['infraspecific_epithet'];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
-      '#value' =>  array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-    $widget['chado-organism__type_id'] = array(
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
+    ];
+    $widget['chado-organism__type_id'] = [
       '#type' => 'value',
-      '#value' =>  $type_id,
-    );
-    $widget['chado-organism__infraspecific_name'] = array(
+      '#value' => $type_id,
+    ];
+    $widget['chado-organism__infraspecific_name'] = [
       '#type' => 'value',
-      '#value' =>  $infra_name,
-    );
+      '#value' => $infra_name,
+    ];
 
-    $cv = tripal_get_cv(array('name' => 'taxonomic_rank'));
+    $cv = tripal_get_cv(['name' => 'taxonomic_rank']);
     $terms = tripal_get_cvterm_select_options($cv->cv_id);
 
     // Unfortunately the taxonomic_rank vocabulary is not properly organized
     // such that we only include terms below 'species'. Therefore we will
     // just list them here and hope we haven't missed one.
-    $valid_terms = array('cultivar', 'subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
-    $options = array();
+    $valid_terms = [
+      'cultivar',
+      'subspecies',
+      'varietas',
+      'subvariety',
+      'forma',
+      'subforma',
+    ];
+    $options = [];
     $options[] = '--Select a rank--';
-    foreach  ($terms as $cvterm_id => $name) {
+    foreach ($terms as $cvterm_id => $name) {
       if (in_array($name, $valid_terms)) {
         $options[$cvterm_id] = $name;
       }
     }
 
-    $widget['infraname'] = array(
+    $widget['infraname'] = [
       '#type' => 'fieldset',
       '#title' => $element['#title'],
       '#collapsible' => FALSE,
       '#collapsed' => FALSE,
-      '#description' => $element['#description']
-    );
-    $widget['infraname']['specific_epithet'] = array(
+      '#description' => $element['#description'],
+    ];
+    $widget['infraname']['specific_epithet'] = [
       '#type' => 'select',
       '#title' => 'Specific Epithet',
       '#description' => 'The rank below species. This field may be left blank if not appropriate.',
       '#options' => $options,
       '#default_value' => $type_id,
-    );
-    $widget['infraname']['infraspecific_epithet'] = array(
+    ];
+    $widget['infraname']['infraspecific_epithet'] = [
       '#type' => 'textfield',
       '#title' => 'Infraspecific Epithet',
       '#description' => 'The name below species.',
       '#default_value' => $infra_name,
       '#required' => $element['#required'],
-    );
+    ];
   }
 
   /**

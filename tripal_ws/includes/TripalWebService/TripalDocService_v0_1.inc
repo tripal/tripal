@@ -6,10 +6,12 @@ class TripalDocService_v0_1 extends TripalWebService {
    * The human-readable label for this web service.
    */
   public static $label = 'API Documentation';
+
   /**
    * A bit of text to describe what this service provides.
    */
   public static $description = 'Provides Hydra style documenation to make this RESTful webservice discoverable.';
+
   /**
    * A machine-readable type for this service. This name must be unique
    * among all Tripal web services and is used to form the URL to access
@@ -76,19 +78,19 @@ class TripalDocService_v0_1 extends TripalWebService {
    * @return TripalWebServiceResource
    *
    */
-  private function addEntryPointClass(){
+  private function addEntryPointClass() {
 
     $service_path = $this->getServicePath();
-    $details = array(
+    $details = [
       'id' => $service_path . '#EntryPoint',
       'term' => 'vocab:EntryPoint',
       'title' => 'EntryPoint',
       'description' => 'The main entry point or homepage of the API',
       'subClassOf' => NULL,
-    );
+    ];
 
     // Add each service as a property.
-    $properties = array();
+    $properties = [];
     foreach ($this->services as $service_class) {
       $service = new $service_class($this->base_path);
 
@@ -96,14 +98,14 @@ class TripalDocService_v0_1 extends TripalWebService {
       $link = new TripalWebServiceResource($this->base_path);
       $link->setID('vocab:EntryPoint/' . $service::$type);
       $link->setType('hydra:Link');
-      $link->addContextItem('domain', array(
+      $link->addContextItem('domain', [
         "@id" => "rdfs:domain",
-        "@type" => "@id"
-      ));
-      $link->addContextItem('range', array(
+        "@type" => "@id",
+      ]);
+      $link->addContextItem('range', [
         "@id" => "rdfs:range",
-        "@type" => "@id"
-      ));
+        "@type" => "@id",
+      ]);
       $link->addContextItem('readable', 'hydra:readable');
       $link->addContextItem('writeable', 'hydra:writeable');
       $link->addContextItem('required', 'hydra:required');
@@ -111,10 +113,10 @@ class TripalDocService_v0_1 extends TripalWebService {
       $link->addContextItem('label', 'rdfs:label');
       $link->addProperty('hydra:title', $service_class::$label);
       $link->addProperty('hydra:description', $service_class::$description);
-//       $link->addProperty('domain', $service_path . '#EntryPoint');
-//       $link->addProperty('range', $service_class::$label);
+      //       $link->addProperty('domain', $service_path . '#EntryPoint');
+      //       $link->addProperty('range', $service_class::$label);
 
-      $ops = array();
+      $ops = [];
       $op = new TripalWebServiceResource($this->base_path);
 
       $op->setID('_:' . $service::$type . '_retrieve');
@@ -122,43 +124,45 @@ class TripalDocService_v0_1 extends TripalWebService {
       $op->addContextItem('method', 'hydra:method');
       $op->addContextItem('label', 'rdfs:label');
       $op->addContextItem('description', 'rdfs:comment');
-      $op->addContextItem('expects', array(
+      $op->addContextItem('expects', [
         "@id" => "hydra:expects",
-        "@type" => "@id"
-      ));
-      $op->addContextItem('returns', array(
+        "@type" => "@id",
+      ]);
+      $op->addContextItem('returns', [
         "@id" => "hydra:returns",
-        "@type" => "@id"
-      ));
+        "@type" => "@id",
+      ]);
       $op->addContextItem('statusCodes', 'hydra:statusCodes');
       $op->addProperty('method', "GET");
       $op->addProperty('label', 'Retrieves the ' . $service_class::$label . ' resource.');
       $op->addProperty('description', NULL);
       $op->addProperty('expects', NULL);
       $op->addProperty('returns', 'local:EntryPoint/' . $service::$type);
-      $op->addProperty('statusCodes', array());
+      $op->addProperty('statusCodes', []);
       $ops[] = $op;
       $link->addContextItem('supportedOperation', 'hydra:supportedOperation');
       $link->addProperty('supportedOperation', $ops);
 
-      $property = array(
+      $property = [
         'type' => $link,
         'title' => $service_class::$label,
         'description' => $service_class::$description,
-        'domain', 'vocab:EntryPoint',
-        'range', $service->getServicePath(),
-      );
+        'domain',
+        'vocab:EntryPoint',
+        'range',
+        $service->getServicePath(),
+      ];
       $properties[] = $property;
     }
 
-    $operations = array();
-    $operations['GET'] = array(
+    $operations = [];
+    $operations['GET'] = [
       'label' => "The APIs main entry point.",
       'description' => NULL,
       'expects' => NULL,
       'returns' => $service_path . '#EntryPoint',
-      'type' => '_:entry_point_retrieve'
-    );
+      'type' => '_:entry_point_retrieve',
+    ];
 
 
     $this->addDocClass($details, $operations, $properties);

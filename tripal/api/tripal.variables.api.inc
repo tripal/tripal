@@ -28,6 +28,7 @@
  *   The name of the variable
  * @param $description
  *   The description for the variable
+ *
  * @return
  *   A record object containg the variable that was added if successful.
  *
@@ -37,12 +38,12 @@ function tripal_insert_variable($name, $description) {
   $name = trim($name);
   if (!$name) {
     tripal_report_error('tripal', TRIPAL_ERROR,
-        'Must have a variable name when adding a new Tripal Variable.', array());
+      'Must have a variable name when adding a new Tripal Variable.', []);
     return NULL;
   }
   if (!$description) {
     tripal_report_error('tripal', TRIPAL_ERROR,
-        'Must have a description when adding a new Tripal Variable.', array());
+      'Must have a description when adding a new Tripal Variable.', []);
     return NULL;
   }
 
@@ -54,10 +55,10 @@ function tripal_insert_variable($name, $description) {
   }
   else {
     db_insert('tripal_variables')
-      ->fields(array(
+      ->fields([
         'name' => $name,
         'description' => $description,
-      ))
+      ])
       ->execute();
     return tripal_get_variable($name);
   }
@@ -68,6 +69,7 @@ function tripal_insert_variable($name, $description) {
  *
  * @param $name
  *   The name of the variable to retrieve
+ *
  * @return
  *   A record object containg the variable.
  *

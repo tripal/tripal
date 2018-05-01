@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view, you also want to
@@ -60,7 +60,7 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'accession' => 'accession',
     'accession_link' => 'accession_link',
     'name' => 'name',
@@ -71,49 +71,49 @@ function tripal_feature_defaultvalue_user_features() {
     'is_obsolete' => 'is_obsolete',
     'is_analysis' => 'is_analysis',
     'nid' => 'nid',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'accession' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'accession' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'accession_link' => array(
+    ],
+    'accession_link' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'uniquename' => array(
+    ],
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name_1' => array(
+    ],
+    'name_1' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'common_name' => array(
+    ],
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'seqlen' => array(
+    ],
+    'seqlen' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'is_obsolete' => array(
+    ],
+    'is_obsolete' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'is_analysis' => array(
+    ],
+    'is_analysis' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'nid' => array(
+    ],
+    'nid' => [
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -198,11 +198,11 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['filters']['uniquename']['expose']['use_operator'] = TRUE;
   $handler->display->display_options['filters']['uniquename']['expose']['operator'] = 'uniquename_op';
   $handler->display->display_options['filters']['uniquename']['expose']['identifier'] = 'uniquename';
-  $handler->display->display_options['filters']['uniquename']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['uniquename']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   $handler->display->display_options['filters']['uniquename']['select_optional'] = TRUE;
   $handler->display->display_options['filters']['uniquename']['max_length'] = '40';
   /* Filter criterion: Chado Feature: Name */
@@ -217,16 +217,16 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['filters']['name_1']['expose']['use_operator'] = TRUE;
   $handler->display->display_options['filters']['name_1']['expose']['operator'] = 'name_1_op';
   $handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Feature: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'feature';
   $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['value'] = array();
+  $handler->display->display_options['filters']['type_id']['value'] = [];
   $handler->display->display_options['filters']['type_id']['group'] = 1;
   $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';
@@ -239,7 +239,7 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
   $handler->display->display_options['filters']['common_name']['table'] = 'organism';
   $handler->display->display_options['filters']['common_name']['field'] = 'common_name';
-  $handler->display->display_options['filters']['common_name']['value'] = array();
+  $handler->display->display_options['filters']['common_name']['value'] = [];
   $handler->display->display_options['filters']['common_name']['group'] = 1;
   $handler->display->display_options['filters']['common_name']['exposed'] = TRUE;
   $handler->display->display_options['filters']['common_name']['expose']['operator_id'] = 'common_name_op';
@@ -297,7 +297,7 @@ function tripal_feature_defaultview_admin_features() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'accession' => 'accession',
     'accession_link' => 'accession_link',
     'name' => 'name',
@@ -308,93 +308,93 @@ function tripal_feature_defaultview_admin_features() {
     'is_obsolete' => 'is_obsolete',
     'is_analysis' => 'is_analysis',
     'nid' => 'nid',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'accession' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'accession' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'accession_link' => array(
+    ],
+    'accession_link' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'uniquename' => array(
+    ],
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name_1' => array(
+    ],
+    'name_1' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'common_name' => array(
+    ],
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'seqlen' => array(
+    ],
+    'seqlen' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'is_obsolete' => array(
+    ],
+    'is_obsolete' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'is_analysis' => array(
+    ],
+    'is_analysis' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'nid' => array(
+    ],
+    'nid' => [
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Add/Import';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Feature',
     'path-1' => 'node/add/tripal-feature',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => 'Import via FASTA file',
     'path-2' => 'admin/tripal/loaders/fasta_loader',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => 'Import via GFF3 file',
     'path-3' => 'admin/tripal/loaders/gff3_load',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area_1']['id'] = 'action_links_area_1';
   $handler->display->display_options['header']['action_links_area_1']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area_1']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area_1']['label'] = 'Extract';
   $handler->display->display_options['header']['action_links_area_1']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area_1']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area_1']['link-1'] = [
     'label-1' => 'Retrieve Sequences',
     'path-1' => 'find/sequences',
-  );
-  $handler->display->display_options['header']['action_links_area_1']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area_1']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area_1']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area_1']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area_1']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area_1']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -484,7 +484,7 @@ function tripal_feature_defaultview_admin_features() {
   $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
   $handler->display->display_options['filters']['common_name']['table'] = 'organism';
   $handler->display->display_options['filters']['common_name']['field'] = 'common_name';
-  $handler->display->display_options['filters']['common_name']['value'] = array();
+  $handler->display->display_options['filters']['common_name']['value'] = [];
   $handler->display->display_options['filters']['common_name']['group'] = '0';
   $handler->display->display_options['filters']['common_name']['exposed'] = TRUE;
   $handler->display->display_options['filters']['common_name']['expose']['operator_id'] = 'common_name_op';
@@ -495,7 +495,7 @@ function tripal_feature_defaultview_admin_features() {
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'feature';
   $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['value'] = array();
+  $handler->display->display_options['filters']['type_id']['value'] = [];
   $handler->display->display_options['filters']['type_id']['group'] = '0';
   $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';
@@ -536,15 +536,15 @@ function tripal_feature_defaultview_admin_features() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }

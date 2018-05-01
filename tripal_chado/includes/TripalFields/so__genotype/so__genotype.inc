@@ -25,7 +25,7 @@ class so__genotype extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SO',
     // The name of the term.
@@ -36,7 +36,7 @@ class so__genotype extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'so__genotype_widget';
@@ -50,6 +50,7 @@ class so__genotype extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -61,14 +62,14 @@ class so__genotype extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
+    return [
+      $field_term => [
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          'rdfs:type' => array(
+        'elements' => [
+          'rdfs:type' => [
             'searchable' => FALSE,
             'label' => 'Genotype Type',
             'help' => 'The type of genotype.',
@@ -76,8 +77,8 @@ class so__genotype extends ChadoField {
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'schema:name' => array(
+          ],
+          'schema:name' => [
             'label' => 'Genotype Name',
             'help' => 'The name of the genotype.',
             'searchable' => FALSE,
@@ -85,8 +86,8 @@ class so__genotype extends ChadoField {
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'schema:description' => array(
+          ],
+          'schema:description' => [
             'label' => 'Genotype Description',
             'help' => 'A description of the genotype.',
             'searchable' => FALSE,
@@ -94,10 +95,10 @@ class so__genotype extends ChadoField {
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-        )
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -120,43 +121,43 @@ class so__genotype extends ChadoField {
 
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
       $field_table . '__' . $pkey => '',
       $field_table . '__' . $fkey_lcolumn => '',
       $field_table . '__' . 'genotype_id' => '',
       // Ignore the synonym_sgml column for now.
-    );
+    ];
 
     $linker_table = $base_table . '_genotype';
-    $options = array(
+    $options = [
       'return_array' => 1,
-      'include_fk' => array(
-        'genotype_id' => array(
-          'type_id' => array(
-            'dbxref_id' => array(
+      'include_fk' => [
+        'genotype_id' => [
+          'type_id' => [
+            'dbxref_id' => [
               'db_id' => TRUE,
-            ),
-          ),
-        ),
+            ],
+          ],
+        ],
         $fkey_lcolumn => TRUE,
-      ),
-    );
+      ],
+    ];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
     $genotype_linkers = isset($record->$linker_table->$fkey_rcolumn) ? $record->$linker_table->$fkey_rcolumn : '';
     if ($genotype_linkers) {
       foreach ($genotype_linkers as $i => $genotype_linker) {
         $genotype = $genotype_linker->genotype_id;
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => array(
+        $entity->{$field_name}['und'][$i] = [
+          'value' => [
             'rdfs:type' => $genotype->type_id->name,
             'schema:name' => $genotype->name,
             'schema:description' => $genotype->description,
-          ),
+          ],
           $field_table . '__' . $pkey => $genotype_linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $genotype_linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'genotype_id' => $genotype->genotype_id
-        );
+          $field_table . '__' . 'genotype_id' => $genotype->genotype_id,
+        ];
 
         if ($genotype && property_exists($genotype, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $genotype->entity_id;

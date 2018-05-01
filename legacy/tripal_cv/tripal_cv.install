@@ -17,7 +17,7 @@ function tripal_cv_disable() {
   require_once("tripal_cv.views_default.inc");
   $views = tripal_cv_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -28,15 +28,15 @@ function tripal_cv_disable() {
  * @ingroup tripal_legacy_cv
  */
 function tripal_cv_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_cv'] = array(
+      $requirements ['tripal_cv'] = [
         'title' => "tripal_cv",
         'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
@@ -70,37 +70,38 @@ function tripal_cv_schema() {
 
 /**
  * * Table definition for the tripal_cv_defaults table
+ *
  * @param unknown $schema
  */
 function tripal_chado_tripal_cv_defaults_schema() {
-  return array(
-    'fields' => array(
-      'cv_default_id' => array(
+  return [
+    'fields' => [
+      'cv_default_id' => [
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE
-      ),
-      'table_name' => array(
+        'not null' => TRUE,
+      ],
+      'table_name' => [
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
-      ),
-      'field_name' => array(
+      ],
+      'field_name' => [
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
-      ),
-      'cv_id' => array(
+      ],
+      'cv_id' => [
         'type' => 'int',
         'not null' => TRUE,
-      )
-    ),
-    'indexes' => array(
-      'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
-    ),
-    'unique keys' => array(
-      'tripal_cv_defaults_unq1' => array('table_name', 'field_name', 'cv_id'),
-    ),
-    'primary key' => array('cv_default_id')
-  );
+      ],
+    ],
+    'indexes' => [
+      'tripal_cv_defaults_idx1' => ['table_name', 'field_name'],
+    ],
+    'unique keys' => [
+      'tripal_cv_defaults_unq1' => ['table_name', 'field_name', 'cv_id'],
+    ],
+    'primary key' => ['cv_default_id'],
+  ];
 }

@@ -8,66 +8,66 @@ function tripal_get_importer_form($form, &$form_state, $class) {
 
   tripal_load_include_importer_class($class);
 
-  $form['importer_class'] = array(
+  $form['importer_class'] = [
     '#type' => 'value',
     '#value' => $class,
-  );
+  ];
 
   if ((array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) or
-      (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) or
-      (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE)) {
-    $form['file'] = array(
+    (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) or
+    (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE)) {
+    $form['file'] = [
       '#type' => 'fieldset',
       '#title' => t($class::$upload_title),
-      '#description' => t($class::$upload_description)
-    );
+      '#description' => t($class::$upload_description),
+    ];
   }
 
   if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
-    $form['file']['file_upload']= array(
+    $form['file']['file_upload'] = [
       '#type' => 'html5_file',
       '#title' => '',
       '#description' => 'Remember to click the "Upload" button below to send ' .
         'your file to the server.  This interface is capable of uploading very ' .
         'large files.  If you are disconnected you can return, reload the file and it ' .
-        'will resume where it left off.  Once the file is uploaded the "Upload '.
+        'will resume where it left off.  Once the file is uploaded the "Upload ' .
         'Progress" will indicate "Complete".  If the file is already present on the server ' .
         'then the status will quickly update to "Complete".',
       '#usage_type' => 'tripal_importer',
       '#usage_id' => 0,
       '#allowed_types' => $class::$file_types,
       '#cardinality' => $class::$cardinality,
-    );
+    ];
   }
 
   if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
-    $form['file']['file_local']= array(
+    $form['file']['file_local'] = [
       '#title' => t('Server path'),
       '#type' => 'textfield',
       '#maxlength' => 5120,
-      '#description'  => t('If the file is local to the Tripal server please provide the full path here.'),
-    );
+      '#description' => t('If the file is local to the Tripal server please provide the full path here.'),
+    ];
   }
   if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
-    $form['file']['file_remote']= array(
+    $form['file']['file_remote'] = [
       '#title' => t('Remote path'),
       '#type' => 'textfield',
       '#maxlength' => 5102,
-      '#description'  => t('If the file is available via a remote URL please provide the full URL here.  The file will be downloaded when the importer job is executed.'),
-    );
+      '#description' => t('If the file is available via a remote URL please provide the full URL here.  The file will be downloaded when the importer job is executed.'),
+    ];
   }
 
   if ($class::$use_analysis) {
     // get the list of analyses
     $sql = "SELECT * FROM {analysis} ORDER BY name";
     $org_rset = chado_query($sql);
-    $analyses = array();
+    $analyses = [];
     $analyses[''] = '';
     while ($analysis = $org_rset->fetchObject()) {
       $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
     }
-    $form['analysis_id'] = array(
-      '#title'  => t('Analysis'),
+    $form['analysis_id'] = [
+      '#title' => t('Analysis'),
       '#type' => t('select'),
       '#description' => t('Choose the analysis to which the uploaded data will be associated. ' .
         'Why specify an analysis for a data load?  All data comes from some place, even if ' .
@@ -76,18 +76,18 @@ function tripal_get_importer_form($form, &$form_state, $class) {
         'a minimum it indicates the source of the data.'),
       '#required' => $class::$require_analysis,
       '#options' => $analyses,
-    );
+    ];
   }
 
   $importer = new $class();
-  $element = array();
+  $element = [];
   $form['class_elements'] = $importer->form($element, $form_state);
 
-  $form['button'] = array(
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => t($class::$button_text),
     '#weight' => 10,
-  );
+  ];
   return $form;
 }
 
@@ -127,7 +127,6 @@ function tripal_get_importer_form_validate($form, &$form_state) {
   if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
     $file_remote = trim($form_state['values']['file_remote']);
   }
-
 
 
   // The user must provide at least an uploaded file or a local file path.
@@ -178,7 +177,7 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   // Sumbit a job for this loader.
   $fname = '';
   $fid = NULL;
-  $file_details = array();
+  $file_details = [];
   if ($file_local) {
     $fname = preg_replace("/.*\/(.*)/", "$1", $file_local);
     $file_details['file_local'] = $file_local;
@@ -209,8 +208,7 @@ function tripal_get_importer_form_submit($form, &$form_state) {
     $importer->create($run_args, $file_details);
     $importer->submitJob();
 
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     drupal_set_message('Cannot submit import: ' . $e->getMessage(), 'error');
   }
 }

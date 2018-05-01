@@ -19,7 +19,7 @@
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_integration_export_form($form, &$form_state, $setup_id) {
-  $form = array();
+  $form = [];
 
   $defn_array = tripal_export_views_integration($setup_id);
 
@@ -29,14 +29,14 @@ function tripal_chado_views_integration_export_form($form, &$form_state, $setup_
   $t = preg_replace("/false/", "FALSE", $t); // upper case false
   $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren
 
-  $form['export'] = array(
+  $form['export'] = [
     '#type' => 'textarea',
     '#title' => 'Export',
     '#description' => t('Simply copy the provided export into the Import text area on '
       . 'another tripal views enabled website to port the integration between websites.'),
     '#rows' => 20,
     '#value' => $t,
-  );
+  ];
 
   return $form;
 }
@@ -47,41 +47,41 @@ function tripal_chado_views_integration_export_form($form, &$form_state, $setup_
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_integration_import_form() {
-  $form = array();
+  $form = [];
 
-  $form['name'] = array(
+  $form['name'] = [
     '#type' => 'textfield',
     '#title' => 'Name (optional)',
-    '#description' => t('A human-readable name for your integration.')
-  );
+    '#description' => t('A human-readable name for your integration.'),
+  ];
 
-  $priorities = array();
+  $priorities = [];
   foreach (range(-10, 10) as $v) {
     $priorities[$v] = (string) $v;
   }
-  $form['views_type']['row_priority'] = array(
+  $form['views_type']['row_priority'] = [
     '#type' => 'select',
     '#title' => t('Priority (optional)'),
     '#description' => t('The level of priority your Views integration has in relation to the '
-      .'default core and module definitions. The views integration definition with the '
-      .'lightest priority will be used. For example, if there is a definition created by '
-      .'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
-      .'your definition will be used for that table because -1 is lighter than both 5 and 10.'),
+      . 'default core and module definitions. The views integration definition with the '
+      . 'lightest priority will be used. For example, if there is a definition created by '
+      . 'core with a priority of 10 and another by a custom module of 5 and yours is -1 then '
+      . 'your definition will be used for that table because -1 is lighter than both 5 and 10.'),
     '#options' => $priorities,
     '#default_value' => -1,
-  );
+  ];
 
-  $form['import'] = array(
+  $form['import'] = [
     '#type' => 'textarea',
     '#title' => 'Import',
     '#description' => t('Simply copy the provided export into the text area to port the integration between websites.'),
     '#rows' => 20,
-  );
+  ];
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
-    '#value' => 'Submit'
-  );
+    '#value' => 'Submit',
+  ];
 
   return $form;
 }
@@ -98,7 +98,7 @@ function tripal_chado_views_integration_import_form_submit($form, &$form_state) 
 
   //$defn_array = unserialize($form_state['values']['import']);
   // convert the array into a real PHP array
-  $defn_array = array();
+  $defn_array = [];
   eval("\$defn_array = " . $form_state['values']['import'] . ";");
 
   // Add optional parameters
@@ -112,9 +112,9 @@ function tripal_chado_views_integration_import_form_submit($form, &$form_state) 
   // Add the views integration
   $success = tripal_add_views_integration($defn_array);
   if ($success) {
-    drupal_set_message(t("Successfully imported %name Integration", array('%name' => $defn_array['name'])));
+    drupal_set_message(t("Successfully imported %name Integration", ['%name' => $defn_array['name']]));
   }
   else {
-    drupal_set_message(t("Unable to import %name Integration", array('%name' => $defn_array['name'])), 'error');
+    drupal_set_message(t("Unable to import %name Integration", ['%name' => $defn_array['name']]), 'error');
   }
 }

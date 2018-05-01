@@ -58,7 +58,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             FROM {cv}
             WHERE cv_id IN (SELECT col FROM t where col IS NOT NULL)
             ORDER BY cv.name ASC";
-        $sql = format_string($sql, array('!table' => $this->table));
+        $sql = format_string($sql, ['!table' => $this->table]);
       }
       // Otherwise, (most often the case) we need to make two-hops
       // to the cv table through the cvterm table.
@@ -109,13 +109,16 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             FROM {cvterm}
             WHERE cv_id IN (SELECT col FROM t where col IS NOT NULL) " . ($cvterm_where == '' ? '' : " AND " . $cvterm_where) . "
             ORDER BY cvterm.name ASC";
-        $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
+        $sql = format_string($sql, [
+          '!table' => $this->table,
+          '!field' => $this->field,
+        ]);
       }
       $resource = chado_query($sql, $arguments);
 
       // Now actually gerenate the select list
       // based on the results from the above query.
-      $cvterms = array();
+      $cvterms = [];
       foreach ($resource as $r) {
         $cvterms[$r->cvterm_id] = $r->name;
       }
@@ -166,10 +169,13 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
           FROM {cvterm}
           WHERE cvterm_id IN (SELECT col FROM t where col IS NOT NULL) " . ($cvterm_where == '' ? '' : " AND " . $cvterm_where) . "
           ORDER BY cvterm.name ASC";
-      $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
+      $sql = format_string($sql, [
+        '!table' => $this->table,
+        '!field' => $this->field,
+      ]);
 
       $resource = chado_query($sql, $arguments);
-      $cvterms = array();
+      $cvterms = [];
 
       // Add an "- Any - " option to allow a type to not be set by default.
       if ($this->options['select_optional']) {
@@ -196,44 +202,44 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
   function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
     return parent::get_select_option_where($table, $generic_placeholder);
   }
-/*
-    // build a where clause that will filter the list in the drop box
-    // using fields that are not exposed and that are for the table
-    // from whcih the values in the drop box will be slected and
-    // we only want to use non-exposed fields because these are not
-    // available to the user to edit--they're fixed.
-    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
-    foreach ($filters as $filter_name => $details) {
-       // we only want to inclue non-exposed filters
-       if ($details->options['exposed'] == FALSE) {
-          $value = $details->value;
-          if (is_array($details->value) AND isset($details->value['value'])) {
-            $value = $details->value['value'];
-          }
-
-          $field = $details->field;
-          if (($this->table == $this->view->base_table) AND ($details->field == 'type_id')) {
-            $field = 'cvterm_id';
-          }
-
-          if (is_array($value)) {
-            // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-              $where[] = "$field IN (" . implode(', ', $value) . ')';
+  /*
+      // build a where clause that will filter the list in the drop box
+      // using fields that are not exposed and that are for the table
+      // from whcih the values in the drop box will be slected and
+      // we only want to use non-exposed fields because these are not
+      // available to the user to edit--they're fixed.
+      $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
+      foreach ($filters as $filter_name => $details) {
+         // we only want to inclue non-exposed filters
+         if ($details->options['exposed'] == FALSE) {
+            $value = $details->value;
+            if (is_array($details->value) AND isset($details->value['value'])) {
+              $value = $details->value['value'];
             }
-          }
-          else {
-            // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, 'cvterm')==0 AND !empty($value)) {
-              $where[] = "$field $details->operator " . $value;
+
+            $field = $details->field;
+            if (($this->table == $this->view->base_table) AND ($details->field == 'type_id')) {
+              $field = 'cvterm_id';
             }
-          }
-       }
+
+            if (is_array($value)) {
+              // we only want to filter on the table we're getting the list from
+              if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
+                $where[] = "$field IN (" . implode(', ', $value) . ')';
+              }
+            }
+            else {
+              // we only want to filter on the table we're getting the list from
+              if (strcmp($details->table, 'cvterm')==0 AND !empty($value)) {
+                $where[] = "$field $details->operator " . $value;
+              }
+            }
+         }
+      }
+
+      return $where;
     }
-
-    return $where;
-  }
-*/
+  */
   /**
    * {@inheritdoc}
    */

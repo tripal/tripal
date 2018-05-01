@@ -17,7 +17,7 @@ function tripal_feature_disable() {
   require_once("tripal_feature.views_default.inc");
   $views = tripal_feature_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -28,15 +28,15 @@ function tripal_feature_disable() {
  * @ingroup tripal_legacy_feature
  */
 function tripal_feature_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_feature'] = array(
-          'title' => "t ripal_feature",
-          'value' => "ERROR: Chado must be installed before this module can be enabled",
-          'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements ['tripal_feature'] = [
+        'title' => "t ripal_feature",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
     }
   }
   return $requirements;
@@ -74,6 +74,7 @@ function tripal_feature_install() {
 function tripal_feature_uninstall() {
 
 }
+
 /**
  * Implementation of hook_schema().
  *
@@ -81,43 +82,45 @@ function tripal_feature_uninstall() {
  */
 function tripal_feature_schema() {
 
-  $schema['chado_feature'] = array(
-    'fields' => array(
-      'vid' => array(
+  $schema['chado_feature'] = [
+    'fields' => [
+      'vid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-       ),
-      'nid' => array(
+        'default' => 0,
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0
-       ),
-      'feature_id' => array(
+        'default' => 0,
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
-      ),
-      'sync_date' => array(
+        'default' => 0,
+      ],
+      'sync_date' => [
         'type' => 'int',
         'not null' => FALSE,
-        'description' => 'UNIX integer sync date/time'
-      ),
-    ),
-    'indexes' => array(
-      'chado_feature_idx1' => array('feature_id')
-    ),
-    'unique keys' => array(
-      'chado_feature_uq1' => array('nid', 'vid'),
-      'chado_feature_uq2' => array('vid')
-    ),
-    'primary key' => array('nid'),
-  );
+        'description' => 'UNIX integer sync date/time',
+      ],
+    ],
+    'indexes' => [
+      'chado_feature_idx1' => ['feature_id'],
+    ],
+    'unique keys' => [
+      'chado_feature_uq1' => ['nid', 'vid'],
+      'chado_feature_uq2' => ['vid'],
+    ],
+    'primary key' => ['nid'],
+  ];
 
   return $schema;
-};
+}
+
+;
 
 /**
  * Add cvs related to publications

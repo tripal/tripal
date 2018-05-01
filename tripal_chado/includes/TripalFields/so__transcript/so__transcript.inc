@@ -24,7 +24,7 @@ class so__transcript extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SO',
     // The name of the term.
@@ -35,7 +35,7 @@ class so__transcript extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'so__transcript_widget';
@@ -49,6 +49,7 @@ class so__transcript extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -59,66 +60,67 @@ class so__transcript extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          'rdfs:type' => array(
+        'elements' => [
+          'rdfs:type' => [
             'name' => 'transcript_type',
             'label' => 'Transcript Type',
             'help' => 'The type of a transcript.',
             'searchable' => FALSE,
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'schema:name' => array(
+          ],
+          'schema:name' => [
             'name' => 'transcript_name',
             'label' => 'Transcript Name',
             'help' => 'The name of a transcript.',
             'searchable' => FALSE,
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'data:0842' => array(
+          ],
+          'data:0842' => [
             'name' => 'transcript_uniquename',
             'label' => 'Transcript Identifier',
             'help' => 'The unique identifier of a transcript.',
             'searchable' => FALSE,
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'SO:0000735' => array(
+          ],
+          'SO:0000735' => [
             'name' => 'loc',
             'label' => 'Transcript Location',
             'help' => 'The location of the transcript on a reference feature.',
             'searchable' => FALSE,
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          'entity' => array(
+          ],
+          'entity' => [
             'searchable' => FALSE,
             'sortable' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -132,16 +134,16 @@ class so__transcript extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(
+    $entity->{$field_name}['und'][0] = [
+      'value' => [
         'rdfs:type' => '',
         'schema:name' => '',
         // Identifier
         'data:0842' => '',
         // sequence location
         'SO:0000735' => '',
-      ),
-    );
+      ],
+    ];
 
     // Get the mRNA features for this gene.
     $sql = "
@@ -155,7 +157,7 @@ class so__transcript extends ChadoField {
         FCVT.name = 'mRNA' and
         CV.name = 'sequence'
     ";
-    $results = chado_query($sql, array(':feature_id' => $record->feature_id));
+    $results = chado_query($sql, [':feature_id' => $record->feature_id]);
     $i = 0;
     while ($transcript = $results->fetchObject()) {
       // Get the location of this mRNA.
@@ -165,21 +167,21 @@ class so__transcript extends ChadoField {
           INNER JOIN {feature} F on F.feature_id = FL.srcfeature_id
         WHERE FL.feature_id = :object_id
       ";
-      $floc_results = chado_query($sql, array(':object_id' => $transcript->feature_id));
+      $floc_results = chado_query($sql, [':object_id' => $transcript->feature_id]);
       $loc = "";
       while ($location = $floc_results->fetchObject()) {
         $loc .= $location->srcfeature_name . ":" . $location->fmin . ".." . $location->fmax;
       }
-      $entity->{$field_name}['und'][$i]['value'] = array(
+      $entity->{$field_name}['und'][$i]['value'] = [
         'rdfs:type' => $transcript->type,
         'schema:name' => $transcript->name,
         'data:0842' => $transcript->uniquename,
         'SO:0000735' => $loc,
-      );
+      ];
       $entity_id = chado_get_record_entity_by_bundle($entity->bundle, $record_id);
       if ($entity_id) {
-         $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
-       }
+        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
+      }
       $i++;
     }
   }

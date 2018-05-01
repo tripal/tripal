@@ -13,7 +13,7 @@ function tripal_jobs_admin_view() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -21,7 +21,7 @@ function tripal_jobs_admin_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_admin_jobs','default');
+  $view = views_embed_view('tripal_admin_jobs', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -41,7 +41,7 @@ function tripal_jobs_admin_view() {
  *
  */
 function tripal_jobs_report_form($form, &$form_state = NULL) {
-  $form = array();
+  $form = [];
 
   // set the default values
   $default_status = '';
@@ -59,30 +59,30 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
   }
 
 
-  $form['job_status'] = array(
-    '#type'          => 'select',
-    '#title'         => t('Filter by Job Status'),
+  $form['job_status'] = [
+    '#type' => 'select',
+    '#title' => t('Filter by Job Status'),
     '#default_value' => $default_status,
-    '#options' => array(
-    0           => 'All Jobs',
-    'Running'   => 'Running',
-    'Waiting'   => 'Waiting',
-    'Completed' => 'Completed',
-    'Cancelled' => 'Cancelled',
-    'Error'     => 'Error',
-  ),
-  );
-  $form['job_name'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Filter by Job Name'),
-    '#description'   => t('The jobs will be filtered if text provided is contained in the job name'),
+    '#options' => [
+      0 => 'All Jobs',
+      'Running' => 'Running',
+      'Waiting' => 'Waiting',
+      'Completed' => 'Completed',
+      'Cancelled' => 'Cancelled',
+      'Error' => 'Error',
+    ],
+  ];
+  $form['job_name'] = [
+    '#type' => 'textfield',
+    '#title' => t('Filter by Job Name'),
+    '#description' => t('The jobs will be filtered if text provided is contained in the job name'),
     '#default_value' => $default_job_name,
-  );
+  ];
 
-  $form['submit'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Filter'),
-  );
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  ];
   return $form;
 }
 
@@ -97,6 +97,7 @@ function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
   $_SESSION['tripal_job_filter']['job_status'] = $job_status;
   $_SESSION['tripal_job_filter']['job_name'] = $job_name;
 }
+
 /**
  * Returns the Tripal Job Report
  *
@@ -126,7 +127,7 @@ function tripal_jobs_report() {
       INNER JOIN {users} U on TJ.uid = U.uid
     WHERE 1=1
   ";
-  $args = array();
+  $args = [];
   if ($job_status) {
     $sql .= "AND TJ.status = :status ";
     $args[':status'] = $job_status;
@@ -155,7 +156,7 @@ function tripal_jobs_report() {
 
 
   // iterate through the jobs and build the table rows
-  $rows = array();
+  $rows = [];
   foreach ($jobs as $job) {
     $submit = tripal_get_job_submit_date($job);
     $start = tripal_get_job_start($job);
@@ -167,8 +168,8 @@ function tripal_jobs_report() {
       $execute_link = "<a href=\"" . url("admin/tripal/tripal_jobs/execute/" . $job->job_id) . "\">Execute</a><br />";
     }
     $rerun_link = "<a href=\"" . url("admin/tripal/tripal_jobs/rerun/" . $job->job_id) . "\">Re-run</a><br />";
-    $view_link ="<a href=\"" . url("admin/tripal/tripal_jobs/view/" . $job->job_id) . "\">View</a>";
-    $rows[] = array(
+    $view_link = "<a href=\"" . url("admin/tripal/tripal_jobs/view/" . $job->job_id) . "\">View</a>";
+    $rows[] = [
       $job->job_id,
       $job->username,
       $job->job_name,
@@ -177,34 +178,34 @@ function tripal_jobs_report() {
       $job->progress . '%',
       $job->job_status,
       "$execute_link $cancel_link $rerun_link $view_link",
-    );
+    ];
   }
 
   // the header for the jobs table
-  $header = array(
+  $header = [
     'Job ID',
     'User',
     'Job Name',
-    array('data' => 'Dates', 'style' => "white-space: nowrap"),
+    ['data' => 'Dates', 'style' => "white-space: nowrap"],
     'Priority',
     'Progress',
     'Status',
-    'Action'
-  );
-  $table = array(
+    'Action',
+  ];
+  $table = [
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array('class' => 'tripal-data-table'),
+    'attributes' => ['class' => 'tripal-data-table'],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => 'No jobs have been submitted',
-  );
+  ];
 
   // create the report page
   $output = "Waiting jobs are executed first by priority level (the lower the " .
-            "number the higher the priority) and second by the order they " .
-            "were entered";
+    "number the higher the priority) and second by the order they " .
+    "were entered";
   $report_form = drupal_get_form('tripal_jobs_report_form');
   $output .= drupal_render($report_form);
   $output .= theme_table($table);
@@ -224,7 +225,7 @@ function tripal_jobs_report() {
 function tripal_jobs_view($job_id) {
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -240,7 +241,7 @@ function tripal_jobs_view($job_id) {
      FROM {tripal_jobs} TJ
        INNER JOIN users U on TJ.uid = U.uid
      WHERE TJ.job_id = :job_id";
-  $results = db_query($sql, array(':job_id' => $job_id));
+  $results = db_query($sql, [':job_id' => $job_id]);
   $job = $results->fetchObject();
 
   // We do not know what the arguments are for and we want to provide a
@@ -258,7 +259,7 @@ function tripal_jobs_view($job_id) {
   }
   $arg_hook = $job->modulename . "_job_describe_args";
   if (is_callable($arg_hook)) {
-    $new_args = call_user_func_array($arg_hook, array($job->callback, $args));
+    $new_args = call_user_func_array($arg_hook, [$job->callback, $args]);
     if (is_array($new_args) and count($new_args)) {
       $job->arguments = $new_args;
     }
@@ -273,17 +274,17 @@ function tripal_jobs_view($job_id) {
   $arguments = '';
   foreach ($job->arguments as $key => $value) {
     if (is_array($value)) {
-      $value = print_r($value,TRUE);
+      $value = print_r($value, TRUE);
     }
     $arguments .= "$key: $value<br>";
   }
 
   // build the links
-  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
+  $links = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
-    $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
+    $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/" . $job->job_id);
   }
 
   // make our start and end times more legible
@@ -292,78 +293,78 @@ function tripal_jobs_view($job_id) {
   $job->end_time = tripal_get_job_end($job);
 
   // construct the table headers
-  $header = array('Detail', 'Value');
+  $header = ['Detail', 'Value'];
 
   // construct the table rows
-  $rows[] = array('Job Description', $job->job_name);
-  $rows[] = array('Submitting Module', $job->modulename);
-  $rows[] = array('Callback function', $job->callback);
-  $rows[] = array('Arguments', $arguments);
-  $rows[] = array('Progress', $job->progress . "%");
-  $rows[] = array('Status', $job->job_status);
-  $rows[] = array('Process ID', $job->pid);
-  $rows[] = array('Submit Date', $job->submit_date);
-  $rows[] = array('Start time', $job->start_time);
-  $rows[] = array('End time', $job->end_time);
-  $rows[] = array('Priority', $job->priority);
-  $rows[] = array('Submitting User', $job->username);
+  $rows[] = ['Job Description', $job->job_name];
+  $rows[] = ['Submitting Module', $job->modulename];
+  $rows[] = ['Callback function', $job->callback];
+  $rows[] = ['Arguments', $arguments];
+  $rows[] = ['Progress', $job->progress . "%"];
+  $rows[] = ['Status', $job->job_status];
+  $rows[] = ['Process ID', $job->pid];
+  $rows[] = ['Submit Date', $job->submit_date];
+  $rows[] = ['Start time', $job->start_time];
+  $rows[] = ['End time', $job->end_time];
+  $rows[] = ['Priority', $job->priority];
+  $rows[] = ['Submitting User', $job->username];
 
-  $table = array(
+  $table = [
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array('class' => 'tripal-data-table'),
+    'attributes' => ['class' => 'tripal-data-table'],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
 
-  $content['links'] = array(
+  $content['links'] = [
     '#type' => 'markup',
     '#markup' => '<p>' . substr($links, 0, -2) . '</p>',
-  );
-  $content['job_title'] = array(
+  ];
+  $content['job_title'] = [
     '#type' => 'item',
     '#title' => t('Job Title'),
     '#markup' => $job->job_name,
-  );
-  $content['job_status'] = array(
+  ];
+  $content['job_status'] = [
     '#type' => 'item',
     '#title' => t('Status'),
     '#markup' => $job->job_status,
-  );
-  $content['details_fset'] = array(
+  ];
+  $content['details_fset'] = [
     '#type' => 'fieldset',
     '#title' => t('Job Details'),
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
-    '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
-    ),
-    '#attached' => array(
-      'js' => array('misc/collapse.js', 'misc/form.js')
-    ),
-  );
-  $content['details_fset']['job_details'] = array(
+    '#attributes' => [
+      'class' => ['collapsible', 'collapsed'],
+    ],
+    '#attached' => [
+      'js' => ['misc/collapse.js', 'misc/form.js'],
+    ],
+  ];
+  $content['details_fset']['job_details'] = [
     '#type' => 'markup',
     '#markup' => theme_table($table),
-  );
-  $content['log_fset'] = array(
+  ];
+  $content['log_fset'] = [
     '#type' => 'fieldset',
     '#title' => t('Job Logs'),
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
-    '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
-    ),
-    '#attached' => array(
-      'js' => array('misc/collapse.js', 'misc/form.js')
-    ),
-  );
-  $content['log_fset']['job_logs'] = array(
+    '#attributes' => [
+      'class' => ['collapsible', 'collapsed'],
+    ],
+    '#attached' => [
+      'js' => ['misc/collapse.js', 'misc/form.js'],
+    ],
+  ];
+  $content['log_fset']['job_logs'] = [
     '#type' => 'markup',
     '#markup' => '<pre>' . $job->error_msg . '</pre>',
-  );
+  ];
   return $content;
 }
 
@@ -374,7 +375,7 @@ function tripal_jobs_view($job_id) {
  */
 function tripal_jobs_status_view($job_id) {
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -383,31 +384,31 @@ function tripal_jobs_status_view($job_id) {
 
   $job = tripal_get_job($job_id);
 
-  drupal_add_css(drupal_get_path ('module', 'tripal') . '/theme/css/tripal_jobs.css');
-  drupal_add_js(drupal_get_path ('module', 'tripal') . '/theme/js/tripal_jobs.js');
+  drupal_add_css(drupal_get_path('module', 'tripal') . '/theme/css/tripal_jobs.css');
+  drupal_add_js(drupal_get_path('module', 'tripal') . '/theme/js/tripal_jobs.js');
 
-  $markup  = "<h2>Job Progress</h2>";
-  $markup .=  "<p>Job: " . $job->job_name . ' (' . $job->progress . '% Complete)';
+  $markup = "<h2>Job Progress</h2>";
+  $markup .= "<p>Job: " . $job->job_name . ' (' . $job->progress . '% Complete)';
   $markup .= '<br>Status: ' . $job->status . '</p>';
   $markup .= '<div id="tripal-jobs-progress-bar"><div></div></div>';
   $markup .= '<p>' . l('Refresh Page', 'admin/tripal/tripal_jobs/status/' . $job_id) . '</p>';
 
-  drupal_add_js('var progress_percent = ' . $job->progress . ';', array('type' => 'inline'));
+  drupal_add_js('var progress_percent = ' . $job->progress . ';', ['type' => 'inline']);
 
   // Reload the page every 30 seconds.
-  $meta = array(
+  $meta = [
     '#tag' => 'meta',
-    '#attributes' => array(
+    '#attributes' => [
       'http-equiv' => 'refresh',
-      'content' =>  '30',
-    )
-  );
+      'content' => '30',
+    ],
+  ];
   drupal_add_html_head($meta, 'tripal_job_status_page');
 
-  $page = array(
+  $page = [
     '#type' => 'markup',
     '#markup' => $markup,
-  );
+  ];
 
   return $page;
 }

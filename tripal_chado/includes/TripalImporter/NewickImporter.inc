@@ -180,7 +180,7 @@ class NewickImporter extends TripalImporter {
       'description' => trim($values["description"]),
       'analysis_id' => $values["analysis_id"],
       'leaf_type' => $values["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
+      'tree_file' => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
@@ -216,19 +216,19 @@ class NewickImporter extends TripalImporter {
 
     $arguments = $this->arguments['run_args'];
 
-    $options = array(
-      'name'         => $this->arguments["tree_name"],
-      'description'  => $this->arguments["description"],
-      'analysis_id'  => $this->arguments["analysis_id"],
-      'leaf_type'    => $this->arguments["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
-      'format'       => 'newick',
-      'dbxref'       => $this->arguments["dbxref"],
-      'match'        => $this->arguments["match"],
-      'name_re'      => $this->arguments["name_re"],
-    );
-    $errors = array();
-    $warnings = array();
+    $options = [
+      'name' => $this->arguments["tree_name"],
+      'description' => $this->arguments["description"],
+      'analysis_id' => $this->arguments["analysis_id"],
+      'leaf_type' => $this->arguments["leaf_type"],
+      'tree_file' => $this->arguments['files'][0]['file_path'],
+      'format' => 'newick',
+      'dbxref' => $this->arguments["dbxref"],
+      'match' => $this->arguments["match"],
+      'name_re' => $this->arguments["name_re"],
+    ];
+    $errors = [];
+    $warnings = [];
     tripal_insert_phylotree($options, $errors, $warnings);
   }
 }

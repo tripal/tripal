@@ -24,7 +24,7 @@ class so__cds extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SO',
     // The name of the term.
@@ -35,7 +35,7 @@ class so__cds extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'so__cds_widget';
@@ -49,14 +49,14 @@ class so__cds extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
+    return [
+      $field_term => [
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
 
   /**
@@ -68,36 +68,36 @@ class so__cds extends ChadoField {
     $num_seqs = 0;
 
     // Set some defauls for the empty record
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
-    );
+    ];
 
-    $options = array(
+    $options = [
       'return_array' => TRUE,
-      'order_by' => array('rank' => 'ASC'),
-    );
+      'order_by' => ['rank' => 'ASC'],
+    ];
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
     $featurelocs = $feature->featureloc->feature_id;
 
-    foreach($featurelocs as $featureloc){
+    foreach ($featurelocs as $featureloc) {
       // Generate a CDS sequence if one exsits for this feature alignment.
       $cds_sequence = tripal_get_feature_sequences(
-        array(
+        [
           'feature_id' => $feature->feature_id,
           'parent_id' => $featureloc->srcfeature_id->feature_id,
           'name' => $feature->name,
           'featureloc_id' => $featureloc->featureloc_id,
-        ),
-        array(
+        ],
+        [
           // CDS are in parent-child relationships so we want to use the
           // sequence from the parent
           'derive_from_parent' => 1,
           // we want to combine all CDS for this feature into a single sequence
           'aggregate' => 1,
           // we're looking for CDS features
-          'sub_feature_types' => array('CDS'),
-          'is_html' => 0
-        )
+          'sub_feature_types' => ['CDS'],
+          'is_html' => 0,
+        ]
       );
 
       if (count($cds_sequence) > 0) {

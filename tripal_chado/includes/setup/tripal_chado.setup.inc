@@ -8,12 +8,12 @@
  * Prepares Chado for Tripal use
  */
 function tripal_chado_prepare_form($form, $form_state) {
-  $form = array();
+  $form = [];
 
   if (variable_get('tripal_chado_is_prepared') == TRUE) {
     drupal_set_message('Your site is prepared.');
   }
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#type' => 'item',
     '#title' => 'Prepare Drupal for Chado.',
     '#description' => t("Before a Drupal site can use Chado (via Tripal), both
@@ -25,18 +25,18 @@ function tripal_chado_prepare_form($form, $form_state) {
         installed Chado using Tripal then you do not need to run this step.
         If you are upgrading from a previous version of Tripal, you do not
         need to prepare your site, and you can click the 'Skip' button."),
-  );
+  ];
 
-  $form['prepare-button'] = array(
+  $form['prepare-button'] = [
     '#type' => 'submit',
     '#value' => t('Prepare this site'),
     '#name' => 'prepare-chado',
-  );
-  $form['skip-button'] = array(
+  ];
+  $form['skip-button'] = [
     '#type' => 'submit',
     '#value' => t('Skip'),
     '#name' => 'prepare-skip',
-  );
+  ];
   return $form;
 }
 
@@ -47,19 +47,19 @@ function tripal_chado_prepare_form($form, $form_state) {
  * @param $form_state
  */
 function tripal_chado_prepare_form_submit($form, $form_state) {
-   if ($form_state['clicked_button']['#name'] == "prepare-chado") {
-     global $user;
-     $args = array();
-     $includes = array(
-        module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
-     );
-     tripal_add_job('Prepare Chado', 'tripal_chado',
-       'tripal_chado_prepare_chado', $args,
-       $user->uid, 10, $includes);
-   }
-   if ($form_state['clicked_button']['#name'] == "prepare-skip") {
-     variable_set('tripal_chado_is_prepared', TRUE);
-   }
+  if ($form_state['clicked_button']['#name'] == "prepare-chado") {
+    global $user;
+    $args = [];
+    $includes = [
+      module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
+    ];
+    tripal_add_job('Prepare Chado', 'tripal_chado',
+      'tripal_chado_prepare_chado', $args,
+      $user->uid, 10, $includes);
+  }
+  if ($form_state['clicked_button']['#name'] == "prepare-skip") {
+    variable_set('tripal_chado_is_prepared', TRUE);
+  }
 }
 
 /**
@@ -69,10 +69,10 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
  * @param $form_state
  */
 function tripal_chado_prepare_drush_submit() {
-  $args = array();
-  $includes = array(
+  $args = [];
+  $includes = [
     module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
-  );
+  ];
   tripal_add_job('Prepare Chado', 'tripal_chado',
     'tripal_chado_prepare_chado', $args,
     1, 10, $includes);
@@ -85,63 +85,63 @@ function tripal_chado_prepare_drush_submit() {
 function tripal_chado_load_ontologies() {
 
   // Insert commonly used ontologies into the tables.
-  $ontologies = array(
-    array(
+  $ontologies = [
+    [
       'name' => 'Relationship Ontology (legacy)',
       'path' => '{tripal_chado}/files/legacy_ro.obo',
       'auto_load' => FALSE,
       'cv_name' => 'ro',
       'db_name' => 'RO',
-    ),
-    array(
+    ],
+    [
       'name' => 'Gene Ontology',
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
       'cv_name' => 'cellualar_component',
       'db_name' => 'GO',
-    ),
-    array(
+    ],
+    [
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
       'cv_name' => 'taxonomic_rank',
-      'db_name' => 'TAXRANK'
-    ),
-    array(
+      'db_name' => 'TAXRANK',
+    ],
+    [
       'name' => 'Tripal Contact',
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
       'cv_name' => 'tripal_contact',
-      'db_name' => 'TCONTACT'
-    ),
-    array(
+      'db_name' => 'TCONTACT',
+    ],
+    [
       'name' => 'Tripal Publication',
       'path' => '{tripal_chado}/files/tpub.obo',
       'auto_load' => TRUE,
       'cv_name' => 'tripal_pub',
       'db_name' => 'TPUB',
-    ),
-     array(
-       'name' => 'Sequence Ontology',
-       'path' => 'http://purl.obolibrary.org/obo/so.obo',
-       'auto_load' => TRUE,
-       'cv_name' => 'sequence',
-       'db_name' => 'SO',
-     ),
+    ],
+    [
+      'name' => 'Sequence Ontology',
+      'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      'auto_load' => TRUE,
+      'cv_name' => 'sequence',
+      'db_name' => 'SO',
+    ],
 
-  );
+  ];
 
   module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
       // Only load ontologies that are not already in the cv table.
-      $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
-      $db = tripal_get_db(array('name' => $ontologies[$i]['db_name']));
+      $cv = tripal_get_cv(['name' => $ontologies[$i]['cv_name']]);
+      $db = tripal_get_db(['name' => $ontologies[$i]['db_name']]);
       if (!$cv or !$db) {
         print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
         $obo_importer = new OBOImporter();
-        $obo_importer->create(array('obo_id' => $obo_id));
+        $obo_importer->create(['obo_id' => $obo_id]);
         $obo_importer->run();
       }
       else {
@@ -150,6 +150,7 @@ function tripal_chado_load_ontologies() {
     }
   }
 }
+
 /**
  * Prepares Chado for use by Tripal.
  */
@@ -240,17 +241,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'OBI',
       'accession' => '0100026',
       'term_name' => 'organism',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'organism',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'OBI',
+      'accession' => '0100026',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -264,17 +268,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'operation',
       'accession' => '2945',
       'term_name' => 'Analysis',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'analysis',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'operation', 'accession' => '2945'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'operation',
+      'accession' => '2945',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -288,17 +295,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'local',
       'accession' => 'project',
       'term_name' => 'project',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'project',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'local',
+      'accession' => 'project',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -312,17 +322,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Map' entity type. This uses the local:project term.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'data',
       'accession' => '1274',
       'term_name' => 'Map',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'featuremap',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'data',
+      'accession' => '1274',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -331,10 +344,10 @@ function tripal_chado_prepare_chado($job = NULL) {
       }
     }
     // Add cvterm mapping for the Map entity type
-    $identifier = array(
-      'cv_id' => array('name' => 'EDAM'),
-      'name' => 'Map'
-    );
+    $identifier = [
+      'cv_id' => ['name' => 'EDAM'],
+      'name' => 'Map',
+    ];
     $cvterm = tripal_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
     if ($report_progress) {
@@ -347,17 +360,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Publication' entity type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'TPUB',
       'accession' => '0000002',
       'term_name' => 'Publication',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'pub',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'TPUB',
+      'accession' => '0000002',
+    ]);
     if ($term) {
-        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -366,42 +382,45 @@ function tripal_chado_prepare_chado($job = NULL) {
       }
     }
     // Add cvterm mapping for the Publication entity type
-    $identifier = array(
-      'cv_id' => array('name' => 'tripal_pub'),
-      'name' => 'Publication'
-    );
+    $identifier = [
+      'cv_id' => ['name' => 'tripal_pub'],
+      'name' => 'Publication',
+    ];
     $cvterm = tripal_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
 
     // Now remove the publication that was added above.
-    $values = array(
-      'dbxref_id' => array(
+    $values = [
+      'dbxref_id' => [
         'accession' => '24163125',
-        'db_id' => array(
+        'db_id' => [
           'name' => 'PMID',
-        ),
-      ),
-    );
-    $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
-    chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+        ],
+      ],
+    ];
+    $result = chado_select_record('pub_dbxref', ['pub_id'], $values);
+    chado_delete_record('pub', ['pub_id' => $result[0]->pub_id]);
     if ($report_progress) {
       $job->setProgress(90);
     }
 
     // Create the 'Gene' entity type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'SO',
       'accession' => '0000704',
       'term_name' => 'gene',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'feature',
         'type_column' => 'type_id',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'SO',
+      'accession' => '0000704',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -415,18 +434,21 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'mRNA' entity type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'SO',
       'accession' => '0000234',
       'term_name' => 'mRNA',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'feature',
         'type_column' => 'type_id',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'SO',
+      'accession' => '0000234',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -440,17 +462,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'biological sample' entity type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'sep',
       'accession' => '00195',
       'term_name' => 'biological sample',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'biomaterial',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'sep', 'accession' => '00195'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'sep',
+      'accession' => '00195',
+    ]);
     if ($term) {
-        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -464,17 +489,20 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Create the 'Phylogenetic tree' entity type.
     $error = '';
-    $args = array(
+    $args = [
       'vocabulary' => 'data',
       'accession' => '0872',
       'term_name' => 'Phylogenetic tree',
-      'storage_args' => array(
+      'storage_args' => [
         'data_table' => 'phylotree',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
+      ],
+    ];
+    $term = tripal_load_term_entity([
+      'vocabulary' => 'data',
+      'accession' => '0872',
+    ]);
     if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     }
     if (!$term or !$bundle) {
       if (!tripal_create_bundle($args, $error)) {
@@ -487,12 +515,11 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Add the supported loaders
-    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
+    variable_set('tripal_pub_supported_dbs', ['PMID', 'AGL']);
 
     // Set a variable to indicate the site is prepared.
     variable_set('tripal_chado_is_prepared', TRUE);
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $job->logMessage($e);
     throw new Exception($e);
   }
@@ -504,7 +531,7 @@ function tripal_chado_prepare_chado($job = NULL) {
  * For Chado v1.2 or greater these tables are not needed as they are part of the
  * schema update.
  */
-function tripal_chado_add_v1_1_custom_tables(){
+function tripal_chado_add_v1_1_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1_1');
   tripal_chado_add_analysisfeatureprop_table();
 }
@@ -515,7 +542,7 @@ function tripal_chado_add_v1_1_custom_tables(){
  * For Chado v1.3 these tables are not needed as they are part of the
  * schema update.
  */
-function tripal_chado_add_v1_2_custom_tables(){
+function tripal_chado_add_v1_2_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1.2');
   tripal_chado_add_contactprop_table();
   tripal_chado_add_featuremap_dbxref_table();
@@ -530,7 +557,7 @@ function tripal_chado_add_v1_2_custom_tables(){
  * These are tables that Chado uses to manage the site (i.e. temporary
  * loading tables) and not for primary data storage.
  */
-function tripal_chado_add_vx_x_custom_tables(){
+function tripal_chado_add_vx_x_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
 
   // Add in custom tables.
@@ -567,6 +594,13 @@ function tripal_chado_fix_v1_3_custom_tables() {
   // Remove the previously managed custom tables from the
   // tripal_custom_tables table.
   db_delete('tripal_custom_tables')
-    ->condition('table_name', array('analysisfeatureprop', 'featuremap_dbxref', 'contactprop', 'featuremapprop', 'featureposprop', 'pubauthor_contact'))
+    ->condition('table_name', [
+      'analysisfeatureprop',
+      'featuremap_dbxref',
+      'contactprop',
+      'featuremapprop',
+      'featureposprop',
+      'pubauthor_contact',
+    ])
     ->execute();
 }

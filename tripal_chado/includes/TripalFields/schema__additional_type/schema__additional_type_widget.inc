@@ -1,11 +1,12 @@
 <?php
 
 class schema__additional_type_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Type';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('schema__additional_type');
+  public static $field_types = ['schema__additional_type'];
 
   /**
    *
@@ -34,13 +35,13 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       $type_id = $form_state['values'][$field_name][$langcode][$delta]['value'];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => $value,
-    );
+    ];
 
     // If a parent_term is provided then use that to get the options
-    $options = array();
+    $options = [];
     $options[] = 'Select a type';
     if ($parent_term) {
       list ($vocabulary, $accession) = explode(':', $parent_term);
@@ -61,14 +62,17 @@ class schema__additional_type_widget extends ChadoFieldWidget {
             NOT CVTS.is_obsolete = 1
           ORDER BY CVTS.name ASC
        ";
-        $results = chado_query($sql, array(':vocabulary' => $vocabulary, ':accession' => $accession));
+        $results = chado_query($sql, [
+          ':vocabulary' => $vocabulary,
+          ':accession' => $accession,
+        ]);
         while ($term = $results->fetchObject()) {
           $options[$term->cvterm_id] = $term->name;
         }
       }
     }
     elseif ($vocabulary) {
-      $cv = tripal_get_cv(array('name' => $vocabulary));
+      $cv = tripal_get_cv(['name' => $vocabulary]);
       $options = tripal_get_cvterm_select_options($cv->cv_id);
     }
     // If no vocabulary or parent term are provided then just give a generic
@@ -77,15 +81,15 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       $cvterm = NULL;
       $default_name = '';
       if ($type_id) {
-        $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $type_id));
+        $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $type_id]);
         $default_name = $cvterm->name;
       }
       tripal_get_term_lookup_form($widget, $form_state, $default_name,
-          $element['#title'], $element['#description'], $element['#required'],
-          $field_name, $delta);
+        $element['#title'], $element['#description'], $element['#required'],
+        $field_name, $delta);
     }
     if ($vocabulary) {
-      $widget['chado-' . $field_table . '__type_id'] = array(
+      $widget['chado-' . $field_table . '__type_id'] = [
         '#type' => 'select',
         '#options' => $options,
         '#title' => $element['#title'],
@@ -94,7 +98,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
         '#default_value' => $type_id,
         '#required' => $element['#required'],
         '#delta' => $delta,
-      );
+      ];
     }
   }
 

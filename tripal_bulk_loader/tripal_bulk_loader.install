@@ -18,7 +18,7 @@ function tripal_bulk_loader_disable() {
   require_once("tripal_bulk_loader.views_default.inc");
   $views = tripal_bulk_loader_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -29,149 +29,150 @@ function tripal_bulk_loader_disable() {
  * Creates the following tables in the Drupal database:
  *  - tripal_bulk_loader: Stores extra details for bulk loading jobs (nodes)
  *  - tripal_bulk_loader_template: Stores all loading templates
- *  - tripal_bulk_loader_inserted: Keeps track of all records inserted for a given bulk loading job
+ *  - tripal_bulk_loader_inserted: Keeps track of all records inserted for a
+ * given bulk loading job
  *
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_schema() {
-  $schema = array();
-  $schema['tripal_bulk_loader'] = array(
-    'fields' => array(
-      'nid' => array(
+  $schema = [];
+  $schema['tripal_bulk_loader'] = [
+    'fields' => [
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'loader_name' => array(
+      ],
+      'loader_name' => [
         'type' => 'varchar',
-      ),
-      'template_id' => array(
+      ],
+      'template_id' => [
         'type' => 'int',
-      ),
-      'file' => array(
+      ],
+      'file' => [
         'type' => 'varchar',
-        'not null' => TRUE
-      ),
-      'job_id' => array(
+        'not null' => TRUE,
+      ],
+      'job_id' => [
         'type' => 'int',
-      ),
-      'job_status' => array(
+      ],
+      'job_status' => [
         'type' => 'varchar',
-      ),
-      'file_has_header' => array(
+      ],
+      'file_has_header' => [
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
-      ),
-      'keep_track_inserted' => array(
+      ],
+      'keep_track_inserted' => [
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
-        'default' => 1
-      ),
-    ),
-      'primary key' => array('nid'),
-      'unique keys' => array(
-        'name' => array('loader_name')
-    ),
-  );
-  $schema['tripal_bulk_loader_template'] = array(
-      'fields' => array(
-         'template_id' => array(
-            'type' => 'serial',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
-          ),
-          'name' => array(
-            'type' => 'varchar',
-          ),
-          'template_array' => array(
-            'type' => 'varchar',
-          ),
-          'created' => array(
-            'description' => 'The Unix timestamp when the template was created.',
-            'type' => 'int',
-            'not null' => TRUE,
-            'default' => 0,
-          ),
-          'changed' => array(
-            'description' => 'The Unix timestamp when the template was most recently saved.',
-            'type' => 'int',
-            'not null' => TRUE,
-            'default' => 0,
-          )
-    ),
-      'primary key' => array('template_id'),
-    'unique keys' => array(
-        'name' => array('name')
-    ),
-  );
-  $schema['tripal_bulk_loader_inserted'] = array(
-    'fields' => array(
-      'tripal_bulk_loader_inserted_id' => array(
+        'default' => 1,
+      ],
+    ],
+    'primary key' => ['nid'],
+    'unique keys' => [
+      'name' => ['loader_name'],
+    ],
+  ];
+  $schema['tripal_bulk_loader_template'] = [
+    'fields' => [
+      'template_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'nid' => array(
-        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'table_inserted_into' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
-        'not null' => TRUE,
-      ),
-      'table_primary_key' => array(
+      ],
+      'template_array' => [
         'type' => 'varchar',
+      ],
+      'created' => [
+        'description' => 'The Unix timestamp when the template was created.',
+        'type' => 'int',
         'not null' => TRUE,
-      ),
-      'ids_inserted' => array(
-        'type' => 'text',
-        'not null' => TRUE
-      ),
-    ),
-    'primary key' => array('tripal_bulk_loader_inserted_id'),
-  );
-  $schema['tripal_bulk_loader_constants'] = array(
-    'fields' => array(
-      'constant_id' => array(
+        'default' => 0,
+      ],
+      'changed' => [
+        'description' => 'The Unix timestamp when the template was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['template_id'],
+    'unique keys' => [
+      'name' => ['name'],
+    ],
+  ];
+  $schema['tripal_bulk_loader_inserted'] = [
+    'fields' => [
+      'tripal_bulk_loader_inserted_id' => [
         'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'nid' => array(
+        'not null' => TRUE,
+      ],
+      'nid' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ),
-      'group_id' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0
-      ),
-      'chado_table' => array(
+      ],
+      'table_inserted_into' => [
         'type' => 'varchar',
         'not null' => TRUE,
-      ),
-      'chado_field' => array(
+      ],
+      'table_primary_key' => [
         'type' => 'varchar',
         'not null' => TRUE,
-      ),
-      'record_id' => array(
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'field_id' => array(
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'value' => array(
+      ],
+      'ids_inserted' => [
         'type' => 'text',
-      ),
-    ),
-    'primary key' => array('constant_id'),
-  );
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['tripal_bulk_loader_inserted_id'],
+  ];
+  $schema['tripal_bulk_loader_constants'] = [
+    'fields' => [
+      'constant_id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'group_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'chado_table' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+      ],
+      'chado_field' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+      ],
+      'record_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'field_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'value' => [
+        'type' => 'text',
+      ],
+    ],
+    'primary key' => ['constant_id'],
+  ];
 
   return $schema;
 }
@@ -209,13 +210,13 @@ function tripal_bulk_loader_update_6151() {
   db_add_field(
     'tripal_bulk_loader_constants',
     'group_id',
-    array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0
-      )
-    );
+    [
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ]
+  );
 
   return 'Added support for multiple sets of loader-specific constants.';
 }
@@ -230,12 +231,12 @@ function tripal_bulk_loader_update_6152() {
   db_add_field(
     'tripal_bulk_loader',
     'keep_track_inserted',
-    array(
+    [
       'type' => 'int',
       'size' => 'tiny',
       'not null' => TRUE,
-      'default' => 1
-    )
+      'default' => 1,
+    ]
   );
 
   return 'Added ability to rollback loading job based on storing loaded ids.';
@@ -254,30 +255,30 @@ function tripal_bulk_loader_update_7200() {
     'tripal_bulk_loader',
     'template_id',
     'template_id',
-    array('type' => 'int')
+    ['type' => 'int']
   );
 
 
   db_add_field(
     'tripal_bulk_loader_template',
     'created',
-    array(
+    [
       'description' => 'The Unix timestamp when the template was created.',
       'type' => 'int',
       'not null' => TRUE,
       'default' => 0,
-    )
+    ]
   );
 
   db_add_field(
     'tripal_bulk_loader_template',
     'changed',
-    array(
+    [
       'description' => 'The Unix timestamp when the template was most recently saved.',
       'type' => 'int',
       'not null' => TRUE,
       'default' => 0,
-    )
+    ]
   );
 
 
@@ -292,15 +293,15 @@ function tripal_bulk_loader_update_7200() {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_bulk_loader'] = array(
-            'title' => "tripal_bulk_loader",
-            'value' => "ERROR: Chado must be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements ['tripal_bulk_loader'] = [
+        'title' => "tripal_bulk_loader",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      ];
     }
   }
   return $requirements;

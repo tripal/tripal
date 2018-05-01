@@ -12,17 +12,17 @@
 function tripal_chado_seq_extract_page() {
 
   if ($_SESSION['tripal_chado_seq_extract']['download']) {
-    $genus      = $_SESSION['tripal_chado_seq_extract']['genus'];
-    $species    = $_SESSION['tripal_chado_seq_extract']['species'];
-    $analysis   = $_SESSION['tripal_chado_seq_extract']['analysis'];
-    $ftype      = $_SESSION['tripal_chado_seq_extract']['ftype'];
-    $fnames     = $_SESSION['tripal_chado_seq_extract']['fnames'];
-    $upstream   = $_SESSION['tripal_chado_seq_extract']['upstream'];
+    $genus = $_SESSION['tripal_chado_seq_extract']['genus'];
+    $species = $_SESSION['tripal_chado_seq_extract']['species'];
+    $analysis = $_SESSION['tripal_chado_seq_extract']['analysis'];
+    $ftype = $_SESSION['tripal_chado_seq_extract']['ftype'];
+    $fnames = $_SESSION['tripal_chado_seq_extract']['fnames'];
+    $upstream = $_SESSION['tripal_chado_seq_extract']['upstream'];
     $downstream = $_SESSION['tripal_chado_seq_extract']['downstream'];
-    $format     = $_SESSION['tripal_chado_seq_extract']['format'];
+    $format = $_SESSION['tripal_chado_seq_extract']['format'];
     $use_parent = $_SESSION['tripal_chado_seq_extract']['use_parent'];
-    $aggregate  = $_SESSION['tripal_chado_seq_extract']['aggregate'];
-    $agg_types  = $_SESSION['tripal_chado_seq_extract']['agg_types'];
+    $aggregate = $_SESSION['tripal_chado_seq_extract']['aggregate'];
+    $agg_types = $_SESSION['tripal_chado_seq_extract']['agg_types'];
 
     unset($_SESSION['tripal_chado_seq_extract']['download']);
 
@@ -34,7 +34,7 @@ function tripal_chado_seq_extract_page() {
       drupal_add_http_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
     }
 
-    tripal_get_bulk_feature_sequences(array(
+    tripal_get_bulk_feature_sequences([
       'genus' => $genus,
       'species' => $species,
       'analysis_name' => $analysis,
@@ -46,8 +46,8 @@ function tripal_chado_seq_extract_page() {
       'output_format' => $format,
       'derive_from_parent' => $use_parent,
       'aggregate' => $aggregate,
-      'sub_feature_types' => $agg_types
-    ));
+      'sub_feature_types' => $agg_types,
+    ]);
 
     return;
   }
@@ -57,8 +57,8 @@ function tripal_chado_seq_extract_page() {
   $output .= '';
   if (user_access('administer tripal')) {
     $output .= tripal_set_message("Administrators, the " .
-        l('organism_feature_count', 'admin/tripal/storage/chado/mviews') . " and " .
-        l('analysis_organism', 'admin/tripal/storage/chado/mviews') . " materialized
+      l('organism_feature_count', 'admin/tripal/storage/chado/mviews') . " and " .
+      l('analysis_organism', 'admin/tripal/storage/chado/mviews') . " materialized
         views must be populated before using this form.  Those views should be re-populated
         when new data is added.");
   }
@@ -74,44 +74,47 @@ function tripal_chado_seq_extract_page() {
  * @ingroup tripal_chado
  */
 function theme_tripal_chado_seq_extract_form($form, &$form_state) {
-  $rows = array(
-    0 => array(
-      array('data' => drupal_render($form['description']), 'colspan' => 3),
-    ),
-    1 => array(
+  $rows = [
+    0 => [
+      ['data' => drupal_render($form['description']), 'colspan' => 3],
+    ],
+    1 => [
       drupal_render($form['genus']),
-      drupal_render($form['species']) ,
+      drupal_render($form['species']),
       drupal_render($form['ftype']),
-    ),
-    2 => array(
-      array('data' => drupal_render($form['analysis']), 'colspan' => 3),
+    ],
+    2 => [
+      ['data' => drupal_render($form['analysis']), 'colspan' => 3],
       //drupal_render($form['format']),
-    ),
-    3 => array(
-      array('data' =>  drupal_render($form['fnames']), 'colspan' => 2),
-      drupal_render($form['upstream']) . drupal_render($form['downstream']) ,
-    ),
-    4 => array(
-      array(
-        'data' =>  drupal_render($form['advanced']),
+    ],
+    3 => [
+      ['data' => drupal_render($form['fnames']), 'colspan' => 2],
+      drupal_render($form['upstream']) . drupal_render($form['downstream']),
+    ],
+    4 => [
+      [
+        'data' => drupal_render($form['advanced']),
         'colspan' => 3,
-      ),
-    ),
-    5 => array(
-      array(
-        'data' =>  drupal_render($form['retrieve_btn']) . drupal_render($form['reset_btn']),
+      ],
+    ],
+    5 => [
+      [
+        'data' => drupal_render($form['retrieve_btn']) . drupal_render($form['reset_btn']),
         'colspan' => 3,
-      ),
-    ),
-  );
-  $headers = array();
-  $table = theme('table', $headers, $rows, array('id' => 'tripal-feature-seq-extract-form-table', 'border' => '0'));
+      ],
+    ],
+  ];
+  $headers = [];
+  $table = theme('table', $headers, $rows, [
+    'id' => 'tripal-feature-seq-extract-form-table',
+    'border' => '0',
+  ]);
 
   $markup .= $table;
-  $form['criteria'] = array(
-    '#markup' =>  $markup,
+  $form['criteria'] = [
+    '#markup' => $markup,
     '#weight' => -10,
-  );
+  ];
   return drupal_render($form);
 }
 
@@ -156,29 +159,29 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
   }
 
   // get defaults
-  $dgenus      = isset($form_state['values']['genus'])      ? $form_state['values']['genus']      : $_SESSION['tripal_chado_seq_extract']['genus'];
-  $dspecies    = isset($form_state['values']['species'])    ? $form_state['values']['species']    : $_SESSION['tripal_chado_seq_extract']['species'];
-  $danalysis   = isset($form_state['values']['analysis'])   ? $form_state['values']['analysis']   : $_SESSION['tripal_chado_seq_extract']['analysis'];
-  $dftype      = isset($form_state['values']['ftype'])      ? $form_state['values']['ftype']      : $_SESSION['tripal_chado_seq_extract']['ftype'];
-  $dfnames     = isset($form_state['values']['fnames'])     ? $form_state['values']['fnames']     : $_SESSION['tripal_chado_seq_extract']['fnames'];
-  $dupstream   = isset($form_state['values']['upstream'])   ? $form_state['values']['upstream']   : $_SESSION['tripal_chado_seq_extract']['upstream'];
+  $dgenus = isset($form_state['values']['genus']) ? $form_state['values']['genus'] : $_SESSION['tripal_chado_seq_extract']['genus'];
+  $dspecies = isset($form_state['values']['species']) ? $form_state['values']['species'] : $_SESSION['tripal_chado_seq_extract']['species'];
+  $danalysis = isset($form_state['values']['analysis']) ? $form_state['values']['analysis'] : $_SESSION['tripal_chado_seq_extract']['analysis'];
+  $dftype = isset($form_state['values']['ftype']) ? $form_state['values']['ftype'] : $_SESSION['tripal_chado_seq_extract']['ftype'];
+  $dfnames = isset($form_state['values']['fnames']) ? $form_state['values']['fnames'] : $_SESSION['tripal_chado_seq_extract']['fnames'];
+  $dupstream = isset($form_state['values']['upstream']) ? $form_state['values']['upstream'] : $_SESSION['tripal_chado_seq_extract']['upstream'];
   $ddownstream = isset($form_state['values']['downstream']) ? $form_state['values']['downstream'] : $_SESSION['tripal_chado_seq_extract']['downstream'];
-  $dformat     = isset($form_state['values']['format'])     ? $form_state['values']['format']     : 'fasta_txt';
+  $dformat = isset($form_state['values']['format']) ? $form_state['values']['format'] : 'fasta_txt';
   $duse_parent = isset($form_state['values']['use_parent']) ? $form_state['values']['use_parent'] : $_SESSION['tripal_chado_seq_extract']['use_parent'];
-  $daggregate  = isset($form_state['values']['aggregate'])  ? $form_state['values']['aggregate']  : $_SESSION['tripal_chado_seq_extract']['aggregate'];
-  $dagg_types  = isset($form_state['values']['agg_types'])  ? $form_state['values']['agg_types']  : $_SESSION['tripal_chado_seq_extract']['agg_types'];
+  $daggregate = isset($form_state['values']['aggregate']) ? $form_state['values']['aggregate'] : $_SESSION['tripal_chado_seq_extract']['aggregate'];
+  $dagg_types = isset($form_state['values']['agg_types']) ? $form_state['values']['agg_types'] : $_SESSION['tripal_chado_seq_extract']['agg_types'];
 
 
-  $form = array();
+  $form = [];
 
   // because we're using Tripal's file_upload_combo form element we
   // need to allow the form to upload files
   $form['#attributes']['enctype'] = 'multipart/form-data';
   $form['#method'] = 'POST';
 
-  $form['description'] = array(
-    '#markup' => t('Use this form to retrieve sequences in FASTA format.')
-  );
+  $form['description'] = [
+    '#markup' => t('Use this form to retrieve sequences in FASTA format.'),
+  ];
 
   $sql = "
     SELECT DISTINCT genus
@@ -186,28 +189,28 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
     ORDER BY genus
   ";
   $results = chado_query($sql);
-  $genus = array();
+  $genus = [];
   $genus[] = '';
   while ($organism = $results->fetchObject()) {
     $genus[$organism->genus] = $organism->genus;
   }
 
-  $form['genus'] = array(
-    '#title'         => t('Genus'),
-    '#type'          => 'select',
-    '#options'       => $genus,
+  $form['genus'] = [
+    '#title' => t('Genus'),
+    '#type' => 'select',
+    '#options' => $genus,
     '#default_value' => $dgenus,
-    '#multiple'      => FALSE,
-    '#description'   => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
-    '#ahah' => array(
-      'path'    => 'find/sequences/ajax',
+    '#multiple' => FALSE,
+    '#description' => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
+    '#ahah' => [
+      'path' => 'find/sequences/ajax',
       'wrapper' => 'tripal-feature-seq-extract-form-block',
-      'event'   => 'change',
-      'method'  => 'replace',
-    ),
-  );
+      'event' => 'change',
+      'method' => 'replace',
+    ],
+  ];
 
-  $species = array();
+  $species = [];
   $species[] = '';
   if ($dgenus) {
     $sql = "
@@ -216,27 +219,27 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
       WHERE genus = :genus
       ORDER BY species
     ";
-    $results = chado_query($sql, array(':genus' => $dgenus));
+    $results = chado_query($sql, [':genus' => $dgenus]);
     while ($organism = $results->fetchObject()) {
       $species[$organism->species] = $organism->species;
     }
   }
-  $form['species'] = array(
-    '#title'         => t('Species'),
-    '#type'          => 'select',
-    '#options'       => $species,
+  $form['species'] = [
+    '#title' => t('Species'),
+    '#type' => 'select',
+    '#options' => $species,
     '#default_value' => $dspecies,
-    '#multiple'      => FALSE,
-    '#description'   => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
-    '#ahah' => array(
-      'path'    => 'find/sequences/ajax',
+    '#multiple' => FALSE,
+    '#description' => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
+    '#ahah' => [
+      'path' => 'find/sequences/ajax',
       'wrapper' => 'tripal-feature-seq-extract-form-block',
-      'event'   => 'change',
-      'method'  => 'replace',
-    ),
-  );
+      'event' => 'change',
+      'method' => 'replace',
+    ],
+  ];
 
-  $analyses = array();
+  $analyses = [];
   $analyses[] = '';
   if ($dgenus) {
     $sql = "
@@ -246,28 +249,28 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
         INNER JOIN {organism} O ON O.organism_id = AO.organism_id
       WHERE O.genus = :genus
     ";
-    $args = array();
+    $args = [];
     $args[':genus'] = $dgenus;
     if ($dspecies) {
       $sql .= " AND O.species = :species ";
       $args[':species'] = $dspecies;
     }
-    $sql .=" ORDER BY A.name ";
+    $sql .= " ORDER BY A.name ";
     $results = chado_query($sql, $args);
     while ($analysis = $results->fetchObject()) {
       $analyses[$analysis->name] = $analysis->name;
     }
   }
-  $form['analysis'] = array(
-    '#title'         => t('Analyses'),
-    '#type'          => 'select',
-    '#options'       => $analyses,
+  $form['analysis'] = [
+    '#title' => t('Analyses'),
+    '#type' => 'select',
+    '#options' => $analyses,
     '#default_value' => $danalysis,
-    '#multiple'      => FALSE,
-    '#description'  => t('You can limit sequences by the analyses to which it was derived or was used. If specified, only features associated with the specific analysis will be retrieved.'),
-  );
+    '#multiple' => FALSE,
+    '#description' => t('You can limit sequences by the analyses to which it was derived or was used. If specified, only features associated with the specific analysis will be retrieved.'),
+  ];
 
-  $ftype = array();
+  $ftype = [];
   $ftype[] = '';
   if ($dgenus) {
     $sql = "
@@ -275,7 +278,7 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
       FROM {organism_feature_count} OFC
       WHERE OFC.genus = :genus
     ";
-    $args = array();
+    $args = [];
     $args['genus'] = $dgenus;
     if ($dspecies) {
       $sql .= " AND OFC.species = :species";
@@ -288,78 +291,78 @@ function tripal_chado_seq_extract_form(&$form_state = NULL) {
       $ftype[$type->feature_type] = $type->feature_type;
     }
   }
-  $form['ftype'] = array(
-    '#title'         => t('Feature Type'),
-    '#type'          => 'select',
-    '#options'       => $ftype,
-    '#multiple'      => FALSE,
+  $form['ftype'] = [
+    '#title' => t('Feature Type'),
+    '#type' => 'select',
+    '#options' => $ftype,
+    '#multiple' => FALSE,
     '#default_value' => $dftype,
-    '#description'   => t('The type of feature to retrieve (e.g. mRNA). All features that match this type will be retrieved.'),
-  );
+    '#description' => t('The type of feature to retrieve (e.g. mRNA). All features that match this type will be retrieved.'),
+  ];
 
-  $form['fnames'] = array(
-    '#title'         => t('Feature Name'),
-    '#type'          => 'file_upload_combo',
+  $form['fnames'] = [
+    '#title' => t('Feature Name'),
+    '#type' => 'file_upload_combo',
     '#default_value' => $dfnames,
-    '#description'   => t('The names of the features to retrieve. Separate each with a new line or comma. Leave blank to retrieve all features matching other criteria.'),
-    '#rows'          => 8
-  );
-  $form['upstream'] = array(
-    '#title'         => t('Upstream Bases'),
-    '#type'          => 'textfield',
-    '#description'   => t('A numeric value specifying the number of upstream bases to include. Only works if the feature is aligned to a larger sequence.'),
+    '#description' => t('The names of the features to retrieve. Separate each with a new line or comma. Leave blank to retrieve all features matching other criteria.'),
+    '#rows' => 8,
+  ];
+  $form['upstream'] = [
+    '#title' => t('Upstream Bases'),
+    '#type' => 'textfield',
+    '#description' => t('A numeric value specifying the number of upstream bases to include. Only works if the feature is aligned to a larger sequence.'),
     '#default_value' => $dupstream,
-    '#size'          => 5,
-  );
-  $form['downstream'] = array(
-    '#title'         => t('Downstream Bases'),
-    '#type'          => 'textfield',
-    '#description'   => t('A numeric value specifying the number of downstream bases to incldue.  Only works if the feature is aligned to a larger sequence.'),
+    '#size' => 5,
+  ];
+  $form['downstream'] = [
+    '#title' => t('Downstream Bases'),
+    '#type' => 'textfield',
+    '#description' => t('A numeric value specifying the number of downstream bases to incldue.  Only works if the feature is aligned to a larger sequence.'),
     '#default_value' => $ddownstream,
-    '#size'          => 5,
-  );
-  $form['format'] = array(
-    '#title'         => t('Output Format'),
-    '#type'          => 'hidden',
+    '#size' => 5,
+  ];
+  $form['format'] = [
+    '#title' => t('Output Format'),
+    '#type' => 'hidden',
     '#default_value' => $dformat,
-    '#options'       => array(
-      'fasta_html'  => 'FASTA (in browser)',
-      'fasta_txt'   => 'FASTA (download)',
-    ),
-  );
-  $form['advanced'] = array(
+    '#options' => [
+      'fasta_html' => 'FASTA (in browser)',
+      'fasta_txt' => 'FASTA (download)',
+    ],
+  ];
+  $form['advanced'] = [
     '#type' => 'fieldset',
     '#title' => 'Advanced',
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
-  );
+    '#collapsed' => TRUE,
+  ];
 
-  $form['advanced']['use_parent'] = array(
-    '#title'         => t('Use Parent'),
-    '#type'          => 'checkbox',
+  $form['advanced']['use_parent'] = [
+    '#title' => t('Use Parent'),
+    '#type' => 'checkbox',
     '#default_value' => $duse_parent,
-    '#description'   => t('Check this box to retrieve the sequence from the parent in an alignment rather than the feature itself. This is useful if the same feature is aligned to multiple parents and you would like to retrieve the underlying sequence from each parent.'),
-  );
-  $form['advanced']['aggregate'] = array(
-    '#title'         => t('Aggregate'),
-    '#type'          => 'checkbox',
+    '#description' => t('Check this box to retrieve the sequence from the parent in an alignment rather than the feature itself. This is useful if the same feature is aligned to multiple parents and you would like to retrieve the underlying sequence from each parent.'),
+  ];
+  $form['advanced']['aggregate'] = [
+    '#title' => t('Aggregate'),
+    '#type' => 'checkbox',
     '#default_value' => $daggregate,
-    '#description'   => t('Check this box to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA. Rather than retrieve the mRNA sequence, the sub features of the mRNA will be aggregated and that will be returned.')
-  );
-  $form['advanced']['agg_types'] = array(
-    '#title'         => t('Types to aggregate'),
-    '#type'          => 'textarea',
+    '#description' => t('Check this box to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA. Rather than retrieve the mRNA sequence, the sub features of the mRNA will be aggregated and that will be returned.'),
+  ];
+  $form['advanced']['agg_types'] = [
+    '#title' => t('Types to aggregate'),
+    '#type' => 'textarea',
     '#default_value' => $dagg_types,
-    '#description'   => t('Set this argument to the type of children to aggregate.  This is useful in the case where a gene has exons, CDSs and UTRs.  In this case, you may only want to aggregate CDSs and exclude exons.  If you want to aggregate both CDSs and UTRs you could specify both.')
-  );
-  $form['retrieve_btn'] = array(
+    '#description' => t('Set this argument to the type of children to aggregate.  This is useful in the case where a gene has exons, CDSs and UTRs.  In this case, you may only want to aggregate CDSs and exclude exons.  If you want to aggregate both CDSs and UTRs you could specify both.'),
+  ];
+  $form['retrieve_btn'] = [
     '#type' => 'submit',
     '#value' => 'Retrieve',
-  );
-  $form['reset_btn'] = array(
+  ];
+  $form['reset_btn'] = [
     '#type' => 'submit',
     '#value' => 'Reset',
-  );
+  ];
   return $form;
 }
 
@@ -390,11 +393,11 @@ function tripal_chado_seq_extract_form_ahah_update() {
 
   // return the updated JSON
   drupal_json(
-    array(
-      'status'   => $status,
-      'data'     => $data,
+    [
+      'status' => $status,
+      'data' => $data,
       'settings' => $settings,
-    )
+    ]
   );
 }
 
@@ -404,24 +407,24 @@ function tripal_chado_seq_extract_form_ahah_update() {
  * @ingroup tripal_chado
  */
 function tripal_chado_seq_extract_form_validate($form, &$form_state) {
-  $genus      = $form_state['values']['genus'];
-  $species    = $form_state['values']['species'];
-  $analysis   = $form_state['values']['analysis'];
-  $ftype      = $form_state['values']['ftype'];
-  $fnames     = $form_state['values']['fnames'];
-  $upstream   = $form_state['values']['upstream'];
+  $genus = $form_state['values']['genus'];
+  $species = $form_state['values']['species'];
+  $analysis = $form_state['values']['analysis'];
+  $ftype = $form_state['values']['ftype'];
+  $fnames = $form_state['values']['fnames'];
+  $upstream = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
-  $format     = $form_state['values']['format'];
+  $format = $form_state['values']['format'];
   $use_parent = $form_state['values']['use_parent'];
-  $aggregate  = $form_state['values']['aggregate'];
-  $agg_types  = $form_state['values']['agg_types'];
-  $op         = $form_state['values']['op'];
+  $aggregate = $form_state['values']['aggregate'];
+  $agg_types = $form_state['values']['agg_types'];
+  $op = $form_state['values']['op'];
 
   if ($op == 'Retrieve') {
     if ($upstream and !preg_match('/^\d+$/', $upstream)) {
       form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
     }
-     if ($downstream and !preg_match('/^\d+$/', $downstream)) {
+    if ($downstream and !preg_match('/^\d+$/', $downstream)) {
       form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
     }
     if (!$genus and !$species and !$ftype and !$fnames) {
@@ -436,18 +439,18 @@ function tripal_chado_seq_extract_form_validate($form, &$form_state) {
  * @ingroup tripal_chado
  */
 function tripal_chado_seq_extract_form_submit($form, &$form_state) {
-  $genus      = $form_state['values']['genus'];
-  $species    = $form_state['values']['species'];
-  $analysis   = $form_state['values']['analysis'];
-  $ftype      = $form_state['values']['ftype'];
-  $fnames     = $form_state['values']['fnames'];
-  $upstream   = $form_state['values']['upstream'];
+  $genus = $form_state['values']['genus'];
+  $species = $form_state['values']['species'];
+  $analysis = $form_state['values']['analysis'];
+  $ftype = $form_state['values']['ftype'];
+  $fnames = $form_state['values']['fnames'];
+  $upstream = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
-  $format     = $form_state['values']['format'];
+  $format = $form_state['values']['format'];
   $use_parent = $form_state['values']['use_parent'];
-  $aggregate  = $form_state['values']['aggregate'];
-  $agg_types  = $form_state['values']['agg_types'];
-  $op         = $form_state['values']['op'];
+  $aggregate = $form_state['values']['aggregate'];
+  $agg_types = $form_state['values']['agg_types'];
+  $op = $form_state['values']['op'];
 
   // we must use the parent sequence if the user has selected
   // the upstream, downstream or to aggregate
@@ -456,18 +459,18 @@ function tripal_chado_seq_extract_form_submit($form, &$form_state) {
   }
 
   if ($op == 'Retrieve') {
-    $_SESSION['tripal_chado_seq_extract']['genus']      = $genus;
-    $_SESSION['tripal_chado_seq_extract']['species']    = $species;
-    $_SESSION['tripal_chado_seq_extract']['analysis']   = $analysis;
-    $_SESSION['tripal_chado_seq_extract']['ftype']      = $ftype;
-    $_SESSION['tripal_chado_seq_extract']['fnames']     = $fnames;
-    $_SESSION['tripal_chado_seq_extract']['upstream']   = $upstream;
+    $_SESSION['tripal_chado_seq_extract']['genus'] = $genus;
+    $_SESSION['tripal_chado_seq_extract']['species'] = $species;
+    $_SESSION['tripal_chado_seq_extract']['analysis'] = $analysis;
+    $_SESSION['tripal_chado_seq_extract']['ftype'] = $ftype;
+    $_SESSION['tripal_chado_seq_extract']['fnames'] = $fnames;
+    $_SESSION['tripal_chado_seq_extract']['upstream'] = $upstream;
     $_SESSION['tripal_chado_seq_extract']['downstream'] = $downstream;
-    $_SESSION['tripal_chado_seq_extract']['format']     = $format;
+    $_SESSION['tripal_chado_seq_extract']['format'] = $format;
     $_SESSION['tripal_chado_seq_extract']['use_parent'] = $use_parent;
-    $_SESSION['tripal_chado_seq_extract']['aggregate']  = $aggregate;
-    $_SESSION['tripal_chado_seq_extract']['agg_types']  = $agg_types;
-    $_SESSION['tripal_chado_seq_extract']['download']   = 1;
+    $_SESSION['tripal_chado_seq_extract']['aggregate'] = $aggregate;
+    $_SESSION['tripal_chado_seq_extract']['agg_types'] = $agg_types;
+    $_SESSION['tripal_chado_seq_extract']['download'] = 1;
   }
   if ($op == 'Reset') {
     unset($_SESSION['tripal_chado_seq_extract']);

@@ -1,11 +1,12 @@
 <?php
 
 class schema__alternate_name_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Synonyms';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('schema__alternate_name');
+  public static $field_types = ['schema__alternate_name'];
 
   /**
    *
@@ -47,7 +48,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $synonym_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'];
       $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
       $is_current = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__is_current'];
@@ -56,12 +57,12 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       $syn_type = $form_state['values'][$field_name]['und'][$delta]['type_id'];
     }
 
-    $options = array();
-    $value = array('cv_id' => array('name' => 'synonym_type'));
-    $op = array('return_array' => 1);
+    $options = [];
+    $value = ['cv_id' => ['name' => 'synonym_type']];
+    $op = ['return_array' => 1];
     $types = chado_generate_var('cvterm', $value, $op);
     if ($types) {
-      foreach($types AS $type) {
+      foreach ($types AS $type) {
         $options[$type->cvterm_id] = $type->name;
       }
     }
@@ -70,59 +71,60 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     // size of the name field to the proper size.
     $schema = chado_get_schema('synonym');
 
-    $widget['#prefix'] =  "<span id='$table_name-$delta'>";
-    $widget['#suffix'] =  "</span>";
+    $widget['#prefix'] = "<span id='$table_name-$delta'>";
+    $widget['#suffix'] = "</span>";
     $widget['#table_name'] = $table_name;
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
-    $widget['chado-' . $table_name . '__' . $pkey] = array(
+    $widget['chado-' . $table_name . '__' . $pkey] = [
       '#type' => 'value',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $table_name . '__synonym_id'] = array(
+    ];
+    $widget['chado-' . $table_name . '__synonym_id'] = [
       '#type' => 'value',
       '#default_value' => $synonym_id,
-    );
-    $widget['chado-' . $table_name . '__' . $fkey] = array(
+    ];
+    $widget['chado-' . $table_name . '__' . $fkey] = [
       '#type' => 'value',
       '#default_value' => $fkey_value,
-    );
+    ];
     // TODO: add a widget for selecting a publication.
-    $widget['chado-' . $table_name . '__pub_id'] = array(
+    $widget['chado-' . $table_name . '__pub_id'] = [
       '#type' => 'value',
       '#default_value' => $pub_id,
-    );
-    $widget['type_id'] = array(
+    ];
+    $widget['type_id'] = [
       '#type' => 'select',
       '#title' => t('Type'),
       '#options' => $options,
       '#default_value' => $syn_type,
-    );
-    $widget['name'] = array(
+    ];
+    $widget['name'] = [
       '#type' => 'textfield',
       '#title' => t('Synonym Name'),
       '#default_value' => $syn_name,
       '#size' => 25,
-    );
+    ];
 
-    $widget['chado-' . $table_name . '__is_current'] = array(
+    $widget['chado-' . $table_name . '__is_current'] = [
       '#type' => 'checkbox',
       '#title' => t('Is Current'),
       '#default_value' => $is_current,
       '#required' => $element['#required'],
-    );
+    ];
 
-    $widget['chado-' . $table_name . '__is_internal'] = array(
+    $widget['chado-' . $table_name . '__is_internal'] = [
       '#type' => 'checkbox',
       '#title' => t('Is Internal'),
       '#default_value' => $is_internal,
       '#required' => $element['#required'],
-    );
+    ];
   }
+
   /**
    * @see TripalFieldWidget::validate()
    */
@@ -148,7 +150,10 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     // the foreign key value to be the chado_record_id.
     if ($syn_name and $syn_type) {
       // Set the synonym_id and FK value
-      $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+      $synonym = chado_generate_var('synonym', [
+        'name' => $syn_name,
+        'type_id' => $syn_type,
+      ]);
       if ($synonym) {
         $form_state['values'][$field_name]['und'][$delta]['value'] = $synonym->name;
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
@@ -158,7 +163,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       }
       // If a publication is not provided then use the null pub.
       if (!$pub_id) {
-        $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+        $pub = chado_generate_var('pub', ['uniquename' => 'null']);
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
       }
     }
@@ -193,13 +198,16 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
 
       // Get the synonym. If one with the same name and type is already present
       // then use that. Otherwise, insert a new one.
-      $synonym = chado_generate_var('synonym', array('name' => $syn_name, 'type_id' => $syn_type));
+      $synonym = chado_generate_var('synonym', [
+        'name' => $syn_name,
+        'type_id' => $syn_type,
+      ]);
       if (!$synonym) {
-        $synonym = chado_insert_record('synonym', array(
+        $synonym = chado_insert_record('synonym', [
           'name' => $syn_name,
           'type_id' => $syn_type,
           'synonym_sgml' => '',
-        ));
+        ]);
         $synonym = (object) $synonym;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $synonym->name;
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__synonym_id'] = $synonym->synonym_id;
@@ -219,16 +227,16 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"synonym-widget\">
         <div class=\"synonym-widget-item\">" .
-          drupal_render($element['name']) . "
+      drupal_render($element['name']) . "
         </div>
         <div>" .
-          drupal_render($element['type_id']) . "
+      drupal_render($element['type_id']) . "
         </div>
         <div class=\"synonym-widget-item\">" .
-          drupal_render($element['chado-' . $table_name . '__is_internal']) . "
+      drupal_render($element['chado-' . $table_name . '__is_internal']) . "
         </div>
         <div>" .
-          drupal_render($element['chado-' . $table_name . '__is_current']) . "
+      drupal_render($element['chado-' . $table_name . '__is_current']) . "
         </div>
       </div>
     ";

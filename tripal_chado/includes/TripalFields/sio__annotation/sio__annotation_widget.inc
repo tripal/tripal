@@ -1,11 +1,12 @@
 <?php
 
 class sio__annotation_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Chado Annotation';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__cvterm');
+  public static $field_types = ['chado_linker__cvterm'];
 
 
   /**
@@ -62,7 +63,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
       }
 
       if ($cvterm_id) {
-        $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
         $cv_id = $cvterm->cv_id->cv_id;
         $cvterm_name = $cvterm->name;
       }
@@ -70,7 +71,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
 
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $fk_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn];
@@ -85,93 +86,93 @@ class sio__annotation_widget extends ChadoFieldWidget {
       }
       $cvterm_name = $form_state['values'][$field_name]['und'][$delta]['cvterm_name'];
       $cv_id = $form_state['values'][$field_name]['und'][$delta]['cv_id'];
-      $cvterm = chado_generate_var('cvterm', array(
+      $cvterm = chado_generate_var('cvterm', [
         'cv_id' => $cv_id,
         'name' => $cvterm_name,
-      ));
+      ]);
       if (!$cvterm) {
         $cvterm_name = '';
       }
     }
 
-    $widget['#prefix'] =  "<span id='$field_name-sio--annotation-$delta'>";
-    $widget['#suffix'] =  "</span>";
+    $widget['#prefix'] = "<span id='$field_name-sio--annotation-$delta'>";
+    $widget['#suffix'] = "</span>";
 
     // The value field isn't really used but it's needed because if
     // it doesn't have a value the element won't be considered for
     // insert/update.
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => $cvterm_id,
-    );
+    ];
 
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
+    $widget['chado-' . $field_table . '__' . $pkey] = [
       '#type' => 'value',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $field_table . '__cvterm_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__cvterm_id'] = [
       '#type' => 'value',
       '#default_value' => $cvterm_id,
-    );
-    $widget['chado-' . $field_table . '__' . $fkey_lcolumn] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $fkey_lcolumn] = [
       '#type' => 'value',
       '#default_value' => $fk_value,
-    );
+    ];
 
     $cvs = tripal_get_cv_select_options();
-    $widget['cv_id'] = array(
+    $widget['cv_id'] = [
       '#type' => 'select',
       '#title' => t('Vocabulary'),
       '#options' => $cvs,
       '#default_value' => $cv_id,
       '#required' => $element['#required'],
-      '#attributes' => array('style' => 'width: 200px;'),
-      '#ajax' => array(
+      '#attributes' => ['style' => 'width: 200px;'],
+      '#ajax' => [
         'callback' => "sio__annotation_widget_form_ajax_callback",
         'wrapper' => "$field_name-sio--annotation-$delta",
         'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
+        'method' => 'replace',
+      ],
+    ];
     $cv_schema = chado_get_schema('cvterm');
-    $widget['cvterm_name'] = array(
+    $widget['cvterm_name'] = [
       '#type' => 'textfield',
       '#title' => t('Term Name'),
       '#default_value' => $cvterm_name,
       '#maxlength' => array_key_exists('length', $cv_schema['fields']['name']) ? $cv_schema['fields']['name']['length'] : 255,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/' . $cv_id,
       '#disabled' => $cv_id ? FALSE : TRUE,
-    );
+    ];
 
     if (array_key_exists('pub_id', $schema['fields'])) {
-      $widget['pub'] = array(
+      $widget['pub'] = [
         '#type' => 'textfield',
         '#title' => t('Publication'),
         '#default_value' => $pub_name,
         '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
         '#maxlength' => 100000,
         '#disabled' => $cv_id ? FALSE : TRUE,
-      );
-      $widget['chado-' . $field_table . '__pub_id'] = array(
+      ];
+      $widget['chado-' . $field_table . '__pub_id'] = [
         '#type' => 'value',
         '#default_value' => $pub_id ? $pub_id : '',
-      );
+      ];
     }
 
     if (array_key_exists('is_not', $schema['fields'])) {
-      $widget['chado-' . $field_table . '__is_not'] = array(
+      $widget['chado-' . $field_table . '__is_not'] = [
         '#type' => 'checkbox',
         '#title' => t('Negate this term (NOT)'),
         '#default_value' => $is_not,
         '#required' => $element['#required'],
         '#disabled' => $cv_id ? FALSE : TRUE,
-      );
+      ];
     }
     if (array_key_exists('rank', $schema['fields'])) {
-      $widget['chado-' . $field_table . '__rank'] = array(
+      $widget['chado-' . $field_table . '__rank'] = [
         '#type' => 'value',
         '#default_value' => $delta,
-      );
+      ];
     }
   }
 
@@ -207,14 +208,14 @@ class sio__annotation_widget extends ChadoFieldWidget {
     if (array_key_exists('pub_id', $schema['fields'])) {
       $pub_name = $form_state['values'][$field_name]['und'][$delta]['pub'];
       if ($pub_name) {
-        $pub = chado_generate_var('pub', array('uniquename' => $pub_name));
+        $pub = chado_generate_var('pub', ['uniquename' => $pub_name]);
         if ($pub) {
           $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
         }
       }
       // Use the NULL pub.
       else {
-        $pub = tripal_get_publication(array('uniquename' => 'null'));
+        $pub = tripal_get_publication(['uniquename' => 'null']);
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
       }
     }
@@ -228,10 +229,10 @@ class sio__annotation_widget extends ChadoFieldWidget {
     // Get the term that matches.
     $cvterm_name = $form_state['values'][$field_name]['und'][$delta]['cvterm_name'];
     $cv_id = $form_state['values'][$field_name]['und'][$delta]['cv_id'];
-    $cvterm = chado_generate_var('cvterm', array(
+    $cvterm = chado_generate_var('cvterm', [
       'cv_id' => $cv_id,
       'name' => $cvterm_name,
-    ));
+    ]);
     if ($cvterm) {
       $form_state['values'][$field_name]['und'][$delta]['cvterm_name'] = '';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__cvterm_id'] = $cvterm->cvterm_id;
@@ -264,16 +265,16 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"sio--annotation-widget\">
         <div class=\"sio--annotation-item\">" .
-          drupal_render($element['cv_id']) . "
+      drupal_render($element['cv_id']) . "
         </div>
         <div class=\"sio--annotation-item\">" .
-          drupal_render($element['cvterm_name']) . "
+      drupal_render($element['cvterm_name']) . "
         </div>
         <div class=\"sio--annotation-item\">" .
-          drupal_render($element['pub']) . "
+      drupal_render($element['pub']) . "
         </div>
         <div class=\"sio--annotation-item\">" .
-          drupal_render($element['chado-' . $field_table . '__is_not']) . "
+      drupal_render($element['chado-' . $field_table . '__is_not']) . "
         </div>
       </div>
     ";

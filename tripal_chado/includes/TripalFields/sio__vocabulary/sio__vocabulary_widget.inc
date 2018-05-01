@@ -6,7 +6,7 @@ class sio__vocabulary_widget extends ChadoFieldWidget {
   public static $default_label = 'Vocabulary';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sio__vocabulary');
+  public static $field_types = ['sio__vocabulary'];
 
 
   /**
@@ -29,41 +29,41 @@ class sio__vocabulary_widget extends ChadoFieldWidget {
     if (empty($items)) {
       // Use the bundle to get the cv_id choosen for this cvterm-based entity.
       // ASSUMPTION: the cv_id is saved as the "type_value" of the bundle.
-      $bundle = tripal_load_bundle_entity(array('name' => $widget['#bundle']));
-      $cv = tripal_get_cv(array('cv_id' => $bundle->type_value));
+      $bundle = tripal_load_bundle_entity(['name' => $widget['#bundle']]);
+      $cv = tripal_get_cv(['cv_id' => $bundle->type_value]);
 
       // Now populate the items array with defaults based on the cv.
       if ($cv) {
-        $items[$delta] = array(
+        $items[$delta] = [
           'value' => $cv->name,
           'chado-' . $field_table . '__cv_id' => $cv->cv_id,
-        );
+        ];
       }
       else {
         tripal_report_error(
           $field_name,
           TRIPAL_ERROR,
           'Unable to determine default vocabulary for :name Tripal Content Type',
-          array(':name' => $bundle->label)
+          [':name' => $bundle->label]
         );
         drupal_set_message(t('Unable to determine default vocabulary for :name Tripal Content Type',
-          array(':name' => $bundle->label)), 'error');
+          [':name' => $bundle->label]), 'error');
       }
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-    $widget['chado-' . $field_table . '__cv_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__cv_id'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['chado-' . $field_table . '__cv_id'] : '',
-    );
-    $widget['vocabulary_name'] = array(
+    ];
+    $widget['vocabulary_name'] = [
       '#type' => 'item',
       '#title' => 'Vocabulary',
       '#markup' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
   }
 
   /**

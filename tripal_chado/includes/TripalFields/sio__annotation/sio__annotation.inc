@@ -24,7 +24,7 @@ class sio__annotation extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SIO',
     // The name of the term.
@@ -35,7 +35,7 @@ class sio__annotation extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'chado_linker__cvterm_widget';
@@ -70,16 +70,16 @@ class sio__annotation extends ChadoField {
       // Get the term that matches.
       $cvterm_name = $item['cvterm_name'];
       $cv_id = $item['cv_id'];
-      if($cvterm_name and $cv_id) {
-        $cvterm = chado_generate_var('cvterm', array(
+      if ($cvterm_name and $cv_id) {
+        $cvterm = chado_generate_var('cvterm', [
           'cv_id' => $cv_id,
           'name' => $cvterm_name,
-        ));
+        ]);
         if (!$cvterm) {
-          $errors[$field_name][$langcode][$delta][] = array(
-            'message' =>  t("Cannot find a term that matches the term name and vocabulary."),
-            'error' => 'cvterm_name'
-          );
+          $errors[$field_name][$langcode][$delta][] = [
+            'message' => t("Cannot find a term that matches the term name and vocabulary."),
+            'error' => 'cvterm_name',
+          ];
         }
       }
     }
@@ -97,63 +97,63 @@ class sio__annotation extends ChadoField {
     $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
 
     $field_term = $this->getFieldTermID();
-    $info = array(
-      $field_term => array(
-        'operations' => array(),
+    $info = [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:complexType',
         'readonly' => FALSE,
-        'elements' => array(
-          $vocabulary_term => array(
+        'elements' => [
+          $vocabulary_term => [
             'sortable' => TRUE,
             'searchable' => TRUE,
             'label' => 'Annotation Term Vocabulary',
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $accession_term => array(
+          ],
+          $accession_term => [
             'sortable' => TRUE,
             'searchable' => TRUE,
             'label' => 'Annotation Term Accession',
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $definition_term => array(
+          ],
+          $definition_term => [
             'sortable' => TRUE,
             'searchable' => TRUE,
             'label' => 'Annotation Term Description',
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
 
     if (array_key_exists('is_not', $schema['fields'])) {
       $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
-      $info[$field_term]['elements'][$negation_term] = array(
+      $info[$field_term]['elements'][$negation_term] = [
         'sortable' => FALSE,
         'searchable' => FALSE,
         'label' => 'Annotation Term Negates',
         'type' => 'xs:boolean',
         'readonly' => FALSE,
         'required' => FALSE,
-      );
+      ];
     }
     if (array_key_exists('rank', $schema['fields'])) {
       $rank_term = tripal_get_chado_semweb_term($field_table, 'rank');
-      $info[$field_term]['elements'][$rank_term] = array(
+      $info[$field_term]['elements'][$rank_term] = [
         'sortable' => FALSE,
         'searchable' => FALSE,
         'label' => 'Annotation Term Rank',
         'type' => 'xs:integer',
         'readonly' => FALSE,
         'required' => FALSE,
-      );
+      ];
     }
     if (array_key_exists('pub_id', $schema['fields'])) {
     }
@@ -241,6 +241,7 @@ class sio__annotation extends ChadoField {
       $query->orderBy($alias . "_cvterm.definition", $order['direction']);
     }
   }
+
   /**
    *
    * @see TripalField::load()
@@ -270,12 +271,12 @@ class sio__annotation extends ChadoField {
 
     // Set some defaults for the empty record.
     $chado_record = $entity->chado_record;
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => $chado_record->$fkey_rcolumn,
       'chado-' . $field_table . '__cvterm_id' => '',
-    );
+    ];
     if (array_key_exists('is_not', $schema['fields'])) {
       $entity->{$field_name}['und'][0]['chado-' . $field_table . '__is_not'] = '';
     }
@@ -287,32 +288,32 @@ class sio__annotation extends ChadoField {
     }
 
     // Get the annotations associated with this base record for this fields type.
-    $columns = array('*');
-    $match = array(
+    $columns = ['*'];
+    $match = [
       $fkey_lcolumn => $chado_record->$fkey_rcolumn,
-    );
-    $order_by = array($pkey => 'ASC');
+    ];
+    $order_by = [$pkey => 'ASC'];
     if (array_key_exists('rank', $schema['fields'])) {
-      $order_by = array('rank' => 'ASC');
+      $order_by = ['rank' => 'ASC'];
     }
-    $options = array(
+    $options = [
       'return_array' => TRUE,
-      'order_by' => $order_by
-    );
+      'order_by' => $order_by,
+    ];
     $fcvterms = chado_select_record($field_table, $columns, $match, $options);
     for ($i = 0; $i < count($fcvterms); $i++) {
       $linker = $fcvterms[$i];
-      $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $linker->cvterm_id));
-      $entity->{$field_name}['und'][$i] = array(
-        'value' => array(
+      $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $linker->cvterm_id]);
+      $entity->{$field_name}['und'][$i] = [
+        'value' => [
           $vocabulary => $cvterm->dbxref_id->db_id->name,
           $accession => $cvterm->dbxref_id->accession,
-          $definition => isset($cvterm->definition) ? $cvterm->definition : ''
-        ),
+          $definition => isset($cvterm->definition) ? $cvterm->definition : '',
+        ],
         'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
         'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
         'chado-' . $field_table . '__' . 'cvterm_id' => $linker->cvterm_id,
-      );
+      ];
       if (array_key_exists('is_not', $schema['fields'])) {
         $entity->{$field_name}['und'][$i]['value'][$negation] = $linker->is_not;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__is_not'] = $linker->is_not;
@@ -344,16 +345,16 @@ function theme_chado_linker__cvterm_widget($variables) {
   $layout = "
     <div class=\"annotation-cvterm-widget\">
       <div class=\"annotation-cvterm-widget-item\">" .
-      drupal_render($element['cv__cv_id']) . "
+    drupal_render($element['cv__cv_id']) . "
       </div>
       <div class=\"annotation-cvterm-widget-item\">" .
-      drupal_render($element['cvterm__name']) . "
+    drupal_render($element['cvterm__name']) . "
       </div>
       <div class=\"annotation-cvterm-widget-item\">" .
-      drupal_render($element['pub']) . "
+    drupal_render($element['pub']) . "
       </div>
       <div class=\"annotation-cvterm-widget-item\">" .
-      drupal_render($element['chado-' . $table_name . '__is_not']) . "
+    drupal_render($element['chado-' . $table_name . '__is_not']) . "
       </div>
     </div>
   ";

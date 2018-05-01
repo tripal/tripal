@@ -8,7 +8,7 @@
  * Load D3.js releated javascripts for the current page.
  */
 function tripal_add_d3js() {
-  $library = array('loaded' => FALSE);
+  $library = ['loaded' => FALSE];
 
   // First try to load d3.js using the libraries API.
   // This will work if the site admin has saved d3.js in their libraries folder.

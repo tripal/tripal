@@ -6,12 +6,12 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
   public static $default_label = 'Relationship';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sbo__relationship');
+  public static $field_types = ['sbo__relationship'];
 
-  public static $default_settings = array(
+  public static $default_settings = [
     'title' => 'Relationship',
     'empty' => 'There are no relationships',
-  );
+  ];
 
   /**
    *
@@ -21,17 +21,17 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     $display = $this->instance['display'][$view_mode];
     $settings = $display['settings'];
-    $element = array();
-    $element['title'] = array(
+    $element = [];
+    $element['title'] = [
       '#type' => 'textfield',
       '#title' => 'Table Header',
       '#default_value' => array_key_exists('title', $settings) ? $settings['title'] : 'Relationship',
-    );
-    $element['empty'] = array(
+    ];
+    $element['empty'] = [
       '#type' => 'textfield',
       '#title' => 'Empty text',
       '#default_value' => array_key_exists('empty', $settings) ? $settings['empty'] : 'There are no relationships',
-    );
+    ];
 
     return $element;
   }
@@ -44,10 +44,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $settings = $display['settings'];
 
     $summary = t('Title: @title<br>Empty: @empty',
-        array(
-          '@title' => $settings['title'],
-          '@empty' => $settings['empty'])
-        );
+      [
+        '@title' => $settings['title'],
+        '@empty' => $settings['empty'],
+      ]
+    );
 
     return $summary;
   }
@@ -60,8 +61,8 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
-    $rows = array();
-    $headers = array($settings['title']);
+    $rows = [];
+    $headers = [$settings['title']];
 
     foreach ($items as $delta => $item) {
       if (empty($item['value'])) {
@@ -77,7 +78,12 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
       if ($object_type == 'mRNA' and
-          (in_array($subject_type, array('CDS', 'exon', 'five_prime_UTR', 'three_prime_UTR')))) {
+        (in_array($subject_type, [
+          'CDS',
+          'exon',
+          'five_prime_UTR',
+          'three_prime_UTR',
+        ]))) {
         continue;
       }
 
@@ -101,10 +107,10 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         }
       }
 
-      $rows[][] = array(
+      $rows[][] = [
         'data' => $phrase,
-        'class' => array('tripal-entity-unattached field-items')
-      );
+        'class' => ['tripal-entity-unattached field-items'],
+      ];
     }
 
     // Build the pager
@@ -113,12 +119,12 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $total_pages = (int) ($total_records / $items_per_page) + 1;
     $pelement = 0; //$this->getPagerElementID();
     $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);
-    $pager = theme('pager', array(
-      'tags' => array(),
+    $pager = theme('pager', [
+      'tags' => [],
       'element' => $pelement,
-      'parameters' => array(),
+      'parameters' => [],
       'quantity' => $total_pages,
-    ));
+    ]);
     $pager = $this->ajaxifyPager($pager, $entity);
     $page_items = array_chunk($rows, $items_per_page);
 
@@ -131,22 +137,22 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         $content = 'There are ' . count($rows) . ' relationships.';
       }
     }
-    $content .= theme_table(array(
+    $content .= theme_table([
       'header' => $headers,
-      'rows' => count($rows) > 0 ? $page_items[$current_page] : array(),
-      'attributes' => array(
+      'rows' => count($rows) > 0 ? $page_items[$current_page] : [],
+      'attributes' => [
         'id' => 'sbo--relationship-table',
-      ),
+      ],
       'sticky' => FALSE,
       'caption' => '',
-      'colgroups' => array(),
+      'colgroups' => [],
       'empty' => $settings['empty'],
-    ));
+    ]);
 
-    $element[0] = array(
+    $element[0] = [
       '#type' => 'markup',
       '#markup' => $content . $pager,
-    );
+    ];
   }
 }
 

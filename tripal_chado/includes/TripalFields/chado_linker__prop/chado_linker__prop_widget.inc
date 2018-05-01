@@ -1,11 +1,12 @@
 <?php
 
 class chado_linker__prop_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Chado Property';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__prop');
+  public static $field_types = ['chado_linker__prop'];
 
   /**
    *
@@ -51,7 +52,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $fk_value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field];
       $type_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'];
@@ -66,48 +67,48 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     if (!$type_id) {
       $vocabulary = $this->instance['settings']['term_vocabulary'];
       $accession = $this->instance['settings']['term_accession'];
-      $cvterm = tripal_get_cvterm(array(
-        'dbxref_id' => array(
-          'db_id' => array(
+      $cvterm = tripal_get_cvterm([
+        'dbxref_id' => [
+          'db_id' => [
             'name' => $vocabulary,
-          ),
+          ],
           'accession' => $accession,
-        ),
-      ));
+        ],
+      ]);
       if ($cvterm) {
         $type_id = $cvterm->cvterm_id;
       }
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
+    $widget['chado-' . $field_table . '__' . $pkey] = [
       '#type' => 'hidden',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $field_table . '__' . $lfkey_field] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $lfkey_field] = [
       '#type' => 'hidden',
       '#value' => $fk_value,
-    );
-    $widget['chado-' . $field_table . '__value'] = array(
+    ];
+    $widget['chado-' . $field_table . '__value'] = [
       '#type' => 'textarea',
       '#default_value' => $value,
       '#title' => $instance['label'],
       '#description' => $instance['description'],
       '#rows' => $rows,
       '#required' => $instance['required'],
-    );
-    $widget['chado-' . $field_table . '__type_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__type_id'] = [
       '#type' => 'hidden',
       '#value' => $type_id,
-    );
-    $widget['chado-' . $field_table . '__rank'] = array(
+    ];
+    $widget['chado-' . $field_table . '__rank'] = [
       '#type' => 'hidden',
       '#value' => $rank,
-    );
+    ];
   }
 
   /**

@@ -1,11 +1,12 @@
 <?php
 
 class chado_linker__prop_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Chado Property';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__prop');
+  public static $field_types = ['chado_linker__prop'];
 
 
   /**
@@ -24,7 +25,7 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
     $field_name = $this->field['field_name'];
     $chado_table = $this->instance['settings']['chado_table'];
 
-    $list = array();
+    $list = [];
     foreach ($items as $index => $item) {
       $list[$index] = $item['value'];
     }
@@ -32,20 +33,25 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
     // If more than one value has been found display all values in an unordered
     // list.
     if (count($list) > 1) {
-      $content = theme_item_list(array(
+      $content = theme_item_list([
         'items' => $list,
         'title' => '',
-        'attributes' => array('class' => array($entity->bundle . '-properties-list', 'properties-field-list')),
-        'type' => 'ul'
-      ));
+        'attributes' => [
+          'class' => [
+            $entity->bundle . '-properties-list',
+            'properties-field-list',
+          ],
+        ],
+        'type' => 'ul',
+      ]);
     }
     else {
       $content = $list[0];
     }
-    $element[0] = array(
+    $element[0] = [
       // We create a render array to produce the desired markup,
       '#type' => 'markup',
       '#markup' => $content,
-    );
+    ];
   }
 }

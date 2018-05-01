@@ -9,14 +9,14 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
   $feature = $variables['node']->feature;
 
   // get the featureloc src features
-  $options = array(
+  $options = [
     'return_array' => 1,
-    'include_fk' => array(
-      'srcfeature_id' => array(
-        'type_id' => 1
-      ),
-    ),
-  );
+    'include_fk' => [
+      'srcfeature_id' => [
+        'type_id' => 1,
+      ],
+    ],
+  ];
 
   $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
@@ -48,14 +48,14 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 
   // if we don't have any featurelocs then no point in continuing
   if (!$featurelocs) {
-    return array();
+    return [];
   }
 
   // get the list of relationships (including any aggregators) and iterate
   // through each one to find information needed to color-code the reference sequence
   $relationships = _tripal_feature_get_aggregate_relationships($feature_id);
   if (!$relationships) {
-    return array();
+    return [];
   }
 
 
@@ -74,19 +74,19 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       $rel->featurelocs = new stdClass();
       $rel->featurelocs->$src = new stdClass();
       $rel->featurelocs->$src->src_uniquename = $rel_featureloc->src_uniquename;
-      $rel->featurelocs->$src->src_cvterm_id  = $rel_featureloc->src_cvterm_id;
-      $rel->featurelocs->$src->src_cvname     = $rel_featureloc->src_cvname;
-      $rel->featurelocs->$src->fmin           = $rel_featureloc->fmin;
-      $rel->featurelocs->$src->fmax           = $rel_featureloc->fmax;
-      $rel->featurelocs->$src->src_name       = $rel_featureloc->src_name;
+      $rel->featurelocs->$src->src_cvterm_id = $rel_featureloc->src_cvterm_id;
+      $rel->featurelocs->$src->src_cvname = $rel_featureloc->src_cvname;
+      $rel->featurelocs->$src->fmin = $rel_featureloc->fmin;
+      $rel->featurelocs->$src->fmax = $rel_featureloc->fmax;
+      $rel->featurelocs->$src->src_name = $rel_featureloc->src_name;
 
       // keep track of the individual parts for each relationship
       $start = $rel->featurelocs->$src->fmin;
-      $end   = $rel->featurelocs->$src->fmax;
-      $type  = $rel->subject_type;
+      $end = $rel->featurelocs->$src->fmax;
+      $type = $rel->subject_type;
       $rel_locs[$src]['parts'][$start][$type]['start'] = $start;
-      $rel_locs[$src]['parts'][$start][$type]['end']   = $end;
-      $rel_locs[$src]['parts'][$start][$type]['type']  = $type;
+      $rel_locs[$src]['parts'][$start][$type]['end'] = $end;
+      $rel_locs[$src]['parts'][$start][$type]['type'] = $type;
     }
   }
 
@@ -94,7 +94,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
   // where this feature is found.   We want to get the sequence for each
   // location and then annotate it with the parts found from the relationships
   // locations determiend above.
-  $floc_sequences = array();
+  $floc_sequences = [];
   foreach ($featurelocs as $featureloc) {
 
     // build the src name so we can keep track of the different parts for each feature
@@ -103,7 +103,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
     // orient the parts to the beginning of the feature sequence
     if (!empty($rel_locs[$src]['parts'])) {
       $parts = $rel_locs[$src]['parts'];
-      $rparts = array();  // we will fill this up if we're on the reverse strand
+      $rparts = [];  // we will fill this up if we're on the reverse strand
 
       foreach ($parts as $start => $types) {
         foreach ($types as $type_name => $type) {
@@ -111,8 +111,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
             // this is on the forward strand.  We need to convert the start on the src feature to the
             // start on this feature's sequence
             $parts[$start][$type_name]['start'] = $parts[$start][$type_name]['start'] - $featureloc->fmin;
-            $parts[$start][$type_name]['end']   = $parts[$start][$type_name]['end'] - $featureloc->fmin;
-            $parts[$start][$type_name]['type']  = $type_name;
+            $parts[$start][$type_name]['end'] = $parts[$start][$type_name]['end'] - $featureloc->fmin;
+            $parts[$start][$type_name]['type'] = $type_name;
           }
           else {
             // this is on the reverse strand.  We need to swap the start and stop and calculate from the
@@ -124,8 +124,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
             $new_end = $size - ($start_orig - $featureloc->fmin);
 
             $rparts[$new_start][$type_name]['start'] = $new_start;
-            $rparts[$new_start][$type_name]['end']   = $new_end;
-            $rparts[$new_start][$type_name]['type']  = $type_name;
+            $rparts[$new_start][$type_name]['end'] = $new_end;
+            $rparts[$new_start][$type_name]['type'] = $type_name;
           }
         }
       }
@@ -142,7 +142,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 
       $floc_sequences[$src]['id'] = $src;
       $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
-      $args = array(':feature_id' => $featureloc->srcfeature_id->feature_id);
+      $args = [':feature_id' => $featureloc->srcfeature_id->feature_id];
       $start = $featureloc->fmin + 1;
       $size = $featureloc->fmax - $featureloc->fmin;
 
@@ -170,11 +170,12 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       $floc_sequences[$src]['location'] = tripal_get_location_string($featureloc);
       $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, '', $featureloc, '', strlen($residues));
       $floc_sequences[$src]['featureloc'] = $featureloc;
-      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $floc_sequences[$src]['defline']);
+      $floc_sequences[$src]['formatted_seq'] = tripal_feature_color_sequence($residues, $parts, $floc_sequences[$src]['defline']);
     }
   }
   return $floc_sequences;
 }
+
 /**
  * Used to sort the list of relationship parts by start position
  *
@@ -191,6 +192,7 @@ function tripal_feature_sort_rel_parts_by_start($a, $b) {
   }
   return strnatcmp($astart, $bstart);
 }
+
 /**
  * Load the locations for a given feature
  *
@@ -218,18 +220,18 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
        INNER JOIN {cvterm} CVT  ON F.type_id     = CVT.cvterm_id
        INNER JOIN {cvterm} CVTS ON FS.type_id    = CVTS.cvterm_id
    ";
-  if (strcmp($side, 'as_parent')==0) {
+  if (strcmp($side, 'as_parent') == 0) {
     $sql .= "WHERE FL.srcfeature_id = :feature_id ";
   }
-  if (strcmp($side, 'as_child')==0) {
+  if (strcmp($side, 'as_child') == 0) {
     $sql .= "WHERE FL.feature_id = :feature_id ";
   }
 
-  $flresults = chado_query($sql, array(':feature_id' => $feature_id));
+  $flresults = chado_query($sql, [':feature_id' => $feature_id]);
 
   // copy the results into an array
-  $i=0;
-  $featurelocs = array();
+  $i = 0;
+  $featurelocs = [];
   while ($loc = $flresults->fetchObject()) {
     // if a drupal node exists for this feature then add the nid to the
     // results object
@@ -240,7 +242,7 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   }
 
   // Add the relationship feature locs if aggregate is turned on
-  if ($aggregate and strcmp($side, 'as_parent')==0) {
+  if ($aggregate and strcmp($side, 'as_parent') == 0) {
     // get the relationships for this feature without substituting any children
     // for the parent. We want all relationships
     $relationships = _tripal_feature_get_aggregate_relationships($feature_id, 0);
@@ -286,7 +288,7 @@ function tripal_feature_sort_locations($a, $b) {
 function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
 
-  $types = array();
+  $types = [];
   // first get the list of types so we can create a color legend
   foreach ($parts as $index => $t) {
     foreach ($t as $type_name => $details) {
@@ -307,8 +309,8 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   $newseq .= ">$defline<br>";
 
   // iterate through the parts. They should be in order.
-  $starts   = array(); // an array holding all of the children starting locations
-  $ends     = array(); // an array holding all of the children's ending locations
+  $starts = []; // an array holding all of the children starting locations
+  $ends = []; // an array holding all of the children's ending locations
   $seqcount = 0;
   foreach ($parts as $index => $types) {
 
@@ -373,6 +375,7 @@ function tripal_feature_sort_rel_parts_by_end($a, $b) {
   }
   return $val;
 }
+
 /**
  *
  *
@@ -400,6 +403,7 @@ function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
     $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
   }
 }
+
 /**
  *
  *
@@ -409,28 +413,28 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
-  $options = array(
+  $options = [
     'return_array' => 1,
-    'include_fk' => array(
-      'srcfeature_id' => array(
+    'include_fk' => [
+      'srcfeature_id' => [
         'type_id' => 1,
-      ),
-      'feature_id' => array(
-        'type_id' => 1
-      ),
-    )
-  );
+      ],
+      'feature_id' => [
+        'type_id' => 1,
+      ],
+    ],
+  ];
   $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
   // get alignments as child
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
-    $cfeaturelocs = array();
+    $cfeaturelocs = [];
   }
   // get alignment as parent
   $pfeaturelocs = $feature->featureloc->srcfeature_id;
   if (!$pfeaturelocs) {
-    $pfeaturelocs = array();
+    $pfeaturelocs = [];
   }
 
   // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
@@ -439,7 +443,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
   // combine all three alignments into a single array for printing together in
   // a single list
-  $alignments = array();
+  $alignments = [];
   foreach ($pfeaturelocs as $featureloc) {
     // if type is a 'match' then ignore it. We will handle those below
     if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
@@ -482,7 +486,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   // provided to this function.
   foreach ($mfeaturelocs as $featureloc) {
     // get more information about the right feature
-    $select = array('feature_id' => $featureloc->right_srcfeature_id);
+    $select = ['feature_id' => $featureloc->right_srcfeature_id];
     $rfeature = chado_generate_var('feature', $select);
     // now add to the list
     $alignment = new stdClass();
@@ -509,6 +513,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   }
   $feature->all_featurelocs = $alignments;
 }
+
 /**
  * This function is for features that align through an intermediate such
  * as 'EST_match' or 'match'.  This occurs in the case where two sequences
@@ -525,7 +530,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
  * alignment of feature 3 with feature 2
  *
  * Features may align to more than one feature and are not matches. We do
-   * not want to include these, so we have to filter on the SO terms:
+ * not want to include these, so we have to filter on the SO terms:
  * match, or %_match
  *
  * @ingroup tripal_legacy_feature
@@ -567,19 +572,20 @@ function tripal_feature_get_matched_alignments($feature) {
      ORDER BY FL1.fmin
    ";
 
-  $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
+  $results = chado_query($sql, [':feature_id' => $feature->feature_id]);
 
   // iterate through the results and add them to our featurelocs array
-  $featurelocs = array();
+  $featurelocs = [];
   while ($fl = $results->fetchObject()) {
     // ignore featurelocs where the left and right srcfeature is the same
     if (strcmp($fl->left_srcfeature_id, $fl->right_srcfeature_id) == 0) {
       continue;
     }
-    $featurelocs[] = $fl ;
+    $featurelocs[] = $fl;
   }
   return $featurelocs;
 }
+
 /**
  *
  *
@@ -589,6 +595,7 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $
   $organism = $variables['node']->organism;
   $organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
 }
+
 /**
  * Load the arguments for the organism feature counts browser
  *
@@ -599,13 +606,13 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $
  */
 function tripal_feature_load_organism_feature_counts($organism) {
 
-  $args = array();
-  $order = array();
-  $names = array();
+  $args = [];
+  $order = [];
+  $names = [];
 
   // We should not assume this table is present since it is a materialized view.
   if (!chado_table_exists('organism_feature_count')) {
-      return NULL;
+    return NULL;
   }
 
   // build the where clause for the SQL statement if we have a custom term list
@@ -628,7 +635,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
 
       // if the admin specified a new name then store that otherwise use the
       // the default sequence ontology term name
-      if(count($temp2) == 2) {
+      if (count($temp2) == 2) {
         $names[] = rtrim($temp2[1]);
       }
       else {
@@ -655,7 +662,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
   $org_features = chado_query($sql, $args);
 
   // iterate through the types
-  $types = array();
+  $types = [];
   while ($type = $org_features->fetchObject()) {
     $types[$type->feature_type] = $type;
     // if we don't have an order this means we didn't go through the loop
@@ -667,16 +674,16 @@ function tripal_feature_load_organism_feature_counts($organism) {
   }
 
   // now reorder the types
-  $ordered_types = array();
+  $ordered_types = [];
   foreach ($order as $type) {
     if (array_key_exists($type, $types)) {
       $ordered_types[] = $types[$type];
     }
   }
-  return array(
+  return [
     'types' => $ordered_types,
-    'names' => $names
-  );
+    'names' => $names,
+  ];
 }
 
 /**
@@ -688,7 +695,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
  *
  * @param $feature
  *   The feature object
-
+ *
  * @return
  *   An array with two objects
  *
@@ -696,24 +703,24 @@ function tripal_feature_load_organism_feature_counts($organism) {
  */
 function tripal_feature_get_feature_relationships($feature) {
   // expand the feature object to include the feature relationships.
-  $options = array(
+  $options = [
     'return_array' => 1,
-    'order_by' => array('rank' => 'ASC'),
+    'order_by' => ['rank' => 'ASC'],
     // we don't want to fully recurse we only need information about the
     // relationship type and the object and subject features (including feature type
     // and organism)
-    'include_fk' => array(
+    'include_fk' => [
       'type_id' => 1,
-      'object_id' => array(
+      'object_id' => [
         'type_id' => 1,
-        'organism_id' => 1
-      ),
-      'subject_id'  => array(
+        'organism_id' => 1,
+      ],
+      'subject_id' => [
         'type_id' => 1,
-        'organism_id' => 1
-      ),
-    ),
-  );
+        'organism_id' => 1,
+      ],
+    ],
+  ];
   $feature = chado_expand_var($feature, 'table', 'feature_relationship', $options);
 
   // get the subject relationships
@@ -723,19 +730,19 @@ function tripal_feature_get_feature_relationships($feature) {
 
   // get alignment as child. The $feature->featureloc element
   // is already populated from the alignment preprocess function
-  $options = array(
-    'include_fk' => array(
+  $options = [
+    'include_fk' => [
       'srcfeature_id' => 1,
       'feature_id' => 1,
-    ),
-  );
+    ],
+  ];
   $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
-    $cfeaturelocs = array();
+    $cfeaturelocs = [];
   }
   elseif (!is_array($cfeaturelocs)) {
-    $cfeaturelocs = array($cfeaturelocs);
+    $cfeaturelocs = [$cfeaturelocs];
   }
 
   // prepare the SQL statement to get the featureloc for the
@@ -750,9 +757,9 @@ function tripal_feature_get_feature_relationships($feature) {
   ";
 
   // combine both object and subject relationshisp into a single array
-  $relationships = array();
-  $relationships['object'] = array();
-  $relationships['subject'] = array();
+  $relationships = [];
+  $relationships['object'] = [];
+  $relationships['subject'] = [];
 
   // iterate through the object relationships
   if ($orelationships) {
@@ -760,9 +767,12 @@ function tripal_feature_get_feature_relationships($feature) {
       $rel = new stdClass();
       // get locations where the child feature and this feature overlap with the
       // same landmark feature.
-      $rel->child_featurelocs = array();
+      $rel->child_featurelocs = [];
       foreach ($cfeaturelocs as $featureloc) {
-        $res = chado_query($flrels_sql, array(':feature_id' => $relationship->subject_id->feature_id, ':srcfeature_id' => $featureloc->srcfeature_id->feature_id));
+        $res = chado_query($flrels_sql, [
+          ':feature_id' => $relationship->subject_id->feature_id,
+          ':srcfeature_id' => $featureloc->srcfeature_id->feature_id,
+        ]);
         while ($loc = $res->fetchObject()) {
           // add in the node id of the src feature if it exists and save this location
           if (property_exists($featureloc->srcfeature_id, 'nid')) {
@@ -779,16 +789,16 @@ function tripal_feature_get_feature_relationships($feature) {
 
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
-      $n = db_query($sql, array(':feature_id' => $relationship->subject_id->feature_id))->fetchObject();
+      $n = db_query($sql, [':feature_id' => $relationship->subject_id->feature_id])->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
 
       if (!array_key_exists($rel_type, $relationships['object'])) {
-        $relationships['object'][$rel_type] = array();
+        $relationships['object'][$rel_type] = [];
       }
       if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-        $relationships['object'][$rel_type][$child_type] = array();
+        $relationships['object'][$rel_type][$child_type] = [];
       }
       $relationships['object'][$rel_type][$child_type][] = $rel;
     }
@@ -799,9 +809,12 @@ function tripal_feature_get_feature_relationships($feature) {
     foreach ($srelationships as $relationship) {
       $rel = new stdClass();
       // get locations where this feature overlaps with the parent
-      $rel->parent_featurelocs = array();
+      $rel->parent_featurelocs = [];
       foreach ($cfeaturelocs as $featureloc) {
-        $res = chado_query($flrels_sql, array(':feature_id' => $relationship->object_id->feature_id, ':srcfeature_id' => $featureloc->srcfeature_id->feature_id));
+        $res = chado_query($flrels_sql, [
+          ':feature_id' => $relationship->object_id->feature_id,
+          ':srcfeature_id' => $featureloc->srcfeature_id->feature_id,
+        ]);
         while ($loc = $res->fetchObject()) {
           // add in the node id of the src feature if it exists and save this location
           if (property_exists($featureloc->srcfeature_id, 'nid')) {
@@ -816,16 +829,16 @@ function tripal_feature_get_feature_relationships($feature) {
 
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
-      $n = db_query($sql, array(':feature_id' => $relationship->object_id->feature_id))->fetchObject();
+      $n = db_query($sql, [':feature_id' => $relationship->object_id->feature_id])->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
 
       if (!array_key_exists($rel_type, $relationships['subject'])) {
-        $relationships['subject'][$rel_type] = array();
+        $relationships['subject'][$rel_type] = [];
       }
       if (!array_key_exists($parent_type, $relationships['subject'][$rel_type])) {
-        $relationships['subject'][$rel_type][$parent_type] = array();
+        $relationships['subject'][$rel_type][$parent_type] = [];
       }
       $relationships['subject'][$rel_type][$parent_type][] = $rel;
     }
@@ -840,8 +853,8 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
 
   // Add in all the javascript/css files.
   tripal_add_d3js();
-  drupal_add_css(drupal_get_path('module','tripal_feature') . '/theme/css/tripal_feature.css');
-  drupal_add_js(drupal_get_path('module','tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
+  drupal_add_css(drupal_get_path('module', 'tripal_feature') . '/theme/css/tripal_feature.css');
+  drupal_add_js(drupal_get_path('module', 'tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
 
   // Retrieve and process all the data and save it as javascript settings.
   //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -850,15 +863,22 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
   // Thus grab all the records from this materialized view.
   $organism_feature_count = chado_select_record(
     'organism_feature_count',
-    array('*'),
-    array(),
-    array('order_by' => array('genus' => 'ASC', 'species' => 'ASC', 'feature_type' => 'ASC', 'num_features' => 'DESC'))
+    ['*'],
+    [],
+    [
+      'order_by' => [
+        'genus' => 'ASC',
+        'species' => 'ASC',
+        'feature_type' => 'ASC',
+        'num_features' => 'DESC',
+      ],
+    ]
   );
 
   // Initialize variables.
-  $chart = array();
-  $type_names = array();
-  $organism_names = array();
+  $chart = [];
+  $type_names = [];
+  $organism_names = [];
   $max_bar_height = 0;
 
   // Process each row of the materialzied view into the chart array.
@@ -880,10 +900,10 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
 
     // Save information about the current organism. This isn't actually used by the
     // chart but can be used to debug the bar generation to follow.
-    $chart[$row->cvterm_id]['organisms'][] = array(
+    $chart[$row->cvterm_id]['organisms'][] = [
       'name' => $row->genus . ' ' . $row->species,
-      'value' => (int) $row->num_features
-    );
+      'value' => (int) $row->num_features,
+    ];
 
     // Now to build the bar array with the start (y0) and end (y1) height on the
     // bar for a given organism.
@@ -901,11 +921,11 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
       $chart[$row->cvterm_id]['y1'] = $chart[$row->cvterm_id]['y0'] + $row->num_features;
     }
     // Now save the bar chunk we just determined.
-    $chart[$row->cvterm_id]['bars'][] = array(
+    $chart[$row->cvterm_id]['bars'][] = [
       'name' => $row->genus . ' ' . $row->species,
       'y0' => $chart[$row->cvterm_id]['y0'],
       'y1' => $chart[$row->cvterm_id]['y1'],
-    );
+    ];
 
     // We also need to keep track of the total number of features for a single bar (Type).
     $chart[$row->cvterm_id]['total_features'] = (int) $chart[$row->cvterm_id]['y1'];
@@ -927,10 +947,10 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
     SELECT mview_id, name, last_update
     FROM tripal_mviews
     WHERE mv_table=:mv_table',
-    array(':mv_table' => 'organism_feature_count')
+    [':mv_table' => 'organism_feature_count']
   )->fetchObject();
 
-  $vars['chart_details'] = array(
+  $vars['chart_details'] = [
     'summary' => $chart,
     'types' => $type_names,
     'organisms' => $organism_names,
@@ -939,9 +959,9 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
     'mviewUrl' => url('admin/tripal/storage/chado/mviews/update/' . $mview->mview_id),
     'mviewTable' => $mview->name,
     'mviewLastUpdate' => $mview->last_update ? format_date($mview->last_update) : '',
-  );
+  ];
 
   // Save everything we just determined as a Drupal JS settings so that we have access to
   // it in our js script.
-  drupal_add_js(array('tripalFeature' => array('admin' => $vars['chart_details'])), 'setting');
+  drupal_add_js(['tripalFeature' => ['admin' => $vars['chart_details']]], 'setting');
 }

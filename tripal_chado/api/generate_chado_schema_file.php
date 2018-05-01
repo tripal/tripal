@@ -11,16 +11,16 @@
  *
  * @code
  *'chado' => array(
-    'default' => array(
-      'database' => 'd7x_t2x_c13',
-      'username' => 'chado',
-      'password' => 'testing123',
-      'host' => 'localhost',
-      'port' => '',
-      'driver' => 'pgsql',
-      'prefix' => '',
-    ),
-  ),
+ * 'default' => array(
+ * 'database' => 'd7x_t2x_c13',
+ * 'username' => 'chado',
+ * 'password' => 'testing123',
+ * 'host' => 'localhost',
+ * 'port' => '',
+ * 'driver' => 'pgsql',
+ * 'prefix' => '',
+ * ),
+ * ),
  * @endcode
  *
  * This script requires a single argument (-v) which is the Chado version.
@@ -28,13 +28,19 @@
  *
  * Example usage in drupal directory root:
  *
- * php ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php -v 1.11 > \
+ * php
+ *   ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php
+ *   -v 1.11 > \
  *   ./sites/all/modules/tripal/tripal_core/api/tripal_core.schema_v1.11.api.inc.new
  *
- * php ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php -v 1.2 > \
+ * php
+ *   ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php
+ *   -v 1.2 > \
  *   ./sites/all/modules/tripal/tripal_core/api/tripal_core.schema_v1.2.api.inc.new
  *
- * php ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php -v 1.3 > \
+ * php
+ *   ./sites/all/modules/tripal/tripal_core/api/generate_chado_schema_file.php
+ *   -v 1.3 > \
  *   ./sites/all/modules/tripal/tripal_core/api/tripal_core.schema_v1.3.api.inc.new
  */
 
@@ -93,7 +99,7 @@ if (isset($arguments['v'])) {
   );
 
   // The SQL for retreiving details about a table.
-  $fksql ="
+  $fksql = "
     SELECT
         tc.constraint_name, tc.table_name, kcu.column_name,
         ccu.table_name AS foreign_table_name,
@@ -117,8 +123,8 @@ if (isset($arguments['v'])) {
     ORDER BY table_name
   ";
   $result = db_query($sql);
-  $table_schemas = array();
-  $referring = array();
+  $table_schemas = [];
+  $referring = [];
   while ($table = $result->fetchField()) {
 
     // Get the schema for each table.
@@ -126,8 +132,8 @@ if (isset($arguments['v'])) {
     $schema = $schema[$table];
 
     // Get the foreign keys and add them to the array.
-    $fks = db_query($fksql, array(':table_name' => $table));
-    $schema['foreign keys'] = array();
+    $fks = db_query($fksql, [':table_name' => $table]);
+    $schema['foreign keys'] = [];
     foreach ($fks as $fk) {
       $schema['foreign keys'][$fk->foreign_table_name]['table'] = $fk->foreign_table_name;
       $schema['foreign keys'][$fk->foreign_table_name]['columns'][$fk->column_name] = $fk->foreign_column_name;
@@ -135,8 +141,8 @@ if (isset($arguments['v'])) {
     }
 
     // Add a table and description key to the top.
-    $schema = array('table' => $table) + $schema;
-    $schema = array('description' => '') + $schema;
+    $schema = ['table' => $table] + $schema;
+    $schema = ['description' => ''] + $schema;
 
     // Fix the datetime fields and add a description field.
     foreach ($schema['fields'] as $fname => $details) {
@@ -156,7 +162,7 @@ if (isset($arguments['v'])) {
   // and generate the function strings.
   foreach ($table_schemas as $table => $schema) {
 
-    $schema['referring_tables'] = array();
+    $schema['referring_tables'] = [];
     if (count($reffering[$table]) > 0) {
       $schema['referring_tables'] = array_unique($reffering[$table]);
     }
@@ -164,12 +170,12 @@ if (isset($arguments['v'])) {
     // Reformat the array to be more legible.
     $arr = var_export($schema, 1);
     // Move array( to previous line.
-    $arr = preg_replace("/\n\s+array/","array", $arr);
+    $arr = preg_replace("/\n\s+array/", "array", $arr);
     // Add indentation.
-    $arr = preg_replace("/\n/","\n  ", $arr);
-    $arr = preg_replace("/true/","TRUE", $arr);
-    $arr = preg_replace("/false/","FALSE", $arr);
-    $arr = preg_replace("/array \(/","array(", $arr);
+    $arr = preg_replace("/\n/", "\n  ", $arr);
+    $arr = preg_replace("/true/", "TRUE", $arr);
+    $arr = preg_replace("/false/", "FALSE", $arr);
+    $arr = preg_replace("/array \(/", "array(", $arr);
 
     print (
       "/**\n" .

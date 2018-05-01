@@ -24,14 +24,14 @@ require_once 'includes/tripal_natural_diversity.admin.inc';
  * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_permission() {
-  return array(
+  return [
     /*
     'administer tripal nd' => array(
       'title' => t('Administer Natural Diversity Module'),
       'description' => t('Allow users to administer the natural diversity module.'),
     ),
     */
-  );
+  ];
 }
 
 /**
@@ -44,35 +44,38 @@ function tripal_natural_diversity_permission() {
  * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_menu() {
-  $items = array();
+  $items = [];
 
-    // the administative settings menu
+  // the administative settings menu
 
-  $items['admin/tripal/legacy/tripal_natdiv'] = array(
-   'title' => 'Natural Diversity Experiments',
-   'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
-   'page callback' => 'tripal_natural_diversity_admin_natdiv_view',
-   'access arguments' => array('administer tripal nd'),
-   'type' => MENU_NORMAL_ITEM,
-  );
+  $items['admin/tripal/legacy/tripal_natdiv'] = [
+    'title' => 'Natural Diversity Experiments',
+    'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
+    'page callback' => 'tripal_natural_diversity_admin_natdiv_view',
+    'access arguments' => ['administer tripal nd'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
-  $items['admin/tripal/legacy/tripal_natdiv/help'] = array(
+  $items['admin/tripal/legacy/tripal_natdiv/help'] = [
     'title' => 'Help',
     'description' => ('Help for the Tripal natural diversity module.'),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_natural_diversity_help'),
-    'access arguments' => array('administer tripal nd'),
+    'page arguments' => ['tripal_natural_diversity_help'],
+    'access arguments' => ['administer tripal nd'],
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
-  );
+    'weight' => 10,
+  ];
 
-  $items['admin/tripal/legacy/tripal_natdiv/views/natdiv_exp/enable'] = array(
+  $items['admin/tripal/legacy/tripal_natdiv/views/natdiv_exp/enable'] = [
     'title' => 'Enable Natural Diversity Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_natural_diversity_admin_natdiv_exp', 'admin/tripal/legacy/tripal_natdiv'),
-    'access arguments' => array('administer tripal nd'),
+    'page arguments' => [
+      'tripal_natural_diversity_admin_natdiv_exp',
+      'admin/tripal/legacy/tripal_natdiv',
+    ],
+    'access arguments' => ['administer tripal nd'],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   return $items;
 }
@@ -81,15 +84,15 @@ function tripal_natural_diversity_menu() {
  * Implements hook_views_api().
  *
  * Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_natural_diversity.views.inc where all the
- *  views integration code is
+ *  for this module which then includes tripal_natural_diversity.views.inc
+ * where all the views integration code is
  *
  * @ingroup tripal_legacy_natural_diversity
  */
 function tripal_natural_diversity_views_api() {
-  return array(
-      'api' => 3.0,
-  );
+  return [
+    'api' => 3.0,
+  ];
 }
 
 /**
@@ -100,30 +103,30 @@ function tripal_natural_diversity_views_api() {
 function tripal_natural_diversity_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $items = array(
+  $items = [
     // tripal_feature templates
-    'tripal_feature_nd_genotypes' => array(
-      'variables' => array('node' => NULL),
+    'tripal_feature_nd_genotypes' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_feature_nd_genotypes',
       'path' => "$path/theme/templates",
-    ),
+    ],
     // tripal_stock templates
-    'tripal_stock_nd_genotypes' => array(
-      'variables' => array('node' => NULL),
+    'tripal_stock_nd_genotypes' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_nd_genotypes',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_stock_nd_phenotypes' => array(
-      'variables' => array('node' => NULL),
+    ],
+    'tripal_stock_nd_phenotypes' => [
+      'variables' => ['node' => NULL],
       'template' => 'tripal_stock_nd_phenotypes',
       'path' => "$path/theme/templates",
-    ),
-    'tripal_natural_diversity_help' => array(
+    ],
+    'tripal_natural_diversity_help' => [
       'template' => 'tripal_natural_diversity_help',
-      'variables' =>  array(NULL),
+      'variables' => [NULL],
       'path' => "$path/theme/templates",
-    ),
-  );
+    ],
+  ];
   return $items;
 }
 
@@ -142,12 +145,12 @@ function tripal_natural_diversity_node_view($node, $view_mode, $langcode) {
         if (array_key_exists('tripal_feature_genotypes', $node->content)) {
           unset($node->content['tripal_feature_genotypes']);
         }
-        $node->content['tripal_feature_nd_genotypes'] = array(
+        $node->content['tripal_feature_nd_genotypes'] = [
           '#theme' => 'tripal_feature_nd_genotypes',
           '#node' => $node,
-          '#tripal_toc_id'    => 'genotypes',
+          '#tripal_toc_id' => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
-        );
+        ];
       }
       break;
     case 'chado_stock':
@@ -158,18 +161,18 @@ function tripal_natural_diversity_node_view($node, $view_mode, $langcode) {
         if (array_key_exists('tripal_stock_genotypes', $node->content)) {
           unset($node->content['tripal_stock_genotypes']);
         }
-        $node->content['tripal_stock_nd_genotypes'] = array(
+        $node->content['tripal_stock_nd_genotypes'] = [
           '#theme' => 'tripal_stock_nd_genotypes',
           '#node' => $node,
-          '#tripal_toc_id'    => 'genotypes',
+          '#tripal_toc_id' => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
-        );
-        $node->content['tripal_stock_nd_phenotypes'] = array(
+        ];
+        $node->content['tripal_stock_nd_phenotypes'] = [
           '#theme' => 'tripal_stock_nd_phenotypes',
           '#node' => $node,
-          '#tripal_toc_id'    => 'phenotypes',
+          '#tripal_toc_id' => 'phenotypes',
           '#tripal_toc_title' => 'Phenotypes',
-        );
+        ];
       }
       break;
   }
