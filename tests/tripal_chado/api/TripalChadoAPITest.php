@@ -66,9 +66,6 @@ class TripalChadoAPITest extends TripalTestCase {
   public function test_tripal_get_chado_tokens(){
     $tokens = tripal_get_chado_tokens('organism');
     $this->assertNotEmpty($tokens);
-    $this->assertArrayHasKey('organism.organism_id', $tokens);
+    $this->assertArrayHasKey('[organism.organism_id]', $tokens);
   }
-
-
-
 }
