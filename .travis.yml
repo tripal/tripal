@@ -50,6 +50,7 @@ before_script:
 
 script:
   # Link our repo to the modules directory
+  - pwd && ls && ls .. && ls ../..
   - ln -s ../../tripal sites/all/modules/tripal
 
   # Apply patches
