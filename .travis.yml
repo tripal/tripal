@@ -20,7 +20,7 @@ install:
 before_script:
   - docker pull statonlab/tripal2
   - psql -c "create database test_db encoding 'utf-8';" -U postgres
-  - psql -c "alter role postgres with password 'dbpass';"
+  - psql -c "alter role postgres with password 'dbpass';" -U postgres
   - cd ..
 
   # Set additional environment variables
