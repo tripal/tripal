@@ -15,7 +15,7 @@ env:
   - BASE_URL="http://localhost:8080"
 
 install:
-  - composer global require drush:8
+  - composer global require drush/drush:8
 
 before_script:
   - docker pull statonlab/tripal2
