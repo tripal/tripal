@@ -39,11 +39,11 @@ before_script:
 
   # Download Dependencies
   - drush dl -y field_group, field_group_table, field_formatter_class, field_formatter_settings, ctools, date, devel,
-                ds, link, entity, libraries, redirect, token, tripal-7.x-3.0-rc2, uuid, jquery_update, views, webform
+                ds, link, entity, libraries, redirect, token, uuid, jquery_update, views, webform
 
   # Enable dependencies
   - drush en -y field_group, field_group_table, field_formatter_class, field_formatter_settings, ctools, date, devel,
-              ds, link, entity, libraries, redirect, token, tripal-7.x-3.0-rc2, uuid, jquery_update, views, webform
+              ds, link, entity, libraries, redirect, token uuid, jquery_update, views, webform
 
   # Run the drush server
   - drush runserver localhost:8080 &
