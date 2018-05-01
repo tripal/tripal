@@ -803,6 +803,8 @@ function tripal_update_cvtermpath_loop_increment(
         $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
   }
+
+
 }
 
 /**
