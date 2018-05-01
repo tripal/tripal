@@ -56,6 +56,7 @@ script:
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
   - patch -p1 < drupal.pgsql-bytea.27.patch
   - cd sites/all/modules/views
+  - ls && pwd && ls .. && ls ..
   - patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
   - cd ../tripal
 
@@ -77,9 +78,7 @@ script:
   - ./vendor/bin/phpunit
 
   # Test Tripal v2 to v3 upgrade steps
-#  - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/tripal2
-#  - sleep 15
-#  - docker exec -it tripal2 drush en -y tripal_core
-#  - docker exec -it tripal2 drush pm-disable tripal_core -y
-#  - git checkout $BRANCH
-#  - docker exec -it tripal2 drush en -y tripal
+  - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/tripal2
+  - sleep 15
+  - docker exec -it tripal2 drush pm-disable tripal_core -y
+  - docker exec -it tripal2 drush en -y tripal
