@@ -1,8 +1,12 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 
-class TripalJobsTest extends TestCase {
+use StatonLab\TripalTestSuite\DBTransaction;
+use StatonLab\TripalTestSuite\TripalTestCase;
+
+class TripalJobsApiTest extends TripalTestCase {
+
+  use DBTransaction;
 
   /**
    * Tests the ability to create a tripal job.
@@ -13,9 +17,5 @@ class TripalJobsTest extends TestCase {
     $job_id = tripal_add_job('Test adding jobs', 'tripal', 'tripal_tripal_cron_notification', [], 1);
     $this->assertTrue(is_numeric($job_id));
 
-    // Clean up
-    if($job_id) {
-      db_query('DELETE FROM {tripal_jobs} WHERE job_id = :id', [':id' => $job_id]);
-    }
   }
 }
