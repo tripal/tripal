@@ -50,7 +50,7 @@ before_script:
 
 script:
   # Link our repo to the modules directory
-  - ln -s ../tripal sites/all/modules/tripal
+  - ln -s ../../tripal sites/all/modules/tripal
 
   # Apply patches
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
