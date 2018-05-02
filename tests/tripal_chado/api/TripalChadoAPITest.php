@@ -1,4 +1,5 @@
 <?php
+namespace Tests\tripal_chado\api;
 
 
 use StatonLab\TripalTestSuite\DBTransaction;
