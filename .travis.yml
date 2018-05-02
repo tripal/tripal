@@ -50,14 +50,14 @@ before_script:
 
 script:
   # Link our repo to the modules directory
-  - pwd && ls && ls .. && ls ../..
-  - ln -s ../../tripal sites/all/modules/tripal
+  - cd sites/all/modules
+  - ln -s ../../../../tripal tripal
+  - cd ../../../
 
   # Apply patches
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
   - patch -p1 < drupal.pgsql-bytea.27.patch
   - cd sites/all/modules/views
-  - ls && pwd && ls .. && file ../tripal && ls ../tripal/tripal_chado_views
   - patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
   - cd ../tripal
 
