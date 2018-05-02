@@ -8,14 +8,12 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
 
   use DBTransaction;
 
-
   /**
    * Test tripal_get_organism.
    *
    * @group api
    */
   public function test_tripal_get_organism() {
-
     $genus_string = 'a_genius_genus';
     $species_string = 'fake_species';
 

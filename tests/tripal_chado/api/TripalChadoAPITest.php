@@ -8,15 +8,12 @@ class TripalChadoAPITest extends TripalTestCase {
 
   use DBTransaction;
 
-
   /**
    * Test the ability to publish Chado organism records as entities.
    *
    * @group api
    */
-
   public function test_tripal_chado_publish_records() {
-
     $genus_string = 'a_genius_genus';
     //create an organism, publish it
     $organism = factory('chado.organism')->create([
@@ -63,7 +60,7 @@ class TripalChadoAPITest extends TripalTestCase {
    *
    * @group api
    */
-  public function test_tripal_get_chado_tokens(){
+  public function test_tripal_get_chado_tokens() {
     $tokens = tripal_get_chado_tokens('organism');
     $this->assertNotEmpty($tokens);
     $this->assertArrayHasKey('[organism.organism_id]', $tokens);
