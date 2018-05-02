@@ -46,7 +46,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
     // If this is a materialized view then don't allow editing with this function.
     if ($custom_table->mview_id) {
-      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_edit_mview() function to edit this custom table as it is a materialized view.", array());
       drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.", 'error');
       return FALSE;
     }
@@ -72,7 +72,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
     // Re-add the custom table to the semantic web interface to pick up any
     // changes in fields.
-    tripal_add_chado_semweb_table($table_name);
+    chado_add_chado_semweb_table($table_name);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -133,7 +133,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
   $created = 0;
   $recreated = 0;
 
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
   $chado_dot = $chado_schema . '.';
 
   $transaction = db_transaction();
@@ -203,7 +203,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
     }
 
     // Add the custom table to the semantic web interface.
-    tripal_add_chado_semweb_table($table);
+    chado_add_chado_semweb_table($table);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -359,7 +359,7 @@ function chado_delete_custom_table($table_id) {
 
   // If this is a materialized view then don't allow deletion with this function.
   if ($custom_table->mview_id) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the tripal_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());
     drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
     return FALSE;
   }

@@ -333,7 +333,7 @@ function chado_set_active($dbname = 'default') {
   }
 
   $previous_db = $active_db = $GLOBALS['chado_active_db'];
-  $search_path = tripal_get_schema_name('drupal');
+  $search_path = chado_get_schema_name('drupal');
 
   // Change only if 'chado' has been specified.
   // Notice that we leave the active_db set as chado but use the possibly 
@@ -342,7 +342,7 @@ function chado_set_active($dbname = 'default') {
   // to alter the schema name used.
   if ($dbname == 'chado') {
     $active_db = 'chado';
-    $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
+    $search_path = chado_get_schema_name('chado') . ',' . chado_get_schema_name('drupal');
   }
   else {
     $active_db = $dbname;
@@ -1675,8 +1675,8 @@ function chado_query($sql, $args = array()) {
     // Chado tables should be enclosed in curly brackets (ie: {feature} )
     // and Drupal tables should be enclosed in square brackets
     // (ie: [tripal_jobs] ).
-    $chado_schema_name = tripal_get_schema_name('chado');
-    $drupal_schema_name = tripal_get_schema_name('drupal');
+    $chado_schema_name = chado_get_schema_name('chado');
+    $drupal_schema_name = chado_get_schema_name('drupal');
     $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
     $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
 
@@ -1747,7 +1747,7 @@ function chado_query($sql, $args = array()) {
  *    A string describing the SQL query to be executed by Tripal. All parameters
  *    should be indicated by :tokens with values being in the $args array and 
  *    all tables should be prefixed with the schema name described in 
- *    tripal_get_schema_name().
+ *    chado_get_schema_name().
  * @param $args
  *    An array of arguments where the key is the token used in $sql 
  *    (for example, :value) and the value is the value you would like
@@ -1987,7 +1987,7 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_get_schema_name($schema = 'chado') {
+function chado_get_schema_name($schema = 'chado') {
 
   // First we will set our default. This is what will be returned in most cases.
   if ($schema == 'chado') {
@@ -2002,7 +2002,7 @@ function tripal_get_schema_name($schema = 'chado') {
   // the names to be changed and ensure that schema names are never hardcoded
   // directly into queries.
   $context = array('schema' => $schema);
-  drupal_alter('tripal_get_schema_name', $schema_name, $context);
+  drupal_alter('chado_get_schema_name', $schema_name, $context);
 
   return $schema_name;
 }
@@ -2019,17 +2019,17 @@ function tripal_get_schema_name($schema = 'chado') {
  *
  * @param $schema_name
  *   The current name of the schema as known by Tripal. This is likely the 
- *   default set in tripal_get_schema_name() but in the case of multiple alter 
+ *   default set in chado_get_schema_name() but in the case of multiple alter 
  *   hooks, it might be different.
  * @param $context
  *   This is an array of items to provide context.
- *     - schema: this is the schema that was passed to tripal_get_schema_name() 
+ *     - schema: this is the schema that was passed to chado_get_schema_name() 
  *       and will be either "chado" or "drupal". This should be used to 
  *       determine you are changing the name of the correct schema.
  *
  * @ingroup tripal_chado_query_api
  */
-function hook_tripal_get_schema_name_alter($schema_name, $context) {
+function hook_chado_get_schema_name_alter($schema_name, $context) {
 
   // First we check which schema was passed to chado_get_schema().
   // Notice that we do not use $schema_name since it may already have

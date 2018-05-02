@@ -31,7 +31,7 @@
  *     )
  * @ingroup tripal_chado_migrate_api
  */
-function tripal_chado_migrate_tripal_content_type($type = array()) {
+function chado_migrate_tripal_content_type($type = array()) {
     
   // Check if the term already exists.
   $term = tripal_load_term_entity($type);
@@ -49,5 +49,5 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
     'sync_node' => 1,
     'bundle_name' => $bundle_name
   );
-  tripal_chado_publish_records($value);
+  chado_publish_records($value);
 }

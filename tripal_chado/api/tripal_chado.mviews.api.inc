@@ -42,7 +42,7 @@
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
+function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
 
   if (!array_key_exists('table', $mv_schema)) {
      tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -136,7 +136,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
+function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
 
   $transaction = db_transaction();
@@ -216,7 +216,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_get_mview_id($view_name) {
+function chado_get_mview_id($view_name) {
   if (db_table_exists('tripal_mviews')) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
     $results = db_query($sql, array(':name' => $view_name));
@@ -259,7 +259,7 @@ function chado_get_mview_table_names() {
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_refresh_mview($mview_id) {
+function chado_refresh_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
@@ -274,7 +274,7 @@ function tripal_refresh_mview($mview_id) {
   // Add a job to populate the mview.
   $args = array("$mview_id");
   tripal_add_job("Populate materialized view '$mview->name'", 'tripal_chado',
-     'tripal_populate_mview', $args, $user->uid);
+    'chado_populate_mview', $args, $user->uid);
 
 }
 
@@ -287,7 +287,7 @@ function tripal_refresh_mview($mview_id) {
  * @ingroup tripal_mviews_api
  *
  */
-function tripal_get_mviews() {
+function chado_get_mviews() {
 
   $results = db_select('tripal_mviews', 'tm')
     ->fields('tm', array('mview_id', 'name'))
@@ -310,7 +310,7 @@ function tripal_get_mviews() {
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_delete_mview($mview_id) {
+function chado_delete_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
@@ -354,7 +354,7 @@ function tripal_delete_mview($mview_id) {
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_populate_mview($mview_id) {
+function chado_populate_mview($mview_id) {
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
   $results = db_query($sql, array(':mview_id' => $mview_id));
   $mview = $results->fetchObject();
