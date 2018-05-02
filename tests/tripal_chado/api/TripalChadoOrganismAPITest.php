@@ -1,5 +1,6 @@
 <?php
 
+namespace Tests\tripal_chado\api;
 
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
@@ -38,6 +39,10 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
     }
   }
 
+  /**
+   * Test tripal_get_organism doesn't return anything
+   * when the organism doesn't exist.
+   */
   public function test_tripal_get_organism_fails_gracefully() {
     $result = tripal_get_organism([
       'genus' => uniqid(),
@@ -53,7 +58,6 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
    * @group  api
    */
   function test_tripal_get_organism_scientific_name() {
-
     $genus_string = 'a_genius_genus';
     $species_string = 'fake_species';
     $infraspecific_name = "infrawhat?";
@@ -73,7 +77,6 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
       $term->name,
       $infraspecific_name,
     ]), $sci_name);
-
   }
 
   //TODO: Can't test because it uses drupal_json_output.
@@ -107,6 +110,4 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
   //    $this->assertGreaterThan(20, count($options));
   //
   //  }
-
-
 }
