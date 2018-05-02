@@ -50,7 +50,7 @@ before_script:
 
 script:
   # Link our repo to the modules directory
-  - cd ../tripal sites/all/modules/tripal
+  - mv ../tripal sites/all/modules/tripal
 
   # Run a docker container with tripal 2 pre-installed
   - docker run -it -d --rm --name tripal2 -v "$(pwd)/tripal":/modules/tripal statonlab/tripal2
