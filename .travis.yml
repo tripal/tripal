@@ -55,7 +55,7 @@ script:
   - cd ../../../
 
   # Run a docker container with tripal 2 pre-installed
-  - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/tripal2
+  - docker run -it -d --rm --name tripal2 -v "$(pwd)/tripal":/modules/tripal statonlab/tripal2
 
   # Apply patches
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
