@@ -54,6 +54,9 @@ script:
   - mv ../../../../tripal tripal
   - cd ../../../
 
+  # Run a docker container with tripal 2 pre-installed
+  - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/tripal2
+
   # Apply patches
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
   - patch -p1 < drupal.pgsql-bytea.27.patch
@@ -70,16 +73,10 @@ script:
   - drush eval "module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"
   - drush trp-run-jobs --username=admin
 
-  # Prepare Drupal
-  - drush eval "module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"
-  - drush trp-run-jobs --username=admin
-
   # Run PHPUnit tests
   - composer install
   - ./vendor/bin/phpunit
 
   # Test Tripal v2 to v3 upgrade steps
-  - docker run -it -d --rm --name tripal2 -v "$(pwd)":/modules/tripal statonlab/tripal2
-  - sleep 15
   - docker exec -it tripal2 drush pm-disable tripal_core -y
   - docker exec -it tripal2 drush en -y tripal
