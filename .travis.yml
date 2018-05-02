@@ -51,7 +51,7 @@ before_script:
 script:
   # Link our repo to the modules directory
   - cd sites/all/modules
-  - ln -s ../../../../tripal tripal
+  - mv ../../../../tripal tripal
   - cd ../../../
 
   # Apply patches
