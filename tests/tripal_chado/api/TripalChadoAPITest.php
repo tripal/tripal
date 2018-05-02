@@ -53,7 +53,7 @@ class TripalChadoAPITest extends TripalTestCase {
     putenv("TRIPAL_SUPPRESS_ERRORS=TRUE");//this will fail, so we suppress the tripal error reporter
     $bool = tripal_chado_publish_records(['bundle_name' => 'never_in_a_million_years']);
     $this->assertFalse($bool);
-    putenv("APP_ENV");//unset
+    putenv("TRIPAL_SUPPRESS_ERRORS");//unset
   }
 
   /**

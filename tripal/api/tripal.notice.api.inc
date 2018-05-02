@@ -63,7 +63,9 @@ define('TRIPAL_DEBUG',7);
  */
 function tripal_report_error($type, $severity, $message, $variables = array(), $options = array()) {
 
-  if(getenv('TRIPAL_SUPPRESS_ERRORS') === 'TRUE') return;
+  $suppress = getenv('TRIPAL_SUPPRESS_ERRORS');
+
+  if(strtolower($suppress) === 'true') return;
 
   // Get human-readable severity string
   $severity_string = '';
