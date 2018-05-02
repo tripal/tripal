@@ -8,8 +8,26 @@
          verbose="true"
          colors="true">
     <testsuites>
-        <testsuite name="default">
-            <directory suffix="Test.php">tests</directory>
+        <testsuite name="tripal">
+            <directory suffix="Test.php">tests/tripal</directory>
+        </testsuite>
+        <testsuite name="tripal_chado">
+            <directory suffix="Test.php">tests/tripal_chado/</directory>
+        </testsuite>
+        <testsuite name="tripal_bulk_loader">
+            <directory suffix="Test.php">tests/tripal_bulk_loader/</directory>
+        </testsuite>
+        <testsuite name="tripal_chado_views">
+            <directory suffix="Test.php">tests/tripal_chado_views/</directory>
+        </testsuite>
+        <testsuite name="tripal_daemon">
+            <directory suffix="Test.php">tests/tripal_daemon/</directory>
+        </testsuite>
+        <testsuite name="tripal_ds">
+            <directory suffix="Test.php">tests/tripal_ds/</directory>
+        </testsuite>
+        <testsuite name="tripal_ws">
+            <directory suffix="Test.php">tests/tripal_ws/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
