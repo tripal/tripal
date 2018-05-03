@@ -40,7 +40,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function tripal_get_organism($identifiers, $options = array()) {
+function chado_get_organism($identifiers, $options = array()) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -53,7 +53,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "tripal_get_organism: The identifier passed in is expected to be an array with the key
+      "chado_get_organism: The identifier passed in is expected to be an array with the key
         matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -64,7 +64,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "tripal_get_organism: You did not pass in anything to identify the organism you want. The identifier
+      "chado_get_organism: You did not pass in anything to identify the organism you want. The identifier
         is expected to be an array with the key matching a column name in the organism table
         (ie: organism_id or name). You passed in %identifier.",
       array(
@@ -101,7 +101,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "tripal_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -114,7 +114,7 @@ function tripal_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "tripal_get_organism: chado_generate_var() failed to return a organism based on the identifiers
+      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -139,7 +139,7 @@ function tripal_get_organism($identifiers, $options = array()) {
  *
  * @ingroup tripal_organism_api
  */
-function tripal_get_organism_scientific_name($organism) {
+function chado_get_organism_scientific_name($organism) {
   $name = $organism->genus . ' ' . $organism->species;
 
   // For Chado v1.3 we have a type_id and infraspecific name.
@@ -152,14 +152,14 @@ function tripal_get_organism_scientific_name($organism) {
       }
     }
     else {
-      $rank_term = tripal_get_cvterm(array('cvterm_id' => $organism->type_id));
+      $rank_term = chado_get_cvterm(array('cvterm_id' => $organism->type_id));
       if ($rank_term) {
         $rank = $rank_term->name;
       }
     }
 
     if ($rank) {
-      $rank = tripal_abbreviate_infraspecific_rank($rank);
+      $rank = chado_abbreviate_infraspecific_rank($rank);
       $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
     }
     else if ($organism->infraspecific_name) {
@@ -182,7 +182,7 @@ function tripal_get_organism_scientific_name($organism) {
  *
  * @ingroup tripal_organism_api
  */
-function tripal_get_organism_select_options($syncd_only = TRUE) {
+function chado_get_organism_select_options($syncd_only = TRUE) {
   $org_list = array();
   $org_list[] = 'Select an organism';
 
@@ -225,7 +225,7 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  *
  * @ingroup tripal_organism_api
  */
-function tripal_get_organism_image_url($organism) {
+function chado_get_organism_image_url($organism) {
   $url = '';
 
   if (!is_object($organism)) {
@@ -287,7 +287,7 @@ function tripal_get_organism_image_url($organism) {
  *
  * @ingroup tripal_organism_api
  */
-function tripal_autocomplete_organism($text) {
+function chado_autocomplete_organism($text) {
   $matches = array();
   $genus = $text;
   $species = '';
@@ -307,7 +307,7 @@ function tripal_autocomplete_organism($text) {
   $results = chado_query($sql, $args);
   $items = array();
   foreach ($results as $organism) {
-    $name = tripal_get_organism_scientific_name($organism);
+    $name = chado_get_organism_scientific_name($organism);
     $items["$name [id: $organism->organism_id]"] = $name;
   }
   drupal_json_output($items);
@@ -323,7 +323,7 @@ function tripal_autocomplete_organism($text) {
  *
  * @ingroup tripal_organism_api
  */
-function tripal_abbreviate_infraspecific_rank($rank) {
+function chado_abbreviate_infraspecific_rank($rank) {
   $abb = '';
   switch($rank) {
     case 'no_rank':

@@ -72,7 +72,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
     // Re-add the custom table to the semantic web interface to pick up any
     // changes in fields.
-    chado_add_chado_semweb_table($table_name);
+    chado_add_semweb_table($table_name);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -203,7 +203,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
     }
 
     // Add the custom table to the semantic web interface.
-    chado_add_chado_semweb_table($table);
+    chado_add_semweb_table($table);
   }
   catch (Exception $e) {
     $transaction->rollback();

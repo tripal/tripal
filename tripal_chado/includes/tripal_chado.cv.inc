@@ -663,7 +663,7 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
       'db_name' => $db->name
     );
 
-    $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+    $cvterm = chado_insert_cvterm($term, array('update_existing' => TRUE));
     if ($cvterm) {
       drupal_set_message('Term updated successfully.');
       drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvterms');
@@ -721,7 +721,7 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
     'db_name' => $db->name
   );
 
-  $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+  $cvterm = chado_insert_cvterm($term, array('update_existing' => TRUE));
   if ($cvterm) {
     drupal_set_message('Term added successfully.');
   }
@@ -809,7 +809,7 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
   $job_args = array($cvid);
   if ($form_state['values']['op'] == t('Update cvtermpath')) {
     tripal_add_job("Update cvtermpath: $cv->name", 'tripal_cv',
-        'tripal_update_cvtermpath', $job_args, $user->uid, 10);
+        'chado_update_cvtermpath', $job_args, $user->uid, 10);
   }
 }
 
@@ -818,7 +818,7 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
  */
 function tripal_cv_cv_delete_form($form, &$form_state, $cv_id) {
 
-  $cv = tripal_get_cv(array('cv_id' => $cv_id));
+  $cv = chado_get_cv(array('cv_id' => $cv_id));
 
   $form['cv_id'] = array(
     '#type' => 'value',

@@ -420,7 +420,7 @@ class OBOImporter extends TripalImporter {
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->newcvs as $namespace => $cvid) {
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
-      tripal_update_cvtermpath($cvid);
+      chado_update_cvtermpath($cvid);
     }
   }
   /**
@@ -486,7 +486,7 @@ class OBOImporter extends TripalImporter {
    */
   private function loadOBO_v1_2_file($obo_name, $file, $is_new = TRUE) {
     if ($is_new) {
-      tripal_insert_obo($obo_name, $file);
+      chado_insert_obo($obo_name, $file);
     }
 
     $success = $this->loadOBO_v1_2($file, $obo_name);
@@ -528,7 +528,7 @@ class OBOImporter extends TripalImporter {
     fclose($obo_fh);
 
     if ($is_new) {
-      tripal_insert_obo($obo_name, $url);
+      chado_insert_obo($obo_name, $url);
     }
 
     // second, parse the OBO
@@ -568,7 +568,7 @@ class OBOImporter extends TripalImporter {
     // present for each stanza.  Some ontologies have adopted the v1.4 method
     // in their v1.2 files and not including it.
     if (array_key_exists('default-namespace', $header)) {
-      $defaultcv = tripal_insert_cv($header['default-namespace'][0], '');
+      $defaultcv = chado_insert_cv($header['default-namespace'][0], '');
       if (!$defaultcv) {
         throw new Exception('Cannot add namespace ' . $header['default-namespace'][0]);
       }
@@ -607,7 +607,7 @@ class OBOImporter extends TripalImporter {
         else {
           $results = $short_name;
         }
-        $defaultcv = tripal_insert_cv(strtoupper($results), '');
+        $defaultcv = chado_insert_cv(strtoupper($results), '');
         $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
       }
       catch (Exception $e) {
@@ -776,7 +776,7 @@ class OBOImporter extends TripalImporter {
         elseif (array_key_exists('namespace', $ontology_info['config'])) {
           $results = $ontology_info['config']['namespace'];
         }
-        $cv_returned = tripal_insert_cv($results[0], '');
+        $cv_returned = chado_insert_cv($results[0], '');
         // If name && definition are both empty then look up the term from the ontology you just loaded.
         if($cv_returned) {
           $defaultcv = $cv_returned;
@@ -790,7 +790,7 @@ class OBOImporter extends TripalImporter {
     $t['db_name'] = $default_db;
 
     // add the cvterm
-    $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
+    $cvterm = chado_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
     }
@@ -1001,7 +1001,7 @@ class OBOImporter extends TripalImporter {
       'is_relationship' => TRUE,
       'db_name' => $default_db
     );
-    $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+    $relcvterm = chado_insert_cvterm($term, array('update_existing' => FALSE));
 
     if (!$relcvterm) {
       // If the relationship term couldn't be found in the default_db provided
@@ -1015,7 +1015,7 @@ class OBOImporter extends TripalImporter {
         'is_relationship' => TRUE,
         'db_name' => 'OBO_REL'
       );
-      $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+      $relcvterm = chado_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$relcvterm) {
         throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
       }
@@ -1047,7 +1047,7 @@ class OBOImporter extends TripalImporter {
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
 
-    $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
+    $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
       throw new Exception("Cannot add cvterm " . $oterm['name'][0]);
     }
@@ -1100,7 +1100,7 @@ class OBOImporter extends TripalImporter {
   private function addSynonym($term, $cvterm) {
 
     // make sure we have a 'synonym_type' vocabulary
-    $syncv = tripal_insert_cv(
+    $syncv = chado_insert_cv(
         'synonym_type',
         'A local vocabulary added for synonym types.'
     );
@@ -1124,7 +1124,7 @@ class OBOImporter extends TripalImporter {
             'name' => 'synonym_type',
           ),
         );
-        $syntype = tripal_get_cvterm($values);
+        $syntype = chado_get_cvterm($values);
 
         // if it doesn't exist then add it
         if (!$syntype) {
@@ -1137,7 +1137,7 @@ class OBOImporter extends TripalImporter {
             'cv_name' => $syncv->name,
             'is_relationship' => FALSE
           );
-          $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+          $syntype = chado_insert_cvterm($term, array('update_existing' => TRUE));
           if (!$syntype) {
             throw new Exception("Cannot add synonym type: internal:$scope");
           }
@@ -1324,7 +1324,7 @@ class OBOImporter extends TripalImporter {
     }
 
     // add the database
-    $db = tripal_insert_db(array('name' => $dbname));
+    $db = chado_insert_db(array('name' => $dbname));
     if (!$db) {
       throw new Exception("Cannot find database '$dbname' in Chado.");
     }
@@ -1369,7 +1369,7 @@ class OBOImporter extends TripalImporter {
   private function addCvtermProp($cvterm, $property, $value, $rank) {
 
     // make sure the 'cvterm_property_type' CV exists
-    $cv = tripal_insert_cv('cvterm_property_type', '');
+    $cv = chado_insert_cv('cvterm_property_type', '');
     if (!$cv) {
       throw new Exception("Cannot add/find cvterm_property_type cvterm");
     }
@@ -1389,7 +1389,7 @@ class OBOImporter extends TripalImporter {
         'cv_name' => $cv->name,
         'is_relationship' => FALSE,
       );
-      $cvproptype = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+      $cvproptype = chado_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$cvproptype) {
         throw new Exception("Cannot add cvterm property: internal:$property");
       }

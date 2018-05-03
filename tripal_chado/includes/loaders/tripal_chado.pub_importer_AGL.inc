@@ -927,7 +927,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub['Author List'] = $newauths;
 
   // build the citation
-  $pub['Citation'] = tripal_pub_create_citation($pub);
+  $pub['Citation'] = chado_pub_create_citation($pub);
 
   $pub['raw'] = $pub_xml;
 

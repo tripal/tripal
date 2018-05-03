@@ -109,7 +109,7 @@ class NewickImporter extends TripalImporter {
     ];
 
     $type_cv = tripal_get_default_cv('phylotree', 'type_id');
-    $so_cv = tripal_get_cv(['name' => 'sequence']);
+    $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
       drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
@@ -190,7 +190,7 @@ class NewickImporter extends TripalImporter {
     $errors = [];
     $warnings = [];
 
-    tripal_validate_phylotree('insert', $options, $errors, $warnings);
+    chado_validate_phylotree('insert', $options, $errors, $warnings);
 
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
@@ -229,6 +229,6 @@ class NewickImporter extends TripalImporter {
     );
     $errors = array();
     $warnings = array();
-    tripal_insert_phylotree($options, $errors, $warnings);
+    chado_insert_phylotree($options, $errors, $warnings);
   }
 }

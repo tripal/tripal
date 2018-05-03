@@ -48,7 +48,7 @@
  *
  * @ingroup tripal_pub_api
  */
-function tripal_get_publication($identifiers, $options = array()) {
+function chado_get_publication($identifiers, $options = array()) {
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -184,12 +184,12 @@ function tripal_get_publication($identifiers, $options = array()) {
  *
  * @ingroup tripal_pub_api
  */
-function tripal_publication_exists($pub_details) {
+function chado_publication_exists($pub_details) {
 
   // First try to find the publication using the accession number if that key 
   // exists in the details array.
   if (array_key_exists('Publication Dbxref', $pub_details)) {
-    $pub = tripal_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
+    $pub = chado_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
     if($pub) {
       return array($pub->pub_id);
     }
@@ -197,7 +197,7 @@ function tripal_publication_exists($pub_details) {
 
   // Make sure the citation is unique.
   if (array_key_exists('Citation', $pub_details)) {
-    $pub = tripal_get_publication(array('uniquename' => $pub_details['Citation']));
+    $pub = chado_get_publication(array('uniquename' => $pub_details['Citation']));
     if($pub) {
       return array($pub->pub_id);
     }
@@ -218,17 +218,17 @@ function tripal_publication_exists($pub_details) {
         'name' => 'tripal_pub',
       ),
     );
-    $pub_type = tripal_get_cvterm($identifiers);
+    $pub_type = chado_get_cvterm($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR,
-      "tripal_publication_exists(): The Publication Type is a " .
+      "chado_publication_exists(): The Publication Type is a " .
       "required property but is missing", array());
     return array();
   }
   if (!$pub_type) {
     tripal_report_error('tripal_pub', TRIPAL_ERROR,
-     "tripal_publication_exists(): Cannot find publication type: '%type'",
+      "chado_publication_exists(): Cannot find publication type: '%type'",
       array('%type' => $pub_details['Publication Type'][0]));
     return array();
   }
@@ -298,7 +298,7 @@ function tripal_publication_exists($pub_details) {
  *
  * @ingroup tripal_pub_api
  */
-function tripal_autocomplete_pub($string = '') {
+function chado_autocomplete_pub($string = '') {
   $items = array();
   $sql = "
     SELECT pub_id, title, uniquename
@@ -334,7 +334,7 @@ function tripal_autocomplete_pub($string = '') {
  *
  * @ingroup tripal_pub_api
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
+function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -410,7 +410,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
  *
  * @ingroup tripal_pub_api
  */
-function tripal_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
+function chado_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
   $num_to_retrieve = 100;
   $page = 0;
 
@@ -528,7 +528,7 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
  *
  * @ingroup tripal_pub_api
  */
-function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
+function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
 
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -633,7 +633,7 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
  *
  * @ingroup tripal_pub_api
  */
-function tripal_pub_create_citations($options) {
+function chado_pub_create_citations($options) {
   $skip_existing = TRUE;
   $sql = "
     SELECT cvterm_id
@@ -669,7 +669,7 @@ function tripal_pub_create_citations($options) {
   while ($pub = $result->fetchObject()) {
     $pub_arr = tripal_pub_get_publication_array($pub->pub_id, $skip_existing);
     if ($pub_arr) {
-      $citation = tripal_pub_create_citation($pub_arr);
+      $citation = chado_pub_create_citation($pub_arr);
       print $citation . "\n\n";
       // Replace if citation exists. This condition is never TRUE if 
       // $skip_existing is TRUE.
@@ -726,7 +726,7 @@ function tripal_pub_create_citations($options) {
  *
  * @ingroup tripal_pub_api
  */
-function tripal_pub_create_citation($pub) {
+function chado_pub_create_citation($pub) {
   $citation = '';
   $pub_type = '';
 
@@ -1028,7 +1028,7 @@ function tripal_pub_create_citation($pub) {
  * 
  * @ingroup tripal_pub_api
  */
-function tripal_get_minimal_pub_info($pub) {
+function chado_get_minimal_pub_info($pub) {
   if (!$pub) {
     return array();
   }
@@ -1150,7 +1150,7 @@ function tripal_get_minimal_pub_info($pub) {
       'Pages' => $pub->pages,
       'Publication Date' => $pub->pyear,
     );
-    $citation = tripal_pub_create_citation($pub_info);
+    $citation = chado_pub_create_citation($pub_info);
   }
 
   return array(

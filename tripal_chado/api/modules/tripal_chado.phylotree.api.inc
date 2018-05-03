@@ -25,7 +25,7 @@
  *   The type of validation. Can be either 'insert' or 'update'.
  * @param $options
  *   An array of key/value pairs containing any of the valid keys for
- *   either the tripal_insert_phylotree() or tripal_update_phylotree()
+ *   either the chado_insert_phylotree() or chado_update_phylotree()
  *   functions.
  * @param $errors
  *   An empty array where validation error messages will be set. The keys
@@ -45,7 +45,7 @@
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
+function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
 
   if ($val_type != 'insert' and $val_type != 'update') {
     tripal_report_error('tripal_phylogeny', TRIPAL_ERROR, "The $val_type argument must be either 'update or 'insert'.");
@@ -281,7 +281,7 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
+function chado_insert_phylotree(&$options, &$errors, &$warnings) {
   global $user;
 
   $options['name_re'] = trim($options['name_re']);
@@ -291,7 +291,7 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
   $options['tree_file'] = trim($options['tree_file']);
 
   // Validate the incoming options.
-  $success = tripal_validate_phylotree('insert', $options, $errors, $warnings);
+  $success = chado_validate_phylotree('insert', $options, $errors, $warnings);
   if (!$success) {
     foreach ($errors as $field => $message) {
       tripal_report_error('tripal_phylogeny', TRIPAL_ERROR, $message);
@@ -341,7 +341,7 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
         'match' => $options['match'] ? 'uniquename' : 'name',
         'name_re' => $options['name_re'],
       );
-      tripal_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
+      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
     }
     else {
       $args = array(
@@ -355,7 +355,7 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
           ),
       );
       if (tripal_add_job("Import Tree File: " . $file->filename, 'tripal_phylogeny',
-          'tripal_phylogeny_import_tree_file', $args, $user->uid)) {
+          'chado_phylogeny_import_tree_file', $args, $user->uid)) {
           drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
       }
     }
@@ -410,13 +410,13 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_update_phylotree($phylotree_id, &$options) {
+function chado_update_phylotree($phylotree_id, &$options) {
   global $user;
 
   // Validate the incoming options.
   $errors = array();
   $warnings = array();
-  $success = tripal_validate_phylotree('update', $options, $errors, $warnings);
+  $success = chado_validate_phylotree('update', $options, $errors, $warnings);
   if (!$success) {
     foreach ($errors as $field => $message) {
       tripal_report_error('tripal_phylogeny', TRIPAL_ERROR, $message);
@@ -496,7 +496,7 @@ function tripal_update_phylotree($phylotree_id, &$options) {
         'match' => $options['match'] ? 'uniquename' : 'name',
         'name_re' => $options['name_re'],
       );
-      tripal_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
+      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
     }
     else {
       $args = array(
@@ -510,7 +510,7 @@ function tripal_update_phylotree($phylotree_id, &$options) {
         ),
       );
       if (tripal_add_job("Import Tree File: " . $file->filename, 'tripal_phylogeny',
-          'tripal_phylogeny_import_tree_file', $args, $user->uid)) {
+          'chado_phylogeny_import_tree_file', $args, $user->uid)) {
         drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
       }
     }
@@ -529,7 +529,7 @@ function tripal_update_phylotree($phylotree_id, &$options) {
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_delete_phylotree($phylotree_id) {
+function chado_delete_phylotree($phylotree_id) {
 
   // If we don't have a phylotree id for this node then this isn't a node of
   // type chado_phylotree or the entry in the chado_phylotree table was lost.
@@ -555,7 +555,7 @@ function tripal_delete_phylotree($phylotree_id) {
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
+function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
   // Assign a left and right index to each node.  The child node must
   // have a right and left index less than that of it's parents.  We
   // increment the index by 100 to give space for new nodes that might
@@ -568,7 +568,7 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
   }
   if (array_key_exists('branch_set', $tree)) {
     foreach ($tree['branch_set'] as $key => $node) {
-      tripal_assign_phylogeny_tree_indices($tree['branch_set'][$key], $index);
+      chado_assign_phylogeny_tree_indices($tree['branch_set'][$key], $index);
       $tree['right_index'] = $index += 100;
     }
   }
@@ -597,7 +597,7 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *                  will be assocaited with the phylonode.
  *
  * Prior to importing the tree the indicies can be set by using the
- * tripal_assign_phylogeny_tree_indices() function.
+ * chado_assign_phylogeny_tree_indices() function.
  *
  * @param $tree
  *   The tree array.
@@ -629,12 +629,12 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *
  * @ingroup tripal_phylotree_api
  */
-function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = array(), $parent = NULL) {
+function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = array(), $parent = NULL) {
 
   // Get the vocabulary terms used to describe nodes in the tree if one
   // wasn't provided.
   if (count($vocab) == 0) {
-    $vocab = tripal_phylogeny_get_node_types_vocab();
+    $vocab = chado_phylogeny_get_node_types_vocab();
   }
 
   if (is_array($tree) and array_key_exists('name', $tree)) {
@@ -738,7 +738,7 @@ function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arr
   }
   if (is_array($tree) and array_key_exists('branch_set', $tree)) {
     foreach ($tree['branch_set'] as $key => $node) {
-      tripal_phylogeny_import_tree($tree['branch_set'][$key], $phylotree, $options, $vocab, $tree);
+      chado_phylogeny_import_tree($tree['branch_set'][$key], $phylotree, $options, $vocab, $tree);
     }
   }
 }
@@ -751,7 +751,7 @@ function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arr
  * 
  * @ingroup tripal_phylotree_api
  */
-function tripal_phylogeny_get_node_types_vocab() {
+function chado_phylogeny_get_node_types_vocab() {
   // Get the vocabulary terms used to describe nodes in the tree.
   $values = array(
     'name' => 'phylo_leaf',
@@ -819,7 +819,7 @@ function tripal_phylogeny_get_node_types_vocab() {
  *
  *  @ingroup tripal_phylotree_api
  */
-function tripal_phylogeny_import_tree_file($file_name, $format, $options = array(), $job_id = NULL) {
+function chado_phylogeny_import_tree_file($file_name, $format, $options = array(), $job_id = NULL) {
 
   // Set some option details.
   if (!array_key_exists('leaf_type', $options)) {
@@ -867,11 +867,11 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = array
       $tree = tripal_phylogeny_parse_newick_file($file_name);
 
       // Assign the right and left indecies to the tree ndoes.
-      tripal_assign_phylogeny_tree_indices($tree);
+      chado_assign_phylogeny_tree_indices($tree);
     }
     // Iterate through the tree nodes and add them to Chado in accordance
     // with the details in the $options array.
-    tripal_phylogeny_import_tree($tree, $phylotree, $options);
+    chado_phylogeny_import_tree($tree, $phylotree, $options);
   }
   catch (Exception $e) {
     $transaction->rollback();

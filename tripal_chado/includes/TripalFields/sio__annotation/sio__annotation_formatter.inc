@@ -35,7 +35,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         // Build the accession.
         $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
         if ($dbxref->db_id->urlprefix) {
-          $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
+          $accession = l($accession, chado_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
         $row = array(

@@ -29,8 +29,8 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $term = reset($term);
 
   // Convert the Tripal term entity into the appropriate record in Chado.
-  $dbxref = tripal_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
-  $cvterm = tripal_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
+  $dbxref = chado_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
+  $cvterm = chado_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
@@ -1179,7 +1179,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_cvterm(&$form,
     ),
   );
   if ($default['use_cvterm'] == 'cv') {
-    $cvs = tripal_get_cv_select_options();
+    $cvs = chado_get_cv_select_options();
     $form['chado_type_cv_id'] = array(
       '#type' => select,
       '#options' => $cvs,

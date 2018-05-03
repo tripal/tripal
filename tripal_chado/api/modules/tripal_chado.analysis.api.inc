@@ -42,7 +42,7 @@
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_get_analysis($identifier, $options) {
+function chado_get_analysis($identifier, $options) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -102,7 +102,7 @@ function tripal_get_analysis($identifier, $options) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "tripal_get_analysis: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_get_analysis: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -115,7 +115,7 @@ function tripal_get_analysis($identifier, $options) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "tripal_get_analysis: chado_generate_var() failed to return a analysis based on the identifiers
+      "chado_get_analysis: chado_generate_var() failed to return a analysis based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -142,7 +142,7 @@ function tripal_get_analysis($identifier, $options) {
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_get_analysis_select_options($syncd_only = TRUE) {
+function chado_get_analysis_select_options($syncd_only = TRUE) {
   $analysis_list = array();
   $analysis_list[] = 'Select an analysis';
 

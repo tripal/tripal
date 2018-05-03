@@ -38,7 +38,7 @@
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cv($identifiers, $options = array()) {
+function chado_get_cv($identifiers, $options = array()) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -51,7 +51,7 @@ function tripal_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: The identifier passed in is expected to be an array with the key
+      "chado_get_cv: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -62,7 +62,7 @@ function tripal_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: You did not pass in anything to identify the cv you want. The identifier
+      "chado_get_cv: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
       array(
@@ -83,7 +83,7 @@ function tripal_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -95,7 +95,7 @@ function tripal_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: chado_generate_var() failed to return a cv based on the identifiers
+      "chado_get_cv: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -119,7 +119,7 @@ function tripal_get_cv($identifiers, $options = array()) {
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cv_select_options() {
+function chado_get_cv_select_options() {
 
   $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
 
@@ -168,7 +168,7 @@ function tripal_get_cv_select_options() {
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cvterm($identifiers, $options = array()) {
+function chado_get_cvterm($identifiers, $options = array()) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -179,14 +179,14 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   // Error Checking of parameters.
   if (!is_array($identifiers)) {
     tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
-      "tripal_get_cvterm: The identifier passed in is expected to be an array with the key
+      "chado_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
       array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
   elseif (empty($identifiers)) {
     tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
-      "tripal_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
+      "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
       array('%identifier'=> print_r($identifiers, TRUE))
@@ -256,7 +256,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "tripal_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -269,7 +269,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "tripal_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
+      "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -302,7 +302,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
+function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
   $columns = array('cvterm_id', 'name');
   $values = array('cv_id' => $cv_id);
   if ($rel_type) {
@@ -368,7 +368,7 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
  *
  * Identifies all of the root terms of the controlled vocabulary. These
  * root terms are then processed by calling the
- * tripal_update_cvtermpath_root_loop() function on each one.
+ * chado_update_cvtermpath_root_loop() function on each one.
  *
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
@@ -376,7 +376,7 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_update_cvtermpath($cv_id, $job_id = NULL){
+function chado_update_cvtermpath($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');
@@ -395,7 +395,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
     $roots = [];
 
     foreach ($record as $item){
-      tripal_update_cvtermpath_root_loop($item->cvterm_id, $item->cv_id, $roots);
+      chado_update_cvtermpath_root_loop($item->cvterm_id, $item->cv_id, $roots);
     }
   }
   catch (Exception $e) {
@@ -421,7 +421,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
+function chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
   $ttype = db_query(
     'SELECT cv.cvterm_id 
     FROM cvterm cv
@@ -448,7 +448,7 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
   $matched_rows = [];
   $possible_start_of_loop = [];
   $depth = 0;
-  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, $depth,
+  chado_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, $depth,
                                 0, $tree_path, FALSE, $matched_rows, $possible_start_of_loop, FALSE);
 
   // Get's the children terms of this "root" term and then recursively calls
@@ -461,7 +461,7 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
     [':rootid' => $rootid]
   );
   while ($cterm_result = $cterm->fetchAssoc()) {
-    tripal_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid, $roots);
+    chado_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid, $roots);
   }
 }
 
@@ -505,7 +505,7 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
  * 
  * @ingroup tripal_chado_cv_api
  */
-function tripal_update_cvtermpath_loop(
+function chado_update_cvtermpath_loop(
   $origin,
   $child_id,
   $cv_id,
@@ -551,7 +551,7 @@ function tripal_update_cvtermpath_loop(
         // and confirmed that this is a loop.
         $possible_loop == FALSE;
         $matched_rows = [];
-        tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+        chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
         $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
 
@@ -588,7 +588,7 @@ function tripal_update_cvtermpath_loop(
           // and confirmed that this is a loop.
           $possible_loop == FALSE;
           $matched_rows = [];
-          tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+          chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
           $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
           $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
 
@@ -603,7 +603,7 @@ function tripal_update_cvtermpath_loop(
       $no_loop_skip_test = TRUE;
       // There is not loop so pass it back the possible_start_of_loop info
       // and a flag telling it to skip the loop check.
-      tripal_update_cvtermpath_loop_increment($possible_start_of_loop->subject_id,
+      chado_update_cvtermpath_loop_increment($possible_start_of_loop->subject_id,
       $possible_start_of_loop->child_id, $possible_start_of_loop->cvid,
       $possible_start_of_loop->type_id, $possible_start_of_loop->depth,
       $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
@@ -611,13 +611,13 @@ function tripal_update_cvtermpath_loop(
     }
     // If $match_rows is not empty we need to keep trying rows.
     else {
-      tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+      chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
       $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
       $match_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
   }
   elseif ($possible_loop === FALSE) {
-    tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+    chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
     $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
     $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
   }
@@ -664,7 +664,7 @@ function tripal_update_cvtermpath_loop(
  * 
  * @ingroup tripal_chado_cv_api
  */
-function tripal_update_cvtermpath_loop_increment(
+function chado_update_cvtermpath_loop_increment(
   $origin,
   $child_id,
   $cv_id,
@@ -772,7 +772,7 @@ function tripal_update_cvtermpath_loop_increment(
     $possible_start_of_loop = [];
 
     // Get all of the relationships of this child term, and recursively
-    // call the tripal_update_cvtermpath_loop_increment() function to continue
+    // call the chado_update_cvtermpath_loop_increment() function to continue
     // descending down the tree.
     $query = db_select('cvterm_relationship', 'cvtr')
       ->fields('cvtr')
@@ -782,7 +782,7 @@ function tripal_update_cvtermpath_loop_increment(
 
     foreach ($cterm_relationships as $item) {
       $increment_of_depth++;
-      tripal_update_cvtermpath_loop_increment($origin, $item->subject_id, $cv_id,
+      chado_update_cvtermpath_loop_increment($origin, $item->subject_id, $cv_id,
         $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
@@ -794,7 +794,7 @@ function tripal_update_cvtermpath_loop_increment(
   }
   elseif ($possible_loop === TRUE) {
     // Get all of the relationships of this child term, and recursively
-    // call the tripal_update_cvtermpath_loop() function to continue
+    // call the chado_update_cvtermpath_loop() function to continue
     // descending down the tree.
     $query = db_select('cvterm_relationship', 'cvtr')
       ->fields('cvtr')
@@ -803,7 +803,7 @@ function tripal_update_cvtermpath_loop_increment(
     $cterm_relationships = $query->fetchAll();
     foreach ($cterm_relationships as $item) {
       $increment_of_depth++;
-      tripal_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
+      chado_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
         $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
@@ -822,9 +822,9 @@ function tripal_update_cvtermpath_loop_increment(
  * @return
  *   An object populated with fields from the newly added database.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_cv($name, $definition) {
+function chado_insert_cv($name, $definition) {
 
   // Insert/update values.
   $ins_values = array(
@@ -901,9 +901,9 @@ function tripal_insert_cv($name, $definition) {
  * @return
  *   A cvterm object
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_cvterm($term, $options = array()) {
+function chado_insert_cvterm($term, $options = array()) {
 
   // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
@@ -997,9 +997,9 @@ function tripal_insert_cvterm($term, $options = array()) {
   }
 
   // Make sure the CV name exists.
-  $cv = tripal_get_cv(array('name' => $cvname));
+  $cv = chado_get_cv(array('name' => $cvname));
   if (!$cv) {
-    $cv = tripal_insert_cv($cvname, '');
+    $cv = chado_insert_cv($cvname, '');
   }
   if (!$cv) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);
@@ -1022,9 +1022,9 @@ function tripal_insert_cvterm($term, $options = array()) {
 
   // Add the database. The function will just return the DB object if the
   // database already exists.
-  $db = tripal_get_db(array('name' => $dbname));
+  $db = chado_get_db(array('name' => $dbname));
   if (!$db) {
-    $db = tripal_insert_db(array('name' => $dbname));
+    $db = chado_insert_db(array('name' => $dbname));
   }
   if (!$db) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
@@ -1103,7 +1103,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     if ($dbxref->accession != $accession) {
 
       // Get/add the dbxref for his term.
-      $dbxref_new =  tripal_insert_dbxref(array(
+      $dbxref_new = chado_insert_dbxref(array(
         'db_id' => $db->db_id,
         'accession' => $accession
       ));
@@ -1148,7 +1148,7 @@ function tripal_insert_cvterm($term, $options = array()) {
   if (!$cvterm) {
 
     // Check to see if the dbxref exists if not, add it.
-    $dbxref =  tripal_insert_dbxref(array(
+    $dbxref = chado_insert_dbxref(array(
       'db_id' => $db->db_id,
       'accession' => $accession
     ));
@@ -1222,7 +1222,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     if (!$check) {
 
       // Check to see if the dbxref exists if not, add it.
-      $dbxref =  tripal_insert_dbxref(array(
+      $dbxref = chado_insert_dbxref(array(
         'db_id' => $db->db_id,
         'accession' => $accession
       ));
@@ -1288,9 +1288,9 @@ function tripal_insert_cvterm($term, $options = array()) {
  * @return
  *   returns the job_id of the submitted job or FALSE if the job was not added
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_submit_obo_job($obo) {
+function chado_submit_obo_job($obo) {
   global $user;
 
   // Set Defaults
@@ -1345,9 +1345,9 @@ function tripal_submit_obo_job($obo) {
  * @return
  *   Returns the ontology ID.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_obo($name, $path) {
+function chado_insert_obo($name, $path) {
   // Make sure an OBO with the same name doesn't already exist.
   $obo_id = db_select('tripal_cv_obo', 'tco')
     ->fields('tco', array('obo_id'))
@@ -1383,8 +1383,10 @@ function tripal_insert_obo($name, $path) {
  *
  * @return
  *   An instance of an OBO record object.
+ * 
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_get_obo($values) {
+function chado_get_obo($values) {
   $query = db_select('tripal_cv_obo', 'tco')
     ->fields('tco');
 
@@ -1408,9 +1410,9 @@ function tripal_get_obo($values) {
  * @return
  * A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_autocomplete_cv($string = '') {
+function chado_autocomplete_cv($string = '') {
   $sql = "
     SELECT CV.cv_id, CV.name
     FROM {cv} CV
@@ -1439,9 +1441,9 @@ function tripal_autocomplete_cv($string = '') {
  * @return
  * A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_autocomplete_cvterm($cv_id, $string = '') {
+function chado_autocomplete_cvterm($cv_id, $string = '') {
   if ($cv_id) {
     $sql = "
       SELECT CVT.cvterm_id, CVT.name
@@ -1508,9 +1510,9 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is 
  *       the default.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
+function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 
@@ -1533,7 +1535,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
     }
     else {
       tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
-        "tripal_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
+        "chado_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
           supplied. You were trying to associate a cvterm with the %base %record_id
           and supplied the cvterm values: %cvterm.",
         array('%base' => $basetable, '%record_id' => $record_id, '%cvterm' => print_r($cvterm,TRUE))
@@ -1549,13 +1551,13 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
     }
     elseif ($options['insert_cvterm']) {
       // Insert the cvterm
-      $insert = tripal_insert_cvterm($values);
+      $insert = chado_insert_cvterm($values);
       if (isset($insert->cvterm_id)) {
         $cvterm['cvterm_id'] = $insert->cvterm_id;
       }
       else {
         tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
-          "tripal_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
+          "chado_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
           array('%cvterm' => print_r($cvterm,TRUE))
         );
         return FALSE;
@@ -1563,7 +1565,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
     }
     else {
       tripal_report_error('tripal_api', TRIPAL_WARNING,
-        "tripal_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
+        "chado_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
         array('%cvterm' => print_r($cvterm,TRUE))
       );
       return FALSE;

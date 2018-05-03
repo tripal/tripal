@@ -47,7 +47,7 @@ function tripal_chado_publish_records($values, $job_id = null) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_tokens($base_table) {
-  chado_get_chado_tokens($base_table);
+  chado_get_tokens($base_table);
 }
 
 /**
@@ -66,7 +66,7 @@ function tripal_get_chado_tokens($base_table) {
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_replace_chado_tokens($string, $record) {
-  chado_replace_chado_tokens($string, $record);
+  chado_replace_tokens($string, $record);
 }
 
 /**
@@ -325,7 +325,7 @@ function tripal_get_schema_name($schema = 'chado')
  */
 function tripal_add_chado_semweb_table($chado_table)
 {
-  chado_add_chado_semweb_table($chado_table);
+  chado_add_semweb_table($chado_table);
 }
 
 /**
@@ -362,7 +362,7 @@ function tripal_associate_chado_semweb_term(
   $term,
   $update = false
 ) {
-  chado_associate_chado_semweb_term(
+  chado_associate_semweb_term(
     $chado_table,
     $chado_column,
     $term,
@@ -392,7 +392,7 @@ function tripal_associate_chado_semweb_term(
  */
 function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array())
 {
-  chado_get_chado_semweb_term($chado_table, $chado_column, $options = array());
+  chado_get_semweb_term($chado_table, $chado_column, $options = array());
 }
 
 /**
@@ -407,7 +407,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  */
 function tripal_format_chado_semweb_term($cvterm)
 {
-  chado_format_chado_semweb_term($cvterm);
+  chado_format_semweb_term($cvterm);
 }
 /**
  * Retreive the column name in a Chado table that matches a given term.
@@ -426,5 +426,5 @@ function tripal_format_chado_semweb_term($cvterm)
  */
 function tripal_get_chado_semweb_column($chado_table, $term)
 {
-  chado_get_chado_semweb_column($chado_table, $term);
+  chado_get_semweb_column($chado_table, $term);
 }

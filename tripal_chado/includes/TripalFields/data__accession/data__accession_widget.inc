@@ -39,7 +39,7 @@ class data__accession_widget extends ChadoFieldWidget {
     }
 
     $schema = chado_get_schema('dbxref');
-    $options = tripal_get_db_select_options();
+    $options = chado_get_db_select_options();
 
     //$widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
@@ -137,7 +137,7 @@ class data__accession_widget extends ChadoFieldWidget {
           'db_id' => $db_id,
           'accession' => $accession,
         );
-        $dbxref = tripal_insert_dbxref($values);
+        $dbxref = chado_insert_dbxref($values);
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
       }

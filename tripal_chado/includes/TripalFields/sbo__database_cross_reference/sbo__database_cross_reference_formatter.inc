@@ -31,8 +31,8 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
       }
       $content = $item['value'][$dbname_term] . ':' . $item['value'][$accession_term];
       if ($item['value'][$dburl_term]) {
-        $dbxref = tripal_get_dbxref(array('dbxref_id' => $item['chado-' . $linker_table . '__dbxref_id']));
-        $url = tripal_get_dbxref_url($dbxref);
+        $dbxref = chado_get_dbxref(array('dbxref_id' => $item['chado-' . $linker_table . '__dbxref_id']));
+        $url = chado_get_dbxref_url($dbxref);
         $content = l($content, $url, array('attributes' => array('target' => '_blank')));
       }
       $element[$delta] = array(

@@ -33,7 +33,7 @@
  *
  * @ingroup tripal_contact_api
  */
-function tripal_insert_contact($values) {
+function chado_insert_contact($values) {
 
   $name = $values['name'];
   $description = $values['description'];
@@ -46,7 +46,7 @@ function tripal_insert_contact($values) {
   $contact = chado_select_record('contact', array('contact_id'), $values, $options);
 
   if (count($contact) == 0) {
-    $cvterm = tripal_get_cvterm(array(
+    $cvterm = chado_get_cvterm(array(
       'name' => $type,
       'cv_id' => array('name' => 'tripal_contact')
     ));
@@ -123,7 +123,7 @@ function tripal_insert_contact($values) {
  *
  * @ingroup tripal_contact_api
  */
-function tripal_autocomplete_contact($text) {
+function chado_autocomplete_contact($text) {
   $matches = array();
 
   $sql = "SELECT * FROM {contact} WHERE lower(name) like lower(:name) ";

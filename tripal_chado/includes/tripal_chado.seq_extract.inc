@@ -43,7 +43,7 @@ function tripal_chado_feature_seq_extract_download() {
     header('Content-Disposition: attachment; filename="sequences.fnn"');
   }
 
-  $seqs = tripal_get_bulk_feature_sequences(array(
+  $seqs = chado_get_bulk_feature_sequences(array(
     'genus' => $genus,
     'species' => $species,
     'analysis_name' => $analysis,

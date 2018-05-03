@@ -34,7 +34,7 @@ function tripal_chado_seq_extract_page() {
       drupal_add_http_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
     }
 
-    tripal_get_bulk_feature_sequences(array(
+    chado_get_bulk_feature_sequences(array(
       'genus' => $genus,
       'species' => $species,
       'analysis_name' => $analysis,

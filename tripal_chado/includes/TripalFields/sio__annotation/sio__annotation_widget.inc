@@ -118,7 +118,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
       '#default_value' => $fk_value,
     );
 
-    $cvs = tripal_get_cv_select_options();
+    $cvs = chado_get_cv_select_options();
     $widget['cv_id'] = array(
       '#type' => 'select',
       '#title' => t('Vocabulary'),
@@ -214,7 +214,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
       }
       // Use the NULL pub.
       else {
-        $pub = tripal_get_publication(array('uniquename' => 'null'));
+        $pub = chado_get_publication(array('uniquename' => 'null'));
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
       }
     }

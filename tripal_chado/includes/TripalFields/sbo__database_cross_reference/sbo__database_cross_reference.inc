@@ -153,7 +153,7 @@ class sbo__database_cross_reference extends ChadoField {
           continue;
         }
 
-        $URL = tripal_get_dbxref_url($dbxref);
+        $URL = chado_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
             $dbname_term => $dbxref->db_id->name,

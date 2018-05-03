@@ -68,8 +68,8 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       }
     }
     elseif ($vocabulary) {
-      $cv = tripal_get_cv(array('name' => $vocabulary));
-      $options = tripal_get_cvterm_select_options($cv->cv_id);
+      $cv = chado_get_cv(array('name' => $vocabulary));
+      $options = chado_get_cvterm_select_options($cv->cv_id);
     }
     // If no vocabulary or parent term are provided then just give a generic
     // term finder.

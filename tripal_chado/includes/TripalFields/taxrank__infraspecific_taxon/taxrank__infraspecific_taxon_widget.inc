@@ -48,8 +48,8 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
       '#value' =>  $infra_name,
     );
 
-    $cv = tripal_get_cv(array('name' => 'taxonomic_rank'));
-    $terms = tripal_get_cvterm_select_options($cv->cv_id);
+    $cv = chado_get_cv(array('name' => 'taxonomic_rank'));
+    $terms = chado_get_cvterm_select_options($cv->cv_id);
 
     // Unfortunately the taxonomic_rank vocabulary is not properly organized
     // such that we only include terms below 'species'. Therefore we will

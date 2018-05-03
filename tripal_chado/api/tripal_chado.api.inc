@@ -268,7 +268,7 @@ function chado_publish_records($values, $job_id = NULL) {
  * 
  * @ingroup tripal_chado_api
  */
-function chado_get_chado_tokens($base_table) {
+function chado_get_tokens($base_table) {
 
   $tokens = array();
   $table_descrip = chado_get_schema($base_table);
@@ -300,7 +300,7 @@ function chado_get_chado_tokens($base_table) {
         $sub_token_prefix = $base_table . '.' . $left_field;
         $sub_location_prefix = implode(' > ',array($base_table, $left_field));
 
-        $sub_tokens = chado_get_chado_tokens($table);
+        $sub_tokens = chado_get_tokens($table);
         if (is_array($sub_tokens)) {
           $tokens = array_merge($tokens, $sub_tokens);
         }
@@ -326,9 +326,9 @@ function chado_get_chado_tokens($base_table) {
  * 
  *  @ingroup tripal_chado_api
  */
-function chado_replace_chado_tokens($string, $record) {
+function chado_replace_tokens($string, $record) {
   // Get the list of tokens
-  $tokens = chado_get_chado_tokens($record->tablename);
+  $tokens = chado_get_tokens($record->tablename);
 
   // Determine which tokens were used in the format string
   if (preg_match_all('/\[[^]]+\]/', $string, $used_tokens)) {

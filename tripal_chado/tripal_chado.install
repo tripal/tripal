@@ -13,7 +13,7 @@ function tripal_chado_install() {
   if (chado_is_installed()) {
     // For an upgraded site we need to move some vocabulary terms over
     // to the new 'local' vocabulary:
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'local',
       'description' => variable_get('site_name', 'This site.'),
     ));
@@ -697,7 +697,7 @@ function tripal_chado_update_7300() {
       chado_query("ALTER TABLE {tripal_gffcds_temp} ALTER COLUMN phase DROP NOT NULL;");
     }
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:1048',
       'name' => 'Database ID',
       'cv_name' => 'EDAM',
@@ -762,25 +762,25 @@ function tripal_chado_update_7301() {
 function tripal_chado_update_7302(){
   try {
     // Add the term for the field.
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'format',
       'description' => 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources. ',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
     ));
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'operation',
       'description' => 'A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
     ));
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'topic',
       'description' => 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.',
       'url' => 'http://edamontology.org/page',
       'urlprefix' => 'http://edamontology.org/{db}_{accession}',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
       'EDAM',
       'EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries.'
     );
@@ -815,20 +815,20 @@ function tripal_chado_update_7303() {
  */
 function tripal_chado_update_7304() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'SIO:001080',
       'name' => 'vocabulary',
       'cv_name' => 'SIO',
       'definition' => 'A vocabulary is a collection of terms.',
     ));
     tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:2976',
       'name' => 'Protein sequence',
       'cv_name' => 'EDAM',
       'definition' => 'One or more protein sequences, possibly with associated annotation.',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:fmin',
       'name' => 'minimal boundary',
       'definition' => 'The leftmost, minimal boundary in the linear range ' .
@@ -838,7 +838,7 @@ function tripal_chado_update_7304() {
       'cv_name' => 'local',
     ));
     tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:fmax',
       'name' => 'maximal boundary',
       'definition' => 'The rightmost, maximal boundary in the linear range ' .
@@ -848,14 +848,14 @@ function tripal_chado_update_7304() {
       'cv_name' => 'local',
     ));
     tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:2336',
       'name' => 'Translation phase specification',
       'cv_name' => 'EDAM',
       'definition' => 'Phase for translation of DNA (0, 1 or 2) relative to a fragment of the coding sequence.',
     ));
     tripal_associate_chado_semweb_term('featureloc', 'phase', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:3002',
       'name' => 'Annotation track',
       'cv_name' => 'EDAM',
@@ -876,90 +876,90 @@ function tripal_chado_update_7304() {
  */
 function tripal_chado_update_7305() {
   try {
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'rdfs',
       'description' => 'Resource Description Framework Schema',
       'url' => 'https://www.w3.org/TR/rdf-schema/',
       'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_{accession}',
     ));
-    tripal_insert_cv('rdfs', 'Resource Description Framework Schema');
-    tripal_insert_db(array(
+    chado_insert_cv('rdfs', 'Resource Description Framework Schema');
+    chado_insert_db(array(
       'name' => 'SO',
       'description' => 'The sequence ontology.',
       'url' => 'http://www.sequenceontology.org/',
       'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
     ));
-    tripal_insert_cv('sequence', 'The sequence ontology.');
-    tripal_insert_db(array(
+    chado_insert_cv('sequence', 'The sequence ontology.');
+    chado_insert_db(array(
       'name' => 'TAXRANK',
       'description' => 'A vocabulary of taxonomic ranks (species, family, phylum, etc)',
       'url' => 'http://www.obofoundry.org/ontology/taxrank.html',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
     ));
-    tripal_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
-    tripal_insert_db(array(
+    chado_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
+    chado_insert_db(array(
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
       'url' => 'http://www.w3.org/ns/hydra/core',
       'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
       'hydra',
       'A Vocabulary for Hypermedia-Driven Web APIs.'
     );
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'dc',
       'description' => 'DCMI Metadata Terms.',
       'url' => 'http://purl.org/dc/dcmitype/',
       'urlprefix' => 'http://purl.org/dc/terms/{accession}',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
       'dc',
       'DCMI Metadata Terms.'
     );
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'dc:Service',
       'name' => 'Service',
       'cv_name' => 'dc',
       'definition' => 'A system that provides one or more functions.',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:Collection',
       'name' => 'Collection',
       'cv_name' => 'hydra',
       'definition' => 'A collection holding references to a number of related resources.',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:member',
       'name' => 'member',
       'cv_name' => 'hydra',
       'definition' => 'A member of the collection',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:description',
       'name' => 'description',
       'cv_name' => 'hydra',
       'definition' => 'A description.',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:totalItems',
       'name' => 'totalItems',
       'cv_name' => 'hydra',
       'definition' => 'The total number of items referenced by a collection.',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:title',
       'name' => 'title',
       'cv_name' => 'hydra',
       'definition' => 'A title, often used along with a description.',
     ));
-    $name = tripal_insert_cvterm(array(
+    $name = chado_insert_cvterm(array(
       'id' => 'hydra:PartialCollectionView',
       'name' => 'PartialCollectionView',
       'cv_name' => 'hydra',
       'definition' => 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'schema:ItemPage',
       'name' => 'ItemPage',
       'cv_name' => 'schema',
@@ -967,19 +967,19 @@ function tripal_chado_update_7305() {
     ));
     global $base_path;
 
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'null',
       'description' => 'No online database.',
       'url' => $base_path . 'cv/lookup/null',
       'urlprefix' => $base_path. 'cv/lookup/{db}/{accession}',
     ));
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'local',
       'description' => 'Terms created for this site.',
       'url' => $base_path . 'cv/lookup/local',
       'urlprefix' => $base_path . 'cv/lookup/{db}/{accession}',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:rank',
       'name' => 'rank',
       'definition' => 'A taxonmic rank',
@@ -1003,7 +1003,7 @@ function tripal_chado_update_7306() {
       'cv_id' => array('name' => 'EDAM'),
       'name' => 'Map'
     );
-    $cvterm = tripal_get_cvterm($identifier);
+    $cvterm = chado_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
   }
   catch (\PDOException $e) {
@@ -1021,7 +1021,7 @@ function tripal_chado_update_7307() {
       'cv_id' => array('name' => 'tripal_pub'),
       'name' => 'Publication'
     );
-    $cvterm = tripal_get_cvterm($identifier);
+    $cvterm = chado_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
   }
   catch (\PDOException $e) {
@@ -1035,7 +1035,7 @@ function tripal_chado_update_7307() {
  */
 function tripal_chado_update_7308() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'IAO:0000129',
       'name' => 'version number',
       'cv_name' => 'IAO',
@@ -1048,7 +1048,7 @@ function tripal_chado_update_7308() {
     tripal_associate_chado_semweb_term('analysis', 'sourceversion', $term);
     tripal_associate_chado_semweb_term(NULL, 'version', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'schema:name',
       'name' => 'name',
       'cv_name' => 'schema',
@@ -1056,7 +1056,7 @@ function tripal_chado_update_7308() {
     ));
     tripal_associate_chado_semweb_term('analysis', 'sourcename', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:2091',
       'name' => 'Accession',
       'cv_name' => 'EDAM',
@@ -1076,7 +1076,7 @@ function tripal_chado_update_7308() {
  */
 function tripal_chado_update_7309() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'SIO:001166',
       'name' => 'annotation',
       'cv_name' => 'SIO',
@@ -1094,7 +1094,7 @@ function tripal_chado_update_7309() {
     tripal_associate_chado_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
 
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'SIO:000281',
       'name' => 'negation',
       'cv_name' => 'SIO',
@@ -1115,18 +1115,18 @@ function tripal_chado_update_7309() {
  */
 function tripal_chado_update_7310() {
   try {
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'OBCS',
       'description' => 'Ontology of Biological and Clinical Statistics.',
       'url' => 'https://github.com/obcs/obcs',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
         'OBCS',
         'Ontology of Biological and Clinical Statistics.'
     );
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'OBCS:0000117',
       'name' => 'rank order',
       'cv_name' => 'OBCS',
@@ -1144,7 +1144,7 @@ function tripal_chado_update_7310() {
  */
 function tripal_chado_update_7311() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:fmin',
       'name' => 'minimal boundary',
       'definition' => 'The leftmost, minimal boundary in the linear range ' .
@@ -1166,14 +1166,14 @@ function tripal_chado_update_7311() {
 function tripal_chado_update_7312() {
   try {
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:miniref',
       'name' => 'Mini-ref',
       'definition' => 'A small in-house unique identifier for a publication.',
       'cv_name' => 'local',
     ));
     tripal_associate_chado_semweb_term('pub', 'miniref', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'schema:url',
       'name' => 'url',
       'cv_name' => 'schema',
@@ -1192,10 +1192,10 @@ function tripal_chado_update_7312() {
  */
 function tripal_chado_update_7313() {
   try {
-    $cv = tripal_get_cv(array('name' => 'tripal_pub'));
-    tripal_update_cvtermpath($cv->cv_id);
-    $cv = tripal_get_cv(array('name' => 'tripal_contact'));
-    tripal_update_cvtermpath($cv->cv_id);
+    $cv = chado_get_cv(array('name' => 'tripal_pub'));
+    chado_update_cvtermpath($cv->cv_id);
+    $cv = chado_get_cv(array('name' => 'tripal_contact'));
+    chado_update_cvtermpath($cv->cv_id);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -1208,7 +1208,7 @@ function tripal_chado_update_7313() {
  */
 function tripal_chado_update_7314() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'name' => 'Reference Feature',
       'definition' => 'A genomic or genetic feature on which other features are mapped.',
       'cv_name' => 'local',
@@ -1227,7 +1227,7 @@ function tripal_chado_update_7314() {
  */
 function tripal_chado_update_7315() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'schema:additionalType',
       'name' => 'additionalType',
       'cv_name' => 'schema',
@@ -1246,7 +1246,7 @@ function tripal_chado_update_7315() {
  */
 function tripal_chado_update_7316() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'SIO:001323',
       'name' => 'email address',
       'cv_name' => 'SIO',
@@ -1264,14 +1264,14 @@ function tripal_chado_update_7316() {
  */
 function tripal_chado_update_7317() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'OBI:0100026',
       'name' => 'organism',
       'cv_name' => 'obi',
       'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
     ));
     tripal_associate_chado_semweb_term('biomaterial', 'taxon_id', $term);
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'local:contact',
       'name' => 'contact',
       'definition' => 'An entity (e.g. individual or organization) through ' .
@@ -1292,14 +1292,14 @@ function tripal_chado_update_7317() {
  */
 function tripal_chado_update_7318() {
   try {
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'sep',
       'description' => 'Sample processing and separation techniques.',
       'url' => 'http://psidev.info/index.php?q=node/312',
       'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
     ));
-    tripal_insert_cv('sep','A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
-    $term = tripal_insert_cvterm(array(
+    chado_insert_cv('sep','A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
+    $term = chado_insert_cvterm(array(
       'id' => 'sep:00195',
       'name' => 'biological sample',
       'cv_name' => 'sep',
@@ -1318,7 +1318,7 @@ function tripal_chado_update_7318() {
  */
 function tripal_chado_update_7319() {
   try {
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'operation:2945',
       'name' => 'Analysis',
       'cv_name' => 'EDAM',
@@ -1337,28 +1337,28 @@ function tripal_chado_update_7319() {
 function tripal_chado_update_7320() {
     try {
     // Associate the Analysis term with the analysis_id of the phylotree table.
-    $term = tripal_get_cvterm(array('id' => 'operation:2945'));
+    $term = chado_get_cvterm(array('id' => 'operation:2945'));
     tripal_associate_chado_semweb_term('phylotree', 'analysis_id', $term);
 
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:0872',
       'name' => 'Phylogenetic tree',
       'cv_name' => 'EDAM',
       'definition' => 'The raw data (not just an image) from which a phylogenetic tree is directly generated or plotted, such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:3272',
       'name' => 'Species tree',
       'cv_name' => 'EDAM',
       'definition' => 'A phylogenetic tree that reflects phylogeny of the taxa from which the characters (used in calculating the tree) were sampled.',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'data:3271',
       'name' => 'Gene tree',
       'cv_name' => 'EDAM',
       'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
     ));
-    $term = tripal_insert_cvterm(array(
+    $term = chado_insert_cvterm(array(
       'id' => 'operation:0567',
       'name' => 'Phylogenetic tree visualisation',
       'cv_name' => 'EDAM',
@@ -1396,37 +1396,37 @@ function tripal_chado_update_7320() {
  */
 function tripal_chado_update_7321() {
   try {
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'TPUB',
       'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => '/cv/lookup/TPUB',
       'urlprefix' => '/cv/lookup/TPUB/{accession}',
     ));
-    tripal_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+    chado_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'rdf',
       'description' => 'Resource Description Framework',
       'url' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns',
       'urlprefix' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
       'rdf',
       'Resource Description Framework'
     );
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'rdfs',
       'description' => 'Resource Description Framework Schema',
       'url' => 'https://www.w3.org/TR/rdf-schema/',
       'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
     ));
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'hydra',
       'description' => 'A Vocabulary for Hypermedia-Driven Web APIs',
       'url' => 'http://www.w3.org/ns/hydra/core',
       'urlprefix' => 'http://www.w3.org/ns/hydra/core#{accession}',
     ));
-    tripal_insert_cv(
+    chado_insert_cv(
       'hydra',
       'A Vocabulary for Hypermedia-Driven Web APIs.'
     );
@@ -1441,21 +1441,21 @@ function tripal_chado_update_7321() {
  */
 function tripal_chado_update_7322() {
   try {
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'TPUB',
       'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => 'cv/lookup/TPUB',
       'urlprefix' => 'cv/lookup/TPUB/{accession}',
     ));
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'TContact',
       'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => 'cv/lookup/TContact',
       'urlprefix' => 'cv/lookup/TContact/{accession}',
     ));
-    tripal_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+    chado_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
-    tripal_insert_db(array(
+    chado_insert_db(array(
       'name' => 'SWO',
       'description' => 'Software Ontology',
       'url' => 'http://purl.obolibrary.org/obo/swo',

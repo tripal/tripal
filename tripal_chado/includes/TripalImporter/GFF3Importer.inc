@@ -902,7 +902,7 @@ class GFF3Importer extends TripalImporter {
             TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand, FLM.uniquename
         ";
         $results = chado_query($sql);
-        $protein_cvterm = tripal_get_cvterm(array(
+        $protein_cvterm = chado_get_cvterm(array(
           'name' => 'polypeptide',
           'cv_id' => array(
             'name' => 'sequence'
@@ -947,7 +947,7 @@ class GFF3Importer extends TripalImporter {
             $feature = $this->loadFeature($organism, $analysis_id,
                 $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
             // Add the derives_from relationship.
-            $cvterm = tripal_get_cvterm(array('cvterm_id' => $result->cvterm_id));
+            $cvterm = chado_get_cvterm(array('cvterm_id' => $result->cvterm_id));
             $this->loadDerivesFrom($feature, $cvterm,
                 $result->uniquename, $organism, $pfmin, $pfmax);
             // Add the featureloc record. Set the start of the protein to
@@ -1055,7 +1055,7 @@ class GFF3Importer extends TripalImporter {
     $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);
     $type_id = NULL;
     if (count($result) > 0) {
-      $otype = tripal_get_cvterm(array(
+      $otype = chado_get_cvterm(array(
         'name' => $result[0]->type_name,
         'cv_id' => array(
           'name' => 'sequence'
@@ -1472,7 +1472,7 @@ class GFF3Importer extends TripalImporter {
         'cv_name' => $syncv->name,
         'is_relationship' => FALSE
       );
-      $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+      $syntype = chado_insert_cvterm($term, array('update_existing' => TRUE));
       if (!$syntype) {
         $this->logMessage("Cannot add synonym type: internal:$type.", array(), TRIPAL_WARNING);
         return 0;
@@ -1912,7 +1912,7 @@ class GFF3Importer extends TripalImporter {
         'cv_name' => 'feature_property',
         'is_relationship' => FALSE
       );
-      $cvterm = (object) tripal_insert_cvterm($term, array('update_existing' => FALSE));
+      $cvterm = (object)chado_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$cvterm) {
         $this->logMessage("Cannot add cvterm, $property.", array(), TRIPAL_WARNING);
         return 0;
