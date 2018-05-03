@@ -863,7 +863,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = array(
     // Parse the file according to the format indicated.
     if ($format == 'newick') {
       // Parse the tree into the expected nested node format.
-      module_load_include('inc', 'tripal_phylogeny', 'includes/parsers/tripal_phylogeny.newick_parser');
+      module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
       $tree = tripal_phylogeny_parse_newick_file($file_name);
 
       // Assign the right and left indecies to the tree ndoes.
