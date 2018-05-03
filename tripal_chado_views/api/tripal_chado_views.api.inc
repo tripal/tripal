@@ -1,13 +1,19 @@
 <?php
 /**
  * @file
- * API functions for Chado Views Integration
+ * Provides API functions that support direct integration of Chado tables with
+ * Drupal Views. 
  */
 /**
  * @defgroup tripal_chado_views_api Chado Views Integration
  * @ingroup tripal_chado_api
  * @{
-
+ * Provides API functions that support direct integration of Chado tables with
+ * Drupal Views. This is different from the entity and field integration that
+ * Tripal v3 provides.  Here Chado tables are directly integrated.  Tripal
+ * provides a web interface that allows site developers to customize how a
+ * Chado table is integrate with Views.  However, these functions provide
+ * programmatic access to the same functionality.
  * @}
  */
 

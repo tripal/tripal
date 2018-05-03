@@ -1,13 +1,19 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) to manage stocks
+ * Provides API functions specificially for managing stock 
+ * records in Chado. 
  */
 
 /**
  * @defgroup tripal_stock_api Chado Stock
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing stock 
+ * records in Chado.  The stock table of Chado is used for storing a variety
+ * of data types besides just stocks from a stock collection.  Examples of 
+ * other records commonly stored in the stock table are germplasm and
+ * individuals from a breeding population.
  * @}
  */
 

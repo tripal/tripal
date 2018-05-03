@@ -1,13 +1,16 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) to manage chado publications
+ * Provides API functions specificially for managing publication 
+ * records in Chado.  
  */
 
 /**
  * @defgroup tripal_pub_api Chado Publication
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing publication 
+ * records in Chado.
  * @}
  */
 

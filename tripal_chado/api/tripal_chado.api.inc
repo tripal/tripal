@@ -3,18 +3,23 @@
 /**
  * @file
  *
- * This file provides the Chado API: a set of functions for
- * interacting with Chado.
+ * This file contains miscellaneous API functions specific to working with
+ * records in Chado that do not have a home in any other sub category of 
+ * API functions.
  */
 
 /**
  * @defgroup tripal_chado_api Chado
  *
  * @ingroup tripal_api
- * The Tripal Chado API: a set of functions for
- * interacting with Chado.
- *
+ * The Tripal Chado API is a set of functions for interacting with data 
+ * inside of a Chado relational database. Entities (or pages) in Drupal
+ * that are provided by Tripal can supply data from any supported database 
+ * back-end, and Chado is the default. This API contains a variety of sub
+ * categories (or groups) where functions are organized.  Any extension module
+ * that desires to work with data in Chado will find these functions useful.
  */
+
 /**
  * Publishes content in Chado as a new TripalEntity entity.
  *

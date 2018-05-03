@@ -1,13 +1,17 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) for working with features
+ * Provides API functions specificially for managing feature
+ * records in Chado.  
  */
 
 /**
  * @defgroup tripal_feature_api Chado Feature
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing feature
+ * records in Chado especially retrieving relationships and sequences derived 
+ * from relationships and feature alignments.
  * @}
  */
 /**
@@ -1038,10 +1042,10 @@ function chado_get_featureloc_sequences($feature_id, $featurelocs) {
       // now sort the parts
       // if we're on the reverse strand we need to resort
       if ($featureloc->strand >= 0) {
-        usort($parts, 'chado_feature__residues_sort_rel_parts_by_start');
+        usort($parts, '_chado_feature__residues_sort_rel_parts_by_start');
       }
       else {
-        usort($rparts, 'chado_feature__residues_sort_rel_parts_by_start');
+        usort($rparts, '_chado_feature__residues_sort_rel_parts_by_start');
         $parts = $rparts;
       }
 
@@ -1256,7 +1260,7 @@ function chado_get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1)
     }
   }
 
-  usort($featurelocs, 'chado_feature__residues_sort_locations');
+  usort($featurelocs, '_chado_feature__residues_sort_locations');
   return $featurelocs;
 }
 
@@ -1351,9 +1355,8 @@ function _chado_feature_load_relationships($feature_id, $side = 'as_subject') {
  * @param $a
  * @param $b
  * 
- * @ingroup tripal_feature_api
  */
-function chado_feature__residues_sort_rel_parts_by_start($a, $b) {
+function _chado_feature__residues_sort_rel_parts_by_start($a, $b) {
   foreach ($a as $type_name => $details) {
     $astart = $a[$type_name]['start'];
     break;
@@ -1375,9 +1378,8 @@ function chado_feature__residues_sort_rel_parts_by_start($a, $b) {
  * @return
  *   Which feature location comes first.
  *
- * @ingroup tripal_feature_api
  */
-function chado_feature__residues_sort_locations($a, $b) {
+function _chado_feature__residues_sort_locations($a, $b) {
   return strnatcmp($a->fmin, $b->fmin);
 }
 
