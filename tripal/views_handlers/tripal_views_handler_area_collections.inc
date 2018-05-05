@@ -285,6 +285,7 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   foreach ($results['TripalEntity'] as $entity) {
     $entities[] = $entity->id;
   }
+
   $collection = tripal_create_collection(array(
     'uid'  => $uid,
     'collection_name' => $collection_name,
@@ -428,7 +429,7 @@ function tripal_views_handler_area_collections_search_api_form_submit($form, $fo
         'fields' => array(),
       );
     }
-    $entities[$bundle]['ids'][] = $r->entity;
+    $entities[$bundle]['ids'][] = $r->entity->id;
   }
 
   // Now add the entities to the collection based on bundle.
