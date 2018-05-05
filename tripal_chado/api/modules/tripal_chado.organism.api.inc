@@ -34,7 +34,7 @@
  * @return
  *   If unique values were passed in as an identifier then an object describing the organism
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   FALSE will be returned.
+ *   NULL will be returned.
  *
  * @ingroup tripal_organism_api
  */
@@ -144,7 +144,7 @@ function tripal_get_organism_scientific_name($organism) {
     // For organism objects crated using chado_generate_var
     if (is_object($organism->type_id)) {
       if ($organism->type_id) {
-        $rank = $orgasnism->type_id->name;
+        $rank = $organism->type_id->name;
       }
     }
     else {
@@ -300,7 +300,7 @@ function tripal_autocomplete_organism($text) {
   $sql .= "ORDER BY genus, species ";
   $sql .= "LIMIT 25 OFFSET 0 ";
   $results = chado_query($sql, $args);
-  $items = array();
+  $items = array(['args' => [$sql => $args]]);
   foreach ($results as $organism) {
     $name = tripal_get_organism_scientific_name($organism);
     $items["$name [id: $organism->organism_id]"] = $name;

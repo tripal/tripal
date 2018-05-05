@@ -1,5 +1,8 @@
 {
   "require-dev": {
-    "phpunit/phpunit": "^7"
+    "doctrine/instantiator": "1.0.*"
+  },
+  "require": {
+    "statonlab/tripal-test-suite": "1.0.*"
   }
 }
