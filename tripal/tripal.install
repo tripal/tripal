@@ -165,6 +165,7 @@ function tripal_schema() {
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
+  $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
@@ -1144,9 +1145,29 @@ function tripal_update_7309() {
 }
 
 /**
- * Adds support for file quotas.
+ * Adds the missing tripal_collection_bundle table
+ * @throws DrupalUpdateException
  */
 function tripal_update_7310() {
+  $transaction = db_transaction();
+  try {
+    if (!db_table_exists('tripal_collection_bundle')) {
+      $schema = array();
+      $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+      db_create_table('tripal_collection_bundle', $schema['tripal_collection_bundle']);
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection_bundle table:' . $error);
+  }
+}
+
+/**
+ * Adds support for file quotas.
+ */
+function tripal_update_7311() {
   try {
     $schema = array();
     $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
