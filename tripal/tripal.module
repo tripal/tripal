@@ -424,10 +424,213 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
+  
+  
+  //
+  // USER FILE MANAGEMENT
+  //
+  $items['admin/tripal/files'] = [
+    'title' => 'User File Management',
+    'description' => 'Set maximum upload sizes, quotas and view usage.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_manage_files_form'],
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 30,
+  ];
+  
+  $items['admin/tripal/files/quota'] = [
+    'title' => 'User Quotas',
+    'description' => 'Set default quota, expiration date, and custom quotas',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_manage_quota_form'],
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 10,
+  ];
+  
+  // Admin remove user quota
+  $items['admin/tripal/files/quota/remove/%'] = [
+    'title' => 'Remove custom user quota',
+    'description' => "Revert's a user's quota and expiration of files to the site wide defaults.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_remove_quota_form', 5],
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  
+  // Add user quota
+  $items['admin/tripal/files/quota/add'] = [
+    'title' => 'Add Custom Quota',
+    'description' => 'Gives the user a new quota and expiration date',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_add_custom_form'],
+    'access arguments' => ['administer tripal'],
+    // TODO: Ask Stephen is this is fine as a link at the top of the form
+    // as well as a link in the table
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  
+  // Autocomplete path for the users on the site
+  $items['admin/tripal/files/quota/user/autocomplete'] = [
+    'title' => 'Autocomplete for existing users',
+    'description' => 'Provide a list of existing users on the site.',
+    'page callback' => 'tripal_users_autocomplete',
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  
+  // Edit user quota
+  $items['admin/tripal/files/quota/edit/%'] = [
+    'title' => 'Edit Custom Quota',
+    'description' => 'Edit an existing user\'s quota and/or expiration date.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_edit_quota_form', 5],
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  
+  $items['admin/tripal/files/usage'] = [
+    'title' => 'File Usage',
+    'description' => 'Set default quota, expiration date, and custom quotas',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_admin_file_usage_page'],
+    'access arguments' => ['administer tripal'],
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal.admin_files.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 15
+  ];
 
+  
+  //
+  // USER FILES
+  //
+  
+  // User view quota (Tab)
+  $items['user/%/files'] = [
+    'title' => 'Uploads',
+    'description' => 'Monitors what files that have been uploaded by user through the tripal module',
+    'page callback' => 'tripal_user_files_page',
+    'page arguments' => [1],
+    'access callback' => 'tripal_access_user_uploads',
+    'access arguments' => ['view', 1],
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 10,
+  ];
+  
+  $items['user/%/files/%'] = [
+    'title' => 'File Details',
+    'description' => "View details about the file",
+    'page callback' => 'tripal_view_file',
+    'page arguments' => [1, 3],
+    'access callback' => 'tripal_access_user_uploads',
+    'access arguments' => ['renew', 1, 3],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  // User file renew.
+  $items['user/%/files/%/renew'] = [
+    'title' => 'Renew File',
+    'description' => "Renew a user's file",
+    'page callback' => 'tripal_renew_file',
+    'page arguments' => [3],
+    'access callback' => 'tripal_access_user_uploads',
+    'access arguments' => ['renew', 1, 3],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  // User file download.
+  $items['user/%/files/%/download'] = [
+    'title' => 'Download File',
+    'description' => "Download a user's file based off of the link clicked in the table",
+    'page callback' => 'tripal_download_file',
+    'page arguments' => [3],
+    'access arguments' => ['download', 1, 3],
+    'access callback' => 'tripal_access_user_uploads',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  // User file delete.
+  $items['user/%/files/%/delete'] = [
+    'title' => 'Delete File',
+    'description' => "Delete a user's file based on either user action or expired file",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_delete_file_form', 1, 3],
+    'access callback' => 'tripal_access_user_uploads',
+    'access arguments' => ['delete', 1, 3],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
   return $items;
 }
 
+/**
+ * Checks if the current user has permissions to perform an action on a file.
+ *
+ * @param $op
+ *   The operation to perform.  These include 'view', 'download', 'renew' and 
+ *   'delete'
+ * @param $uid
+ *   The user ID of the user's account that owns the file.
+ * @param $fid
+ *   The file ID.
+ */
+function tripal_access_user_uploads($op, $uid, $fid = NULL) {
+  global $user;
+  
+  // The site admin can do anything.
+  if (in_array('administrator', $user->roles)) {
+    return TRUE;
+  }
+  
+  // Only the user that owns the files can see them.
+  if ($uid != $user->uid) {
+    return FALSE;
+  }
+  
+  // If no file ID is provided and the user wants to view then
+  // this is the case where the user wants to see all the files.
+  if (!$fid and $op == 'view') {
+    return TRUE;
+  }
+    
+  $file = file_load($fid);
+  switch ($op) {
+    case 'view':
+    case 'download':
+    case 'renew':
+    case 'delete':
+      if ($user->uid == $file->uid) {
+        return TRUE;
+      }
+      break;
+  }
+  return FALSE;
+}
+/**
+ * An access function for data collections.
+ * 
+ * @return boolean
+ */
 function tripal_accesss_user_collections($uid) {
   if (!tripal_access_user_data($uid)) {
     return FALSE;
@@ -437,6 +640,24 @@ function tripal_accesss_user_collections($uid) {
     return FALSE;
   }
   return TRUE;
+}
+
+/**
+ * Autocomplete function for listing existing users on the site.
+ *
+ * @return json array of users that match the query in the textfield
+ **/
+function tripal_users_autocomplete($string) {
+  $matches = [];
+  $result = db_select('users', 'u')
+    ->fields('u', ['name'])
+    ->condition('name', '%' . db_like($string) . '%', 'LIKE')
+    ->execute();
+  
+  foreach ($result as $row) {
+    $matches[$row->name] = check_plain($row->name);
+  }
+  drupal_json_output($matches);
 }
 
 /**
@@ -770,6 +991,7 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
   module_load_include('inc', 'tripal', 'api/tripal.upload.api');
   module_load_include('inc', 'tripal', 'api/tripal.collections.api');
+  module_load_include('inc', 'tripal', 'api/tripal.quotas.api');
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
 }
 
@@ -1105,37 +1327,25 @@ function tripal_block_configure($delta = '') {
 function tripal_cron() {
 
   // Add jobs to the Tripal queue for commong tasks.
-  $args = array();
-  $includes = array();
+  $args = [];
+  $includes = [];
 
   if (variable_get('tripal_admin_notification_creation_during_cron', TRUE)) {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job(
-        "Cron: Checking for '$module' notifications.",    // Job Name
-        'tripal',                                         // Module Name
-        $function,                                        // Callback
-        $args,                                            // Arguements
-        1,                                                // User UID
-        1,                                                // Priority (1-10)
-        $includes,                                        // Includes
-        TRUE                                              // Ignore Duplicates
-      );
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',                                         // Module Name
+        $function, $args, 1, 1, $includes, TRUE);
     }
   }
 
   // Check for expired collections.
-  tripal_add_job(
-    'Cron: Checking expired collections',             // Job Name
-    'tripal',                                         // Module Name
-    'tripal_expire_collections',                      // Callback
-    $args,                                            // Arguements
-    1,                                                // User UID
-    1,                                                // Priority (1-10)
-    $includes,                                        // Includes
-    TRUE                                              // Ignore Duplicates
-  );
+  tripal_add_job('Cron: Checking expired collections', 'tripal',
+    'tripal_expire_collections', $args, 1, 1, $includes, TRUE);
+  
+  tripal_add_job('Cron: Checking expired files', 'tripal',
+    'tripal_expire_files', $args, 1, 1, $includes, TRUE);
+
 }
 
 /**
@@ -1308,44 +1518,6 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
       return $input;
     }
   }
-}
-
-
-/**
- * Implements hook_handle_uploaded_file().
- */
-function tripal_handle_uploaded_file($filename, $filepath, $type) {
-
-  global $user;
-
-  // Split the type into a node ID and form_key
-  list($id, $form_key) = explode('-', $type);
-
-
-  // See if this file is already managed then add another entry fin the
-  // usage table.
-  $fid = db_select('file_managed', 'fm')
-    ->fields('fm', array('fid'))
-    ->condition('uri', $filepath)
-    ->execute()
-    ->fetchField();
-
-  // Create a file object.
-  if (!$fid) {
-    $file = new stdClass();
-    $file->uri = $filepath;
-    $file->filename = $filename;
-    $file->filemime = file_get_mimetype($filepath);
-    $file->uid = $user->uid;
-    $file->status = FILE_STATUS_PERMANENT;
-    $file = file_save($file);
-    $fid = $file->fid;
-  }
-
-  $file = file_load($fid);
-  file_usage_add($file, 'tripal', $form_key, $id);
-  return $fid;
-
 }
 
 /**

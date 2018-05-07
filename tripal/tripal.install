@@ -154,6 +154,8 @@ function tripal_schema() {
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
   $schema['tripal_token_formats'] = tripal_tripal_token_formats_schema();
   $schema['tripal_variables'] = tripal_tripal_variables_schema();
+  $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
+  $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
 
 
   // Adds a table for managing TripalEntity entities.
@@ -836,6 +838,71 @@ function tripal_tripal_bundle_variables_schema() {
 }
 
 /**
+ * Provides the schema for the tripal_custom_quota table.
+ */
+function tripal_tripal_custom_quota_schema() {
+  $schema = array(
+    'table' => 'tripal_custom_quota',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_quota' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_expiration' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+    ),
+    'primary key' => array('uid'),
+    'unique keys' => array(
+      'tripal_custom_quota_uq1' => array('uid'),
+    ),
+    'indexes' => array(
+      'tripal_custom_quota_idx1' => array('uid'),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Provides the schema for the tripal_expiration_files table.
+ */
+function tripal_tripal_expiration_files_schema() {
+  $schema = array (
+    'table' => 'tripal_expiration_files',
+    'fields' => array (
+      'fid' => array(
+        'type' => 'int',
+        'not NULL' => TRUE
+      ),
+      'expiration_date' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE
+      ),
+    ),
+    'primary key' => array(
+      0 => 'fid'
+    ),
+    'unique keys' => array(
+      'tripal_expiration_files_uq1' => array('fid'),
+    ),
+    'indexes' => array(
+      'tripal_expiration_files_idx1' => array('fid'),
+    ),
+  );
+  return $schema;
+}
+
+
+/**
  * Additional Tripal Admin Notification Information.
  *
  * This table is used for information describing administrative
@@ -1094,5 +1161,22 @@ function tripal_update_7310() {
     $transaction->rollback();
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not add the tripal_collection_bundle table:' . $error);
+  }
+}
+
+/**
+ * Adds support for file quotas.
+ */
+function tripal_update_7311() {
+  try {
+    $schema = array();
+    $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
+    $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
+    db_create_table('tripal_custom_quota', $schema['tripal_custom_quota']);
+    db_create_table('tripal_expiration_files', $schema['tripal_expiration_files']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }

@@ -19,6 +19,38 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
     ));
     return;
   }
+  
+  // Make sure we don't go over the user's quota, but only do this check
+  // before loading the first chunk so we don't repeat it over and over again.
+  if ($action == 'check' and $chunk == 0) {
+    $usage = tripal_get_user_usage($user->uid);
+    $quota = tripal_get_user_quota($user->uid);
+    $quota_size = $quota->custom_quota;
+    if ($file_size + $usage > $quota_size) {
+      drupal_json_output(array(
+        'status' => 'failed',
+        'message' => t("Unfortunately, you can not upload this file as the size exceeds the remainder of your quota. See your account page under the 'Uploads' tab to manage your uploaded files."),
+        'file_id' => '',
+      ));
+      return;
+    }
+    
+    // Make sure we don't go over the max file upload size.
+    $upload_max = variable_get('tripal_upload_max_size', 10000000000);
+    if ($file_size > $upload_max) {
+      $message = t("Unfortunately, you can not upload this file as the size exceeds the the maximum file size allowed by this site: " . tripal_format_bytes($upload_max) . '. ');
+      
+      if (user_access('administer tripal')) {
+        $message .= t('You can manage the file upload by visiting: Home » Administration » Tripal » User File Management.');
+      }
+      drupal_json_output(array(
+        'status' => 'failed',
+        'message' => $message,
+        'file_id' => '',
+      ));
+      return;
+    }
+  }
 
   // Allow the module that will own the file to make some checks. The module
   // is allowed to stop the upload as needed.
@@ -42,7 +74,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   }
 
   switch ($action) {
-    // If the action is 'put' then the callee is sending a chunk of the file
+    // If the action is 'save' then the callee is sending a chunk of the file
     case 'save':
       tripal_file_upload_put($filename, $chunk, $user_dir);
       break;
@@ -56,7 +88,6 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
 }
 /**
  * Merges all chunks into a single file
- * @param unknown $filename
  */
 function tripal_file_upload_merge($filename, $type, $user_dir) {
   global $user;
@@ -127,33 +158,58 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
     $status = 'failed';
     $message = 'Merge file is missing after upload ' . $merge_file . '.';
   }
+  
   $file_id = NULL;
 
-  // If the file has been successfully merged then let the calling module
-  // deal with it.
-  if ($status != 'failed') {
+  // If the file has been successfully merged then do a few other things...
+  if ($status != 'failed') {   
+    
+    // See if this file is already managed if so, then it has been uploaded
+    // before and we don't need to add a managed item again.
+    $fid = db_select('file_managed', 'fm')
+      ->fields('fm', ['fid'])
+      ->condition('uri', $merge_file)
+      ->execute()
+      ->fetchField();
+    
+    // Add the file if it is not already managed.
+    if (!$fid) {
+      $file = new stdClass();
+      $file->uri = $merge_file;
+      $file->filename = $filename;
+      $file->filemime = file_get_mimetype($merge_file);
+      $file->uid = $user->uid;
+      $file->status = FILE_STATUS_PERMANENT;
+      $file = file_save($file);
+      $fid = $file->fid;
+    }
+    
+    // Reload the file object to get a full object.
+    $file_id = $fid;
+    $file = file_load($fid);
+    
+    // Set the file as being managed by Tripal.
+    file_usage_add($file, 'tripal', $type, 0);
+    
+    // Set the file expiration.
+    tripal_reset_file_expiration($fid);
+    
+    // Generate an md5 file the uploaded file.
+    $full_path = drupal_realpath($file->uri);
+    $md5sum = md5_file($full_path);
+    $md5sum_file = fopen("$full_path.md5", "w");
+    fwrite($md5sum_file, $md5sum);
+    fclose($md5sum_file);
+    
+    // Remove the temporary directory.
+    file_unmanaged_delete_recursive($temp_dir);
+    
+    // Now let the submitting module deal with it.
     $function = $module . '_handle_uploaded_file';
-    if(function_exists($function)) {
-      $file_id = $function($filename, $merge_file, $type);
-      if ($file_id) {
-        $file = file_load($file_id);
-        $status = 'completed';
-        $full_path = drupal_realpath($file->uri);
-        $md5sum = md5_file($full_path);
-        $md5sum_file = fopen("$full_path.md5", "w");
-        fwrite($md5sum_file, $md5sum);
-        fclose($md5sum_file);
-        unlink($temp_dir);
-      }
-      else {
-        $status = 'failed';
-        $message = 'Could not add file to the database.';
-      }
+    if (function_exists($function)) {
+      $function($file, $type);
     }
-    else {
-      $status = 'failed';
-      $message = 'Cannot find the function: ' . $function . '().';
-    }
+    $status = 'completed';
   }
 
   if ($status == 'failed') {
