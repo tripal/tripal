@@ -804,7 +804,7 @@ function chado_get_location_string($featureloc) {
  *
  * @ingroup tripal_feature_api
  */
-function chado_get_feature_relationships($feature) {
+function chado_tripal_get_feature_relationships($feature) {
   // Expand the feature object to include the feature relationships.
   $options = array(
     'return_array' => 1,

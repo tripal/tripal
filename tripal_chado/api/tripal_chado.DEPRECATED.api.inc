@@ -298,7 +298,7 @@ function hook_tripal_get_schema_name_alter($schema_name, $context)
  */
 function tripal_get_schema_name($schema = 'chado')
 {
-  chado_get_schema_name($schema = 'chado');
+  chado_get_schema_name($schema);
 }
 
 
