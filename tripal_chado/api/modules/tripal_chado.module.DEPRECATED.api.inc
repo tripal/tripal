@@ -962,27 +962,6 @@ function tripal_get_location_string($featureloc) {
 }
 
 /**
- * Quickly retrieves relationships for a feature.
- *
- * Using the chado_expand_var function to retrieve a set
- * of relationships can be very slow, especialy if there are many relationships.
- * This function is intended to help speed up the retrieval of relationships
- * by only retrieving the base information for the relationship and returning
- * an array.
- *
- * @param $feature
- *   The feature object
-
- * @return
- *   An array with two objects
- *
- * @ingroup tripal_chado_module_DEPRECATED_api
- */
-function tripal_get_feature_relationships($feature) {
-  chado_get_feature_relationships($feature);
-}
-
-/**
  * Retrieves a chado organism variable.
  *
  * @param $identifier
