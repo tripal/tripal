@@ -13,6 +13,7 @@ class TripalChadoAPITest extends TripalTestCase {
    * Test the ability to publish Chado organism records as entities.
    *
    * @group api
+   * @group failing
    */
   public function test_tripal_chado_publish_records() {
     $genus_string = 'a_genius_genus';
@@ -27,11 +28,12 @@ class TripalChadoAPITest extends TripalTestCase {
       ->condition('data_table', 'organism')
       ->execute()->fetchField();
 
+    var_dump($bundle);
     $values = ['bundle_name' => 'bio_data_' . $bundle];
 
-    ob_start();//dont display the job message
-    $bool = tripal_chado_publish_records($values);
-    ob_end_clean();
+ //   ob_start();//dont display the job message
+    $bool = chado_publish_records($values);
+   // ob_end_clean();
 
     $this->assertTrue($bool, 'Publishing a fake organism record failed');
 
@@ -51,7 +53,7 @@ class TripalChadoAPITest extends TripalTestCase {
    */
   public function test_tripal_chado_publish_records_false_with_bad_bundle() {
     putenv("TRIPAL_SUPPRESS_ERRORS=TRUE");//this will fail, so we suppress the tripal error reporter
-    $bool = tripal_chado_publish_records(['bundle_name' => 'never_in_a_million_years']);
+    $bool = chado_publish_records(['bundle_name' => 'never_in_a_million_years']);
     $this->assertFalse($bool);
     putenv("TRIPAL_SUPPRESS_ERRORS");//unset
   }
