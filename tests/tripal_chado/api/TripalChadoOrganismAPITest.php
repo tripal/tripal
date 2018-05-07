@@ -25,8 +25,8 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
 
     $results = [];
 
-    $results[] = tripal_get_organism(['organism_id' => $organism->organism_id]);
-    $results[] = tripal_get_organism([
+    $results[] = chado_get_organism(['organism_id' => $organism->organism_id]);
+    $results[] = chado_get_organism([
       'genus' => $genus_string,
       'species' => $species_string,
     ]);
@@ -44,7 +44,7 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
    * when the organism doesn't exist.
    */
   public function test_tripal_get_organism_fails_gracefully() {
-    $result = tripal_get_organism([
+    $result = chado_get_organism([
       'genus' => uniqid(),
       'species' => uniqid(),
     ]);
@@ -70,7 +70,7 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
       'type_id' => $term->cvterm_id,
     ]);
 
-    $sci_name = tripal_get_organism_scientific_name($organism);
+    $sci_name = chado_get_organism_scientific_name($organism);
     $this->assertEquals(implode(" ", [
       $genus_string,
       $species_string,
