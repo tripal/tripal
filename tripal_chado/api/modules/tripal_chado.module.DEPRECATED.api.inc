@@ -979,7 +979,7 @@ function tripal_get_location_string($featureloc) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_feature_relationships($feature) {
-  chado_tripal_get_feature_relationships($feature);
+  chado_get_feature_relationships($feature);
 }
 
 /**
