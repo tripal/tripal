@@ -93,10 +93,10 @@ class obi__organism extends ChadoField {
 
     // Get the terms for each of the keys for the 'values' property.
     $label_term = 'rdfs:label';
-    $genus_term = tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = chado_get_semweb_term('organism', 'genus');
+    $species_term = chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
 
     // Set the linker field appropriately.
@@ -120,7 +120,7 @@ class obi__organism extends ChadoField {
         $organism = $record->organism_id;
       }
       $string = $settings['field_display_string'];
-      $label = tripal_replace_chado_tokens($string, $organism);
+      $label = chado_replace_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
         $label_term => $label,
         $genus_term => $organism->genus,
@@ -177,10 +177,10 @@ class obi__organism extends ChadoField {
     $headers = array('Token', 'Description');
     $rows = array();
 
-    // Here we use the tripal_get_chado_tokens rather than the
+    // Here we use the chado_get_tokens rather than the
     // tripal_get_entity_tokens because we can't gurantee that all organisms
     // have entities.
-    $tokens = tripal_get_chado_tokens('organism');
+    $tokens = chado_get_tokens('organism');
     foreach ($tokens as $token) {
       $rows[] = array(
         $token['token'],
@@ -211,10 +211,10 @@ class obi__organism extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
-    $genus_term = tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = chado_get_semweb_term('organism', 'genus');
+    $species_term = chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
     return array(
       $field_term => array(
@@ -285,10 +285,10 @@ class obi__organism extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'genus');
+    $species_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");
@@ -329,10 +329,10 @@ class obi__organism extends ChadoField {
     $alias = $this->field['field_name'];
 
     $field_term_id = $this->getFieldTermID();
-    $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'genus');
+    $species_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");

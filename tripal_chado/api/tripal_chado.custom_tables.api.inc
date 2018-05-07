@@ -96,11 +96,11 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  * added to the tripal_custom_tables and no table is created in Chado.
  *
  * If you are creating a materialized view do not use this function, but rather
- * use the tripal_add_mview(). A materialized view is also considered a custom 
+ * use the chado_add_mview(). A materialized view is also considered a custom 
  * table and an entry for it will be added to both the tripal_mviews and
- * tripal_custom_tables tables, but only if the tripal_add_mview() function is
+ * tripal_custom_tables tables, but only if the chado_add_mview() function is
  * used. The optional $mview_id parameters in this function is intended
- * for use by the tripal_add_mview() function when it calls this function
+ * for use by the chado_add_mview() function when it calls this function
  * to create the table.
  *
  * @param $table
@@ -115,7 +115,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  * @param $mview_id
  *   Optional. If this custom table is also a materialized view then provide
  *   it's mview_id. This paramter is intended only when this function
- *   is called by the tripal_add_mview() function. When creating a custom
+ *   is called by the chado_add_mview() function. When creating a custom
  *   table you shouldn't need to use this parameter.
  * @param $redirect
  *   Optional (default: TRUE). By default this function redirects back to

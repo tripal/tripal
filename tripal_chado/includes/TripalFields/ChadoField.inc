@@ -78,7 +78,7 @@ class ChadoField extends TripalField {
     if ($chado_table == $base_table) {
       // Get the base table column that is associated with the term
       // passed as $condition['column'].
-      $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
+      $base_field = chado_get_semweb_column($chado_table, $condition['column']);
       $query->condition('base.' . $base_field , $condition['value'], $operator);
     }
     else {
@@ -106,7 +106,7 @@ class ChadoField extends TripalField {
     if ($chado_table == $base_table) {
       // Get the base table column that is associated with the term
       // passed as $condition['column'].
-      $base_field = tripal_get_chado_semweb_column($chado_table, $order['column']);
+      $base_field = chado_get_semweb_column($chado_table, $order['column']);
       $query->orderBy('base.' . $base_field, $order['direction']);
     }
     else {

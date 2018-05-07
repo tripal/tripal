@@ -366,8 +366,7 @@ function tripal_associate_chado_semweb_term(
     $chado_table,
     $chado_column,
     $term,
-    $update = false
-  );
+    $update);
 }
 
 
@@ -392,7 +391,7 @@ function tripal_associate_chado_semweb_term(
  */
 function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array())
 {
-  chado_get_semweb_term($chado_table, $chado_column, $options = array());
+  chado_get_semweb_term($chado_table, $chado_column, $options);
 }
 
 /**

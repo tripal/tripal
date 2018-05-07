@@ -205,7 +205,7 @@ function tripal_chado_add_organism_stock_count_mview() {
         O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
   ";
 
-  tripal_add_mview($view_name, 'tripal_stock', $schema, $sql, $comment, FALSE);
+  chado_add_mview($view_name, 'tripal_stock', $schema, $sql, $comment, FALSE);
 }
 
 
@@ -261,7 +261,7 @@ function tripal_chado_add_library_feature_count_mview(){
     GROUP BY L.library_id, L.name, CVT.name
   ";
 
-  tripal_add_mview($view_name, 'tripal_library', $schema, $sql, $comment, FALSE);
+  chado_add_mview($view_name, 'tripal_library', $schema, $sql, $comment, FALSE);
 }
 
 
@@ -344,7 +344,7 @@ function tripal_chado_add_organism_feature_count_mview() {
         O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
   ";
 
-  tripal_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment, FALSE);
+  chado_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment, FALSE);
 }
 
 
@@ -404,7 +404,7 @@ function tripal_chado_add_analysis_organism_mview() {
   );
 
   // add the view
-  tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment, FALSE);
+  chado_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment, FALSE);
 }
 
 /**
@@ -463,7 +463,7 @@ function tripal_chado_add_db2cv_mview_mview() {
   ";
 
   // Create the MView
-  tripal_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
+  chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
 }
 /**
  * Add a materialized view of root terms for all chado cvs.
@@ -515,6 +515,6 @@ function tripal_chado_add_cv_root_mview_mview() {
   ";
 
   // Create the MView
-  tripal_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
+  chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
 }
 

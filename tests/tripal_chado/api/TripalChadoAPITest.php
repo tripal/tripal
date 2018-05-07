@@ -57,12 +57,12 @@ class TripalChadoAPITest extends TripalTestCase {
   }
 
   /**
-   * calls tripal_get_chado_tokens.
+   * calls chado_get_tokens.
    *
    * @group api
    */
-  public function test_tripal_get_chado_tokens() {
-    $tokens = tripal_get_chado_tokens('organism');
+  public function test_chado_get_tokens() {
+    $tokens = chado_get_tokens('organism');
     $this->assertNotEmpty($tokens);
     $this->assertArrayHasKey('[organism.organism_id]', $tokens);
   }

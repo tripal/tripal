@@ -207,12 +207,12 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Populate the mviews based on controlled vocabularies.
     drush_print('Populating materialized view db2cv_mview...');
-    $mview_id = tripal_get_mview_id('db2cv_mview');
-    tripal_populate_mview($mview_id);
+    $mview_id = chado_get_mview_id('db2cv_mview');
+    chado_populate_mview($mview_id);
 
     drush_print('Populating materialized view cv_root_mview...');
-    $mview_id = tripal_get_mview_id('cv_root_mview');
-    tripal_populate_mview($mview_id);
+    $mview_id = chado_get_mview_id('cv_root_mview');
+    chado_populate_mview($mview_id);
 
     if ($report_progress) {
       $job->setProgress(50);

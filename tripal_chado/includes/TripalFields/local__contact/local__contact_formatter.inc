@@ -24,9 +24,9 @@ class local__contact_formatter extends ChadoFieldFormatter {
     // Get the settings
     $settings = $display['settings'];
 
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     $headers = array('Name', 'Description', 'Type');
     $rows = array();

@@ -27,11 +27,11 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    $vocabulary = tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary = chado_get_semweb_term('cvterm', 'cv_id');
+    $accession = chado_get_semweb_term('dbxref', 'accession');
+    $definition = chado_get_semweb_term('cvterm', 'definition');
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation = chado_get_semweb_term($field_table, 'is_not');
     }
 
     // Get the field defaults.
@@ -192,11 +192,11 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    $vocabulary = tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary = chado_get_semweb_term('cvterm', 'cv_id');
+    $accession = chado_get_semweb_term('dbxref', 'accession');
+    $definition = chado_get_semweb_term('cvterm', 'definition');
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation = chado_get_semweb_term($field_table, 'is_not');
     }
 
     $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];

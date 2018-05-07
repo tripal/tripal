@@ -217,7 +217,7 @@ function drush_tripal_chado_trp_refresh_mview() {
   }
 
   drush_print('Updating the Materialized View with ID=' . $mview_id);
-  $status = tripal_populate_mview($mview_id);
+  $status = chado_populate_mview($mview_id);
   if ($status) {
     drush_log('Materialized View Updated', 'ok');
   }

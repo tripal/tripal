@@ -176,8 +176,8 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'The name of the item.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'name', $term);
-  tripal_associate_chado_semweb_term('analysis', 'sourcename', $term);
+  chado_associate_semweb_term(NULL, 'name', $term);
+  chado_associate_semweb_term('analysis', 'sourcename', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'schema:alternateName',
@@ -192,7 +192,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'Comments, typically from users.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'comment', $term);
+  chado_associate_semweb_term(NULL, 'comment', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'schema:description',
@@ -200,8 +200,8 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'A description of the item.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'description', $term);
-  tripal_associate_chado_semweb_term('organism', 'comment', $term);
+  chado_associate_semweb_term(NULL, 'description', $term);
+  chado_associate_semweb_term('organism', 'comment', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'schema:publication',
@@ -209,7 +209,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'A publication event associated with the item.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'pub_id', $term);
+  chado_associate_semweb_term(NULL, 'pub_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'schema:url',
@@ -217,7 +217,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'URL of the item.',
   ));
-  tripal_associate_chado_semweb_term('db', 'url', $term);
+  chado_associate_semweb_term('db', 'url', $term);
 
   // Typically the type_id field is used for distinguishing between records
   // but in the case that it isn't then we need to associate a term with it
@@ -240,7 +240,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
       continue;
     }
     if (in_array("type_id", array_keys($schema['fields']))) {
-      tripal_associate_chado_semweb_term($table, 'type_id', $term);
+      chado_associate_semweb_term($table, 'type_id', $term);
     }
   }
 
@@ -302,7 +302,7 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'A measurement of a spatial location relative to a frame of reference or other objects.',
   ));
-  tripal_associate_chado_semweb_term('featurepos', 'mappos', $term);
+  chado_associate_semweb_term('featurepos', 'mappos', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:001166',
@@ -310,16 +310,16 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'An annotation is a written explanatory or critical description, or other in-context information (e.g., pattern, motif, link), that has been associated with data or other types of information.',
   ));
-  tripal_associate_chado_semweb_term('feature_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('analysis_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('cell_line_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('environment_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('expression_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('library_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('organism_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('phenotype_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('stock_cvterm', 'cvterm_id', $term);
-  tripal_associate_chado_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('feature_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('analysis_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('cell_line_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('environment_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('expression_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('library_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('organism_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('phenotype_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('stock_cvterm', 'cvterm_id', $term);
+  chado_associate_semweb_term('stock_relationship_cvterm', 'cvterm_id', $term);
 
 
   $term = chado_insert_cvterm(array(
@@ -328,10 +328,10 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'NOT is a logical operator in that has the value true if its operand is false.',
   ));
-  tripal_associate_chado_semweb_term('feature_cvterm', 'is_not', $term);
-  tripal_associate_chado_semweb_term('analysis_cvterm', 'is_not', $term);
-  tripal_associate_chado_semweb_term('organism_cvterm', 'is_not', $term);
-  tripal_associate_chado_semweb_term('stock_cvterm', 'is_not', $term);
+  chado_associate_semweb_term('feature_cvterm', 'is_not', $term);
+  chado_associate_semweb_term('analysis_cvterm', 'is_not', $term);
+  chado_associate_semweb_term('organism_cvterm', 'is_not', $term);
+  chado_associate_semweb_term('stock_cvterm', 'is_not', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:001080',
@@ -339,7 +339,7 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'A vocabulary is a collection of terms.',
   ));
-  tripal_associate_chado_semweb_term('cvterm', 'cv_id', $term);
+  chado_associate_semweb_term('cvterm', 'cv_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:001323',
@@ -429,7 +429,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.',
   ));
-  tripal_associate_chado_semweb_term('feature', 'seqlen', $term);
+  chado_associate_semweb_term('feature', 'seqlen', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2190',
@@ -437,7 +437,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A fixed-size datum calculated (by using a hash function) for a molecular sequence, typically for purposes of error detection or indexing.',
   ));
-  tripal_associate_chado_semweb_term('feature', 'md5checksum', $term);
+  chado_associate_semweb_term('feature', 'md5checksum', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2091',
@@ -445,8 +445,8 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A persistent (stable) and unique identifier, typically identifying an object (entry) from a database.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'dbxref_id', $term);
-  tripal_associate_chado_semweb_term('dbxref', 'accession', $term);
+  chado_associate_semweb_term(NULL, 'dbxref_id', $term);
+  chado_associate_semweb_term('dbxref', 'accession', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2044',
@@ -454,7 +454,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'One or more molecular sequences, possibly with associated annotation..',
   ));
-  tripal_associate_chado_semweb_term('feature', 'residues', $term);
+  chado_associate_semweb_term('feature', 'residues', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:0842',
@@ -462,7 +462,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'uniquename', $term);
+  chado_associate_semweb_term(NULL, 'uniquename', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2976',
@@ -477,7 +477,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'Biological or biomedical data has been rendered into an image, typically for display on screen.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+  chado_associate_semweb_term(NULL, 'eimage_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:1274',
@@ -485,7 +485,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A map of (typically one) DNA sequence annotated with positional or non-positional features.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'eimage_id', $term);
+  chado_associate_semweb_term(NULL, 'eimage_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:1278',
@@ -493,7 +493,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.',
   ));
-  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
+  chado_associate_semweb_term('featuremap', 'featuremap_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:1280',
@@ -501,7 +501,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A map of DNA (linear or circular) annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.',
   ));
-  tripal_associate_chado_semweb_term('featuremap', 'featuremap_id', $term);
+  chado_associate_semweb_term('featuremap', 'featuremap_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2012',
@@ -523,7 +523,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'An identifier of a biological or bioinformatics database.',
   ));
-  tripal_associate_chado_semweb_term('db', 'name', $term);
+  chado_associate_semweb_term('db', 'name', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:1047',
@@ -531,7 +531,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'The name of a biological or bioinformatics database.',
   ));
-  tripal_associate_chado_semweb_term('analysis', 'sourceuri', $term);
+  chado_associate_semweb_term('analysis', 'sourceuri', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:2336',
@@ -539,7 +539,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'Phase for translation of DNA (0, 1 or 2) relative to a fragment of the coding sequence.',
   ));
-  tripal_associate_chado_semweb_term('featureloc', 'phase', $term);
+  chado_associate_semweb_term('featureloc', 'phase', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:0853',
@@ -547,7 +547,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'The strand of a DNA sequence (forward or reverse).',
   ));
-  tripal_associate_chado_semweb_term('featureloc', 'strand', $term);
+  chado_associate_semweb_term('featureloc', 'strand', $term);
   $term = chado_insert_cvterm(array(
     'id' => 'data:3002',
     'name' => 'Annotation track',
@@ -556,7 +556,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'biomolecular (typically genome) sequence, suitable for import and ' .
     'display in a genome browser. Synonym: Sequence annotation track.',
   ));
-  tripal_associate_chado_semweb_term('featureloc', 'srcfeature_id', $term);
+  chado_associate_semweb_term('featureloc', 'srcfeature_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'operation:2945',
@@ -564,7 +564,7 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'Apply analytical methods to existing data of a specific type.',
   ));
-  tripal_associate_chado_semweb_term('phylotree', 'analysis_id', $term);
+  chado_associate_semweb_term('phylotree', 'analysis_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'data:0872',
@@ -637,7 +637,7 @@ function tripal_chado_populate_vocab_OBCS() {
     'cv_name' => 'OBCS',
     'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'rank', $term);
+  chado_associate_semweb_term(NULL, 'rank', $term);
 }
 /**
  * Adds the Information Artifact Ontology database and terms.
@@ -660,8 +660,8 @@ function tripal_chado_populate_vocab_OBI() {
     'cv_name' => 'obi',
     'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
-  tripal_associate_chado_semweb_term('biomaterial', 'taxon_id', $term);
+  chado_associate_semweb_term(NULL, 'organism_id', $term);
+  chado_associate_semweb_term('biomaterial', 'taxon_id', $term);
 }
 
 /**
@@ -713,7 +713,7 @@ function tripal_chado_populate_vocab_IAO() {
       'a class or property. Shall be Aristotelian, formalized and normalized. ' .
       'Can be augmented with colloquial definitions.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'definition', $term);
+  chado_associate_semweb_term(NULL, 'definition', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'IAO:0000129',
@@ -725,9 +725,9 @@ function tripal_chado_populate_vocab_IAO() {
     'packaging and indicates its order within a set of other products ' .
     'having the same name.',
   ));
-  tripal_associate_chado_semweb_term('analysis', 'programversion', $term);
-  tripal_associate_chado_semweb_term('analysis', 'sourceversion', $term);
-  tripal_associate_chado_semweb_term(NULL, 'version', $term);
+  chado_associate_semweb_term('analysis', 'programversion', $term);
+  chado_associate_semweb_term('analysis', 'sourceversion', $term);
+  chado_associate_semweb_term(NULL, 'version', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'IAO:0000064',
@@ -735,7 +735,7 @@ function tripal_chado_populate_vocab_IAO() {
     'cv_name' => 'IAO',
     'definition' => 'An algorithm is a set of instructions for performing a paticular calculation.',
   ));
-  tripal_associate_chado_semweb_term('analysis', 'algorithm', $term);
+  chado_associate_semweb_term('analysis', 'algorithm', $term);
 }
 
 /**
@@ -908,7 +908,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
     'definition' => 'The time at which the record was last modified.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'timelastmodified', $term);
+  chado_associate_semweb_term(NULL, 'timelastmodified', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:timeaccessioned',
@@ -916,7 +916,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
     'definition' => 'The time at which the record was first added.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'timeaccessioned', $term);
+  chado_associate_semweb_term(NULL, 'timeaccessioned', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:timeexecuted',
@@ -924,7 +924,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
     'definition' => 'The time when the task was executed.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'timeexecuted', $term);
+  chado_associate_semweb_term(NULL, 'timeexecuted', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:infraspecific_type',
@@ -932,7 +932,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('organism', 'type_id', $term);
+  chado_associate_semweb_term('organism', 'type_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:abbreviation',
@@ -940,7 +940,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
     'definition' => 'A shortened name (or abbreviation) for the item.'
   ));
-  tripal_associate_chado_semweb_term('organism', 'abbreviation', $term);
+  chado_associate_semweb_term('organism', 'abbreviation', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:expression',
@@ -955,7 +955,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'Indicates if this feature was predicted computationally using another feature.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('feature', 'is_analysis', $term);
+  chado_associate_semweb_term('feature', 'is_analysis', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:is_obsolete',
@@ -963,7 +963,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'Indicates if this record is obsolete.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
+  chado_associate_semweb_term(NULL, 'is_obsolete', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:miniref',
@@ -971,7 +971,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'A small in-house unique identifier for a publication.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('pub', 'miniref', $term);
+  chado_associate_semweb_term('pub', 'miniref', $term);
 
   //-----------------------------
   // Relationship Terms
@@ -982,9 +982,9 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'The subject of a relationship clause.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'subject_id', $term);
-  tripal_associate_chado_semweb_term(NULL, 'subject_reagent_id', $term);
-  tripal_associate_chado_semweb_term(NULL, 'subject_project_id', $term);
+  chado_associate_semweb_term(NULL, 'subject_id', $term);
+  chado_associate_semweb_term(NULL, 'subject_reagent_id', $term);
+  chado_associate_semweb_term(NULL, 'subject_project_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:relationship_object',
@@ -992,9 +992,9 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'The object of a relationship clause.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'object_id', $term);
-  tripal_associate_chado_semweb_term(NULL, 'object_reagent_id', $term);
-  tripal_associate_chado_semweb_term(NULL, 'object_project_id', $term);
+  chado_associate_semweb_term(NULL, 'object_id', $term);
+  chado_associate_semweb_term(NULL, 'object_reagent_id', $term);
+  chado_associate_semweb_term(NULL, 'object_project_id', $term);
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:relationship_type',
@@ -1002,20 +1002,20 @@ function tripal_chado_populate_vocab_LOCAL() {
     'definition' => 'The relationship type.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('acquisition_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('biomaterial_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('cell_line_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('contact_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('element_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('elementresult_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('feature_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('nd_reagent_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('phylonode_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('project_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('pub_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('quantification_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('stock_relationship', 'type_id', $term);
-  tripal_associate_chado_semweb_term('cvterm_relationship', 'type_id', $term);
+  chado_associate_semweb_term('acquisition_relationship', 'type_id', $term);
+  chado_associate_semweb_term('biomaterial_relationship', 'type_id', $term);
+  chado_associate_semweb_term('cell_line_relationship', 'type_id', $term);
+  chado_associate_semweb_term('contact_relationship', 'type_id', $term);
+  chado_associate_semweb_term('element_relationship', 'type_id', $term);
+  chado_associate_semweb_term('elementresult_relationship', 'type_id', $term);
+  chado_associate_semweb_term('feature_relationship', 'type_id', $term);
+  chado_associate_semweb_term('nd_reagent_relationship', 'type_id', $term);
+  chado_associate_semweb_term('phylonode_relationship', 'type_id', $term);
+  chado_associate_semweb_term('project_relationship', 'type_id', $term);
+  chado_associate_semweb_term('pub_relationship', 'type_id', $term);
+  chado_associate_semweb_term('quantification_relationship', 'type_id', $term);
+  chado_associate_semweb_term('stock_relationship', 'type_id', $term);
+  chado_associate_semweb_term('cvterm_relationship', 'type_id', $term);
 
   //-----------------------------
   // NCBI Organism Property Terms
@@ -1322,7 +1322,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'is_relationship' => 0,
     'db_name' => 'local'
   ));
-  tripal_associate_chado_semweb_term('featurepos', 'map_feature_id', $term);
+  chado_associate_semweb_term('featurepos', 'map_feature_id', $term);
 
 
   //--------------
@@ -1337,7 +1337,7 @@ function tripal_chado_populate_vocab_LOCAL() {
       'represent the 5-prime coordinate.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('featureloc', 'fmin', $term);
+  chado_associate_semweb_term('featureloc', 'fmin', $term);
   $term = chado_insert_cvterm(array(
     'id' => 'local:fmax',
     'name' => 'maximal boundary',
@@ -1347,7 +1347,7 @@ function tripal_chado_populate_vocab_LOCAL() {
       '3-prime coordinate',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('featureloc', 'fmax', $term);
+  chado_associate_semweb_term('featureloc', 'fmax', $term);
 
 
   //--------------
@@ -1424,7 +1424,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'influential people, and the like.',
     'cv_name' => 'local',
   ));
-  tripal_associate_chado_semweb_term('biomaterial', 'biosourceprovider_id', $term);
+  chado_associate_semweb_term('biomaterial', 'biosourceprovider_id', $term);
 
 
   chado_insert_cvterm(array(
@@ -1504,7 +1504,7 @@ function tripal_chado_populate_vocab_SWO() {
       'processor and that directs a computer\'s processor to perform ' .
       'specific operations.',
   ));
-  tripal_associate_chado_semweb_term('analysis', 'program', $term);
+  chado_associate_semweb_term('analysis', 'program', $term);
 }
 
 /**
@@ -1552,31 +1552,31 @@ function tripal_chado_populate_vocab_TPUB() {
       array('update_existing' => TRUE)
   );
   $term = chado_get_cvterm(array('id' => 'TPUB:0000039'));
-  tripal_associate_chado_semweb_term('pub', 'title', $term);
+  chado_associate_semweb_term('pub', 'title', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000243'));
-  tripal_associate_chado_semweb_term('pub', 'volumetitle', $term);
+  chado_associate_semweb_term('pub', 'volumetitle', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000042'));
-  tripal_associate_chado_semweb_term('pub', 'volume', $term);
+  chado_associate_semweb_term('pub', 'volume', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000256'));
-  tripal_associate_chado_semweb_term('pub', 'series_name', $term);
+  chado_associate_semweb_term('pub', 'series_name', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000043'));
-  tripal_associate_chado_semweb_term('pub', 'issue', $term);
+  chado_associate_semweb_term('pub', 'issue', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000059'));
-  tripal_associate_chado_semweb_term('pub', 'pyear', $term);
+  chado_associate_semweb_term('pub', 'pyear', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000044'));
-  tripal_associate_chado_semweb_term('pub', 'pages', $term);
+  chado_associate_semweb_term('pub', 'pages', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000244'));
-  tripal_associate_chado_semweb_term('pub', 'publisher', $term);
+  chado_associate_semweb_term('pub', 'publisher', $term);
 
   $term = chado_get_cvterm(array('id' => 'TPUB:0000245'));
-  tripal_associate_chado_semweb_term('pub', 'pubplace', $term);
+  chado_associate_semweb_term('pub', 'pubplace', $term);
 }
 
 /**
@@ -1597,7 +1597,7 @@ function tripal_chado_populate_vocab_UO() {
     'cv_name' => 'uo',
     'description' => 'A unit of measurement is a standardized quantity of a physical quality.'
   ));
-  tripal_associate_chado_semweb_term('featuremap', 'unittype_id', $term);
+  chado_associate_semweb_term('featuremap', 'unittype_id', $term);
 }
 
 /**
@@ -1614,13 +1614,13 @@ function tripal_chado_populate_vocab_TAXRANK() {
   chado_insert_cv('taxonomic_rank', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)');
 
   $term = chado_get_cvterm(array('id' => 'TAXRANK:0000005'));
-  tripal_associate_chado_semweb_term('organism', 'genus', $term);
+  chado_associate_semweb_term('organism', 'genus', $term);
 
   $term = chado_get_cvterm(array('id' => 'TAXRANK:0000006'));
-  tripal_associate_chado_semweb_term('organism', 'species', $term);
+  chado_associate_semweb_term('organism', 'species', $term);
 
   $term = chado_get_cvterm(array('id' => 'TAXRANK:0000045'));
-  tripal_associate_chado_semweb_term('organism', 'infraspecific_name', $term);
+  chado_associate_semweb_term('organism', 'infraspecific_name', $term);
 }
 
 /**
@@ -1643,7 +1643,7 @@ function tripal_chado_populate_vocab_NCBITAXON() {
     'name' => 'common name',
     'cv_name' => 'ncbitaxon',
   ));
-  tripal_associate_chado_semweb_term('organism', 'common_name', $term);
+  chado_associate_semweb_term('organism', 'common_name', $term);
 }
 
 /**
