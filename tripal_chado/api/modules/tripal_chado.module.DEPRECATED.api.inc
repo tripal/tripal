@@ -281,19 +281,9 @@ function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
  * 
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_update_cvtermpath_loop(
-  $origin,
-  $child_id,
-  $cv_id,
-  $type_id,
-  $depth,
-  $increment_of_depth,
-  $tree_path,
-  $possible_loop,
-  $matched_rows,
-  $possible_start_of_loop,
-  $no_loop_skip_test
-) {
+function tripal_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id,
+  $depth, $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
+  $possible_start_of_loop, $no_loop_skip_test) {
   chado_update_cvtermpath_loop($origin, $child_id, $cv_id, $type_id, $depth,
     $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
     $possible_start_of_loop, $no_loop_skip_test); 
@@ -340,19 +330,9 @@ function tripal_update_cvtermpath_loop(
  * 
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_update_cvtermpath_loop_increment(
-  $origin,
-  $child_id,
-  $cv_id,
-  $type_id,
-  $depth,
-  $increment_of_depth,
-  $tree_path,
-  $possible_loop,
-  $matched_rows,
-  &$possible_start_of_loop,
-  $no_loop_skip_test
-) {
+function tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+  $type_id, $depth, $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
+  &$possible_start_of_loop, $no_loop_skip_test) {
   chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id, $type_id,
     $depth, $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
     $possible_start_of_loop, $no_loop_skip_test);

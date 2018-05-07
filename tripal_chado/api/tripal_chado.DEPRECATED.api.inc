@@ -120,8 +120,7 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true)
-{
+function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true) {
   chado_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true);
 }
 
@@ -158,30 +157,10 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = nul
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_edit_mview(
-  $mview_id,
-  $name,
-  $modulename,
-  $mv_table,
-  $mv_specs,
-  $indexed,
-  $query,
-  $special_index,
-  $comment = null,
-  $mv_schema = null
-) {
-  chado_edit_mview(
-    $mview_id,
-    $name,
-    $modulename,
-    $mv_table,
-    $mv_specs,
-    $indexed,
-    $query,
-    $special_index,
-    $comment = null,
-    $mv_schema = null
-  );
+function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
+  $indexed, $query, $special_index, $comment = null, $mv_schema = null) {
+  chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
+    $indexed, $query, $special_index, $comment = null,$mv_schema = null);
 }
 
 /**
@@ -195,8 +174,7 @@ function tripal_edit_mview(
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_get_mview_id($view_name)
-{
+function tripal_get_mview_id($view_name) {
   chado_get_mview_id($view_name);
 }
 
@@ -208,8 +186,7 @@ function tripal_get_mview_id($view_name)
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_refresh_mview($mview_id)
-{
+function tripal_refresh_mview($mview_id) {
   chado_refresh_mview($mview_id);
 }
 
@@ -222,8 +199,7 @@ function tripal_refresh_mview($mview_id)
  * @ingroup tripal_chado_DEPRECATED_api
  *
  */
-function tripal_get_mviews()
-{
+function tripal_get_mviews() {
   chado_get_mviews();
 }
 
@@ -237,8 +213,7 @@ function tripal_get_mviews()
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_delete_mview($mview_id)
-{
+function tripal_delete_mview($mview_id) {
   chado_delete_mview($mview_id);
 }
 
@@ -296,8 +271,7 @@ function hook_tripal_get_schema_name_alter($schema_name, $context)
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_get_schema_name($schema = 'chado')
-{
+function tripal_get_schema_name($schema = 'chado') {
   chado_get_schema_name($schema);
 }
 
@@ -321,10 +295,9 @@ function tripal_get_schema_name($schema = 'chado')
  * @param $chado_table
  *   The name of the Chado table.
  * 
- * @ingroup tripal_chado_semweb_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_add_chado_semweb_table($chado_table)
-{
+function tripal_add_chado_semweb_table($chado_table) {
   chado_add_semweb_table($chado_table);
 }
 
@@ -354,19 +327,11 @@ function tripal_add_chado_semweb_table($chado_table)
  * @return boolean
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
  * 
- *  @ingroup tripal_chado_semweb_api
+ *  @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_associate_chado_semweb_term(
-  $chado_table,
-  $chado_column,
-  $term,
-  $update = false
-) {
-  chado_associate_semweb_term(
-    $chado_table,
-    $chado_column,
-    $term,
-    $update);
+function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
+    $update = false) {
+  chado_associate_semweb_term($chado_table, $chado_column, $term, $update);
 }
 
 
@@ -387,10 +352,9 @@ function tripal_associate_chado_semweb_term(
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
  * 
- *  @ingroup tripal_chado_semweb_api
+ *  @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array())
-{
+function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
   chado_get_semweb_term($chado_table, $chado_column, $options);
 }
 
@@ -402,10 +366,9 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  * @return
  *   The semantic web name for the term.
  * 
- *  @ingroup tripal_chado_semweb_api
+ *  @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_format_chado_semweb_term($cvterm)
-{
+function tripal_format_chado_semweb_term($cvterm) {
   chado_format_semweb_term($cvterm);
 }
 /**
@@ -421,9 +384,8 @@ function tripal_format_chado_semweb_term($cvterm)
  *   The name of the Chado column that matches the given term or FALSE if the
  *   term is not mapped to the Chado table.
  * 
- *  @ingroup tripal_chado_semweb_api
+ *  @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_get_chado_semweb_column($chado_table, $term)
-{
+function tripal_get_chado_semweb_column($chado_table, $term) {
   chado_get_semweb_column($chado_table, $term);
 }
