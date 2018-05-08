@@ -403,10 +403,10 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
     // Rollback any database changes
     $transaction->rollback();
     throw $e;
+  } finally {
+    // Set the database back
+    chado_set_active($prev_db);
   }
-
-  // Set the database back
-  chado_set_active($prev_db);
 }
 
 /**
