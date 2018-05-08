@@ -18,11 +18,11 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     $field_table = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($field_table);
 
-    $vocabulary_term = tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary_term = chado_get_semweb_term('cvterm', 'cv_id');
+    $accession_term = chado_get_semweb_term('dbxref', 'accession');
+    $definition_term = chado_get_semweb_term('cvterm', 'definition');
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation_term = chado_get_semweb_term($field_table, 'is_not');
     }
 
     $chado_table = $this->instance['settings']['chado_table'];
@@ -35,7 +35,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         // Build the accession.
         $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
         if ($dbxref->db_id->urlprefix) {
-          $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
+          $accession = l($accession, chado_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
         $row = array(

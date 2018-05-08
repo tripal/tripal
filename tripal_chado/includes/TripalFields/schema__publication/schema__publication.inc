@@ -107,7 +107,7 @@ class schema__publication extends ChadoField {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
         $pub = $linker->pub_id;
-        $pub_details = tripal_get_minimal_pub_info($pub);
+        $pub_details = chado_get_minimal_pub_info($pub);
 
         $entity->{$field_name}['und'][$i]['value'] = $pub_details;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;

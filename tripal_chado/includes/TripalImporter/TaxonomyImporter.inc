@@ -256,7 +256,7 @@ class TaxonomyImporter extends TripalImporter {
 
     // Now import the tree.
     $options = array('taxonomy' => 1);
-    tripal_phylogeny_import_tree($this->tree, $this->phylotree, $options);
+    chado_phylogeny_import_tree($this->tree, $this->phylotree, $options);
   }
 
 
@@ -312,7 +312,7 @@ class TaxonomyImporter extends TripalImporter {
     $lineage_nodes[] = array();
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
-    $rank_cvterm = tripal_get_cvterm(array(
+    $rank_cvterm = tripal_chado_get_cvtermget_cvterm(array(
       'name' => 'rank',
       'cv_id' => array('name' => 'local')
     ));
@@ -332,7 +332,7 @@ class TaxonomyImporter extends TripalImporter {
     $total = count($this->all_orgs);
     $j = 1;
     foreach ($this->all_orgs as $organism) {
-      $sci_name =  tripal_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism);
       //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
 
       // First get the phylonode record for this organism.
@@ -433,7 +433,7 @@ class TaxonomyImporter extends TripalImporter {
       }
 
       // Now add in the leaf node
-      $sci_name = tripal_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism);
       $node = array(
         'name' => $sci_name,
         'depth' => $i,
@@ -451,7 +451,7 @@ class TaxonomyImporter extends TripalImporter {
       $this->addTaxonomyNode($tree, $node, $lineage_depth);
 
       // Set the indecies for the tree.
-      tripal_assign_phylogeny_tree_indices($tree);
+      chado_assign_phylogeny_tree_indices($tree);
     }
 
     return $tree;
@@ -473,7 +473,7 @@ class TaxonomyImporter extends TripalImporter {
       // if so we should use that instead of the scientific name.
 
       // Build the query string to get the information about this species.
-      $sci_name = tripal_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism);
       $sci_name = urlencode($sci_name);
       $search_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?".
           "db=taxonomy" .
@@ -561,7 +561,7 @@ class TaxonomyImporter extends TripalImporter {
     // Second, check if the full name includes the infraspecific name.
     if (!$organism) {
       foreach ($this->all_orgs as $item) {
-        $internal_sci_name = tripal_get_organism_scientific_name($item);
+        $internal_sci_name = chado_get_organism_scientific_name($item);
         if ($sci_name == $internal_sci_name) {
           $organism = $item;
         }
@@ -594,13 +594,13 @@ class TaxonomyImporter extends TripalImporter {
       $infra = $matches[3];
 
       // Get the CV term for the rank.
-      $type = tripal_get_cvterm(array(
+      $type = chado_get_cvterm(array(
         'name' => preg_replace('/ /','_', $rank),
         'cv_id' => array('name' => 'taxonomic_rank')
       ));
 
       // Remove the rank from the infraspecific name.
-      $abbrev = tripal_abbreviate_infraspecific_rank($rank);
+      $abbrev = chado_abbreviate_infraspecific_rank($rank);
       $infra = preg_replace("/$abbrev/", "", $infra);
       $infra = trim($infra);
 
@@ -648,7 +648,7 @@ class TaxonomyImporter extends TripalImporter {
     $adds_organism = $organism ? FALSE : TRUE;
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
-    $rank_cvterm = tripal_get_cvterm(array(
+    $rank_cvterm = chado_get_cvterm(array(
       'name' => 'rank',
       'cv_id' => array('name' => 'local')
     ));
@@ -795,7 +795,7 @@ class TaxonomyImporter extends TripalImporter {
       $this->addTaxonomyNode($this->tree, $node, $lineage_depth);
 
       // Set the indecies for the tree.
-      tripal_assign_phylogeny_tree_indices($this->tree);
+      chado_assign_phylogeny_tree_indices($this->tree);
     }
   }
   /**
@@ -901,12 +901,12 @@ class TaxonomyImporter extends TripalImporter {
    * @param unknown $taxId
    */
   private function addDbxref($organism_id, $taxId) {
-    $db = tripal_get_db(array('name' => 'NCBITaxon'));
+    $db = chado_get_db(array('name' => 'NCBITaxon'));
     $values = array(
       'db_id' => $db->db_id,
       'accession' => $taxId
     );
-    $dbxref = tripal_insert_dbxref($values);
+    $dbxref = chado_insert_dbxref($values);
 
     $values = array(
       'dbxref_id' => $dbxref->dbxref_id,

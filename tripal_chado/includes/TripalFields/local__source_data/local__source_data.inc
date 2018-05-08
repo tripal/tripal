@@ -61,9 +61,9 @@ class local__source_data extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
-    $sourcename_term = tripal_get_chado_semweb_term('analysis', 'sourcename');
-    $sourceversion_term = tripal_get_chado_semweb_term('analysis', 'sourceversion');
-    $sourceuri_term = tripal_get_chado_semweb_term('analysis', 'sourceuri');
+    $sourcename_term = chado_get_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = chado_get_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = chado_get_semweb_term('analysis', 'sourceuri');
 
     return array(
       $field_term => array(
@@ -112,9 +112,9 @@ class local__source_data extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $sourcename_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourcename');
-    $sourceversion_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceversion');
-    $sourceuri_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceuri');
+    $sourcename_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourceuri');
 
     if ($condition['column'] == $sourcename_term) {
       $query->condition("base.sourcename", $condition['value'], $operator);
@@ -128,9 +128,9 @@ class local__source_data extends ChadoField {
    */
   public function queryOrder($query, $order) {
     $field_term_id = $this->getFieldTermID();
-    $sourcename_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourcename');
-    $sourceversion_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceversion');
-    $sourceuri_term = $field_term_id . ',' . tripal_get_chado_semweb_term('analysis', 'sourceuri');
+    $sourcename_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = $field_term_id . ',' . chado_get_semweb_term('analysis', 'sourceuri');
 
     if ($order['column'] == $sourcename_term) {
       $query->orderBy("base.sourcename", $order['direction']);
@@ -151,9 +151,9 @@ class local__source_data extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    $sourcename_term = tripal_get_chado_semweb_term('analysis', 'sourcename');
-    $sourceversion_term = tripal_get_chado_semweb_term('analysis', 'sourceversion');
-    $sourceuri_term = tripal_get_chado_semweb_term('analysis', 'sourceuri');
+    $sourcename_term = chado_get_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = chado_get_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = chado_get_semweb_term('analysis', 'sourceuri');
 
     $entity->{$field_name}['und'][0] = array(
       'value' => array(

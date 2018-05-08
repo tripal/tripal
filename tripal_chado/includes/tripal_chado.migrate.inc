@@ -746,7 +746,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'sync_node' => 1,
       'bundle_name' => $bundle_name
     );
-    tripal_chado_publish_records($value);
+    chado_publish_records($value);
 
     // Migrate Resource Titles/Blocks or Resource Links if available
     tripal_chado_migrate_resource_blocks($bundle_name);

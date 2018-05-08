@@ -133,11 +133,11 @@ function tripal_chado_load_ontologies() {
 
   module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
   for ($i = 0; $i < count($ontologies); $i++) {
-    $obo_id = tripal_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
+    $obo_id = chado_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
       // Only load ontologies that are not already in the cv table.
-      $cv = tripal_get_cv(array('name' => $ontologies[$i]['cv_name']));
-      $db = tripal_get_db(array('name' => $ontologies[$i]['db_name']));
+      $cv = chado_get_cv(array('name' => $ontologies[$i]['cv_name']));
+      $db = chado_get_db(array('name' => $ontologies[$i]['db_name']));
       if (!$cv or !$db) {
         print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
         $obo_importer = new OBOImporter();
@@ -207,12 +207,12 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Populate the mviews based on controlled vocabularies.
     drush_print('Populating materialized view db2cv_mview...');
-    $mview_id = tripal_get_mview_id('db2cv_mview');
-    tripal_populate_mview($mview_id);
+    $mview_id = chado_get_mview_id('db2cv_mview');
+    chado_populate_mview($mview_id);
 
     drush_print('Populating materialized view cv_root_mview...');
-    $mview_id = tripal_get_mview_id('cv_root_mview');
-    tripal_populate_mview($mview_id);
+    $mview_id = chado_get_mview_id('cv_root_mview');
+    chado_populate_mview($mview_id);
 
     if ($report_progress) {
       $job->setProgress(50);
@@ -335,7 +335,7 @@ function tripal_chado_prepare_chado($job = NULL) {
       'cv_id' => array('name' => 'EDAM'),
       'name' => 'Map'
     );
-    $cvterm = tripal_get_cvterm($identifier);
+    $cvterm = chado_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
     if ($report_progress) {
       $job->setProgress(86);
@@ -343,7 +343,7 @@ function tripal_chado_prepare_chado($job = NULL) {
 
     // Import a publication so we get all of the properties before
     // creating the content type.
-    tripal_import_pub_by_dbxref('PMID:24163125');
+    chado_import_pub_by_dbxref('PMID:24163125');
 
     // Create the 'Publication' entity type.
     $error = '';
@@ -370,7 +370,7 @@ function tripal_chado_prepare_chado($job = NULL) {
       'cv_id' => array('name' => 'tripal_pub'),
       'name' => 'Publication'
     );
-    $cvterm = tripal_get_cvterm($identifier);
+    $cvterm = chado_get_cvterm($identifier);
     tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
 
     // Now remove the publication that was added above.

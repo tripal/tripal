@@ -979,7 +979,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
 
   // before proceeding check to see if the publication already exists. If there is only one match
   // and the $update_if_exists is NOT set then return FALSE
-  $pub_ids = tripal_publication_exists($pub_details);
+  $pub_ids = chado_publication_exists($pub_details);
 
   if(count($pub_ids) == 1 and !$update_if_exists) {
     tripal_report_error('tripal_pub', TRIPAL_NOTICE,
@@ -1031,7 +1031,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         'name' => 'tripal_pub'
       ),
     );
-    $pub_type = tripal_get_cvterm($identifiers);
+    $pub_type = chado_get_cvterm($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR,
@@ -1125,10 +1125,10 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         'name' => 'tripal_pub'
       ),
     );
-    $cvterm = tripal_get_cvterm($identifiers);
+    $cvterm = chado_get_cvterm($identifiers);
 
     // if we could not find the cvterm by name then try by synonym
-    //$cvterm = tripal_get_cvterm(array('name' => $key, 'cv_id' => array('name' => 'tripal_pub')));
+    //$cvterm = chado_get_cvterm(array('name' => $key, 'cv_id' => array('name' => 'tripal_pub')));
     if (!$cvterm) {
       $identifiers = array(
         'synonym' => array(
@@ -1136,7 +1136,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
           'cv_name' => 'tripal_pub'
         )
       );
-      $cvterm = tripal_get_cvterm($identifiers);
+      $cvterm = chado_get_cvterm($identifiers);
     }
     if (!$cvterm) {
       tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));
@@ -1257,7 +1257,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // if the user wants us to create a contact for each author then do it.
     if ($do_contact) {
       // Add the contact
-      $contact = tripal_insert_contact(array(
+      $contact = chado_insert_contact(array(
         'name' => $name,
         'description' => '',
         'type_name' => $type,
@@ -1695,5 +1695,5 @@ function tripal_pub_citation_form($form, &$form_state) {
  */
 function tripal_pub_citation_form_submit(&$form_state) {
   $options [0] = $form_state['options']['#value'];
-  tripal_add_job("Create citations ($options[0])", 'tripal_pub', 'tripal_pub_create_citations', $options, $user->uid);
+  tripal_add_job("Create citations ($options[0])", 'tripal_pub', 'chado_pub_create_citations', $options, $user->uid);
 }

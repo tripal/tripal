@@ -66,7 +66,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     if (!$type_id) {
       $vocabulary = $this->instance['settings']['term_vocabulary'];
       $accession = $this->instance['settings']['term_accession'];
-      $cvterm = tripal_get_cvterm(array(
+      $cvterm = chado_get_cvterm(array(
         'dbxref_id' => array(
           'db_id' => array(
             'name' => $vocabulary,

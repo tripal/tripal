@@ -1,6 +1,13 @@
 <?php
 
 /**
+ * @file
+ * Provides an application programming interface (API) for describing Chado tables.
+ *
+ * @ingroup tripal_chado
+ */
+
+/**
  * @defgroup tripal_chado_schema_api Chado Schema
  * @ingroup tripal_chado_api
  * @{
@@ -44,7 +51,7 @@ function chado_table_exists($table) {
   // Get the default database and chado schema.
   global $databases;
   $default_db = $databases['default']['default']['database'];
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // If we've already lookup up this table then don't do it again, as
   // we don't need to keep querying the database for the same tables.
@@ -121,7 +128,7 @@ function chado_column_exists($table, $column) {
   $args = array(
     ':table_name' => $table,
     ':column_name' => $column,
-    ':chado' => tripal_get_schema_name('chado'),
+    ':chado' => chado_get_schema_name('chado'),
     ':default_db' => $default_db
   );
   $results = db_query($sql, $args);
@@ -168,7 +175,7 @@ function chado_sequence_exists($sequence) {
   ";
   $args = array(
     ':sequence_name' => $sequence,
-    ':sequence_schema' => tripal_get_schema_name('chado'),
+    ':sequence_schema' => chado_get_schema_name('chado'),
     ':sequence_catalog' => $default_db
   );
   $results = db_query($sql, $args);
@@ -291,7 +298,7 @@ function chado_is_local() {
       has_schema_privilege(nspname, 'USAGE') AND
       nspname = :chado
   ";
-  $results = db_query($sql, array(':chado' => tripal_get_schema_name('chado')));
+  $results = db_query($sql, array(':chado' => chado_get_schema_name('chado')));
   $name = $results->fetchObject();
   if ($name) {
     variable_set('chado_schema_exists', FALSE);
@@ -315,7 +322,7 @@ function chado_is_installed() {
   global $databases;
 
   // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists(tripal_get_schema_name('chado'), $databases)) {
+  if (array_key_exists(chado_get_schema_name('chado'), $databases)) {
     return TRUE;
   }
 
@@ -358,7 +365,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (!$is_local) {
     // If it's not in the drupal database check to see if it's specified in
     // the $db_url in the settings.php
-    if (!array_key_exists(tripal_get_schema_name('chado'), $databases)) {
+    if (!array_key_exists(chado_get_schema_name('chado'), $databases)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';
@@ -371,7 +378,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   else {
     $chado_exists = TRUE;
     // @todo we need a chado aware db_table_exists.
-    $prop_exists = db_table_exists(tripal_get_schema_name('chado') . '.chadoprop');
+    $prop_exists = db_table_exists(chado_get_schema_name('chado') . '.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know

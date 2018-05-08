@@ -1,5 +1,24 @@
 <?php
 
+/**
+ * @file
+ *
+ * This file contains miscellaneous API functions specific to working with
+ * records in Chado that do not have a home in any other sub category of 
+ * API functions.
+ */
+
+/**
+ * @defgroup tripal_chado_api Chado
+ *
+ * @ingroup tripal_api
+ * The Tripal Chado API is a set of functions for interacting with data 
+ * inside of a Chado relational database. Entities (or pages) in Drupal
+ * that are provided by Tripal can supply data from any supported database 
+ * back-end, and Chado is the default. This API contains a variety of sub
+ * categories (or groups) where functions are organized.  Any extension module
+ * that desires to work with data in Chado will find these functions useful.
+ */
 
 /**
  * Publishes content in Chado as a new TripalEntity entity.
@@ -18,7 +37,7 @@
  *
  * @ingroup tripal_chado_api
  */
-function tripal_chado_publish_records($values, $job_id = NULL) {
+function chado_publish_records($values, $job_id = NULL) {
 
   // We want the job object in order to report progress.
   if (is_object($job_id)) {
@@ -251,8 +270,10 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
  *    The name of a base table in Chado.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
+ * 
+ * @ingroup tripal_chado_api
  */
-function tripal_get_chado_tokens($base_table) {
+function chado_get_tokens($base_table) {
 
   $tokens = array();
   $table_descrip = chado_get_schema($base_table);
@@ -284,7 +305,7 @@ function tripal_get_chado_tokens($base_table) {
         $sub_token_prefix = $base_table . '.' . $left_field;
         $sub_location_prefix = implode(' > ',array($base_table, $left_field));
 
-        $sub_tokens = tripal_get_chado_tokens($table);
+        $sub_tokens = chado_get_tokens($table);
         if (is_array($sub_tokens)) {
           $tokens = array_merge($tokens, $sub_tokens);
         }
@@ -307,10 +328,12 @@ function tripal_get_chado_tokens($base_table) {
  *
  * @return
  *   The string will all tokens replaced with values.
+ * 
+ *  @ingroup tripal_chado_api
  */
-function tripal_replace_chado_tokens($string, $record) {
+function chado_replace_tokens($string, $record) {
   // Get the list of tokens
-  $tokens = tripal_get_chado_tokens($record->tablename);
+  $tokens = chado_get_tokens($record->tablename);
 
   // Determine which tokens were used in the format string
   if (preg_match_all('/\[[^]]+\]/', $string, $used_tokens)) {

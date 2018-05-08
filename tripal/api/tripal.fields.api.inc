@@ -4,6 +4,7 @@
  * @file
  * Provides an application programming interface (API) for working with
  * fields attached to TripalEntity content types (bundles).
+ * 
  */
 
 /**
@@ -12,8 +13,39 @@
  * @{
  * Provides an application programming interface (API) for working with
  * fields attached to TripalEntity content types (bundles).
+ * 
+ * Fields:
+ * A field is a reusable "data container" that is attached to a Bundle. 
+ * Programmatically, each field provides one or more primitive data types, with 
+ * validators and widgets for editing and formatters for display. Each field 
+ * independently manages the data to which it assigned.  Just like with Bundles, 
+ * Fields are also described using controlled vocabulary terms.  For example, a 
+ * gene Bundle has a field attached that provides the name of the gene.   
+ * This field only provides the name and nothing more.  Tripal uses the 
+ * schema:name vocabulary term to describe the field.  
+ *
+ * Field Instances:
+ * Fields describe "atomic" units of data that are associated with an entity.  
+ * For example, a "name" is an atomic unit of data about a Gene or Organism 
+ * entity. Fields can be reused for multiple Bundles. For example, gene, mRNA, 
+ * genetic markers and variants all have name data.  Despite that all of these 
+ * Bundles provides a "name", we only need one field to describe that this data
+ * is a "name".  However, we may want to customize a field specific to each 
+ * bundle.  Therefore, an Instance of a field is attached to a bundle, and 
+ * field instances can then be customized differently.  The most important 
+ * customization is the one that defines the Chado table from which the data 
+ * for a field is retrieved.   Despite that field instances are attached to 
+ * bundles, they become visible with Entities.  When an entity is loaded for 
+ * display, Drupal examines all of the fields that are attached to the entity's 
+ * bundle, and then populates the fields instances with data specific to the 
+ * entity being loaded.
  * @}
  *
+ */
+
+/**
+ * @section
+ * Hooks.
  */
 
 /**
@@ -49,9 +81,12 @@ function hook_field_storage_tquery($conditions, $orderBy) {
 }
 
 /**
- *
- * @param unknown $entity_type
- * @param unknown $bundle
+ * Allows a module to return a bundles field info. 
+ * 
+ * @param $entity_type
+ *  The name of the entity, like 'TripalEntity'.
+ * @param $bundle
+ *  The bundle object.
  *
  * @ingroup tripal_fields_api
  */
@@ -60,37 +95,18 @@ function hook_bundle_fields_info($entity_type, $bundle) {
 }
 
 /**
- *
- * @param unknown $entity_type
- * @param unknown $bundle
- *
+ * Allows a module to return the field instances of a bundle.
+ * @param $entity_type
+ *  The name of the entity, most likely 'TripalEntity'.
+ * @param $bundle
+ *  The bundle object.
+ * 
  * @ingroup tripal_fields_api
  */
 function hook_bundle_instances_info($entity_type, $bundle) {
 
 }
-/**
- *
- * @param unknown $info
- * @param unknown $bundle
- * @param unknown $term
- *
- * @ingroup tripal_fields_api
- */
-function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 
-}
-/**
- *
- * @param unknown $info
- * @param unknown $bundle
- * @param unknown $term
- *
- * @ingroup tripal_fields_api
- */
-function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
-
-}
 /**
  * Retrieves a list of TripalField types.
  *
@@ -156,6 +172,7 @@ function tripal_get_field_types() {
   }
   return $types;
 }
+
 /**
  * Retrieves a list of TripalFieldWidgets.
  *
@@ -221,7 +238,7 @@ function tripal_get_field_widgets() {
  * @param $field
  *   A field array as returned by the field_info_field() function.
  * @param $instance
- *   An field instance array.
+ *   A field instance array.
  * @return
  *   A list of file formatter class names.
  */
@@ -313,7 +330,7 @@ function tripal_get_field_formatters() {
  * Loads the TripalField class file into scope.
  *
  * @param $class
- *   The class to include.  This can be a TripalField, TripalFieldWidget or
+ *   The class to include. This can be a TripalField, TripalFieldWidget or
  *   TripalFieldFormatter class name.
  *
  * @return

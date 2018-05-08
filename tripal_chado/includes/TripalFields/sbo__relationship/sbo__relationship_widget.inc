@@ -194,13 +194,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         if (trim($rtype) == '') {
           continue;
         }
-        $term = tripal_get_cvterm(array('name' => trim($rtype)));
+        $term = chado_get_cvterm(array('name' => trim($rtype)));
         // Try to get term with vocabulary specified
         if (!$term) {
           $tmp = explode('|', trim($rtype), 2);
-          $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+          $cv = chado_get_cv(array('name' => trim($tmp[0])));
           $rtype = trim($tmp[1]);
-          $term = tripal_get_cvterm(array('name' => $rtype, 'cv_id' => $cv->cv_id));
+          $term = chado_get_cvterm(array('name' => $rtype, 'cv_id' => $cv->cv_id));
         }
         $rtype_options[$term->cvterm_id] = $term->name;
       }
@@ -220,7 +220,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         'cv_id' => $option2_vocab,
         'name' => $option2_parent
       );
-      $parent_term = tripal_get_cvterm($values);
+      $parent_term = chado_get_cvterm($values);
 
       // If the term wasn't found then see if it's a synonym.
       if(!$parent_term) {
@@ -229,7 +229,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
             'name' => trim($option2_parent),
           )
         );
-        $synonym = tripal_get_cvterm($values);
+        $synonym = chado_get_cvterm($values);
         if ($synonym && $synonym->cv_id->cv_id == $option2_vocab) {
           $parent_term = $synonym;
         }
@@ -283,11 +283,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     else {
       // Set up available cvterms for selection
       $vocs = array(0 => 'Select a vocabulary');
-      $vocs = tripal_get_cv_select_options();
+      $vocs = chado_get_cv_select_options();
       $cv_id = isset($form_state['values'][$field_name]['und'][0]['vocabulary']) ? $form_state['values'][$field_name]['und'][0]['vocabulary'] : 0;
       // Try getting the cv_id from cvterm for existing records
       if (!$cv_id && $type_id) {
-        $cvterm = tripal_get_cvterm(array('cvterm_id' => $type_id));
+        $cvterm = chado_get_cvterm(array('cvterm_id' => $type_id));
         if (isset($cvterm->cv_id->cv_id)) {
           $cv_id = $cvterm->cv_id->cv_id;
           $default_term = $cvterm->name;

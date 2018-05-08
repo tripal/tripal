@@ -37,7 +37,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     $name = '';
     $value = '';
 
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $name_term = chado_get_semweb_term('contact', 'name');
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.

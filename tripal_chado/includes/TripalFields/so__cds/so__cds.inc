@@ -81,7 +81,7 @@ class so__cds extends ChadoField {
 
     foreach($featurelocs as $featureloc){
       // Generate a CDS sequence if one exsits for this feature alignment.
-      $cds_sequence = tripal_get_feature_sequences(
+      $cds_sequence = chado_get_feature_sequences(
         array(
           'feature_id' => $feature->feature_id,
           'parent_id' => $featureloc->srcfeature_id->feature_id,
@@ -101,7 +101,7 @@ class so__cds extends ChadoField {
       );
 
       if (count($cds_sequence) > 0) {
-        // the tripal_get_feature_sequences() function can return multiple sequences
+        // the chado_get_feature_sequences() function can return multiple sequences
         // if a feature is aligned to multiple places. In the case of CDSs we expect
         // that one mRNA is only aligned to a single location on the assembly so we
         // can access the CDS sequence with index 0.

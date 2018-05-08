@@ -404,7 +404,7 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
   );
 
   // Get the name of the chado schema.
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // Iterate through the new Chado tables and create them or if they already
   // exist then update them.
@@ -531,7 +531,7 @@ function tripal_chado_upgrade_chado_1_11_to_1_2() {
 function tripal_chado_reset_chado_schema() {
 
   // determine the schema name.
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
   $chado_dot = $chado_schema . '.';
 
   // drop current chado and chado-related schema
@@ -588,7 +588,7 @@ function tripal_chado_install_sql($sql_file) {
   $chado_local = chado_dbschema_exists('chado');
 
   // determine the schema name.
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
   $chado_dot = $chado_schema . '.';
 
   if ($chado_local) {
@@ -814,6 +814,6 @@ function tripal_chado_install_sql($sql_file) {
  */
 function tripal_chado_install_done() {
 
-  $drupal_schema = tripal_get_schema_name('drupal');
+  $drupal_schema = chado_get_schema_name('drupal');
   db_query("set search_path to $drupal_schema");
 }

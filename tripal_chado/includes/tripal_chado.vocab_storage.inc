@@ -298,7 +298,7 @@ function _tripal_chado_format_term_description($cvterm) {
     'vocabulary' => $vocabulary,
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,
-    'url'        => tripal_get_dbxref_url($cvterm->dbxref_id),
+    'url'        => chado_get_dbxref_url($cvterm->dbxref_id),
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
   );
   return $term;
@@ -327,11 +327,11 @@ function tripal_chado_vocab_add_term($details) {
     // TODO: deal with the URL prefix
   );
   $options = array('update_existing' => TRUE);
-  tripal_insert_db($values, $options);
+  chado_insert_db($values, $options);
 
 
   // Second make sure the term is added.
-  $term = tripal_insert_cvterm(array(
+  $term = chado_insert_cvterm(array(
     'id' => $vocabulary . ':' . $accession,
     'name' => $details['name'],
     'definition' => $details['definition'],
