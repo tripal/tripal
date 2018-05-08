@@ -374,7 +374,7 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
  *
  * Identifies all of the root terms of the controlled vocabulary. These
  * root terms are then processed by calling the
- * chado_update_cvtermpath_root_loop() function on each one.
+ * _chado_update_cvtermpath_root_loop() function on each one.
  *
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
@@ -401,7 +401,7 @@ function chado_update_cvtermpath($cv_id, $job_id = NULL){
     $roots = [];
 
     foreach ($record as $item){
-      chado_update_cvtermpath_root_loop($item->cvterm_id, $item->cv_id, $roots);
+      _chado_update_cvtermpath_root_loop($item->cvterm_id, $item->cv_id, $roots);
     }
   }
   catch (Exception $e) {
@@ -427,7 +427,7 @@ function chado_update_cvtermpath($cv_id, $job_id = NULL){
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
+function _chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
   $ttype = db_query(
     'SELECT cv.cvterm_id 
     FROM cvterm cv
@@ -454,7 +454,7 @@ function chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
   $matched_rows = [];
   $possible_start_of_loop = [];
   $depth = 0;
-  chado_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, $depth,
+  _chado_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, $depth,
                                 0, $tree_path, FALSE, $matched_rows, $possible_start_of_loop, FALSE);
 
   // Get's the children terms of this "root" term and then recursively calls
@@ -467,7 +467,7 @@ function chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
     [':rootid' => $rootid]
   );
   while ($cterm_result = $cterm->fetchAssoc()) {
-    chado_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid, $roots);
+    _chado_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid, $roots);
   }
 }
 
@@ -511,7 +511,7 @@ function chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
  * 
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath_loop(
+function _chado_update_cvtermpath_loop(
   $origin,
   $child_id,
   $cv_id,
@@ -557,7 +557,7 @@ function chado_update_cvtermpath_loop(
         // and confirmed that this is a loop.
         $possible_loop == FALSE;
         $matched_rows = [];
-        chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+        _chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
         $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
 
@@ -594,7 +594,7 @@ function chado_update_cvtermpath_loop(
           // and confirmed that this is a loop.
           $possible_loop == FALSE;
           $matched_rows = [];
-          chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+          _chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
           $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
           $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
 
@@ -609,7 +609,7 @@ function chado_update_cvtermpath_loop(
       $no_loop_skip_test = TRUE;
       // There is not loop so pass it back the possible_start_of_loop info
       // and a flag telling it to skip the loop check.
-      chado_update_cvtermpath_loop_increment($possible_start_of_loop->subject_id,
+      _chado_update_cvtermpath_loop_increment($possible_start_of_loop->subject_id,
       $possible_start_of_loop->child_id, $possible_start_of_loop->cvid,
       $possible_start_of_loop->type_id, $possible_start_of_loop->depth,
       $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
@@ -617,13 +617,13 @@ function chado_update_cvtermpath_loop(
     }
     // If $match_rows is not empty we need to keep trying rows.
     else {
-      chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+      _chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
       $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
       $match_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
   }
   elseif ($possible_loop === FALSE) {
-    chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
+    _chado_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
     $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
     $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
   }
@@ -670,7 +670,7 @@ function chado_update_cvtermpath_loop(
  * 
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath_loop_increment(
+function _chado_update_cvtermpath_loop_increment(
   $origin,
   $child_id,
   $cv_id,
@@ -787,7 +787,7 @@ function chado_update_cvtermpath_loop_increment(
     $possible_start_of_loop = [];
 
     // Get all of the relationships of this child term, and recursively
-    // call the chado_update_cvtermpath_loop_increment() function to continue
+    // call the _chado_update_cvtermpath_loop_increment() function to continue
     // descending down the tree.
     $query = db_select('cvterm_relationship', 'cvtr')
       ->fields('cvtr')
@@ -797,7 +797,7 @@ function chado_update_cvtermpath_loop_increment(
 
     foreach ($cterm_relationships as $item) {
       $increment_of_depth++;
-      chado_update_cvtermpath_loop_increment($origin, $item->subject_id, $cv_id,
+      _chado_update_cvtermpath_loop_increment($origin, $item->subject_id, $cv_id,
         $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
@@ -809,7 +809,7 @@ function chado_update_cvtermpath_loop_increment(
   }
   elseif ($possible_loop === TRUE) {
     // Get all of the relationships of this child term, and recursively
-    // call the chado_update_cvtermpath_loop() function to continue
+    // call the _chado_update_cvtermpath_loop() function to continue
     // descending down the tree.
     $query = db_select('cvterm_relationship', 'cvtr')
       ->fields('cvtr')
@@ -818,7 +818,7 @@ function chado_update_cvtermpath_loop_increment(
     $cterm_relationships = $query->fetchAll();
     foreach ($cterm_relationships as $item) {
       $increment_of_depth++;
-      chado_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
+      _chado_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
         $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
         $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
     }
