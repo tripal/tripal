@@ -400,14 +400,12 @@ function tripal_update_cvtermpath($cv_id, $job_id = NULL){
     }
   }
   catch (Exception $e) {
-    // If there's an exception we have to set the database back. So, do that
-    // and then rethrow the error.
-    chado_set_active($prev_db);
-
     // Rollback any database changes
     $transaction->rollback();
     throw $e;
   }
+
+  // Set the database back
   chado_set_active($prev_db);
 }
 
