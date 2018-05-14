@@ -127,6 +127,10 @@ class chado_linker__prop extends ChadoField {
 
     // Ensure there are no values if there are no properties.
     // This is necessary to make sure the field is not rendered when there are no properies.
+    // @todo: We should revisit this in the future as none of the other fields do this.
+    //        It was added here to make it easier to detect when the field was empty
+    //        but in hindsight, we would just check $entity->{$field_name}['und'][$i]['value']
+    //        in the formatter.
     if (empty($properties)) {
       unset($entity->{$field_name});
     }
