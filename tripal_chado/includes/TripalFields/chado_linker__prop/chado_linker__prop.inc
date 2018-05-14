@@ -124,6 +124,12 @@ class chado_linker__prop extends ChadoField {
         );
       }
     }
+
+    // Ensure there are no values if there are no properties.
+    // This is necessary to make sure the field is not rendered when there are no properies.
+    if (empty($properties)) {
+      unset($entity->{$field_name});
+    }
   }
 
   /**
