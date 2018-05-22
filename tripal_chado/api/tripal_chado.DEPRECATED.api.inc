@@ -33,7 +33,7 @@
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_chado_publish_records($values, $job_id = null) {
-  chado_publish_records($values, $job_id = null);
+  return chado_publish_records($values, $job_id = null);
 }
 
 /**
@@ -47,7 +47,7 @@ function tripal_chado_publish_records($values, $job_id = null) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_tokens($base_table) {
-  chado_get_tokens($base_table);
+  return chado_get_tokens($base_table);
 }
 
 /**
@@ -66,7 +66,7 @@ function tripal_get_chado_tokens($base_table) {
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_replace_chado_tokens($string, $record) {
-  chado_replace_tokens($string, $record);
+  return chado_replace_tokens($string, $record);
 }
 
 /**
@@ -89,7 +89,7 @@ function tripal_replace_chado_tokens($string, $record) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_chado_migrate_tripal_content_type($type = array()) {
-  chado_migrate_tripal_content_type($type = array());
+  return chado_migrate_tripal_content_type($type = array());
 }
 
 
@@ -121,7 +121,7 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true) {
-  chado_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true);
+  return chado_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true);
 }
 
 /**
@@ -159,7 +159,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = nul
  */
 function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   $indexed, $query, $special_index, $comment = null, $mv_schema = null) {
-  chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
+  return chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     $indexed, $query, $special_index, $comment = null,$mv_schema = null);
 }
 
@@ -175,7 +175,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_mview_id($view_name) {
-  chado_get_mview_id($view_name);
+  return chado_get_mview_id($view_name);
 }
 
 /**
@@ -187,7 +187,7 @@ function tripal_get_mview_id($view_name) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_refresh_mview($mview_id) {
-  chado_refresh_mview($mview_id);
+  return chado_refresh_mview($mview_id);
 }
 
 /**
@@ -200,7 +200,7 @@ function tripal_refresh_mview($mview_id) {
  *
  */
 function tripal_get_mviews() {
-  chado_get_mviews();
+  return chado_get_mviews();
 }
 
 /**
@@ -214,7 +214,7 @@ function tripal_get_mviews() {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_delete_mview($mview_id) {
-  chado_delete_mview($mview_id);
+  return chado_delete_mview($mview_id);
 }
 
 /**
@@ -229,7 +229,7 @@ function tripal_delete_mview($mview_id) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_populate_mview($mview_id) {
-  chado_populate_mview($mview_id);
+  return chado_populate_mview($mview_id);
 }
 
 /**
@@ -255,9 +255,8 @@ function tripal_populate_mview($mview_id) {
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function hook_tripal_get_schema_name_alter($schema_name, $context)
-{
-  hook_chado_get_schema_name_alter($schema_name, $context);
+function hook_tripal_get_schema_name_alter($schema_name, $context) {
+  return hook_chado_get_schema_name_alter($schema_name, $context);
 }
 
 /**
@@ -272,7 +271,7 @@ function hook_tripal_get_schema_name_alter($schema_name, $context)
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_schema_name($schema = 'chado') {
-  chado_get_schema_name($schema);
+  return chado_get_schema_name($schema);
 }
 
 
@@ -298,7 +297,7 @@ function tripal_get_schema_name($schema = 'chado') {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_add_chado_semweb_table($chado_table) {
-  chado_add_semweb_table($chado_table);
+  return chado_add_semweb_table($chado_table);
 }
 
 /**
@@ -331,7 +330,7 @@ function tripal_add_chado_semweb_table($chado_table) {
  */
 function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
     $update = false) {
-  chado_associate_semweb_term($chado_table, $chado_column, $term, $update);
+  return chado_associate_semweb_term($chado_table, $chado_column, $term, $update);
 }
 
 
@@ -355,7 +354,7 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
-  chado_get_semweb_term($chado_table, $chado_column, $options);
+  return chado_get_semweb_term($chado_table, $chado_column, $options);
 }
 
 /**
@@ -369,7 +368,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_format_chado_semweb_term($cvterm) {
-  chado_format_semweb_term($cvterm);
+  return chado_format_semweb_term($cvterm);
 }
 /**
  * Retreive the column name in a Chado table that matches a given term.
@@ -387,5 +386,5 @@ function tripal_format_chado_semweb_term($cvterm) {
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_semweb_column($chado_table, $term) {
-  chado_get_semweb_column($chado_table, $term);
+  return chado_get_semweb_column($chado_table, $term);
 }
