@@ -45,7 +45,7 @@
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_analysis($identifier, $options) {
-  chado_get_analysis($identifier, $options);
+  return chado_get_analysis($identifier, $options);
 }
 
 /**
@@ -62,7 +62,7 @@ function tripal_get_analysis($identifier, $options) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_analysis_select_options($syncd_only = true) {
-  chado_get_analysis_select_options($syncd_only);
+  return chado_get_analysis_select_options($syncd_only);
 }
 
 /**tripal_contact_api*/
@@ -87,7 +87,7 @@ function tripal_get_analysis_select_options($syncd_only = true) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_contact($values) {
-  chado_insert_contact($values); 
+  return chado_insert_contact($values);
 }
 
 /**
@@ -102,7 +102,7 @@ function tripal_insert_contact($values) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_contact($text) {
-  chado_autocomplete_contact($text);
+  return chado_autocomplete_contact($text);
 }
 
 /**tripal_chado_cv_api*/
@@ -131,7 +131,7 @@ function tripal_autocomplete_contact($text) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_cv($identifiers, $options = array()) {
-  chado_get_cv($identifiers, $options);
+  return chado_get_cv($identifiers, $options);
 }
 
 /**
@@ -144,7 +144,7 @@ function tripal_get_cv($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_cv_select_options() {
-  chado_get_cv_select_options();
+  return chado_get_cv_select_options();
 }
 
 /**
@@ -286,7 +286,7 @@ function tripal_insert_cv($name, $definition) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_cvterm($term, $options = array()) {
-  chado_insert_cvterm($term, $options);
+  return chado_insert_cvterm($term, $options);
 }
 
 /**
@@ -325,7 +325,7 @@ function tripal_insert_cvterm($term, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_submit_obo_job($obo) {
-  chado_submit_obo_job($obo);
+  return chado_submit_obo_job($obo);
 }
 
 /**
@@ -344,7 +344,7 @@ function tripal_submit_obo_job($obo) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_obo($name, $path) {
-  chado_insert_obo($name, $path);
+  return chado_insert_obo($name, $path);
 }
 
 /**
@@ -359,7 +359,7 @@ function tripal_insert_obo($name, $path) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_obo($values) {
-  chado_get_obo($values);
+  return chado_get_obo($values);
 }
 
 /**
@@ -376,7 +376,7 @@ function tripal_get_obo($values) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_cv($string = '') {
-  chado_autocomplete_cv($string);
+  return chado_autocomplete_cv($string);
 }
 
 /**
@@ -394,7 +394,7 @@ function tripal_autocomplete_cv($string = '') {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_cvterm($cv_id, $string = '') {
-  chado_autocomplete_cvterm($cv_id, $string);
+  return chado_autocomplete_cvterm($cv_id, $string);
 }
 
 /**
@@ -420,7 +420,7 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
-  chado_associate_cvterm($basetable, $record_id, $cvterm, $options);
+  return chado_associate_cvterm($basetable, $record_id, $cvterm, $options);
 }
 
 /**tripal_chado_database_api*/
@@ -467,7 +467,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_db($identifiers, $options = array()) {
-  chado_get_db($identifiers, $options);
+  return chado_get_db($identifiers, $options);
 }
 
 /**
@@ -480,7 +480,7 @@ function tripal_get_db($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_db_select_options() {
-  chado_get_db_select_options();
+  return chado_get_db_select_options();
 }
 
 /**
@@ -537,7 +537,7 @@ function tripal_get_db_select_options() {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_dbxref($identifiers, $options = array()) {
-  chado_get_dbxref($identifiers, $options);
+  return chado_get_dbxref($identifiers, $options);
 }
 
 /**
@@ -559,7 +559,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_dbxref_url($dbxref) {
-  chado_get_dbxref_url($dbxref);
+  return chado_get_dbxref_url($dbxref);
 }
 
 /**
@@ -587,7 +587,7 @@ function tripal_get_dbxref_url($dbxref) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_db($values, $options = array()) {
-  chado_insert_db($values, $options);
+  return chado_insert_db($values, $options);
 }
 
 /**
@@ -607,7 +607,7 @@ function tripal_insert_db($values, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_dbxref($values) {
-  chado_insert_dbxref($values);
+  return chado_insert_dbxref($values);
 }
 
 /**
@@ -633,7 +633,7 @@ function tripal_insert_dbxref($values) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = array()) {
-  chado_associate_dbxref($basetable, $record_id, $dbxref, $options);
+  return chado_associate_dbxref($basetable, $record_id, $dbxref, $options);
 }
 
 /**
@@ -651,7 +651,7 @@ function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = arr
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_dbxref($db_id, $string = '') {
-  chado_autocomplete_dbxref($db_id, $string);
+  return chado_autocomplete_dbxref($db_id, $string);
 }
 
 /**tripal_feature_api*/
@@ -669,7 +669,7 @@ function tripal_autocomplete_dbxref($db_id, $string = '') {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_feature($string = '') {
-  chado_autocomplete_feature($string);
+  return chado_autocomplete_feature($string);
 }
 
 /**
@@ -684,7 +684,7 @@ function tripal_autocomplete_feature($string = '') {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_reverse_compliment_sequence($sequence) {
-  chado_reverse_compliment_sequence($sequence);
+  return chado_reverse_compliment_sequence($sequence);
 }
 
 /**
@@ -742,7 +742,7 @@ function tripal_reverse_compliment_sequence($sequence) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_feature_sequences($feature, $options) {
-  chado_get_feature_sequences($feature, $options);
+  return chado_get_feature_sequences($feature, $options);
 }
 
 /**
@@ -797,7 +797,7 @@ function tripal_get_feature_sequences($feature, $options) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_bulk_feature_sequences($options) {
-  chado_get_bulk_feature_sequences($options);
+  return chado_get_bulk_feature_sequences($options);
 }
 
 /**
@@ -827,7 +827,7 @@ function tripal_get_bulk_feature_sequences($options) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_fasta_defline($feature, $notes = '', $featureloc = null, $type = '', $length = 0) {
-  chado_get_fasta_defline($feature, $notes, $featureloc, $type, $length);
+  return chado_get_fasta_defline($feature, $notes, $featureloc, $type, $length);
 }
 
 /**
@@ -843,7 +843,7 @@ function tripal_get_fasta_defline($feature, $notes = '', $featureloc = null, $ty
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_location_string($featureloc) {
-  chado_get_location_string($featureloc);
+  return chado_get_location_string($featureloc);
 }
 
 /**
@@ -876,7 +876,7 @@ function tripal_get_location_string($featureloc) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_organism($identifiers, $options = array()) {
-  chado_get_organism($identifiers, $options);
+  return chado_get_organism($identifiers, $options);
 }
 
 /**
@@ -890,7 +890,7 @@ function tripal_get_organism($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_organism_scientific_name($organism) {
-  chado_get_organism_scientific_name($organism);
+  return chado_get_organism_scientific_name($organism);
 }
 
 /**
@@ -907,7 +907,7 @@ function tripal_get_organism_scientific_name($organism) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_organism_select_options($syncd_only = true) {
-  chado_get_organism_select_options($syncd_only);
+  return chado_get_organism_select_options($syncd_only);
 }
 
 /**
@@ -923,7 +923,7 @@ function tripal_get_organism_select_options($syncd_only = true) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_organism_image_url($organism) {
-  chado_get_organism_image_url($organism);
+  return chado_get_organism_image_url($organism);
 }
 
 /**
@@ -939,7 +939,7 @@ function tripal_get_organism_image_url($organism) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_organism($text) {
-  chado_autocomplete_organism($text);
+  return chado_autocomplete_organism($text);
 }
 
 /**
@@ -953,7 +953,7 @@ function tripal_autocomplete_organism($text) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_abbreviate_infraspecific_rank($rank) {
-  chado_abbreviate_infraspecific_rank($rank);
+  return chado_abbreviate_infraspecific_rank($rank);
 }
 
 /** tripal_phylotree_api */
@@ -990,7 +990,7 @@ function tripal_abbreviate_infraspecific_rank($rank) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
-  chado_validate_phylotree($val_type, $options, $errors, $warnings); 
+  return chado_validate_phylotree($val_type, $options, $errors, $warnings); 
 }
 
 /**
@@ -1050,7 +1050,7 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
-  chado_insert_phylotree($options, $errors, $warnings);
+  return chado_insert_phylotree($options, $errors, $warnings);
 }
 
 /**
@@ -1100,7 +1100,7 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_update_phylotree($phylotree_id, &$options) {
-  chado_update_phylotree($phylotree_id, $options);
+  return chado_update_phylotree($phylotree_id, $options);
 }
 
 /**
@@ -1114,7 +1114,7 @@ function tripal_update_phylotree($phylotree_id, &$options) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_delete_phylotree($phylotree_id) {
-  chado_delete_phylotree($phylotree_id);
+  return chado_delete_phylotree($phylotree_id);
 }
 
 /**
@@ -1129,7 +1129,7 @@ function tripal_delete_phylotree($phylotree_id) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
-  chado_assign_phylogeny_tree_indices($tree, $index);
+  return chado_assign_phylogeny_tree_indices($tree, $index);
 }
 
 /**
@@ -1188,7 +1188,7 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = array(), $parent = null) {
-  chado_phylogeny_import_tree($tree, $phylotree, $options, $vocab, $parent);
+  return chado_phylogeny_import_tree($tree, $phylotree, $options, $vocab, $parent);
 }
 
 /**
@@ -1200,7 +1200,7 @@ function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arr
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_phylogeny_get_node_types_vocab() {
-  chado_phylogeny_get_node_types_vocab();
+  return chado_phylogeny_get_node_types_vocab();
 }
 
 /**
@@ -1232,7 +1232,7 @@ function tripal_phylogeny_get_node_types_vocab() {
  *  @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_phylogeny_import_tree_file($file_name, $format, $options = array(), $job_id = null) {
-  chado_phylogeny_import_tree_file($file_name, $format, $options, $job_id);
+  return chado_phylogeny_import_tree_file($file_name, $format, $options, $job_id);
 }
 
 /** tripal_pub_api */
@@ -1273,7 +1273,7 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = array
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_publication($identifiers, $options = array()) {
-  chado_get_publication($identifiers, $options);
+  return chado_get_publication($identifiers, $options);
 }
 
 /**
@@ -1311,7 +1311,7 @@ function tripal_get_publication($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_publication_exists($pub_details) {
-  chado_publication_exists($pub_details);
+  return chado_publication_exists($pub_details);
 }
 
 /**
@@ -1328,7 +1328,7 @@ function tripal_publication_exists($pub_details) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_autocomplete_pub($string = '') {
-  chado_autocomplete_pub($string);
+  return chado_autocomplete_pub($string);
 }
 
 /**
@@ -1349,7 +1349,7 @@ function tripal_autocomplete_pub($string = '') {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_update = true) {
-  chado_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_update);
+  return chado_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_update);
 }
 
 /**
@@ -1365,7 +1365,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_updat
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_execute_active_pub_importers($report_email = false, $do_update = false) {
-  chado_execute_active_pub_importers($report_email, $do_update);
+  return chado_execute_active_pub_importers($report_email, $do_update);
 }
 
 /**
@@ -1391,7 +1391,7 @@ function tripal_execute_active_pub_importers($report_email = false, $do_update =
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_reimport_publications($do_contact = false, $dbxref = null, $db = null) {
-  chado_reimport_publications($do_contact, $dbxref, $db);
+  return chado_reimport_publications($do_contact, $dbxref, $db);
 }
 
 /**
@@ -1410,7 +1410,7 @@ function tripal_reimport_publications($do_contact = false, $dbxref = null, $db =
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_pub_create_citations($options) {
-  chado_pub_create_citations($options);
+  return chado_pub_create_citations($options);
 }
 
 /**
@@ -1443,7 +1443,7 @@ function tripal_pub_create_citations($options) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_pub_create_citation($pub) {
-  chado_pub_create_citation($pub);
+  return chado_pub_create_citation($pub);
 }
 
 /**
@@ -1462,7 +1462,7 @@ function tripal_pub_create_citation($pub) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_minimal_pub_info($pub) {
-  chado_get_minimal_pub_info($pub);
+  return chado_get_minimal_pub_info($pub);
 }
 
 
@@ -1497,7 +1497,7 @@ function tripal_get_minimal_pub_info($pub) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_stock($identifiers, $options = array()) {
-  chado_get_stock($identifiers, $options);
+  return chado_get_stock($identifiers, $options);
 }
 
 /**
@@ -1518,5 +1518,5 @@ function tripal_get_stock($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_multiple_stocks($identifiers, $options = array()) {
-  chado_get_multiple_stocks($identifiers, $options);
+  return chado_get_multiple_stocks($identifiers, $options);
 }
