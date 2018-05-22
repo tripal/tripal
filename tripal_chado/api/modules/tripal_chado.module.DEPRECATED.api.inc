@@ -182,7 +182,7 @@ function tripal_get_cv_select_options() {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_cvterm($identifiers, $options = array()) {
-  chado_get_cvterm($identifiers, $options);
+  return chado_get_cvterm($identifiers, $options);
 }
 
 /**
@@ -203,7 +203,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
-  chado_get_cvterm_select_options($cv_id, $rel_type);
+  return chado_get_cvterm_select_options($cv_id, $rel_type);
 }
 
 /**
@@ -220,7 +220,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_update_cvtermpath($cv_id, $job_id = null) {
-  chado_update_cvtermpath($cv_id, $job_id);
+  return chado_update_cvtermpath($cv_id, $job_id);
 }
 
 /**
@@ -238,7 +238,7 @@ function tripal_update_cvtermpath($cv_id, $job_id = null) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_insert_cv($name, $definition) {
-  chado_insert_cv($name, $definition);
+  return chado_insert_cv($name, $definition);
 }
 
 /**
