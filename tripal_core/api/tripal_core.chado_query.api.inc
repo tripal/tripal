@@ -870,7 +870,7 @@ function chado_delete_record($table, $match, $options = NULL) {
   foreach ($delete_matches as $field => $value) {
     // if we have an array values then this is an "IN" clasue.
 
-    if (count($value) > 1) {
+    if (is_array($value) and count($value) > 1) {
       $sql .= "$field IN (";
       $index = 0;
       foreach ($value as $v) {
