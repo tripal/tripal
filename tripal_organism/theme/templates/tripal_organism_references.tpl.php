@@ -6,7 +6,7 @@ $references = array();
 $options = array('return_array' => 1);
 $organism = chado_expand_var($organism, 'table', 'organism_dbxref', $options);
 $organism_dbxrefs = $organism->organism_dbxref;
-if (count($organism_dbxrefs) > 0 ) {
+if (is_array($organism_dbxrefs) and count($organism_dbxrefs) > 0 ) {
   foreach ($organism_dbxrefs as $organism_dbxref) {    
     if($organism_dbxref->dbxref_id->db_id->name == 'GFF_source'){
       // check to see if the reference 'GFF_source' is there.  This reference is
@@ -19,7 +19,7 @@ if (count($organism_dbxrefs) > 0 ) {
 }
 
 
-if(count($references) > 0){ ?>
+if(is_array($references) and count($references) > 0){ ?>
   <div class="tripal_organism-data-block-desc tripal-data-block-desc">External references for this organism</div><?php
    
   // the $headers array is an array of fields to use as the colum headers.

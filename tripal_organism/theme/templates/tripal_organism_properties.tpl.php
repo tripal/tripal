@@ -5,7 +5,7 @@ $options = array('return_array' => 1);
 $organism = chado_expand_var($organism, 'table', 'organismprop', $options);
 $properties = $organism->organismprop;
 
-if(count($properties) > 0){ 
+if(is_array($properties) and count($properties) > 0){ 
     
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
