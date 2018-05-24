@@ -43,7 +43,7 @@ function tripal_chado_publish_records($values, $job_id = null) {
  *    The name of a base table in Chado.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
- * 
+ *
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_tokens($base_table) {
@@ -62,7 +62,7 @@ function tripal_get_chado_tokens($base_table) {
  *
  * @return
  *   The string will all tokens replaced with values.
- * 
+ *
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_replace_chado_tokens($string, $record) {
@@ -71,10 +71,10 @@ function tripal_replace_chado_tokens($string, $record) {
 
 /**
  * Migrate Tripal content types
- * 
- * Migrate specified Tripal content type and publish all its content. The content type 
+ *
+ * Migrate specified Tripal content type and publish all its content. The content type
  * will be created if it does not already exist.
- * 
+ *
  * @param $type
  *   A type array specifying the vocabular, accession, term_name, and chado data_table
  *   e.g.
@@ -103,7 +103,7 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
  * @param $name
  *   The name of the materialized view.
  * @param $modulename
- *   The name of the module submitting the materialized view 
+ *   The name of the module submitting the materialized view
  *   (e.g. 'tripal_library').
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
@@ -121,11 +121,11 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true) {
-  return chado_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true);
+  return chado_add_mview($name, $modulename, $mv_schema, $query, $comment, $redirect);
 }
 
 /**
- * Edits a materialized view to the chado database to help speed data access. 
+ * Edits a materialized view to the chado database to help speed data access.
  * This function supports the older style where postgres column specifications
  * are provided using the $mv_table, $mv_specs and $indexed variables. It also
  * supports the newer preferred method where the materialized view is described
@@ -136,10 +136,10 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = nul
  * @param $name
  *   The name of the materialized view.
  * @param $modulename
- *   The name of the module submitting the materialized view 
+ *   The name of the module submitting the materialized view
  *   (e.g. 'tripal_library').
  * @param $mv_table
- *   The name of the table to add to chado. This is the table that can be 
+ *   The name of the table to add to chado. This is the table that can be
  *   queried.
  * @param $mv_specs
  *   The table definition.
@@ -235,22 +235,22 @@ function tripal_populate_mview($mview_id) {
 /**
  * Alter the name of the schema housing Chado and/or Drupal.
  *
- * This example implementation shows a solution for the case where your chado 
- * database was well established in the "public" schema and you added Drupal 
- * later in a "drupal" schema. Please note that this has not been tested and 
- * while we can ensure that Tripal will work as expected, we have no control 
+ * This example implementation shows a solution for the case where your chado
+ * database was well established in the "public" schema and you added Drupal
+ * later in a "drupal" schema. Please note that this has not been tested and
+ * while we can ensure that Tripal will work as expected, we have no control
  * over whether Drupal is compatible with not being in the public schema. That's
  * why we recommened the organization we have (ie: Chado in a "chado" schema and
  * Drupal in the "public schema).
  *
  * @param $schema_name
- *   The current name of the schema as known by Tripal. This is likely the 
- *   default set in tripal_get_schema_name() but in the case of multiple alter 
+ *   The current name of the schema as known by Tripal. This is likely the
+ *   default set in tripal_get_schema_name() but in the case of multiple alter
  *   hooks, it might be different.
  * @param $context
  *   This is an array of items to provide context.
- *     - schema: this is the schema that was passed to tripal_get_schema_name() 
- *       and will be either "chado" or "drupal". This should be used to 
+ *     - schema: this is the schema that was passed to tripal_get_schema_name()
+ *       and will be either "chado" or "drupal". This should be used to
  *       determine you are changing the name of the correct schema.
  *
  * @ingroup tripal_chado_DEPRECATED_api
@@ -263,7 +263,7 @@ function hook_tripal_get_schema_name_alter($schema_name, $context) {
  * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
  *
  * @param $schema
- *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the 
+ *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
  *   default.
  * @return
  *   The name of the PostgreSQL schema housing the $schema specified.
@@ -293,7 +293,7 @@ function tripal_get_schema_name($schema = 'chado') {
  *
  * @param $chado_table
  *   The name of the Chado table.
- * 
+ *
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_add_chado_semweb_table($chado_table) {
@@ -325,7 +325,7 @@ function tripal_add_chado_semweb_table($chado_table) {
  *
  * @return boolean
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
- * 
+ *
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
@@ -350,7 +350,7 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *   Returns a string-based representation of the term (e.g. SO:0000704). If
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
- * 
+ *
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
@@ -364,7 +364,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *   A cvterm object.
  * @return
  *   The semantic web name for the term.
- * 
+ *
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_format_chado_semweb_term($cvterm) {
@@ -382,7 +382,7 @@ function tripal_format_chado_semweb_term($cvterm) {
  * @return
  *   The name of the Chado column that matches the given term or FALSE if the
  *   term is not mapped to the Chado table.
- * 
+ *
  *  @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_semweb_column($chado_table, $term) {
