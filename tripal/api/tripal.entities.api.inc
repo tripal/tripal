@@ -644,7 +644,9 @@ function tripal_create_bundle_fields($bundle, $term) {
   foreach ($modules as $module) {
     $function = $module . '_bundle_fields_info';
     $temp = $function('TripalEntity', $bundle);
-    $info = array_merge($info, $temp);
+    if (is_array($temp)) {
+      $info = array_merge($info, $temp);
+    }
   }
 
   // Allow modules to alter which fields should be attached to content

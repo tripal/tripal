@@ -7,11 +7,10 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   $file_size = array_key_exists('file_size', $_GET) ? $_GET['file_size'] : '';
   $chunk_size = array_key_exists('chunk_size', $_GET) ? $_GET['chunk_size'] : '';
 
-  $user_dir = 'public://tripal/users/' . $user->uid;
-
-  if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
-    $message = 'Could not access the directory on the server for storing this file.';
-    watchdog('tripal', $message, array(), WATCHDOG_ERROR);
+  $user_dir = tripal_get_user_files_dir($user);
+  if (!tripal_is_user_files_dir_writeable($user)) {
+    $message = 'The user\'s data directory is not writeable: !user_dir.';
+    watchdog('tripal', $message, array('!user_dir' => $user_dir), WATCHDOG_ERROR);
     drupal_json_output(array(
       'status'  => 'failed',
       'message' => $message,

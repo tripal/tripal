@@ -138,6 +138,9 @@ function tripal_get_files_stream($module_name = FALSE) {
  *
  * @return string
  *   A formatted string indicating the size of the file
+ *   
+ *   
+ * @ingroup tripal_files_api
  */
 function tripal_format_bytes($bytes, $precision = 2) {
   $units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -155,6 +158,7 @@ function tripal_format_bytes($bytes, $precision = 2) {
 
 /**
  * Retrieves the list of files uploaded by a user.
+ * 
  * @param $uid
  *   The ID of the user whose files should be retrieved.
  * @param $allowed_types
@@ -164,6 +168,8 @@ function tripal_format_bytes($bytes, $precision = 2) {
  *      
  * @return
  *   A list of file objects.
+ *   
+ * @ingroup tripal_files_api
  */
 function tripal_get_user_uploads($uid, $allowed_types = array(), $module = 'tripal') {
   $user = user_load($uid);
@@ -188,4 +194,55 @@ function tripal_get_user_uploads($uid, $allowed_types = array(), $module = 'trip
   }
   
   return $files_list;
+}
+
+/**
+ * Retrieves the URI for the dedicated directory for a user's files.
+ * 
+ * This directory is used by the file uploader and by data collections.
+ * 
+ * @param $user
+ *   A Drupal user object.
+ *   
+ * @return 
+ *   The URI of the directory.
+ *   
+ * @ingroup tripal_files_api
+ */
+function tripal_get_user_files_dir($user) {
+  
+  $user_dir = 'public://tripal/users/' . $user->uid;
+    
+  return $user_dir;
+}
+
+/**
+ * Checks if the user's dedicated directory is accessible and writeable. 
+ * 
+ * @param $user
+ *   A Drupal user object.
+ *   
+ * @return
+ *   TRUE if the user's directory is writeable. FALSE otherwise.
+ *   
+ * @ingroup tripal_files_api
+ */
+function tripal_is_user_files_dir_writeable($user) {
+  $user_dir = tripal_get_user_files_dir($user);
+   
+  // First, make sure the directory exists.
+  if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
+    return FALSE;
+  }
+  
+  // It has been reported that file_prepare_directory is not properly
+  // detecting if the directory is writeable, so we'll do another
+  // round of checks to be sure.
+  if (!is_dir($user_dir)) {
+    return FALSE;
+  }
+  if (!is_writeable($user_dir)) {
+    return FALSE;
+  }
+  return TRUE;
 }
