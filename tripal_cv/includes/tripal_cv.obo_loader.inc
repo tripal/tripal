@@ -571,7 +571,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
       fclose($fh);
       // Check if the EBI ontology search has this ontology:
       try {
-        $results = tripl_cv_obo_EBI_Lookup($short_name, 'ontology');
+        $results = tripal_cv_obo_EBI_lookup($short_name, 'ontology');
         if (array_key_exists('default-namespace', $results['config']['annotations'])) {
           $results = $results['config']['annotations']['default-namespace'];
           if (is_array($results)) {
@@ -594,10 +594,12 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
       if (empty($defaultcv)) {
         throw new Exception("Could not find a namespace for this OBO file: $file");
       }
-      tripal_report_error('T_obo_loader', "This OBO is missing the 'default-namespace' header. It " .
-        "is not possible to determine which vocabulary terms without a 'namespace' key " .
-        "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.", 
-        array('!vocab' => $defaultcv->name), 'error');
+      tripal_report_error('T_obo_loader', TRIPAL_WARNING, "This OBO is missing " . 
+        "the 'default-namespace' header. It is therefore, not possible to " .
+        "determine which vocabulary a term belongs to if it does not have " . 
+        "a 'namespace' key.  Instead, terms without a 'namespace' key " .
+        "will be placed in the '!vocab' vocabulary.", 
+        array('!vocab' => $defaultcv->name));
     }
 
     // add any typedefs to the vocabulary first
@@ -654,7 +656,7 @@ function tripal_cv_obo_quiterror($message) {
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
-  $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
+  $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef'";
   $typedefs = chado_query($sql);
 
   $sql = "
@@ -720,11 +722,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
   $i = 0;
 
   // iterate through each term from the OBO file and add it
-  $sql = "
-    SELECT * FROM {tripal_obo_temp}
-    WHERE type = 'Term'
-    ORDER BY id
-  ";
+  $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Term' ORDER BY id";
   $terms = chado_query($sql);
 
   $sql = "
@@ -822,7 +820,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
   $results = chado_query($sql)->fetchObject();
   if (!$results){
     //The controlled vocabulary is not in the cv term table and needs to be added.
-    $ontology_info = tripal_cv_obo_EBI_Lookup($defaultcv, 'ontology');
+    $ontology_info = tripal_cv_obo_EBI_lookup($defaultcv, 'ontology');
     if (!empty($ontology_info)){
       if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
         $results = $ontology_info['config']['annotations']['default-namespace'];
@@ -1015,7 +1013,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
     $ontology_id = $pair[0];
     $accession_num = $pair[1];
     if (is_numeric($accession_num)) {
-      $results = tripal_cv_obo_EBI_Lookup($rel, 'query');
+      $results = tripal_cv_obo_EBI_lookup($rel, 'query');
       if (!empty($results)) {
         if (array_key_exists('docs', $results)){
           if(!empty($results['docs'])) {
@@ -1023,7 +1021,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
           }
           else {
             // The first search doesn't work, so let's try a broader one.
-            $results = tripal_cv_obo_EBI_Lookup($rel, 'query-non-local');
+            $results = tripal_cv_obo_EBI_lookup($rel, 'query-non-local');
             if (!empty($results)) {
               if (array_key_exists('docs', $results)){
                 if(!empty($results['docs'])) {
@@ -1554,7 +1552,7 @@ function tripal_cv_obo_form_ajax_callback($form, $form_state) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_cv_obo_EBI_Lookup($accession, $type_of_search) {
+function tripal_cv_obo_EBI_lookup($accession, $type_of_search) {
   
   //Grab just the ontology from the $accession.
   $parts = explode(':', $accession);
