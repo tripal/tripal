@@ -708,8 +708,8 @@ function chado_update_record($table, $match, $values, $options = NULL) {
       $sql .= " $field = NULL AND ";
     }
     else {
-      $sql .= " $field = :$field AND ";
-      $args[":$field"] = $value;
+      $sql .= " $field = :old_$field AND ";
+      $args[":old_$field"] = $value;
     }
   }
   $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND'
