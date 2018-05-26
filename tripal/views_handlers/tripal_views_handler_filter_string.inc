@@ -36,18 +36,20 @@ class tripal_views_handler_filter_string extends tripal_views_handler_filter {
         'method' => 'op_contains',
         'values' => 1,
       ),
-      'word' => array(
-        'title' => t('Contains any word'),
-        'short' => t('has word'),
-        'method' => 'op_word',
-        'values' => 1,
-      ),
-      'allwords' => array(
-        'title' => t('Contains all words'),
-        'short' => t('has all'),
-        'method' => 'op_word',
-        'values' => 1,
-      ),
+      // TODO: These two filters are a bit problematic with fields.
+      // The require a tripal_views_query::placeholder() function
+//       'word' => array(
+//         'title' => t('Contains any word'),
+//         'short' => t('has word'),
+//         'method' => 'op_word',
+//         'values' => 1,
+//       ),
+//       'allwords' => array(
+//         'title' => t('Contains all words'),
+//         'short' => t('has all'),
+//         'method' => 'op_word',
+//         'values' => 1,
+//       ),
       'starts' => array(
         'title' => t('Starts with'),
         'short' => t('begins'),
@@ -78,18 +80,22 @@ class tripal_views_handler_filter_string extends tripal_views_handler_filter {
         'method' => 'op_not',
         'values' => 1,
       ),
-      'shorterthan' => array(
-        'title' => t('Length is shorter than'),
-        'short' => t('shorter than'),
-        'method' => 'op_shorter',
-        'values' => 1,
-      ),
-      'longerthan' => array(
-        'title' => t('Length is longer than'),
-        'short' => t('longer than'),
-        'method' => 'op_longer',
-        'values' => 1,
-      ),
+      // TODO: These two filters are a bit problematic with fields.
+      // The require a tripal_views_query::add_where_expression function
+      // that can properly separate the field out of the "snippet". For now
+      // we'll just comment them out.
+//       'shorterthan' => array(
+//         'title' => t('Length is shorter than'),
+//         'short' => t('shorter than'),
+//         'method' => 'op_shorter',
+//         'values' => 1,
+//       ),
+//       'longerthan' => array(
+//         'title' => t('Length is longer than'),
+//         'short' => t('longer than'),
+//         'method' => 'op_longer',
+//         'values' => 1,
+//       ),
     );
     // if the definition allows for the empty operator, add it.
     if (!empty($this->definition['allow empty'])) {

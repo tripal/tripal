@@ -55,7 +55,6 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
 
-
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
 
   // If this is an insert then add the chado_entity record.
@@ -537,11 +536,12 @@ function tripal_chado_field_storage_query($query) {
 
           $matches = array();
           $key = $condition['value'];
-          $op = '=';
+          $op = array_key_exists('operator', $condition) ? $condition['operator'] : '=';
           if (preg_match('/^(.+);(.+)$/', $key, $matches)) {
             $key = $matches[1];
             $op = $matches[2];
           }
+
           switch ($op) {
             case 'eq':
               $op = '=';
@@ -558,12 +558,22 @@ function tripal_chado_field_storage_query($query) {
             case 'lte':
               $op = '<=';
               break;
+            case '<>':
             case 'ne':
-              $op = '<>';
+              $op = '!=';
               break;
+            case 'LIKE':
             case 'contains':
               $op = 'LIKE';
-              $key = '%' . $key . '%';
+              if (!preg_match('/\%/', $key)) {
+                $key = '%' . $key . '%';
+              }
+              break;
+            case 'NOT LIKE':              
+              $op = 'NOT LIKE';
+              if (!preg_match('/\%/', $key)) {
+                $key = '%' . $key . '%';
+              }
               break;
             case 'starts':
               $op = 'LIKE';
@@ -718,8 +728,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-// dpm($cquery->__toString());
-// dpm($cquery->getArguments());
+ //dpm($cquery->__toString());
+ //dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 

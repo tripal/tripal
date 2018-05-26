@@ -132,6 +132,42 @@ class tripal_views_query extends views_plugin_query {
       $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
     }
   }
+  
+  /**
+   * Add's a where exression clause to a query.
+   * 
+   * @param $group
+   *   The WHERE group to add these to; groups are used to create AND/OR
+   *   sections. Groups cannot be nested. Use 0 as the default group. If the
+   *   group does not yet exist it will be created as an AND group.
+   * @param $snippet
+   *   The snippet to check. This can be either a column or a complex 
+   *   expression like "UPPER(table.field) = 'value'".
+   * @param $args
+   *   An associative array of arguments.
+   */
+  public function add_where_expression($group, $snippet, $args = array()) {
+    
+    // Ensure all variants of 0 are actually 0. Thus '', 0 and NULL are all
+    // the default group.
+    if (empty($group)) {
+      $group = 0;
+    }
+    
+    // TODO: this function needs to be adjusted to pull out the element from
+    // snippet (see the code for the add_where function above for an example.
+    // for now this function will not properly work.
+    
+    // Check for a group.
+    if (!isset($this->where[$group])) {
+      $this->set_where_group('AND', $group);
+    }
+    $this->where[$group]['conditions'][] = array(
+      'field' => $snippet,
+      'value' => $args,
+      'operator' => 'formula',
+    );
+  }
 
   /**
    * Overrides add_orderby().
@@ -326,4 +362,13 @@ class tripal_views_query extends views_plugin_query {
     $view->execute_time = microtime(TRUE) - $start;
   }
 
+  /**
+   * Provides a unique placeholders for handlers.
+   */
+  public function placeholder() {
+    // TODO: this function doesn't currently work. It is used by the
+    // words, all words, shorter than, longer than filters, but those
+    // are currently commented out.
+    //return $this->query->placeholder($this->options['table'] . '_' . $this->options['field']);
+  }
 }
