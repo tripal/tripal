@@ -119,7 +119,7 @@ function tripal_cv_cv_edit_form($form, &$form_state, $cv_id = NULL) {
 }
 
 /**
- * Validation fucntion for tripal_cv_cv_edit_form
+ * Validation function for tripal_cv_cv_edit_form
  *
  * @ingroup tripal_cv
  */
@@ -165,7 +165,7 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
 }
 
 /**
- * Form to add contolled vocabularies
+ * Form to add controlled vocabularies
  *
  * @ingroup tripal_cv
  */
