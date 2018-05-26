@@ -14,8 +14,8 @@ class taxrank__infraspecific_taxon_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $label_term = 'rdfs:label';
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
     if (is_array($items[0]['value']) and array_key_exists($infraspecific_name_term, $items[0]['value'])) {
       $infraspecific_name = $items[0]['value'][$infraspecific_name_term];

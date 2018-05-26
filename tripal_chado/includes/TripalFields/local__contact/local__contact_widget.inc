@@ -29,7 +29,7 @@ class local__contact_widget extends ChadoFieldWidget {
     $name = '';
     $value = '';
 
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
+    $name_term = chado_get_semweb_term('contact', 'name');
 
     // Set the linker field appropriately.
     if ($field_table == 'biomaterial') {

@@ -1,8 +1,8 @@
 <?php
 /**
  * @file
- * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for
- * completion.
+ * Tripal offers a job management subsystem for managing tasks that may require 
+ * an extended period of time for completion.
  */
 
 /**
@@ -39,8 +39,8 @@
  * @param $uid
  *    The uid of the user adding the job
  * @param $priority
- *    The priority at which to run the job where the highest priority is 10 and the lowest priority
- *    is 1. The default priority is 10.
+ *    The priority at which to run the job where the highest priority is 10 and 
+ *    the lowest priority is 1. The default priority is 10.
  * @param $includes
  *    An array of paths to files that should be included in order to execute
  *    the job. Use the module_load_include function to get a path for a given
@@ -60,7 +60,8 @@
  *         $user->uid, $analysis_id, $match_type);
  *
  *   $includes = array()
- *   $includes[] = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.fasta_loader');
+ *   $includes[] = module_load_include('inc', 'tripal_chado', 
+ *                                'includes/loaders/tripal_chado.fasta_loader');
  *
  *   tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
  *     'tripal_feature_load_fasta', $args, $user->uid, 10, $includes);
@@ -231,12 +232,13 @@ function tripal_max_jobs_exceeded($max_jobs) {
 }
 
 /**
- * Set a job to be re-ran (ie: add it back into the job queue)
+ * Set a job to be re-run (ie: add it back into the job queue).
  *
  * @param $job_id
  *   The job_id of the job to be re-ran
  * @param $goto_jobs_page
- *   If set to TRUE then after the re run job is added Drupal will redirect to the jobs page
+ *   If set to TRUE then after the re run job is added Drupal will redirect to 
+ *   the jobs page
  *
  * @ingroup tripal_jobs_api
  */
@@ -287,7 +289,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
 }
 
 /**
- * Cancel a Tripal Job currently waiting in the job queue
+ * Cancel a Tripal Job currently waiting in the job queue.
  *
  * @param $job_id
  *   The job_id of the job to be cancelled
@@ -323,7 +325,7 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
 }
 
 /**
- * A function used to manually launch all queued tripal jobs
+ * A function used to manually launch all queued tripal jobs.
  *
  * @param $do_parallel
  *   A boolean indicating whether jobs should be attempted to run in parallel
@@ -335,7 +337,8 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
  * @param $max_jobs
- *   The maximum number of jobs that should be run concurrently. If -1 then unlimited.
+ *   The maximum number of jobs that should be run concurrently. If -1 then 
+ *   unlimited.
  * @param $single
  *   Ensures only a single job is run rather then the entire queue.
  *
@@ -434,7 +437,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
 }
 
 /**
- * An internal function for setting the progress for a current job
+ * An internal function for setting the progress for a current job.
  *
  * @param $job_id
  *   The job_id to set the progress for

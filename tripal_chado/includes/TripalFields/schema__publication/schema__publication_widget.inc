@@ -37,7 +37,7 @@ class schema__publication_widget extends ChadoFieldWidget {
       $fkey_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $fkey, $fkey_value);
       $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
       if ($pub_id) {
-        $pub = tripal_get_publication(array('pub_id' => $pub_id));
+        $pub = chado_get_publication(array('pub_id' => $pub_id));
         $title =  $pub->title . ' [id:' . $pub->pub_id . ']';
       }
     }

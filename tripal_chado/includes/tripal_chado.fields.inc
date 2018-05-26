@@ -92,7 +92,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
     if ($column_name == $pkey or $column_name == $type_column) {
       continue;
     }
-    $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    $cvterm = chado_get_semweb_term($table_name, $column_name, array('return_object' => TRUE));
     if (!$cvterm) {
       tripal_report_error('tripal', TRIPAL_ERROR,
         'Cannot create field for "%table_name.%column_name". Missing an appropriate vocabulary term',
@@ -822,7 +822,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
 
-    $cvterm = tripal_get_chado_semweb_term($table_name, $column_name, array('return_object' => TRUE));
+    $cvterm = chado_get_semweb_term($table_name, $column_name, array('return_object' => TRUE));
     if (!$cvterm) {
       // We already provided an error when creating the base field.  So
       // don't create another one here.

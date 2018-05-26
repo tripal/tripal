@@ -361,7 +361,7 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
           }
           break;
         case 'Materialized View':
-          $mview_id = tripal_get_mview_id($extension[$namespace]['mview_name']);
+          $mview_id = chado_get_mview_id($extension[$namespace]['mview_name']);
           if ($mview_id) {
             $is_installed = '<li>A materialized view with this name is already installed.</li>';
           }
@@ -570,7 +570,7 @@ function tripal_extensions_form_submit($form, &$form_state) {
         if ($error) {
           drupal_set_message("Cannot import Materialized View: $error", "error");
         }
-        tripal_add_mview($mview_name, $module_name, $schema_array, $mview_sql);
+        chado_add_mview($mview_name, $module_name, $schema_array, $mview_sql);
         break;
       case 'Extension Module':
         if (array_key_exists('drupal_project', $extension[$namespace])) {

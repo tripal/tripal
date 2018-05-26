@@ -35,6 +35,7 @@ require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
 require_once 'api/tripal_chado.semweb.api.inc';
 require_once 'api/tripal_chado.migrate.api.inc';
+require_once 'api/tripal_chado.DEPRECATED.api.inc';
 
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';
@@ -46,6 +47,7 @@ require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
 require_once 'api/modules/tripal_chado.phylotree.api.inc';
+require_once 'api/modules/tripal_chado.module.DEPRECATED.api.inc';
 
 //
 // REQUIRED INCLUDE FILES
@@ -519,7 +521,7 @@ function tripal_chado_menu() {
   //                           Auto Completes
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado/auto_name/dbxref/%/%'] = array(
-    'page callback' => 'tripal_autocomplete_dbxref',
+    'page callback' => 'chado_autocomplete_dbxref',
     'page arguments' => array(6, 7),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.db.api.inc',
@@ -527,7 +529,7 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/auto_name/cv/%'] = array(
-    'page callback' => 'tripal_autocomplete_cv',
+    'page callback' => 'chado_autocomplete_cv',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.cv.api.inc',
@@ -535,7 +537,7 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/auto_name/cvterm/%/%'] = array(
-    'page callback' => 'tripal_autocomplete_cvterm',
+    'page callback' => 'chado_autocomplete_cvterm',
     'page arguments' => array(6, 7),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.cv.api.inc',
@@ -544,7 +546,7 @@ function tripal_chado_menu() {
   );
 
   $items['admin/tripal/storage/chado/auto_name/pub/%'] = array(
-    'page callback' => 'tripal_autocomplete_pub',
+    'page callback' => 'chado_autocomplete_pub',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.pub.api.inc',
@@ -560,7 +562,7 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/auto_name/feature/%'] = array(
-    'page callback' => 'tripal_autocomplete_feature',
+    'page callback' => 'chado_autocomplete_feature',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.feature.api.inc',
@@ -568,7 +570,7 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/auto_name/organism/%'] = array(
-    'page callback' => 'tripal_autocomplete_organism',
+    'page callback' => 'chado_autocomplete_organism',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.organism.api.inc',
@@ -588,7 +590,7 @@ function tripal_chado_menu() {
     'weight' => 6
   );
   $items['admin/tripal/loaders/chado_vocabs/chado_cv'] = array(
-    'title' => 'Manage Controlled Vocabularies',
+    'title' => 'Manage Chado CVs',
     'description' => 'View, edit and add controlled vocabularies used by this site.',
     'page callback' => 'tripal_cv_admin_cv_listing',
     'access arguments' => array('administer controlled vocabularies'),
@@ -982,7 +984,7 @@ function tripal_chado_exclude_type_by_default() {
 /**
  * Implements hook_job_describe_args().
  *
- * Describes the arguments for the tripal_populate_mview job to allow for
+ * Describes the arguments for the chado_populate_mview job to allow for
  * greater readability in the jobs details pages.
  *
  * @param $callback
@@ -998,7 +1000,7 @@ function tripal_chado_exclude_type_by_default() {
  */
 function tripal_chado_job_describe_args($callback, $args) {
   $new_args = array();
-  if ($callback == 'tripal_populate_mview') {
+  if ($callback == 'chado_populate_mview') {
     // get this mview details
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
     $results = db_query($sql, array(':mview_id' => $args[0]));

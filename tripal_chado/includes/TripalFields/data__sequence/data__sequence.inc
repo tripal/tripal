@@ -120,7 +120,7 @@ class data__sequence extends ChadoField {
         '@type' => 'SO:0000316',
         'type' => 'coding_sequence',
         'label' => 'Coding sequence (CDS)',
-        'defline' => tripal_get_fasta_defline($feature, 'CDS', NULL, '', strlen($coding_seq)),
+        'defline' => chado_get_fasta_defline($feature, 'CDS', NULL, '', strlen($coding_seq)),
         'residues' => $coding_seq,
       );
     }
@@ -137,13 +137,13 @@ class data__sequence extends ChadoField {
         'residues' => $attrs['residues'],
         '@type' => 'SO:0000110',
         'type' => 'sequence_feature',
-        'defline' => tripal_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', strlen($attrs['residues'])),
+        'defline' => chado_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', strlen($attrs['residues'])),
         'label' => 'Sequence from alignment at ' . $attrs['location'],
       );
 
 
       // check to see if this alignment has any CDS. If so, generate a CDS sequence
-      $cds_sequence = tripal_get_feature_sequences(
+      $cds_sequence = chado_get_feature_sequences(
           array(
             'feature_id' => $feature->feature_id,
             'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
@@ -159,7 +159,7 @@ class data__sequence extends ChadoField {
           );
 
       if (count($cds_sequence) > 0) {
-        // the tripal_get_feature_sequences() function can return multiple sequences
+        // the chado_get_feature_sequences() function can return multiple sequences
         // if a feature is aligned to multiple places. In the case of CDSs we expect
         // that one mRNA is only aligned to a single location on the assembly so we
         // can access the CDS sequence with index 0.
@@ -168,7 +168,7 @@ class data__sequence extends ChadoField {
             'residues' => $cds_sequence[0]['residues'],
             '@type' => 'SO:0000316',
             'type' => 'coding_sequence',
-            'defline' => tripal_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', $cds_sequence[0]['length']),
+            'defline' => chado_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', $cds_sequence[0]['length']),
             'label' => 'Coding sequence (CDS) from alignment at  ' . $attrs['location'],
           );
         }

@@ -618,7 +618,7 @@ class sbo__relationship extends ChadoField {
     //         as the relationship types. This select box will replace the vocabulary select box if the
     //         following value is set.'
     //     );
-    $vocs = tripal_get_cv_select_options();
+    $vocs = chado_get_cv_select_options();
     $element['relationships']['option1'] = array(
       '#type' => 'item',
       '#title' => 'Option #1',
@@ -725,7 +725,7 @@ class sbo__relationship extends ChadoField {
           if (strpos($type, '|')) {
             $tmp = explode('|', $type, 2);
             $type = trim($tmp[1]);
-            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            $cv = chado_get_cv(array('name' => trim($tmp[0])));
             if($cv) {
               $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
               $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
@@ -753,7 +753,7 @@ class sbo__relationship extends ChadoField {
           if (strpos($type, '|')) {
             $tmp = explode('|', $type, 2);
             $type = trim($tmp[1]);
-            $cv = tripal_get_cv(array('name' => trim($tmp[0])));
+            $cv = chado_get_cv(array('name' => trim($tmp[0])));
             if ($cv) {
               $sql = "SELECT cvterm_id FROM {cvterm} WHERE name = :name AND cv_id = :cv_id";
               $results = chado_query($sql, array(':name' => $type, ':cv_id' => $cv->cv_id));
@@ -774,14 +774,14 @@ class sbo__relationship extends ChadoField {
     if ($option2) {
       $cv_id = $settings['option2_vocab'];
       $supertype = $settings['option2_parent'];
-      $term = tripal_get_cvterm(array(
+      $term = chado_get_cvterm(array(
         'name' => trim($supertype),
         'cv_id' => $cv_id,
       ));
       // Tripal cv autocomplete also allow cvterm synonyms, if the parent term doesn't match
       // a cvterm, try cvtermsynonym
       if (!$term) {
-        $synonym = tripal_get_cvterm(
+        $synonym = chado_get_cvterm(
             array(
               'synonym' => array(
                 'name' => trim($supertype),

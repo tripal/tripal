@@ -15,10 +15,10 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $reference_term = 'data:3002';
-    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
     $content = '';
     foreach ($items as $item) {

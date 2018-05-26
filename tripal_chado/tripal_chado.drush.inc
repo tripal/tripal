@@ -143,10 +143,10 @@ function drush_tripal_chado_trp_import_pubs() {
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
   if ($dbxref) {
-    tripal_import_pub_by_dbxref($dbxref, $create_contacts, $update);
+    chado_import_pub_by_dbxref($dbxref, $create_contacts, $update);
   }
   else {
-    tripal_execute_active_pub_importers($do_report, $update);
+    chado_execute_active_pub_importers($do_report, $update);
   }
 }
 
@@ -161,7 +161,7 @@ function drush_tripal_chado_trp_update_pubs() {
   $db = drush_get_option('db');
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
-  tripal_reimport_publications($create_contacts, $dbxref, $db);
+  chado_reimport_publications($create_contacts, $dbxref, $db);
 }
 
 /**
@@ -217,7 +217,7 @@ function drush_tripal_chado_trp_refresh_mview() {
   }
 
   drush_print('Updating the Materialized View with ID=' . $mview_id);
-  $status = tripal_populate_mview($mview_id);
+  $status = chado_populate_mview($mview_id);
   if ($status) {
     drush_log('Materialized View Updated', 'ok');
   }

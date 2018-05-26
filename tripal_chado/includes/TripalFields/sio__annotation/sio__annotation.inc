@@ -92,9 +92,9 @@ class sio__annotation extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $schema = chado_get_schema($field_table);
 
-    $vocabulary_term = tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary_term = chado_get_semweb_term('cvterm', 'cv_id');
+    $accession_term = chado_get_semweb_term('dbxref', 'accession');
+    $definition_term = chado_get_semweb_term('cvterm', 'definition');
 
     $field_term = $this->getFieldTermID();
     $info = array(
@@ -134,7 +134,7 @@ class sio__annotation extends ChadoField {
     );
 
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation_term = chado_get_semweb_term($field_table, 'is_not');
       $info[$field_term]['elements'][$negation_term] = array(
         'sortable' => FALSE,
         'searchable' => FALSE,
@@ -145,7 +145,7 @@ class sio__annotation extends ChadoField {
       );
     }
     if (array_key_exists('rank', $schema['fields'])) {
-      $rank_term = tripal_get_chado_semweb_term($field_table, 'rank');
+      $rank_term = chado_get_semweb_term($field_table, 'rank');
       $info[$field_term]['elements'][$rank_term] = array(
         'sortable' => FALSE,
         'searchable' => FALSE,
@@ -177,9 +177,9 @@ class sio__annotation extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
 
-    $vocabulary_term = $field_term_id . ',' . tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition_term = $field_term_id . ',' . tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary_term = $field_term_id . ',' . chado_get_semweb_term('cvterm', 'cv_id');
+    $accession_term = $field_term_id . ',' . chado_get_semweb_term('dbxref', 'accession');
+    $definition_term = $field_term_id . ',' . chado_get_semweb_term('cvterm', 'definition');
 
 
     // Join to the xxx_cvterm table for this field.
@@ -218,9 +218,9 @@ class sio__annotation extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
 
-    $vocabulary_term = $field_term_id . ',' . tripal_get_chado_semweb_term('cvterm', 'cv_id');
-    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
-    $definition_term = $field_term_id . ',' . tripal_get_chado_semweb_term('cvterm', 'definition');
+    $vocabulary_term = $field_term_id . ',' . chado_get_semweb_term('cvterm', 'cv_id');
+    $accession_term = $field_term_id . ',' . chado_get_semweb_term('dbxref', 'accession');
+    $definition_term = $field_term_id . ',' . chado_get_semweb_term('cvterm', 'definition');
 
     // Join to the xxx_cvterm table for this field.
     $this->queryJoinOnce($query, $field_table, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
@@ -264,10 +264,10 @@ class sio__annotation extends ChadoField {
     $name = tripal_get_chado_semweb_term('cvterm', 'name');
 
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation = chado_get_semweb_term($field_table, 'is_not');
     }
     if (array_key_exists('rank', $schema['fields'])) {
-      $rank_term = tripal_get_chado_semweb_term($field_table, 'rank');
+      $rank_term = chado_get_semweb_term($field_table, 'rank');
     }
 
     // Set some defaults for the empty record.

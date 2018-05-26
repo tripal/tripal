@@ -1,4 +1,19 @@
 <?php
+
+/**
+ * @file
+ * Provides an application programming interface (API) for semantic web support.
+ *
+ * @ingroup tripal_chado
+ */
+/**
+ * @defgroup tripal_chado_semweb_api Semantic Web
+ * @ingroup tripal_chado_api
+ * @{
+ * Provides an application programming interface (API) for semantic web support.
+ * @}
+ */
+
 /**
  * Adds a new Chado table to the semantic web support for Chado.
  *
@@ -7,7 +22,7 @@
  * the Chado schema, this function should be called to indicate that the
  * table should be included in the semantic web. No associations are made for
  * the columns. The associations should be added using the
- * tripal_associate_chado_semweb_term() function.
+ * chado_associate_semweb_term() function.
  *
  * If the table has already been added previously then this function does
  * nothing. It will not overwrite existing assocations.
@@ -17,10 +32,12 @@
  *
  * @param $chado_table
  *   The name of the Chado table.
+ * 
+ * @ingroup tripal_chado_semweb_api
  */
-function tripal_add_chado_semweb_table($chado_table) {
+function chado_add_semweb_table($chado_table) {
 
-  // Don't include the tripal temp tables
+  // Don't include the tripal temp tables.
   if (preg_match('/tripal_.+_temp/', $chado_table)) {
     return;
   }
@@ -30,7 +47,7 @@ function tripal_add_chado_semweb_table($chado_table) {
   $schema = chado_get_schema($chado_table);
   foreach ($schema['fields'] as $chado_column => $details) {
 
-    // If the record already exists don't overwrite it
+    // If the record already exists don't overwrite it.
     $record = db_select('chado_semweb', 'CS')
       ->fields('CS', array('chado_semweb_id'))
       ->condition('CS.chado_table', $chado_table)
@@ -46,6 +63,7 @@ function tripal_add_chado_semweb_table($chado_table) {
     }
   }
 }
+
 /**
  * Associates a controlled vocabulary term with a field in a Chado table.
  *
@@ -71,8 +89,10 @@ function tripal_add_chado_semweb_table($chado_table) {
  *
  * @return boolean
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
-function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
+function chado_associate_semweb_term($chado_table, $chado_column, $term,
     $update = FALSE) {
 
   // Check for required arguments.
@@ -174,8 +194,10 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *   Returns a string-based representation of the term (e.g. SO:0000704). If
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
-function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
+function chado_get_semweb_term($chado_table, $chado_column, $options = array()) {
   $cvterm_id = db_select('chado_semweb', 'CS')
     ->fields('CS', array('cvterm_id'))
     ->condition('chado_column', $chado_column)
@@ -189,7 +211,7 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
       return $cvterm;
     }
 
-    return tripal_format_chado_semweb_term($cvterm);
+    return chado_format_semweb_term($cvterm);
   }
 }
 
@@ -200,8 +222,10 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *   A cvterm object.
  * @return
  *   The semantic web name for the term.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
-function tripal_format_chado_semweb_term($cvterm) {
+function chado_format_semweb_term($cvterm) {
   if ($cvterm) {
     return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
   }
@@ -219,8 +243,10 @@ function tripal_format_chado_semweb_term($cvterm) {
  * @return
  *   The name of the Chado column that matches the given term or FALSE if the
  *   term is not mapped to the Chado table.
+ * 
+ *  @ingroup tripal_chado_semweb_api
  */
-function tripal_get_chado_semweb_column($chado_table, $term) {
+function chado_get_semweb_column($chado_table, $term) {
   $columns = db_select('chado_semweb', 'CS')
     ->fields('CS')
     ->condition('chado_table', $chado_table)

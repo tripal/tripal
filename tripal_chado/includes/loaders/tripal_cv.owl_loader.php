@@ -132,7 +132,7 @@ function tripal_cv_parse_owl($filename) {
   );
 
   // Using the Tripal API function to insert the term into the Chado database.
-  $db = tripal_insert_db($db);
+  $db = chado_insert_db($db);
 
   // Get the description for this vocabulary. This should be in the
   // dc:description element. If that element is missing then the
@@ -156,7 +156,7 @@ function tripal_cv_parse_owl($filename) {
   }
 
   // Insert the CV record into Chado.
-  $cv = tripal_insert_cv($cv_name, $cv_description);
+  $cv = chado_insert_cv($cv_name, $cv_description);
 
   // Add this CV and DB to our vocabs array so we can reuse it later.
   $vocabs[$db_name]['cv'] = $namespace_cv;
@@ -343,13 +343,13 @@ function tripal_owl_handle_annotation_property($stanza, $vocabs) {
 //     $values = array(
 //       'name' => $db_name
 //     );
-//     $db = tripal_insert_db($values);
+//     $db = chado_insert_db($values);
 // // Insert a dbxref record.
 //   $values = array(
 //     'db_id' => $db->db_id,
 //     'accession' => $accession
 //   );
-//   $dbxref = tripal_insert_dbxref($values);
+//   $dbxref = chado_insert_dbxref($values);
 
 //   $imported_from = $stanza->getChild('obo:IAO_0000114');
 //     if ($imported_from == NULL) {
@@ -385,7 +385,7 @@ function tripal_owl_handle_annotation_property($stanza, $vocabs) {
 //   if ($vocabs['this'] != $db->name){
 //   	$option['update_existing'] = FALSE;
 //   }
-//   $cvterm = tripal_insert_cvterm($term, $option);
+//   $cvterm = chado_insert_cvterm($term, $option);
 // }
 }
 /**
@@ -453,7 +453,7 @@ function tripal_owl_handle_class(OWLStanza $stanza, $vocabs) {
     'db_id' => $db->db_id,
     'accession' => $accession
   );
-  $dbxref = tripal_insert_dbxref($values);
+  $dbxref = chado_insert_dbxref($values);
 
   $cvterm_name = $stanza->getChild('rdfs:label');
   if ($cvterm_name) {
@@ -476,7 +476,7 @@ function tripal_owl_handle_class(OWLStanza $stanza, $vocabs) {
   if ($vocabs['this'] != $db->name) {
   $options['update_existing'] = FALSE;
   }
-  $cvterm = tripal_insert_cvterm($term, $options);
+  $cvterm = chado_insert_cvterm($term, $options);
 
   // // Add a record to the chado relationship table if an ‘rdfs:subClassOf’ child exists.
 
@@ -506,5 +506,5 @@ function tripal_owl_handle_class(OWLStanza $stanza, $vocabs) {
   // if ($vocabs['this'] != $db->name) {
   // $option['update_existing'] = FALSE;
   // }
-  // $cvterm = tripal_insert_cvterm($term, $option);
+  // $cvterm = chado_insert_cvterm($term, $option);
   }

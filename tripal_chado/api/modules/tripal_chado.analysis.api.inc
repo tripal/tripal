@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides functions for managing analysis'.
+ * Provides API functions specificially for managing analysis records in Chado.
  *
  * @ingroup tripal_chado
  */
@@ -10,45 +10,47 @@
  * @defgroup tripal_analysis_api Chado Analysis
  * @ingroup tripal_chado_api
  * @{
-
+ * Provides API functions for working with analysis records in Chado that
+ * go beyond the generic Chado API functions.
  * @}
  */
 
 
 /**
- * Retrieves an chado analysis variable
+ * Retrieves a chado analysis variable.
  *
  * @param $itentifier
- *   an array with the key stating what the identifier is. Supported keys (only on of the
- *   following unique keys is required):
- *    - analysis_id: the chado analysis.analysis_id primary key
- *    - nid: the drupal node.nid primary key
+ *   an array with the key stating what the identifier is. Supported keys 
+ *   (only on of the following unique keys is required):
+ *    - analysis_id: the chado analysis.analysis_id primary key.
+ *    - nid: the drupal node.nid primary key.
  *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. It
- *      should at least have either a type_name (if unique across cvs) or type_id. Other
- *      supported keys include: cv_id/cv_name (of the type), value and rank
+ *    - property: An array/object describing the property to select records for. 
+ *      It should at least have either a type_name (if unique across cvs) or 
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *      value and rank.
+ *   NOTE: the $identifier parameter can be any array similar to $values 
+ *   passed into chado_select_record(). It should fully specify the stock record 
+ *   to be returned.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
- *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the stock record to be returned.
+ *     - Any keys supported by chado_generate_var(). See that function 
+ *       definition for additional details.
  *
  * @return
  *   the analysis node matching the passed in identifier
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_get_analysis($identifier, $options) {
+function chado_get_analysis($identifier, $options) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var not to follow any foreign keys
+    // Tells chado_generate_var not to follow any foreign keys.
     $options['include_fk'] = array();
   }
 
-  // Error Checking of parameters
+  // Error Checking of parameters.
   if (!is_array($identifiers)) {
     tripal_report_error(
       'tripal_stock_api',
@@ -73,7 +75,7 @@ function tripal_get_analysis($identifier, $options) {
     );
   }
 
-  // If one of the identifiers is property then use chado_get_record_with_property()
+  // If one of the identifiers is property then use chado_get_record_with_property().
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
@@ -83,7 +85,8 @@ function tripal_get_analysis($identifier, $options) {
     );
   }
 
-  // Else we have a simple case and we can just use chado_generate_var to get the analysis
+  // Else we have a simple case and we can just use chado_generate_var to get 
+  // the analysis.
   else {
 
     // Try to get the analysis
@@ -94,24 +97,25 @@ function tripal_get_analysis($identifier, $options) {
     );
   }
 
-  // Ensure the analysis is singular. If it's an array then it is not singular
+  // Ensure the analysis is singular. If it's an array then it is not singular.
   if (is_array($analysis)) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "tripal_get_analysis: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_get_analysis: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
     );
   }
 
-  // Report an error if $analysis is FALSE since then chado_generate_var has failed
+  // Report an error if $analysis is FALSE since then chado_generate_var has 
+  // failed.
   elseif ($analysis === FALSE) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "tripal_get_analysis: chado_generate_var() failed to return a analysis based on the identifiers
+      "chado_get_analysis: chado_generate_var() failed to return a analysis based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -126,18 +130,19 @@ function tripal_get_analysis($identifier, $options) {
   }
 }
 /**
- * Returns a list of analyses that are currently synced with Drupal to use in select lists
+ * Returns a list of analyses that are currently synced with Drupal to use in 
+ * select lists.
  *
  * @param $syncd_only
- *   Whether or not to return all chado analyses or just those sync'd with drupal. Defaults
- *   to TRUE (only sync'd analyses)
+ *   Whether or not to return all chado analyses or just those sync'd with 
+ *   drupal. Defaults to TRUE (only sync'd analyses).
  * @return
- *   An array of analyses sync'd with Drupal where each value is the analysis scientific
- *   name and the keys are analysis_id's
+ *   An array of analyses sync'd with Drupal where each value is the analysis 
+ *   scientific name and the keys are analysis_id's.
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_get_analysis_select_options($syncd_only = TRUE) {
+function chado_get_analysis_select_options($syncd_only = TRUE) {
   $analysis_list = array();
   $analysis_list[] = 'Select an analysis';
 
@@ -150,7 +155,7 @@ function tripal_get_analysis_select_options($syncd_only = TRUE) {
     ";
     $analyses = chado_query($sql);
 
-    // iterate through the analyses and build an array of those that are synced
+    // iterate through the analyses and build an array of those that are synced.
     foreach ($analyses as $analysis) {
       $analysis_list[$analysis->analysis_id] = $analysis->name;
     }
@@ -160,7 +165,7 @@ function tripal_get_analysis_select_options($syncd_only = TRUE) {
     $csql =  "SELECT * FROM {analysis} ORDER BY name";
     $analyses = chado_query($csql);
 
-    // iterate through the analyses and build an array of those that are synced
+    // iterate through the analyses and build an array of those that are synced.
     foreach ($analyses as $analysis) {
       $analysis_list[$analysis->analysis_id] = $analysis->name;
     }

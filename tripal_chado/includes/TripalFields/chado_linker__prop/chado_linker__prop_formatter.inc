@@ -29,6 +29,11 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
       $list[$index] = $item['value'];
     }
 
+    // Also need to make sure to not return markup if the field is empty.
+    if (empty($list)) {
+      return;
+    }
+
     // If more than one value has been found display all values in an unordered
     // list.
     if (count($list) > 1) {

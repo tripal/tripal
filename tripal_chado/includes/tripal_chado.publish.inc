@@ -170,7 +170,7 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
     );
     return tripal_add_job("Publish " . $bundle->label . " records.",
-       'tripal_chado', 'tripal_chado_publish_records', $args,
+       'tripal_chado', 'chado_publish_records', $args,
        $user->uid, 10, $includes);
   }
 }

@@ -436,7 +436,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       }
     }
   }
-  $pub['Citation'] = tripal_pub_create_citation($pub);
+  $pub['Citation'] = chado_pub_create_citation($pub);
 
   $pub['raw'] = $pub_xml;
   return $pub;
@@ -619,7 +619,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
             )
           );
           $options = array('case_insensitive_columns' => array('name'));
-          $pub_cvterm = tripal_get_cvterm($identifiers, $options);
+          $pub_cvterm = chado_get_cvterm($identifiers, $options);
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
             $identifiers = array(
@@ -628,7 +628,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
                 'cv_name' => 'tripal_pub'
               )
             );
-            $pub_cvterm = tripal_get_cvterm($identifiers, $options);
+            $pub_cvterm = chado_get_cvterm($identifiers, $options);
             if (!$pub_cvterm) {
               tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
                 'Cannot find a valid vocabulary term for the publication type: "%term".',

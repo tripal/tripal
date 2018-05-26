@@ -10,7 +10,8 @@
  * @defgroup tripal_bulk_loader_api Bulk Loader
  * @ingroup tripal_api
  * @{
- * All functions in this file provide an API to administrative management of bulk loader templates
+ * All functions in this file provide an API to administrative management of 
+ * bulk loader templates.
  * @}
  */
 
@@ -21,10 +22,10 @@
  *   The type of validation. Can be either 'insert' or 'update'.
  * @param $options
  *   An array of key/value pairs containing the following keys:
- *     'template_name':   The name of the template.
- *     'template_array':  The JSON array representing the template.
- *   Optional:
- *     'strict':          If set then only JSON formatted templates are allowed.
+ *     template_name: The name of the template.
+ *     template_array: The JSON array representing the template.
+ *     Optional:
+ *      strict: If set then only JSON formatted templates are allowed.
  * @param $errors
  *   An empty array where validation error messages will be set. The keys
  *   of the array will be name of the field from the options array and the
@@ -42,6 +43,7 @@
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
  *
+ *  @ingroup tripal_bulk_loader_api
  */
 function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$warnings = array()) {
   $template_array = trim($options['template_array']);
@@ -105,7 +107,7 @@ function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$
 /**
  * Inserts a bulk loader template record.
  *
- * This function validates the options passed prior to insertion of the record,
+ * This function validates the options passed prior to insertion of the record.
  *
  * @param $options
  *   An array of key/value pairs containing the following keys:
@@ -125,6 +127,8 @@ function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$
  *   value is the error message.
  * @return
  *   TRUE for success and FALSE for failure.
+ * 
+ *  @ingroup tripal_bulk_loader_api
  */
 function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
 
@@ -178,20 +182,23 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
 }
 
 /**
- * Meant to be called from a form_validate function to ensure a newly added bulk loader record
- * name is unique and not empty.
+ * Meant to be called from a form_validate function to ensure a newly added bulk 
+ * loader record name is unique and not empty.
  *
  * @param $new_record_name
  *   The record name to check for uniqueness
  * @param $template_id
  *   The template_id of the template to add the record to
  * @param $template_array
- *   The array describing the template. Optional -will be loaded using template_id if not provided
+ *   The array describing the template. Optional -will be loaded using 
+ *   template_id if not provided
  * @param $current_priority
- *   The priority of the already existing record -checks that the name only occurs on this particular record
+ *   The priority of the already existing record -checks that the name only 
+ *   occurs on this particular record
  *
  * @return
- *   TRUE if the record name is not empty and not already in the template_array; FALSE otherwise
+ *   TRUE if the record name is not empty and not already in the template_array; 
+ *   FALSE otherwise
  *
  * @ingroup tripal_bulk_loader_api
  */

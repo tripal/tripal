@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Functions to interact with contacts.
+ * Provides API functions specificially for managing contact records in Chado.
  *
  * @ingroup tripal_chado
  */
@@ -10,29 +10,32 @@
  * @defgroup tripal_contact_api Chado Contact
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions for working with chado records in Chado that
+ * go beyond the generic Chado API functions.
  * @}
  */
 
 /**
- * Adds a contact to the Chado contact table
+ * Adds a contact to the Chado contact table.
  *
  * @param $values
  *   An array of values to be inserted. Valid keys include:
- *   - name: The name of the contact
- *   - description: Text describing the contact
- *   - type_name: The type of contact.  Must be a term in the tripal_contact vocabulary
- *   - properties: An associative array containing a list of key value pairs for the properites.
- *     The key's must be valid terms in the tripal_contact vocabulary (e.g. Affiliation,
- *     Address, etc).
+ *   - name: The name of the contact.
+ *   - description: Text describing the contact.
+ *   - type_name: The type of contact.  Must be a term in the tripal_contact 
+ *     vocabulary.
+ *   - properties: An associative array containing a list of key value pairs for
+ *     the properites. The key's must be valid terms in the tripal_contact 
+ *     vocabulary (e.g. Affiliation, Address, etc).
  *
  * @return
  *   On success, an array is returned containing the fields of the contact
  *   record including the newly added contact_id. On failure, FALSE is
- *   returned
+ *   returned.
  *
  * @ingroup tripal_contact_api
  */
-function tripal_insert_contact($values) {
+function chado_insert_contact($values) {
 
   $name = $values['name'];
   $description = $values['description'];
@@ -45,7 +48,7 @@ function tripal_insert_contact($values) {
   $contact = chado_select_record('contact', array('contact_id'), $values, $options);
 
   if (count($contact) == 0) {
-    $cvterm = tripal_get_cvterm(array(
+    $cvterm = chado_get_cvterm(array(
       'name' => $type,
       'cv_id' => array('name' => 'tripal_contact')
     ));
@@ -115,14 +118,14 @@ function tripal_insert_contact($values) {
  * This function is intended to be used in autocomplete forms for contacts.
  *
  * @param $text
- *   The string to search for
+ *   The string to search for.
  *
  * @return
- *   A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string.
  *
  * @ingroup tripal_contact_api
  */
-function tripal_autocomplete_contact($text) {
+function chado_autocomplete_contact($text) {
   $matches = array();
 
   $sql = "SELECT * FROM {contact} WHERE lower(name) like lower(:name) ";

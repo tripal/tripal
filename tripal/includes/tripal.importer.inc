@@ -5,6 +5,7 @@
  * Build the form for a TripalImporter implementation.
  */
 function tripal_get_importer_form($form, &$form_state, $class) {
+  global $user;
 
   tripal_load_include_importer_class($class);
 
@@ -24,6 +25,20 @@ function tripal_get_importer_form($form, &$form_state, $class) {
   }
 
   if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
+    
+    $existing_files = tripal_get_user_uploads($user->uid, $class::$file_types);
+    if (count($existing_files) > 0) {
+      $fids = [0 => '--Select a file--'];
+      foreach ($existing_files as $fid => $file) {
+        $fids[$fid] = $file->filename . ' (' . tripal_format_bytes($file->filesize) . ') ';
+      }
+      $form['file']['file_upload_existing'] = [
+        '#type' => 'select',
+        '#title' => t('Existing Files'),
+        '#description' => t('You may select a file that is already uploaded.'),
+        '#options' => $fids,
+      ];
+    }
     $form['file']['file_upload']= array(
       '#type' => 'html5_file',
       '#title' => '',
@@ -102,7 +117,8 @@ function tripal_get_importer_form_validate($form, &$form_state) {
   $file_local = NULL;
   $file_upload = NULL;
   $file_remote = NULL;
-
+  $file_existing = NULL;
+  
   // Get the form values for the file.
   if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
     $file_local = trim($form_state['values']['file_local']);
@@ -123,15 +139,16 @@ function tripal_get_importer_form_validate($form, &$form_state) {
   }
   if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
     $file_upload = trim($form_state['values']['file_upload']);
+    if (array_key_exists('file_upload_existing', $form_state['values']) and $form_state['values']['file_upload_existing']) {
+      $file_existing = $form_state['values']['file_upload_existing'];
+    }
   }
   if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
     $file_remote = trim($form_state['values']['file_remote']);
   }
 
-
-
   // The user must provide at least an uploaded file or a local file path.
-  if ($class::$file_required == TRUE and !$file_upload and !$file_local and !$file_remote) {
+  if ($class::$file_required == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
     form_set_error('file_local', t("You must provide a file."));
   }
 
@@ -154,6 +171,7 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   // full file path and the fid instead.
   unset($run_args['file_local']);
   unset($run_args['file_upload']);
+  unset($run_args['file_upload_existing']);
   unset($run_args['form_build_id']);
   unset($run_args['form_token']);
   unset($run_args['form_id']);
@@ -163,6 +181,7 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   $file_local = NULL;
   $file_upload = NULL;
   $file_remote = NULL;
+  $file_existing = NULL;
 
   // Get the form values for the file.
   if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
@@ -170,23 +189,30 @@ function tripal_get_importer_form_submit($form, &$form_state) {
   }
   if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
     $file_upload = trim($form_state['values']['file_upload']);
+    if (array_key_exists('file_upload_existing', $form_state['values']) and $form_state['values']['file_upload_existing']) {
+      $file_existing = trim($form_state['values']['file_upload_existing']);
+    }
   }
   if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
     $file_remote = trim($form_state['values']['file_remote']);
   }
 
+
   // Sumbit a job for this loader.
   $fname = '';
   $fid = NULL;
   $file_details = array();
-  if ($file_local) {
+  if ($file_existing) {
+    $file_details['fid'] = $file_existing;
+  }
+  elseif ($file_local) {
     $fname = preg_replace("/.*\/(.*)/", "$1", $file_local);
     $file_details['file_local'] = $file_local;
   }
-  if ($file_upload) {
+  elseif ($file_upload) {
     $file_details['fid'] = $file_upload;
   }
-  if ($file_remote) {
+  elseif ($file_remote) {
     $file_details['file_remote'] = $file_remote;
   }
   try {

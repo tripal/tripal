@@ -1,52 +1,57 @@
 <?php
 /**
  * @file
- * Provides an application programming interface (API) to manage chado publications
+ * Provides API functions specificially for managing publication 
+ * records in Chado.  
  */
 
 /**
  * @defgroup tripal_pub_api Chado Publication
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing publication 
+ * records in Chado.
  * @}
  */
 
 
 /**
- * Retrieves a chado publication array
+ * Retrieves a chado publication array.
  *
  * @param $identifier
  *   An array used to uniquely identify a publication. This array has the same
  *   format as that used by the chado_generate_var(). The following keys can be
  *   useful for uniquely identifying a publication as they should be unique:
- *    - pub_id: the chado pub.pub_id primary key
- *    - nid: the drupal nid of the publication
- *    - uniquename: A value to matach with the pub.uniquename field
+ *    - pub_id: the chado pub.pub_id primary key.
+ *    - nid: the drupal nid of the publication.
+ *    - uniquename: A value to matach with the pub.uniquename field.
  *   There are also some specially handled keys. They are:
  *    - property: An array describing the property to select records for. It
  *      should at least have either a 'type_name' key (if unique across cvs) or
- *      'type_id' key. Other supported keys include: 'cv_id', 'cv_name' (of the type),
- *      'value' and 'rank'
- *    - dbxref: The database cross reference accession.  It should be in the form
- *        DB:ACCESSION, where DB is the database name and ACCESSION is the
- *        unique publication identifier (e.g. PMID:4382934)
+ *      'type_id' key. Other supported keys include: 'cv_id', 'cv_name' 
+ *      (of the type), 'value' and 'rank'
+ *    - dbxref: The database cross reference accession.  It should be in the 
+ *      form DB:ACCESSION, where DB is the database name and ACCESSION is the
+ *      unique publication identifier (e.g. PMID:4382934)
  *    - dbxref_id:  The dbxref.dbxref_id of the publication.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
+ *     - Any keys supported by chado_generate_var(). See that function 
+ *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the pub record to be returned.
+ * NOTE: the $identifier parameter can really be any array similar to $values 
+ * passed into chado_select_record(). It should fully specify the pub record to 
+ * be returned.
  *
  * @return
- *   If a singe publication is retreived using the identifiers, then a publication
- *   array will be returned.  The array is of the same format returned by the
- *   chado_generate_var() function. Otherwise, FALSE will be returned.
+ *   If a singe publication is retreived using the identifiers, then a 
+ *   publication array will be returned.  The array is of the same format 
+ *   returned by the chado_generate_var() function. Otherwise, FALSE will be 
+ *   returned.
  *
  * @ingroup tripal_pub_api
  */
-function tripal_get_publication($identifiers, $options = array()) {
+function chado_get_publication($identifiers, $options = array()) {
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -65,7 +70,8 @@ function tripal_get_publication($identifiers, $options = array()) {
     );
   }
 
-  // If one of the identifiers is property then use chado_get_record_with_property()
+  // If one of the identifiers is property then use 
+  // chado_get_record_with_property().
   if (array_key_exists('property', $identifiers)) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
@@ -105,11 +111,11 @@ function tripal_get_publication($identifiers, $options = array()) {
     }
   }
   elseif (array_key_exists('dbxref_id', $identifiers)) {
-    // first get the pub_dbxref record
+    // First get the pub_dbxref record.
     $values = array('dbxref_id' => $identifiers['dbxref_id']);
     $pub_dbxref = chado_select_record('pub_dbxref', array('pub_id'), $values);
 
-    // now get the pub
+    // Now get the pub.
     if (count($pub_dbxref) > 0) {
       $pub = chado_generate_var('pub', array('pub_id' => $pub_dbxref[0]->pub_id), $options);
     }
@@ -118,13 +124,14 @@ function tripal_get_publication($identifiers, $options = array()) {
     }
 
   }
-  // Else we have a simple case and we can just use chado_generate_var to get the pub
+  // Else we have a simple case and we can just use chado_generate_var to get 
+  // the pub.
   else {
-    // Try to get the pub
+    // Try to get the pub.
     $pub = chado_generate_var('pub', $identifiers, $options);
   }
 
-  // Ensure the pub is singular. If it's an array then it is not singular
+  // Ensure the pub is singular. If it's an array then it is not singular.
   if (is_array($pub)) {
     tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
       "chado_get_publication: The identifiers did not find a single unique record. Identifiers passed: %identifier.",
@@ -132,7 +139,7 @@ function tripal_get_publication($identifiers, $options = array()) {
     );
   }
 
-  // Report an error if $pub is FALSE since then chado_generate_var has failed
+  // Report an error if $pub is FALSE since then chado_generate_var has failed.
   elseif ($pub === FALSE) {
     tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
       "chado_get_publication: Could not find a publication using the identifiers
@@ -159,42 +166,47 @@ function tripal_get_publication($identifiers, $options = array()) {
  * @param $pub_details
  *   An associative array with details about the publications. The expected keys
  *   are:
- *     'Title':              The title of the publication
- *     'Year':               The published year of the publication
- *     'Publication Type':   An array of publication types. A publication can have more than one type.
- *     'Series Name':        The series name of the publication
- *     'Journal Name':       An alternative to 'Series Name'
- *     'Conference Name':    An alternative to 'Series Name'
- *     'Citation':           The publication citation (this is the value saved in the pub.uniquename field and must be unique)
- *   If this key is present it will also be checked
- *     'Publication Dbxref': A database cross reference of the form DB:ACCESSION where DB is the name
- *                           of the database and ACCESSION is the unique identifier (e.g PMID:3483139)
+ *     'Title':              The title of the publication.
+ *     'Year':               The published year of the publication.
+ *     'Publication Type':   An array of publication types. A publication can 
+ *                           have more than one type.
+ *     'Series Name':        The series name of the publication.
+ *     'Journal Name':       An alternative to 'Series Name'.
+ *     'Conference Name':    An alternative to 'Series Name'.
+ *     'Citation':           The publication citation (this is the value saved 
+ *                           in the pub.uniquename field and must be unique).
+ *   
+ *     If this key is present it will also be checked
+ *     'Publication Dbxref': A database cross reference of the form DB:ACCESSION 
+ *                           where DB is the name of the database and ACCESSION 
+ *                           is the unique identifier (e.g PMID:3483139).
  *
  * @return
  *   An array containing the pub_id's of matching publications. Returns an
- *   empty array if no pubs match
+ *   empty array if no pubs match.
  *
  * @ingroup tripal_pub_api
  */
-function tripal_publication_exists($pub_details) {
+function chado_publication_exists($pub_details) {
 
-  // first try to find the publication using the accession number if that key exists in the details array
+  // First try to find the publication using the accession number if that key 
+  // exists in the details array.
   if (array_key_exists('Publication Dbxref', $pub_details)) {
-    $pub = tripal_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
+    $pub = chado_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
     if($pub) {
       return array($pub->pub_id);
     }
   }
 
-  // make sure the citation is unique
+  // Make sure the citation is unique.
   if (array_key_exists('Citation', $pub_details)) {
-    $pub = tripal_get_publication(array('uniquename' => $pub_details['Citation']));
+    $pub = chado_get_publication(array('uniquename' => $pub_details['Citation']));
     if($pub) {
       return array($pub->pub_id);
     }
   }
 
-  // get the publication type (use the first publication type)
+  // Get the publication type (use the first publication type).
   if (array_key_exists('Publication Type', $pub_details)) {
     $type_name = '';
     if(is_array($pub_details['Publication Type'])) {
@@ -209,22 +221,23 @@ function tripal_publication_exists($pub_details) {
         'name' => 'tripal_pub',
       ),
     );
-    $pub_type = tripal_get_cvterm($identifiers);
+    $pub_type = chado_get_cvterm($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR,
-      "tripal_publication_exists(): The Publication Type is a " .
+      "chado_publication_exists(): The Publication Type is a " .
       "required property but is missing", array());
     return array();
   }
   if (!$pub_type) {
     tripal_report_error('tripal_pub', TRIPAL_ERROR,
-     "tripal_publication_exists(): Cannot find publication type: '%type'",
+      "chado_publication_exists(): Cannot find publication type: '%type'",
       array('%type' => $pub_details['Publication Type'][0]));
     return array();
   }
 
-  // get the series name.  The pub.series_name field is only 255 chars so we must truncate to be safe
+  // Get the series name.  The pub.series_name field is only 255 chars so we 
+  // must truncate to be safe.
   $series_name = '';
   if (array_key_exists('Series Name', $pub_details)) {
     $series_name = substr($pub_details['Series Name'], 0, 255);
@@ -236,7 +249,8 @@ function tripal_publication_exists($pub_details) {
     $series_name = substr($pub_details['Conference Name'], 0, 255);
   }
 
-  // make sure the publication is unique using the prefereed import duplication check
+  // Make sure the publication is unique using the prefereed import 
+  // duplication check.
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = array();
   switch ($import_dups_check) {
@@ -280,14 +294,14 @@ function tripal_publication_exists($pub_details) {
  * @param $field
  *   The field in the publication to search on.
  * @param $string
- *   The string to search for
+ *   The string to search for.
  *
  * @return
- *   A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_pub_api
  */
-function tripal_autocomplete_pub($string = '') {
+function chado_autocomplete_pub($string = '') {
   $items = array();
   $sql = "
     SELECT pub_id, title, uniquename
@@ -321,9 +335,9 @@ function tripal_autocomplete_pub($string = '') {
  *   If set to TRUE then the publication will be updated if it already exists
  *   in the database.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_pub_api
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
+function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -366,11 +380,12 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     // is enabled. If so, then sync the nodes.
     if (module_exists('tripal_pub')) {
 
-      // sync the newly added publications with Drupal
+      // Sync the newly added publications with Drupal.
       print "Syncing publications with Drupal...\n";
       chado_node_sync_records('pub');
 
-      // if any of the importers wanted to create contacts from the authors then sync them
+      // If any of the importers wanted to create contacts from the authors 
+      // then sync them.
       if($do_contact) {
         print "Syncing contacts with Drupal...\n";
         chado_node_sync_records('contact');
@@ -391,14 +406,14 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
  *
  * @param $report_email
  *   A list of email address, separated by commas, that should be notified
- *   once importing has completed
+ *   once importing has completed.
  * @param $do_update
  *   If set to TRUE then publications that already exist in the Chado database
- *   will be updated, whereas if FALSE only new publications will be added
+ *   will be updated, whereas if FALSE only new publications will be added.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_pub_api
  */
-function tripal_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
+function chado_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
   $num_to_retrieve = 100;
   $page = 0;
 
@@ -410,7 +425,7 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
   $transaction = db_transaction();
 
   try {
-    // get all of the loaders
+    // Get all of the loaders.
     $args = array();
     $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
     $results = db_query($sql, $args);
@@ -419,27 +434,27 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
     foreach ($results as $import) {
       $page = 0;
       print "Executing importer: '" . $import->name . "'\n";
-      // keep track if any of the importers want to create contacts from authors
+      // Keep track if any of the importers want to create contacts from authors.
       if ($import->do_contact == 1) {
         $do_contact = TRUE;
       }
       $criteria = unserialize($import->criteria);
       $remote_db = $criteria['remote_db'];
       do {
-        // retrieve the pubs for this page. We'll retreive 100 at a time
+        // Retrieve the pubs for this page. We'll retreive 100 at a time.
         $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
         $pubs = $results['pubs'];
         $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
         $page++;
       }
-      // continue looping until we have a $pubs array that does not have
-      // our requested numer of records.  This means we've hit the end
+      // Continue looping until we have a $pubs array that does not have
+      // our requested numer of records.  This means we've hit the end.
       while (count($pubs) == $num_to_retrieve);
     }
 
-    // sync the newly added publications with Drupal. If the user
+    // Sync the newly added publications with Drupal. If the user
     // requested a report then we don't want to print any syncing information
-    // so pass 'FALSE' to the sync call
+    // so pass 'FALSE' to the sync call.
     // For backwards compatibility check to see if the legacy pub module
     // is enabled. If so, then sync the nodes.
     if (module_exists('tripal_pub')) {
@@ -447,7 +462,8 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
       chado_node_sync_records('pub');
     }
 
-    // iterate through each of the reports and generate a final report with HTML links
+    // Iterate through each of the reports and generate a final report with HTML
+    // links.
     $HTML_report = '';
     if ($report_email) {
       $HTML_report .= "<html>";
@@ -475,7 +491,8 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
     // For backwards compatibility check to see if the legacy pub module
     // is enabled. If so, then sync the nodes.
     if (module_exists('tripal_pub')) {
-      // if any of the importers wanted to create contacts from the authors then sync them
+      // If any of the importers wanted to create contacts from the authors then 
+      // sync them.
       if($do_contact) {
         print "Syncing contacts with Drupal...\n";
         chado_node_sync_records('contact');
@@ -512,9 +529,9 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
  *   no dbxref then all of the publications currently in the Chado database
  *   for this remote database will be updated.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_pub_api
  */
-function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
+function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
 
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -522,7 +539,8 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
   $transaction = db_transaction();
   try {
 
-    // get a list of all publications by their Dbxrefs that have supported databases
+    // Get a list of all publications by their Dbxrefs that have supported 
+    // databases.
     $sql = "
       SELECT DB.name as db_name, DBX.accession
       FROM pub P
@@ -546,17 +564,17 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
     $results = chado_query($sql, $args);
 
     $num_to_retrieve = 100;
-    $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
-    $curr_db = '';          // keeps track of the current current database
-    $ids = array();         // the list of IDs for the database
-    $search = array();      // the search array passed to the search function
+    $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query.
+    $curr_db = '';          // keeps track of the current current database.
+    $ids = array();         // the list of IDs for the database.
+    $search = array();      // the search array passed to the search function.
 
-    // iterate through the pub IDs
+    // Iterate through the pub IDs.
     while ($pub = $results->fetchObject()) {
       $accession = $pub->accession;
       $remote_db = $pub->db_name;
 
-      // here we need to only update publications for databases we support
+      // Here we need to only update publications for databases we support.
       $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
       if(!in_array($remote_db, $supported_dbs)) {
         continue;
@@ -582,11 +600,11 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
     // For backwards compatibility check to see if the legacy pub module
     // is enabled. If so, then sync the nodes.
     if (module_exists('tripal_pub')) {
-      // sync the newly added publications with Drupal
+      // Sync the newly added publications with Drupal.
       print "Syncing publications with Drupal...\n";
       chado_node_sync_records('pub');
 
-      // if the caller wants to create contacts then we should sync them
+      // If the caller wants to create contacts then we should sync them.
       if ($do_contact) {
         print "Syncing contacts with Drupal...\n";
         chado_node_sync_records('contact');
@@ -613,12 +631,12 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
  * @param $options
  *  Options pertaining to what publications to generate citations for.
  *  One of the following must be present:
- *   - all: Create and replace citation for all pubs
- *   - new: Create citation for pubs that don't already have one
+ *   - all: Create and replace citation for all pubs.
+ *   - new: Create citation for pubs that don't already have one.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_pub_api
  */
-function tripal_pub_create_citations($options) {
+function chado_pub_create_citations($options) {
   $skip_existing = TRUE;
   $sql = "
     SELECT cvterm_id
@@ -629,12 +647,12 @@ function tripal_pub_create_citations($options) {
   ";
   $citation_type_id = chado_query($sql)->fetchField();
 
-  // Create and replace citation for all pubs
+  // Create and replace citation for all pubs.
   if ($options == 'all') {
     $sql = "SELECT pub_id FROM {pub} P WHERE pub_id <> 1";
     $skip_existing = FALSE;
   }
-  // Create citation for pubs that don't already have one
+  // Create citation for pubs that don't already have one.
   else if ($options == 'new') {
     $sql = "
       SELECT pub_id
@@ -654,9 +672,10 @@ function tripal_pub_create_citations($options) {
   while ($pub = $result->fetchObject()) {
     $pub_arr = tripal_pub_get_publication_array($pub->pub_id, $skip_existing);
     if ($pub_arr) {
-      $citation = tripal_pub_create_citation($pub_arr);
+      $citation = chado_pub_create_citation($pub_arr);
       print $citation . "\n\n";
-      // Replace if citation exists. This condition is never TRUE if $skip_existing is TRUE
+      // Replace if citation exists. This condition is never TRUE if 
+      // $skip_existing is TRUE.
       if ($pub_arr['Citation']) {
         $sql = "
           UPDATE {pubprop} SET value = :value
@@ -665,7 +684,7 @@ function tripal_pub_create_citations($options) {
         chado_query($sql, array(':value' => $citation, ':pub_id' => $pub->pub_id,
           ':type_id' => $citation_type_id, ':rank' => 0));
         $counter_updated ++;
-        // Generate a new citation
+        // Generate a new citation.
       } else {
         $sql = "
           INSERT INTO {pubprop} (pub_id, type_id, value, rank)
@@ -692,23 +711,25 @@ function tripal_pub_create_citations($options) {
  *   are the publication ontology term names and values are the
  *   corresponding details.  The pub array can contain the following
  *   keys with corresponding values:
- *     - Publication Type:  an array of publication types. a publication can have more than one type
- *     - Authors: a  string containing all of the authors of a publication
- *     - Journal Name:  a string containing the journal name
- *     - Journal Abbreviation: a string containing the journal name abbreviation
- *     - Series Name: a string containing the series (e.g. conference proceedings) name
+ *     - Publication Type:  an array of publication types. a publication can 
+ *       have more than one type.
+ *     - Authors: a  string containing all of the authors of a publication.
+ *     - Journal Name:  a string containing the journal name.
+ *     - Journal Abbreviation: a string containing the journal name abbreviation.
+ *     - Series Name: a string containing the series (e.g. conference 
+ *       proceedings) name.
  *     - Series Abbreviation: a string containing the series name abbreviation
- *     - Volume: the serives volume number
- *     - Issue: the series issue number
- *     - Pages: the page numbers for the publication
- *     - Publication Date:  A date in the format "Year Month Day"
+ *     - Volume: the serives volume number.
+ *     - Issue: the series issue number.
+ *     - Pages: the page numbers for the publication.
+ *     - Publication Date:  A date in the format "Year Month Day".
  *
  * @return
- *   A text string containing the citation
+ *   A text string containing the citation.
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_pub_api
  */
-function tripal_pub_create_citation($pub) {
+function chado_pub_create_citation($pub) {
   $citation = '';
   $pub_type = '';
 
@@ -745,8 +766,8 @@ function tripal_pub_create_citation($pub) {
       }
       else if ($ptype == "Research Support, Non-U.S. Gov't") {
         $pub_type = $ptype;
-        // we don't break because if the article is also a Journal Article
-        // we prefer that type
+        // We don't break because if the article is also a Journal Article
+        // we prefer that type.
       }
     }
     // If we don't have a recognized publication type, then just use the
@@ -999,16 +1020,18 @@ function tripal_pub_create_citation($pub) {
  * Retrieves the minimal information to uniquely describe any publication.
  *
  * The returned array is an associative array where the keys are
- * the controlled vocabulary terms in the form [vocab]:[accession]
+ * the controlled vocabulary terms in the form [vocab]:[accession].
  *
  * @param $pub
- *   A publication object as created by chado_generate_var()
+ *   A publication object as created by chado_generate_var().
  *
  * @return
  *   An array with the following keys:  'Citation', 'Abstract', 'Authors',
  *   'URL'. All keys are term names in the Tripal Publication Ontology :TPUB.
+ * 
+ * @ingroup tripal_pub_api
  */
-function tripal_get_minimal_pub_info($pub) {
+function chado_get_minimal_pub_info($pub) {
   if (!$pub) {
     return array();
   }
@@ -1018,11 +1041,11 @@ function tripal_get_minimal_pub_info($pub) {
     return array();
   }
 
-  // expand the title
+  // Expand the title.
   $pub = chado_expand_var($pub, 'field', 'pub.title');
   $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
 
-  // get the abstract
+  // Get the abstract.
   $values = array(
     'pub_id' => $pub->pub_id,
     'type_id' => array(
@@ -1058,7 +1081,7 @@ function tripal_get_minimal_pub_info($pub) {
     $authors_list = $authors->value;
   }
 
-  // get the first database cross-reference with a url.
+  // Get the first database cross-reference with a url.
   $options = array('return_array' => 1);
   $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
   $dbxref = NULL;
@@ -1070,7 +1093,7 @@ function tripal_get_minimal_pub_info($pub) {
     }
   }
 
-  // get the URL.
+  // Get the URL.
   $values = array(
     'pub_id' => $pub->pub_id,
     'type_id' => array(
@@ -1103,7 +1126,7 @@ function tripal_get_minimal_pub_info($pub) {
     $dbxrefs[] = $pub_dbxref->dbxref_id->db_id->name . ':' . $pub_dbxref->dbxref_id->accession;
   }
 
-  // get the citation
+  // Get the citation.
   $values = array(
     'pub_id' => $pub->pub_id,
     'type_id' => array(
@@ -1130,7 +1153,7 @@ function tripal_get_minimal_pub_info($pub) {
       'Pages' => $pub->pages,
       'Publication Date' => $pub->pyear,
     );
-    $citation = tripal_pub_create_citation($pub_info);
+    $citation = chado_pub_create_citation($pub_info);
   }
 
   return array(

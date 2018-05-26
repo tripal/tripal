@@ -61,12 +61,12 @@ class ogi__location_on_map extends ChadoField {
     $field_term = $this->getFieldTermID();
 
     $map_term = 'data:1274';
-    $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
-    $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
-    $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
-    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = tripal_get_chado_semweb_term('feature', 'uniquename');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
+    $mappos_term = chado_get_semweb_term('featurepos', 'mappos');
+    $ref_feature_term = chado_get_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = chado_get_semweb_term('feature', 'name');
+    $ref_feature_id = chado_get_semweb_term('feature', 'uniquename');
     $ref_feature_type = 'rdfs:type';
 
     return array(
@@ -167,14 +167,14 @@ class ogi__location_on_map extends ChadoField {
     // Map details.
     $field_term_id = $this->getFieldTermID();
     $map_term = 'data:1274';
-    $name_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'name');
-    $description_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'description');
-    $mappos_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featurepos', 'mappos');
+    $name_term = $field_term_id . ',' . $map_term . ',' . chado_get_semweb_term('featuremap', 'name');
+    $description_term = $field_term_id . ',' . $map_term . ',' . chado_get_semweb_term('featuremap', 'description');
+    $mappos_term = $field_term_id . ',' . chado_get_semweb_term('featurepos', 'mappos');
 
     // Reference sequence details.
-    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_term = chado_get_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .chado_get_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .chado_get_semweb_term('feature', 'uniquename');
     $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
 
     $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id");
@@ -214,14 +214,14 @@ class ogi__location_on_map extends ChadoField {
     // Map details.
     $field_term_id = $this->getFieldTermID();
     $map_term = 'data:1274';
-    $name_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'name');
-    $description_term = $field_term_id . ',' . $map_term . ',' . tripal_get_chado_semweb_term('featuremap', 'description');
-    $mappos_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featurepos', 'mappos');
+    $name_term = $field_term_id . ',' . $map_term . ',' . chado_get_semweb_term('featuremap', 'name');
+    $description_term = $field_term_id . ',' . $map_term . ',' . chado_get_semweb_term('featuremap', 'description');
+    $mappos_term = $field_term_id . ',' . chado_get_semweb_term('featurepos', 'mappos');
 
     // Reference sequence details.
-    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_term = chado_get_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = $field_term_id . ',' . $ref_feature_term . ',' .chado_get_semweb_term('feature', 'name');
+    $ref_feature_id = $field_term_id . ',' . $ref_feature_term . ',' .chado_get_semweb_term('feature', 'uniquename');
     $ref_feature_type = $field_term_id . ',' . $ref_feature_term . ',' .'rdfs:type';
 
     $this->queryJoinOnce($query, 'featurepos', $alias, "base.feature_id = $alias.feature_id", 'LEFT OUTER');
@@ -265,14 +265,14 @@ class ogi__location_on_map extends ChadoField {
 
     // Map details
     $map_term = 'data:1274';
-    $name_term = tripal_get_chado_semweb_term('featuremap', 'name');
-    $description_term = tripal_get_chado_semweb_term('featuremap', 'description');
-    $mappos_term = tripal_get_chado_semweb_term('featurepos', 'mappos');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
+    $mappos_term = chado_get_semweb_term('featurepos', 'mappos');
 
     // Reference sequence details.
-    $ref_feature_term = tripal_get_chado_semweb_term('featurepos', 'map_feature_id');
-    $ref_feature_name = tripal_get_chado_semweb_term('feature', 'name');
-    $ref_feature_id = tripal_get_chado_semweb_term('feature', 'uniquename');
+    $ref_feature_term = chado_get_semweb_term('featurepos', 'map_feature_id');
+    $ref_feature_name = chado_get_semweb_term('feature', 'name');
+    $ref_feature_id = chado_get_semweb_term('feature', 'uniquename');
     $ref_feature_type = 'rdfs:type';
 
     // Set some defaults for the empty record.

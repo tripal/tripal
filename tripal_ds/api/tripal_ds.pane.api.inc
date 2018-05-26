@@ -30,6 +30,9 @@
  *  field_create_field($field);
  *  field_create_instance($instance);
  *  tripal_ds_field_create_field($field_label, $field, $bundle);
+ * 
+ *  @ingroup tripal_ds_pane_api
+ * 
  */
 function tripal_ds_create_field($field_label, $field_name, $bundle_name) {
   $field_name = str_replace(' ', '_', strtolower($field_name));

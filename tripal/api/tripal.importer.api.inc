@@ -4,6 +4,7 @@
  * @file
  * Provides an application programming interface (API) for working with
  * data file importers using the TripalImporter class.
+ * 
  */
 
 /**
@@ -11,7 +12,7 @@
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for working with
- * data file importers using the TripalImporter class.
+ * data file importers using the TripalImporter class into a chado database.
  * @}
  *
  */
@@ -22,10 +23,8 @@
  * This is a Tripal hook that allows the module to set the proper
  * parameters for a file uploaded via the Tripal HTML5 uploader.
  *
- * @param $filename
- *   The name of the file uploaded
- * @param $filepath
- *   The path to the file
+ * @param $file
+ *   The Drupal file object of the newly uploaded file.
  * @param $type
  *   The category or type of file.
  *
@@ -34,7 +33,7 @@
  *
  * @ingroup tripal_importer_api
  */
-function hook_handle_uploaded_file($filename, $filepath, $type) {
+function hook_handle_uploaded_file($file, $type) {
 
 }
 
