@@ -590,7 +590,7 @@ function tripal_chado_menu() {
     'weight' => 6
   );
   $items['admin/tripal/loaders/chado_vocabs/chado_cv'] = array(
-    'title' => 'Manage Controlled Vocabularies',
+    'title' => 'Manage Chado CVs',
     'description' => 'View, edit and add controlled vocabularies used by this site.',
     'page callback' => 'tripal_cv_admin_cv_listing',
     'access arguments' => array('administer controlled vocabularies'),
