@@ -246,6 +246,8 @@ function tripal_field_no_delete() {
  * the table to let the user know where fields are storing their data.
  */
 function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  
+  $used_terms = [];
 
   // If this isn't a TripalEntity content type then skip this form.
   if ($form['#entity_type'] != 'TripalEntity') {
@@ -262,6 +264,22 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
 
     $field = field_info_field($field_name);
     $instance = field_info_instance('TripalEntity', $field_name, $form['#bundle']);
+    
+    // Warn users if any of the terms are not unique.
+    if ($instance and array_key_exists('settings', $instance) and is_array($instance['settings']) and 
+        array_key_exists('term_vocabulary', $instance['settings'])) {
+      $term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+      if (array_key_exists($term, $used_terms)) {
+        $used_terms[$term][] = $field_name;
+        drupal_set_message(t('The term !term is in use by multiple fields: !fields. 
+          This is not allowed. Every field must have a different controlled vocabulary term. 
+          Please correct the term assignments.', 
+          array('!term' => $term, '!fields' => implode(', ', $used_terms[$term]))), 'error');
+      }
+      $used_terms[$term][] = $field_name;
+    }
+    
+    
     // For rows in the tables that aren't fields, just add an empty value
     // for the storage column.
     if (!$field) {
