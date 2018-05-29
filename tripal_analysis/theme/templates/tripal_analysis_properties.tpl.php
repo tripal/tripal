@@ -5,7 +5,7 @@ $analysis = $variables['node']->analysis;
 $analysis = chado_expand_var($analysis,'table', 'analysisprop', array('return_array' => 1));
 $properties = $analysis->analysisprop;
 
-if (count($properties) > 0) { ?>
+if (is_array($properties) and count($properties) > 0) { ?>
   <div class="tripal_analysis-data-block-desc tripal-data-block-desc">Additional information about this analysis:</div><?php
   
   // the $headers array is an array of fields to use as the colum headers.

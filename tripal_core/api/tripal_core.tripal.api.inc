@@ -125,7 +125,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
   }
 
   // Format the message for printing (either to the screen, log or both)
-  if (sizeof($variables) > 0) {
+  if (is_array($variables) and sizeof($variables) > 0) {
     $print_message = str_replace(array_keys($variables), $variables, $message);
   }
   else {

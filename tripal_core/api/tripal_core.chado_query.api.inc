@@ -870,7 +870,7 @@ function chado_delete_record($table, $match, $options = NULL) {
   foreach ($delete_matches as $field => $value) {
     // if we have an array values then this is an "IN" clasue.
 
-    if (count($value) > 1) {
+    if (is_array($value) and count($value) > 1) {
       $sql .= "$field IN (";
       $index = 0;
       foreach ($value as $v) {
@@ -1449,17 +1449,15 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
 }
 
 /**
- * Use this function instead of db_query() to avoid switching databases
- * when making query to the chado database.
+ * Use instead of db_query() when making a query to the Chado database.
  *
- * Will use a chado persistent connection if it already exists.
- *
- * NOTE: When writting SQL queries it is important to enclose the chado table name in
- * curley brackets (ie: {feature}) in order to enusure proper prefixing. Furthermore,
- * if you need to join between tables in separate schemas (ie: chado and drupal) then
- * you should enclose the drupal table in square brackets (ie: [chado_feature]).
- * Keep in mind JOINING BETWEEN SCHEMA'S IS NOT RECOMMENDED since it will break functionality
- * for sites with external chado databases.
+ * When writting SQL queries it is important to enclose the chado table 
+ * name in curley brackets (ie: {feature}) in order to enusure proper prefixing. 
+ * Furthermore, if you need to join between tables in separate schemas (ie: 
+ * chado and drupal) then you should enclose the drupal table in square 
+ * brackets (ie: [chado_feature]). Keep in mind JOINING BETWEEN SCHEMA'S IS 
+ * NOT RECOMMENDED since it will break functionality for sites with external 
+ * chado databases.
  *
  * @param $sql
  *   The sql statement to execute
@@ -1473,15 +1471,19 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *
  * Example usage:
  * @code
- * $sql = "SELECT F.name, CVT.name as type_name, ORG.common_name
- *          FROM {feature} F
- *          LEFT JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
- *          LEFT JOIN {organism} ORG ON F.organism_id = ORG.organism_id
- *          WHERE
- *            F.uniquename = :feature_uniquename";
- * $args = array( ':feature_uniquename' => $form_state['values']['uniquename'] );
- * $result = chado_query( $sql, $args );
- * foreach ($result as $r) { [Do something with the records here] }
+ * $sql = "
+ *   SELECT F.name, CVT.name as type_name, ORG.common_name
+ *   FROM {feature} F
+ *     LEFT JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
+ *     LEFT JOIN {organism} ORG ON F.organism_id = ORG.organism_id
+ *   WHERE
+ *     F.uniquename = :feature_uniquename
+ * ";
+ * $args = [':feature_uniquename' => $form_state['values']['uniquename']];
+ * $result = chado_query($sql, $args);
+ * foreach ($result as $r) {
+ *   // Do something with the records here 
+ * }
  * @endcode
  *
  * @ingroup tripal_chado_query_api
@@ -1541,11 +1543,9 @@ function chado_query($sql, $args = array()) {
   // Check for any cross schema joins (ie: both drupal and chado tables represented
   // and if present don't execute the query but instead warn the administrator.
   elseif (preg_match('/\[(\w*?)\]/', $sql)) {
-    tripal_report_error(
-      'chado_query',
-      TRIPAL_ERROR,
+    tripal_report_error('chado_query', TRIPAL_ERROR,
       'The following query does not support external chado databases. Please file an issue
-      with the Drupal.org Tripal Project. Query: @query',
+       with the Drupal.org Tripal Project. Query: @query',
       array('@query' => $sql)
     );
     return FALSE;

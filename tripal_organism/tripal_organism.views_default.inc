@@ -268,7 +268,7 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Organism',
-    'path-1' => 'node/add/tripal_organism',
+    'path-1' => 'node/add/chado-organism',
   );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';

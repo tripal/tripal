@@ -141,7 +141,7 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Analysis',
-    'path-1' => 'node/add/tripal-analysis',
+    'path-1' => 'node/add/chado-analysis',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
     'label-2' => '',
