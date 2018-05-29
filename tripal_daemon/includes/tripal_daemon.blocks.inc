@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * @file
  * Contains functions related to administrative blocks for daemon monitoring.
  */
@@ -28,7 +28,7 @@ function tripal_daemon_block_info() {
     'status' => TRUE,
     'region' => 'dashboard_main',
   );
-  
+
   return $blocks;
 }
 
@@ -52,11 +52,11 @@ function tripal_daemon_block_view($delta='') {
       $block['content'] = drupal_get_form('trpdaemon_display_log_form');
       break;
   }
-  
+
   return $block;
 }
 
-/** 
+/**
  * Provide markup for the Tripal Job Daemon Status block.
  *
  * @param $show_all
@@ -87,6 +87,7 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
     $output .= theme_image(array(
       'path' => 'misc/message-24-ok.png',
       'alt' => 'status-ok',
+      'attributes' => array(),
     ));
     if ($status['Running Job']) {
       $output .= 'Running Job(s)';
@@ -99,6 +100,7 @@ function theme_tripal_daemon_status_block_content($show_all = FALSE) {
     $output .= theme_image(array(
       'path' => 'misc/message-24-error.png',
       'alt' => 'status-error',
+      'attributes' => array(),
     ));
     if ($is_running AND !$is_alive) {
       $output .= 'Dead';
@@ -155,8 +157,13 @@ function trpdaemon_display_log_form($form, $form_state) {
   $form['#attached']['css'][] = drupal_get_path('module','tripal_daemon') . '/theme/tripal_daemon.log_block.css';
 
   $status_file = drushd_get_daemon_status_file('tripal_daemon');
-  $status = unserialize(file_get_contents($status_file));
-  $file = $status['Current Log File'];
+  if ($status_file) {
+    $status = unserialize(file_get_contents($status_file));
+    $file = $status['Current Log File'];
+  }
+  else {
+    $file = NULL;
+  }
 
   $form['num_lines'] = array(
     '#type' => 'radios',
@@ -176,10 +183,17 @@ function trpdaemon_display_log_form($form, $form_state) {
       'class' => array('container-inline'),
     ),
   );
-  $num_lines = (isset($form_state['values'])) ? $form_state['values']['num_lines'] : $form['num_lines']['#default_value'];
 
-  $text = `tail -n $num_lines $file`;
-  $text = str_replace("\n", '<br />', $text);
+  if ($file) {
+    $num_lines = (isset($form_state['values'])) ? $form_state['values']['num_lines'] : $form['num_lines']['#default_value'];
+    $text = `tail -n $num_lines $file`;
+    $text = str_replace("\n", '<br />', $text);
+  }
+  else {
+    $num_lines = 0;
+    $text = '';
+  }
+
   $form['log'] = array(
     '#type' => 'markup',
     '#markup' => $text,
