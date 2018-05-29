@@ -258,9 +258,11 @@ class sio__annotation extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    $vocabulary = chado_get_semweb_term('cvterm', 'cv_id');
-    $accession = chado_get_semweb_term('dbxref', 'accession');
-    $definition = chado_get_semweb_term('cvterm', 'definition');
+    $vocabulary = tripal_get_chado_semweb_term('cvterm', 'cv_id');
+    $accession = tripal_get_chado_semweb_term('dbxref', 'accession');
+    $definition = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $name = tripal_get_chado_semweb_term('cvterm', 'name');
+
     if (array_key_exists('is_not', $schema['fields'])) {
       $negation = chado_get_semweb_term($field_table, 'is_not');
     }
@@ -307,6 +309,7 @@ class sio__annotation extends ChadoField {
         'value' => array(
           $vocabulary => $cvterm->dbxref_id->db_id->name,
           $accession => $cvterm->dbxref_id->accession,
+          $name => $cvterm->name,
           $definition => isset($cvterm->definition) ? $cvterm->definition : ''
         ),
         'chado-' . $field_table . '__' . $pkey => $linker->$pkey,

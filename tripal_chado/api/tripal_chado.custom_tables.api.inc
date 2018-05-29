@@ -86,8 +86,10 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 }
 
 /**
- * Add a new table to the Chado schema. This function is simply a wrapper for
- * the db_create_table() function of Drupal, but ensures the table is created
+ * Add a new table to the Chado schema. 
+ * 
+ * This function is simply a wrapper for  the db_create_table() function of 
+ * Drupal, but ensures the table is created
  * inside the Chado schema rather than the Drupal schema.  If the table already
  * exists then it will be dropped and recreated using the schema provided.
  * However, it will only drop a table if it exsits in the tripal_custom_tables
@@ -128,6 +130,24 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  */
 function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
     $mview_id = NULL, $redirect = TRUE) {
+  
+  if (!$table) {
+    tripal_report_error('trp_ctables', TRIPAL_ERROR, 
+      'Please provide a value for the $table argument to the chado_create_custom_table() function');
+    return FALSE;
+  }
+  if (!$schema) {
+    tripal_report_error('trp_ctables', TRIPAL_ERROR, 
+      'Please provide a value for the $schema argument to the chado_create_custom_table() function');
+    return FALSE;
+  }
+  if ($schema and !is_array($schema)) {
+    tripal_report_error('trp_ctables', TRIPAL_ERROR, 
+      'Please provide an array for the $schema argument to the chado_create_custom_table() function');
+    return FALSE;
+  }
+  // TODO: make sure the schema is valid by adding extra checks.
+  
 
   global $databases;
   $created = 0;

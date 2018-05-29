@@ -645,6 +645,8 @@ function tripal_create_bundle_fields($bundle, $term) {
     $function = $module . '_bundle_fields_info';
     $temp = $function('TripalEntity', $bundle);
     if (is_array($temp)) {
+      // TODO: it would be good to check this array to make sure it follows
+      // protocol.  It would help identify potential errors.
       $info = array_merge($info, $temp);
     }
   }
@@ -680,7 +682,11 @@ function tripal_create_bundle_fields($bundle, $term) {
   foreach ($modules as $module) {
     $function = $module . '_bundle_instances_info';
     $temp = $function('TripalEntity', $bundle);
-    $info = array_merge($info, $temp);
+    if (is_array($temp)) {
+      // TODO: it would be good to check this array to make sure it follows
+      // protocol.  It would help identify potential errors.
+      $info = array_merge($info, $temp);
+    }
   }
 
   // Allow modules to alter which fields should be attached to content
