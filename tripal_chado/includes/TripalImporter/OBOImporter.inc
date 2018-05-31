@@ -294,7 +294,7 @@ class OBOImporter extends TripalImporter {
       }
 
     }
-    else if (!empty($obo_name)) {
+    elseif (!empty($obo_name)) {
       $obo_id = db_insert('tripal_cv_obo')
         ->fields(array(
           'name' => $obo_name,
@@ -765,27 +765,44 @@ class OBOImporter extends TripalImporter {
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       if (is_numeric($accession_num)) {
-        $results = $this->oboEbiLookup($t['id'], 'query');
+        $results = $this->oboEbiLookup($t['id'], 'term');
         if (!empty($results)) {
+          $t['name'] = $results['label'];
+          $defaultcv = $results['ontology_name'];
+        } 
+        elseif (empty($results)) {
+          $results = $this->oboEbiLookup($t['id'], 'query');
           if (array_key_exists('docs', $results)) {
-            if (!empty($results['docs'])) {
-              $t['id'] = $results['docs']['label'];
-            } else {
-              // The first search doesn't work, so let's try a broader one.
-              $results = $this->oboEbiLookup($t['id'], 'query-non-local');
-              if (!empty($results)) {
-                if (array_key_exists('docs', $results)) {
-                  if (!empty($results['docs'])) {
-                    $accession = $t['id'];
-                    $accession_underscore = str_replace(":", "_", $accession);
-                    foreach ($results['docs'] as $item) {
-                      if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
-                        //Found the first place a label is other than the accession is used, so take
-                        // that info and then end the loop.
-                        $t['id'] = $item['label'];
-                        break;
-                      }
-                    }
+            if (!empty($results['response']['docs'])) {
+              if (count($results['response']['docs']) > 1) {
+                foreach ($results['response']['docs'] as $doc) {
+                  if ($doc['obo_id'] == $t['id']) {
+                    $t['name']  = $doc['label'];
+                    $defaultcv = $doc['ontology_name'];
+                  }
+                }
+              } else {
+                $t['name']  = $results['response']['docs'][0]['label'];
+                $defaultcv = $results['response']['docs'][0]['ontology_name'];
+              }
+            }
+          }
+        } 
+        elseif ($results['response']['numFound'] == 0) {
+          // The first search doesn't work, so let's try a broader one.
+          $results = $this->oboEbiLookup($t['id'], 'query-non-local');
+          if (!empty($results)) {
+            if (array_key_exists('docs', $results)) {
+              if (!empty($results['docs'])) {
+                $accession = $t['id'];
+                $accession_underscore = str_replace(":", "_", $accession);
+                foreach ($results['response']['docs'] as $item) {
+                  if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
+                    //Found the first place a label is other than the accession is used, so take
+                    // that info and then end the loop.
+                    $t['name'] = $item['label'];
+                    $defaultcv = $item['ontology_name'];
+                    break;
                   }
                 }
               }
@@ -794,6 +811,7 @@ class OBOImporter extends TripalImporter {
         }
       }
     } 
+
 
     // Check that the default_cv is in the cv table.
     $sql =  "
@@ -806,20 +824,41 @@ class OBOImporter extends TripalImporter {
       //The controlled vocabulary is not in the cv term table and needs to be added.
       $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
       if (!empty($ontology_info)){
-        if (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
-          $results = $ontology_info['config']['annotations']['default-namespace'];
+        // CV Name.
+        if (array_key_exists('namespace', $ontology_info['config'])) {
+          $cv_info = $ontology_info['config']['namespace'];
         }
-        elseif (array_key_exists('namespace', $ontology_info['config'])) {
-          $results = $ontology_info['config']['namespace'];
+        elseif (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
+          $cv_info = $ontology_info['config']['annotations']['default-namespace'];
         }
-        $cv_returned = tripal_insert_cv($results[0], '');
+
+        //CV Description.
+        if (array_key_exists('description', $ontology_info['config'])) {
+          $description = $ontology_info['config']['description'];
+        }
+        else {
+          $description = '';
+        }
+        $cv_returned = chado_insert_cv($cv_info, $description);
         // If name && definition are both empty then look up the term from the ontology you just loaded.
         if($cv_returned) {
-          $defaultcv = $cv_returned;
+          $defaultcv = $cv_returned->name;
+
+          // Now add the db entry.
+          $values = array(
+            'name' => $ontology_info['config']['preferredPrefix'],
+            'description' => $ontology_info['config']['description'],
+            'url' => $ontology_info['config']['versionIri'],
+    
+          );
+          $db_returned = chado_insert_db($values);
+          if ($db_returned) {
+            $default_db = $db_returned->name;
+          }
+
         }
       }
     }
- 
 
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
@@ -991,34 +1030,59 @@ class OBOImporter extends TripalImporter {
    */
   private function addRelationship($cvterm, $defaultcv, $rel,
       $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
+    $reference_term = FALSE;
     // If an accession was passed we need to see if we can find the actual label.
-    if (strpos($rel, ':')) {
-      $pair = explode(":", $rel);    
+    if (strpos($rel, ':') || strpos($objname, ':')) {
+      if (strpos($rel, ':')) {
+        $term_id = $rel;
+      }
+      elseif (strpos($objname, ':')) {
+        $term_id = $objname;
+      }
+      $reference_term = TRUE;
+      $pair = explode(":", $term_id);    
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       if (is_numeric($accession_num)) {
-        $results = $this->oboEbiLookup($rel, 'query');
-        if (!empty($results)) {
+        $results = $this->oboEbiLookup($term_id, 'term');
+        if (isset($results['label'])) {
+          $rel_name = $results['label'];
+          $oterm = $results;
+        } 
+        elseif (empty($results)) {
+          $results = $this->oboEbiLookup($term_id, 'query');
           if (array_key_exists('docs', $results)){
-            if(!empty($results['docs'])) {
-              $rel = $results['docs']['label'];
+            if(!empty($results['response']['docs'])) {
+              if (count($results['response']['docs']) > 1) {
+                foreach ($results['response']['docs'] as $doc) {
+                  if ($doc['obo_id'] == $term_id) {
+                    $rel_name = $doc['label'];
+                    $oterm = $doc;
+                  }
+                }
+              } 
+              else {
+                $rel_name = $results['response']['docs'][0]['label'];
+                $oterm = $results['response']['docs'][0];
+              }
             }
-            else {
-              // The first search doesn't work, so let's try a broader one.
-              $results = $this->oboEbiLookup($rel, 'query-non-local');
-              if (!empty($results)) {
-                if (array_key_exists('docs', $results)){
-                  if(!empty($results['docs'])) {
-                    $accession = $rel;
-                    $accession_underscore = str_replace(":", "_", $accession);
-                    foreach ($results['docs'] as $item) {
-                      if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
-                        //Found the first place a label is other than the accession is used, so take
-                        // that info and then end the loop.
-                        $rel = $item['label'];
-                        break;
-                      }
-                    }
+          }
+        } 
+        elseif ($results['response']['numFound'] === FALSE) {
+          // The first search doesn't work, so let's try a broader one.
+          $results = $this->oboEbiLookup($term_id, 'query-non-local');
+          if (!empty($results)) {
+            if (array_key_exists('docs', $results)) {
+              if (!empty($results['docs'])) {
+                $accession = $term_id;
+                $accession_underscore = str_replace(":", "_", $accession);
+                foreach ($results['response']['docs'] as $item) {
+                  if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
+                    //Found the first place a label is other than the accession is used, so take
+                    // that info and then end the loop.
+                    $rel_name = $item['label'];
+                    $oterm = $item;
+                    break;
                   }
                 }
               }
@@ -1056,29 +1120,46 @@ class OBOImporter extends TripalImporter {
         throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
       }
     }
-  
+
     // Get the object term.
-    $oterm = $this->getTerm($objname);
-    if (!$oterm) {
-      throw new Exception("Could not find object term $objname\n");
+    if ($reference_term === TRUE) {
+      $objterm = array();
+      $objterm['id'] = $rel;
+      $objterm['name'] = $oterm['obo_id'];
+      if (array_key_exists('def', $oterm)) {
+        $objterm['definition'] = $oterm['def'];
+      }
+      if (array_key_exists('subset', $oterm)) {
+        $objterm['subset'] = $oterm['subset'];
+      }
+      if (array_key_exists('namespace', $oterm)) {
+        $objterm['namespace'] = $oterm['ontology_name'];
+      }
+      if (array_key_exists('is_obsolete', $oterm)) {
+        $objterm['is_obsolete'] = $oterm['is_obsolete'];
+      }
     }
-
-    $objterm = array();
-    $objterm['id']            = $oterm['id'][0];
-    $objterm['name']          = $oterm['name'][0];
-    if (array_key_exists('def', $oterm)) {
-      $objterm['definition']           = $oterm['def'][0];
+    else {
+      $oterm = $this->getTerm($objname);
+      if (!$oterm) {
+        throw new Exception("Could not find object term $objname\n");
+      }
+      $objterm = array();
+      $objterm['id'] = $oterm['id'][0];
+      $objterm['name'] = $oterm['name'][0];
+      if (array_key_exists('def', $oterm)) {
+        $objterm['definition'] = $oterm['def'][0];
+      }
+      if (array_key_exists('subset', $oterm)) {
+        $objterm['subset'] = $oterm['subset'][0];
+      }
+      if (array_key_exists('namespace', $oterm)) {
+        $objterm['namespace'] = $oterm['namespace'][0];
+      }
+      if (array_key_exists('is_obsolete', $oterm)) {
+        $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
+      }
     }
-    if (array_key_exists('subset', $oterm)) {
-      $objterm['subset']      = $oterm['subset'][0];
-    }
-    if (array_key_exists('namespace', $oterm)) {
-      $objterm['namespace']   = $oterm['namespace'][0];
-    }
-    if (array_key_exists('is_obsolete', $oterm)) {
-      $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
-    }
-
     $objterm['cv_name' ] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
