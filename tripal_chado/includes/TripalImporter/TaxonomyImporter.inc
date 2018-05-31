@@ -912,6 +912,9 @@ class TaxonomyImporter extends TripalImporter {
       'dbxref_id' => $dbxref->dbxref_id,
       'organism_id' => $organism_id,
     );
-    chado_insert_record('organism_dbxref', $values);
+
+   if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values)) {
+     chado_insert_record('organism_dbxref', $values);
+   }
   }
 }
