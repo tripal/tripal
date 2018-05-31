@@ -43,8 +43,31 @@ class TaxonomyImporterTest extends TripalTestCase {
     $this->assertNotEmpty($result);
 
   }
-//
-//  public function testImportOrganismFromTaxID() {
-//
-//  }
+
+  /**
+   * the importer can also load an array of pubmed ids.  We use the pillbug again.
+   *
+   * https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=96821
+   *
+   * @throws \Exception
+   */
+  public function testImportOrganismFromTaxID() {
+
+    $file = [];
+    $run_args = ['taxonomy_ids' => '96821']; //its the pillbug again!
+    $importer = new \TaxonomyImporter();
+
+    ob_start();
+    $importer->create($run_args, $file);
+    $importer->run();
+    ob_end_clean();
+
+    $query = db_select('chado.organism', 'o');
+    $query->fields('o', ['genus'])
+      ->condition('o.species', 'officinalis');
+    $result = $query->execute()->fetchField();
+    $this->assertEquals('Armadillo', $result);
+
+  }
+
 }
