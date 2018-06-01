@@ -200,6 +200,10 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     // Now simulate manual deletion of the table outside of the API.
     chado_query('DROP TABLE {' . $mview_name . '}');
     
+    // Make sure the table no longer exists.
+    $this->assertFalse(chado_table_exists($mview_name), 
+      "Failed to manually remove the materialized view, cannot complete the test.");
+    
     // Now try to read the mview. Previously, the behavior was the the mview
     // table would not be created because Tripal thinks it's already there.
     chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
