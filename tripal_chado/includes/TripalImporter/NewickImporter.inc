@@ -108,7 +108,6 @@ class NewickImporter extends TripalImporter {
       '#maxlength' => 255,
     ];
 
-    $type_cv = tripal_get_default_cv('phylotree', 'type_id');
     $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {

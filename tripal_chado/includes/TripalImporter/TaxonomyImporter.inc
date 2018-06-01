@@ -312,7 +312,7 @@ class TaxonomyImporter extends TripalImporter {
     $lineage_nodes[] = array();
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
-    $rank_cvterm = tripal_chado_get_cvtermget_cvterm(array(
+    $rank_cvterm = chado_get_cvterm(array(
       'name' => 'rank',
       'cv_id' => array('name' => 'local')
     ));
@@ -912,6 +912,9 @@ class TaxonomyImporter extends TripalImporter {
       'dbxref_id' => $dbxref->dbxref_id,
       'organism_id' => $organism_id,
     );
-    chado_insert_record('organism_dbxref', $values);
+
+   if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values)) {
+     chado_insert_record('organism_dbxref', $values);
+   }
   }
 }
