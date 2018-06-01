@@ -52,6 +52,15 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
 
   $mv_table = $mv_schema['table'];
 
+  // Check that the materialized view actually exists and if not,
+  // remove the entry from tripal_mviews.
+  if ($mview_id AND !chado_table_exists($name)) {
+    db_query(
+      'DELETE FROM {tripal_mviews} WHERE mview_id = :id',
+      array(':id' => $mview_id))->execute();
+      $mview_id = FALSE;
+  }
+  
   // See if the mv_table name already exsists.
   $mview_id = db_query(
     'SELECT mview_id FROM {tripal_mviews} WHERE name = :name',
