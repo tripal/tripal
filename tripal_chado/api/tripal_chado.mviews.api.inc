@@ -40,6 +40,8 @@
  *   admin pages. However, when called by Drush we don't want to redirect. This
  *   parameter allows this to be used as a true API function.
  *
+ * @return 
+ *   TRUE if the materialized view was successfully addd, FALSE otherwise.
  * @ingroup tripal_mviews_api
  */
 function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
@@ -47,25 +49,27 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   if (!array_key_exists('table', $mv_schema)) {
      tripal_report_error('tripal_chado', TRIPAL_ERROR,
        'Must have a table name when creating an mview.', array());
-     return NULL;
+     return FALSE;
   }
 
   $mv_table = $mv_schema['table'];
+ 
+  // See if the mv_table name already exsists.
+  $mview_id = db_select('tripal_mviews', 'tm')
+    ->fields('tm', array('mview_id'))
+    ->condition('name', $name)
+    ->execute()
+    ->fetchField();
 
   // Check that the materialized view actually exists and if not,
   // remove the entry from tripal_mviews.
   if ($mview_id AND !chado_table_exists($name)) {
-    db_query(
-      'DELETE FROM {tripal_mviews} WHERE mview_id = :id',
-      array(':id' => $mview_id))->execute();
-      $mview_id = FALSE;
+    db_delete('tripal_mviews')
+      ->condition('mview_id', $mview_id)
+      ->execute();
+    $mview_id = FALSE;
   }
   
-  // See if the mv_table name already exsists.
-  $mview_id = db_query(
-    'SELECT mview_id FROM {tripal_mviews} WHERE name = :name',
-    array(':name' => $name))->fetchField();
-
   if(!$mview_id) {
     $transaction = db_transaction();
     try {
