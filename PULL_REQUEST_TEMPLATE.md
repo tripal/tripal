@@ -1,7 +1,8 @@
 <!--- Provide a general summary of your changes in the Title above -->
 <!--- See our Contribution Guidelines here:
           https://github.com/tripal/tripal/blob/7.x-3.x/CONTRIBUTING.md -->
-<!--- If it fixes an open issue, please add the issue link here. -->
+          
+<!--- If it fixes an open issue, please add the issue link below. -->
 Issue #
 
 ## Type(s) of Change(s)
@@ -16,7 +17,6 @@ Issue #
 ## Description
 <!--- Describe your changes in detail -->
 <!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
 
 ## Testing?
 <!--- Please describe in detail how you tested your changes. -->
