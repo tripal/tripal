@@ -76,7 +76,6 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     $mview_sql = $this->example_mviews[$mview_name]['sql'];
     $mview_schema = $this->example_mviews[$mview_name]['schema'];
     $mview_comment = $this->example_mviews[$mview_name]['comment'];
-    
     $success = chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
     $this->assertTrue($success, "Failed to create materialized view: $mview_name");  
     
@@ -106,6 +105,8 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     // Make sure the table exists.
     $this->assertTrue(chado_table_exists($mview_name),
       "Materialized view, $mview_name, was added to the tripal_mviews table but the table was not created.");
+    
+    $this->reset_tables();
   }
   /**
    * Test deletion of a materialized view.
@@ -113,19 +114,51 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_delete_mview() {
-    // TODO: this is currently a stub for a test function that neds
-    // implementation. For now it returns true to get past unit testing.
-    $this->assertTrue(true);
+
+    // Make sure the mview is present.
+    $mview_name = 'analysis_organism_test';
+    $mview_module = $this->example_mviews[$mview_name]['module'];
+    $mview_sql = $this->example_mviews[$mview_name]['sql'];
+    $mview_schema = $this->example_mviews[$mview_name]['schema'];
+    $mview_comment = $this->example_mviews[$mview_name]['comment'];    
+    $success = chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
+    $this->assertTrue($success, "Failed to create materialized view: $mview_name");
+    
+    // Get the mview_id.
+    $mview = db_select('tripal_mviews', 'tm')
+      ->fields('tm')
+      ->condition('name', $mview_name)
+      ->execute()
+      ->fetchObject();
+    $this->assertTrue(is_object($mview),
+      "Failed to find the materialized view, $mview_name, in the tripal_mviews table");
+    $mview_id = $mview->mview_id;
+    
+    // Now run the API function to delete it.
+    $success = chado_delete_mview($mview_id);
+    $this->assertTrue($success, 
+      "Materialized view, $mview_name, could not be deleted.");
+
+    $this->reset_tables();
+    
+    // Make sure the table is gone.
+    $this->assertFalse(chado_table_exists($mview_name),
+      "Materialized view, $mview_name, table failed to be removed after deletion.");
+    
   }
+  
   /**
    * Test modifications to a materialized view
    *
    * @group api
    */
   public function test_chado_edit_mview() {
+        
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
+    
+    $this->reset_tables();
   }
   /**
    * Test adding a Tripal Job to re-populate a materialized view
@@ -133,9 +166,12 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_refresh_mview() {
+    
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
+    
+    $this->reset_tables();
   }
   /**
    * Test re-populating a materialized view.
@@ -143,9 +179,12 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_populate_mview() {
+   
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
+    
+    $this->reset_tables();
   }
   /**
    * Test modifications to a materialized view
@@ -153,9 +192,12 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_get_mview_id() {
+    
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
+    
+    $this->reset_tables();
   }
   /**
    * Test retrieving names of the materialized views.
@@ -163,6 +205,8 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_get_mview_table_names() {
+    $this->reset_tables();
+    
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
@@ -173,9 +217,12 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
    * @group api
    */
   public function test_chado_get_mviews() {
+   
     // TODO: this is currently a stub for a test function that neds
     // implementation. For now it returns true to get past unit testing.
     $this->assertTrue(true);
+    
+    $this->reset_tables();
   }
   
   /**
@@ -193,7 +240,6 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     $mview_sql = $this->example_mviews[$mview_name]['sql'];
     $mview_schema = $this->example_mviews[$mview_name]['schema'];
     $mview_comment = $this->example_mviews[$mview_name]['comment'];
-    
     $success = chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
     $this->assertTrue($success, "Failed to create materialized view: $mview_name");
         
@@ -209,7 +255,26 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     $success = chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
     $this->assertTrue($success, "Failed to re-create materialized view: $mview_name");
     
+    // Now make sure the mview table exists.
+    $this->reset_tables();
     $this->assertTrue(chado_table_exists($mview_name),
-      "Manually removing a materialized views throws off the chado_add_mview function when the mview is re-added. See Issue #322");    
+      "Manually removing a materialized views throws off the chado_add_mview function when the mview is re-added. See Issue #322");
+    
+    $this->reset_tables();
+  }
+  
+  /**
+   * The chado_table_exists() function mantains a global variable to keep track
+   * of which tables exist.  If the table exists then it stores that info in
+   * the global variable. This is because lots of queries perform a check to
+   * see if the tables exist and that can have a major performance hit.
+   * 
+   * Because we are creating and dropping Chado tables in our tests it throws 
+   * off the array and we need to reset it. Normally this isn't a problem 
+   * because this would get reset on every page load anyone.  For testing it 
+   * doesn't.
+   */
+  public function reset_tables() {
+    $GLOBALS["chado_tables"] = [];
   }
 }

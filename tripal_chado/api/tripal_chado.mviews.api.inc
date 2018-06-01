@@ -100,17 +100,17 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
       $transaction->rollback();
       watchdog_exception('tripal_chado', $e);
       $error = _drupal_decode_exception($e);
-      drupal_set_message(t("Could not create the materialized view %table_name: %message.",
-      array('%table_name' => $name, '%message' => $error['!message'])), 'error');
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, 
+        "Could not create the materialized view %table_name: %message.",
+        array('%table_name' => $name, '%message' => $error['!message']));
       return FALSE;
     }
     drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
-    return TRUE;
   }
   else {
     drupal_set_message(t("Materialized view, $name, already exists. Skipping creation.", array('%name' => $name)));
-    return FALSE;
   }
+  return TRUE;
 }
 
 /**
@@ -273,7 +273,9 @@ function chado_refresh_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
-    return '';
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      'Must provide an mview_id when refreshing an mview.', array());
+    return FALSE;
   }
 
   // Get this mview details.
@@ -318,39 +320,62 @@ function chado_get_mviews() {
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on.
  *
+ * @return
+ *   TRUE if the deletion was a success, FALSE on error.
+ *   
  * @ingroup tripal_mviews_api
  */
 function chado_delete_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
-    return '';
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      'Must provide an mview_id when deleting an mview.', array());
+    return FALSE;
   }
 
-  // Get this mview details.
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
-  $results = db_query($sql, array(':mview_id' => $mview_id));
-  $mview = $results->fetchObject();
-
-  // If op is to delete then do so.
-  // Remove the mview from the tripal_mviews table.
-  $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
-  db_query($sql);
-
-  // Does the table already exist?
-  $mview_exists = chado_table_exists($mview->mv_table);
-
-  // Drop the table from chado if it exists.
-  if ($mview_exists) {
-    $sql = "DROP TABLE {" . $mview->mv_table . "}";
-    $success = chado_query($sql);
-    if ($success) {
-      drupal_set_message(t("Materialized view, %name, deleted.", array('%name' => $mview->name)));
+  try {
+    $transaction = db_transaction();
+    
+    // Get this mview details.
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+    $results = db_query($sql, array(':mview_id' => $mview_id));
+    $mview = $results->fetchObject();
+  
+    // If op is to delete then do so.
+    // Remove the mview from the tripal_mviews table.
+    $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
+    db_query($sql);
+  
+    // Does the table already exist?
+    $mview_exists = chado_table_exists($mview->mv_table);
+  
+    // Drop the table from chado if it exists.
+    if ($mview_exists) {
+      $sql = "DROP TABLE {" . $mview->mv_table . "}";
+      $success = chado_query($sql);
+      if ($success) {
+        drupal_set_message(t("Materialized view, %name, deleted.", array('%name' => $mview->name)));
+        return TRUE;
+      }
+      else {
+        drupal_set_message(t("Problem deleting materialized view, %name.", array('%name' => $mview->name)), 'error');
+        return FALSE;
+      }
     }
     else {
-      drupal_set_message(t("Problem deleting materialized view, %name.", array('%name' => $mview->name)), 'error');
+      return TRUE;
     }
   }
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog_exception('tripal_chado', $e);
+    $error = _drupal_decode_exception($e);
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      "Could not delete the materialized view %table_name: %message.",
+      array('%table_name' => $name, '%message' => $error['!message']));
+  }
+  return FALSE;
 }
 
 /**
