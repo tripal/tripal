@@ -16,12 +16,8 @@
  */
 
 /**
- * Add a materialized view to the chado database to help speed data access. This
- * function supports the older style where postgres column specifications
- * are provided using the $mv_table, $mv_specs and $indexed variables. It also
- * supports the newer preferred method where the materialized view is described
- * using the Drupal Schema API array.
- *
+ * Add a materialized view to the chado database. 
+ * 
  * @param $name
  *   The name of the materialized view.
  * @param $modulename
@@ -41,7 +37,8 @@
  *   parameter allows this to be used as a true API function.
  *
  * @return 
- *   TRUE if the materialized view was successfully addd, FALSE otherwise.
+ *   TRUE if the materialized view was successfully added, FALSE otherwise.
+ *   
  * @ingroup tripal_mviews_api
  */
 function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {

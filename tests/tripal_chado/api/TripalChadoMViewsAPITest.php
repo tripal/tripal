@@ -206,7 +206,7 @@ class TripalChadoMViewsAPITest extends TripalTestCase {
     
     // Now try to read the mview. Previously, the behavior was the the mview
     // table would not be created because Tripal thinks it's already there.
-    chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
+    $success = chado_add_mview($mview_name, $mview_module, $mview_schema, $mview_sql, $mview_comment, FALSE);
     $this->assertTrue($success, "Failed to re-create materialized view: $mview_name");
     
     $this->assertTrue(chado_table_exists($mview_name),
