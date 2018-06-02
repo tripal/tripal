@@ -463,7 +463,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
-  //protocol
+  // Protocol.
   if ($table_name == 'protocol' and array_key_exists('protocol_id', $schema['fields'])) {
     $field_name = 'sep__protocol';
     $field_type = 'sep__protocol';
@@ -476,7 +476,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ),
     );
-  }
+  } 
 
 }
 
@@ -1066,7 +1066,75 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     if ($table_name == 'contact' and $column_name == 'description') {
       $base_info['label'] = 'Short Description';
     }
-
+    //
+    // PROTOCOL TABLE
+    //
+    if ($table_name == 'protocol') {
+      if ($column_name == 'protocoldescription') {
+        $base_info['label'] = 'Protocol Description';
+      }
+      if ($column_name == 'uri') {
+        $base_info['label'] = 'URI';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'name') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'hardwaredescription') {
+        $base_info['label'] = 'Instrument Description';
+        $base_info['description'] = 'The description of instruments used for this protocol';
+      }
+      if ($column_name == 'softwaredescription') {
+        $base_info['label'] = 'Software Description';
+        $base_info['description'] = 'The description of software used for this protocol';
+      }
+      if ($column_name == 'pub_id') {
+        $base_info['label'] = 'Publication';
+      }
+    }
+    //
+    // ASSAY TABLE
+    //
+    if ($table_name == 'assay') {
+      if ($column_name == 'name') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'protcol_id') {
+        $base_info['label'] = 'Protocol';
+      }
+      if ($column_name == 'arraybatchidentifier') {
+        $base_info['label'] = 'Array Batch Identifier';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'operator_id') {
+        $base_info['label'] = 'Operator';
+      }
+      if ($column_name == 'arrayidentifier') {
+        $base_info['label'] = 'Array Identifier';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'arraydesign_id') {
+        $base_info['label'] = 'Array Design';
+      }
+      if ($column_name == 'assaydate') {
+        $base_info['label'] = 'Assay Date';
+      }
+    }
+    //
+    // ARRAYDESIGN TABLE
+    //
+    if ($table_name == 'arraydesign') {
+      if ($column_name == 'name' or $column_name == 'version' or 
+          $column_name == 'array_dimensions' or $column_name == 'element_dimensions') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+    }
 
     $info[$field_name] = $base_info;
   }
@@ -1649,7 +1717,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
 
   // PROTOCOL FIELD
-  if ($table_name != 'protocol' and
+   if ($table_name != 'protocol' and
     (array_key_exists('protocol_id', $schema['fields']))) {
 
     $field_name = 'sep__protocol';
@@ -1686,10 +1754,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-  }
-
-
-
+  } 
 
 }
 
