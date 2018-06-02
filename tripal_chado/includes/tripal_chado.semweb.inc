@@ -689,6 +689,13 @@ function tripal_chado_populate_vocab_EFO() {
     'definition' => '',
   ));
   chado_associate_semweb_term('arraydesign', 'manufacturer_id', $term);
+  $term = chado_insert_cvterm(array(
+    'id' => 'EFO:0001728',
+    'name' => 'array manufacturer',
+    'cv_name' => 'efo',
+    'definition' => '',
+  ));
+  chado_associate_semweb_term('arraydesign', 'manufacturer_id', $term);
 }
 /**
  * Adds the Eagle-i Resource Ontology database and terms.
