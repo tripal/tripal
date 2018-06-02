@@ -588,7 +588,8 @@ function chado_get_base_tables() {
 
   // Initialize the base tables with those tables that are missing a type.
   // Ideally they should have a type, but that's for a future version of Chado.
-  $base_tables = array('organism', 'project', 'analysis', 'biomaterial', 'eimage');
+  $base_tables = array('organism', 'project', 'analysis', 'biomaterial', 
+    'eimage', 'assay');
 
   // We'll use the cvterm table to guide which tables are base tables. Typically
   // base tables (with a few exceptions) all have a type.  Iterate through the
@@ -617,10 +618,16 @@ function chado_get_base_tables() {
   // whose foreign key constraints link to two or more base table.
   $final_list = array();
   foreach ($base_tables as $i => $tablename) {
-    // The biomaterial table breaks our rule and seems to look like a linking
-    // table, but we want to keep it as a base table.
-    if ($tablename == 'biomaterial') {
+    // A few tables break our rule and seems to look 
+    // like a linking table, but we want to keep it as a base table.
+    if ($tablename == 'biomaterial' or $tablename == 'assay' or $tablename == 'arraydesign') {
       $final_list[] = $tablename;
+      continue;
+    }
+    
+    // Remove the phenotype table. It really shouldn't be a base table as
+    // it is meant to store individual phenotype measurements.
+    if ($tablename == 'phenotype') {
       continue;
     }
     $num_links = 0;
@@ -636,10 +643,6 @@ function chado_get_base_tables() {
       $final_list[] = $tablename;
     }
   }
-
-  // Remove the phenotype table. It really shouldn't be a base table as
-  // it is meant to store individual phenotype measurements.
-  unset($final_list['phenotyp']);
 
   // Now add in the cvterm table to the list.
   $final_list[] = 'cvterm';

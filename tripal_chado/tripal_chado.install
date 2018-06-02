@@ -1513,4 +1513,17 @@ function tripal_chado_update_7324() {
   }
 }
 
+/**
+ * Adding additional vocabulary term mapping to Chado table columns.
+ */
+function tripal_chado_update_7325() {
+  try {
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
+    tripal_chado_populate_chado_semweb_table();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 
