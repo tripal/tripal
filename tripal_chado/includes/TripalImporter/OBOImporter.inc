@@ -736,7 +736,6 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function processTerm($term, $defaultcv, $is_relationship = 0, $default_db) {
-
     // make sure we have a namespace for this term
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
@@ -766,11 +765,12 @@ class OBOImporter extends TripalImporter {
       $accession_num = $pair[1];
       if (is_numeric($accession_num)) {
         $results = $this->oboEbiLookup($t['id'], 'term');
-        if (!empty($results)) {
+        if (isset($results['label'])) {
           $t['name'] = $results['label'];
           $defaultcv = $results['ontology_name'];
+          $default_db = $results['ontology_prefix'];
         } 
-        elseif (empty($results)) {
+        if (!isset($results['label'])) {
           $results = $this->oboEbiLookup($t['id'], 'query');
           if (array_key_exists('docs', $results)) {
             if (!empty($results['response']['docs'])) {
@@ -779,16 +779,18 @@ class OBOImporter extends TripalImporter {
                   if ($doc['obo_id'] == $t['id']) {
                     $t['name']  = $doc['label'];
                     $defaultcv = $doc['ontology_name'];
+                    $default_db = $doc['ontology_prefix'];
                   }
                 }
               } else {
                 $t['name']  = $results['response']['docs'][0]['label'];
                 $defaultcv = $results['response']['docs'][0]['ontology_name'];
+                $default_db = $results['response']['docs'][0]['ontology_prefix'];
               }
             }
           }
         } 
-        elseif ($results['response']['numFound'] == 0) {
+        if ($results['response']['numFound'] == 0 && !isset($results['label'])) {
           // The first search doesn't work, so let's try a broader one.
           $results = $this->oboEbiLookup($t['id'], 'query-non-local');
           if (!empty($results)) {
@@ -802,6 +804,7 @@ class OBOImporter extends TripalImporter {
                     // that info and then end the loop.
                     $t['name'] = $item['label'];
                     $defaultcv = $item['ontology_name'];
+                    $default_db = $item['ontology_prefix'];
                     break;
                   }
                 }
@@ -811,7 +814,6 @@ class OBOImporter extends TripalImporter {
         }
       }
     } 
-
 
     // Check that the default_cv is in the cv table.
     $sql =  "
@@ -823,7 +825,7 @@ class OBOImporter extends TripalImporter {
     if (!$results){
       //The controlled vocabulary is not in the cv term table and needs to be added.
       $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
-      if (!empty($ontology_info)){
+      if (!empty($ontology_info['config'])){
         // CV Name.
         if (array_key_exists('namespace', $ontology_info['config'])) {
           $cv_info = $ontology_info['config']['namespace'];
@@ -840,17 +842,15 @@ class OBOImporter extends TripalImporter {
           $description = '';
         }
         $cv_returned = chado_insert_cv($cv_info, $description);
-        // If name && definition are both empty then look up the term from the ontology you just loaded.
         if($cv_returned) {
           $defaultcv = $cv_returned->name;
-
           // Now add the db entry.
           $values = array(
             'name' => $ontology_info['config']['preferredPrefix'],
             'description' => $ontology_info['config']['description'],
             'url' => $ontology_info['config']['versionIri'],
-    
           );
+          
           $db_returned = chado_insert_db($values);
           if ($db_returned) {
             $default_db = $db_returned->name;
@@ -863,8 +863,6 @@ class OBOImporter extends TripalImporter {
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
     $t['db_name'] = $default_db;
-
-    // add the cvterm
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
@@ -1043,15 +1041,16 @@ class OBOImporter extends TripalImporter {
       $pair = explode(":", $term_id);    
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
+      $rel_name = '';
       if (is_numeric($accession_num)) {
         $results = $this->oboEbiLookup($term_id, 'term');
         if (isset($results['label'])) {
           $rel_name = $results['label'];
           $oterm = $results;
         } 
-        elseif (empty($results)) {
+        if (empty($rel_name)) {
           $results = $this->oboEbiLookup($term_id, 'query');
-          if (array_key_exists('docs', $results)){
+          if (array_key_exists('docs', $results['response'])){
             if(!empty($results['response']['docs'])) {
               if (count($results['response']['docs']) > 1) {
                 foreach ($results['response']['docs'] as $doc) {
@@ -1068,16 +1067,14 @@ class OBOImporter extends TripalImporter {
             }
           }
         } 
-        elseif ($results['response']['numFound'] === FALSE) {
+        if (empty($rel_name)) {
           // The first search doesn't work, so let's try a broader one.
           $results = $this->oboEbiLookup($term_id, 'query-non-local');
           if (!empty($results)) {
-            if (array_key_exists('docs', $results)) {
-              if (!empty($results['docs'])) {
-                $accession = $term_id;
-                $accession_underscore = str_replace(":", "_", $accession);
+            if (array_key_exists('docs', $results['response'])) {
+              if (!empty($results['response']['docs'])) {
                 foreach ($results['response']['docs'] as $item) {
-                  if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
+                  if ($item['obo_id'] == $term_id) {
                     //Found the first place a label is other than the accession is used, so take
                     // that info and then end the loop.
                     $rel_name = $item['label'];
@@ -1124,7 +1121,7 @@ class OBOImporter extends TripalImporter {
     // Get the object term.
     if ($reference_term === TRUE) {
       $objterm = array();
-      $objterm['id'] = $rel;
+      $objterm['id'] = $oterm['label'];
       $objterm['name'] = $oterm['obo_id'];
       if (array_key_exists('def', $oterm)) {
         $objterm['definition'] = $oterm['def'];
@@ -1160,13 +1157,13 @@ class OBOImporter extends TripalImporter {
         $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
       }
     }
+
     $objterm['cv_name' ] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
-
     $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
-      throw new Exception("Cannot add cvterm " . $oterm['name'][0]);
+      throw new Exception("Cannot add cvterm " . $objterm['name']);
     }
 
     // check to see if the cvterm_relationship already exists, if not add it
@@ -1344,6 +1341,12 @@ class OBOImporter extends TripalImporter {
 
       //remove comments from end of lines
       $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);  // TODO: if the explamation is escaped
+      
+      // Remove annotations surrounded by brackets. These are found
+      // in the Trait Ontology (e.g. TO:1000023 {is_inferred="true"})
+      // That construct has useful info, but it is not in the OBO 1.4 format
+      // specifications.
+      $line = preg_replace('/\{.*?\}/', '', $line);
 
       // at the first stanza we're out of header
       if (preg_match('/^\s*\[/', $line)) {
@@ -1613,7 +1616,7 @@ class OBOImporter extends TripalImporter {
         $response = drupal_json_decode($response->data);
       }
     }
-    elseif($type_of_search == 'query') {    
+    elseif($type_of_search == 'query') { 
       $options = array();
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
       $response = drupal_http_request($full_url, $options);
