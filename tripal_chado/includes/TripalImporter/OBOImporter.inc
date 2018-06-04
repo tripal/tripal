@@ -763,7 +763,7 @@ class OBOImporter extends TripalImporter {
       $pair = explode(":", $t['id']);
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
-      if (is_numeric($accession_num)) {
+      if (is_numeric($accession_num) && ($ontology_id != $default_db)) {
         $results = $this->oboEbiLookup($t['id'], 'term');
         if (isset($results['label'])) {
           $t['name'] = $results['label'];
@@ -863,6 +863,7 @@ class OBOImporter extends TripalImporter {
     $t['cv_name'] = $defaultcv;
     $t['is_relationship'] = $is_relationship;
     $t['db_name'] = $default_db;
+
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
@@ -1029,19 +1030,23 @@ class OBOImporter extends TripalImporter {
   private function addRelationship($cvterm, $defaultcv, $rel,
       $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
     $reference_term = FALSE;
+    $in_obo = $this->getTerm($objname);
     // If an accession was passed we need to see if we can find the actual label.
-    if (strpos($rel, ':') || strpos($objname, ':')) {
+    if (strpos($rel, ':') || strpos($objname, ':') && empty($in_obo['name'])) {
+
       if (strpos($rel, ':')) {
         $term_id = $rel;
       }
       elseif (strpos($objname, ':')) {
         $term_id = $objname;
       }
+
       $reference_term = TRUE;
       $pair = explode(":", $term_id);    
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       $rel_name = '';
+
       if (is_numeric($accession_num)) {
         $results = $this->oboEbiLookup($term_id, 'term');
         if (isset($results['label'])) {
