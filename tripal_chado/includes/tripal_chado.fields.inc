@@ -464,7 +464,8 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   }
 
   // Protocol.
-  if ($table_name == 'protocol' and array_key_exists('protocol_id', $schema['fields'])) {
+  if ($table_name != 'protocol' and 
+      array_key_exists('protocol_id', $schema['fields'])) {
     $field_name = 'sep__protocol';
     $field_type = 'sep__protocol';
     $info[$field_name] = array(
