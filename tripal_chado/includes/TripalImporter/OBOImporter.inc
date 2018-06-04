@@ -1119,7 +1119,7 @@ class OBOImporter extends TripalImporter {
     }
 
     // Get the object term.
-    if ($reference_term === TRUE) {
+    if ($reference_term === TRUE && !empty($oterm)) {
       $objterm = array();
       $objterm['id'] = $oterm['label'];
       $objterm['name'] = $oterm['obo_id'];
