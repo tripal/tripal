@@ -21,12 +21,14 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
     $vocabulary = $this->instance['settings']['vocabulary'];
     $parent_term = $this->instance['settings']['parent_term'];
+    
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
     $value = '';
     $type_id = '';
 
     if (count($items) > 0) {
-      $type_id = $items[0]['chado-' . $field_table . '__type_id'];
+      $type_id = $items[0][$linker_field];
       $value = $items[0]['value'];
     }
 
@@ -85,7 +87,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
           $field_name, $delta);
     }
     if ($vocabulary) {
-      $widget['chado-' . $field_table . '__type_id'] = array(
+      $widget[$linker_field] = array(
         '#type' => 'select',
         '#options' => $options,
         '#title' => $element['#title'],
@@ -111,11 +113,12 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
     $vocabulary = $this->instance['settings']['vocabulary'];
     $parent_term = $this->instance['settings']['parent_term'];
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
     // Get the vocabulary term.
     $type_id = '';
     if ($vocabulary) {
-      $type_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'];
+      $type_id = $form_state['values'][$field_name]['und'][$delta][$linker_field];
     }
     else {
       $selected = tripal_get_term_lookup_form_result($form, $form_state, $field_name, $delta);
@@ -128,7 +131,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     }
 
     if (!$type_id) {
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = '__NULL__';
+      $form_state['values'][$field_name]['und'][$delta][$linker_field] = '__NULL__';
     }
     else {
       $form_state['values'][$field_name]['und'][$delta]['value'] = $type_id;

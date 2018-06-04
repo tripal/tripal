@@ -554,7 +554,7 @@ function tripal_admin_add_type_form($form, &$form_state) {
     // more than one that match.
     foreach ($terms as $term) {
       // Save the user a click by setting the default value as 1 if there's
-      // only one matching term.
+      // only one matching term. 
       $default = FALSE;
       $attrs = array();
       if ($num_terms == 0 and count($terms) == 1) {
@@ -583,6 +583,49 @@ function tripal_admin_add_type_form($form, &$form_state) {
         $selected_term = $term;
       }
       $num_terms++;
+    }
+    
+    
+    // Next find terms that are synonyms
+    $match = array(
+      'synonym' => $term_name,
+    );
+    $termsyn = chado_generate_var('cvtermsynonym', $match, array('return_array' => TRUE));
+    // Let the user select from any matching terms. Sometimes there may be
+    // more than one that match.
+    foreach ($termsyn as $synonym) {
+      $term = $synonym->cvterm_id;
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
+      $term_element_name = 'term-' . $term->cvterm_id;
+      $form['term_match']['terms_list'][$term_element_name] = array(
+        '#type' => 'checkbox',
+        '#title' =>  $term->name,
+        '#default_value' => $default,
+        '#attributes' => $attrs,
+        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $term->definition .
+        '<br><b>Synonym:</b> ' . $synonym->synonym,
+        '#ajax' => array(
+          'callback' => "tripal_admin_add_type_form_ajax_callback",
+          'wrapper' => "tripal-vocab-select-form",
+          'effect' => 'fade',
+          'method' => 'replace'
+        ),
+      );
+      
+      if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
+        $form_state['values'][$term_element_name] == 1) {
+          $selected_term = $term;
+        }
+        $num_terms++;
     }
     if ($num_terms == 0) {
       $form['terms_list']['none'] = array(

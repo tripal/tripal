@@ -114,29 +114,31 @@ class sep__protocol extends ChadoField {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    $linker_field = 'chado-' . $field_table . '__protocol_id';
+    $base_table = $this->instance['settings']['base_table'];
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = [
       'value' => [],
     ];
 
-    if (!$record->protocol_id->protocol_id) {
+    if (!$record) {
       return;
     }
-
-    $protocol_id = $record->protocol_id->protocol_id;
-    $protocol_name = $record->protocol_id->name;
-    $protocol_type_id = $record->protocol_id->type_id;
-
+    
+    $protocol = $record->{$field_column};
     $entity_id = $record->entity_id;
 
+    // Get the Protocol controlled vocabulary terms.
+    $protocol_name_term = chado_get_semweb_term('protocol', 'name');
+    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');       
+    
     $entity->{$field_name}['und'][0]['value'] = [
-      "protocol_name" => $protocol_name,
-      'type_id' => $protocol_type_id
+      $protocol_name_term => $protocol->name,
+      $protocol_type_term => $protocol->type_id->name,
     ];
-    $entity->{$field_name}['und'][0]['protocol_chado_id'] =  $protocol_id;
-//    $entity->{$field_name}['und'][0]['protocol_entity_id'] =  $entity_id;
+    
+    $entity->{$field_name}['und'][0][$linker_field] =  $protocol->protocol_id;
 
     // Is there a published entity for this protocol?
     if (property_exists($record->{$field_column}, 'entity_id')) {
@@ -144,6 +146,9 @@ class sep__protocol extends ChadoField {
     }
   }
 
+  /**
+   * @see TripalField::elementInfo()
+   */
   function elementInfo() {
     $field_term = $this->getFieldTermID();
     $type_id_term = tripal_get_chado_semweb_term('protocol', 'type_id');

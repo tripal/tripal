@@ -1978,6 +1978,17 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A plan detailing how a study will be performed in order to represent the phenomenon under examination, to answer the research questions that have been asked, and defining the methods of data analysis. Study design is driven by research hypothesis being posed, study subject/population/sample available, logistics/resources: technology, support, networking, collaborative support, etc. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'studydesign_id', $term);
+  
+  // The Company term is missing for the Tripal Contact ontology, but is
+  // useful for the arraydesign.manufacturer which is an FK to Contact.
+  // It seems better to use a term from a curated ontology than to add to 
+  // Tripal Contact.
+  $term = chado_insert_cvterm(array(
+    'id' => 'NCIT:C54131',
+    'name' => 'Company',
+    'cv_name' => 'ncit',
+    'definition' => 'Any formal business entity for profit, which may be a corporation, a partnership, association or individual proprietorship. [ NCI http://dictionary.law.com ]',
+  ));
 }
 
 /**

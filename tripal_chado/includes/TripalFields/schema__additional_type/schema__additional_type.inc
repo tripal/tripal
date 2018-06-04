@@ -94,17 +94,19 @@ class schema__additional_type extends ChadoField {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-
+    
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
+    
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      'chado-' . $field_table . '__type_id' => '',
+      $linker_field => '',
     );
 
-    if ($record->type_id) {
+    if ($record->{$field_column}) {
       $entity->{$field_name}['und'][0] = array(
-        'value' => $record->type_id->name,
-        'chado-' . $field_table . '__type_id' => $record->type_id->cvterm_id,
+        'value' => $record->{$field_column}->name,
+        $linker_field => $record->{$field_column}->cvterm_id,
       );
     }
   }

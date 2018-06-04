@@ -32,12 +32,7 @@ class local__contact_widget extends ChadoFieldWidget {
     $name_term = chado_get_semweb_term('contact', 'name');
 
     // Set the linker field appropriately.
-    if ($field_table == 'biomaterial') {
-      $linker_field = 'chado-biomaterial__biosourceprovider_id';
-    }
-    else {
-      $linker_field = 'chado-' . $field_table . '__contact_id';
-    }
+    $linker_field = 'chado-' . $field_table . '__' . $chado_column;
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -70,11 +65,11 @@ class local__contact_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $contact_id,
     );
-
     $widget['name'] = array(
       '#type' => 'textfield',
-      '#title' => t('Contact'),
+      '#title' => $element['#title'],
       '#default_value' => $name,
+      '#required' => $element['#required'],
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/contact',
       '#maxlength' => 100000,
     );
@@ -102,12 +97,7 @@ class local__contact_widget extends ChadoFieldWidget {
     $name = $form_state['values'][$field_name]['und'][$delta]['name'];
 
     // Set the linker field appropriately.
-    if ($field_table == 'biomaterial') {
-      $linker_field = 'chado-biomaterial__biosourceprovider_id';
-    }
-    else {
-      $linker_field = 'chado-' . $field_table . '__contact_id';
-    }
+    $linker_field = 'chado-' . $field_table . '__' . $chado_column;
 
     // If the user provided a name then we want to set the foreign key
     // value to be the chado_record_id

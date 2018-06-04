@@ -585,6 +585,11 @@ function tripal_get_vocabularies() {
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $title = 'Vocabulary Term', $description = '', $is_required,
     $field_name = '', $delta = 0 ) {
+  
+  $ajax_wrapper_id = 'tripal-vocab-select-form-' . $delta;
+  if ($field_name) {
+    $ajax_wrapper_id = $field_name . '-' . $delta;
+  }
 
   $term_name = $default_name;
   if (array_key_exists('values', $form_state)) {
@@ -600,15 +605,15 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       'the controlled vocabulary should already be loaded into this site.');
   }
 
-  $form_state['storage']['term_match_field'] = $field_name;
-  $form_state['storage']['term_match_delta'] = $delta;
+  $form_state['storage'][$ajax_wrapper_id]['term_match_field'] = $field_name;
+  $form_state['storage'][$ajax_wrapper_id]['term_match_delta'] = $delta;
 
   $form['term_match'] = array(
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,
     '#title' => t($title),
-    '#prefix' => '<div id = "tripal-vocab-select-form">',
+    '#prefix' => '<div id = "' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
   );
   $form['term_match']['term_name'] = array(
@@ -622,12 +627,12 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   $form['term_match']['select_button'] = array(
     '#type' => 'button',
     '#value' => t('Lookup Term'),
-    '#name' => 'select_cvterm',
+    '#name' => 'select_cvterm_' . $ajax_wrapper_id,
     '#validate' => array(),
     '#limit_validation_errors' => array(),
     '#ajax' => array(
       'callback' => "tripal_get_term_lookup_form_ajax_callback",
-      'wrapper' => "tripal-vocab-select-form",
+      'wrapper' => $ajax_wrapper_id,
       'effect' => 'fade',
       'method' => 'replace'
     ),
@@ -652,7 +657,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     $num_terms = 0;
-    $selected_term = '';
+    $selected_term = '';  
 
     // Let the user select from any matching terms. Sometimes there may be
     // more than one that match.
@@ -676,7 +681,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '<br><b>Definition:</b>  ' . $term->definition,
         '#ajax' => array(
           'callback' => "tripal_get_term_lookup_form_ajax_callback",
-          'wrapper' => "tripal-vocab-select-form",
+          'wrapper' => $ajax_wrapper_id,
           'effect' => 'fade',
           'method' => 'replace'
         ),
@@ -688,6 +693,50 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       }
       $num_terms++;
     }
+    
+    // Next find terms that are synonyms
+    $match = array(
+      'synonym' => $term_name,
+    );
+    $termsyn = chado_generate_var('cvtermsynonym', $match, array('return_array' => TRUE));
+    // Let the user select from any matching terms. Sometimes there may be
+    // more than one that match.
+    foreach ($termsyn as $synonym) {
+      $term = $synonym->cvterm_id;
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
+      $term_element_name = 'term-' . $term->cvterm_id;
+      $form['term_match']['terms_list'][$term_element_name] = array(
+        '#type' => 'checkbox',
+        '#title' =>  $term->name,
+        '#default_value' => $default,
+        '#attributes' => $attrs,
+        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $term->definition . 
+        '<br><b>Synonym:</b> ' . $synonym->synonym,
+        '#ajax' => array(
+          'callback' => "tripal_get_term_lookup_form_ajax_callback",
+          'wrapper' => $ajax_wrapper_id,
+          'effect' => 'fade',
+          'method' => 'replace'
+        ),
+      );
+      
+      if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
+        $form_state['values'][$term_element_name] == 1) {
+          $selected_term = $term;
+        }
+        $num_terms++;
+    }
+    
+    
     if ($num_terms == 0) {
       $form['term_match']['terms_list']['none'] = array(
         '#type' => 'item',
@@ -727,11 +776,13 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
     $values = $form_state['values'];
   }
 
-  foreach ($values as $key => $value) {
-    $matches = array();
-    if (preg_match("/^term-(\d+)$/", $key, $matches) and $values['term-' . $matches[1]]) {
-      $cvterm_id = $matches[1];
-      $selected[] = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+  if (is_array($values)) {
+    foreach ($values as $key => $value) {
+      $matches = array();
+      if (preg_match("/^term-(\d+)$/", $key, $matches) and $values['term-' . $matches[1]]) {
+        $cvterm_id = $matches[1];
+        $selected[] = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      }
     }
   }
   return $selected;
@@ -743,9 +794,11 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form_ajax_callback($form, $form_state) {
-  $field_name = $form_state['storage']['term_match_field'];
-  $delta = $form_state['storage']['term_match_delta'];
-
+  $ajax_wrapper_id = $form_state['triggering_element']['#ajax']['wrapper'];
+  
+  $field_name = $form_state['storage'][$ajax_wrapper_id]['term_match_field'];
+  $delta = $form_state['storage'][$ajax_wrapper_id]['term_match_delta'];
+  
   // If this form is in a field then we need to dig a bit deeper to return
   // the form elements.
   if ($field_name) {
