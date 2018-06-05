@@ -19,23 +19,14 @@ function tripal_chado_prepare_form($form, $form_state) {
     '#description' => t("Before a Drupal site can use Chado (via Tripal), both
         Chado and Drupal must be prepared a bit more.  Tripal will add some new
         materialized views, custom tables and controlled vocabularies to Chado.
-        It will also add some management tables to Drupal. You only are
-        required to prepare your Drupal site if this is a brand-new Drupal
-        installation or if Chado was installed outside of Tripal.  If you
-        installed Chado using Tripal then you do not need to run this step.
-        If you are upgrading from a previous version of Tripal, you do not
-        need to prepare your site, and you can click the 'Skip' button."),
+        It will also add some management tables to Drupal and add some default
+        content types for biological and ancillary data."),
   );
 
   $form['prepare-button'] = array(
     '#type' => 'submit',
     '#value' => t('Prepare this site'),
     '#name' => 'prepare-chado',
-  );
-  $form['skip-button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Skip'),
-    '#name' => 'prepare-skip',
   );
   return $form;
 }
@@ -56,9 +47,6 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
      tripal_add_job('Prepare Chado', 'tripal_chado',
        'tripal_chado_prepare_chado', $args,
        $user->uid, 10, $includes);
-   }
-   if ($form_state['clicked_button']['#name'] == "prepare-skip") {
-     variable_set('tripal_chado_is_prepared', TRUE);
    }
 }
 
