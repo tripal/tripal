@@ -864,6 +864,14 @@ class OBOImporter extends TripalImporter {
     $t['is_relationship'] = $is_relationship;
     $t['db_name'] = $default_db;
 
+    // The name being empty regularly causes problems, so let's check it's there.
+    if (empty($t['name'])){
+      $results = $this->oboEbiLookup($t['id'], 'term');
+      if (isset($results['label'])) {
+        $t['name'] = $results['label'];
+      } 
+    }
+    
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
