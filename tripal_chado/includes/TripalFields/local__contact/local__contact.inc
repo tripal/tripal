@@ -139,16 +139,8 @@ class local__contact extends ChadoField {
     }
       
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    if ($field_table == 'biomaterial') {
-      $contact = $record->biosourceprovider_id;      
-    }
-    elseif ($field_table == 'arraydesign') {
-      $contact = $record->manufacturer_id;
-    }
-    else {
-      $contact = $record->contact_id;
-    }
-  
+    $contact = $record->{$field_column};
+    
     if ($contact) {
       $entity->{$field_name}['und'][0] = array(
         'value' => array(
@@ -157,7 +149,7 @@ class local__contact extends ChadoField {
           $description_term => $contact->description,
         ),
         $entity->{$field_name}['und'][0][$linker_field] = $contact->contact_id,
-        );
+      );
       if (property_exists($contact, 'entity_id')) {
         $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
       }

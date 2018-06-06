@@ -519,6 +519,21 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
   
+  // Assay operator.
+  if ($table_name == 'assay') {
+      $field_name = 'assay__operator_id';
+      $field_type = 'local__contact';
+      $info[$field_name] = array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => 1,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+      );
+    }
+  
   // For the pub_id field in the base table.
   $schema = chado_get_schema($table_name);
   if (array_key_exists('pub_id', $schema['fields'])) {
@@ -1974,7 +1989,45 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   } 
-
+  
+  if ($table_name == 'assay') {      
+    // Remove the ncit__operator added by the
+    // tripal_chado_bunde_instnaces_info_base function.
+    unset($info['ncit__operator']);
+    
+    $field_name = 'assay__operator_id';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Operator',
+      'description' => 'The individual responsible for performing the assay.',
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => 'assay',
+        'chado_column' => 'operator_id',
+        'base_table' => 'assay',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'Operator',
+        'term_accession' => 'C48036',
+        
+      ),
+      'widget' => array(
+        'type' => 'local__contact_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'local__contact_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  } 
 }
 
 /**

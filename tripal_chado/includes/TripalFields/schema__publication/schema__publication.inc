@@ -88,8 +88,7 @@ class schema__publication extends ChadoField {
     $pkey = '';
     $fkey_lcolumn = '';
     $fkey_rcolumn = '';
-    $linker_table = '';
-       
+    $linker_table = '';   
     
     // If the field table and the base table are not the same thing then
     // we are going through a linker table.
