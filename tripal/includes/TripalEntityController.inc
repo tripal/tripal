@@ -655,7 +655,9 @@ class TripalEntityController extends EntityAPIController {
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
-                cache_set($cfid, $entity->$field_name, 'cache_field');
+                if (property_exists($entity, $field_name)) {
+                  cache_set($cfid, $entity->$field_name, 'cache_field');
+                }
               }
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
