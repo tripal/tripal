@@ -99,6 +99,73 @@ function tripal_core_get_schemas() {
     $schema[$table] = $arr;
   }
 
+  $schema['tripal_custom_quota'] = tripal_core_tripal_custom_quota_schema();
+  $schema['tripal_expiration_files'] = tripal_core_tripal_expiration_files_schema();
+  
+  return $schema;
+}
+
+/**
+ * Provides the schema for the tripal_custom_quota table.
+ */
+function tripal_core_tripal_custom_quota_schema() {
+  $schema = array(
+    'table' => 'tripal_custom_quota',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_quota' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_expiration' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+    ),
+    'primary key' => array('uid'),
+    'unique keys' => array(
+      'tripal_custom_quota_uq1' => array('uid'),
+    ),
+    'indexes' => array(
+      'tripal_custom_quota_idx1' => array('uid'),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Provides the schema for the tripal_expiration_files table.
+ */
+function tripal_core_tripal_expiration_files_schema() {
+  $schema = array (
+    'table' => 'tripal_expiration_files',
+    'fields' => array (
+      'fid' => array(
+        'type' => 'int',
+        'not NULL' => TRUE
+      ),
+      'expiration_date' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE
+      ),
+    ),
+    'primary key' => array(
+      0 => 'fid'
+    ),
+    'unique keys' => array(
+      'tripal_expiration_files_uq1' => array('fid'),
+    ),
+    'indexes' => array(
+      'tripal_expiration_files_idx1' => array('fid'),
+    ),
+  );
   return $schema;
 }
 
@@ -651,5 +718,21 @@ function tripal_core_update_7204() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not add new tables table: '. $error);
 
+  }
+}
+
+/**
+ * Adds new tables for file quotas and expiration.
+ */
+function tripal_core_update_7205() {
+  try {
+    $schema['tripal_custom_quota'] = tripal_core_tripal_custom_quota_schema();
+    db_create_table('tripal_custom_quota', $schema['tripal_custom_quota']);  
+    $schema['tripal_expiration_files'] = tripal_core_tripal_expiration_files_schema();
+    db_create_table('tripal_expiration_files', $schema['tripal_expiration_files']);
+  }
+  catch (Exception $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add new tables table: '. $error);    
   }
 }
