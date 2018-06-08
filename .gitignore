@@ -2,3 +2,6 @@
 .idea/
 vendor/
 tests/.env
+.buildpath
+.project
+.settings/

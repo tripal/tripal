@@ -1,11 +1,12 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b7fddf464c4d4d28fc77f805792807d",
-    "packages": [
+    "content-hash": "c8b425537daabed28cd865fb02a05684",
+    "packages": [],
+    "packages-dev": [
         {
             "name": "doctrine/instantiator",
             "version": "1.0.5",
@@ -1653,16 +1654,16 @@
         },
         {
             "name": "statonlab/tripal-test-suite",
-            "version": "1.0.2",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/statonlab/TripalTestSuite.git",
-                "reference": "2d09cd7565a82f16cc4bba7411bc32e2553cb92c"
+                "reference": "80b60a14b80f00d164ae5ba8511080d725526d38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/2d09cd7565a82f16cc4bba7411bc32e2553cb92c",
-                "reference": "2d09cd7565a82f16cc4bba7411bc32e2553cb92c",
+                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/80b60a14b80f00d164ae5ba8511080d725526d38",
+                "reference": "80b60a14b80f00d164ae5ba8511080d725526d38",
                 "shasum": ""
             },
             "require": {
@@ -1697,7 +1698,7 @@
                     "email": "bcondon@utk.edu"
                 }
             ],
-            "time": "2018-05-02T15:51:28+00:00"
+            "time": "2018-05-25T13:17:31+00:00"
         },
         {
             "name": "symfony/console",
@@ -1917,7 +1918,6 @@
             "time": "2018-01-29T19:49:41+00:00"
         }
     ],
-    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],

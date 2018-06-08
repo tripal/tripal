@@ -1,8 +1,8 @@
 {
   "require-dev": {
-    "doctrine/instantiator": "1.0.*"
+    "doctrine/instantiator": "1.0.*",
+    "statonlab/tripal-test-suite": "^1.1"
   },
   "require": {
-    "statonlab/tripal-test-suite": "1.0.*"
   }
 }
