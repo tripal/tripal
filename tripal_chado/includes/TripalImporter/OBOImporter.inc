@@ -685,7 +685,7 @@ class OBOImporter extends TripalImporter {
    */
   private function processTerms($defaultcv, $default_db) {
     $i = 0;
-
+    $external = FALSE;
     // Iterate through each term from the OBO file and add it.
     $sql = "
       SELECT * FROM {tripal_obo_temp}
@@ -710,8 +710,22 @@ class OBOImporter extends TripalImporter {
       $this->setItemsHandled($i);
 
       // Add/update this term.
-      if (!$this->processTerm($term, $defaultcv->name, 0, $default_db)) {
+      $status = $this->processTerm($term, $defaultcv->name, 0, $default_db);
+      if (!$status) {
         throw new Exception("Failed to process terms from the ontology");
+      }
+      else if ($status === 2 && $external == FALSE) {
+        $this->logMessage(
+          "A term that belongs to another ontology is used within this " .
+            "vocabulary.  Therefore a lookup was performed with the EBI Ontology " .
+            "Lookup Service to retrieve the information for this term. " .
+            "Please note, that vocabularies with many non-local terms " .
+            "require remote lookups and these lookups can dramatically " . 
+            "decrease loading time. " ,
+          array('!vocab' => $defaultcv->name),
+          TRIPAL_WARNING
+        );
+        $external = TRUE;
       }
 
       $i++;
@@ -759,16 +773,19 @@ class OBOImporter extends TripalImporter {
     }
 
     // Check the id isn't a reference to another term.
+    //TODO: Check chado for the accession, so we can avoid lookups where possible.
     if (strpos($t['id'], ':')) {
       $pair = explode(":", $t['id']);
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       if (is_numeric($accession_num) && ($ontology_id != $default_db)) {
+        // Check that the term isn't already in Chado.
         $results = $this->oboEbiLookup($t['id'], 'term');
         if (isset($results['label'])) {
           $t['name'] = $results['label'];
           $defaultcv = $results['ontology_name'];
           $default_db = $results['ontology_prefix'];
+          $external = TRUE;
         } 
         if (!isset($results['label'])) {
           $results = $this->oboEbiLookup($t['id'], 'query');
@@ -780,12 +797,14 @@ class OBOImporter extends TripalImporter {
                     $t['name']  = $doc['label'];
                     $defaultcv = $doc['ontology_name'];
                     $default_db = $doc['ontology_prefix'];
+                    $external = true;
                   }
                 }
               } else {
                 $t['name']  = $results['response']['docs'][0]['label'];
                 $defaultcv = $results['response']['docs'][0]['ontology_name'];
                 $default_db = $results['response']['docs'][0]['ontology_prefix'];
+                $external = true;
               }
             }
           }
@@ -805,6 +824,7 @@ class OBOImporter extends TripalImporter {
                     $t['name'] = $item['label'];
                     $defaultcv = $item['ontology_name'];
                     $default_db = $item['ontology_prefix'];
+                    $external = true;
                     break;
                   }
                 }
@@ -871,7 +891,7 @@ class OBOImporter extends TripalImporter {
         $t['name'] = $results['label'];
       } 
     }
-    
+
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
@@ -1012,6 +1032,9 @@ class OBOImporter extends TripalImporter {
     }
     if (array_key_exists('builtin', $term)) {
       //print "WARNING: unhandled tag: builtin\n";
+    }
+    if ($external ) {
+      return 2;
     }
     return 1;
   }
