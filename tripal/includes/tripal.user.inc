@@ -147,7 +147,7 @@ function tripal_download_file($fid) {
 }
 
 /**
- * Provides a confirmation form for deleting a galaxy workflow uploaded file.
+ * Provides a confirmation form for deleting an uploaded file.
  */
 function tripal_delete_file_form($form, $form_state, $uid, $fid) {
   $form = array();
@@ -165,13 +165,12 @@ function tripal_delete_file_form($form, $form_state, $uid, $fid) {
 
   return confirm_form($form,
       t('Confirm deletion of the file named "' . $file->filename . '"?'),
-      'user/' . $uid . '/files/',
-      t('Warning.  If this file is intended to be used with a analysis workflow submission that has not yet started then the workflow will fail. Once deleted, the file can no longer be used for new workflow submissions without uploading again.')
+      'user/' . $uid . '/files/'
   );
 }
 
 /**
- * Implements a form submit for deleting a galaxy workflow uploaded file.
+ * Implements a form submit for deleting an uploaded file.
  */
 function tripal_delete_file_form_submit($form, &$form_state) {
   $fid = $form_state['values']['fid'];
@@ -255,42 +254,6 @@ function tripal_view_file($uid, $fid) {
     $expiration
   );
 
-  // Find which workflow submissions are using this file.
-  $usage = file_usage_list($file);
-  $usage = $usage['tripal'];
-  $workflow_nids = array();
-  foreach ($usage as $step => $nid) {
-    $nid = array_keys($nid)[0];
-    if (!in_array($nid, $workflow_nids)) {
-      $workflow_nids[] = $nid;
-    }
-  }
-  $wf_links = array();
-  foreach ($workflow_nids as $i => $nid) {
-    $query = db_select('tripal_workflow', 'tgw');
-    $query->fields('tgw', array('workflow_name'));
-    $query->innerJoin('tripal_workflow_submission', 'tgws', 'tgw.galaxy_workflow_id = tgws.galaxy_workflow_id');
-    $query->fields('tgws', array('sid'));
-    $query->condition('tgw.nid', $nid, '=');
-    $results = $query->execute();
-    $workflow = $results->fetchObject();
-    if ($workflow) {
-      $wf_links[] = l($workflow->workflow_name . ' (submission ID: ' . $workflow->sid . ')', "user/$uid/galaxy-jobs/$workflow->sid");
-    }
-  }
-  $rows[] = array(
-    array(
-      'data' => 'Usage',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    theme_item_list(array(
-      'items' => $wf_links,
-      'title' => '',
-      'type' => 'ul',
-      'attributes' => array(),
-    )),
-  );
   $rows[] = array(
     array(
       'data' => 'Actions',
@@ -303,7 +266,7 @@ function tripal_view_file($uid, $fid) {
   $content = array(
     'description' => array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('The following file has been uploaded for use in an analytical workflow.') . '</p>',
+      '#markup' => '<p>' . t('The following file has been uploaded.') . '</p>',
     ),
     'return' => array(
       '#type' => 'markup',
