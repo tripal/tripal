@@ -21,6 +21,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
       '#type' => 'fieldset',
       '#title' => t($class::$upload_title),
       '#description' => t($class::$upload_description)
+      '#weight' => -15,
     );
   }
 
@@ -91,6 +92,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
         'a minimum it indicates the source of the data.'),
       '#required' => $class::$require_analysis,
       '#options' => $analyses,
+      '#weight' => -14,
     );
   }
 
