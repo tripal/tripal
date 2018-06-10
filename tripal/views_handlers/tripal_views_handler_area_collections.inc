@@ -429,7 +429,21 @@ function tripal_views_handler_area_collections_search_api_form_submit($form, $fo
         'fields' => array(),
       );
     }
-    $entities[$bundle]['ids'][] = $r->entity->id;
+    // Note: $r->entity is the entity_id due to the way the search_api saves results.
+    // Doing a check here just in case some search index backends store the data differently.
+    if (is_int($r->entity)) {
+      $entities[$bundle]['ids'][] = $r->entity;
+    }
+    elseif (is_object($r->entity) AND property_exists($r->entity, 'id')) {
+      $entities[$bundle]['ids'][] = $r->entity->id;
+    }
+    else {
+      tripal_report_error(
+        'Tripal Data Collection',
+        TRIPAL_ERROR,
+        'Unable to save entity to collection. Results from the view are: '.print_r($r, TRUE)
+      );
+    }
   }
 
   // Now add the entities to the collection based on bundle.
