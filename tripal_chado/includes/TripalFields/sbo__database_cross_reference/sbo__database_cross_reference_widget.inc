@@ -73,7 +73,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $dbxref_id,
     );
-    $options = tripal_get_db_select_options();
+    $options = chado_get_db_select_options();
     $widget['db_id'] = array(
       '#type' => 'select',
       '#title' => t('Database'),

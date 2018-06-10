@@ -70,7 +70,7 @@ class chado_linker__prop extends ChadoField {
 
     $vocabulary = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
-    $cvterm = tripal_get_cvterm(array(
+    $cvterm = chado_get_cvterm(array(
       'dbxref_id' => array(
         'db_id' => array(
           'name' => $vocabulary,
@@ -124,6 +124,16 @@ class chado_linker__prop extends ChadoField {
         );
       }
     }
+
+    // Ensure there are no values if there are no properties.
+    // This is necessary to make sure the field is not rendered when there are no properies.
+    // @todo: We should revisit this in the future as none of the other fields do this.
+    //        It was added here to make it easier to detect when the field was empty
+    //        but in hindsight, we would just check $entity->{$field_name}['und'][$i]['value']
+    //        in the formatter.
+    if (empty($properties)) {
+      unset($entity->{$field_name});
+    }
   }
 
   /**
@@ -141,7 +151,7 @@ class chado_linker__prop extends ChadoField {
     $vocab = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
 
-    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+    $cvterm = chado_get_cvterm(array('id' => $vocab . ':' . $accession));
 
     $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey");
     $query->condition("$alias.type_id", $cvterm->cvterm_id);
@@ -163,7 +173,7 @@ class chado_linker__prop extends ChadoField {
     $vocab = $this->instance['settings']['term_vocabulary'];
     $accession = $this->instance['settings']['term_accession'];
 
-    $cvterm = tripal_get_cvterm(array('id' => $vocab . ':' . $accession));
+    $cvterm = chado_get_cvterm(array('id' => $vocab . ':' . $accession));
 
     $this->queryJoinOnce($query, $prop_linker, $alias, "base.$bpkey = $alias.$bpkey AND $alias.type_id = $cvterm->cvterm_id", "LEFT OUTER");
     $query->orderBy("$alias.value", $order['direction']);

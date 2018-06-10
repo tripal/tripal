@@ -160,16 +160,10 @@ abstract class TripalFieldDownloader {
       $collection_bundle->fields = unserialize($collection_bundle->fields);
       $this->collection_bundles[] = $collection_bundle;
     }
-
-    if (!file_prepare_directory($user_dir, FILE_CREATE_DIRECTORY)) {
-      $message = 'Could not access the directory on the server for storing this file.';
-      watchdog('tripal', $message, array(), WATCHDOG_ERROR);
-      drupal_json_output(array(
-        'status'  => 'failed',
-        'message' => $message,
-        'file_id' => '',
-      ));
-      return;
+ 
+    $user_dir = tripal_get_user_files_dir($user);
+    if (!tripal_is_user_files_dir_writeable($user)) {
+      throw new Exception(t("The user's data directory is not writeable: !user_dir.", array('!user_dir' => $user_dir)));
     }
 
     // Map the fields to their term accessions.

@@ -62,9 +62,9 @@ class chado_linker__contact extends ChadoField {
   public function elementInfo() {
 
     $field_term = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     return array(
       $field_term => array(
@@ -124,9 +124,9 @@ class chado_linker__contact extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
@@ -193,9 +193,9 @@ class chado_linker__contact extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     $contact_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
@@ -234,9 +234,9 @@ class chado_linker__contact extends ChadoField {
   public function queryOrder($query, $order) {
     $alias = $this->field['field_name'];
     $field_term_id = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     $contact_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];

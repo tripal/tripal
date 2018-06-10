@@ -31,8 +31,8 @@ class uo__unit_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    $cv = tripal_get_cv(array('name' => 'featuremap_units'));
-    $options = tripal_get_cvterm_select_options($cv->cv_id);
+    $cv = chado_get_cv(array('name' => 'featuremap_units'));
+    $options = chado_get_cvterm_select_options($cv->cv_id);
     unset($options[0]);
     $widget['chado-' . $field_table . '__unittype_id'] = array(
       '#type' => 'select',

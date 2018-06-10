@@ -124,7 +124,7 @@ class go__gene_expression extends ChadoField {
         // Add the pub information if a real pub is associated with the record.
         $pub = $exp_linker->pub_id;
         if ($pub->uniquename != 'null') {
-          $pub_details = tripal_get_minimal_pub_info($pub);
+          $pub_details = chado_get_minimal_pub_info($pub);
 
           $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
           $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;

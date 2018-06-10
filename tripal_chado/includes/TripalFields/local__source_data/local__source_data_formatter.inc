@@ -13,9 +13,9 @@ class local__source_data_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    $sourcename_term = tripal_get_chado_semweb_term('analysis', 'sourcename');
-    $sourceversion_term = tripal_get_chado_semweb_term('analysis', 'sourceversion');
-    $sourceuri_term = tripal_get_chado_semweb_term('analysis', 'sourceuri');
+    $sourcename_term = chado_get_semweb_term('analysis', 'sourcename');
+    $sourceversion_term = chado_get_semweb_term('analysis', 'sourceversion');
+    $sourceuri_term = chado_get_semweb_term('analysis', 'sourceuri');
 
     $content = 'The data source is not provided.';
     if ($items[0]['value']) {

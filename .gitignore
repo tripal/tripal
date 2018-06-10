@@ -1,4 +1,7 @@
 .DS_Store
-composer.lock
-vendor/*
+.idea/
+vendor/
 tests/.env
+.buildpath
+.project
+.settings/

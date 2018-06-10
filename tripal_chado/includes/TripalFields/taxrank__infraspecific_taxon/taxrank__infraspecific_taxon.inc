@@ -61,8 +61,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
     $field_term = $this->getFieldTermID();
 
     $label_term = 'rdfs:label';
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
     return array(
       $field_term => array(
@@ -115,8 +115,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
     $label_term = $field_term_id . ',' . 'rdfs:label';
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     if ($condition['column'] == $label_term or $condition['column'] == $field_term_id) {
       $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', $alias . "_cvterm.cvterm_id = base.type_id");
@@ -138,8 +138,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
     $label_term = $field_term_id . ',' . 'rdfs:label';
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     if ($order['column'] == $infraspecific_name_term) {
       $query->orderBy('base.infraspecific_name', $order['direction']);
@@ -170,8 +170,8 @@ class taxrank__infraspecific_taxon extends ChadoField {
     }
 
     $label_term = 'rdfs:label';
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(

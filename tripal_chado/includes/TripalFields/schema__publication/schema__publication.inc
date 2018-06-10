@@ -103,11 +103,11 @@ class schema__publication extends ChadoField {
       'return_array' => 1,
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    if (count($record->$linker_table) > 0) {
+    if (property_exists($record, $linker_table) and is_array($record->$linker_table) and count($record->$linker_table) > 0) {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
         $pub = $linker->pub_id;
-        $pub_details = tripal_get_minimal_pub_info($pub);
+        $pub_details = chado_get_minimal_pub_info($pub);
 
         $entity->{$field_name}['und'][$i]['value'] = $pub_details;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;

@@ -91,7 +91,7 @@ class data__accession extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
 
     $field_term_id = $this->getFieldTermID();
-    $accession_term = tripal_get_chado_semweb_term($field_table, $field_column);
+    $accession_term = chado_get_semweb_term($field_table, $field_column);
 
     // We don't offer any sub elements so the value coming in should
     // always be the field_name.
@@ -108,7 +108,7 @@ class data__accession extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
 
     $field_term_id = $this->getFieldTermID();
-    $accession_term = tripal_get_chado_semweb_term($field_table, $field_column);
+    $accession_term = chado_get_semweb_term($field_table, $field_column);
 
     // We don't offer any sub elements so the value coming in should
     // always be the field_name.

@@ -118,7 +118,7 @@ function tripal_chado_views_views_data() {
   $data = tripal_chado_views_views_data_tripal_views_tables($data);
 
   // Determine the name of the chado schema
-  $chado_schema = tripal_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // MAKE SURE ALL CHADO TABLES ARE INTEGRATED
   tripal_chado_views_integrate_all_chado_tables();

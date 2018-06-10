@@ -572,7 +572,7 @@ function tripal_mviews_form_submit($form, &$form_state) {
 
   // if this is an edit action
   if (strcmp($action, 'Edit') == 0) {
-    tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
+    chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       $indexed, $query, $special_index, $comment, $schema);
   }
   // else an add action
@@ -633,7 +633,7 @@ function tripal_mviews_delete_form_submit($form, &$form_state) {
   $mview_id = $form_state['values']['mview_id'];
 
   if (strcmp($action, 'Delete') == 0) {
-    tripal_delete_mview($mview_id);
+    chado_delete_mview($mview_id);
   }
   else {
     drupal_set_message(t("No action performed."));
@@ -642,13 +642,13 @@ function tripal_mviews_delete_form_submit($form, &$form_state) {
 }
 
 /**
- * A wrapper for the tripal_refresh_mview() API function, which
+ * A wrapper for the chado_refresh_mview() API function, which
  * then redirects back to the admin page for mviews.
  *
  * @param $mview_id
  */
 function tripal_mviews_add_populate_job($mview_id) {
 
-  tripal_refresh_mview($mview_id);
+  chado_refresh_mview($mview_id);
   drupal_goto("admin/tripal/storage/chado/mviews");
 }

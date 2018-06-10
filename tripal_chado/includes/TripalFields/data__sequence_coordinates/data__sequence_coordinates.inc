@@ -62,10 +62,10 @@ class data__sequence_coordinates extends ChadoField {
     $field_term = $this->getFieldTermID();
 
     $reference_term = 'data:3002';
-    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
     return array(
       $field_term => array(
@@ -144,10 +144,10 @@ class data__sequence_coordinates extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
     $reference_term = $field_term_id . ',' . 'data:3002';
-    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'phase');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id");
@@ -185,10 +185,10 @@ class data__sequence_coordinates extends ChadoField {
 
     $field_term_id = $this->getFieldTermID();
     $reference_term = $field_term_id . ',' . 'data:3002';
-    $fmin_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = $field_term_id . ',' . tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = $field_term_id . ',' . chado_get_semweb_term('featureloc', 'phase');
 
     $this->queryJoinOnce($query, 'featureloc', $alias, "base.feature_id = $alias.feature_id", "LEFT OUTER");
     if ($order['column'] == $reference_term) {
@@ -218,10 +218,10 @@ class data__sequence_coordinates extends ChadoField {
 
     $description = 'schema:description';
     $reference_term = 'data:3002';
-    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
     $options = array(
       'return_array' => TRUE,

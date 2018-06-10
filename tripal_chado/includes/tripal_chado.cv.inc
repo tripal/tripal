@@ -23,13 +23,12 @@ function tripal_cv_load_obo($obo_id, $job = NULL) {
 function tripal_cv_admin_cv_listing() {
   $output = '';
 
-  // set the breadcrumb
   $breadcrumb = array();
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Modules', 'admin/tripal/legacy');
-  $breadcrumb[] = l('Vocabularies', 'admin/tripal/legacy/vocab');
+  $breadcrumb[] = l('Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Chado Vocabularies', 'admin/tripal/loaders/chado_vocabs');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -63,96 +62,21 @@ function tripal_cv_admin_cv_listing() {
  *
  * @ingroup tripal_cv
  */
-function tripal_cv_cv_edit_form($form, &$form_state) {
+function tripal_cv_cv_edit_form($form, &$form_state, $cv_id = NULL) {
 
-  // get the cv_d if form was submitted via AJAX
-  $cv_id = 0;
-  if (array_key_exists('values', $form_state)) {
-    $cv_id = $form_state['values']['cv_id'];
-  }
-  elseif (isset($form_state['build_info']['args'][0])) {
-    $cv_id = $form_state['build_info']['args'][0];
-  }
-
-  // get a list of db from chado for user to choose
-  $sql = "SELECT * FROM {cv} WHERE NOT name = 'tripal' ORDER BY name ";
-  $results = chado_query($sql);
-
-  $cvs = array();
-  $cvs[] = 'Select a vocabulary';
-  foreach ($results as $cv) {
-    $cvs[$cv->cv_id] = $cv->name;
-  }
-
-  $form['cv_id'] = array(
-    '#title' => t('Controlled Vocabulary Name'),
-    '#type' => 'select',
-    '#options' => $cvs,
-    '#ajax' => array(
-      'callback' => 'tripal_cv_edit_form_ajax',
-      'wrapper'  => 'cv-edit-div',
-      'effect'   => 'fade',
-      'event'    => 'change',
-      'method'   => 'replace',
-    ),
-    '#default_value' => $cv_id,
-  );
-
-
-  // if we don't have a db_id then we can  return the form, otherwise
-  // add in the other fields
-  if ($cv_id) {
-    tripal_cv_add_cv_form_fields($form, $form_state, $cv_id);
-
-    $form['update'] = array(
-      '#type' => 'submit',
-      '#value' => t('Update'),
-    );
-    $form['delete'] = array(
-      '#type' => 'markup',
-      '#markup' => l('delete', 'admin/tripal/loaders/chado_vocabs/chado_cv/delete/' . $cv_id),
-    );
-  }
-  else {
-    // if we don't have a dbid then this is the first time the form has
-    // benn loaded and we need to create the div where ajax replacement elements get stored
-    $form['div_replace'] = array(
-      '#type' => 'item',
-      '#prefix' => '<div id="cv-edit-div">',
-      '#suffix' => '</div>',
-    );
-  }
-  return $form;
-}
-
-/**
- * Form to add contolled vocabularies
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_cv_add_form($form, &$form_state) {
-
-  // add in the form fields to this form
-  tripal_cv_add_cv_form_fields($form, $form_state);
-
-  $form['add'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Add'),
-    '#weight'       => 5,
-  );
-  return $form;
-}
-
-/**
- * Form fields in common between the cv add & edit form.
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
-
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Chado Vocabularies', 'admin/tripal/loaders/chado_vocabs');
+  $breadcrumb[] = l('Manage Chado CVs', 'admin/tripal/loaders/chado_vocabs/chado_cvs');
+  drupal_set_breadcrumb($breadcrumb);
+  
   $default_name = '';
   $default_desc = '';
-
+  
   if ($cv_id) {
     $values = array('cv_id' => $cv_id);
     $result = chado_select_record('cv', array('*'), $values);
@@ -160,14 +84,12 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
     $default_name = $cv->name;
     $default_desc = $cv->definition;
   }
-
-  // add a fieldset for the Drupal Schema API
-  $form = array(
-    '#type' => 'fieldset',
-    '#title' => 'Controlled Vocabulary Details',
-    '#collapsible' => 0,
+  
+  $form['cv_id'] = array(
+    '#type' => 'value',
+    '#value' => $cv_id,
   );
-
+  
   $form['name']= array(
     '#type'          => 'textfield',
     '#title'         => t("Controlled Vocabulary name"),
@@ -176,7 +98,7 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
     '#default_value' => $default_name,
     '#maxlength'     => 255,
   );
-
+  
   $form['definition']= array(
     '#type'          => 'textarea',
     '#title'         => t('Description'),
@@ -184,6 +106,111 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
     '#default_value' => $default_desc,
   );
 
+  $form['update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+  );
+  $form['delete'] = array(
+    '#type' => 'markup',
+    '#markup' => l('delete', 'admin/tripal/loaders/chado_vocabs/chado_cv/delete/' . $cv_id),
+  );
+
+  return $form;
+}
+
+/**
+ * Validation function for tripal_cv_cv_edit_form
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_cv_edit_form_validate($form, &$form_state) {
+  $name =  array_key_exists('name', $form_state['values'])       ? trim($form_state['values']['name']) : '';
+  $desc =  array_key_exists('definition', $form_state['values']) ? trim($form_state['values']['definition']) : '';
+  $cv_id = array_key_exists('cv_id', $form_state['values'])      ? trim($form_state['values']['cv_id']) : '';
+   
+  // make sure the cv name is unique
+  $values = array('name' => $name);
+  $results = chado_select_record('cv', array('cv_id'), $values);
+  if (count($results) > 0 and $results[0]->cv_id != $cv_id) {
+    form_set_error('name', 'The vocabulary name must be unique');
+  }
+}
+
+/**
+ * Submit cv edit form
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_cv_edit_form_submit($form, &$form_state) {
+  $name  = array_key_exists('name', $form_state['values'])       ? trim($form_state['values']['name']) : '';
+  $desc  = array_key_exists('definition', $form_state['values']) ? trim($form_state['values']['definition']) : '';
+  $cv_id = array_key_exists('cv_id', $form_state['values'])      ? trim($form_state['values']['cv_id']) : '';
+  $op    = array_key_exists('op', $form_state['values'])         ? trim($form_state['values']['op']) : '';
+  
+  $values = array(
+    'name' => $name,
+    'definition' => $desc,
+  );
+  if (strcmp($op, 'Update')==0) {
+    $match = array('cv_id' => $cv_id);
+    $success = chado_update_record('cv', $match, $values);
+    if ($success) {
+      drupal_set_message(t("Controlled vocabulary updated"));
+      drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvs');
+    }
+    else {
+      drupal_set_message(t("Failed to update controlled vocabulary."));
+    }
+  }
+}
+
+/**
+ * Form to add controlled vocabularies
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_cv_add_form($form, &$form_state) {
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Chado Vocabularies', 'admin/tripal/loaders/chado_vocabs');
+  $breadcrumb[] = l('Manage Chado CVs', 'admin/tripal/loaders/chado_vocabs/chado_cvs');
+  drupal_set_breadcrumb($breadcrumb);
+  
+  $default_name = '';
+  $default_desc = '';
+   
+  // add a fieldset for the Drupal Schema API
+  $form = array(
+    '#type' => 'fieldset',
+    '#title' => 'Controlled Vocabulary Details',
+    '#collapsible' => 0,
+  );
+  
+  $form['name']= array(
+    '#type'          => 'textfield',
+    '#title'         => t("Controlled Vocabulary name"),
+    '#description'   => t('Please enter the name for this vocabulary.'),
+    '#required'      => TRUE,
+    '#default_value' => $default_name,
+    '#maxlength'     => 255,
+  );
+  
+  $form['definition']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#description'   => t('Please enter a definition for this vocabulary'),
+    '#default_value' => $default_desc,
+  );
+
+  $form['add'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Add'),
+  );
   return $form;
 }
 
@@ -193,33 +220,13 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
  * @ingroup tripal_cv
  */
 function tripal_cv_cv_add_form_validate($form, &$form_state) {
-  tripal_cv_form_fields_validate($form, $form_state);
-}
-
-/**
- * Validation fucntion for tripal_cv_cv_edit_form
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_cv_edit_form_validate($form, &$form_state) {
-  tripal_cv_form_fields_validate($form, $form_state);
-}
-
-/**
- * Generic validation form for shared fields of both the edit and add forms
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_form_fields_validate($form, &$form_state) {
   $name =  array_key_exists('name', $form_state['values'])       ? trim($form_state['values']['name']) : '';
   $desc =  array_key_exists('definition', $form_state['values']) ? trim($form_state['values']['definition']) : '';
-  $cv_id = array_key_exists('cv_id', $form_state['values'])      ? trim($form_state['values']['cv_id']) : '';
-
-
+  
   // make sure the cv name is unique
   $values = array('name' => $name);
   $results = chado_select_record('cv', array('cv_id'), $values);
-  if (count($results) > 0 and $results[0]->cv_id != $cv_id) {
+  if (count($results) > 0) {
     form_set_error('name', 'The vocabulary name must be unique');
   }
 }
@@ -241,38 +248,14 @@ function tripal_cv_cv_add_form_submit($form, &$form_state) {
   $success = chado_insert_record('cv', $values);
   if ($success) {
     drupal_set_message(t("Controlled vocabulary added"));
+    drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvs');
   }
   else {
     drupal_set_message(t("Failed to add controlled vocabulary."));
   }
 }
 
-/**
- * Submit cv edit form
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_cv_edit_form_submit($form, &$form_state) {
-  $name  = array_key_exists('name', $form_state['values'])       ? trim($form_state['values']['name']) : '';
-  $desc  = array_key_exists('definition', $form_state['values']) ? trim($form_state['values']['definition']) : '';
-  $cv_id = array_key_exists('cv_id', $form_state['values'])      ? trim($form_state['values']['cv_id']) : '';
-  $op    = array_key_exists('op', $form_state['values'])         ? trim($form_state['values']['op']) : '';
 
-  $values = array(
-    'name' => $name,
-    'definition' => $desc,
-  );
-  if (strcmp($op, 'Update')==0) {
-    $match = array('cv_id' => $cv_id);
-    $success = chado_update_record('cv', $match, $values);
-    if ($success) {
-      drupal_set_message(t("Controlled vocabulary updated"));
-    }
-    else {
-      drupal_set_message(t("Failed to update controlled vocabulary."));
-    }
-  }
-}
 
 /**
  * Ajax callback for the tripal_cv_form
@@ -309,7 +292,16 @@ function tripal_cv_edit_form_ajax($form, $form_state) {
  * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_edit_form($form, &$form_state) {
-
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Chado Vocabularies', 'admin/tripal/loaders/chado_vocabs');
+  $breadcrumb[] = l('Controlled Vocabulary Terms', 'admin/tripal/loaders/chado_vocabs/chado_cvterms');
+  drupal_set_breadcrumb($breadcrumb);
+  
   $step = 0;
   if (empty($form_state['storage']['step'])) {
     $form_state['storage']['step'] = 0;
@@ -429,6 +421,17 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
  * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_add_form($form, &$form_state) {
+  
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Chado Vocabularies', 'admin/tripal/loaders/chado_vocabs');
+  $breadcrumb[] = l('Controlled Vocabulary Terms', 'admin/tripal/loaders/chado_vocabs/chado_cvterms');
+  drupal_set_breadcrumb($breadcrumb);
+  
   $cv_id = 0;
   if (array_key_exists('values', $form_state)) {
     $cv_id = $form_state['values']['cv_id'];
@@ -663,7 +666,7 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
       'db_name' => $db->name
     );
 
-    $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+    $cvterm = chado_insert_cvterm($term, array('update_existing' => TRUE));
     if ($cvterm) {
       drupal_set_message('Term updated successfully.');
       drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvterms');
@@ -721,7 +724,7 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
     'db_name' => $db->name
   );
 
-  $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
+  $cvterm = chado_insert_cvterm($term, array('update_existing' => TRUE));
   if ($cvterm) {
     drupal_set_message('Term added successfully.');
   }
@@ -809,7 +812,7 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
   $job_args = array($cvid);
   if ($form_state['values']['op'] == t('Update cvtermpath')) {
     tripal_add_job("Update cvtermpath: $cv->name", 'tripal_cv',
-        'tripal_update_cvtermpath', $job_args, $user->uid, 10);
+        'chado_update_cvtermpath', $job_args, $user->uid, 10);
   }
 }
 
@@ -818,7 +821,7 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
  */
 function tripal_cv_cv_delete_form($form, &$form_state, $cv_id) {
 
-  $cv = tripal_get_cv(array('cv_id' => $cv_id));
+  $cv = chado_get_cv(array('cv_id' => $cv_id));
 
   $form['cv_id'] = array(
     '#type' => 'value',

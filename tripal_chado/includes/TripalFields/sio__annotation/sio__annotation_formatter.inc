@@ -12,7 +12,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $headers = array('Term', 'Definition');
+    $headers = array('Term', 'Name', 'Definition');
     $rows = array();
 
     $field_table = $this->instance['settings']['chado_table'];
@@ -21,8 +21,10 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     $vocabulary_term = tripal_get_chado_semweb_term('cvterm', 'cv_id');
     $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
     $definition_term = tripal_get_chado_semweb_term('cvterm', 'definition');
+    $name_term = tripal_get_chado_semweb_term('cvterm', 'name');
+
     if (array_key_exists('is_not', $schema['fields'])) {
-      $negation_term = tripal_get_chado_semweb_term($field_table, 'is_not');
+      $negation_term = chado_get_semweb_term($field_table, 'is_not');
     }
 
     $chado_table = $this->instance['settings']['chado_table'];
@@ -35,11 +37,12 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         // Build the accession.
         $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
         if ($dbxref->db_id->urlprefix) {
-          $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
+          $accession = l($accession, chado_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
         }
 
         $row = array(
           $accession,
+          $item['value'][$name_term],
           $item['value'][$definition_term],
         );
 
@@ -54,7 +57,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     }
 
     // Theme the results in a talbe.
-    $caption = 'This record is associated with the following annotations.';
+    $caption = 'This record has the following annotations.';
     $table = array(
       'header' => $headers,
       'rows' => $rows,

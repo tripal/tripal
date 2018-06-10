@@ -29,8 +29,8 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $term = reset($term);
 
   // Convert the Tripal term entity into the appropriate record in Chado.
-  $dbxref = tripal_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
-  $cvterm = tripal_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
+  $dbxref = chado_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
+  $cvterm = chado_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
@@ -54,7 +54,6 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
-
 
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
 
@@ -533,15 +532,16 @@ function tripal_chado_field_storage_query($query) {
         if ($chado_table == $base_table) {
           // Get the base table column that is associated with the term
           // passed as $condition['column'].
-          $base_field = tripal_get_chado_semweb_column($chado_table, $condition['column']);
+          $base_field = chado_get_semweb_column($chado_table, $condition['column']);
 
           $matches = array();
           $key = $condition['value'];
-          $op = '=';
+          $op = array_key_exists('operator', $condition) ? $condition['operator'] : '=';
           if (preg_match('/^(.+);(.+)$/', $key, $matches)) {
             $key = $matches[1];
             $op = $matches[2];
           }
+
           switch ($op) {
             case 'eq':
               $op = '=';
@@ -558,12 +558,22 @@ function tripal_chado_field_storage_query($query) {
             case 'lte':
               $op = '<=';
               break;
+            case '<>':
             case 'ne':
-              $op = '<>';
+              $op = '!=';
               break;
+            case 'LIKE':
             case 'contains':
               $op = 'LIKE';
-              $key = '%' . $key . '%';
+              if (!preg_match('/\%/', $key)) {
+                $key = '%' . $key . '%';
+              }
+              break;
+            case 'NOT LIKE':              
+              $op = 'NOT LIKE';
+              if (!preg_match('/\%/', $key)) {
+                $key = '%' . $key . '%';
+              }
               break;
             case 'starts':
               $op = 'LIKE';
@@ -699,7 +709,7 @@ function tripal_chado_field_storage_query($query) {
         else {
           $base_table = $instance['settings']['base_table'];
           $chado_table = $instance['settings']['chado_table'];
-          $table_column = tripal_get_chado_semweb_column($chado_table, $column);
+          $table_column = chado_get_semweb_column($chado_table, $column);
           if ($table_column) {
              if ($chado_table == $base_table) {
                $cquery->orderBy('base.' . $table_column, $direction);
@@ -718,8 +728,8 @@ function tripal_chado_field_storage_query($query) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
 
-// dpm($cquery->__toString());
-// dpm($cquery->getArguments());
+ //dpm($cquery->__toString());
+ //dpm($cquery->getArguments());
 
   $records = $cquery->execute();
 
@@ -1179,7 +1189,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_cvterm(&$form,
     ),
   );
   if ($default['use_cvterm'] == 'cv') {
-    $cvs = tripal_get_cv_select_options();
+    $cvs = chado_get_cv_select_options();
     $form['chado_type_cv_id'] = array(
       '#type' => select,
       '#options' => $cvs,

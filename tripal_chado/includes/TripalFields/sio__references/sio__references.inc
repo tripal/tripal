@@ -129,7 +129,7 @@ class sio__references extends ChadoField {
               ->execute()
               ->fetchObject();
             if ($mapping) {
-              $cvterm = tripal_get_cvterm(array('cvterm_id' => $mapping->cvterm_id));
+              $cvterm = chado_get_cvterm(array('cvterm_id' => $mapping->cvterm_id));
               $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $cvterm->name;
             }
           }

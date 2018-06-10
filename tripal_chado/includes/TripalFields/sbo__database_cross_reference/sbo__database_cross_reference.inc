@@ -63,9 +63,9 @@ class sbo__database_cross_reference extends ChadoField {
   public function elementInfo() {
 
     $field_term = $this->getFieldTermID();
-    $dbname_term = tripal_get_chado_semweb_term('db', 'name');
-    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $dburl_term = tripal_get_chado_semweb_term('db', 'url');
+    $dbname_term = chado_get_semweb_term('db', 'name');
+    $accession_term = chado_get_semweb_term('dbxref', 'accession');
+    $dburl_term = chado_get_semweb_term('db', 'url');
 
     return array(
       $field_term => array(
@@ -125,9 +125,9 @@ class sbo__database_cross_reference extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    $dbname_term = tripal_get_chado_semweb_term('db', 'name');
-    $accession_term = tripal_get_chado_semweb_term('dbxref', 'accession');
-    $dburl_term = tripal_get_chado_semweb_term('db', 'url');
+    $dbname_term = chado_get_semweb_term('db', 'name');
+    $accession_term = chado_get_semweb_term('dbxref', 'accession');
+    $dburl_term = chado_get_semweb_term('db', 'url');
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
@@ -142,7 +142,7 @@ class sbo__database_cross_reference extends ChadoField {
     $linker_table = $base_table . '_dbxref';
     $options = array('return_array' => 1);
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    if (count($record->$linker_table) > 0) {
+    if (property_exists($record, $linker_table) and is_array($record->$linker_table) and count($record->$linker_table) > 0) {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
         $dbxref = $linker->dbxref_id;
@@ -153,7 +153,7 @@ class sbo__database_cross_reference extends ChadoField {
           continue;
         }
 
-        $URL = tripal_get_dbxref_url($dbxref);
+        $URL = chado_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
             $dbname_term => $dbxref->db_id->name,
@@ -186,9 +186,9 @@ class sbo__database_cross_reference extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $dbname_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'name');
-    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
-    $dburl_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'url');
+    $dbname_term = $field_term_id . ',' . chado_get_semweb_term('db', 'name');
+    $accession_term = $field_term_id . ',' . chado_get_semweb_term('dbxref', 'accession');
+    $dburl_term = $field_term_id . ',' . chado_get_semweb_term('db', 'url');
 
     $this->queryJoinOnce($query, $field_table, $alias, "base.$bpkey = $alias.$bpkey");
     $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id");
@@ -216,9 +216,9 @@ class sbo__database_cross_reference extends ChadoField {
     $alias = $this->field['field_name'];
 
     $field_term_id = $this->getFieldTermID();
-    $dbname_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'name');
-    $accession_term = $field_term_id . ',' . tripal_get_chado_semweb_term('dbxref', 'accession');
-    $dburl_term = $field_term_id . ',' . tripal_get_chado_semweb_term('db', 'url');
+    $dbname_term = $field_term_id . ',' . chado_get_semweb_term('db', 'name');
+    $accession_term = $field_term_id . ',' . chado_get_semweb_term('dbxref', 'accession');
+    $dburl_term = $field_term_id . ',' . chado_get_semweb_term('db', 'url');
 
     $this->queryJoinOnce($query, $field_table, $alias, "base.$bpkey = $alias.$bpkey", "LEFT OUTER");
     $this->queryJoinOnce($query, 'dbxref', $alias . '_DBX', $alias . "_DBX.dbxref_id = $alias.dbxref_id", "LEFT OUTER");

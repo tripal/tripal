@@ -39,7 +39,7 @@ class obi__organism_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    $options = tripal_get_organism_select_options(FALSE);
+    $options = chado_get_organism_select_options(FALSE);
     $widget[$linker_field] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
