@@ -20,7 +20,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
     $form['file'] = array(
       '#type' => 'fieldset',
       '#title' => t($class::$upload_title),
-      '#description' => t($class::$upload_description)
+      '#description' => t($class::$upload_description),
       '#weight' => -15,
     );
   }
