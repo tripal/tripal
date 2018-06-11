@@ -4,6 +4,7 @@ about: Suggest an idea for this project
 
 ---
 
+
 ## Feature Request/Discussion
 <!---
 INSTRUCTIONS: The following template is meant to structure your feature request. 
@@ -13,8 +14,6 @@ INSTRUCTIONS: The following template is meant to structure your feature request.
 
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-- [ ] is this feature something ALL Tripal sites will want?
-- [ ] do you feel this feature is generally applicable?
 - [ ] does this feature attempt to solve an existing problem with Tripal?
 - [ ] are you open to developing or collaborating on an extension module if this is not a good fit for Tripal Core (no pressure here -just good to know upfront :-) )
 - [ ] do you **Need** this feature ASAP?
