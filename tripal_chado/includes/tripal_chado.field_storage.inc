@@ -43,6 +43,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
+// dpm($field_vals);
 
   // First, write the record for the base table.  If we have a record id then
   // this is an update and we need to set the primary key.  If not, then this
@@ -799,6 +800,10 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
       and $form_state['values']['type_column']) {
     $default['type_column'] = $form_state['values']['type_column'];
   }
+  if (array_key_exists('type_column_ignore', $form_state['values'])
+    and $form_state['values']['type_column_ignore']) {
+      $default['type_column_ignore'] = $form_state['values']['type_column_ignore'];
+  } 
   if (array_key_exists('prop_term_name', $form_state['values'])
       and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
@@ -883,7 +888,13 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
     $submit_disabled = FALSE;
     return $form;
   }
-
+  
+  // If the type column is not disabled and the user has not selected
+  // a type then return.
+  if (!$default['type_column_ignore'] and empty($default['type_column'])) {
+    return $form;
+  }
+    
   // Let's set the names of the linker and prop table for use below.
   $linker_table = $default['table'] . '_cvterm';
   $prop_table = $default['table']. 'prop';
@@ -891,7 +902,7 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
   $prop_exists = chado_table_exists($prop_table);
 
   // Ask the user if they want to use a linker table if it exists.
-  if($prop_exists) {
+  if ($prop_exists) {
 
     tripal_chado_field_storage_bundle_mapping_form_add_prop($form,
         $form_state, $term, $prop_table, $default);
@@ -958,8 +969,10 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
     $default['type_column'] = '';
     return;
   }
-
+  
+  $default_column_ignore = !empty($default['type_column_ignore']) ? $default['type_column_ignore'] : 0;
   $default_column = !empty($default['type_column']) ? $default['type_column'] : 'type_id';
+   
   $form['type_column'] = array(
     '#type' => 'select',
     '#title' => 'Type Column',
@@ -970,6 +983,18 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
       if you the type can be identified using a property or linker table.
       Only fields that have a foreign key to the cvterm table will be listed.',
     '#default_value' => $default_column,
+    '#ajax' => array(
+      'callback' => "tripal_admin_add_type_form_ajax_callback",
+      'wrapper' => "tripal-vocab-select-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+    '#disabled' => $default_column_ignore,
+  );
+  $form['type_column_ignore'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'The type column does not distinguish the type',
+    '#default_value' => $default_column_ignore,
     '#ajax' => array(
       'callback' => "tripal_admin_add_type_form_ajax_callback",
       'wrapper' => "tripal-vocab-select-form",
