@@ -20,7 +20,8 @@ function tripal_get_importer_form($form, &$form_state, $class) {
     $form['file'] = array(
       '#type' => 'fieldset',
       '#title' => t($class::$upload_title),
-      '#description' => t($class::$upload_description)
+      '#description' => t($class::$upload_description),
+      '#weight' => -15,
     );
   }
 
@@ -91,12 +92,22 @@ function tripal_get_importer_form($form, &$form_state, $class) {
         'a minimum it indicates the source of the data.'),
       '#required' => $class::$require_analysis,
       '#options' => $analyses,
+      '#weight' => -14,
     );
   }
 
+  // Retrieve the forms from the custom TripalImporter class
+  // for this loader.
   $importer = new $class();
   $element = array();
-  $form['class_elements'] = $importer->form($element, $form_state);
+  $element_form = $importer->form($element, $form_state);
+  // Quick check to make sure we had an array returned so array_merge() works.
+  if (!is_array($element_form)) $element_form = arry();
+ 
+  // Merge the custom form with our default one.
+  // This way, the custom TripalImporter can use the #weight property
+  // to change the order of their elements in reference to the default ones.
+  $form = array_merge($form, $element_form);
 
   $form['button'] = array(
     '#type' => 'submit',
