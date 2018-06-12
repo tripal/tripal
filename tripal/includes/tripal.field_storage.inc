@@ -125,7 +125,9 @@ function tripal_field_storage_query($query) {
   // records that are deleted that need purging separately so we can do nothing
   // with this.
   if (isset($query->deleted)) {
-    // do nothing.
+    // There won't ever be field data marked as deleted so just created a 
+    // condition that always evaluates to false.
+    $select->where('1=0');
   }
 
   // Perform the query and return the results.
