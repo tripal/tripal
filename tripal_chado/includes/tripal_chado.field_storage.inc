@@ -727,6 +727,16 @@ function tripal_chado_field_storage_query($query) {
       } // end foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
     } // end if ($sort['type'] == 'field') {
   } // end foreach ($query->order as $index => $sort) {
+  
+  
+  // Only include records that are deleted.  Tripal doesn't keep track of
+  // records that are deleted that need purging separately so we can do nothing
+  // with this.
+  if (isset($query->deleted)) {
+    // There won't ever be field data marked as deleted so just created a
+    // condition that always evaluates to false.
+    $cquery->where('1=0');
+  }
 
  //dpm($cquery->__toString());
  //dpm($cquery->getArguments());
