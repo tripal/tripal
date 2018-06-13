@@ -109,11 +109,11 @@ function chado_associate_semweb_term($chado_table, $chado_column, $term,
   if ($chado_table) {
     $schema = chado_get_schema($chado_table);
     if (!$schema) {
-      tripal_set_message('The $chado_table is not a known table in Chado.', TRIPAL_ERROR);
+      tripal_set_message("Cannot associate the term with the field because the $chado_table is not a known table in Chado.", TRIPAL_ERROR);
       return FALSE;
     }
     if (!array_key_exists($chado_column, $schema['fields'])) {
-      tripal_set_message('The $chado_column is not a known column in the $chado_table.', TRIPAL_ERROR);
+      tripal_set_message("Cannot associate the term with the field because the $chado_column is not a known column in the $chado_table.", TRIPAL_ERROR);
       return FALSE;
     }
   }

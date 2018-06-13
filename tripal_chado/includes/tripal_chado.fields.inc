@@ -237,6 +237,33 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
+  
+  // BASE ARRAYDESIGN TABLE
+  if ($table_name == 'arraydesign') {
+    $field_name = 'ncit__technology_platform';
+    $field_type = 'schema__additional_type';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+    
+    $field_name = 'efo__substrate_type';
+    $field_type = 'schema__additional_type';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 
   // BASE ORGANISM_ID
   if ($table_name != 'organism' and
@@ -257,6 +284,19 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   if ($table_name == 'biomaterial') {
     $field_name = 'biomaterial__provider_id';
+    $field_type = 'local__contact';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
+  if ($table_name == 'arraydesign') {
+    $field_name = 'efo__array_manufacturer';
     $field_type = 'local__contact';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -463,8 +503,9 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     );
   }
 
-  //protocol
-  if ($table_name == 'protocol' and array_key_exists('protocol_id', $schema['fields'])) {
+  // Protocol.
+  if ($table_name != 'protocol' and 
+      array_key_exists('protocol_id', $schema['fields'])) {
     $field_name = 'sep__protocol';
     $field_type = 'sep__protocol';
     $info[$field_name] = array(
@@ -477,6 +518,42 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
+  
+  // Assay operator.
+  if ($table_name == 'assay') {
+      $field_name = 'assay__operator_id';
+      $field_type = 'local__contact';
+      $info[$field_name] = array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => 1,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+      );
+    }
+  
+  // For the pub_id field in the base table.
+  $schema = chado_get_schema($table_name);
+  if (array_key_exists('pub_id', $schema['fields'])) {
+    
+    // Remove the schema__publication added by the
+    // tripal_chado_bunde_instnaces_info_base function.
+    unset($info['schema__publication']);
+    
+    $field_name = 'schema__publication_single';
+    $field_type = 'schema__publication';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  } 
 
 }
 
@@ -1066,7 +1143,85 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     if ($table_name == 'contact' and $column_name == 'description') {
       $base_info['label'] = 'Short Description';
     }
-
+    //
+    // PROTOCOL TABLE
+    //
+    if ($table_name == 'protocol') {
+      if ($column_name == 'protocoldescription') {
+        $base_info['label'] = 'Protocol Description';
+      }
+      if ($column_name == 'uri') {
+        $base_info['label'] = 'URI';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'name') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'hardwaredescription') {
+        $base_info['label'] = 'Instrument Description';
+        $base_info['description'] = 'The description of instruments used for this protocol';
+      }
+      if ($column_name == 'softwaredescription') {
+        $base_info['label'] = 'Software Description';
+        $base_info['description'] = 'The description of software used for this protocol';
+      }
+      if ($column_name == 'pub_id') {
+        $base_info['label'] = 'Publication';
+      }
+    }
+    //
+    // ASSAY TABLE
+    //
+    if ($table_name == 'assay') {
+      if ($column_name == 'name') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'protcol_id') {
+        $base_info['label'] = 'Protocol';
+      }
+      if ($column_name == 'arraybatchidentifier') {
+        $base_info['label'] = 'Array Batch Identifier';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'operator_id') {
+        $base_info['label'] = 'Operator';
+      }
+      if ($column_name == 'arrayidentifier') {
+        $base_info['label'] = 'Array Identifier';
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'arraydesign_id') {
+        $base_info['label'] = 'Array Design';
+      }
+      if ($column_name == 'assaydate') {
+        $base_info['label'] = 'Assay Date';
+      }
+    }
+    //
+    // ARRAYDESIGN TABLE
+    //
+    if ($table_name == 'arraydesign') {
+      if ($column_name == 'name' or $column_name == 'version' or 
+          $column_name == 'array_dimensions' or $column_name == 'element_dimensions') {
+        $base_info['widget']['type'] = 'text_textfield';
+        $base_info['settings']['text_processing'] = '0';
+      }
+      if ($column_name == 'platformtype_id') {
+        $base_info['label'] = 'Platform type';
+      }
+      if ($column_name == 'substratetype_id') {
+        $base_info['label'] = 'Substrate Type';
+      }
+      if ($column_name == 'manufacturer_id') {
+        $base_info['label'] = 'Manufacturer';
+      }
+      
+    }
 
     $info[$field_name] = $base_info;
   }
@@ -1148,6 +1303,82 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
+  
+  if ($table_name == 'arraydesign') {
+    $field_name = 'ncit__technology_platform';
+    $default_vocab = '';
+    $parent_term = '';
+    $description = 'Select the platform type.';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Platform Type',
+      'description' => $description,
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'platformtype_id',
+        'base_table' => $table_name,
+        'vocabulary' => $default_vocab,
+        'parent_term' => $parent_term,
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'Technology Platform',
+        'term_accession' => 'C45378',
+      ),
+      'widget' => array(
+        'type' => 'schema__additional_type_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'schema__additional_type_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+    
+    $field_name = 'efo__substrate_type';
+    $default_vocab = '';
+    $parent_term = '';
+    $description = 'Select the substrate type.';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Substrate Type',
+      'description' => $description,
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'substratetype_id',
+        'base_table' => $table_name,
+        'vocabulary' => $default_vocab,
+        'parent_term' => $parent_term,
+        'term_vocabulary' => 'EFO',
+        'term_name' => 'substrate type',
+        'term_accession' => '0005522',
+      ),
+      'widget' => array(
+        'type' => 'schema__additional_type_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'schema__additional_type_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
   // BASE ORGANISM_ID
     if ($table_name != 'organism' and
@@ -1202,13 +1433,47 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Contact',
-      'description' => 'An indviddual or organization that serves as a contact for this record.',
+      'description' => 'An indvidual or organization that serves as a contact for this record.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
         'chado_table' => 'biomaterial',
         'chado_column' => 'biosourceprovider_id',
         'base_table' => 'biomaterial',
+      ),
+      'widget' => array(
+        'type' => 'local__contact_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'local__contact_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+  if ($table_name == 'arraydesign') {
+    $field_name = 'efo__array_manufacturer';
+    $field_type = 'local__contact';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Manufacturer',
+      'description' => 'A manufacturer\'s contact details',
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => 'arraydesign',
+        'chado_column' => 'manufacturer_id',
+        'base_table' => 'arraydesign',
+        'term_vocabulary' => 'EFO',
+        'term_name' => 'aarray manufacturer',
+        'term_accession' => '0001728',
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -1686,11 +1951,83 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-  }
-
-
-
-
+  } 
+  // pub_id field in table.
+  $schema = chado_get_schema($table_name);
+  if (array_key_exists('pub_id', $schema['fields'])) {
+    
+    // Remove the schema__publication added by the 
+    // tripal_chado_bunde_instnaces_info_base function.
+    unset($info['schema__publication']);
+      
+    $field_name = 'schema__publication_single';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Publication',
+      'description' => 'This record has been referenced or is sourced from these publications.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'pub_id',
+        'base_table' => $table_name,
+      ),
+      'widget' => array(
+        'type' => 'schema__publication_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'schema__publication_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  } 
+  
+  if ($table_name == 'assay') {      
+    // Remove the ncit__operator added by the
+    // tripal_chado_bunde_instnaces_info_base function.
+    unset($info['ncit__operator']);
+    
+    $field_name = 'assay__operator_id';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Operator',
+      'description' => 'The individual responsible for performing the assay.',
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => 'assay',
+        'chado_column' => 'operator_id',
+        'base_table' => 'assay',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'Operator',
+        'term_accession' => 'C48036',
+        
+      ),
+      'widget' => array(
+        'type' => 'local__contact_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'local__contact_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  } 
 }
 
 /**
@@ -2127,7 +2464,6 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ),
     );
   }
-
 
   // PUBLICATIONS
   $pub_table = $table_name . '_pub';
