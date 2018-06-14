@@ -358,8 +358,7 @@ function tripal_load_bundle_entity($values) {
 }
 
 /**
- * Allows a module to write to the admin notification table
- * during the cron run.
+ * Allows a module to write to the admin notification table.
  *
  * @param $title
  *   A generic phrase indicating what the notification is for.
