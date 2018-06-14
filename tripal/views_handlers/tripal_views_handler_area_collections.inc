@@ -11,7 +11,7 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
    */
   function render($empty = FALSE) {
 
-    // If collections are disbabled then don't show anything.
+    // If collections are disabled then don't show anything.
     $collections_enabled = variable_get('tripal_data_collections_enabled', 1);
     if (!$collections_enabled) {
       return '';
