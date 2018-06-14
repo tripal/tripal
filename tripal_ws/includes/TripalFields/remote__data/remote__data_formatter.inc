@@ -69,6 +69,8 @@ class remote__data_formatter extends WebServicesFieldFormatter {
    *    hook_field_formatter_view() function.
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    $content = '';
+    
     // Get the settings
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
@@ -94,14 +96,9 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       ->execute()
       ->fetchObject();
 
-      $content = '<p>';
-    if (is_object($site_logo)) {
-      $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
-    }
-    $content .=  t('This content provided by !site.',
-        array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
-    $content .= '</p>';
+    // Iterate through the results and create a generic table.
     $rows = array();
+    $headers = array('');
     foreach ($items as $index => $item) {
       $remote_entity_label = $item['remote_entity']['label'];
       $remote_entity_page = $item['remote_entity']['ItemPage'];
@@ -112,7 +109,11 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       if (!$value) {
         continue;
       }
-      $headers = array('');
+      $error = $item['error'];
+      if ($error) {
+        $rows[] = [['error' => $value]];
+        continue;
+      }
 
       // If this is a collection then handle it as a list of members.
       if (array_key_exists('members', $value)) {
@@ -128,7 +129,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         }
         else {
           if (array_key_exists($flabel, $value)) {
-            $rows[] = array(l($value[$flabel], $remote_entity_page, array('attributes' => array('target' => '_blank'))));
+            $rows[] = array($value[$flabel]);
           }
           else {
             $value['Link'] = l('View content on ' . $site->name, $remote_entity_page, array('attributes' => array('target' => '_blank')));
@@ -136,7 +137,6 @@ class remote__data_formatter extends WebServicesFieldFormatter {
           }
         }
       }
-
     }
 
     $has_sub_tables = FALSE;
@@ -171,6 +171,15 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         $content .= $rows[$i][0];
       }
     }
+    
+    $content .= '<p>';
+    if (is_object($site_logo)) {
+      $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
+    }
+    $content .=  t('This content provided by !site.',
+      array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
+    $content .= '</p>';
+    
     // Return the content for this field.
     $element[0] = array(
       '#type' => 'markup',

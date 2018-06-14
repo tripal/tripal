@@ -241,7 +241,6 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   if ($query) {
     $ws_url = $ws_url . '?' . $query;
   }
-  dpm($ws_url);
 
   // TODO: something is wrong here, the query is not being recognized on
   // the remote Tripal site. It's just returning the default.
@@ -269,7 +268,6 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
         'Tripal remote web services reports the following error: !error. Using URL: !url',
         array('!error' => $error, '!url' => $ws_url));
-    return FALSE;
   }
 
   return $data;

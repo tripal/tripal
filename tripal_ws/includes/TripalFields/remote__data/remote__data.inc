@@ -136,6 +136,7 @@ class remote__data extends WebServicesField {
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
       'remote_entity' => array(),
+      'error' => NULL,
     );
 
     // If this field is being loaded via web services then just return.
@@ -155,11 +156,11 @@ class remote__data extends WebServicesField {
     }
 
     $total_items = $data['totalItems'];
-dpm($data);
+
     // Iterate through the members returned and save those for the field.
     for ($i = 0; $i < $total_items; $i++) {
       $member = $data['member'][$i];
-      dpm($member);
+
 
       // Get the cotent type and remote entity id
       $content_type = $member['@type'];
@@ -177,16 +178,14 @@ dpm($data);
       // Next get the the details about this member.
       $query_field_url =  $content_type . '/' . $remote_entity_id . '/' . $query_field;
       $field_data = $this->makeRemoteRequest($query_field_url);
+
       if(!$field_data){
         // If we encounter any type of error, we'll reset the field and return.
-        $entity->{$field_name}['und'] = array();
-        $entity->{$field_name}['und'][0] = array(
-          'value' => array(),
-          'remote_entity' => array(),
-        );
+        $entity->{$field_name}['und'][$i]['value'] = 'Unable to retrieve remote content';
+        $entity->{$field_name}['und'][$i]['error'] = TRUE;
         return;
       }
-
+      
       // Set the field data as the value.
       $field_data_type = $field_data['@type'];
       $entity->{$field_name}['und'][$i]['value'] = $field_data;
