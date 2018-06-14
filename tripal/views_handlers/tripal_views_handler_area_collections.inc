@@ -11,24 +11,39 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
    */
   function render($empty = FALSE) {
 
-    // If collections are dispabled then don't show anything.
+    // If collections are disabled then don't show anything.
     $collections_enabled = variable_get('tripal_data_collections_enabled', 1);
     if (!$collections_enabled) {
       return '';
     }
 
-    // This will only work with Tripal content types and the tripal_views_query
-    // plugin. So don't show anything for others.
-    if ($this->query->plugin_name != 'tripal_views_query') {
-      return '';
+    // We need a specific form to work with Tripal content types and the tripal_views_query plugin.
+    if ($this->query->plugin_name == 'tripal_views_query') {
+      $form = drupal_get_form('tripal_views_handler_area_collections_form', $this->view, $this->query);
+      return drupal_render($form);
     }
-    $form = drupal_get_form('tripal_views_handler_area_collections_form', $this->view, $this->query);
-    return drupal_render($form);
+    // We also want to support views created via the Drupal Search API.
+    elseif ($this->query->plugin_name == 'search_api_views_query') {
+      $form = drupal_get_form('tripal_views_handler_area_collections_search_api_form', $this->view, $this->query);
+      return drupal_render($form);
+    }
+    // If we don't support this type of view, then we should tell the admin
+    // so they're not left scratching their head like I was ;-).
+    else {
+      tripal_set_message('Unfortunatly Tripal Collections are not supported for your current view type.');
+    }
   }
 }
 
 /**
+ * Views Area Handler Form: Tripal Collections on Tripal Entity-based Views
  *
+ * @param $form
+ * @param $form_state
+ * @param $view
+ *   The views object that this form will be rendered on.
+ * @param $query
+ *   The views query object generating the views results.
  */
 function tripal_views_handler_area_collections_form($form, $form_state, $view, $query) {
 
@@ -186,6 +201,7 @@ function tripal_views_handler_area_collections_form($form, $form_state, $view, $
   $form['#suffix'] = '</div>';
   return $form;
 }
+
 /**
  * Theme the fields section of the tripal_views_handler_area_collections form.
  *
@@ -230,13 +246,14 @@ function theme_tripal_views_handler_area_collections_fields_fset($variables) {
 }
 
 /**
- *
+ * AJAX: Tripal Collections on Tripal Entity-based Views
  */
 function tripal_views_handler_area_collections_form_ajax($form, $form_state) {
   return $form;
 }
+
 /**
- *
+ * Views Area Handler Form SUBMIT: Tripal Collections on Tripal Entity-based Views
  */
 function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   global $user;
@@ -268,6 +285,7 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
   foreach ($results['TripalEntity'] as $entity) {
     $entities[] = $entity->id;
   }
+
   $collection = tripal_create_collection(array(
     'uid'  => $uid,
     'collection_name' => $collection_name,
@@ -276,4 +294,175 @@ function tripal_views_handler_area_collections_form_submit($form, $form_state) {
     'ids' => $entities,
     'fields' => $selected_fids,
   ));
+}
+
+/**
+ * Views Area Handler Form: Tripal Collections on Drupal Search API-based
+ *
+ * @param $form
+ * @param $form_state
+ * @param $view
+ *   The views object that this form will be rendered on.
+ * @param $query
+ *   The views query object generating the views results.
+ */
+function tripal_views_handler_area_collections_search_api_form($form, $form_state, $view, $query) {
+
+  // Set form defaults.
+  $collection_name = '';
+  $collection_desc = '';
+
+  $form['save_collection'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Save Results'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('A data collection is a virtual container into which you can
+      save data.  You can place your search results into a data collection for
+      download or use with other tools on this site that support data collections.'),
+  );
+
+  // Save the results of the full query for further processing.
+  // We use clones to ensure we don't inadvertently change the current view.
+  $cloned_view = clone $view;
+  $cloned_query = clone $query;
+  $cloned_query->set_limit(0);
+  $cloned_query->execute($cloned_view);
+  $form['save_collection']['results'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($cloned_view->result),
+  );
+  unset($cloned_view, $cloned_query);
+
+  $form['save_collection']['summary'] = array(
+    '#type' => 'item',
+    '#title' => 'Results Summary',
+    '#markup' => t('There are @total_rows record(s) that can be added to a data collection.', array('@total_rows' => $view->total_rows)),
+  );
+
+  $form['save_collection']['collection_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Collection Name'),
+    '#description' => t('Please name this collection for future reference.'),
+    '#default_value' => $collection_name,
+    '#required' => TRUE,
+  );
+
+  $form['save_collection']['description_fset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add a Description'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['save_collection']['description_fset']['collection_desc'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#description' => t('Please provide a description about this data collection. This is meant to help you remember what is in the collection.'),
+    '#default_value' => $collection_name,
+  );
+
+  // @todo add ability to choose fields for the collection.
+
+  $form['save_collection']['button'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save Data Collection',
+    '#name' => 'save_collection',
+    '#ajax' => array(
+      'callback' => "tripal_views_handler_area_collections_form_ajax",
+      'wrapper' => 'tripal-views-handler-area-collections',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+      'prevent'  => 'click'
+    ),
+  );
+
+  $form['#prefix'] = '<div id="tripal-views-handler-area-collections">';
+  $form['#suffix'] = '</div>';
+
+  return $form;
+}
+
+/**
+ * Views Area Handler Form SUBMIT: Tripal Collections on Drupal Search API-based Views
+ */
+function tripal_views_handler_area_collections_search_api_form_validate($form, $form_state) {
+
+  // CHECK: Collection with the given name doesn't already exist.
+
+}
+
+/**
+ * Views Area Handler Form SUBMIT: Tripal Collections on Drupal Search API-based Views
+ */
+function tripal_views_handler_area_collections_search_api_form_submit($form, $form_state) {
+  global $user;
+
+  // Create the collection.
+  $collection_details = array(
+    'uid' => $user->uid,
+    'collection_name' => trim($form_state['values']['collection_name']),
+    'description' => $form_state['values']['collection_desc'],
+  );
+  // This can't be done via tripal_create_collection() since we support more
+  // then a single bundle. Instead we are going to use the controller class directly.
+  $collection = new TripalEntityCollection();
+  $collection->create($collection_details);
+  $collection_id = $collection->getCollectionID();
+
+  // First, determine the bundle for each entity in our resultset.
+  $entities = array();
+  $results = unserialize($form_state['values']['results']);
+  foreach($results as $r) {
+
+    // Retrieve the bundle for the current entity.
+    // ASSUMPTION: all search results are TripalEntities.
+    $wrapper = entity_metadata_wrapper('TripalEntity', $r->entity);
+    $bundle = $wrapper->getBundle();
+
+    // If this is the first time we've seen this bundle
+    // then initialize the array.
+    if (!isset($entities[$bundle])) {
+      $entities[$bundle] = array(
+        'bundle_name' => $bundle,
+        'ids' => array(),
+        'fields' => array(),
+      );
+    }
+    // Note: $r->entity is the entity_id due to the way the search_api saves results.
+    // Doing a check here just in case some search index backends store the data differently.
+    if (is_int($r->entity)) {
+      $entities[$bundle]['ids'][] = $r->entity;
+    }
+    elseif (is_object($r->entity) AND property_exists($r->entity, 'id')) {
+      $entities[$bundle]['ids'][] = $r->entity->id;
+    }
+    else {
+      tripal_report_error(
+        'Tripal Data Collection',
+        TRIPAL_ERROR,
+        'Unable to save entity to collection. Results from the view are: '.print_r($r, TRUE)
+      );
+    }
+  }
+
+  // Now add the entities to the collection based on bundle.
+  foreach($entities as $bundle_name => $bundle_col) {
+
+    $field_ids = array();
+    foreach (field_info_instances('TripalEntity', $bundle_name) as $field) {
+      $field_ids[] = $field['field_id'];
+    }
+    $bundle_col['fields'] = $field_ids;
+    $collection->addBundle($bundle_col);
+  }
+
+  // Finally, tell the user we're done and link them to the collection.
+  drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
+    array(
+      '%name' => $collection_details['collection_name'],
+      '%num_recs' => count($results),
+      '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+    ))
+  );
 }
