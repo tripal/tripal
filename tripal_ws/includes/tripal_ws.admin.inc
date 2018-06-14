@@ -98,14 +98,14 @@ function tripal_ws_tripal_sites_edit_form($form, &$form_state, $tripal_site_id =
   $form['tripal_site_info']['url'] = array(
     '#title' => t('URL'),
     '#type' => 'textfield',
-    '#description' => t('The URL of the Tripal site.'),
+    '#description' => t('The URL of the Tripal site, including the "http://" or "https://" followed by the address for the site\'s home page.'),
     '#default_value' => $url,
     '#required' => TRUE
   );
   $form['tripal_site_info']['version'] = array(
     '#title' => t('Version'),
     '#type' => 'textfield',
-    '#description' => t('Web services version used by the Tripal site.'),
+    '#description' => t('Web services version used by the Tripal site (example: v0.1)'),
     '#default_value' => $version,
   );
   $form['tripal_site_info']['description'] = array(
