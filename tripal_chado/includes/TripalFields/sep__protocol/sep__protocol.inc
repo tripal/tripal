@@ -106,44 +106,127 @@ class sep__protocol extends ChadoField {
    *
    */
   public function load($entity) {
-
     parent::load($entity);
-
-
     $record = $entity->chado_record;
     $settings = $this->instance['settings'];
-
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    $linker_field = 'chado-' . $field_table . '__protocol_id';
+    $base_table = $this->instance['settings']['base_table'];
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = [
       'value' => [],
     ];
 
-    if (!$record->protocol_id->protocol_id) {
+    if (!$record) {
       return;
     }
-
-    $protocol_id = $record->protocol_id->protocol_id;
-    $protocol_name = $record->protocol_id->name;
-
+    
+    $protocol = $record->{$field_column};
     $entity_id = $record->entity_id;
 
+    // Get the Protocol controlled vocabulary terms.
+    $protocol_name_term = chado_get_semweb_term('protocol', 'name');
+    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');       
+    
     $entity->{$field_name}['und'][0]['value'] = [
-      "protocol_id" => $protocol_id,
-      "protocol_name" => $protocol_name,
-      "entity_id" => $entity_id,
+      $protocol_name_term => $protocol->name,
+      $protocol_type_term => $protocol->type_id->name,
     ];
+    
+    $entity->{$field_name}['und'][0][$linker_field] =  $protocol->protocol_id;
 
     // Is there a published entity for this protocol?
     if (property_exists($record->{$field_column}, 'entity_id')) {
       $entity->{$field_name}['und'][0]['value']['entity_id'] = 'TripalEntity:' . $record->{$field_column}->entity_id;
     }
   }
+
+  /**
+   * @see TripalField::elementInfo()
+   */
+  function elementInfo() {
+    $field_term = $this->getFieldTermID();
+    $type_id_term = tripal_get_chado_semweb_term('protocol', 'type_id');
+
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
+        'sortable' => TRUE,
+        'searchable' => TRUE,
+        'readonly' => FALSE,
+        'type' => 'xs:complexType',
+        'elements' => [
+          'rdfs:label' => [
+            'searchable' => TRUE,
+            'name' => 'protocol_name',
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
+            'sortable' => FALSE,
+            'type' => 'xs:string',
+            'readonly' => TRUE,
+            'required' => FALSE,
+          ],
+          'entity' => [
+            'searchable' => FALSE,
+          ],
+          $type_id_term => [
+            'searchable' => TRUE,
+            'name' => 'protocol_type',
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
+            'sortable' => TRUE,
+            'readonly' => FALSE,
+            'required' => TRUE,
+            'type' => 'xs:integer',
+          ],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Provide query support.  We only make use of the name and type.
+   * @param $query
+   * @param $condition
+   */
+
+  function query($query, $condition) {
+    $alias = $this->field['field_name'];
+    $operator = $condition['operator'];
+    $field_term_id = $this->getFieldTermID();
+    $type_id_term = $field_term_id . ',' . tripal_get_chado_semweb_term('protocol', 'type_id');
+
+    // Join to the protocol table for this field.
+    $this->queryJoinOnce($query, 'protocol', $alias, "base.protocol_id = $alias.protocol_id");
+
+
+    if ($condition['column'] == $field_term_id or
+      $condition['column'] == $field_term_id . ',rdfs:label') {
+      $query->condition("$alias.name", $condition['value'], $operator);
+    }
+    if ($condition['column'] == $type_id_term) {
+      $this->queryJoinOnce($query, 'cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+      $query->condition("CVT.name", $condition['value'], $operator);
+    }
+  }
+
+  function queryOrder($query, $order) {
+    $alias = $this->field['field_name'];
+    $field_term_id = $this->getFieldTermID();
+    $type_id_term = tripal_get_chado_semweb_term('protocol', 'type_id');
+    // Join to the protocol table for this field.
+    $this->queryJoinOnce($query, 'protocol', $alias, "base.protocol_id = $alias.organism_id");
+
+    if ($order['column'] == $type_id_term) {
+      if (!in_array('CVT', $joins)) {
+        $this->queryJoinOnce($query, 'cvterm', 'CVT', "base.type_id = CVT.cvterm_id");
+      }
+      $query->orderBy("CVT.name", $order['direction']);
+    }
+  }
+
 
 }

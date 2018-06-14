@@ -15,27 +15,46 @@ class schema__publication_widget extends ChadoFieldWidget {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     $field_name = $this->field['field_name'];
-
-    // Get the FK column that links to the base table.
-    $table_name = $this->instance['settings']['chado_table'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    $schema = chado_get_schema($table_name);
-    $pkey = $schema['primary key'][0];
-    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-    $fkey = $fkeys[0];
-
-    // Get the field defaults.
+    
+    // These fields are used when the publications come through a linker table.
+    $pkey = '';
+    $fkeys = '';
+    $fkey = '';
     $pkey_val = '';
     $fkey_value = '';
+    $linker_table = '';
+    
+    // If the field table and the base table are not the same thing then
+    // we are going through a linker table.
+    $pub_item_id = '';
+    if ($field_table != $base_table) {
+      $schema = chado_get_schema($field_table);
+      $pkey = $schema['primary key'][0];
+      $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+      $fkey = $fkeys[0];
+      $linker_table = $base_table . '_pub';
+      $pub_item_id = 'chado-' . $field_table . '__pub_id';
+    }
+    else {
+      $pub_item_id = 'chado-' . $field_table . '__' . $field_column;
+    }
+
+    // Get the field defaults.
     $pub_id = '';
     $title = '';
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
-      $pkey_val =  tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $pkey, $pkey_val);
-      $fkey_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__' . $fkey, $fkey_value);
-      $pub_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $table_name . '__pub_id', $pub_id);
+      if ($linker_table) {
+        $pkey_val =  tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $pkey_val);
+        $fkey_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey, $fkey_value);
+      }
+      $pub_id = tripal_get_field_item_keyval($items, $delta, $pub_item_id, $pub_id);
       if ($pub_id) {
         $pub = chado_get_publication(array('pub_id' => $pub_id));
         $title =  $pub->title . ' [id:' . $pub->pub_id . ']';
@@ -49,11 +68,9 @@ class schema__publication_widget extends ChadoFieldWidget {
       $pub_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
     }
 
-    $schema = chado_get_schema('pub');
-
-    $widget['#table_name'] = $table_name;
+    $widget['#table_name'] = $field_table;
     $widget['#fkey_field'] = $fkey;
-    $widget['#prefix'] =  "<span id='$table_name-$delta'>";
+    $widget['#prefix'] =  "<span id='" . $field_table . "-" . $delta . "'>";
     $widget['#suffix'] =  "</span>";
 
     $widget['value'] = array(
@@ -61,15 +78,17 @@ class schema__publication_widget extends ChadoFieldWidget {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
-    $widget['chado-' . $table_name . '__' . $pkey] = array(
-      '#type' => 'value',
-      '#default_value' => $pkey_val,
-    );
-    $widget['chado-' . $table_name . '__' . $fkey] = array(
-      '#type' => 'value',
-      '#default_value' => $fkey_value,
-    );
-    $widget['chado-' . $table_name . '__pub_id'] = array(
+    if ($linker_table) {
+      $widget['chado-' . $field_table . '__' . $pkey] = array(
+        '#type' => 'value',
+        '#default_value' => $pkey_val,
+      );
+      $widget['chado-' . $field_table . '__' . $fkey] = array(
+        '#type' => 'value',
+        '#default_value' => $fkey_value,
+      );
+    }
+    $widget[$pub_item_id] = array(
       '#type' => 'value',
       '#default_value' => $pub_id,
     );
@@ -91,17 +110,27 @@ class schema__publication_widget extends ChadoFieldWidget {
   public function validate($element, $form, &$form_state, $langcode, $delta) {
 
     // Get the FK column that links to the base table.
-    $table_name = $this->instance['settings']['chado_table'];
-    $base_table = $this->instance['settings']['base_table'];
-    $schema = chado_get_schema($table_name);
-    $pkey = $schema['primary key'][0];
-    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-    $fkey = $fkeys[0];
     $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
+    
+    if ($field_table != $base_table) {
+      $schema = chado_get_schema($field_table);
+      $pkey = $schema['primary key'][0];
+      $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+      $fkey = $fkeys[0];
+      $pub_item_id = 'chado-' . $field_table . '__pub_id';
 
-    // Get the field values.
-    $fkey_value = $form_state['values'][$field_name]['und'][$delta]['value'];
-    $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
+      // Get the field values.
+      $fkey_value = $form_state['values'][$field_name]['und'][$delta]['value'];
+    }
+    else {
+      $pub_item_id = 'chado-' . $field_table . '__' . $field_column;
+    }
+    
+    $pub_id = $form_state['values'][$field_name]['und'][$delta][$pub_item_id];
     $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
 
     // If the user provided a pub_title then we want to set the foreign key
@@ -111,7 +140,7 @@ class schema__publication_widget extends ChadoFieldWidget {
       if (preg_match('/^.*\[id:(\d+)]$/', $title, $matches)) {
         $pub_id = $matches[1];
         $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
-        $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = $pub->pub_id;
+        $form_state['values'][$field_name]['und'][$delta][$pub_item_id] = $pub->pub_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $pub->pub_id;
       }
     }
@@ -121,9 +150,9 @@ class schema__publication_widget extends ChadoFieldWidget {
     // it out so that the Chado field_storage infrastructure won't try to
     // write a record.
     if (!$title) {
-      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__' . $fkey] = '';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['value'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '';
     }
   }
 

@@ -83,42 +83,84 @@ class schema__publication extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
+    
+    // These fields are used when the publications come through a linker table.
+    $pkey = '';
+    $fkey_lcolumn = '';
+    $fkey_rcolumn = '';
+    $linker_table = '';   
+    
+    // If the field table and the base table are not the same thing then
+    // we are going through a linker table.
+    if ($field_table != $base_table) {
 
-    // Get the FK that links to the base record.
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+      // Get the FK that links to the base record.
+      $schema = chado_get_schema($field_table);
+      $pkey = $schema['primary key'][0];
+      $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+      $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+      $linker_table = $base_table . '_pub';
 
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => '',
-      'chado-' . $field_table . '__' . 'pub_id' => '',
-    );
+      // Set some defaults for the empty record.
+      $entity->{$field_name}['und'][0] = array(
+        'value' => array(),
+        'chado-' . $field_table . '__' . $pkey => '',
+        'chado-' . $field_table . '__' . $fkey_lcolumn => '',
+        'chado-' . $field_table . '__' . 'pub_id' => '',
+      );
+    }
+    // Otherwise, the base table has a pub_id field.
+    else {
+      $entity->{$field_name}['und'][0] = array(
+        'value' => array(),
+        'chado-' . $field_table . '__' . $field_column => '',
+      );
+    }
+    
+    if (!$record) {
+      return;
+    }
 
-    $linker_table = $base_table . '_pub';
-    $options = array(
-      'return_array' => 1,
-    );
-    $record = chado_expand_var($record, 'table', $linker_table, $options);
-    if (property_exists($record, $linker_table) and is_array($record->$linker_table) and count($record->$linker_table) > 0) {
-      $i = 0;
-      foreach ($record->$linker_table as $index => $linker) {
-        $pub = $linker->pub_id;
-        $pub_details = chado_get_minimal_pub_info($pub);
+    // Get the list of publications
+    $pubs = array();
+    if ($linker_table) {
+      $options = array(
+        'return_array' => 1,
+      );
+      $record = chado_expand_var($record, 'table', $linker_table, $options);
+      if (property_exists($record, $linker_table) and is_array($record->$linker_table) and count($record->$linker_table) > 0) {
+        $i = 0;
+        foreach ($record->$linker_table as $index => $linker) {
+          $pub = $linker->pub_id;
+          $pubs[$pub->pub_id] = $pub;          
+        }
+      }
+    }
+    else {
+      $pub = $record->{$field_column};
+      if ($pub) {
+        $pubs[$pub->pub_id] = $pub;
+      }
+    }
+    
+    $i = 0;
+    foreach ($pubs as $pub_id => $pub) {
+      $pub_details = chado_get_minimal_pub_info($pub);
 
-        $entity->{$field_name}['und'][$i]['value'] = $pub_details;
+      $entity->{$field_name}['und'][$i]['value'] = $pub_details;
+      if ($linker_table) {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub->pub_id;
-
-        if (property_exists($pub, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
-        }
-        $i++;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub_id;
       }
+      else {
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $field_column] = $pub_id;
+      }
+
+      if (property_exists($pub, 'entity_id')) {
+        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
+      }
+      $i++;
     }
   }
 }

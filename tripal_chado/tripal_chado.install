@@ -1513,4 +1513,42 @@ function tripal_chado_update_7324() {
   }
 }
 
+/**
+ * Adding additional vocabulary term mapping to Chado table columns.
+ */
+function tripal_chado_update_7325() {
+  try {
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
+    tripal_chado_populate_chado_semweb_table();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+
+/**
+ * Adding a "Company" term.
+ */
+function tripal_chado_update_7326() {
+  try {
+    // The Company term is missing for the Tripal Contact ontology, but is
+    // useful for the arraydesign.manufacturer which is an FK to Contact.
+    // It seems better to use a term from a curated ontology than to add to
+    // Tripal Contact.
+    $term = chado_insert_cvterm(array(
+      'id' => 'NCIT:C54131',
+      'name' => 'Company',
+      'cv_name' => 'ncit',
+      'definition' => 'Any formal business entity for profit, which may be a corporation, a partnership, association or individual proprietorship. [ NCI http://dictionary.law.com ]',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+
 

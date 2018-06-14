@@ -157,6 +157,18 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
       );
     }
   }
+  if ($table == 'arraydesign') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'assay') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5
+    );
+  }
   if ($table == 'biomaterial') {
     $format[] = array(
       'format' => '[schema__name]',
@@ -218,6 +230,12 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
     );
   }
   if ($table == 'library') {
+    $format[] = array(
+      'format' => '[schema__name]',
+      'weight' => -5,
+    );
+  }
+  if ($table == 'protocol') {
     $format[] = array(
       'format' => '[schema__name]',
       'weight' => -5,

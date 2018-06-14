@@ -134,25 +134,26 @@ class local__contact extends ChadoField {
     );
 
     // Handle the biomaterial table.
-    if ($field_table == 'biomaterial') {
-      if ($record) {
-        $contact = $record->biosourceprovider_id;
-        if ($contact) {
-          $entity->{$field_name}['und'][0] = array(
-            'value' => array(
-              $type_term => $contact->type_id ? $contact->type_id->name : '',
-              $name_term => $contact->name,
-              $description_term => $contact->description,
-            ),
-            $entity->{$field_name}['und'][0]['chado-biomaterial__biosourceprovider_id'] = $contact->contact_id,
-          );
-          if (property_exists($contact, 'entity_id')) {
-            $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
-          }
-        }
+    if (!$record) {
+      return;
+    }
+      
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
+    $contact = $record->{$field_column};
+    
+    if ($contact) {
+      $entity->{$field_name}['und'][0] = array(
+        'value' => array(
+          $type_term => $contact->type_id ? $contact->type_id->name : '',
+          $name_term => $contact->name,
+          $description_term => $contact->description,
+        ),
+        $entity->{$field_name}['und'][0][$linker_field] = $contact->contact_id,
+      );
+      if (property_exists($contact, 'entity_id')) {
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
       }
-    };
-    // Here place other non-linker tables that have a FK to the contact table.
+    }
   }
 
   /**
