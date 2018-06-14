@@ -68,10 +68,14 @@ class TripalContentService_v0_1 extends TripalWebService {
       $ctype_lookup = array();
       $found = FALSE;
       while ($bundle = $bundles->fetchObject()) {
-        if ($ctype == preg_replace('/[^\w]/', '_', $bundle->label)) {
+        // Check the label by replacing non alpha-numeric characters with 
+        // an underscore and is case-insensitive
+        $label = preg_replace('/[^\w]/', '_', $bundle->label);
+        if (preg_match("/$label/i", $ctype)) {
           $ctype = $bundle->label;
           $found = TRUE;
         }
+        // Check if this is an accession.
         if ($ctype == $bundle->vocabulary . ':' . $bundle->accession) {
           $ctype = $bundle->label;
           $found = TRUE;
