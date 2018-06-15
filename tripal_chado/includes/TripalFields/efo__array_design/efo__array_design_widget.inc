@@ -34,7 +34,7 @@ class efo__array_design_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
-    $sql = "SELECT arraydesign_id, name, version FROM {arraydesign}";
+    $sql = "SELECT arraydesign_id, name, version FROM {arraydesign} ORDER BY name";
     $results = chado_query($sql);
     $options = ['' => '- Select an array design -'];
     while ($r = $results->fetchObject()) {
