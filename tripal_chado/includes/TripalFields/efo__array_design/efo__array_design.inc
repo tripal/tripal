@@ -159,15 +159,16 @@ class efo__array_design extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('arraydesign', 'name');
-    $version_term = chado_get_semweb_term('arraydesign', 'version');
+    $name_term = $field_term_id . ',' . chado_get_semweb_term('arraydesign', 'name');
+    $version_term = $field_term_id . ',' . chado_get_semweb_term('arraydesign', 'version');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'arraydesign', $alias, "base.arraydesign_id = $alias.arraydesign_id");
 
     // If the column is the field name then we're during a search on the full
     // scientific name.
-    if ($condition['column'] == $field_term_id or ['column'] == $name_term) {
+    if ($condition['column'] == $field_term_id or 
+        $condition['column'] == $name_term) {      
       $query->condition("$alias.name", $condition['value'], $operator);
     }
     // If the column is a subfield.
@@ -183,8 +184,8 @@ class efo__array_design extends ChadoField {
     $alias = $this->field['field_name'];
 
     $field_term_id = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('arraydesign', 'name');
-    $version_term = chado_get_semweb_term('arraydesign', 'version');
+    $name_term = $field_term_id . ',' . chado_get_semweb_term('arraydesign', 'name');
+    $version_term = $field_term_id . ',' . chado_get_semweb_term('arraydesign', 'version');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'arraydesign', $alias, "base.arraydesign_id = $alias.arraydesign_id");
