@@ -5,6 +5,13 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
   function options_form(&$form, &$form_state) {
     // We have no options so we have to implement this function with
     // nothing in it.
+    $form['content'] = array(
+      '#type' => 'markup',
+      '#markup' => tripal_set_message('Please note that if you have the ' . 
+        'highlighting filter enabled for the search index, it will create ' . 
+        'signficant slowness in creating data collections. If you want to use '.
+        'Tripal data collections make sure the highlighting filter is turned off'), 
+    );
   }
   /**
    * Implements views_handler_area_result::render().
@@ -30,7 +37,7 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
     // If we don't support this type of view, then we should tell the admin
     // so they're not left scratching their head like I was ;-).
     else {
-      tripal_set_message('Unfortunatly Tripal Collections are not supported for your current view type.');
+      tripal_set_message('Unfortunately, Tripal Collections are not supported for your current view type.');
     }
   }
 }
