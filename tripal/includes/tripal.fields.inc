@@ -265,6 +265,15 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
     $field = field_info_field($field_name);
     $instance = field_info_instance('TripalEntity', $field_name, $form['#bundle']);
     
+    // Warn users if a field is missing a term.
+    if ($instance and $instance['entity_type'] == 'TripalEntity' and 
+        array_key_exists('settings', $instance) and is_array($instance['settings']) and
+        (!array_key_exists('term_vocabulary', $instance['settings']) or !$instance['settings']['term_vocabulary'])) {
+      tripal_report_error('tripal_fields', TRIPAL_WARNING,
+          'The field, !field, is missing a controlled vocabulary term. Please edit the field and set a term, otherwise this field may not work properly.',
+          ['!field' => $field_name],
+          ['drupal_set_message' => TRUE]);
+    }
     // Warn users if any of the terms are not unique.
     if ($instance and array_key_exists('settings', $instance) and is_array($instance['settings']) and 
         array_key_exists('term_vocabulary', $instance['settings'])) {
