@@ -771,7 +771,15 @@ function tripal_field_widget_form_validate($element, &$form_state, $form) {
   tripal_load_include_field_class($widget_class);
   if (class_exists($widget_class)) {
     $widget = new $widget_class($field, $instance);
-    $widget->validate($element, $form, $form_state, $langcode, $delta);
+    
+    // Set the validation function for this field widget depending on the
+    // form displaying the widget.
+    if ($form['#form_id'] == 'field_ui_field_edit_form') {
+      $widget->validateDefaults($element, $form, $form_state, $langcode, $delta);
+    }
+    else {
+      $widget->validate($element, $form, $form_state, $langcode, $delta);
+    }
   }
 }
 
