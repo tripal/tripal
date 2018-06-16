@@ -532,17 +532,6 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
           'type' => 'field_chado_storage',
         ),
       );
-      $field_name = 'efo__array_design';
-      $field_type = 'efo__array_design';
-      $info[$field_name] = array(
-        'field_name' => $field_name,
-        'type' => $field_type,
-        'cardinality' => 1,
-        'locked' => FALSE,
-        'storage' => array(
-          'type' => 'field_chado_storage',
-        ),
-      );
     }
   
   // For the pub_id field in the base table.
@@ -2071,80 +2060,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-    
-    $field_name = 'efo__array_design';
-    $info[$field_name] =  array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Array design',
-      'description' => 'An instrument design which describes the design of the array.',
-      'required' => TRUE,
-      'settings' => array(
-        'auto_attach' => TRUE,
-        'chado_table' => 'assay',
-        'chado_column' => 'arraydesign_id',
-        'base_table' => 'assay',
-        'term_vocabulary' => 'EFO',
-        'term_name' => 'array design',
-        'term_accession' => '0000269',
-        
-      ),
-      'widget' => array(
-        'type' => 'efo__array_design_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'efo__array_design_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
   } 
-  // Analysis Id
-  if (array_key_exists('analysis_id', $schema['fields'])) {
-    $field_name = 'operation__analysis';
-    $is_required = FALSE;
-    if (array_key_exists('not null', $schema['fields']['analysis_id']) and
-        $schema['fields']['analysis_id']['not null']) {
-      $is_required = TRUE;
-    }
-    $info[$field_name] =  array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'Analysis',
-      'description' => 'Application of analytical methods to existing data of a specific type.',
-      'required' => $is_required,
-      'settings' => array(
-        'auto_attach' => TRUE,
-        'chado_table' => $table_name,
-        'chado_column' => 'analysis_id',
-        'base_table' => $table_name,
-        'term_vocabulary' => 'operation',
-        'term_name' => 'Analysis',
-        'term_accession' => '2945',
-        
-      ),
-      'widget' => array(
-        'type' => 'operation__analysis_widget',
-        'settings' => array(
-          'display_label' => 0,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'inline',
-          'type' => 'operation__analysis_formatter',
-          'settings' => array(),
-        ),
-      ),
-    );
-  }
 }
 
 /**
