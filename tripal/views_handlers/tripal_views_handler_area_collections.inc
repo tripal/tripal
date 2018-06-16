@@ -3,15 +3,17 @@
 class tripal_views_handler_area_collections extends views_handler_area_result {
 
   function options_form(&$form, &$form_state) {
-    // We have no options so we have to implement this function with
-    // nothing in it.
-    $form['content'] = array(
-      '#type' => 'markup',
-      '#markup' => tripal_set_message('Please note that if you have the ' . 
-        'highlighting filter enabled for the search index, it will create ' . 
-        'signficant slowness in creating data collections. If you want to use '.
-        'Tripal data collections make sure the highlighting filter is turned off'), 
-    );
+    // If this handler is attached to a view based off of a Search API index
+    // then give a warning message.
+    if (preg_match('/^search_api_index/', $this->view->base_table)) {
+      $form['content'] = array(
+        '#type' => 'markup',
+        '#markup' => tripal_set_message('Please note that if this field is added to  have the ' . 
+          'highlighting filter enabled for the search index, it will create ' . 
+          'signficant slowness in creating data collections. If you want to use '.
+          'Tripal data collections make sure the highlighting filter is turned off'), 
+      );
+    }
   }
   /**
    * Implements views_handler_area_result::render().
