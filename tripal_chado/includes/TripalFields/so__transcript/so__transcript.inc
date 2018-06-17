@@ -133,15 +133,12 @@ class so__transcript extends ChadoField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(
-        'rdfs:type' => '',
-        'schema:name' => '',
-        // Identifier
-        'data:0842' => '',
-        // sequence location
-        'SO:0000735' => '',
-      ),
+      'value' => ''
     );
+    
+    if (!$record) {
+      return;
+    }
 
     // Get the mRNA features for this gene.
     $sql = "
@@ -176,10 +173,10 @@ class so__transcript extends ChadoField {
         'data:0842' => $transcript->uniquename,
         'SO:0000735' => $loc,
       );
-      $entity_id = chado_get_record_entity_by_bundle($entity->bundle, $record_id);
-      if ($entity_id) {
-         $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
-       }
+      $feature = chado_generate_var('feature', ['feature_id' => $transcript->feature_id]);
+      if (property_exists($feature, 'entity_id')) {
+         $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $feature->entity_id;
+      }
       $i++;
     }
   }
