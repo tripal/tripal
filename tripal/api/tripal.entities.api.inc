@@ -1008,14 +1008,14 @@ function tripal_get_default_title_format($bundle) {
 /**
  * Returns an array of tokens based on Tripal Entity Fields.
  *
- * @param TripalBundle $entity
+ * @param TripalBundle $bundle
  *    The bundle entity for which you want tokens.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  *
  * @ingroup tripal_entities_api
  */
-function tripal_get_entity_tokens($entity, $options = array()) {
+function tripal_get_entity_tokens($bundle, $options = array()) {
   $tokens = array();
 
   // Set default options.
@@ -1042,7 +1042,7 @@ function tripal_get_entity_tokens($entity, $options = array()) {
     );
   }
 
-  $fields = field_info_instances('TripalEntity', $entity->name);
+  $fields = field_info_instances('TripalEntity', $bundle->name);
   foreach ($fields as $f) {
 
     // Build the token from the field information.
