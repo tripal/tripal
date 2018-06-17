@@ -47,7 +47,6 @@ class TripalEntityController extends EntityAPIController {
       $function = $module . '_entity_create';
       $function($entity, $values['type']);
     }
-
     return $entity;
 
   }
@@ -360,6 +359,9 @@ class TripalEntityController extends EntityAPIController {
         $invocation = 'entity_update';
         $pkeys = array('id');
       }
+      if (property_exists($entity, 'publish') and $entity->publish == TRUE) {
+        $invocation = 'entity_publish';
+      }
 
       // Invoke hook_entity_presave().
       module_invoke_all('entity_presave', $entity, $entity->type);
@@ -389,11 +391,14 @@ class TripalEntityController extends EntityAPIController {
       // Now we need to either insert or update the fields which are
       // attached to this entity. We use the same primary_keys logic
       // to determine whether to update or insert, and which hook we
-      // need to invoke.
+      // need to invoke.  We do not attach fields when publishing an entity.
+      // This is because a field may have default values and if so, those fields
+      // will be attached and the storage backend may then try to insert
+      // fields which should not be inserted because they already exist.
       if ($invocation == 'entity_insert') {
         field_attach_insert('TripalEntity', $entity);
       }
-      else {
+      if ($invocation == 'entity_update') {
         field_attach_update('TripalEntity', $entity);
       }
 

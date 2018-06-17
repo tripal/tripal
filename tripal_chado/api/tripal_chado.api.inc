@@ -225,6 +225,7 @@ function chado_publish_records($values, $job_id = NULL) {
         // can deal with it.
         'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
         'chado_record_id' => $record_id,
+        'publish' => TRUE,
       ));
       $entity = $entity->save();
       if (!$entity) {

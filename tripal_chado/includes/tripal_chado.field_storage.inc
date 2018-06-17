@@ -42,12 +42,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
-  $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-// dpm($field_vals);
-
-  // First, write the record for the base table.  If we have a record id then
-  // this is an update and we need to set the primary key.  If not, then this
-  // is an insert and we need to set the type_id if the table supports it.
+  list($field_vals, $field_items) = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
+  // dpm($field_vals);  
+  
+  // First, write the record for the base table.
   $values = $field_vals[$base_table];
   if ($record_id) {
     $values[$base_pkey] = $record_id;
@@ -55,8 +53,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
-
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
+  if (!$base_record_id) {
+    throw new Exception('Unable to write fields to Chado: ' . print_r($field_items, TRUE));
+  }
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
@@ -381,6 +381,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity) {
   $all_fields = array();
   $base_fields = array();
+  $field_items = array();
 
   // Iterate through all of the fields and organize them into a
   // new fields array keyed by the table name
@@ -405,6 +406,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
     $temp = array();
+    $field_items[$field_name] = $items;
     foreach ($items as $delta => $item) {
 
       // A field may have multiple items. The field can use items
@@ -453,7 +455,7 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
   }
 
   $all_fields = array_merge($base_fields, $all_fields);
-  return $all_fields;
+  return [$all_fields, $field_items];
 }
 
 /**
