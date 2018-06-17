@@ -14,13 +14,15 @@ class local__gbrowse_image_formatter extends ChadoFieldFormatter {
     $content = '';
     if (count($items) > 0) {
       $url_term = chado_get_semweb_term('db', 'url');
-      $content = '<img src="' . $items[0]['value'][$url_term] . '" class="tripal-local--gbrowse-image"/>';
+      if (is_array($items[0]['value']) and array_key_exists($url_term, $items[0]['value'])) {
+        $content = '<img src="' . $items[0]['value'][$url_term] . '" class="tripal-local--gbrowse-image"/>';
       
-      $element[0] = array(
-        // We create a render array to produce the desired markup,
-        '#type' => 'markup',
-        '#markup' => $content,
-      );
+        $element[0] = array(
+          // We create a render array to produce the desired markup,
+          '#type' => 'markup',
+          '#markup' => $content,
+        );
+      }
     }
   }
 }

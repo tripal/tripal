@@ -82,8 +82,25 @@ class local__gbrowse_image extends ChadoField {
     }
     
     // Replace any tokens in the string.
+    $gbrowse_url = NULL;
+    $g_urls = $settings['gbrowse_url'];   
+    $g_urls = explode("\n", $g_urls);
+    foreach ($g_urls as $g_url) {
+      $matches = [];
+      if (preg_match('/^(.*)\s+(.*)\s+(http.*)$/', $g_url, $matches)) {
+        if ($record->organism_id->genus == $matches[1] and
+            $record->organism_id->species == $matches[2]) {
+          $gbrowse_url = $matches[3];
+        }
+      }
+      elseif (preg_match('/^http.*$/', $g_url)) {
+        $gbrowse_url = $g_url;
+      }
+    }
+    if (!$gbrowse_url) {
+      return;
+    }
     $bundle = tripal_load_bundle_entity(['name' => $this->instance['bundle']]);
-    $gbrowse_url = $settings['gbrowse_url'];   
     $gbrowse_url = tripal_replace_entity_tokens($gbrowse_url, $entity, $bundle);
         
     // Use the term associated to the db.url table of Chado.
@@ -111,7 +128,11 @@ class local__gbrowse_image extends ChadoField {
         'field values from this content type. Open the "Available Tokens" fieldset below. ' .
         'For example, to show a view of a gene from the rice genome GBrowse the ' .
         'following URL with tokens can be used: ' . 
-        'http://rice.plantbiology.msu.edu/cgi-bin/gbrowse_img/rice/?name=[schema__name];type=Landmarks%3Aregion+Genes+Rice_Annotation'),
+        'http://rice.plantbiology.msu.edu/cgi-bin/gbrowse_img/rice/?name=[schema__name];type=Landmarks%3Aregion+Genes+Rice_Annotation' . 
+        '. If you need to specify different GBrowse URLs for different ' .
+        'species, put the genus, species and URL all on one line with each separated ' . 
+        'by a space. For example: ' . 
+        '"Oryza sativa http://rice.plantbiology.msu.edu/cgi-bin/gbrowse_img/rice/?name=[schema__name];type=Landmarks%3Aregion+Genes+Rice_Annotation"'),
       '#default_value' => $settings['gbrowse_url'],
     );
     
