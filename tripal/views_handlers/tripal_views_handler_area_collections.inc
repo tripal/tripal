@@ -8,10 +8,10 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
     if (preg_match('/^search_api_index/', $this->view->base_table)) {
       $form['content'] = array(
         '#type' => 'markup',
-        '#markup' => tripal_set_message('Please note that if this field is added to  have the ' . 
-          'highlighting filter enabled for the search index, it will create ' . 
-          'signficant slowness in creating data collections. If you want to use '.
-          'Tripal data collections make sure the highlighting filter is turned off'), 
+        '#markup' => tripal_set_message('Please note that if this field is added while the ' .
+          'highlighting filter is enabled for the search index, it will ' .
+          'signficantly slow the creation of data collections. If you want to use '.
+          'Tripal data collections make sure the highlighting filter is turned off.'),
       );
     }
   }
