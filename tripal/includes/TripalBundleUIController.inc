@@ -347,7 +347,8 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $form['url']['token_display'] = array(
     '#type' => 'fieldset',
     '#title' => t('Available Tokens'),
-    '#description' => t('Copy the token and paste it into the "URL Alias Pattern" text field above.'),
+    '#description' => t('Copy the token and paste it into the "URL Alias Pattern" ' . 
+      'text field above. Please choose tokens that will guarantee a unique URL.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
@@ -488,8 +489,8 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       $includes = array(
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
       );
-      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all_urls_and_titles', $args,
-        $user->uid, 10, $includes);
+      tripal_add_job('Update all aliases for content type: ' . $bundle->label, 'tripal', 
+        'tripal_update_all_urls_and_titles', $args, $user->uid, 10, $includes);
     }
     elseif ($trigger == 'Bulk update all aliases'){
       $update = $form_state['input']['url']['url_pattern'];
@@ -502,8 +503,8 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       $includes = array(
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
       );
-      tripal_add_job('Update all aliases', 'tripal', 'tripal_update_all_urls_and_titles', $args,
-        $user->uid, 10, $includes);
+      tripal_add_job('Update all aliases for content type: ' . $bundle->label, 'tripal', 
+        'tripal_update_all_urls_and_titles', $args, $user->uid, 10, $includes);
     }
 
     $form_state['redirect'] = 'admin/structure/bio_data';

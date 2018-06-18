@@ -100,30 +100,23 @@ class TripalEntityController extends EntityAPIController {
    * Sets the title for an entity.
    *
    * @param $entity
+   *   The entity whose title should be changed.
    * @param $title
+   *   The title to use. It can contain tokens the correspond to field values.
+   *   Token should be be compatible with those returned by 
+   *   tripal_get_entity_tokens().
    */
   public function setTitle($entity, $title = NULL) {
-
+    
+    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
-    if (!$title) {
-      // Load the TripalBundle entity for this TripalEntity.
-      // Get the format for the title based on the bundle of the entity.
-      // And then replace all the tokens with values from the entity fields.
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    if (!$title) {     
       $title = tripal_get_title_format($bundle_entity);
-      $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
     }
-    // Check if the passed alias has tokens.
-    if($title && (preg_match_all("/\[[^\]]*\]/", $title, $bundle_tokens))) {
-
-      // Load the TripalBundle entity for this TripalEntity.
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-
-      // And then replace all the tokens with values from the entity fields.
-      $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
-    }
-    // As long as we were able to determine a title, we should update it ;-).
+    $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
+    
     if ($title) {
       db_update('tripal_entity')
         ->fields(array(
@@ -136,6 +129,13 @@ class TripalEntityController extends EntityAPIController {
 
   /**
    * Sets the URL alias for an entity.
+   * 
+   * @param $entity
+   *   The entity whose URL alias should be changed.
+   * @param $alias
+   *   The alias to use. It can contain tokens the correspond to field values.
+   *   Token should be be compatible with those returned by 
+   *   tripal_get_entity_tokens().
    */
   public function setAlias($entity, $alias = NULL) {
     $source_url = "bio_data/$entity->id";
@@ -145,12 +145,10 @@ class TripalEntityController extends EntityAPIController {
     if (!$alias) {
 
       // Load the TripalBundle entity for this TripalEntity.
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-
       // First get the format for the url alias based on the bundle of the entity.
+      // Then replace all the tokens with values from the entity fields.
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
-
-      // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
@@ -158,31 +156,28 @@ class TripalEntityController extends EntityAPIController {
     // the term name and entity id.
     if (!$alias) {
 
-      // Load the term for this TripalEntity.
+      // Load the term for this TripalEntity. Set a default based on the term 
+      // name and entity id. Then replace all the tokens with values from 
+      // the entity fields.
       $term = entity_load('TripalTerm', array('id' => $entity->term_id));
       $term = reset($term);
-
-      // Set a default based on the term name and entity id.
       $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
-
-      // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
-    // Check if the passed alias has tokens.
+    
+    // Check if the passed alias has tokens. Load the TripalBundle entity for 
+    // this TripalEntity. Then replace all the tokens with values from the 
+    // entity fields.
     if($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
-
-      // Load the TripalBundle entity for this TripalEntity.
       $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-
-      // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
     // Make sure the alias doesn't contain spaces.
-    $alias = preg_replace('/\s+/','-',$alias);
+    //$alias = preg_replace('/\s+/','-',$alias);
     // Or any non alpha numeric characters.
-    $alias = preg_replace('/[^a-zA-Z0-9\-\/]/','',$alias);
-    $alias = preg_replace('/_/','-',$alias);
+    //$alias = preg_replace('/[^a-zA-Z0-9\-\/]/','',$alias);
+    //$alias = preg_replace('/_/','-',$alias);
 
     if ($alias) {
       // Determine if this alias has already been used.
@@ -210,10 +205,7 @@ class TripalEntityController extends EntityAPIController {
           'language' => 'und',
         );
 
-//        path_delete(array('source' => $source_url));
-//        $path = array('source' => $source_url, 'alias' => $alias);
-//        path_save($path);
-        //Now check if an entry with the source url for this entity already
+        // Now check if an entry with the source url for this entity already
         // exists. This is an issue when updating existing url aliases. To avoid
         // creating 404s existing aliases need to be updated and a redirect
         // created to handle the old alias.
@@ -246,15 +238,14 @@ class TripalEntityController extends EntityAPIController {
               ->condition('source', $source_url, '=')
               ->condition('pid', $ea->pid, '=')
               ->execute();
-
           }
         }
         else {
           drupal_write_record('url_alias', $values);
         }
       }
-      // If there is only one alias matching then it might just be that we already
-      // assigned this alias to this entity in a previous save.
+      // If there is only one alias matching then it might just be that we 
+      // already assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
 
         $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));

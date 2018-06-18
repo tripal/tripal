@@ -1007,14 +1007,14 @@ function tripal_get_default_title_format($bundle) {
 /**
  * Returns an array of tokens based on Tripal Entity Fields.
  *
- * @param TripalBundle $entity
+ * @param TripalBundle $bundle
  *    The bundle entity for which you want tokens.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  *
  * @ingroup tripal_entities_api
  */
-function tripal_get_entity_tokens($entity, $options = array()) {
+function tripal_get_entity_tokens($bundle, $options = array()) {
   $tokens = array();
 
   // Set default options.
@@ -1023,51 +1023,132 @@ function tripal_get_entity_tokens($entity, $options = array()) {
 
   if ($options['include id']) {
     $token = '[TripalBundle__bundle_id]';
-    $tokens[$token] = array(
+    $tokens[$token] = [
       'label' => 'Bundle ID',
       'description' => 'The unique identifier for this Tripal Content Type.',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE
-    );
+    ];
 
     $token = '[TripalEntity__entity_id]';
-    $tokens[$token] = array(
+    $tokens[$token] = [
       'label' => 'Content/Entity ID',
       'description' => 'The unique identifier for an individual piece of Tripal Content.',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE
-    );
+    ];
   }
 
-  $fields = field_info_instances('TripalEntity', $entity->name);
-  foreach ($fields as $f) {
-
-    // Build the token from the field information.
-    $token = '[' . $f['field_name'] . ']';
-    $current_token = array(
-      'label' => $f['label'],
-      'description' => $f['description'],
-      'token' => $token,
-      'field_name' => $f['field_name'],
-      'required' => $f['required']
-    );
-
-    // If the required only option is set then we only want to add
-    // required fields to the token list.
-    if ($options['required only'] AND $current_token['required']) {
-      $tokens[$token] = $current_token;
+  $instances = field_info_instances('TripalEntity', $bundle->name);
+  foreach ($instances as $instance_name => $instance) {
+    
+    if (!$instance['required'] and $options['required only']) {
+      continue;
     }
-    // If the required only option is not set then add everything.
-    elseif (!$options['required only']) {
-      $tokens[$token] = $current_token;
+    
+    $use_field = FALSE;
+   
+    // Iterate through the TripalEntity fields and see if they have
+    // sub-elements, if so, add those as tokens too.
+    $field_name = $instance['field_name'];
+    if ($instance['entity_type'] == 'TripalEntity') {
+      if (tripal_load_include_field_class($field_name)) {
+        $field = field_info_field($field_name);
+        $field_obj = new $field_name($field, $instance);
+        $element_info = $field_obj->elementInfo();
+        $term_id = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
+        if ($element_info and 
+            array_key_exists($term_id, $element_info) and 
+            array_key_exists('elements', $element_info[$term_id]) and count($element_info[$term_id]['elements']) > 0) {
+          $elements = $element_info[$term_id]['elements'];
+          _tripal_get_entity_tokens_for_elements($instance, $field_name, $elements, $tokens, $options);
+        }
+        else {
+          $use_field = TRUE;
+        }
+      }
+      else {
+        $use_field = TRUE;
+      }
+    }
+    else {
+      $use_field = TRUE;
+    }
+    
+    // If we have no elements to add then just add the field as is.
+    if ($use_field) {
+      // Build the token from the field information.
+      $token = '[' . $instance['field_name'] . ']';
+      $tokens[$token] = [
+        'label' => $instance['label'],
+        'description' => $instance['description'],
+        'token' => $token,
+        'field_name' => $instance['field_name'],
+        'required' => $instance['required']
+      ];
     }
   }
 
   return $tokens;
 }
 
+/**
+ * A recursive helper function to get tokens for element sub fields.
+ * 
+ * @param $instance
+ *   A original field instance object.
+ * @param $parent
+ *   The name of the parent. The first time this is called outside of 
+ *   recursion this should be the field name.
+ * @param $elements
+ *   The array of elements to process.
+ * @param $tokens
+ *   The array of tokens to be added to.
+ */
+function _tripal_get_entity_tokens_for_elements($instance, $parent, $elements, &$tokens, $options) {
+  
+  // Iterate through all of the elements and add tokens for each one.
+  foreach ($elements as $child_term_id => $details) {
+    
+    // We don't need to add the entity element.
+    if ($child_term_id == 'entity') {
+      continue;
+    }
+    
+    // Skip elements that aren't required.
+    $required = array_key_exists('required', $details) ? $details['required'] : FALSE;
+    if (!$required and $options['required only']) {
+      continue;
+    }
+    $token = '[' . $parent . ',' . $child_term_id . ']'; 
+    $label = $child_term_id;
+    if (array_key_exists('name', $details)) {
+      $label = $details['name'];
+    }
+    elseif (preg_match('/:/', $child_term_id)) {
+      list($vocabulary, $accession) = explode(':', $child_term_id);
+      $term = tripal_get_term_details($vocabulary, $accession);
+      $label = $term['name'];
+    }
+
+    // Add the token!
+    $tokens[$token] = [
+      'label' => $label,
+      'description' => array_key_exists('description', $details) ? $details['description'] : '',
+      'token' => $token,
+      'field_name' => $instance['field_name'],
+      'required' => $required
+    ];
+    
+    // Recurse to include sub elements
+    if (array_key_exists('elements', $details)) {
+      _tripal_get_entity_tokens_for_elements($instance, $parent . ',' . $child_term_id, 
+        $details['elements'], $tokens, $options);
+    }
+  }
+}
 /**
  * Replace all Tripal Tokens in a given string.
  *
@@ -1088,8 +1169,8 @@ function tripal_get_entity_tokens($entity, $options = array()) {
  */
 function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) {
   // Determine which tokens were used in the format string
-  $used_tokens = array();
-  if (preg_match_all('/\[\w+\]/', $string, $matches)) {
+  $used_tokens = [];
+  if (preg_match_all('/\[.*?\]/', $string, $matches)) {
     $used_tokens = $matches[0];
   }
 
@@ -1104,10 +1185,13 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
   // all synced entities causes extreme slowness, so we'll only attach
   // the necessary fields for replacing tokens.
   $attach_fields = array();
-  foreach($used_tokens as $token) {
-    $field_name = str_replace(array('.','[',']'), array('__','',''), $token);
 
-    if (!property_exists($entity, $field_name)) {
+  foreach($used_tokens as $token) {
+    $token = preg_replace('/[\[\]]/', '', $token);
+    $elements = explode(',', $token);
+    $field_name = array_shift($elements);
+    //$field_name = str_replace(array('.','[',']'), array('__','',''), $field_name);
+    if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
       $field = field_info_field($field_name);
       $storage = $field['storage'];
       $attach_fields[$storage['type']]['storage'] = $storage;
@@ -1129,20 +1213,28 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
     module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
         $entities, FIELD_LOAD_CURRENT, $field_ids, array());
   }
-
+  
   // Now that all necessary fields are attached process the tokens.
   foreach($used_tokens as $token) {
-    $field_name = str_replace(array('.','[',']'), array('__','',''), $token);
+    $token = preg_replace('/[\[\]]/', '', $token);
+    $elements = explode(',', $token);
+    $field_name = array_shift($elements);
     $value = '';
-
+    
     if (property_exists($entity, $field_name)) {
+      $value = '';
       // Note: there is a memory leak in field_get_items() so we can't use it
       // here or bulk publishing will slowly erode memory.
-      //$field_value = field_get_items('TripalEntity', $entity, $field_name);
-      if (array_key_exists(0, $entity->{$field_name}['und'])) {
+      // $field_value = field_get_items('TripalEntity', $entity, $field_name);
+      if (array_key_exists('und', $entity->{$field_name}) and 
+          array_key_exists(0, $entity->{$field_name}['und'])) {
         $value = $entity->{$field_name}['und'][0]['value'];
-      }
-      // TODO: deal with the value when it is not a scalar.
+        // If the value is an array it means we have sub elements and we can
+        // descend through the array to look for matching value.
+        if (is_array($value) and count($elements) > 0) {
+          $value = _tripal_replace_entity_tokens_for_elements($elements, $value);
+        }
+      }    
     }
     // The TripalBundle__bundle_id is a special token for substituting the
     // bundle id.
@@ -1163,14 +1255,31 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
     // We can't support tokens that have multiple elements (i.e. in an array).
     if (is_array($value)) {
-      $string = str_replace($token, '', $string);
+      $string = str_replace('[' . $token . ']', '', $string);
     }
     else {
-      $string = str_replace($token, $value, $string);
+      $string = str_replace('[' . $token . ']', $value, $string);
     }
   }
 
   return $string;
+}
+
+/**
+ * A helper function for tripal_replace_entity_tokens to get token values.
+ * 
+ * This helper function is used when the tokens are from subelements.
+ * @param $entity
+ */
+function _tripal_replace_entity_tokens_for_elements($elements, $values) {
+  $term_id = array_shift($elements);
+  $value = $values[$term_id];
+  if (count($elements) == 0) {
+    return $value;
+  }
+  else {
+    _tripal_replace_entity_tokens_for_elements($elements, $value);
+  }
 }
 
 /**
