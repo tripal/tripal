@@ -2066,7 +2066,7 @@ function chado_db_select($table, $alias = NULL, array $options = array()) {
     $options['target'] = 'default';
   }
    
-  // We only want one connection for chado_db_select, so the first ime we
+  // We only want one connection for chado_db_select, so the first time we
   // create it, we'll save it in the $GLOBALS array for use next time this
   // function is called. If we don't do this, then the function will
   // open too many connections and cause the database server to block.
