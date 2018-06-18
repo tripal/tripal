@@ -56,6 +56,55 @@ class TripalBundleUIController extends EntityDefaultUIController {
 
     return $forms;
   }
+  
+  /**
+   * Renders the Bundle overview table
+   */
+  public function overviewTable($conditions = array()) {
+    $entities = entity_load($this->entityType, FALSE, $conditions);
+
+    // Sort the entities by label.
+    $sorted = [];    
+    foreach ($entities as $entity) {
+      $sorted[$entity->label] = $entity;
+    }
+    ksort($sorted, SORT_STRING|SORT_FLAG_CASE);
+    
+    $rows = array();
+    foreach ($sorted as $entity) {
+      // Get the term for this content type
+      $additional_cols = [$entity->term->name . ' (' . l($entity->accession, 'cv/lookup/' . $entity->term->vocab->vocabulary . '/' . $entity->term->accession) . ')'];
+      $rows[] = $this->overviewTableRow($conditions, 
+        entity_id($this->entityType, $entity), $entity,
+        $additional_cols);
+    }
+    // Assemble the right table header.
+    $header = array(t('Label'));
+    if (!empty($this->entityInfo['exportable'])) {
+      $header[] = t('Status');
+    }
+    $header[] = array(
+      'data' => t('Term'),
+    );
+    // Add operations with the right colspan.
+    $field_ui = !empty($this->entityInfo['bundle of']) && module_exists('field_ui');
+    $exportable = !empty($this->entityInfo['exportable']);
+    $colspan = 3;
+    $colspan = $field_ui ? $colspan + 2 : $colspan;
+    $colspan = $exportable ? $colspan + 1 : $colspan;
+    $header[] = array(
+      'data' => t('Operations'),
+      'colspan' => $colspan,
+    );
+    
+    $render = array(
+      '#theme' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+      '#empty' => t('None.'),
+    );
+    return $render;
+  }
 
 }
 
