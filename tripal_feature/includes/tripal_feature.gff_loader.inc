@@ -650,7 +650,12 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $strand = -1;
       }
       if (strcmp($phase, '.') == 0) {
-        $phase = '';
+        if ($type == 'CDS') {
+          $phase = '0';
+        }
+        else {
+          $phase = '';
+        }
       }
       if (array_key_exists($type, $cvterm_lookup)) {
         $cvterm = $cvterm_lookup[$type];
