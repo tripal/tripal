@@ -76,10 +76,18 @@ function tripal_field_storage_query($query) {
   $select->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
   $select->fields('TE', array('id'));
   $select->fields('TB', array('name'));
+  
+  // Apply any entity condition filters.
+  if ($query->entityConditions) {
+    if (array_key_exists('bundle', $query->entityConditions)) {
+      $select->condition('TB.name', $query->entityConditions['bundle']['value']);
+    }
+  }
 
   // Add in any filters to the query.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
+    
     // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'tripal_no_storage') {
       continue;
@@ -106,6 +114,20 @@ function tripal_field_storage_query($query) {
     if ($field['field_name'] == 'content_type') {
       $select->orderBy('TB.label', $direction);
     }
+  }
+  
+  // Add a range of records to retrieve
+  if (isset($query->range)) {
+    $select->range($query->range['start'], $query->range['length']);
+  }
+  
+  // Only include records that are deleted.  Tripal doesn't keep track of
+  // records that are deleted that need purging separately so we can do nothing
+  // with this.
+  if (isset($query->deleted)) {
+    // There won't ever be field data marked as deleted so just created a 
+    // condition that always evaluates to false.
+    $select->where('1=0');
   }
 
   // Perform the query and return the results.
