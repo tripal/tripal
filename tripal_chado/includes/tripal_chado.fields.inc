@@ -847,7 +847,7 @@ function tripal_chado_bundle_instances_info($entity_type, $bundle) {
   tripal_chado_bundle_instances_info_base($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_instances_info_custom($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_instances_info_linker($info, $entity_type, $bundle, $details);
-
+dpm($info);
   return $info;
 
 }
@@ -1543,7 +1543,8 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   if (array_key_exists('dbxref_id', $schema['fields'])) {
     $field_name = 'data__accession';
     $required = FALSE;
-    if ($table == 'phylotree') {
+    if (array_key_exists('not null', $schema['fields']['dbxref_id']) and
+        $schema['fields']['dbxref_id']['not null']) {
       $required = TRUE;
     }
     $info[$field_name] = array(

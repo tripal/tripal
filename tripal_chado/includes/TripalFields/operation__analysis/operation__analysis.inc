@@ -36,44 +36,9 @@ class operation__analysis extends ChadoField {
 
 
   /**
-   * @see TripalField::validate()
-   */
-  public function validate($entity_type, $entity, $langcode, $items, &$errors) {
-
-    // If we don't have an entity then we don't want to validate.  The case
-    // where this could happen is when a user is editing the field settings
-    // and trying to set a default value. In that case there's no entity and
-    // we don't want to validate.  There will always be an entity for creation
-    // and update operations of a content type.
-    if (!$entity) {
-      return;
-    }
-    $settings = $this->field['settings'];
-    $field_name = $this->field['field_name'];
-    $field_type = $this->field['type'];
-    $field_table = $this->instance['settings']['chado_table'];
-    $field_column = $this->instance['settings']['chado_column'];
-    $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    
-    // Get the field values.
-    foreach ($items as $delta => $values) {
-
-      // Get the field values.
-      $analysis_id = $values[$linker_field];
-      if (!$analysis_id or $analysis_id == 0) {
-        $errors[$field_name]['und'][0][] = [
-          'message' =>  t("Please specify an analysis."),
-          'error' => 'operation__analysis'
-        ];
-      }
-    }
-  }
-
-  /**
    * @see TripalField::load()
    */
   public function load($entity) {
-
     $record = $entity->chado_record;
     $settings = $this->instance['settings'];
 
