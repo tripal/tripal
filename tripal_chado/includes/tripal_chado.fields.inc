@@ -554,6 +554,21 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   } 
+
+  // Analysis Id
+  if (array_key_exists('analysis_id', $schema['fields'])) {
+    $field_name = 'operation__analysis';
+    $field_type = 'operation__analysis';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 }
 
 /**
@@ -847,6 +862,7 @@ function tripal_chado_bundle_instances_info($entity_type, $bundle) {
   tripal_chado_bundle_instances_info_base($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_instances_info_custom($info, $entity_type, $bundle, $details);
   tripal_chado_bundle_instances_info_linker($info, $entity_type, $bundle, $details);
+
   return $info;
 
 }
@@ -1551,7 +1567,8 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   if (array_key_exists('dbxref_id', $schema['fields'])) {
     $field_name = 'data__accession';
     $required = FALSE;
-    if ($table == 'phylotree') {
+    if (array_key_exists('not null', $schema['fields']['dbxref_id']) and
+        $schema['fields']['dbxref_id']['not null']) {
       $required = TRUE;
     }
     $info[$field_name] = array(
@@ -2061,6 +2078,46 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   } 
+  // Analysis Id
+  if (array_key_exists('analysis_id', $schema['fields'])) {
+    $field_name = 'operation__analysis';
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema['fields']['analysis_id']) and
+        $schema['fields']['analysis_id']['not null']) {
+      $is_required = TRUE;
+    }
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Analysis',
+      'description' => 'Application of analytical methods to existing data of a specific type.',
+      'required' => $is_required,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => $table_name,
+        'chado_column' => 'analysis_id',
+        'base_table' => $table_name,
+        'term_vocabulary' => 'operation',
+        'term_name' => 'Analysis',
+        'term_accession' => '2945',
+        
+      ),
+      'widget' => array(
+        'type' => 'operation__analysis_widget',
+        'settings' => array(
+          'display_label' => 0,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'operation__analysis_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 }
 
 /**

@@ -108,8 +108,8 @@ class TripalFieldWidget {
     );
     $widget['#field'] = $this->field;
     $widget['#instance'] = $this->instance;
-    $widget['#element_validate'] = array('tripal_field_widget_form_validate');
     $widget['#theme'] = 'tripal_field_default';
+    $widget['#element_validate'] = array('tripal_field_widget_form_validate');
   }
 
   /**
@@ -125,6 +125,16 @@ class TripalFieldWidget {
 
   }
 
+  /**
+   * Performs validation of the widget form when setting defaults.
+   *
+   * Use this validate to ensure that form values are entered correctly when
+   * a user edits the defaults on the field edit page (available from the
+   * "managed fields" section of the Content type page. 
+   */
+  public function validateDefaults($element, $form, &$form_state, $langcode, $delta) {
+    
+  }
 
   /**
    * Performs extra commands when the entity form is submitted.

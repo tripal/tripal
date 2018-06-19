@@ -174,7 +174,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
       );
     }
   }
-
+ 
   /**
    *
    * @see TripalFieldWidget::submit()
@@ -185,7 +185,7 @@ class sio__annotation_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-
+    
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];

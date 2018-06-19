@@ -5,6 +5,11 @@
  * @param $phylotree
  */
 function tripal_phylogeny_prepare_tree_viewer($phylotree) {
+  
+  // If the phylotree is not provided then just return;
+  if (!$phylotree) {
+    tripal_report_error('tripal_phylotree', TRIPAL_ERROR, 'tripal_phylogeny_prepare_tree_viewer: must provide a $phylotree argument.');
+  }
 
   // Don't prepare for viewing more than once.
   if (property_exists($phylotree, 'prepared_to_view') and
@@ -24,7 +29,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
 
   // Don't show tick marks for the taxonomy tree.
   $skip_ticks = 0;
-  if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Species tree') {
+  if (!is_null($phylotree->type_id) and ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Species tree')) {
     $skip_ticks = 1;
   }
 
