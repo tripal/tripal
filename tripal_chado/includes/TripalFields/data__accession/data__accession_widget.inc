@@ -94,6 +94,14 @@ class data__accession_widget extends ChadoFieldWidget {
     $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
     $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
     $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
+    
+    // Is this field required?
+    if ($element['#required'] and !$db_id) {
+      form_set_error($field_name . '][und][0][db_id', "A database for the accession must be provided.");
+    }
+    if ($element['#required'] and !$accession) {
+      form_set_error($field_name . '][und][0][accession', "An accession number must be provided.");
+    }
 
     // If user did not select a database, we want to remove dbxref_id from the
     // field. We use '__NULL__' because this field is part of the base table
