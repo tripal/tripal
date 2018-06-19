@@ -316,7 +316,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        $query->propertyCondition('status', 0);
      }
    }
-   $query->propertyOrderBy('label', 'ASC');
+   //$query->propertyOrderBy('created', 'DESC');
 
    // Find out the total number of records and determine what page we're on, and
    // initialize the pager.
