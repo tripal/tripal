@@ -356,7 +356,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
   if (!$pub_xml) {
     return $pub;
   }
-
+  
   // read the XML and iterate through it.
   $xml = new XMLReader();
   $xml->xml(trim($pub_xml));
@@ -512,9 +512,7 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
           tripal_pub_PMID_parse_journal($xml, $pub);
           break;
         case 'ArticleTitle':
-          $xml->read();
-          // remoave any trailing period from the title
-          $pub['Title'] = trim(preg_replace('/\.$/', '', $xml->value));
+          $pub['Title'] = $xml->readString();
           break;
         case 'Abstract':
           tripal_pub_PMID_parse_abstract($xml, $pub);
@@ -675,14 +673,14 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
       switch ($element) {
         case 'AbstractText':
           $label = $xml->getAttribute('Label');
-          $xml->read();
+          $value = $xml->readString();
           if ($label) {
-            $part = "<p><b>$label</b></br>" . $xml->value . '</p>';
+            $part = "<p><b>$label</b></br>" . $value . '</p>';
             $abstract .= $part;
             $pub['Structured Abstract Part'][] = $part;
           }
           else {
-            $abstract .= '<p>' . $xml->value . '</p>';
+            $abstract .= "<p>" . $value . "</p>";
           }
           break;
         case 'CopyrightInformation':

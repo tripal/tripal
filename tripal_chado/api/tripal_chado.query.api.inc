@@ -2065,7 +2065,19 @@ function chado_db_select($table, $alias = NULL, array $options = array()) {
   if (empty($options['target'])) {
     $options['target'] = 'default';
   }
-  $conninfo = Database::getConnectionInfo();
-  $conn = new ChadoDatabaseConnection($conninfo['default']);
+   
+  // We only want one connection for chado_db_select, so the first time we
+  // create it, we'll save it in the $GLOBALS array for use next time this
+  // function is called. If we don't do this, then the function will
+  // open too many connections and cause the database server to block.
+  $conn = NULL;
+  if (!array_key_exists('chado_db_select_connnection', $GLOBALS)) {
+    $conninfo = Database::getConnectionInfo();
+    $conn = new ChadoDatabaseConnection($conninfo['default']);
+    $GLOBALS['chado_db_select_connnection'] = $conn;
+  }
+  else {
+    $conn = $GLOBALS['chado_db_select_connnection'];
+  }
   return $conn->select($table, $alias, $options);
 }

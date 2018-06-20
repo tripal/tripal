@@ -123,6 +123,7 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
     );
   }
+    
   /**
    * @see TripalFieldWidget::validate()
    */
@@ -138,7 +139,6 @@ class schema__alternate_name_widget extends ChadoFieldWidget {
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
     $fkey = $fkeys[0];
-
 
     $pub_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $table_name . '__pub_id'];
     $syn_name = $form_state['values'][$field_name]['und'][$delta]['name'];

@@ -7,7 +7,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('chado_linker__prop');
 
-  /**
+    /**
    *
    * @see TripalFieldWidget::form()
    */
@@ -109,6 +109,17 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
       '#value' => $rank,
     );
   }
+  
+  /**
+   * @see TripalFieldWidget::validateDefaults()
+   */
+  public function validateDefaults($element, $form, &$form_state, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $field_table = $this->instance['settings']['chado_table'];
+    
+    $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
+    $form_state['values'][$field_name]['und'][$delta]['value'] = $value;    
+  }
 
   /**
    *
@@ -121,7 +132,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $chado_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
-
+       
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $base_table = $this->instance['settings']['base_table'];
