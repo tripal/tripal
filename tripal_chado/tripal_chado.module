@@ -1183,7 +1183,12 @@ function tripal_feature_match_features_page($id) {
     }
     $table_attrs = array('class' => 'tripal-data-table');
     $output = "<p>The following features match the name '$id'.</p>";
-    $output .= theme_table($header, $rows, $table_attrs, $caption);
+    $output .= theme_table(array(
+      'header' => $header, 
+      'rows' => $rows, 
+      'attributes' => $table_attrs, 
+      'caption' => $caption
+    ));
     return $output;
   }
 
