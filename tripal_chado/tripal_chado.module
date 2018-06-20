@@ -407,7 +407,7 @@ function tripal_chado_menu() {
   );
   $items['admin/tripal/loaders/pub/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
-    'page arguments' => array(5),
+    'page arguments' => array('edit', 5),
     'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
