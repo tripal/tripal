@@ -627,6 +627,8 @@ function tripal_get_content_type($bundle_name) {
  *
  * @param $bundle_name
  *   The name of the bundle to refresh (e.g. bio_data_4).
+ * @param $term
+ *   The term object for the bundle.
  *
  * @return
  *   The array of field instance names that were added.
@@ -634,38 +636,34 @@ function tripal_get_content_type($bundle_name) {
  * @ingroup tripal_entities_api
  */
 function tripal_create_bundle_fields($bundle, $term) {
-
   $added = array();
 
   // Allow modules to add fields to the new bundle.
   $modules = module_implements('bundle_fields_info');
-  $info = array();
+  $field_info = array();
   foreach ($modules as $module) {
     $function = $module . '_bundle_fields_info';
     $temp = $function('TripalEntity', $bundle);
     if (is_array($temp)) {
       // TODO: it would be good to check this array to make sure it follows
       // protocol.  It would help identify potential errors.
-      $info = array_merge($info, $temp);
+      $field_info = array_merge($field_info, $temp);
     }
   }
 
   // Allow modules to alter which fields should be attached to content
   // types they create.
-  drupal_alter('bundle_fields_info', $info, $bundle, $term);
+  drupal_alter('bundle_fields_info', $field_info, $bundle, $term);
 
   // Iterate through all of the fields and create them.
-  foreach ($info as $field_name => $details) {
+  foreach ($field_info as $field_name => $details) {
     $field_type = $details['type'];
-
-    // TODO: make sure the field term exits. If not then
-    // skip it.
 
     // If the field already exists then skip it.
     $field = field_info_field($details['field_name']);
     if ($field) {
       continue;
-    }
+    }    
 
     // Create the field.
     $field = field_create_field($details);
@@ -677,35 +675,99 @@ function tripal_create_bundle_fields($bundle, $term) {
 
   // Allow modules to add instances to the new bundle.
   $modules = module_implements('bundle_instances_info');
-  $info = array();
+  $instance_info = array();
   foreach ($modules as $module) {
     $function = $module . '_bundle_instances_info';
     $temp = $function('TripalEntity', $bundle);
     if (is_array($temp)) {
       // TODO: it would be good to check this array to make sure it follows
       // protocol.  It would help identify potential errors.
-      $info = array_merge($info, $temp);
+      $instance_info = array_merge($instance_info, $temp);
     }
   }
 
   // Allow modules to alter which fields should be attached to content
   // types they create.
-  drupal_alter('bundle_instances_info', $info, $bundle, $term);
-
+  drupal_alter('bundle_instances_info', $instance_info, $bundle, $term);
+  
+  // Get the list of existing instances
+  $existing_instances = field_info_instances('TripalEntity', $bundle->name);
+  
   // Iterate through all of the field instances and create them.
-  foreach ($info as $field_name => $details) {
+  foreach ($instance_info as $instance_name => $details) {
+    
+    // Make sure the instance has a term. If not, report it and skip the field.
+    if (!array_key_exists('term_vocabulary', $details['settings'])) {
+      tripal_report_error('tripal_fields', TRIPAL_WARNING,
+        'The field instance, !field, is missing the "term_vocabulary" setting. The field instance cannot be added. Please check the field settings.',
+        ['!field' => $instance_name], ['drupal_set_message' => TRUE]);
+        continue;
+    }
+    if (!array_key_exists('term_accession', $details['settings'])) {
+      tripal_report_error('tripal_fields', TRIPAL_WARNING,
+        'The field instance, !field, is missing the "term_accession" setting. The field instance cannot be added. Please check the field settings.',
+        ['!field' => $instance_name], ['drupal_set_message' => TRUE]);
+        continue;}
+    
+    // Make sure the term exists. If not, skip the field instance and 
+    // report an error.
+    $field_term_id = $details['settings']['term_vocabulary'] . ':' . $details['settings']['term_accession'];    
+    $field_term = tripal_get_term_details($details['settings']['term_vocabulary'], $details['settings']['term_accession']);
+    if (!$field_term) {
+      tripal_report_error('tripal_fields', TRIPAL_WARNING, 
+        'The term, !term, for the field, !field, does not exist in the database. The  ' .
+        'field instance cannot be added. Please make sure the term is correct and add it if necessary.',
+        ['!term' => $field_term_id,
+          '!field' => $instance_name],
+        ['drupal_set_message' => TRUE]);
+      continue;
+    }
+    
+    // Make sure the term is not used for any other existing field instance.
+    $skip = TRUE;
+    foreach ($existing_instances as $existing_name => $existing_instance) {
+      // If this instance term is the same as this exsiting term and the 
+      // instance name is not the same then we have a problem.
+      $existing_term_id = $existing_instance['settings']['term_vocabulary'] . ':' . $existing_instance['settings']['term_accession'];
+      $existing_field = field_info_field($existing_name);
+      if ($existing_term_id == $field_term_id and $instance_name != $existing_name) {
+        tripal_report_error('tripal_fields', TRIPAL_WARNING,
+          'The field, !field, uses a term, !term, that is already in use on this content type. The ' .
+          'field instance cannot be added.',
+          ['!term' => $existing_term_id,
+            '!field' => $instance_name],
+          ['drupal_set_message' => TRUE]);
+        $skip = TRUE;
+      }
+      
+      // If the instance term is the same as this exsting term but the storage
+      // types are different then we have a problem.
+      $existing_storage = $existing_field['storage']['type'];
+      $this_field_storage = $field_info[$details['field_name']]['storage']['type'];
+      if ($existing_term_id == $field_term_id and $existing_storage != $this_field_storage) {
+        tripal_report_error('tripal_fields', TRIPAL_WARNING,
+          'The field, !field, provided by the storage type, !type, uses a term, !term, that is already in use on this content type and provided by another storage backend. The ' .
+          'field instance cannot be added.  Perhaps, consider a different term and adjust the data in the database.',
+          ['!term' => $existing_term_id,
+           '!type' => $this_field_storage,
+           '!field' => $instance_name],
+          ['drupal_set_message' => TRUE]);
+        $skip = TRUE;
+      }
+    }
+    if ($skip) {
+      continue;
+    }
 
     // If the field is already attached to this bundle then skip it.
-    $field = field_info_field($details['field_name']);
-    if ($field and array_key_exists('bundles', $field) and
-        array_key_exists('TripalEntity', $field['bundles']) and
-        in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+    if (array_key_exists($instance_name, $existing_instances)) {
       continue;
     }
 
     // Create the field instance.
     $instance = field_create_instance($details);
-    $added[] = $field_name;
+    $existing_instances[$instance_name] = $instance;
+    $added[] = $instance_name;
   }
   return $added;
 }
