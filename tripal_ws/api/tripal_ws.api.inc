@@ -254,8 +254,9 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   // If the data object has an error then this is some sort of
   // connection error (not a Tripal web servcies error).
   if (property_exists($data, 'error')) {
+    $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Remote web Services reports the following error: !error. Using URL: !url',
+        'Remote web services reports the following error: !error. Using URL: !url',
         array('!error' => $error, '!url' => $ws_url));
     return FALSE;
   }
