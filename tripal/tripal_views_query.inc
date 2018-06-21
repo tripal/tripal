@@ -396,6 +396,8 @@ class tripal_views_query extends views_plugin_query {
    * This function copied from views_plugin_query_default::add_relationship
    */ 
   public function add_relationship($alias, $join, $base, $link_point = NULL) {
+dpm($alias);
+dpm($join);
     if (empty($link_point)) {
       $link_point = $this->base_table;
     }

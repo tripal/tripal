@@ -15,9 +15,9 @@ class TripalFieldQuery extends EntityFieldQuery {
   /**
    * This function is for views integration.
    *
-   *  Views may not always have a 1 to 1 mapping 
+   *  
    */ 
-  public function addjoinFilter($table_name, $field, $value, $op) {
+  public function entityRelationJoin($base_table, $base_field, $table, $field, $value, $op) {
 
   }
 
