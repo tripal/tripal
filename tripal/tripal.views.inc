@@ -51,10 +51,11 @@ function tripal_views_data() {
  */
 function tripal_views_data_alter(&$data) {
 
+  // Iterate through all of the views data and find
+  // those that are associated with fields attached to 
+  // Tripal entities.  For known field types (e.g. Taxonomy) we
+  // can support those.
   foreach ($data as $data_table => $definition) {
-    if ($data_table == 'field_data_field_pub_tags') {
-      dpm($definition); 
-    }
     foreach ($definition as $data_column => $element) {
       if (is_array($element) and array_key_exists('field', $element) and 
           is_array($element['field']) and array_key_exists('field_name', $element['field'])) {
@@ -94,19 +95,17 @@ function tripal_views_data_alter(&$data) {
           // Support the taxonomy_term_reference field when it's added to a 
           // Tripal content type
           if ($field['type'] == 'taxonomy_term_reference') { 
-            //dpm($definition);
-            $data[$bundle_term_id][$data_table] = [
+            $data[$bundle_term_id][$field_name] = [
               'title' => t('Tagged Categories'), 
               'help' => t('Relates this Tripal content type to categories that have been assigned to it using Drupal\'s Taxonomy system.'),
               'relationship' => array(
-                 'base' => 'tripal_entity',
-                 'base field' => 'id',
+                 'base' => $data_table,
+                 'base field' => 'entity_id',
                  'relationship field' => 'entity_id',
                  'handler' => 'views_handler_relationship',
                  'label' => t('Tags'),
               ),
             ];
-            //dpm($data[$bundle_term_id]);
           } 
         }
       } 

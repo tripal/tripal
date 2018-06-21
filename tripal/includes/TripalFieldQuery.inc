@@ -11,6 +11,16 @@ class TripalFieldQuery extends EntityFieldQuery {
    */
   protected $includes = array();
 
+
+  /**
+   * This function is for views integration.
+   *
+   *  Views may not always have a 1 to 1 mapping 
+   */ 
+  public function addjoinFilter($table_name, $field, $value, $op) {
+
+  }
+
   /**
    * Overrides the EntityFieldQuery::execute() function.
    */
