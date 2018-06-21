@@ -144,12 +144,12 @@ function tripal_field_storage_query($query) {
     $select->where('1=0');
   }
 
+//   dpm($query);
+//   dpm($select->__toString());
+//   dpm($select->getArguments());
+  
   // Perform the query and return the results.
   $entities = $select->execute();
-  
-  if ($query->count) {
-    return $entities->rowCount();
-  }
   
   $result = array(
     'TripalEntity' => array(),

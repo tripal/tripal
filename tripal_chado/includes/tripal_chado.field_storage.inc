@@ -737,21 +737,17 @@ function tripal_chado_field_storage_query($query) {
   // Only include records that are deleted.  Tripal doesn't keep track of
   // records that are deleted that need purging separately so we can do nothing
   // with this.
-  if (isset($query->deleted)) {
+  if (property_exists($query, 'deleted') and $query->deleted) {
     // There won't ever be field data marked as deleted so just created a
     // condition that always evaluates to false.
     $cquery->where('1=0');
   }
 
- //dpm($cquery->__toString());
- //dpm($cquery->getArguments());
+  // Please keep these dpm's they help with debugging
+  // dpm($cquery->__toString());
+  // dpm($cquery->getArguments());
 
   $records = $cquery->execute();
-
-  // If the query is a count query then just return the  total count.
-  if ($query->count) {
-    return $records->rowCount();
-  }
 
   // If this is not a count query then return the results.
   $result = array();

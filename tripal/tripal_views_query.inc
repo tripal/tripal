@@ -111,6 +111,7 @@ class tripal_views_query extends views_plugin_query {
       // followed by the table column.  We have to handle both because
       // a TripalEntity can have both types attached.
       $elements = explode('.', $field_name);
+      $field = NULL;
       if (count($elements) > 2) {
         $bundle_term = array_shift($elements);
         $field_name = array_shift($elements);
@@ -121,12 +122,18 @@ class tripal_views_query extends views_plugin_query {
       if (count($elements) == 2) {
         $field_name = array_shift($elements);
         $element_name = array_shift($elements);
+        
+        // At this point we're still not 100% sure if we have a
+        // Tripal Storage API field or not.  One quick way to
+        // tell is to see if we get a field using the $field_name. if so the
+        // field name comes in as the second element.
+        $field = field_info_field($element_name);
+        if ($field) {
+          $field_name = $element_name;
+          $element_name = '';
+        }
       }
-
-      // At this point we're still not 100% sure if we have a 
-      // Tripal Storage API field or not.  One quick way to
-      // tell is to see if we get a field using the $field_name
-      $field = field_info_field($field_name);
+      
       if ($field) { 
         $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
 
