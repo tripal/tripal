@@ -145,10 +145,13 @@ class tripal_views_query extends views_plugin_query {
         $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
       }
       else {
-        // If we have a table name we need to find the field for it.
-        $field_name = $this->_get_table_field($field_name);
+        // If we have a table name then this table is in the Drupal schema and
+        // we need to add a relationship with the tripal_entity table.
+        $table = $field_name;
+        $field = $element_name;
+        $this->query->relationshipCondition($table, $field, $value, $operator);
+        $this->cquery->relationshipCondition($table, $field, $value, $operator);
       }
-
     }
   }
  
@@ -396,14 +399,6 @@ class tripal_views_query extends views_plugin_query {
    * This function copied from views_plugin_query_default::add_relationship
    */ 
   public function add_relationship($alias, $join, $base, $link_point = NULL) {
-dpm($alias);
-dpm($join);
-    if (empty($link_point)) {
-      $link_point = $this->base_table;
-    }
-    elseif (!array_key_exists($link_point, $this->relationships)) {
-      return FALSE;
-    }
   
     // Make sure $alias isn't already used; if it, start adding stuff.
     $alias_base = $alias;
@@ -411,31 +406,9 @@ dpm($join);
     while (!empty($this->relationships[$alias])) {
       $alias = $alias_base . '_' . $count++;
     }
-  
-    // Make sure this join is adjusted for our relationship.
-    if ($link_point && isset($this->relationships[$link_point])) {
-      $join = $this
-        ->adjust_join($join, $link_point);
-    }
-  
-    // Add the table directly to the queue to avoid accidentally marking it.
-    $this->table_queue[$alias] = array(
-      'table' => $join->table,
-      'num' => 1,
-      'alias' => $alias,
-      'join' => $join,
-      'relationship' => $link_point,
-    );
-    $this->relationships[$alias] = array(
-      'link' => $link_point,
-      'table' => $join->table,
-      'base' => $base,
-    );
-    $this->tables[$this->base_table][$alias] = array(
-      'count' => 1,
-      'alias' => $alias,
-    );
+      
+    $this->query->addRelationship($join->table, $alias, $join->field);
+    $this->cquery->addRelationship($join->table, $alias, $join->field);
     return $alias;
   }
-
 }

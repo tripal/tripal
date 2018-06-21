@@ -86,6 +86,18 @@ function tripal_field_storage_query($query) {
     }
   }
 
+  if ($query->relationshipConditions) {
+    foreach ($query->relationshipConditions as $table_alias => $reldetails) {
+      $field = $reldetails['field'];
+      $value = $reldetails['value'];
+      $op = $reldetails['op'];        
+      $relationship = $query->relationships[$table_alias];
+      $table = $relationship['table'];
+      $select->join($table, $table_alias, 'TE.id = ' . $table_alias . '.' . $relationship['field']);
+      $select->condition($table_alias . '.' . $field, $value, $op);
+    }
+  }
+
   // Add in any filters to the query.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
@@ -119,14 +131,14 @@ function tripal_field_storage_query($query) {
   }
   
   // Add a range of records to retrieve
-  if (isset($query->range)) {
+  if ($query->range) {
     $select->range($query->range['start'], $query->range['length']);
   }
   
   // Only include records that are deleted.  Tripal doesn't keep track of
   // records that are deleted that need purging separately so we can do nothing
   // with this.
-  if (isset($query->deleted)) {
+  if (property_exists($query, 'deleted') and $query->deleted) {
     // There won't ever be field data marked as deleted so just created a 
     // condition that always evaluates to false.
     $select->where('1=0');
@@ -134,6 +146,11 @@ function tripal_field_storage_query($query) {
 
   // Perform the query and return the results.
   $entities = $select->execute();
+  
+  if ($query->count) {
+    return $entities->rowCount();
+  }
+  
   $result = array(
     'TripalEntity' => array(),
   );
