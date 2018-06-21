@@ -8,7 +8,9 @@ function tripal_chado_field_storage_info() {
     'field_chado_storage' => array(
       'label' => t('Chado'),
       'description' => t('Stores fields in the local Chado database.'),
-      'settings' => array(),
+      'settings' => array(
+        'tripal_storage_api' => TRUE,
+      ),
       // The logo_url key is supported by Tripal. It's not a Drupal key. It's
       // used for adding a logo or picture for the data store to help make it
       // more easily recognized on the  field_ui_field_overview_form. Ideally

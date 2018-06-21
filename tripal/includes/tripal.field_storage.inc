@@ -14,7 +14,9 @@ function tripal_field_storage_info() {
       'label' => t('Tripal'),
       'description' => t('The NULL storage is a placeholder for field values
           that are not stored in any storage backend (e.g. entity types).'),
-      'settings' => array(),
+      'settings' => array(
+        'tripal_storage_api' => TRUE,
+      ),
     ),
   );
 }

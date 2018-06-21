@@ -51,42 +51,65 @@ function tripal_views_data() {
  */
 function tripal_views_data_alter(&$data) {
 
-  $fields = field_info_fields();
-  $tripal_fields = tripal_get_field_types();
-
-  // Iterate through all of the fields.
-  foreach ($fields as $field) {
-
-    // Skip fields that aren't attached to TripalEntity entities.
-    if (!array_key_exists('TripalEntity', $field['bundles'])) {
-      continue;
+  foreach ($data as $data_table => $definition) {
+    if ($data_table == 'field_data_field_pub_tags') {
+      dpm($definition); 
     }
+    foreach ($definition as $data_column => $element) {
+      if (is_array($element) and array_key_exists('field', $element) and 
+          is_array($element['field']) and array_key_exists('field_name', $element['field'])) {
+        $field_name = $element['field']['field_name'];
+        $field = field_info_field($field_name);
 
-    // Iterate through the bundles to which this field is attached and
-    // if it is a TripalField field then we'll call the viewsData function.
-    $bundles = $field['bundles']['TripalEntity'];
-    $result = array();
-    foreach ($bundles as $bundle_name) {
-      $field_name = $field['field_name'];
+        // Skip fields that aren't attached to a TripalEntity content type.
+        if (!array_key_exists('TripalEntity', $field['bundles'])) {
+          continue;
+        }
 
-      // Skip fields that aren't setup for views with this bundle.
-      // Fields should be associated with the bundle's term identifier
-      // (i.e. [vocab]__[accession].
-      $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-      $bundle_term_id = $term->vocab->vocabulary . '__' . $term->accession;
-      if (!array_key_exists($bundle_term_id, $data)) {
-        continue;
-      }
+        // Skip fields that use the Tripal Storage API.
+        if (array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
+          continue;
+        }
 
-      // Skip fields implemented using a TripalField class. These fields
-      // should already have the proper handlers because the class sets
-      // them up automatically.
-      if (in_array($field_name, $tripal_fields)) {
-        continue;
-      }
+        //  
+        // Now update views for integrating other data with our Tripal Entities.
+        //
+    
+        // Iterate through the bundles to which this field is attached and
+        // if it is a TripalField field then we'll call the viewsData function.
+        $bundles = $field['bundles']['TripalEntity'];
+        $result = array();
+        foreach ($bundles as $bundle_name) {
 
-      $data[$bundle_term_id][$field_name]['sort']['handler'] = 'tripal_views_handler_sort';
+          // Skip fields that aren't setup for views with this bundle.
+          // Fields should be associated with the bundle's term identifier
+          // (i.e. [vocab]__[accession].
+          $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+          $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+          $bundle_term_id = $term->vocab->vocabulary . '__' . $term->accession;
+          if (!array_key_exists($bundle_term_id, $data)) {
+            continue;
+          }
+
+          // Support the taxonomy_term_reference field when it's added to a 
+          // Tripal content type
+          if ($field['type'] == 'taxonomy_term_reference') { 
+            //dpm($definition);
+            $data[$bundle_term_id][$data_table] = [
+              'title' => t('Tagged Categories'), 
+              'help' => t('Relates this Tripal content type to categories that have been assigned to it using Drupal\'s Taxonomy system.'),
+              'relationship' => array(
+                 'base' => 'tripal_entity',
+                 'base field' => 'id',
+                 'relationship field' => 'entity_id',
+                 'handler' => 'views_handler_relationship',
+                 'label' => t('Tags'),
+              ),
+            ];
+            //dpm($data[$bundle_term_id]);
+          } 
+        }
+      } 
     }
   }
 }
@@ -101,6 +124,11 @@ function tripal_views_data_fields(&$data) {
 
     // Skip fields that aren't attached to TripalEntity entities.
     if (!array_key_exists('TripalEntity', $field['bundles'])) {
+      continue;
+    }
+
+    // Fields that don't connect to the Tripal Storage API should be added differently
+    if (!array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
       continue;
     }
 

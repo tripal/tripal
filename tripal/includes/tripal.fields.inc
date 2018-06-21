@@ -88,6 +88,15 @@ function tripal_field_widget_info_alter(&$info) {
 function tripal_field_views_data($field) {
   $data = array();
 
+  // Skip fields that aren't attached to TripalEntity entities.
+  if (!array_key_exists('TripalEntity', $field['bundles'])) {
+    return $data;
+  }
+
+  if (!array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
+    return $data;
+  }
+
   $field_type = $field['type'];
   $field_types = tripal_get_field_types();
 
