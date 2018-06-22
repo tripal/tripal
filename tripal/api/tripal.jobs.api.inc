@@ -415,6 +415,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
 
     // Run the job
     $callback = $job->getCallback();
+    print date('Y-m-d H:i:s') . ": Job ID " . $job_id . ".\n";
     print date('Y-m-d H:i:s') .": Calling: $callback(" . implode(", ", $string_args) . ")\n";
     try {
       $job->run();
