@@ -71,7 +71,7 @@ class TripalFieldQuery extends EntityFieldQuery {
    */
   public function execute() {
     // Initialize the results array.
-    $results = array();
+    $results = array('first_results' => TRUE);
     
     // Give a chance for other modules to alter the query.
     drupal_alter('entity_query', $this);
@@ -99,14 +99,15 @@ class TripalFieldQuery extends EntityFieldQuery {
     }
             
     // If we have relationships, then handle those.
-    if (!empty($this->relationships)) {
+    if (!empty($this->relationshipConditions)) {
       $st_results = tripal_field_storage_query($this);
       $results = $this->_intersectResults($results, $st_results);
       
       // Are there any other callbacks that need running other than
       // propertyQuery as we would have run those with the relationships.
       $callback = $this->queryCallback();
-      if ($callback != 'propertyQuery' and $callback != 'tripal_field_storage_query') {
+      if ($callback and $callback[1] != 'propertyQuery' and 
+          $callback[1] != 'tripal_field_storage_query') {
         $st_results = call_user_func($callback, $this);
         $results = $this->_intersectResults($results, $st_results);
       }
@@ -133,12 +134,10 @@ class TripalFieldQuery extends EntityFieldQuery {
    * Generates an intersection of results from different storage back-ends.
    */
   protected function _intersectResults($current_results, $new_results) {
-    if ($this->count) {
-      return $new_results;
-    }
+
     // If we currently don't have any results then just allow all through.
     // This is the first result set.
-    if (empty($current_results)) {
+    if (array_key_exists('first_results', $current_results)) {
       return $new_results;
     }
     
