@@ -1054,7 +1054,7 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
 
     // If this is a Chado field we need to preserve the Chado elements of the
     // settings or they will be lost if a user edits the field settings.
-    if (array_key_Exists('chado_table', $form['#instance']['settings'])) {
+    if (array_key_exists('chado_table', $form['#instance']['settings'])) {
       $form['instance']['settings']['base_table'] = array(
         '#type' => 'value',
         '#value' => $form['#instance']['settings']['base_table'],

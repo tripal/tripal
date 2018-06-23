@@ -438,8 +438,12 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
 }
 
 function tripal_ws_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  // Don't let the user change the cardinality of web services fields
   if ($form['#instance']['entity_type'] == 'TripalEntity') {
+    if ($form['#field']['storage']['type'] == 'field_tripal_ws_storage') {
       $form['field']['cardinality']['#access'] = FALSE;
+      $form['instance']['required']['#access'] = FALSE;
+    }
   }
 }
 
