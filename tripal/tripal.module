@@ -348,7 +348,8 @@ function tripal_menu() {
   foreach ($importers as $class_name) {
     tripal_load_include_importer_class($class_name);
     if (class_exists($class_name)) {
-      $menu_path = 'admin/tripal/loaders/' . $class_name::$machine_name;
+      $machine_name = $class_name::$machine_name;
+      $menu_path = 'admin/tripal/loaders/' . $machine_name;
       if ($class_name::$menu_path) {
         $menu_path = $class_name::$menu_path;
       }
@@ -357,7 +358,7 @@ function tripal_menu() {
         'description' =>  $class_name::$description,
         'page callback' => 'drupal_get_form',
         'page arguments' => array('tripal_get_importer_form', $class_name),
-        'access arguments' => array('load tripal data'),
+        'access arguments' => array('use ' . $machine_name . ' importer'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'includes/tripal.importer.inc',
         'file path' => drupal_get_path('module', 'tripal'),
@@ -745,6 +746,21 @@ function tripal_permission() {
       'description' => t('Allow the user to delete %label content', array('%label' => $bundle->label)),
       'restrict access' => TRUE,
     );
+  }
+  
+  // Add permissions for each Importer
+  $importers = tripal_get_importers();
+  foreach ($importers as $class_name) {
+    tripal_load_include_importer_class($class_name);
+    if (class_exists($class_name)) {
+      $machine_name = $class_name::$machine_name;
+      $name = $class_name::$name;
+      $permissions['use ' . $machine_name . ' importer'] = array(
+        'title' => t('Importer: Use the %label', array('%label' => $name)),
+        'description' => t('Allow the user to import data using the  %label', array('%label' => $name)),
+        'restrict access' => TRUE,
+      );
+    }
   }
   return $permissions;
 }
