@@ -148,17 +148,6 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
     'weight' => -100
   );
-//   $items['admin/tripal/extension/import'] = array(
-//     'title' => 'Import Extensions',
-//     'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
-//     'page callback' => 'drupal_get_form',
-//     'page arguments' => array('tripal_extensions_form'),
-//     'access arguments' => array('administer tripal'),
-//     'type' => MENU_NORMAL_ITEM,
-//     'file' =>  'includes/tripal.extensions.inc',
-//     'file path' => drupal_get_path('module', 'tripal'),
-//     'weight' => -100,
-//   );
 
   /**
    * Jobs Management
@@ -757,7 +746,7 @@ function tripal_permission() {
       $name = $class_name::$name;
       $permissions['use ' . $machine_name . ' importer'] = array(
         'title' => t('Importer: Use the %label', array('%label' => $name)),
-        'description' => t('Allow the user to import data using the  %label', array('%label' => $name)),
+        'description' => t('Allow the user to import data using the  %label.  Note: you may also need to give the "Upload Files" permission for importers to work.', array('%label' => $name)),
         'restrict access' => TRUE,
       );
     }
