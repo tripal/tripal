@@ -125,6 +125,12 @@ class TripalImporter {
    * TripalImporter desipte your loader being self-sufficient is that Tripal
    * will treat your loader like all others providing a consistent location
    * in the menu and set of permissions.
+   * 
+   * Note: use of a callback is discouraged as the importer provides a 
+   * consistent workflow for all importers.  Try your best to fit your importer
+   * within the class.  Use this if you abosolutely cannot fit your importer
+   * into  TripalImporter implementation.
+   * 
    */
   public static $callback = '';
   
