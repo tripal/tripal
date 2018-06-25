@@ -112,9 +112,9 @@ class TripalEntityController extends EntityAPIController {
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$title) {     
-      $title = tripal_get_title_format($bundle_entity);
+      $title = tripal_get_title_format($bundle);
     }
-    $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
+    $title = tripal_replace_entity_tokens($title, $entity, $bundle);
     
     if ($title) {
       db_update('tripal_entity')
