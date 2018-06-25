@@ -532,6 +532,17 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
           'type' => 'field_chado_storage',
         ),
       );
+      $field_name = 'efo__array_design';
+      $field_type = 'efo__array_design';
+      $info[$field_name] = array(
+        'field_name' => $field_name,
+        'type' => $field_type,
+        'cardinality' => 1,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+      );
     }
   
   // For the pub_id field in the base table.
@@ -2073,6 +2084,39 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => array(
           'label' => 'inline',
           'type' => 'local__contact_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+    
+    $field_name = 'efo__array_design';
+    $info[$field_name] =  array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Array design',
+      'description' => 'An instrument design which describes the design of the array.',
+      'required' => TRUE,
+      'settings' => array(
+        'auto_attach' => TRUE,
+        'chado_table' => 'assay',
+        'chado_column' => 'arraydesign_id',
+        'base_table' => 'assay',
+        'term_vocabulary' => 'EFO',
+        'term_name' => 'array design',
+        'term_accession' => '0000269',
+        
+      ),
+      'widget' => array(
+        'type' => 'efo__array_design_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'efo__array_design_formatter',
           'settings' => array(),
         ),
       ),
