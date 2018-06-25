@@ -795,7 +795,8 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
   $values = array();
   $selected = array();
   if ($field_name) {
-    if (array_key_exists('term_match', $form_state['values'][$field_name]['und'][$delta])) {
+    if (array_key_exists('term_match', $form_state['values'][$field_name]['und'][$delta]) and 
+      array_key_exists('terms_list', $form_state['values'][$field_name]['und'][$delta]['term_match'])) {
       $values = $form_state['values'][$field_name]['und'][$delta]['term_match']['terms_list'];
     }
   }
