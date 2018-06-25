@@ -1000,11 +1000,6 @@ class TripalContentService_v0_1 extends TripalWebService {
       $member->addContextItem($accession, 'vocab:' . $accession);
       $member->setType($accession);
 
-      // Make sure the term has a URL.
-      $url = $term['url'];
-      if (!$url) {
-        throw new Exception(t('Missing a URL for the term: @term.', array('@term' => $term['vocabulary']['short_name'] . ':' . $term['accession'])));
-      }
       $this->addResourceProperty($member, $label, $bundle->label . ' Collection');
       $member->addContextItem('description', 'rdfs:comment');
       // Get the bundle description. If no description is provided then

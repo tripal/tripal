@@ -31,10 +31,10 @@ class obi__organism extends ChadoField {
   );
 
   // The default widget for this field.
-  public static $default_widget = 'OBI__organism_widget';
+  public static $default_widget = 'obi__organism_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'OBI__organism_formatter';
+  public static $default_formatter = 'obi__organism_formatter';
 
 
   /**

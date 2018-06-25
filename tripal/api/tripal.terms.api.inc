@@ -389,7 +389,34 @@ function tripal_get_term_details($vocabulary, $accession) {
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
-      return $function($vocabulary, $accession);
+      $term = $function($vocabulary, $accession);
+      
+      // Make sure the term has a URL. If it does not, then use the Tripal
+      // interface as the URL for the term.
+      $url_missing = FALSE;
+      if (!$term['url']) {
+        $url_missing = TRUE;
+        $term['url'] = url('cv/lookup/' . $term['vocabulary']['short_name'] . '/' . $term['accession'], ['absolute' => TRUE]);
+      }
+      if (!$term['vocabulary']['sw_url']) {
+        $url_missing = TRUE;
+        $term['vocabulary']['sw_url'] = url('cv/lookup/' . $term['vocabulary']['short_name'] . '/' . $term['accession'], ['absolute' => TRUE]);
+      }
+      // Let the user know that the vocabulary is missing.
+      if ($url_missing) {
+        tripal_add_notification(
+          "Missing CV term URL", 
+          t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
+            "this by linking to the cv/lookup page of this site. However, the correct " .
+            "should be updated for this site", 
+            ['%vocab' => $term['vocabulary']['short_name']]),
+          'Controlled Vocabularies', 
+          NULL, 
+          'mising-vocab-' . $term['vocabulary']['short_name']
+        );
+      }
+      
+      return $term;
     }
   }
 }

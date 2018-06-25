@@ -19,8 +19,8 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    $vocabulary = $this->instance['settings']['vocabulary'];
-    $parent_term = $this->instance['settings']['parent_term'];
+    $enforce_vocabulary = $this->instance['settings']['vocabulary'];
+    $enforce_parent_term = $this->instance['settings']['parent_term'];
     
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
@@ -44,8 +44,8 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     // If a parent_term is provided then use that to get the options
     $options = array();
     $options[] = 'Select a type';
-    if ($parent_term) {
-      list ($vocabulary, $accession) = explode(':', $parent_term);
+    if ($enforce_parent_term) {
+      list ($vocabulary, $accession) = explode(':', $enforce_parent_term);
       if ($vocabulary and $accession) {
         $sql = "
           SELECT
@@ -69,8 +69,8 @@ class schema__additional_type_widget extends ChadoFieldWidget {
         }
       }
     }
-    elseif ($vocabulary) {
-      $cv = chado_get_cv(array('name' => $vocabulary));
+    elseif ($enforce_vocabulary) {
+      $cv = chado_get_cv(array('name' => $enforce_vocabulary));
       $options = chado_get_cvterm_select_options($cv->cv_id);
     }
     // If no vocabulary or parent term are provided then just give a generic

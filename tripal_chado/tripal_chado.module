@@ -407,7 +407,7 @@ function tripal_chado_menu() {
   );
   $items['admin/tripal/loaders/pub/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
-    'page arguments' => array(5),
+    'page arguments' => array('edit', 5),
     'access arguments' => array('load tripal data'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
@@ -1054,7 +1054,7 @@ function tripal_chado_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
 
     // If this is a Chado field we need to preserve the Chado elements of the
     // settings or they will be lost if a user edits the field settings.
-    if (array_key_Exists('chado_table', $form['#instance']['settings'])) {
+    if (array_key_exists('chado_table', $form['#instance']['settings'])) {
       $form['instance']['settings']['base_table'] = array(
         '#type' => 'value',
         '#value' => $form['#instance']['settings']['base_table'],
@@ -1183,7 +1183,12 @@ function tripal_feature_match_features_page($id) {
     }
     $table_attrs = array('class' => 'tripal-data-table');
     $output = "<p>The following features match the name '$id'.</p>";
-    $output .= theme_table($header, $rows, $table_attrs, $caption);
+    $output .= theme_table(array(
+      'header' => $header, 
+      'rows' => $rows, 
+      'attributes' => $table_attrs, 
+      'caption' => $caption
+    ));
     return $output;
   }
 

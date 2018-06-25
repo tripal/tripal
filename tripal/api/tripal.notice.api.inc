@@ -58,6 +58,8 @@ define('TRIPAL_DEBUG',7);
  *   An array of options. Some available options include:
  *     - print: prints the error message to the terminal screen. Useful when
  *       display is the command-line
+ *     - drupal_set_message: set to TRUE to call drupal_set_message with the 
+ *       same error.
  *
  * @ingroup tripal_notify_api
  */
@@ -113,7 +115,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     watchdog($type, $message, $variables, $severity);
   }
   catch (Exception $e) {
-    print "CRITICAL (TRIPAL): Unable to register error message with watchdog: " . $e->getMessage(). "\n.";
+    print "CRITICAL (TRIPAL): Unable to add error message with watchdog: " . $e->getMessage(). "\n.";
     $options['print'] = TRUE;
   }
 
@@ -128,6 +130,19 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
   // If print option supplied then print directly to the screen.
   if (isset($options['print'])) {
     print $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n";
+  }
+  
+  if (isset($options['drupal_set_message'])) {
+    if (in_array($severity, [TRIPAL_CRITICAL, TRIPAL_ERROR])) {
+      $status = 'error';
+    }
+    elseif ($severity == TRIPAL_WARNING) {
+      $status = 'warning';
+    }
+    else {
+      $status = 'status';
+    }
+    drupal_set_message($print_message, $status);
   }
 
   // Print to the Tripal error log but only if the severity is not info.
