@@ -71,6 +71,8 @@ class remote__data_formatter extends WebServicesFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $content = '';
     
+    dpm($items);
+    
     // Get the settings
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
@@ -100,40 +102,50 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $rows = array();
     $headers = array('');
     foreach ($items as $index => $item) {
-      $remote_entity_label = $item['remote_entity']['label'];
+      if (!$item['value'] or empty($item['value'])) {
+        continue;
+      }
+      $value = $item['value'];
+      $error = $item['error'];
+      $warning = $item['warning'];
+      if ($error) {
+        $rows[] = [$value];
+        continue;
+      }      
+      if ($warning) {
+        $rows[] = [$value];
+        continue;
+      }
+      
+      
+      $remote_entity_label = array_key_exists('label', $item) ? $item['remote_entity']['label'] : '';
       $remote_entity_page = $item['remote_entity']['ItemPage'];
       $link = t('View !data on %site',
           array('!data' => l('this content', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
             '%site' => $site->name));
-      $value = $item['value'];
-      if (!$value) {
-        continue;
-      }
-      $error = $item['error'];
-      if ($error) {
-        $rows[] = [['error' => $value]];
-        continue;
-      }
+
 
       // If this is a collection then handle it as a list of members.
-      if (array_key_exists('members', $value)) {
-        foreach ($value['members'] as $subvalue) {
-          $subvalue = $this->refineSubValue($subvalue, $subfields, $header_label);
-          $rows[] = array($subvalue);
-        }
-      }
-      else {
-        if (count($subfields) > 0) {
-          $subvalue = $this->refineSubValue($value, $subfields, $header_label);
-          $rows[] = array($subvalue);
+      if (is_array($value)) {
+        if (array_key_exists('members', $value)) {
+          foreach ($value['members'] as $subvalue) {
+            $subvalue = $this->refineSubValue($subvalue, $subfields, $header_label);
+            $rows[] = array($subvalue);
+          }
         }
         else {
-          if (array_key_exists($flabel, $value)) {
-            $rows[] = array($value[$flabel]);
+          if (count($subfields) > 0) {
+            $subvalue = $this->refineSubValue($value, $subfields, $header_label);
+            $rows[] = array($subvalue);
           }
           else {
-            $value['Link'] = l('View content on ' . $site->name, $remote_entity_page, array('attributes' => array('target' => '_blank')));
-            $rows[] = array($value);
+            if (array_key_exists($flabel, $value)) {
+              $rows[] = array($value[$flabel]);
+            }
+            else {
+              $value['Link'] = l('View content on ' . $site->name, $remote_entity_page, array('attributes' => array('target' => '_blank')));
+              $rows[] = array($value);
+            }
           }
         }
       }
@@ -144,6 +156,12 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       if (is_array($rows[$i][0])) {
         $rows[$i][0] = $this->createTable($rows[$i]);
         $has_sub_tables = TRUE;
+      }
+      else {
+        $rows[$i] = [
+          'colspan' => 2,
+          'data' => $rows[$i],
+        ];
       }
     }
 
