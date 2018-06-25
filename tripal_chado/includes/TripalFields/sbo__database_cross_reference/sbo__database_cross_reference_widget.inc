@@ -99,7 +99,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       '#disabled' => $db_id ? FALSE : TRUE,
     );
   }
-
+    
   /**
    * @see TripalFieldWidget::validate()
    */
@@ -111,7 +111,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-
+    
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);

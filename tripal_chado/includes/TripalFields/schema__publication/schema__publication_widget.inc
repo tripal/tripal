@@ -150,7 +150,7 @@ class schema__publication_widget extends ChadoFieldWidget {
     // it out so that the Chado field_storage infrastructure won't try to
     // write a record.
     if (!$title) {
-      $form_state['values'][$field_name]['und'][$delta]['value'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey] = '';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '';
     }

@@ -8,6 +8,7 @@
  * @param $type
  */
 function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
+
   // Load all the entity_ids.
   $entity_table = 'chado_'.$bundle_id;
   $entities = db_select($entity_table, 'e')
@@ -15,16 +16,16 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
     ->orderBy('entity_id', 'ASC')
     ->execute();
   $num_entities = $entities->rowCount();
+  
   // Parse the $update variable for tokens and load those tokens.
-  preg_match_all("/\[[^\]]*\]/", $update, $bundle_tokens);
+  preg_match_all("'/\[.*?\]/'", $update, $bundle_tokens);
 
   $fields = array();
   foreach ($bundle_tokens as $bundle_token) {
-    foreach ($bundle_token as $token) {
-      $string = str_replace(array('[', ']'), '', $token);
-      $field_array = field_info_field($string);
-      $fields[] = $field_array['id'];
-    }
+    $elements = explode(',', $token);
+    $field_name = array_shift($elements);
+    $field_array = field_info_field($field_name);
+    $fields[] = $field_array['id'];
   }
 
   $i = 1;

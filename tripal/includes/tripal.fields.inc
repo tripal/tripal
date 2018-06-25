@@ -265,16 +265,27 @@ function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $f
     $field = field_info_field($field_name);
     $instance = field_info_instance('TripalEntity', $field_name, $form['#bundle']);
     
+    // Warn users if a field is missing a term.
+    if ($instance and $instance['entity_type'] == 'TripalEntity' and 
+        array_key_exists('settings', $instance) and is_array($instance['settings']) and
+        (!array_key_exists('term_vocabulary', $instance['settings']) or !$instance['settings']['term_vocabulary'])) {
+      tripal_report_error('tripal_fields', TRIPAL_WARNING,
+          'The field, !field, is missing a controlled vocabulary term. Please edit the field and set a term, otherwise this field may not work properly.',
+          ['!field' => $field_name],
+          ['drupal_set_message' => TRUE]);
+    }
     // Warn users if any of the terms are not unique.
     if ($instance and array_key_exists('settings', $instance) and is_array($instance['settings']) and 
         array_key_exists('term_vocabulary', $instance['settings'])) {
       $term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
       if (array_key_exists($term, $used_terms)) {
         $used_terms[$term][] = $field_name;
-        drupal_set_message(t('The term !term is in use by multiple fields: !fields. 
-          This is not allowed. Every field must have a different controlled vocabulary term. 
-          Please correct the term assignments.', 
-          array('!term' => $term, '!fields' => implode(', ', $used_terms[$term]))), 'error');
+        tripal_report_error('tripal_fields', TRIPAL_WARNING,
+          'The term !term is in use by multiple fields: !fields. ' .
+          'This is not allowed. Every field must have a different controlled vocabulary term. ' . 
+          'Please correct the term assignments.',
+          ['!term' => $term, '!fields' => implode(', ', $used_terms[$term])], 
+          ['drupal_set_message' => TRUE]);
       }
       $used_terms[$term][] = $field_name;
     }
@@ -734,6 +745,19 @@ function tripal_field_instance_settings_form_alter_validate($form, &$form_state)
         }
       }
     }
+    
+    // Make sure this term is not already used.    
+    $bundle_name = $form_state['values']['instance']['bundle'];
+    $existing_instances = field_info_instances('TripalEntity', $bundle_name);
+    $field_term_id = $form_state['values']['instance']['settings']['term_vocabulary'] . ':' . $form_state['values']['instance']['settings']['term_accession'];
+    $field_name = $form_state['values']['instance']['field_name'];  
+    foreach ($existing_instances as $existing_name => $existing_instance) {
+      $existing_term_id = $existing_instance['settings']['term_vocabulary'] . ':' . $existing_instance['settings']['term_accession'];
+      if ($existing_term_id == $field_term_id and $field_name != $existing_name) {       
+        form_set_error('term-', t('The term, !term, is already in use on this content type.  A term can only be used once per content type. Please choose a different term.',
+          ['!term' => $field_term_id]));
+      }
+    }
 
     if ($num_selected > 1) {
       form_set_error('term-', 'Please select only one term
@@ -771,7 +795,15 @@ function tripal_field_widget_form_validate($element, &$form_state, $form) {
   tripal_load_include_field_class($widget_class);
   if (class_exists($widget_class)) {
     $widget = new $widget_class($field, $instance);
-    $widget->validate($element, $form, $form_state, $langcode, $delta);
+    
+    // Set the validation function for this field widget depending on the
+    // form displaying the widget.
+    if ($form['#form_id'] == 'field_ui_field_edit_form') {
+      $widget->validateDefaults($element, $form, $form_state, $langcode, $delta);
+    }
+    else {
+      $widget->validate($element, $form, $form_state, $langcode, $delta);
+    }
   }
 }
 
