@@ -386,13 +386,13 @@ function tripal_chado_menu() {
   //////////////////////////////////////////////////////////////////////////////
 
   $items['admin/tripal/loaders/pub'] = array(
-    'title' => t('Chado Publication Importers'),
+    'title' => t('Chado Bulk Publication Importer Callback'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
     'weight' => 0
   );
 
@@ -400,7 +400,7 @@ function tripal_chado_menu() {
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
     'page callback' => 'tripal_pub_importer_setup_page',
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -408,7 +408,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
     'page arguments' => array(5),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -416,7 +416,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/raw/%'] = array(
     'page callback' => 'tripal_get_remote_pub_raw_page',
     'page arguments' => array(5),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -425,7 +425,7 @@ function tripal_chado_menu() {
   // add a second link for the importer on the data loaders page
   $items['admin/tripal/loaders/pub/import'] = array(
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -434,7 +434,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/submit/%'] = array(
     'page callback' => 'tripal_pub_importer_submit_job',
     'page arguments' => array(5),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -443,7 +443,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
     'page arguments' => array(5),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -451,7 +451,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/changedb'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
     'page arguments' => array(),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -460,7 +460,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/loaders/pub/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
     'page arguments' => array(5, 6),
-    'access arguments' => array('load tripal data'),
+    'access arguments' => array('use chado_pub_bulk importer'),
     'type ' => MENU_CALLBACK,
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -856,7 +856,6 @@ function tripal_chado_permission() {
       'title' => t('Administer Semantic Web and Chado Integration'),
       'description' => t('Allows the user to assign controlled vocabulary terms to tables and table columns in Chado.')
     ),
-
   );
 }
 

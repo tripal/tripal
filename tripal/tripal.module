@@ -323,15 +323,6 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
   );
 
-
-  $items['admin/tripal/loaders'] = array(
-    'title' => 'Data Loaders',
-    'description' => t('Tools facilitating data import.'),
-    'access arguments' => array('load tripal data'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 6
-  );
-
   // Add in the loaders
   $importers = tripal_get_importers();
   foreach ($importers as $class_name) {
@@ -339,18 +330,34 @@ function tripal_menu() {
     if (class_exists($class_name)) {
       $machine_name = $class_name::$machine_name;
       $menu_path = 'admin/tripal/loaders/' . $machine_name;
+      $callback = $class_name::$callback;
+      $callback_path = $class_name::$callback_path;
+      $callback_module = $class_name::$callback_module;
+      $page_args = [];
       if ($class_name::$menu_path) {
         $menu_path = $class_name::$menu_path;
       }
+      if (!$callback) {
+        $callback = 'drupal_get_form';
+        $page_args = ['tripal_get_importer_form', $class_name];
+      }      
+      if (!$callback_path) {
+        $callback_path = 'includes/tripal.importer.inc';
+      }
+      $file_path = drupal_get_path('module', 'tripal');
+      if ($callback_path and $callback_module) {
+        $file_path = drupal_get_path('module', $callback_module);
+      }      
+      
       $items[$menu_path] = array(
         'title' => $class_name::$name,
         'description' =>  $class_name::$description,
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('tripal_get_importer_form', $class_name),
+        'page callback' => $callback,
+        'page arguments' => $page_args,
         'access arguments' => array('use ' . $machine_name . ' importer'),
         'type' => MENU_NORMAL_ITEM,
-        'file' => 'includes/tripal.importer.inc',
-        'file path' => drupal_get_path('module', 'tripal'),
+        'file' => $callback_path,
+        'file path' => $file_path,
       );
     }
   }
@@ -694,10 +701,6 @@ function tripal_permission() {
       'title' => t('Publish Tripal content types'),
       'description' => t('Allows the user to publish Tripal content for online access.'),
       'restrict access' => TRUE,
-    ),
-    'load tripal data' => array(
-      'title' => t('Load data into the Tripal site'),
-      'description' => t('Allows the user to load data into the Tripal site using data loaders. Some data loaders may have their own specific permission as well.'),
     ),
     'upload files' => array(
       'title' => t('Upload Files'),
