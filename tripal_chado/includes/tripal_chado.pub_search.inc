@@ -308,6 +308,7 @@ function tripal_chado_pub_search_form($form, &$form_state) {
       '#type'          => 'textfield',
       '#default_value' => $search_terms,
       '#required'      => FALSE,
+      '#size' => 35,
     );
     $form['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
