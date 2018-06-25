@@ -1658,19 +1658,6 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   chado_associate_semweb_term('arraydesign', 'num_sub_rows', $term);
-  
-  $term = chado_insert_cvterm(array(
-    'id' => 'local:gbrowse_image',
-    'name' => 'Gbrowse Image',
-    'definition' => 'A GBrowse image of a feature alignment to another sequence',
-    'cv_name' => 'local',
-  ));
-  $term = chado_insert_cvterm(array(
-    'id' => 'local:jbrowse_image',
-    'name' => 'Jbrowse Image',
-    'definition' => 'A JBrowse image of a feature aligned to another sequence.',
-    'cv_name' => 'local',
-  ));
 }
 /**
  * Adds the Systems Biology Ontology database and terms.

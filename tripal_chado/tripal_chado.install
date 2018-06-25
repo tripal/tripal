@@ -1561,18 +1561,6 @@ function tripal_chado_update_7327() {
       'cv_name' => 'EDAM',
       'definition' => 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.',
     ));
-    $term = chado_insert_cvterm(array(
-      'id' => 'local:gbrowse_image',
-      'name' => 'Gbrowse Image',
-      'definition' => 'A GBrowse image of a feature alignment to another sequence',
-      'cv_name' => 'local',
-    ));
-    $term = chado_insert_cvterm(array(
-      'id' => 'local:jbrowse_image',
-      'name' => 'Jbrowse Image',
-      'definition' => 'A JBrowse image of a feature aligned to another sequence.',
-      'cv_name' => 'local',
-    ));
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

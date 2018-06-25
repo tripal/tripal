@@ -411,20 +411,6 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
-  
-  if ($table_name == 'feature') {
-    $field_name = 'local__gbrowse_image';
-    $field_type = 'local__gbrowse_image';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'type' => $field_type,
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage',
-      ),
-    );
-  }
 
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
@@ -1737,41 +1723,6 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
          'settings' => array(),
        ),
      ),
-    );
-  }
-  
-  if ($table_name == 'feature') {
-    $field_name = 'local__gbrowse_image';
-    $info[$field_name] = array(
-      'field_name' => $field_name,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
-      'label' => 'GBrowse image',
-      'description' => 'A GBrowse image of a feature alignment.',
-      'required' => FALSE,
-      'settings' => array(
-        'auto_attach' => FALSE,
-        'chado_table' => '',
-        'chado_column' => '',
-        'base_table' => 'feature',
-        'term_vocabulary' => 'local',
-        'term_name' => 'Gbrowse Image',
-        'term_accession' => 'gbrowse_image',
-        'gbrowse_url' => '',
-      ),
-      'widget' => array(
-        'type' => 'local__gbrowse_image_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'local__gbrowse_image_formatter',
-          'settings' => array(),
-        ),
-      ),
     );
   }
 
