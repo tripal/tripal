@@ -1458,6 +1458,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => $table_column,
         'base_table' => $table_name,
+        'term_accession' => '0100026',
+        'term_vocabulary' => 'OBI',
+        'term_name' => 'organism',
       ),
       'widget' => array(
         'type' => 'obi__organism_widget',
@@ -1490,6 +1493,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => 'biomaterial',
         'chado_column' => 'biosourceprovider_id',
         'base_table' => 'biomaterial',
+        'term_accession' => 'contact',
+        'term_vocabulary' => 'local',
+        'term_name' => 'contact',
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -1557,6 +1563,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'cv_id',
         'base_table' => $table_name,
+        'term_accession' => '001080',
+        'term_vocabulary' => 'SIO',
+        'term_name' => 'vocabulary',
       ),
       'widget' => array(
         'type' => 'sio__vocabulary_widget',
@@ -1595,6 +1604,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
         'base_table' => $table_name,
+        'term_accession' => '2091',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Accession',
       ),
       'widget' => array(
         'type' => 'data__accession_widget',
@@ -1631,6 +1643,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'md5checksum',
         'base_table' => $table_name,
+        'term_accession' => '2190',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence checksum',
       ),
       'widget' => array(
         'type' => 'data__sequence_checksum_widget',
@@ -1664,6 +1679,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'residues',
         'base_table' => $table_name,
+        'term_accession' => '2044',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence',
       ),
       'widget' => array(
         'type' => 'data__sequence_widget',
@@ -1699,6 +1717,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'seqlen',
         'base_table' => $table_name,
+        'term_accession' => '1249',
+        'term_vocabulary' => 'data',
+        'term_name' => 'delete	Sequence length',
       ),
       'widget' => array(
         'type' => 'data__sequence_length_widget',
@@ -1732,6 +1753,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => 'feature',
         'chado_column' => 'residues',
         'base_table' => 'feature',
+        'term_accession' => '2976',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Protein sequence',
       ),
       'widget' => array(
         'type' => 'data__protein_sequence_widget',
@@ -1761,6 +1785,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 //         'chado_table' => 'featureloc',
 //         'chado_column' => '',
 //         'base_table' => 'featureloc',
+//         'term_accession' => '',
+//         'term_vocabulary' => '',
+//         'term_name' => '',
 //       ),
 //       'widget' => array(
 //         'type' => 'so__cds_widget',
@@ -1795,6 +1822,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 //         'chado_table' => $rel_table,
 //         'chado_column' => '',
 //         'base_table' => $table_name,
+//         'term_accession' => '',
+//         'term_vocabulary' => '',
+//         'term_name' => '',
 //       ),
 //       'widget' => array(
 //         'type' => 'so__transcript_widget',
@@ -1863,6 +1893,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'unittype_id',
         'base_table' => $table_name,
+        'term_accession' => '0000000',
+        'term_vocabulary' => 'UO',
+        'term_name' => 'unit',
       ),
       'widget' => array(
         'type' => 'uo__unit_widget',
@@ -1895,6 +1928,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => 'analysis_id',
         'base_table' => $table_name,
+        'term_accession' => 'source_data',
+        'term_vocabulary' => 'local',
+        'term_name' => 'source_data',
       ),
       'widget' => array(
         'type' => 'local__source_data_widget',
@@ -1953,6 +1989,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => 'phylotree',
         'chado_column' => 'type_id',
         'base_table' => 'phylotree',
+        'term_accession' => '0567',
+        'term_vocabulary' => 'operation',
+        'term_name' => 'Phylogenetic tree visualisation',
       ),
       'widget' => array(
         'type' => 'operation__phylotree_vis_widget',
@@ -1994,6 +2033,9 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => $table_column,
         'base_table' => $table_name,
+        'term_accession' => '00101',
+        'term_vocabulary' => 'sep',
+        'term_name' => 'Protocol',
       ),
       'widget' => array(
         'type' => 'sep__protocol_widget',
@@ -2072,7 +2114,6 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'NCIT',
         'term_name' => 'Operator',
         'term_accession' => 'C48036',
-        
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -2194,6 +2235,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_table' => $contact_table,
         'base_table' => $table_name,
         'chado_column' => 'contact_id',
+        'term_accession' => 'contact',
+        'term_vocabulary' => 'local',
+        'term_name' => 'contact',
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -2269,6 +2313,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 //         'chado_table' => $expression_table,
 //         'chado_column' => $pkey,
 //         'base_table' => $table_name,
+//         'term_accession' => '',
+//         'term_vocabulary' => '',
+//         'term_name' => '',
 //       ),
 //       'widget' => array(
 //         'type' => 'go__gene_expression_widget',
@@ -2304,6 +2351,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_table' => 'featureloc',
         'chado_column' => $pkey,
         'base_table' => 'feature',
+        'term_accession' => '2012',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence coordinates',
       ),
       'widget' => array(
         'type' => 'data__sequence_coordinates_widget',
@@ -2338,6 +2388,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_table' => 'featurepos',
         'chado_column' => $pkey,
         'base_table' => 'feature',
+        'term_accession' => '0000021',
+        'term_vocabulary' => 'OGI',
+        'term_name' => 'location on map',
       ),
       'widget' => array(
         'type' => 'ogi__location_on_map_widget',
@@ -2373,6 +2426,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 //         'chado_table' => $genotype_table,
 //         'chado_column' => $pkey,
 //         'base_table' => $table_name,
+//         'term_accession' => '',
+//         'term_vocabulary' => '',
+//         'term_name' => '',
 //       ),
 //       'widget' => array(
 //         'type' => 'so__genotype_widget',
@@ -2408,6 +2464,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 //         'chado_table' => $phenotype_table,
 //         'chado_column' => $pkey,
 //         'base_table' => $table_name,
+//         'term_accession' => '',
+//         'term_vocabulary' => '',
+//         'term_name' => '',
 //       ),
 //       'widget' => array(
 //         'type' => 'sbo__phenotype_widget',
@@ -2668,6 +2727,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_table' => $table_name,
         'chado_column' => $pkey,
         'base_table' => $table_name,
+        'term_accession' => '000631',
+        'term_vocabulary' => 'SIO',
+        'term_name' => 'references',
       ),
       'widget' => array(
         'type' => 'sio__references_widget',
@@ -2742,6 +2804,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_table' => $syn_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
+        'term_accession' => 'alternateName',
+        'term_vocabulary' => 'schema',
+        'term_name' => 'alternateName',
       ),
       'widget' => array(
         'type' => 'schema__alternate_name_widget',
