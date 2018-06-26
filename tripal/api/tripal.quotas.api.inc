@@ -71,12 +71,13 @@ function tripal_get_user_usage($uid) {
   // Get the user's current file usage
   $sql = "
     SELECT SUM(filesize) FROM (
-    SELECT DISTINCT FM.filesize
+    SELECT DISTINCT FM.fid, FM.filename, FM.filesize
       FROM file_usage FU
         INNER JOIN file_managed FM ON FM.fid = FU.fid and FU.module = 'tripal'
-      WHERE FM.uid = 1) AS foo
+      WHERE FM.uid = :uid) AS foo
   ";
-  return db_query($sql, [':uid' => $uid])->fetchField();
+  $total_usage = db_query($sql, [':uid' => $uid])->fetchField();
+  return ($total_usage);
 }
 
 /**
