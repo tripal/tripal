@@ -378,6 +378,7 @@ function tripal_get_term_details($vocabulary, $accession) {
 
   if (empty($vocabulary) OR empty($accession)) {
     tripal_report_error('tripal_term', TRIPAL_ERROR, "Unable to retrieve details for term due to missing vocabulary and/or accession");
+    return FALSE;
   }
 
   // TODO: we need some sort of administrative interface that lets the user
@@ -390,7 +391,7 @@ function tripal_get_term_details($vocabulary, $accession) {
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
       $term = $function($vocabulary, $accession);
-      
+
       // Make sure the term has a URL. If it does not, then use the Tripal
       // interface as the URL for the term.
       $url_missing = FALSE;
