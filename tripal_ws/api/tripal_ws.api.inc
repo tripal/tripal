@@ -195,6 +195,36 @@ function tripal_remove_site($record_id) {
 }
 
 /**
+ * Constructs a URL for a remote Tripal web service.
+ * 
+ * @param $remote_site
+ *   A remote Tripal site object.
+ * @param $path
+ *   The web service path for the content (excluding
+ *   'web-servcies/vX.x/content').  To retrieve the full content listing
+ *   leave this paramter empty.
+ * @param $query
+ *   An query string to appear after the ? in a URL.
+ *   
+ * @return  
+ *   The full URL within the content service.
+ */
+function tripal_build_remote_content_url($remote_site, $path = '', $query = '') {
+  // Build the URL to the remote web services.
+  $ws_version = $remote_site->version;
+  $ws_url = $remote_site->url;
+  $ws_url = trim($ws_url, '/');
+  $ws_url .= '/web-services/content/' . $ws_version . '/' . $path;
+  
+  // Build the Query and make and substitions needed.
+  if ($query) {
+    $ws_url = $ws_url . '?' . $query;
+  }
+  
+  return $ws_url;
+}
+
+/**
  * Makes a request to the "content" service of a remote Tripal web site.
  *
  * @param $site_id
@@ -225,53 +255,59 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
     ->fetchObject();
 
   if (!$remote_site) {
-    tripal_report_error('tripal_ws', TRIPAL_ERROR,
-      t('Could not find a remote tripal site using the id provided: !id.',
-        array('!id' => $site_id)));
-    return FALSE;
+    $data = [
+      'error' => t('Could not find a remote tripal site using the id provided: !id.',
+        array('!id' => $site_id))
+    ];
+    _tripal_report_ws_error($data);
+    return $data;
   }
-
-  // Build the URL to the remote web services.
-  $ws_version = $remote_site->version;
-  $ws_url = $remote_site->url;
-  $ws_url = trim($ws_url, '/');
-  $ws_url .= '/web-services/content/' . $ws_version . '/' . $path;
-
-  // Build the Query and make and substitions needed.
-  if ($query) {
-    $ws_url = $ws_url . '?' . $query;
-  }
-
-  // TODO: something is wrong here, the query is not being recognized on
-  // the remote Tripal site. It's just returning the default.
+  
+  // Make the remote query.
+  $ws_url = tripal_build_remote_content_url($remote_site, $path, $query);
   $data = drupal_http_request($ws_url);
   if (!$data) {
-    tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        t('Could not connect to the remote web service.'));
-    return FALSE;
+    $data = [
+      'error' => t('Could not connect to the remote web service using the url: !url',
+        ['!url' => $ws_url])
+    ];
+    _tripal_report_ws_error($data);
+    return $data;
   }
 
   // If the data object has an error then this is some sort of
   // connection error (not a Tripal web servcies error).
   if (property_exists($data, 'error')) {
-    $error = '</pre>' . print_r($data->error, TRUE) . '</pre>';
-    tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Remote web services reports the following error: !error. Using URL: !url',
-        array('!error' => $error, '!url' => $ws_url));
-    return FALSE;
+    $data = [
+      'error' => $data->error
+    ];
+    _tripal_report_ws_error($data);
+    return $data;
   }
 
   // We got a response, so convert it to a PHP array.
   $data = drupal_json_decode($data->data);
+  
   // Check if there was a Tripal Web Services error.
   if (array_key_exists('error', $data)) {
-    $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
-    tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Tripal remote web services reports the following error: !error. Using URL: !url',
-        array('!error' => $error, '!url' => $ws_url));
+    _tripal_report_ws_error($data);
   }
 
   return $data;
+}
+
+/**
+ * A helper function for reporting an error when retrieving remote content.
+ * 
+ * @param $data
+ *   A data array containing at a minimum the 'error' key containing the
+ *   error message.
+ */
+function _tripal_report_ws_error($data) {  
+  $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
+  tripal_report_error('tripal_ws', TRIPAL_ERROR,
+    'Tripal remote web services reports the following error: !error.',
+    array('!error' => $error));
 }
 
 /**
@@ -495,7 +531,9 @@ function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_acces
     '&fields=' . urlencode(implode(",", $field_ids));
 
   $results = tripal_get_remote_content($site_id, $bundle_accession, $query);
-  if (!$results) {
+  
+  // If we encountered an error just return;
+  if (array_key_exists('error', $results)) {
     return FALSE;
   }
 
@@ -563,7 +601,9 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
 
   // Get the remote entity and create the fake entity.
   $remote_entity = tripal_get_remote_content($site_id, $bundle_accession . '/' . $remote_entity_id);
-  if (!$remote_entity) {
+  
+  // If we encountered an error just return;
+  if (array_key_exists('error', $results)) {
     return FALSE;
   }
 

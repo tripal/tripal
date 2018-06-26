@@ -89,7 +89,7 @@ class remote__data extends WebServicesField {
   // should exclude the field from web services or downloads.  An example
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
-  public static $no_data = FALSE;
+  public static $no_data = TRUE;
 
   // Holds an object describing the remote site that tihs field connects to.
   private $remote_site = NULL;
@@ -105,9 +105,8 @@ class remote__data extends WebServicesField {
     // We don't want remote content to be available in web services.  There
     // is an if statement to not show this field in the web services but the
     // entity_load function doesn't know this field shouldn't be loaded so
-    // we need to short-circuit that.
-    $_SERVER['REQUEST_URI'];
-    if (preg_match('/^web-services/', $_SERVER['REQUEST_URI'])) {
+    // we need to short-circuit that.  
+    if (preg_match('/web-services/', $_SERVER['REQUEST_URI'])) {
       $this->loaded_via_ws = TRUE;
       return;
     }
@@ -128,22 +127,24 @@ class remote__data extends WebServicesField {
    * @see WebServicesField::load()
    */
   public function load($entity) {
+    
+    // If this field is being loaded via web services then just return.
+    if ($this->loaded_via_ws == TRUE) {
+      return;
+    }
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-      'remote_entity' => array(),
+      'value' => '',
+      'remote_entity' => NULL,
       'error' => FALSE,
       'warning' => FALSE,
+      'admin_message' => '',
+      'query_str' => '',
     );
-
-    // If this field is being loaded via web services then just return.
-    if ($this->loaded_via_ws == TRUE) {
-      return;
-    }
 
     // Get the query set by the admin for this field and replace any tokens
     $query_str = $this->instance['settings']['data_info']['query'];
@@ -152,35 +153,47 @@ class remote__data extends WebServicesField {
 
     // Make the request.
     $data = $this->makeRemoteRequest($query_str);
-    dpm($data);
     if(!$data){
+      $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving content for this field.';
+      $entity->{$field_name}['und'][0]['admin_message'] =  "The remote service returned no data.";
+      $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
+      $entity->{$field_name}['und'][0]['error'] = TRUE;
+      $entity->{$field_name}['und'][0]['warning'] = FALSE;
+      $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);      
+      return;
+    }
+    // Make sure we didn't have a problem
+    if (array_key_exists('error', $data)) {
+      $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving content for this field.';
+      $entity->{$field_name}['und'][0]['admin_message'] = "The  content is currently not available because the " .
+          "remote service reported the following error: " . $data['error'] . ".";
+      $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
+      $entity->{$field_name}['und'][0]['error'] = TRUE;
+      $entity->{$field_name}['und'][0]['warning'] = FALSE;
+      $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);
       return;
     }
 
-    $total_items = $data['totalItems'];
-    if ($total_items == 0) {
-      $entity->{$field_name}['und'][0]['value'] = 'Content from the remote site is currently not available'  .
-        tripal_set_message("The remote content is currently not available. " .
-          "It could be that remote services are unavailable or the query " .
-          "string does not match content appropriate for this content. Please check.",
-          TRIPAL_WARNING, ['return_html' => TRUE]);
+    $num_items = count($data['member']);
+    if ($num_items == 0) {
+      $entity->{$field_name}['und'][0]['value'] = 'Content is unavailable on the remote service.';
+      $entity->{$field_name}['und'][0]['admin_message'] = "The query to the remote service returned an empty result set. If you " .
+          "think this is an error, please check the query string and the remote service to verify. ";
       $entity->{$field_name}['und'][0]['warning'] = TRUE;
+      $entity->{$field_name}['und'][0]['error'] = FALSE;
       $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
+      $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);
+      return;
     }
-
+    
     // Iterate through the members returned and save those for the field.
-    for ($i = 0; $i < $total_items; $i++) {
+    for ($i = 0; $i < $num_items; $i++) {
       $member = $data['member'][$i];
 
       // Get the cotent type and remote entity id
       $content_type = $member['@type'];
       $remote_entity_id = $member['@id'];
       $remote_entity_id = preg_replace('/^.*\/(\d+)/', '$1', $remote_entity_id);
-
-      // Save the member information for use later.
-      $entity->{$field_name}['und'][$i]['remote_entity'] = $member;
-      $entity->{$field_name}['und'][$i]['error'] = FALSE;
-      $entity->{$field_name}['und'][$i]['warning'] = FALSE;
 
       // Separate the query_field if it has subfields.
       $rd_field_name = $this->instance['settings']['data_info']['rd_field_name'];
@@ -190,22 +203,42 @@ class remote__data extends WebServicesField {
       // Next get the the details about this member.
       $query_field_url =  $content_type . '/' . $remote_entity_id . '/' . $query_field;
       $field_data = $this->makeRemoteRequest($query_field_url);
-
-      if(!$field_data){
-        // If we encounter any type of error, we'll reset the field and return.
-        $entity->{$field_name}['und'][$i]['value'] = 'Unable to retrieve remote content' .
-          tripal_set_message("Something is wrong with the remote site. It returned " . 
-            "a list of matches for the query but did not return details about each match.",
-            TRIPAL_ERROR, ['return_html' => TRUE]);
-        $entity->{$field_name}['und'][$i]['error'] = TRUE;
+      
+      // If we encounter any type of error, we'll reset the field and return.
+      if (array_key_exists('error', $field_data)) {
+        $entity->{$field_name} = [];
+        $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving secific content for this field.';
+        $entity->{$field_name}['und'][0]['admin_message'] = "While iterating through the list of results, the " .
+          "remote service reported the following error: " . $field_data['error'] . ". " ;
+        $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
+        $entity->{$field_name}['und'][0]['error'] = TRUE;
+        $entity->{$field_name}['und'][0]['warning'] = FALSE;
+        $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_field_url);
         return;
       }
       
       // Set the field data as the value.
       $field_data_type = $field_data['@type'];
       $entity->{$field_name}['und'][$i]['value'] = $field_data;
+      $entity->{$field_name}['und'][$i]['remote_entity'] = $member;
+      $entity->{$field_name}['und'][$i]['error'] = FALSE;
+      $entity->{$field_name}['und'][$i]['warning'] = FALSE;
+      $entity->{$field_name}['und'][$i]['admin_message'] = '';
+      $entity->{$field_name}['und'][$i]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_field_url);;
     }
-   }
+  }
+  
+  /**
+   * Used to build the full URL for the query.
+   */
+  private function buildRemoteURL($remote_site, $query) {
+    $path = $query;
+    $q = '';
+    if (preg_match('/\?/', $query)) {
+      list($path, $q) = explode('?', $query);
+    }
+    return tripal_build_remote_content_url($remote_site, $path, $q);
+  }
    /**
     * Makes a request to a remote Tripal web services site.
     *
@@ -219,8 +252,6 @@ class remote__data extends WebServicesField {
      if (preg_match('/\?/', $query)) {
        list($path, $q) = explode('?', $query);
      }
-     dpm($path);
-     dpm($q);
      $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
 
      return $data;
