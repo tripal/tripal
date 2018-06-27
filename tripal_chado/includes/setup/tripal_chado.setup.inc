@@ -549,7 +549,7 @@ function tripal_chado_fix_v1_3_custom_tables() {
 
   // Update the featuremap_dbxref table by adding an is_current field.
   if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
-    chado_query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL,;");
+    chado_query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
   }
 
   // Remove the previously managed custom tables from the
