@@ -724,7 +724,7 @@ function tripal_create_bundle_fields($bundle, $term) {
     }
     
     // Make sure the term is not used for any other existing field instance.
-    $skip = TRUE;
+    $skip = FALSE;
     foreach ($existing_instances as $existing_name => $existing_instance) {
       // If this instance term is the same as this exsiting term and the 
       // instance name is not the same then we have a problem.
