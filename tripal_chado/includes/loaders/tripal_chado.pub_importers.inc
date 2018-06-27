@@ -74,10 +74,8 @@ function tripal_pub_importers_list() {
       <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
-          importer to run peridically by adding a cron job. See the " .
-     l("Pub Module help instructions", "admin/tripal/legacy/tripal_pub/help") . " to learn how to
-     set the importers to run automatically.") . '</li>
-     </ol><br>';
+          importer to run peridically by adding a cron job. </li> 
+     </ol><br>");
 
 
   $table = array(
@@ -125,9 +123,13 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
     drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
 
+  /**
+   * Commenting the AGL message out until we get AGL working again.
+   * spf 6/22/2018
   if(!extension_loaded ('yaz')){
     drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Pub Module help page'), 'admin/tripal/legacy/tripal_pub/help') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
   }
+  */
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
@@ -137,9 +139,9 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
 
   // retrieve any results
   if (array_key_exists('tripal_pub_import', $_SESSION)) {
-    $remote_db = $_SESSION['tripal_pub_import']['remote_db'];
-    $num_criteria = $_SESSION['tripal_pub_import']['num_criteria'];
-    $days = $_SESSION['tripal_pub_import']['days'];
+    $remote_db = array_key_exists('remote_db', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['remote_db'] : '';
+    $num_criteria = array_key_exists('num_criteria', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['num_criteria'] : '';
+    $days = array_key_exists('days', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['days'] : '';
 
     $search_array = array();
     $search_array['remote_db'] = $remote_db;
@@ -371,6 +373,11 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   if (!$remote_db) {
     $remote_db = 'PMID';
   }
+  /**
+   * Removing AGL option until we get it fixed
+   * spf 6/22/2018
+   */
+  unset($remote_dbs['AGL']);
   $form['themed_element']['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',
@@ -639,7 +646,7 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     }
 
     if (!$is_phrase) {
-      if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
+      if (preg_match('/\sand\s/i', $search_terms) and preg_match('/\sor\s/i', $search_terms)) {
         form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
         $_SESSION['tripal_pub_import']['perform_search'] = 0;
       }
@@ -1535,6 +1542,13 @@ function tripal_execute_pub_importer($import_id, $job_id = NULL) {
       if($import->do_contact) {
         print "Syncing contacts with Drupal...\n";
         chado_node_sync_records('contact');
+      }
+    }
+    // For Tripal v3 we want to publish the new publications
+    else {
+      $bundle = tripal_load_bundle_entity(['label' => 'Publication']);
+      if ($bundle) {
+        chado_publish_records(['bundle_name' => $bundle->name], $job_id);
       }
     }
     tripal_set_job_progress($job_id, '100');

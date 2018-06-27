@@ -57,10 +57,6 @@ class local__contact_widget extends ChadoFieldWidget {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
-      '#type' => 'value',
-      '#default_value' => $record_id,
-    );
     $widget[$linker_field] = array(
       '#type' => 'value',
       '#default_value' => $contact_id,

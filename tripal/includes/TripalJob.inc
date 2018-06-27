@@ -160,7 +160,7 @@ class TripalJob {
     }
 
     $includes = $details['includes'];
-    if ($path and is_array($path)) {
+    if ($includes and is_array($includes)) {
       foreach ($includes as $path) {
         $full_path = $_SERVER['DOCUMENT_ROOT'] . base_path() . $path;
         if (!empty($path)) {

@@ -131,24 +131,6 @@ function tripal_menu() {
     'access arguments' => array('administer tripal'),
   );
 
-  // Menu items for facilitating import of extension modules.
-  $items['admin/tripal/extension/available'] = array(
-    'title' => 'Available Extensions',
-    'description' => t('Look for extensions to add new functionality to this
-        site. Tripal can be extended with new functionality developed
-        by other Tripal site developers. These include modules with new or
-        different functionality, bulk loading templates, or materialized
-        views.  Anyone can create new extensions and share those for
-        others to use.  Once shared they will appear in this list.'),
-    'access arguments' => array('administer tripal'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_extensions_form'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'includes/tripal.extensions.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => -100
-  );
-
   /**
    * Jobs Management
    */

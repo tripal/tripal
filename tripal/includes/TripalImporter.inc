@@ -334,7 +334,7 @@ class TripalImporter {
           foreach ($fids as $fid) {
             $file = file_load($fid);
             $arguments['files'][] = array(
-              'file_path' => base_path() . drupal_realpath($file->uri),
+              'file_path' => drupal_realpath($file->uri),
               'fid' => $fid
             );
             $has_file++;
@@ -345,14 +345,14 @@ class TripalImporter {
           $fid = $file_details['fid'];
           $file = file_load($fid);
           $arguments['files'][] = array(
-            'file_path' => base_path() . drupal_realpath($file->uri),
+            'file_path' => drupal_realpath($file->uri),
             'fid' => $fid
           );
           $has_file++;
 
           // For backwards compatibility add the old 'file' element.
           $arguments['file'] = array(
-            'file_path' => base_path() . drupal_realpath($file->uri),
+            'file_path' => drupal_realpath($file->uri),
             'fid' => $fid
           );
         }
