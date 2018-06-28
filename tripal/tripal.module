@@ -305,6 +305,17 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  /*
+   * Data Loaders (TripalImporter)
+   */
+  $items['admin/tripal/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating data import.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+
   // Add in the loaders
   $importers = tripal_get_importers();
   foreach ($importers as $class_name) {
