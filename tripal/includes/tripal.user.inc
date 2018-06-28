@@ -21,7 +21,6 @@
        INNER JOIN {file_usage} FU on FM.fid = FU.fid and FM.uid = :user_id
        LEFT JOIN {tripal_expiration_files} TGEF on TGEF.fid = FU.fid
      WHERE FU.module = 'tripal'
-     GROUP BY FM.fid, TGEF.expiration_date
      ORDER BY FM.filename
    ";
    $files = db_query($sql, array(':user_id' => $uid));
