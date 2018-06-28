@@ -116,19 +116,19 @@ class TripalImporter {
   
   
   /**
-   * If your importer requires more flexibility and advance features than
-   * the TripalImporter provies you can indicate a callback function. If set,
+   * If your importer requires more flexibility and advanced features than
+   * the TripalImporter provides, you can indicate a callback function. If set,
    * the callback will be used to provide the importer interface to the
    * end-user.  However, because this bypasses the class infrastructure the
    * run() function will also not be available and your importer must be
-   * fully self-sufficient outside of this calss.  The benefit for using a
-   * TripalImporter desipte your loader being self-sufficient is that Tripal
+   * fully self-sufficient outside of this class.  The benefit for using a
+   * TripalImporter despite your loader being self-sufficient is that Tripal
    * will treat your loader like all others providing a consistent location
    * in the menu and set of permissions.
    * 
    * Note: use of a callback is discouraged as the importer provides a 
    * consistent workflow for all importers.  Try your best to fit your importer
-   * within the class.  Use this if you abosolutely cannot fit your importer
+   * within the class.  Use this if you absolutely cannot fit your importer
    * into  TripalImporter implementation.
    * 
    */

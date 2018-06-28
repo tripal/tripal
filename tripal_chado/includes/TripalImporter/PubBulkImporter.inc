@@ -17,7 +17,7 @@ class PubBulkImporter extends TripalImporter {
    * A brief description for this loader.  This description will be
    * presented to the site user.
    */
-  public static $description = 'Create and modify importers that can connect to and retreive publications from remote databases.';
+  public static $description = 'Create and modify importers that can connect to and retrieve publications from remote databases.';
 
   /**
    * An array containing the extensions of allowed file types.
@@ -58,7 +58,7 @@ class PubBulkImporter extends TripalImporter {
    * Text that should appear on the button at the bottom of the importer
    * form.
    */
-  public static $button_text = 'Import from NCBI Taxonomy';
+  public static $button_text = 'Import';
 
   /**
    * Indicates the methods that the file uploader will support.
@@ -97,8 +97,8 @@ class PubBulkImporter extends TripalImporter {
   public static $cardinality = 0;
   
   /**
-   * Be default, all loaders are automaticlly added to the Admin >
-   * Tripal > Data Laders menu.  However, if this loader should be
+   * Be default, all loaders are automatically added to the Admin >
+   * Tripal > Data Loaders menu.  However, if this loader should be
    * made available via a different menu path, then set it here.  If the
    * value is empty then the path will be the default.
    */
@@ -106,12 +106,12 @@ class PubBulkImporter extends TripalImporter {
 
   /**
    * If your importer requires more flexibility and advance features than
-   * the TripalImporter provies you can indicate a callback function. If set,
+   * the TripalImporter provides you can indicate a callback function. If set,
    * the callback will be used to provide the importer interface to the
    * end-user.  However, because this bypasses the class infrastructure the
    * run() function will also not be available and your importer must be
-   * fully self-sufficient outside of this calss.  The benefit for using a
-   * TripalImporter desipte your loader being self-sufficient is that Tripal
+   * fully self-sufficient outside of this class.  The benefit for using a
+   * TripalImporter despite your loader being self-sufficient is that Tripal
    * will treat your loader like all others providing a consistent location
    * in the menu and set of permissions.
    */
