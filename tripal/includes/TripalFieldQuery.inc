@@ -140,7 +140,15 @@ class TripalFieldQuery extends EntityFieldQuery {
     if (array_key_exists('first_results', $current_results)) {
       return $new_results;
     }
-    
+
+    // set defaults to prevent warnings
+    if (empty($new_results)){
+    $new_results['TripalEntity'] = [];
+    }
+    if (empty($current_results)){
+      $current_results['TripalEntity'] = [];
+    }
+
     // Iterate through all of the new results and only include those that
     // exist in both the current and new.
     $intersection = [];
