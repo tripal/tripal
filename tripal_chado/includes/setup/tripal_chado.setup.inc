@@ -225,8 +225,10 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     drush_print("Creating common Tripal Content Types...");
+    drush_print("This may take awhile if you are upgrading a site that has lots of data...");
 
     // Create the 'Organism' entity type. This uses the obi:organism term.
+    drush_print("Creating Organism...");
     $error = '';
     $args = array(
       'vocabulary' => 'OBI',
@@ -251,6 +253,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
+    drush_print("Creating Analysis...");
     $error = '';
     $args = array(
       'vocabulary' => 'operation',
@@ -275,6 +278,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
+    drush_print("Creating Project...");
     $error = '';
     $args = array(
       'vocabulary' => 'local',
@@ -299,6 +303,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'Map' entity type. This uses the local:project term.
+    drush_print("Creating Map...");
     $error = '';
     $args = array(
       'vocabulary' => 'data',
@@ -334,6 +339,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     chado_import_pub_by_dbxref('PMID:24163125');
 
     // Create the 'Publication' entity type.
+    drush_print("Creating Publication...");
     $error = '';
     $args = array(
       'vocabulary' => 'TPUB',
@@ -377,6 +383,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'Gene' entity type.
+    drush_print("Creating Gene...");
     $error = '';
     $args = array(
       'vocabulary' => 'SO',
@@ -402,6 +409,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'mRNA' entity type.
+    drush_print("Creating mRNA...");
     $error = '';
     $args = array(
       'vocabulary' => 'SO',
@@ -427,6 +435,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'biological sample' entity type.
+    drush_print("Creating Biological Sample...");
     $error = '';
     $args = array(
       'vocabulary' => 'sep',
@@ -451,6 +460,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     }
 
     // Create the 'Phylogenetic tree' entity type.
+    drush_print("Creating Phylogenetic tree...");
     $error = '';
     $args = array(
       'vocabulary' => 'data',
@@ -549,7 +559,7 @@ function tripal_chado_fix_v1_3_custom_tables() {
 
   // Update the featuremap_dbxref table by adding an is_current field.
   if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
-    chado_query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL,;");
+    chado_query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
   }
 
   // Remove the previously managed custom tables from the

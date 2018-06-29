@@ -68,10 +68,14 @@ class TripalContentService_v0_1 extends TripalWebService {
       $ctype_lookup = array();
       $found = FALSE;
       while ($bundle = $bundles->fetchObject()) {
-        if ($ctype == preg_replace('/[^\w]/', '_', $bundle->label)) {
+        // Check the label by replacing non alpha-numeric characters with 
+        // an underscore and is case-insensitive
+        $label = preg_replace('/[^\w]/', '_', $bundle->label);
+        if (preg_match("/^$label$/i", $ctype)) {
           $ctype = $bundle->label;
           $found = TRUE;
         }
+        // Check if this is an accession.
         if ($ctype == $bundle->vocabulary . ':' . $bundle->accession) {
           $ctype = $bundle->label;
           $found = TRUE;
@@ -274,8 +278,16 @@ class TripalContentService_v0_1 extends TripalWebService {
       }
       // Get the information about this field.
       $field = field_info_field($field_name);
+      
+      // If the field has the $no_data turned on then we should exclude it.
+      if (tripal_load_include_field_class($field['type'])) {
+        $field_class = $field['type'];
+        if ($field_class::$no_data) {
+          return;
+        }
+      }
 
-      // Skip the remote__data field that is provided by the tripal_Ws
+      // Skip the remote__data field that is provided by the tripal_ws
       // module.
       if ($field['type'] == 'remote__data') {
         continue;
@@ -946,12 +958,10 @@ class TripalContentService_v0_1 extends TripalWebService {
       $entity = $entity[$entity_id];
 
       // Add in any requested fields
-      foreach ($fields as $expfield) {
-        if (array_key_exists($expfield, $add_fields)) {
-          $this->addEntityField($member, $add_fields[$expfield]['term'], $entity,
-              $bundle, $add_fields[$expfield]['field'], $add_fields[$expfield]['instance'],
-              $service_path);
-        }
+      foreach ($add_fields as $expfield => $expfield_details) {
+        $this->addEntityField($member, $expfield_details['term'], $entity,
+            $bundle, $expfield_details['field'], $expfield_details['instance'],
+            $service_path);
       }
       $this->resource->addMember($member);
     }

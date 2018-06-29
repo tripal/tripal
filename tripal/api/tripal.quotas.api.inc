@@ -70,22 +70,14 @@ function tripal_remove_user_quota($uid) {
 function tripal_get_user_usage($uid) {
   // Get the user's current file usage
   $sql = "
-    SELECT DISTINCT FU.fid
-    FROM {file_usage} FU
-      INNER JOIN {file_managed} FM ON FM.fid = FU.fid and FU.module = 'tripal'
-    WHERE FM.uid = :uid
+    SELECT SUM(filesize) FROM (
+    SELECT DISTINCT FM.fid, FM.filename, FM.filesize
+      FROM file_usage FU
+        INNER JOIN file_managed FM ON FM.fid = FU.fid and FU.module = 'tripal'
+      WHERE FM.uid = :uid) AS foo
   ";
-  $fids = db_query($sql, [
-    ':uid' => $uid
-  ]);
-  $total_size = 0;
-  while ($fid = $fids->fetchObject()) {
-    $sql = "SELECT filesize FROM {file_managed} WHERE fid = :fid";
-    $total_size += db_query($sql, [
-      ':fid' => $fid->fid
-    ])->fetchObject()->filesize;
-  }
-  return $total_size;
+  $total_usage = db_query($sql, [':uid' => $uid])->fetchField();
+  return ($total_usage);
 }
 
 /**

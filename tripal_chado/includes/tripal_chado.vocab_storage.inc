@@ -230,9 +230,9 @@ function tripal_chado_vocab_get_term_children($vocabulary, $accession) {
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
 
 
-  // Get the children
+  // Get the children.
   $sql = "
-    SELECT subject_id
+    SELECT DISTINCT subject_id
     FROM {cvterm_relationship} CVTR
     WHERE object_id = :object_id
   ";

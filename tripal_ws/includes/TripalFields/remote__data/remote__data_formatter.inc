@@ -11,64 +11,11 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     'setting1' => 'default_value',
   );
   /**
-   * Provides the field's setting form.
-   *
-   * This function corresponds to the hook_field_formatter_settings_form()
-   * function of the Drupal Field API.
-   *
-   * The settings form appears on the 'Manage Display' page of the content
-   * type administration page. This function provides the form that will
-   * appear on that page.
-   *
-   * To add a validate function, please create a static function in the
-   * implementing class, and indicate that this function should be used
-   * in the form array that is returned by this function.
-   *
-   * This form will not be displayed if the formatter_settings_summary()
-   * function does not return anything.
-   *
-   * param $field
-   *   The field structure being configured.
-   * param $instance
-   *   The instance structure being configured.
-   * param $view_mode
-   *   The view mode being configured.
-   * param $form
-   *   The (entire) configuration form array, which will usually have no use
-   *   here.  Typically for reference only.
-   * param $form_state
-   *   The form state of the (entire) configuration form.
-   *
-   * @return
-   *   A Drupal Form array containing the settings form for this field.
-   */
-  public function settingsForm($view_mode, $form, &$form_state) {
-  }
-  /**
-   *  Provides the display for a field
-   *
-   * This function corresponds to the hook_field_formatter_view()
-   * function of the Drupal Field API.
-   *
-   *  This function provides the display for a field when it is viewed on
-   *  the web page.  The content returned by the formatter should only include
-   *  what is present in the $items[$delta]['values] array. This way, the
-   *  contents that are displayed on the page, via webservices and downloaded
-   *  into a CSV file will always be identical.  The view need not show all
-   *  of the data in the 'values' array.
-   *
-   *  @param $element
-   *  @param $entity_type
-   *  @param $entity
-   *  @param $langcode
-   *  @param $items
-   *  @param $display
-   *
-   *  @return
-   *    An element array compatible with that returned by the
-   *    hook_field_formatter_view() function.
+   * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
+    $content = '';
+    
     // Get the settings
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
@@ -94,25 +41,39 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       ->execute()
       ->fetchObject();
 
-      $content = '<p>';
-    if (is_object($site_logo)) {
-      $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
-    }
-    $content .=  t('This content provided by !site.',
-        array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
-    $content .= '</p>';
+    // Iterate through the results and create a generic table.
     $rows = array();
+    $headers = array('');
     foreach ($items as $index => $item) {
-      $remote_entity_label = $item['remote_entity']['label'];
-      $remote_entity_page = $item['remote_entity']['ItemPage'];
-      $link = t('View !data on %site',
-          array('!data' => l('this content', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
-            '%site' => $site->name));
-      $value = $item['value'];
-      if (!$value) {
+      if (!$item['value'] or empty($item['value'])) {
         continue;
       }
-      $headers = array('');
+      $value = $item['value'];
+      $error = $item['error'];
+      $warning = $item['warning'];
+      
+      // If there is an error or warning then clear the cache for this field
+      // so that next time the page is loaded it will try to reload again.
+      if ($error or $warning) {
+        $cid = "field:TripalEntity:" . $entity->id . ':' . $field_name;
+        cache_clear_all($cid, 'cache_field');
+        if ($item['admin_message']) {
+          $severity = TRIPAL_ERROR;
+          if ($warning) {
+            $severity = TRIPAL_WARNING;
+          }
+          $value .= tripal_set_message($item['admin_message'] . 'The query URL was: ' . l($item['query_str'], $item['query_str'], ['attributes' => ['target' => '_blank']]),
+            $severity, ['return_html' => TRUE]);
+        }
+        $rows[] = [$value];
+        continue;
+      }
+      
+      $remote_entity_label = array_key_exists('label', $item) ? $item['remote_entity']['label'] : '';
+      $remote_entity_page = $item['remote_entity']['ItemPage'];
+      $remote_entity_link = t('View !data on %site',
+          array('!data' => l('this data', $remote_entity_page, array('attributes' => array('target' => '_blank'))),
+            '%site' => $site->name));
 
       // If this is a collection then handle it as a list of members.
       if (array_key_exists('members', $value)) {
@@ -128,7 +89,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         }
         else {
           if (array_key_exists($flabel, $value)) {
-            $rows[] = array(l($value[$flabel], $remote_entity_page, array('attributes' => array('target' => '_blank'))));
+            $rows[] = array($value[$flabel]);
           }
           else {
             $value['Link'] = l('View content on ' . $site->name, $remote_entity_page, array('attributes' => array('target' => '_blank')));
@@ -136,14 +97,21 @@ class remote__data_formatter extends WebServicesFieldFormatter {
           }
         }
       }
-
     }
+    
+    // TODO: we need to handle paged elements.
 
     $has_sub_tables = FALSE;
     for ($i = 0; $i < count($rows); $i++) {
       if (is_array($rows[$i][0])) {
         $rows[$i][0] = $this->createTable($rows[$i]);
         $has_sub_tables = TRUE;
+      }
+      else {
+        $rows[$i] = [
+          'colspan' => 2,
+          'data' => $rows[$i],
+        ];
       }
     }
 
@@ -171,6 +139,19 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         $content .= $rows[$i][0];
       }
     }
+    
+    $content .= '<p>';
+
+    $content .=  t('This content provided by !site.',
+      array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
+    if (is_object($site_logo)) {
+      $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
+    }
+    if (count($items) == 1) {
+      $content .= $remote_entity_link;
+    }
+    $content .= '</p>';
+    
     // Return the content for this field.
     $element[0] = array(
       '#type' => 'markup',

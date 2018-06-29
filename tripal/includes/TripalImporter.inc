@@ -113,6 +113,38 @@ class TripalImporter {
    * value is empty then the path will be the default.
    */
   public static $menu_path = '';
+  
+  
+  /**
+   * If your importer requires more flexibility and advanced features than
+   * the TripalImporter provides, you can indicate a callback function. If set,
+   * the callback will be used to provide the importer interface to the
+   * end-user.  However, because this bypasses the class infrastructure the
+   * run() function will also not be available and your importer must be
+   * fully self-sufficient outside of this class.  The benefit for using a
+   * TripalImporter despite your loader being self-sufficient is that Tripal
+   * will treat your loader like all others providing a consistent location
+   * in the menu and set of permissions.
+   * 
+   * Note: use of a callback is discouraged as the importer provides a 
+   * consistent workflow for all importers.  Try your best to fit your importer
+   * within the class.  Use this if you absolutely cannot fit your importer
+   * into  TripalImporter implementation.
+   * 
+   */
+  public static $callback = '';
+  
+  /**
+   * The name of the module that provides the callback function.
+   */
+  public static $callback_module = '';
+  
+  /**
+   * An include path for the callback function.  Use a relative path within
+   * this scope of this module
+   * (e.g. includes/loaders/tripal_chado_pub_importers).
+   */
+  public static $callback_path = '';
 
   // --------------------------------------------------------------------------
   //                  PRIVATE MEMBERS -- DO NOT EDIT or OVERRIDE
