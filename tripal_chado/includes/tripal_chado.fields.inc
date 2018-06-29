@@ -386,7 +386,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   // PROTEIN & CDS
   if ($table_name == 'feature' and
-     ($bundle->label == 'mRNA' or $bundle->label == 'transcript' or $bundle->label == 'Transcript'))  {
+    ($bundle->term->name == 'mRNA' or $bundle->term->name == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $field_type = 'data__protein_sequence';
     $info[$field_name] = array(
@@ -414,7 +414,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
-  if (chado_table_exists($rel_table) and ($bundle->label == 'gene' or $bundle->label == 'Gene')) {
+  if (chado_table_exists($rel_table) and ($bundle->term->name == 'gene')) {
     $field_name = 'so__transcript';
     $field_type = 'so__transcript';
     $info[$field_name] = array(
@@ -1739,7 +1739,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   // PROTEIN & CDS SEQUENCES.
   if ($table_name == 'feature' and
-      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
+    ($bundle->term->name == 'mRNA' or $bundle->term->name == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -1807,7 +1807,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   // GENE TRANSCRIPTS
   $rel_table = $table_name . '_relationship';
-  if (chado_table_exists($rel_table) and ($bundle->label == 'gene' or $bundle->label == 'Gene')) {
+  if (chado_table_exists($rel_table) and ($bundle->term->name == 'gene')) {
     $field_name = 'so__transcript';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -2113,6 +2113,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'NCIT',
         'term_name' => 'Operator',
         'term_accession' => 'C48036',
+        
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
