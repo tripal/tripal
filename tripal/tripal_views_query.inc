@@ -87,7 +87,6 @@ class tripal_views_query extends views_plugin_query {
    *   here.
    */
   public function add_where($group, $field_name, $value = NULL, $operator = NULL) {
-
     if ($value) {
 
       $this->filters[] = array(
@@ -104,35 +103,65 @@ class tripal_views_query extends views_plugin_query {
         return;
       }
 
-      // For Tripal create fields the name of the field is an encoded
-      // string that contains the bundle term, field name and any
-      // sub elements. We need to extract them.
+      // For fields compatible with the Tripal storage API, the
+      // incoming $field_name is a combination of the entity term ID,
+      // followed by the field name and the the sub element string, with
+      // sub elements children separated by a comma.  For non Tripal 
+      // storage API the $field_name is a combination of the table name
+      // followed by the table column.  We have to handle both because
+      // a TripalEntity can have both types attached.
       $elements = explode('.', $field_name);
-      $bundle_term = array_shift($elements);
-      $field_name = array_shift($elements);
-      $element_name = implode(',', $elements);
+      $field = NULL;
+      if (count($elements) > 2) {
+        $bundle_term = array_shift($elements);
+        $field_name = array_shift($elements);
+        // put the sub elements back together into a string with a 
+        // comma delimeter.
+        $element_name = implode(',', $elements);
+      }
+      if (count($elements) == 2) {
+        $field_name = array_shift($elements);
+        $element_name = array_shift($elements);
+        
+        // At this point we're still not 100% sure if we have a
+        // Tripal Storage API field or not.  One quick way to
+        // tell is to see if we get a field using the $field_name. if so the
+        // field name comes in as the second element.
+        $field = field_info_field($element_name);
+        if ($field) {
+          $field_name = $element_name;
+          $element_name = '';
+        }
+      }
+      
+      if ($field) { 
+        $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
 
-      // Get the field and instance.
-      $field = field_info_field($field_name);
-      $instance = field_info_instance('TripalEntity', $field_name, $this->query->entityConditions['bundle']['value']);
+        // Construct the field term.
+        $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
 
-      // Construct the field term.
-      $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
-
-      // Let's add add on the $field_term to the element_name and add the
-      // query condition.
-      if ($element_name) {
-        $element_name = $field_term . ',' . $element_name;
+        // Let's add add on the $field_term to the element_name and add the
+        // query condition.
+        if ($element_name) {
+          $element_name = $field_term . ',' . $element_name;
+        }
+        else {
+          $element_name = $field_term;
+        }
+        $this->query->fieldCondition($field_name, $element_name, $value, $operator);
+        $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
       }
       else {
-        $element_name = $field_term;
+        // If we have a table name then this table is in the Drupal schema and
+        // we need to add a relationship with the tripal_entity table.
+        $table = $field_name;
+        $field = $element_name;
+        $this->query->relationshipCondition($table, $field, $value, $operator);
+        $this->cquery->relationshipCondition($table, $field, $value, $operator);
       }
-
-      $this->query->fieldCondition($field_name, $element_name, $value, $operator);
-      $this->cquery->fieldCondition($field_name, $element_name, $value, $operator);
     }
   }
-  
+ 
   /**
    * Add's a where exression clause to a query.
    * 
@@ -370,5 +399,23 @@ class tripal_views_query extends views_plugin_query {
     // words, all words, shorter than, longer than filters, but those
     // are currently commented out.
     //return $this->query->placeholder($this->options['table'] . '_' . $this->options['field']);
+  }
+
+ 
+  /**
+   * This function copied from views_plugin_query_default::add_relationship
+   */ 
+  public function add_relationship($alias, $join, $base, $link_point = NULL) {
+  
+    // Make sure $alias isn't already used; if it, start adding stuff.
+    $alias_base = $alias;
+    $count = 1;
+    while (!empty($this->relationships[$alias])) {
+      $alias = $alias_base . '_' . $count++;
+    }
+      
+    $this->query->addRelationship($join->table, $alias, $join->field);
+    $this->cquery->addRelationship($join->table, $alias, $join->field);
+    return $alias;
   }
 }

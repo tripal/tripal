@@ -1180,3 +1180,32 @@ function tripal_update_7311() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds a tripal_storage_api setting to all field storage details
+ */
+function tripal_update_7312() {
+  $transaction = db_transaction();
+  try {
+    $fields = db_select('field_config', 'fc')
+      ->fields('fc', ['id', 'storage_type', 'data'])
+      ->where("fc.storage_type = 'field_chado_storage' or fc.storage_type = 'tripal_no_storage'")
+      ->execute();
+    while ($field = $fields->fetchObject()) {
+      $data = unserialize($field->data); 
+      $data['storage']['settings']['tripal_storage_api'] = TRUE;
+      db_update('field_config')
+        ->fields([
+          'data' => serialize($data)
+        ])
+        ->condition('id', $field->id)
+        ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
