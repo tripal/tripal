@@ -391,6 +391,12 @@ function tripal_get_term_details($vocabulary, $accession) {
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
       $term = $function($vocabulary, $accession);
+      
+      // If the vocabulary is missing then we have a problem.
+      if (!array_key_exists('vocabulary', $term)) {
+        tripal_report_error('tripal_term', TRIPAL_ERROR, "The term is missing a vocabulary entry.");
+        return FALSE;
+      }
 
       // Make sure the term has a URL. If it does not, then use the Tripal
       // interface as the URL for the term.
@@ -403,8 +409,9 @@ function tripal_get_term_details($vocabulary, $accession) {
         $url_missing = TRUE;
         $term['vocabulary']['sw_url'] = url('cv/lookup/' . $term['vocabulary']['short_name'] . '/' . $term['accession'], ['absolute' => TRUE]);
       }
-      // Let the user know that the vocabulary is missing.
+      // Let the user know that the url is missing.
       if ($url_missing) {
+        
         tripal_add_notification(
           "Missing CV term URL", 
           t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
