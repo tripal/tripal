@@ -636,6 +636,7 @@ function tripal_get_content_type($bundle_name) {
  * @ingroup tripal_entities_api
  */
 function tripal_create_bundle_fields($bundle, $term) {
+
   $added = array();
 
   // Allow modules to add fields to the new bundle.
@@ -663,7 +664,7 @@ function tripal_create_bundle_fields($bundle, $term) {
     $field = field_info_field($details['field_name']);
     if ($field) {
       continue;
-    }    
+    }
 
     // Create the field.
     $field = field_create_field($details);

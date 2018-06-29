@@ -386,7 +386,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   // PROTEIN & CDS
   if ($table_name == 'feature' and
-      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
+    ($bundle->term->name == 'mRNA' or $bundle->term->name == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $field_type = 'data__protein_sequence';
     $info[$field_name] = array(
@@ -399,34 +399,34 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
 
-//     $field_name = 'so__cds';
-//     $field_type = 'so__cds';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'type' => $field_type,
-//       'cardinality' => 1,
-//       'locked' => FALSE,
-//       'storage' => array(
-//         'type' => 'field_chado_storage',
-//       ),
-//     );
+    $field_name = 'so__cds';
+    $field_type = 'so__cds';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
   }
 
-//   // GENE TRANSCRIPTS
-//   $rel_table = $table_name . '_relationship';
-//   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
-//     $field_name = 'so__transcript';
-//     $field_type = 'so__transcript';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'type' => $field_type,
-//       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-//       'locked' => FALSE,
-//       'storage' => array(
-//         'type' => 'field_chado_storage',
-//       ),
-//     );
-//   }
+  // GENE TRANSCRIPTS
+  $rel_table = $table_name . '_relationship';
+  if (chado_table_exists($rel_table) and ($bundle->term->name == 'gene')) {
+    $field_name = 'so__transcript';
+    $field_type = 'so__transcript';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+    );
+  }
 
   // ORGANISM TYPE_ID
   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
@@ -1739,7 +1739,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   // PROTEIN & CDS SEQUENCES.
   if ($table_name == 'feature' and
-      ($bundle->label == 'mRNA' or $bundle->label == 'transcript'))  {
+    ($bundle->term->name == 'mRNA' or $bundle->term->name == 'transcript'))  {
     $field_name = 'data__protein_sequence';
     $info[$field_name] = array(
       'field_name' => $field_name,
@@ -1772,75 +1772,74 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
 
-//     $field_name = 'so__cds';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'entity_type' => $entity_type,
-//       'bundle' => $bundle->name,
-//       'label' => 'Coding Sequence',
-//       'description' => 'Coding sequences.',
-//       'required' => FALSE,
-//       'settings' => array(
-//         'auto_attach' => FALSE,
-//         'chado_table' => 'featureloc',
-//         'chado_column' => '',
-//         'base_table' => 'featureloc',
-//         'term_accession' => '',
-//         'term_vocabulary' => '',
-//         'term_name' => '',
-//       ),
-//       'widget' => array(
-//         'type' => 'so__cds_widget',
-//         'settings' => array(
-//           'display_label' => 1,
-//         ),
-//       ),
-//       'display' => array(
-//         'default' => array(
-//           'label' => 'above',
-//           'type' => 'so__cds_formatter',
-//           'settings' => array(),
-//         ),
-//       ),
-//     );
+    $field_name = 'so__cds';
+    $info[$field_name] = array(
+     'field_name' => $field_name,
+     'entity_type' => $entity_type,
+     'bundle' => $bundle->name,
+     'label' => 'Coding Sequence (CDS)',
+     'description' => 'Coding sequences.',
+     'required' => FALSE,
+     'settings' => array(
+       'auto_attach' => FALSE,
+       'chado_table' => 'featureprop',
+       'chado_column' => 'value',
+       'base_table' => 'feature',
+       'term_vocabulary' => 'SO',
+       'term_name' => 'CDS',
+       'term_accession' => '0000316',
+     ),
+     'widget' => array(
+       'type' => 'so__cds_widget',
+       'settings' => array(
+         'display_label' => 1,
+       ),
+     ),
+     'display' => array(
+       'default' => array(
+         'label' => 'above',
+         'type' => 'so__cds_formatter',
+         'settings' => array(),
+       ),
+     ),
+    );
   }
 
-
-//   // GENE TRANSCRIPTS
-//   $rel_table = $table_name . '_relationship';
-//   if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
-//     $field_name = 'so__transcript';
-//     $info[$field_name] = array(
-//       'field_name' => $field_name,
-//       'entity_type' => $entity_type,
-//       'bundle' => $bundle->name,
-//       'label' => 'Transcripts',
-//       'description' => 'Transcripts that are part of this gene.',
-//       'required' => FALSE,
-//       'settings' => array(
-//         'auto_attach' => FALSE,
-//         'chado_table' => $rel_table,
-//         'chado_column' => '',
-//         'base_table' => $table_name,
-//         'term_accession' => '',
-//         'term_vocabulary' => '',
-//         'term_name' => '',
-//       ),
-//       'widget' => array(
-//         'type' => 'so__transcript_widget',
-//         'settings' => array(
-//           'display_label' => 1,
-//         ),
-//       ),
-//       'display' => array(
-//         'default' => array(
-//           'label' => 'above',
-//           'type' => 'so__transcript_formatter',
-//           'settings' => array(),
-//         ),
-//       ),
-//     );
-//   }
+  // GENE TRANSCRIPTS
+  $rel_table = $table_name . '_relationship';
+  if (chado_table_exists($rel_table) and ($bundle->term->name == 'gene')) {
+    $field_name = 'so__transcript';
+    $info[$field_name] = array(
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Transcripts',
+      'description' => 'Transcripts that are part of this gene.',
+      'required' => FALSE,
+      'settings' => array(
+        'auto_attach' => FALSE,
+        'chado_table' => $rel_table,
+        'chado_column' => '',
+        'base_table' => $table_name,
+        'term_vocabulary' => 'SO',
+        'term_name' => 'transcript',
+        'term_accession' => '0000673',
+      ),
+      'widget' => array(
+        'type' => 'so__transcript_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'so__transcript_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
 
   // ORGANISM TYPE_ID
   if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
@@ -2114,6 +2113,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'NCIT',
         'term_name' => 'Operator',
         'term_accession' => 'C48036',
+        
       ),
       'widget' => array(
         'type' => 'local__contact_widget',

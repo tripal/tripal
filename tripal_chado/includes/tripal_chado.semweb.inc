@@ -642,6 +642,12 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'A phylogenetic tree that is an estimate of the character\'s phylogeny.',
   ));
+  $term = chado_insert_cvterm(array(
+    'id' => 'operation:0564',
+    'name' => 'Sequence visualisation',
+    'cv_name' => 'EDAM',
+    'definition' => 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.',
+  ));
 
 }
 /**

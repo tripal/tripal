@@ -338,7 +338,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   );
 
 
-  $tokens = tripal_get_entity_tokens($bundle, array('required only' => TRUE));
+  $tokens = tripal_get_entity_tokens($bundle);
   $form['url']['tokens'] = array(
     '#type' => 'hidden',
     '#value' => serialize($tokens)
