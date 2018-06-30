@@ -1,4 +1,6 @@
 [![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
+[![DOI](https://zenodo.org/badge/42666405.svg)](https://zenodo.org/badge/latestdoi/42666405)
+
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
