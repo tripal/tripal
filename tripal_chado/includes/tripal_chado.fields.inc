@@ -547,7 +547,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   
   // For the pub_id field in the base table.
   $schema = chado_get_schema($table_name);
-  if (array_key_exists('pub_id', $schema['fields'])) {
+  if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
     
     // Remove the schema__publication added by the
     // tripal_chado_bunde_instnaces_info_base function.
@@ -2053,7 +2053,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   } 
   // pub_id field in table.
   $schema = chado_get_schema($table_name);
-  if (array_key_exists('pub_id', $schema['fields'])) {
+  if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
     
     // Remove the schema__publication added by the 
     // tripal_chado_bunde_instnaces_info_base function.
