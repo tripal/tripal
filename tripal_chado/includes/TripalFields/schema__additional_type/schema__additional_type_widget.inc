@@ -44,6 +44,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
     // If a parent_term is provided then use that to get the options
     $options = array();
     $options[] = 'Select a type';
+    $vocabulary = '';
     if ($enforce_parent_term) {
       list ($vocabulary, $accession) = explode(':', $enforce_parent_term);
       if ($vocabulary and $accession) {
@@ -70,6 +71,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       }
     }
     elseif ($enforce_vocabulary) {
+      $vocabulary = $enforce_vocabulary;
       $cv = chado_get_cv(array('name' => $enforce_vocabulary));
       $options = chado_get_cvterm_select_options($cv->cv_id);
     }

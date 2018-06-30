@@ -223,8 +223,10 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   $schema = chado_get_schema($table_name);
 
-  // Handle type_id fields that are not the type_column.
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column) {
+  // Handle type_id fields that are not the type_column, except for the
+  // organism type_id as that is handled by the taxrank__infraspecific_taxon
+  // field.
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -1293,7 +1295,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   $schema = chado_get_schema($table_name);
 
   // An additional type for publications
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column) {
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
