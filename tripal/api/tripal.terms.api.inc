@@ -405,16 +405,16 @@ function tripal_get_term_details($vocabulary, $accession) {
       }
       // Let the user know that the vocabulary is missing.
       if ($url_missing) {
-        tripal_add_notification(
-          "Missing CV term URL", 
-          t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
-            "this by linking to the cv/lookup page of this site. However, the correct " .
-            "should be updated for this site", 
-            ['%vocab' => $term['vocabulary']['short_name']]),
-          'Controlled Vocabularies', 
-          NULL, 
-          'mising-vocab-' . $term['vocabulary']['short_name']
-        );
+//         tripal_add_notification(
+//           "Missing CV term URL", 
+//           t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
+//             "this by linking to the cv/lookup page of this site. However, the correct " .
+//             "should be updated for this site", 
+//             ['%vocab' => $term['vocabulary']['short_name']]),
+//           'Controlled Vocabularies', 
+//           NULL, 
+//           'mising-vocab-' . $term['vocabulary']['short_name']
+//         );
       }
       
       return $term;
