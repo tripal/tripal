@@ -53,8 +53,7 @@ are available in Tripal v3.
 
 
 # Installation
-Please follow the instructions in the online Tripal User's Guide:
-http://tripal.info/tutorials/v2.0/installation
+Please follow the instructions in the online Tripal User's Guide for [Tripal v2](https://tripal.info/tutorials/v2.x/installation) or [Tripal v3](https://tripal.info/tutorials/v3.x/installation).
 
 
 # Upgrade from Tripal v2.x to v3.x
