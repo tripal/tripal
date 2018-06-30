@@ -194,11 +194,6 @@ function tripal_chado_prepare_chado($job = NULL) {
     drush_print("Loading Ontologies...");
     tripal_chado_load_ontologies();
 
-    // Populate the mviews based on controlled vocabularies.
-    drush_print('Populating materialized view db2cv_mview...');
-    $mview_id = chado_get_mview_id('db2cv_mview');
-    chado_populate_mview($mview_id);
-
     drush_print('Populating materialized view cv_root_mview...');
     $mview_id = chado_get_mview_id('cv_root_mview');
     chado_populate_mview($mview_id);
@@ -225,6 +220,11 @@ function tripal_chado_prepare_chado($job = NULL) {
       $job->setProgress(70);
     }
 
+    // Populate the mviews based on controlled vocabularies.
+    drush_print('Populating materialized view db2cv_mview...');
+    $mview_id = chado_get_mview_id('db2cv_mview');
+    chado_populate_mview($mview_id);
+    
     drush_print("Creating common Tripal Content Types...");
     drush_print("This may take awhile if you are upgrading a site that has lots of data...");
 
