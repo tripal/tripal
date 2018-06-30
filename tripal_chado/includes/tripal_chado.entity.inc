@@ -152,7 +152,7 @@ function tripal_chado_tripal_default_title_format($bundle, $available_tokens) {
     }
     else {
       $format[] = array(
-        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecific_taxon]',
+        'format' => '[taxrank__genus] [taxrank__species] [taxrank__infraspecific_taxon,TAXRANK:0000045]',
         'weight' => -5
       );
     }
