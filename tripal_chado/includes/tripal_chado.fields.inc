@@ -567,7 +567,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   } 
 
   // Analysis Id
-  if (array_key_exists('analysis_id', $schema['fields'])) {
+  if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
     $field_name = 'operation__analysis';
     $field_type = 'operation__analysis';
     $info[$field_name] = array(
@@ -2164,7 +2164,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   } 
   // Analysis Id
-  if (array_key_exists('analysis_id', $schema['fields'])) {
+  if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
     $field_name = 'operation__analysis';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['analysis_id']) and
