@@ -620,7 +620,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   }
 
   $term_name = $default_name;
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and array_key_exists('term_name', $form_state['values'])) {
     $term_name = $form_state['values']['term_name'];
   }
   if ($field_name and array_key_exists('input', $form_state) and array_key_exists($field_name, $form_state['input'])) {
