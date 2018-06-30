@@ -102,7 +102,7 @@ class taxrank__infraspecific_taxon_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name]['und'][0]['chado-organism__type_id'] = $type_id;
       $form_state['values'][$field_name]['und'][0]['chado-organism__infraspecific_name'] = $infra_name;
     }
-    if ($infra_name and !$type_id) {
+    else if ($infra_name and !$type_id) {
       $form_state['values'][$field_name]['und'][0]['value'] = $infra_name;
       $form_state['values'][$field_name]['und'][0]['chado-organism__type_id'] = '__NULL__';
       $form_state['values'][$field_name]['und'][0]['chado-organism__infraspecific_name'] = $infra_name;
