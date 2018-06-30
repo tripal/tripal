@@ -223,8 +223,10 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
 
   $schema = chado_get_schema($table_name);
 
-  // Handle type_id fields that are not the type_column.
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column) {
+  // Handle type_id fields that are not the type_column, except for the
+  // organism type_id as that is handled by the taxrank__infraspecific_taxon
+  // field.
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -547,7 +549,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   
   // For the pub_id field in the base table.
   $schema = chado_get_schema($table_name);
-  if (array_key_exists('pub_id', $schema['fields'])) {
+  if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
     
     // Remove the schema__publication added by the
     // tripal_chado_bunde_instnaces_info_base function.
@@ -567,7 +569,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   } 
 
   // Analysis Id
-  if (array_key_exists('analysis_id', $schema['fields'])) {
+  if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
     $field_name = 'operation__analysis';
     $field_type = 'operation__analysis';
     $info[$field_name] = array(
@@ -1293,7 +1295,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   $schema = chado_get_schema($table_name);
 
   // An additional type for publications
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column) {
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
@@ -2053,7 +2055,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   } 
   // pub_id field in table.
   $schema = chado_get_schema($table_name);
-  if (array_key_exists('pub_id', $schema['fields'])) {
+  if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
     
     // Remove the schema__publication added by the 
     // tripal_chado_bunde_instnaces_info_base function.
@@ -2164,7 +2166,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
     );
   } 
   // Analysis Id
-  if (array_key_exists('analysis_id', $schema['fields'])) {
+  if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
     $field_name = 'operation__analysis';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['analysis_id']) and

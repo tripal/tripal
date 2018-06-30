@@ -100,7 +100,7 @@ function tripal_chado_load_ontologies() {
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
       'cv_name' => 'tripal_contact',
-      'db_name' => 'TCONTACT'
+      'db_name' => 'TContact'
     ),
     array(
       'name' => 'Tripal Publication',
@@ -131,6 +131,7 @@ function tripal_chado_load_ontologies() {
         $obo_importer = new OBOImporter();
         $obo_importer->create(array('obo_id' => $obo_id));
         $obo_importer->run();
+        $obo_importer->postRun();
       }
       else {
         print "Ontology already loaded (skipping): " . $ontologies[$i]['name'] . "...\n";
