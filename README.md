@@ -2,23 +2,15 @@
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-Tripal is a toolkit for construction of online biological (genetics, genomics,
-breeding, etc), community database, and is a member of the 
-[GMOD](http://www.gmod.org) family of tools. Tripal v3 provides by default
-integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started).
-Tripal's primary goals are: 
+Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community database, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
 
-Genomics, genetics, breeding and other biological data are increasingly complicated and time consuming to publish online for other researchers to search, browse and make discoveries.   Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards, and interact to address questions and learn best practices for sharing, storing and visualizing complex biological data.
+Genetics, genomics, breeding, and other biological data are complicated and time-consuming to publish online for others to search, browse and discover. Tripal provides not only a framework to reduce the complexity, but also access to groups that share community-standards.  They are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing biological data.
 
-1. Provide a framework for those with genomic, genetic and breeding data that
-can facility creation of an online site for display, search and visualization.
-2. To use community-derived standards and ontologies to facility continuity
-between sites which in turn fosters collaboration and sharing 
-3. Provide an out-of-the-box setup for a genomics site for those who simply 
-want to put new genome assemblies and annotations online.
-4. Provide Application Programming Interfaces (APIs) for complete customization 
-such that more advanced displays, look-and-feel, and new functionality
-can be supported. 
+The primary goals of Tripal are to:
+1.	Provide a framework online to display, search, and visualize biological data, including genetics, genomics, and breeding;
+2.	Use community-derived standards and ontologies to facilitate continuity between sites and foster collaboration and sharing;
+3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
+4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
 
 
 # Features
