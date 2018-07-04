@@ -2,12 +2,12 @@
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community database, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
+Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community databases, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
 
-Genetics, genomics, breeding, and other biological data are complicated and time-consuming to publish online for others to search, browse and discover. Tripal provides not only a framework to reduce the complexity, but also access to groups that share community-standards.  They are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing biological data.
+Genetics, genomics, breeding, and other biological data are increasingly complicated and time-consuming to publish online for others to search, browse and make discoveries with. Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards. The users of Tripal are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing complex biological data.
 
 The primary goals of Tripal are to:
-1.	Provide a framework online to display, search, and visualize biological data, including genetics, genomics, and breeding;
+1.	Provide a framework for creating sites that allow display, search, and visualization of biological data, including genetics, genomics, and breeding data;
 2.	Use community-derived standards and ontologies to facilitate continuity between sites and foster collaboration and sharing;
 3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
 4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
