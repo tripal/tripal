@@ -169,6 +169,7 @@ class OBOImporter extends TripalImporter {
         ->condition('obo_id', $obo_id)
         ->execute()
         ->fetchObject();
+
       $uobo_name = $vocab->name;
       if (preg_match('/^http/', $vocab->path)) {
         $uobo_url = $vocab->path;
@@ -1676,6 +1677,6 @@ class OBOImporter extends TripalImporter {
  * Ajax callback for the OBOImporter::form() function.
  */
 function tripal_cv_obo_form_ajax_callback($form, $form_state) {
-  return $form['class_elements']['obo_existing'];
+  return $form['obo_existing'];
 }
 
