@@ -872,6 +872,12 @@ function tripal_admin_access($entity) {
   // Get the bundle object.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
+  if (!$bundle) {
+    tripal_report_error('tripal', TRIPAL_WARNING, 
+      'Unable to load bundle :name when creating permissions.', array(':name' => $bundle_name));
+    return FALSE;
+  }
+
   // Identify the administrative user roles.
   $admin_role = user_role_load_by_name('administrator');
   $roles = array($admin_role->rid => $admin_role->name);
