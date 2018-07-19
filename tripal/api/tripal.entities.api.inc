@@ -442,9 +442,9 @@ function tripal_create_bundle($args, &$error = '') {
         $vocab->save();
       }
       else {
+        $transaction->rollback();
         tripal_report_error('tripal_entities', TRIPAL_ERROR, 
           'Unable to create TripalVocab :vocab', array(':vocab' => $vocabulary));
-        $transaction->rollback();
         return FALSE;
       }
     }
@@ -461,9 +461,9 @@ function tripal_create_bundle($args, &$error = '') {
         $term = $term->save();
       }
       else {
+        $transaction->rollback();
         tripal_report_error('tripal_entities', TRIPAL_ERROR,
           'Unable to create TripalTerm :term', array(':term' => $term_name));
-        $transaction->rollback();
         return FALSE;
       }
     }
@@ -491,9 +491,9 @@ function tripal_create_bundle($args, &$error = '') {
 
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
     if (!$bundle) {
+      $transaction->rollback();
       tripal_report_error('tripal_entities', TRIPAL_ERROR,
         'Unable to create Tripal Bundle :name.', array(':name' => $bundle_name));
-      $transaction->rollback();
       return FALSE;
     }
 
@@ -515,9 +515,9 @@ function tripal_create_bundle($args, &$error = '') {
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
     if (!$bundle) {
+      $transaction->rollback();
       tripal_report_error('tripal_entities', TRIPAL_ERROR,
         'Unable to load Tripal Bundle :name after cache clear.', array(':name' => $bundle_name));
-      $transaction->rollback();
       return FALSE;
     }
 
