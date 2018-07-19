@@ -304,7 +304,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
         field_update_instance($instance);
       }
       elseif($instance_name == 'schema__additional_type' || $instance_name == 'tpub__doi'
-        || $instance_name == 'tpub__publication_date' || 'tpub__abstract' ||
+        || $instance_name == 'tpub__publication_date' || $instance_name == 'tpub__abstract' ||
         $instance_name == 'tpub__citation') {
         array_push($properties, $instance_name);
       }
