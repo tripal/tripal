@@ -438,7 +438,15 @@ function tripal_create_bundle($args, &$error = '') {
     $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
     if (!$vocab) {
       $vocab = entity_get_controller('TripalVocab')->create(array('vocabulary' => $vocabulary));
-      $vocab->save();
+      if ($vocab) {
+        $vocab->save();
+      }
+      else {
+        $transaction->rollback();
+        tripal_report_error('tripal_entities', TRIPAL_ERROR, 
+          'Unable to create TripalVocab :vocab', array(':vocab' => $vocabulary));
+        return FALSE;
+      }
     }
 
     // Next create the TripalTerm if it doesn't already exist.
@@ -449,7 +457,15 @@ function tripal_create_bundle($args, &$error = '') {
     if (!$term) {
       $targs = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
       $term = entity_get_controller('TripalTerm')->create($targs);
-      $term = $term->save();
+      if ($term) {
+        $term = $term->save();
+      }
+      else {
+        $transaction->rollback();
+        tripal_report_error('tripal_entities', TRIPAL_ERROR,
+          'Unable to create TripalTerm :term', array(':term' => $term_name));
+        return FALSE;
+      }
     }
 
     // If the bundle doesn't already exist, then add it.
@@ -474,10 +490,19 @@ function tripal_create_bundle($args, &$error = '') {
     }
 
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    if (!$bundle) {
+      $transaction->rollback();
+      tripal_report_error('tripal_entities', TRIPAL_ERROR,
+        'Unable to create Tripal Bundle :name.', array(':name' => $bundle_name));
+      return FALSE;
+    }
+
     $modules = module_implements('bundle_create');
     foreach ($modules as $module) {
       $function = $module . '_bundle_create';
-      $function($bundle, $storage_args);
+      if (function_exists($function)) {
+        $function($bundle, $storage_args);
+      }
     }
 
     // Clear the entity cache so that Drupal will read our
@@ -489,20 +514,39 @@ function tripal_create_bundle($args, &$error = '') {
 
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    if (!$bundle) {
+      $transaction->rollback();
+      tripal_report_error('tripal_entities', TRIPAL_ERROR,
+        'Unable to load Tripal Bundle :name after cache clear.', array(':name' => $bundle_name));
+      return FALSE;
+    }
 
     tripal_create_bundle_fields($bundle, $term);
 
-    $modules = module_implements('bundle_postcreate');
-    foreach ($modules as $module) {
-      $function = $module . '_bundle_postcreate';
-      $function($bundle);
-    }
+    // Specifically commiting here since we have a fully featured bundle.
+    // Post-create hook implementations assume we have a 
+    // created bundle so we don't want to rollback if a 
+    // custom implementation causes an exception.
+    unset($transaction);
+
   }
   catch (Exception $e) {
     $transaction->rollback();
     drupal_set_message(t("Failed to create content type: %message.",
       array('%message' => $e->getMessage())), 'error');
     return FALSE;
+  }
+
+  // Call any custom hook_bundle_postcreate() implementations.
+  // This is done outside of the try/catch & transaction
+  // since it occurs after creation and thus should not cause
+  // a rollback of the creation on error.
+  $modules = module_implements('bundle_postcreate');
+  foreach ($modules as $module) {
+    $function = $module . '_bundle_postcreate';
+    if (function_exists($function)) {
+      $function($bundle);
+    }
   }
 
   return $bundle;
