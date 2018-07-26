@@ -248,7 +248,7 @@ class data__sequence_coordinates extends ChadoField {
         }
         $fmin = $featureloc->fmin + 1;
         $fmax = $featureloc->fmax;
-        $entity->{$field_name}['und'][0] = array(
+        $entity->{$field_name}['und'][$index] = array(
           'value' => array(
             $description => $srcfeature . ':' . $fmin . '-' . $fmax . $strand,
             $reference_term => $srcfeature,

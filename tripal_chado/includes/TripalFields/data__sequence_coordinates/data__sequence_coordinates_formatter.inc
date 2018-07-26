@@ -20,7 +20,7 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
     $strand_term = chado_get_semweb_term('featureloc', 'strand');
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
-    $content = '';
+    $locations = array();
     foreach ($items as $item) {
       if (!empty($item['value'])) {
         $srcfeature = $item['value'][$reference_term];
@@ -28,11 +28,14 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
         $fmax = $item['value'][$fmax_term];
         $phase = $item['value'][$phase_term];
         $strand = $item['value'][$strand_term];
-        $content .= $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
+        $locations[] = $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
       }
     }
-    if (!$content) {
+    if (!$locations) {
       $content = 'This feature is not located on any sequence.';
+    }
+    else {
+      $content = implode('<br />', $locations);
     }
     $element[0] = array(
       '#type' => 'markup',
