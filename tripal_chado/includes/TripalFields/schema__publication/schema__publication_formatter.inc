@@ -15,6 +15,11 @@ class schema__publication_formatter extends ChadoFieldFormatter {
     $list_items = array();
     $chado_table = $this->instance['settings']['chado_table'];
 
+    // If there are no items, we don't want to return any markup.
+    if (empty($items)) {
+      return;
+    }
+
     foreach ($items as $delta => $item) {
 
       $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
