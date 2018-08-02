@@ -134,7 +134,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       }
 
       // Set header type based on what values are available.
-      if ($delta == 0) {
+      if (!isset($tables[$relationship_type])) {
         $tables[$relationship_type]['header_type'] = 'all';
         if ($subject_uniquename === NULL AND $subject_species === NULL) {
           $tables[$relationship_type]['header_type'] = 'nt';
@@ -203,12 +203,19 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
     );
 
     foreach ($tables as $relationship_type => $details) {
+
+      $table_id = 'sbo__relationship-'.$item['value']['local:relationship_subject']['rdfs:type']; //$this->getPagerElementID();
       $element[0][$relationship_type] = array(
         '#type' => 'markup',
         '#theme' => 'table',
         '#header' => $headers[ $details['header_type'] ],
         '#rows' => $details['rows'],
         '#caption' => $details['caption'],
+        '#sticky' => FALSE,
+        '#attributes' => array(
+          'class' => 'tripal-data-table',
+          'id' => $table_id,
+        ),
       );
     }
   }
