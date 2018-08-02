@@ -9,8 +9,8 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
   public static $field_types = array('sbo__relationship');
 
   public static $default_settings = array(
-    'title' => 'Relationship',
-    'empty' => 'There are no relationships',
+    'subject_caption' => 'This @type is <em>@rel_type</em> of the following <em>@content_type(s)</em>:',
+    'object_caption' => 'The following <em>@content_type(s)</em> are <em>@rel_type</em> of this @type:',
   );
 
   /**
@@ -21,16 +21,36 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
 
     $display = $this->instance['display'][$view_mode];
     $settings = $display['settings'];
+
+    // Ensure the default are set if the value is not configured.
+    foreach ($this::$default_settings as $key => $value) {
+      if (!isset($settings[$key])) { $settings[$key] = $value; }
+    }
+
     $element = array();
-    $element['title'] = array(
+    $element['subject_caption'] = array(
       '#type' => 'textfield',
-      '#title' => 'Table Header',
-      '#default_value' => array_key_exists('title', $settings) ? $settings['title'] : 'Relationship',
+      '#title' => 'Caption: where current entity is the subject.',
+      '#description' => 'This labels the relationship tables where the current entity is the subject of the relationship.',
+      '#default_value' => $settings['subject_caption'],
     );
-    $element['empty'] = array(
+
+    $element['object_caption'] = array(
       '#type' => 'textfield',
-      '#title' => 'Empty text',
-      '#default_value' => array_key_exists('empty', $settings) ? $settings['empty'] : 'There are no relationships',
+      '#title' => 'Caption: where current entity is the object.',
+      '#description' => 'This labels the relationship tables where the current entity is the object of the relationship.',
+      '#default_value' => $settings['object_caption'],
+    );
+
+    $element['tokens'] = array(
+      '#type' => 'item',
+      '#title' => 'Tokens',
+      '#markup' => 'The following tokens should be used in <strong>both the above captions</strong>:</p>
+                     <ul>
+                       <li>@type: The value of rdfs__type for the current entity.</li>
+                       <li>@rel_type: the type name of the current relationship.</li>
+                       <li>@content_type: the human-readable name of the content type for the current entity.</li>
+                     </ul>',
     );
 
     return $element;
@@ -43,10 +63,15 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
     $display = $this->instance['display'][$view_mode];
     $settings = $display['settings'];
 
-    $summary = t('Title: @title<br>Empty: @empty',
+    // Ensure the default are set if the value is not configured.
+    foreach ($this::$default_settings as $key => $value) {
+      if (!isset($settings[$key])) { $settings[$key] = $value; }
+    }
+
+    $summary = t('<strong>Subject Caption:</strong> @subject<br><strong>Object Caption:</strong> @object',
         array(
-          '@title' => $settings['title'],
-          '@empty' => $settings['empty'])
+          '@subject' => $settings['subject_caption'],
+          '@object' => $settings['object_caption'])
         );
 
     return $summary;
@@ -58,19 +83,26 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    // Get the settings
+    // Get the settings and set defaults.
     $settings = $display['settings'];
+    foreach ($this::$default_settings as $key => $value) {
+      if (!isset($settings[$key])) { $settings[$key] = $value; }
+    }
+
+    // Headers depending on which fields are available.
     $headers = array(
       'all' => array('Name', 'Unique Name', 'Species', 'Type'),
       'nst' => array('Name', 'Species', 'Type'),
       'nut' => array('Name', 'Unique Name', 'Type'),
       'nt' => array('Name', 'Type'),
     );
+
     // This is an array of tables where each table corresponds to a relationship type.
     // The header is the same for all tables and the caption includes a sentence
     // stating the relationship type.
     $tables = array();
 
+    // For each relationship...
     foreach ($items as $delta => $item) {
       if (empty($item['value'])) {
         continue;
@@ -140,7 +172,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
 
       // Add the related entity to the tables array by type of relationship.
       if ($is_subject) {
-        $tables[$relationship_type]['caption'] = t('This @type is <em>@rel_type</em> of the following <em>@content_type(s)</em>:',
+        $tables[$relationship_type]['caption'] = t($settings['subject_caption'],
           array('@type' => $subject_type, '@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
 
         $row = array();
@@ -152,7 +184,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
         $tables[$relationship_type]['rows'][] = $row;
       }
       else {
-        $tables[$relationship_type]['caption'] = t('The following <em>@content_type(s)</em> are <em>@rel_type</em> of this @type:',
+        $tables[$relationship_type]['caption'] = t($settings['object_caption'],
           array('@type' => $object_type, '@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
 
         $row = array();
