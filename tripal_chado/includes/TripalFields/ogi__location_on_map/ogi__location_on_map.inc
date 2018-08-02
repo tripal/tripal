@@ -321,6 +321,12 @@ class ogi__location_on_map extends ChadoField {
         $i++;
       }
     }
+
+    // If there are no map positions expanded above then remove the stub.
+    // This is needed to ensure this field isn't displayed when there are no locations.
+    if (!isset($feature->featurepos->feature_id) OR (sizeof($feature->featurepos->feature_id) == 0)) {
+      unset($entity->{$field_name});
+    }
   }
 
 }

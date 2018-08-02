@@ -328,6 +328,12 @@ class sio__annotation extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__pub_id'] = $linker->pub_id;
       }
     }
+
+    // If there are no cvterms selected above then remove the stub.
+    // This is needed to ensure this field isn't displayed when there are no annotations.
+    if (sizeof($fcvterms) == 0) {
+      unset($entity->{$field_name});
+    }
   }
 }
 
