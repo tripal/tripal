@@ -71,3 +71,18 @@ Factory::define('chado.feature', function (Faker\Generator $faker) {
         'type_id' => factory('chado.cvterm')->create()->cvterm_id,
     ];
 });
+
+
+Factory::define('chado.analysis', function (Faker\Generator $faker) {
+  return [
+    'name' => $faker->name,
+    'description' => $faker->name,
+    'program' => $faker->unique()->name,
+    'programversion' => $faker->unique()->name,
+    'sourcename' => $faker->unique()->name,
+    'algorithm' => $faker->name,
+    'sourcename' => $faker->name,
+    'sourceversion' => $faker->name,
+    'sourceuri' => $faker->name,
+  ];
+});
