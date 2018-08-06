@@ -49,6 +49,7 @@ Tests must end with `Test.php` to be recognized by PHPUnit.  The tests themselve
 * fields
 * entities
 * admin
+* loaders
 
 So for example, tests for the file `tripal/api/tripal.jobs.api.inc` should go in `tests/tripal/api/TripalJobsAPITest.php`. tests that don't fit in any of these categories should be placed in `tests/[submodule]/`.
 
