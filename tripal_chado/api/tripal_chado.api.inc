@@ -259,21 +259,32 @@ function chado_publish_records($values, $job_id = NULL) {
         // multiple entities at once... sort of like the copy method.
         $record_id = $record->record_id;
         $ec = entity_get_controller('TripalEntity');
+
+        // @performance remove after development
+        // print 'After get controller :' . (microtime(true) - $started_at) . "s.\n";
+
         $entity = $ec->create(array(
           'bundle' => $bundle_name,
           'term_id' => $bundle->term_id,
           // Add in the Chado details for when the hook_entity_create()
           // is called and our tripal_chado_entity_create() implementation
           // can deal with it.
-          // @performance maybe there is something we can easily do here?
-          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id), array('include_fk' => 0)),
           'chado_record_id' => $record_id,
           'publish' => TRUE,
+          'bundle_object' => $bundle,
         ));
+
+        // @performance remove after development
+        // print 'After tripal_chado_entity_create() :' . (microtime(true) - $started_at) . "s.\n";
+
         $entity = $entity->save();
         if (!$entity) {
           throw new Exception('Could not create entity.');
         }
+
+        // @performance remove after development
+        // print 'After entity save :' . (microtime(true) - $started_at) . "s.\n";
 
           // @performance remove after development: this takes 0.2-0.3s.
           //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";

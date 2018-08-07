@@ -45,7 +45,12 @@ class TripalEntityController extends EntityAPIController {
     $modules = module_implements('entity_create');
     foreach ($modules as $module) {
       $function = $module . '_entity_create';
-      $function($entity, $values['type']);
+      if (isset($values['bundle_object'])) {
+        $function($entity, $values['type'], $values['bundle_object']);
+      }
+      else {
+        $function($entity, $values['type']);
+      }
     }
     return $entity;
 
@@ -102,20 +107,20 @@ class TripalEntityController extends EntityAPIController {
    *   The entity whose title should be changed.
    * @param $title
    *   The title to use. It can contain tokens the correspond to field values.
-   *   Token should be be compatible with those returned by 
+   *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
    */
   public function setTitle($entity, $title = NULL) {
-    
+
     $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    
+
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
-    if (!$title) {     
+    if (!$title) {
       $title = tripal_get_title_format($bundle);
     }
     $title = tripal_replace_entity_tokens($title, $entity, $bundle);
-    
+
     if ($title) {
       db_update('tripal_entity')
         ->fields(array(
@@ -128,12 +133,12 @@ class TripalEntityController extends EntityAPIController {
 
   /**
    * Sets the URL alias for an entity.
-   * 
+   *
    * @param $entity
    *   The entity whose URL alias should be changed.
    * @param $alias
    *   The alias to use. It can contain tokens the correspond to field values.
-   *   Token should be be compatible with those returned by 
+   *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
    */
   public function setAlias($entity, $alias = NULL) {
@@ -155,17 +160,17 @@ class TripalEntityController extends EntityAPIController {
     // the term name and entity id.
     if (!$alias) {
 
-      // Load the term for this TripalEntity. Set a default based on the term 
-      // name and entity id. Then replace all the tokens with values from 
+      // Load the term for this TripalEntity. Set a default based on the term
+      // name and entity id. Then replace all the tokens with values from
       // the entity fields.
       $term = entity_load('TripalTerm', array('id' => $entity->term_id));
       $term = reset($term);
       $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
-    
-    // Check if the passed alias has tokens. Load the TripalBundle entity for 
-    // this TripalEntity. Then replace all the tokens with values from the 
+
+    // Check if the passed alias has tokens. Load the TripalBundle entity for
+    // this TripalEntity. Then replace all the tokens with values from the
     // entity fields.
     if($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
       $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
@@ -243,7 +248,7 @@ class TripalEntityController extends EntityAPIController {
           drupal_write_record('url_alias', $values);
         }
       }
-      // If there is only one alias matching then it might just be that we 
+      // If there is only one alias matching then it might just be that we
       // already assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
 
