@@ -7,8 +7,15 @@
  * This hook is called when brand new entities are created, but
  * they are not loaded so the hook_entity_load() is not yet called. We
  * can use this hook to add properties to the entity before saving.
+ *
+ * @param $entity
+ *   The entity being created.
+ * @param $type
+ *   The type of entity being created.
+ * @param $bundle (OPTIONAL)
+ *   The bundle object for the current entity.
  */
-function tripal_chado_entity_create(&$entity, $type) {
+function tripal_chado_entity_create(&$entity, $type, $bundle = NULL) {
   if ($type == 'TripalEntity') {
 
     // Set some defaults on vars needed by this module.
@@ -18,7 +25,9 @@ function tripal_chado_entity_create(&$entity, $type) {
       $entity->chado_linker = NULL;
 
       // Add in the Chado table information for this entity type.
-      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      if (!$bundle) {
+        $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      }
       if ($bundle->data_table) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
