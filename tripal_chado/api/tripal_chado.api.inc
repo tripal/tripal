@@ -68,6 +68,11 @@ function chado_publish_records($values, $job_id = NULL) {
   $filters = array_key_exists('filters', $values) ? $values['filters'] : array();
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
+  // We want to break the number of records to publish into chunks in order to ensure
+  // transactions do not run for too long (performance issue). The number of records
+  // to be processed per chunk is set here:
+  $chunk_size = 500;
+
   // @performance remove after development: 0.00059294700622559s
 
   // Load the bundle entity so we can get information about which Chado
@@ -200,108 +205,124 @@ function chado_publish_records($values, $job_id = NULL) {
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
-
-  // calculate the interval for updates
-  $interval = intval($count / 50);
-  if ($interval < 1) {
-    $interval = 1;
-  }
+  print "\nThere are $count records to publish.\n";
 
   // @performance remove after development:0.25212502479553s
-  print 'Count amount to do :' . (microtime(true) - $started_at) . "s.\n";
+  // @performance print 'Count amount to do :' . (microtime(true) - $started_at) . "s.\n";
+
+  print "\nNOTE: publishing records is performed using database transactions. If the job fails\n" .
+          "or is terminated prematurely then the current set of $chunk_size is rolled back with\n" .
+          "no changes to the database. Simply re-run the publishing job to publish any remaining\n".
+          "content after fixing the issue that caused the job to fail.\n\n" .
+          "Also, the following progress only updates every $chunk_size records.\n";
 
   // Perform the query.
-  $sql = $select . $from . $where;
-  $records = chado_query($sql, $args);
+  $sql = $select . $from . $where . ' LIMIT '.$chunk_size;
+  $more_records_to_publish = TRUE;
+  $total_published = 0;
+  while ($more_records_to_publish) {
 
-  // @performance remove after development:0.43729090690613s
-  print 'Perform Query :' . (microtime(true) - $started_at) . "s.\n";
+    // @performance remove after development:0.43729090690613s
+    // @performance limiting this query DRASTICALLY decreases query execution time: 0.26s
+    // @performance print 'Perform Query :' . (microtime(true) - $started_at) . "s.\n\n";
+    $records = chado_query($sql, $args);
 
-  // @performance evaluate this transaction. Long running transactions can have serious
-  // performance issues in PostgreSQL. One option is to move the transaction within the
-  // loop so that each one is not very long but then we end up with more overhead creating
-  // transactions. A better albeit more complicated approach might be to break the job into
-  // chunks where each one is a single transaction.
-  $transaction = db_transaction();
+    // @performance evaluate this transaction. Long running transactions can have serious
+    // performance issues in PostgreSQL. One option is to move the transaction within the
+    // loop so that each one is not very long but then we end up with more overhead creating
+    // transactions. A better albeit more complicated approach might be to break the job into
+    // chunks where each one is a single transaction.
+    $transaction = db_transaction();
 
-  print "\nNOTE: publishing records is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "is rolled back with no changes to the database\n\n";
-
-  $i = 0;
-  printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
-  try {
-    while($record = $records->fetchObject()) {
-
-      // @performance remove after development
-      print 'Start current entity :' . (microtime(true) - $started_at) . "s.\n";
-
-      // update the job status every interval
-      if ($i % $interval == 0) {
-        $complete = ($i / $count) * 33.33333333;
-        // Currently don't support setting job progress within a transaction.
-        // if ($report_progress) { $job->setProgress(intval($complete * 3)); }
-        printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
-      }
-
-      // First save the tripal_entity record.
-      // @performace This is likely a bottleneck. Too bad we can't create
-      // multiple entities at once... sort of like the copy method.
-      $record_id = $record->record_id;
-      $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
-        'bundle' => $bundle_name,
-        'term_id' => $bundle->term_id,
-        // Add in the Chado details for when the hook_entity_create()
-        // is called and our tripal_chado_entity_create() implementation
-        // can deal with it.
-        // @performance maybe there is something we can easily do here?
-        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
-        'chado_record_id' => $record_id,
-        'publish' => TRUE,
-      ));
-      $entity = $entity->save();
-      if (!$entity) {
-        throw new Exception('Could not create entity.');
-      }
-
-        // @performance remove after development: this takes 0.2-0.3s.
-        //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";
-
-      // Next save the chado entity record.
-      $entity_record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-      );
-
-      // For the Tv2 to Tv3 migration we want to add the nid to the
-      // entity so we can associate the node with the entity.
-      if (property_exists($record, 'nid')) {
-        $entity_record['nid'] = $record->nid;
-      }
-      $result = db_insert($chado_entity_table)
-        ->fields($entity_record)
-        ->execute();
-      if(!$result){
-        throw new Exception('Could not create mapping of entity to Chado record.');
-      }
-
-      // @performance remove after development: this takes <0.001s.
-      // print 'Relate back to chado :' . (microtime(true) - $started_at) . "s.\n";
-
-      $i++;
+    // update the job status every chunk start.
+    $complete = ($total_published / $count) * 33.33333333;
+    // Currently don't support setting job progress within a transaction.
+    // if ($report_progress) { $job->setProgress(intval($complete * 3)); }
+    if ($total_published === 0) {
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
+        $i, $count, 0, number_format(memory_get_usage()), 0);
     }
+    else {
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
+        $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
+    }
+
+    try {
+      $i = 0;
+      while($record = $records->fetchObject()) {
+
+        // @performance remove after development
+        // print 'Start current entity :' . (microtime(true) - $started_at) . "s.\n";
+
+        // First save the tripal_entity record.
+        // @performace This is likely a bottleneck. Too bad we can't create
+        // multiple entities at once... sort of like the copy method.
+        $record_id = $record->record_id;
+        $ec = entity_get_controller('TripalEntity');
+        $entity = $ec->create(array(
+          'bundle' => $bundle_name,
+          'term_id' => $bundle->term_id,
+          // Add in the Chado details for when the hook_entity_create()
+          // is called and our tripal_chado_entity_create() implementation
+          // can deal with it.
+          // @performance maybe there is something we can easily do here?
+          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+          'chado_record_id' => $record_id,
+          'publish' => TRUE,
+        ));
+        $entity = $entity->save();
+        if (!$entity) {
+          throw new Exception('Could not create entity.');
+        }
+
+          // @performance remove after development: this takes 0.2-0.3s.
+          //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";
+
+        // Next save the chado entity record.
+        $entity_record = array(
+          'entity_id' => $entity->id,
+          'record_id' => $record_id,
+        );
+
+        // For the Tv2 to Tv3 migration we want to add the nid to the
+        // entity so we can associate the node with the entity.
+        if (property_exists($record, 'nid')) {
+          $entity_record['nid'] = $record->nid;
+        }
+        $result = db_insert($chado_entity_table)
+          ->fields($entity_record)
+          ->execute();
+        if(!$result){
+          throw new Exception('Could not create mapping of entity to Chado record.');
+        }
+
+        // @performance remove after development: this takes <0.001s.
+        // print 'Relate back to chado :' . (microtime(true) - $started_at) . "s.\n";
+
+        $i++;
+        $total_published++;
+      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      $error = $e->getMessage();
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
+      drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
+      return FALSE;
+    }
+
+    // If we get through the loop and haven't completed 100 records, then we're done!
+    if ($i < $chunk_size) {
+      $more_records_to_publish = FALSE;
+    }
+
+    // Commit our current chunk.
+    unset($transaction);
   }
-  catch (Exception $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
-    drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
-    return FALSE;
-  }
+
   drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
     // @performance remove after development
-  print 'Complete :' . (microtime(true) - $started_at) . "s.\n";
+  print 'Complete! Runtime:' . number_format(microtime(true) - $started_at) . " seconds.\n";
   return TRUE;
 }
 
