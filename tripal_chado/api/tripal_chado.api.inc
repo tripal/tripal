@@ -4,7 +4,7 @@
  * @file
  *
  * This file contains miscellaneous API functions specific to working with
- * records in Chado that do not have a home in any other sub category of 
+ * records in Chado that do not have a home in any other sub category of
  * API functions.
  */
 
@@ -12,9 +12,9 @@
  * @defgroup tripal_chado_api Chado
  *
  * @ingroup tripal_api
- * The Tripal Chado API is a set of functions for interacting with data 
+ * The Tripal Chado API is a set of functions for interacting with data
  * inside of a Chado relational database. Entities (or pages) in Drupal
- * that are provided by Tripal can supply data from any supported database 
+ * that are provided by Tripal can supply data from any supported database
  * back-end, and Chado is the default. This API contains a variety of sub
  * categories (or groups) where functions are organized.  Any extension module
  * that desires to work with data in Chado will find these functions useful.
@@ -38,6 +38,9 @@
  * @ingroup tripal_chado_api
  */
 function chado_publish_records($values, $job_id = NULL) {
+
+  // @performance remove after development
+  $started_at = microtime(true);
 
   // We want the job object in order to report progress.
   if (is_object($job_id)) {
@@ -65,6 +68,8 @@ function chado_publish_records($values, $job_id = NULL) {
   $filters = array_key_exists('filters', $values) ? $values['filters'] : array();
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
+  // @performance remove after development: 0.00059294700622559s
+
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
@@ -76,6 +81,7 @@ function chado_publish_records($values, $job_id = NULL) {
   }
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
 
+  // @performance remove after development: 0.05065393447876s
 
   // Get the mapping of the bio data type to the Chado table.
   $chado_bundle = db_select('chado_bundle', 'cb')
@@ -95,11 +101,16 @@ function chado_publish_records($values, $job_id = NULL) {
   $cvterm_id  = $chado_bundle->type_id;
   $type_value = $chado_bundle->type_value;
 
+  // @performance remove after development:0.051163911819458s
+
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
 
+  // @performance remove after development:0.05134105682373s
+
   // Construct the SQL for identifying which records should be published.
+  // @performance find a way to optimize this?
   $args = array();
   $select = "SELECT T.$pkey_field as record_id ";
   $from = "
@@ -181,7 +192,11 @@ function chado_publish_records($values, $job_id = NULL) {
       }
     }
   }
+
+  // @performance remove after development:0.060441970825195s
+
   // First get the count
+  // @performance optimize, estimate or remove this. It's only used for reporting progress on the command-line.
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
@@ -192,9 +207,21 @@ function chado_publish_records($values, $job_id = NULL) {
     $interval = 1;
   }
 
+  // @performance remove after development:0.25212502479553s
+  print 'Count amount to do :' . (microtime(true) - $started_at) . "s.\n";
+
   // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql, $args);
+
+  // @performance remove after development:0.43729090690613s
+  print 'Perform Query :' . (microtime(true) - $started_at) . "s.\n";
+
+  // @performance evaluate this transaction. Long running transactions can have serious
+  // performance issues in PostgreSQL. One option is to move the transaction within the
+  // loop so that each one is not very long but then we end up with more overhead creating
+  // transactions. A better albeit more complicated approach might be to break the job into
+  // chunks where each one is a single transaction.
   $transaction = db_transaction();
 
   print "\nNOTE: publishing records is performed using a database transaction. \n" .
@@ -206,6 +233,9 @@ function chado_publish_records($values, $job_id = NULL) {
   try {
     while($record = $records->fetchObject()) {
 
+      // @performance remove after development
+      print 'Start current entity :' . (microtime(true) - $started_at) . "s.\n";
+
       // update the job status every interval
       if ($i % $interval == 0) {
         $complete = ($i / $count) * 33.33333333;
@@ -215,6 +245,8 @@ function chado_publish_records($values, $job_id = NULL) {
       }
 
       // First save the tripal_entity record.
+      // @performace This is likely a bottleneck. Too bad we can't create
+      // multiple entities at once... sort of like the copy method.
       $record_id = $record->record_id;
       $ec = entity_get_controller('TripalEntity');
       $entity = $ec->create(array(
@@ -223,6 +255,7 @@ function chado_publish_records($values, $job_id = NULL) {
         // Add in the Chado details for when the hook_entity_create()
         // is called and our tripal_chado_entity_create() implementation
         // can deal with it.
+        // @performance maybe there is something we can easily do here?
         'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
         'chado_record_id' => $record_id,
         'publish' => TRUE,
@@ -231,6 +264,9 @@ function chado_publish_records($values, $job_id = NULL) {
       if (!$entity) {
         throw new Exception('Could not create entity.');
       }
+
+        // @performance remove after development: this takes 0.2-0.3s.
+        //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";
 
       // Next save the chado entity record.
       $entity_record = array(
@@ -250,6 +286,9 @@ function chado_publish_records($values, $job_id = NULL) {
         throw new Exception('Could not create mapping of entity to Chado record.');
       }
 
+      // @performance remove after development: this takes <0.001s.
+      // print 'Relate back to chado :' . (microtime(true) - $started_at) . "s.\n";
+
       $i++;
     }
   }
@@ -261,6 +300,8 @@ function chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
   drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
+    // @performance remove after development
+  print 'Complete :' . (microtime(true) - $started_at) . "s.\n";
   return TRUE;
 }
 
@@ -271,7 +312,7 @@ function chado_publish_records($values, $job_id = NULL) {
  *    The name of a base table in Chado.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
- * 
+ *
  * @ingroup tripal_chado_api
  */
 function chado_get_tokens($base_table) {
@@ -329,7 +370,7 @@ function chado_get_tokens($base_table) {
  *
  * @return
  *   The string will all tokens replaced with values.
- * 
+ *
  *  @ingroup tripal_chado_api
  */
 function chado_replace_tokens($string, $record) {
