@@ -227,17 +227,10 @@ function chado_publish_records($values, $job_id = NULL) {
     // @performance print 'Perform Query :' . (microtime(true) - $started_at) . "s.\n\n";
     $records = chado_query($sql, $args);
 
-    // @performance evaluate this transaction. Long running transactions can have serious
-    // performance issues in PostgreSQL. One option is to move the transaction within the
-    // loop so that each one is not very long but then we end up with more overhead creating
-    // transactions. A better albeit more complicated approach might be to break the job into
-    // chunks where each one is a single transaction.
-    $transaction = db_transaction();
-
-    // update the job status every chunk start.
+    // Update the job status every chunk start.
+    // Because this is outside of hte transaction, we can update the admin through the jobs UI.
     $complete = ($total_published / $count) * 33.33333333;
-    // Currently don't support setting job progress within a transaction.
-    // if ($report_progress) { $job->setProgress(intval($complete * 3)); }
+    if ($report_progress) { $job->setProgress(intval($complete * 3)); }
     if ($total_published === 0) {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
         $i, $count, 0, number_format(memory_get_usage()), 0);
@@ -246,6 +239,13 @@ function chado_publish_records($values, $job_id = NULL) {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
         $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
     }
+
+    // @performance evaluate this transaction. Long running transactions can have serious
+    // performance issues in PostgreSQL. One option is to move the transaction within the
+    // loop so that each one is not very long but then we end up with more overhead creating
+    // transactions. A better albeit more complicated approach might be to break the job into
+    // chunks where each one is a single transaction.
+    $transaction = db_transaction();
 
     try {
       $i = 0;
