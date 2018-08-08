@@ -16,6 +16,7 @@ function tripal_chado_entity_create(&$entity, $type) {
       $entity->chado_table =  NULL;
       $entity->chado_column = NULL;
       $entity->chado_linker = NULL;
+      $entity->chado_type_value = NULL;
 
       // Add in the Chado table information for this entity type.
       $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
@@ -23,6 +24,7 @@ function tripal_chado_entity_create(&$entity, $type) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
         $entity->chado_linker = $bundle->type_linker_table;
+        $entity->chado_type_value = $bundle->type_value;
       }
     }
     if (!property_exists($entity, 'chado_record')) {
