@@ -9,6 +9,7 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
 
   public static $default_settings = array(
     'caption' => 'This @content_type is aligned to the following:',
+    'expand_strand' => TRUE,
   );
 
   /**
@@ -26,6 +27,14 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
     }
 
     $element = array();
+
+    $element['expand_strand'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Expand Strand',
+      '#description' => 'Expands the strand to full words versus "+" or "-".',
+      '#default_value' => $settings['expand_strand'],
+    );
+
     $element['caption'] = array(
       '#type' => 'textfield',
       '#title' => 'Caption',
@@ -90,10 +99,24 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
     $rows = array();
     foreach ($items as $item) {
       if (!empty($item['value'])) {
+
+        $strand = $item['value'][$strand_term];
+        if ($settings['expand_strand']) {
+          if ($item['value'][$strand_term] == '+') {
+            $strand = 'positive';
+          }
+          elseif ($item['value'][$strand_term] == '-') {
+            $strand = 'negative';
+          }
+          else {
+            $strand = '<span style="color:#B3B3B3">unknown</span>';
+          }
+        }
+
         $rows[] = array(
           $item['value'][$reference_term],
           $item['value'][$fmin_term] . '..' . $fmax = $item['value'][$fmax_term],
-          $item['value'][$strand_term]
+          $strand
         );
       }
     }
