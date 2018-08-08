@@ -9,8 +9,8 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
   public static $field_types = array('sbo__relationship');
 
   public static $default_settings = array(
-    'subject_caption' => 'This @type is <em>@rel_type</em> of the following <em>@content_type(s)</em>:',
-    'object_caption' => 'The following <em>@content_type(s)</em> are <em>@rel_type</em> of this @type:',
+    'subject_caption' => 'This @content_type is <em>@rel_type</em> the following:',
+    'object_caption' => 'The following are <em>@rel_type</em> this @content_type:',
   );
 
   /**
@@ -47,7 +47,6 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       '#title' => 'Tokens',
       '#markup' => 'The following tokens should be used in <strong>both the above captions</strong>:</p>
                      <ul>
-                       <li>@type: The value of rdfs__type for the current entity.</li>
                        <li>@rel_type: the type name of the current relationship.</li>
                        <li>@content_type: the human-readable name of the content type for the current entity.</li>
                      </ul>',
@@ -173,7 +172,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       // Add the related entity to the tables array by type of relationship.
       if ($is_subject) {
         $tables[$relationship_type]['caption'] = t($settings['subject_caption'],
-          array('@type' => $subject_type, '@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
+          array('@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
 
         $row = array();
         $row['name'] = $object_name;
@@ -185,7 +184,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       }
       else {
         $tables[$relationship_type]['caption'] = t($settings['object_caption'],
-          array('@type' => $object_type, '@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
+          array('@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
 
         $row = array();
         $row['name'] = $subject_name;
