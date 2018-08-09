@@ -39,7 +39,7 @@
  */
 function chado_publish_records($values, $job_id = NULL) {
 
-  // @performance remove after development
+  // Used for adding runtime to the progress report.
   $started_at = microtime(true);
 
   // We want the job object in order to report progress.
@@ -115,7 +115,6 @@ function chado_publish_records($values, $job_id = NULL) {
   $pkey_field = $table_schema['primary key'][0];
 
   // Construct the SQL for identifying which records should be published.
-  // @performance find a way to optimize this?
   $args = array();
   $select = "SELECT T.$pkey_field as record_id ";
   $from = "
@@ -217,9 +216,6 @@ function chado_publish_records($values, $job_id = NULL) {
   $total_published = 0;
   while ($more_records_to_publish) {
 
-    // @performance remove after development:0.43729090690613s
-    // @performance limiting this query DRASTICALLY decreases query execution time: 0.26s
-    // @performance print 'Perform Query :' . (microtime(true) - $started_at) . "s.\n\n";
     $records = chado_query($sql, $args);
 
     // Update the job status every chunk start.
@@ -235,11 +231,6 @@ function chado_publish_records($values, $job_id = NULL) {
         $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
     }
 
-    // @performance evaluate this transaction. Long running transactions can have serious
-    // performance issues in PostgreSQL. One option is to move the transaction within the
-    // loop so that each one is not very long but then we end up with more overhead creating
-    // transactions. A better albeit more complicated approach might be to break the job into
-    // chunks where each one is a single transaction.
     $transaction = db_transaction();
     $cache['transaction'] = $transaction;
 
@@ -265,10 +256,6 @@ function chado_publish_records($values, $job_id = NULL) {
           'bundle_object' => $bundle,
         ));
 
-        // We pass in the transaction and tell save not to clear the field cache for
-        // for performance reasons. We will clear the field cache in bulk below.
-        // @todo clear the field cache in bulk below ;-p
-        $cache['clear_cached_fields'] = FALSE;
         $entity = $entity->save($cache);
         if (!$entity) {
           throw new Exception('Could not create entity.');

@@ -225,15 +225,13 @@ class TripalEntityController extends EntityAPIController {
         // First delete any previous alias' for this entity.
         // Then save the new one.
 
-        // TODO: publishing an entity can be very slow if there are lots of
+        // @performance: Look into this further.
+        // @spficklin publishing an entity can be very slow if there are lots of
         // entries in the url_alias table, due to this type of
-        // SQL statement that gets called somewhere by Drupal:
+        // SQL statement that gets called in drupal_path_alias_whitelist_rebuild():
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
-        // This happens in drupal_path_alias_whitelist_rebuild(). It appears we can
-        // get around it by whitelisting our paths before it's called...
         // @lacey: drupal_path_alias_whitelist_rebuild() isn't getting called for me during publish.
-        // @performance
         $values =  array(
           'source' => $source_url,
           'alias' => $alias,
@@ -460,7 +458,9 @@ class TripalEntityController extends EntityAPIController {
 
       // Clear any cache entries for this entity so it can be reloaded using
       // the values that were just saved.
-      if ($cache['clear_cached_fields']) {
+      // Also, we don't need to clear cached fields when publishing because we
+      // didn't attach any (see above).
+      if ($cache['clear_cached_fields'] AND ($invocation != 'entity_publish')) {
         $cid = 'field:TripalEntity:' . $entity->id;
         cache_clear_all($cid, 'cache_field', TRUE);
       }
