@@ -18,17 +18,23 @@ class TripalEntity extends Entity {
   /**
    * Permanently saves the entity.
    *
-   * @param DatabaseTransaction $transaction
-   *    (OPTIONAL) Allows you to pass in your current transaction to save nested transaction overhead.
-   * @param boolean $clear_cached_fields
-   *    (OPTIONAL) Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
-   *    must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
-   *    The only known reason to set this to FALSE is to clear the cache in bulk for perfomance reasons.
-   *
+   * @param $cache
+   *   This array is used to store objects you want to cache for performance reasons,
+   *   as well as, cache related options. The following are supported:
+   *   - DatabaseTransaction $transaction
+   *       Allows you to pass in your current transaction to save nested transaction overhead.
+   *   - boolean $clear_cached_fields
+   *       Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
+   *       must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
+   *       The only known reason to set this to FALSE is to clear the cache in bulk for perfomance reasons.
+   *   - TripalBundle $bundle
+   *       The bundle for the current entity.
+   *   - TripalTerm $term
+   *       The term for the current entity.
    * @see entity_save()
    */
-  public function save(DatabaseTransaction $transaction = NULL, $clear_cached_fields = TRUE) {
-    return entity_get_controller($this->entityType)->save($this, $transaction, $clear_cached_fields);
+  public function save($cache = array()) {
+    return entity_get_controller($this->entityType)->save($this, $cache);
   }
 
 }

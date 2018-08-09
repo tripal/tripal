@@ -55,6 +55,9 @@ function chado_publish_records($values, $job_id = NULL) {
     $report_progress = TRUE;
   }
 
+  // Start an array for caching objects to save performance.
+  $cache = array();
+
   // Make sure we have the required options: bundle_name.
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -73,11 +76,10 @@ function chado_publish_records($values, $job_id = NULL) {
   // to be processed per chunk is set here:
   $chunk_size = 500;
 
-  // @performance remove after development: 0.00059294700622559s
-
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $cache['bundle'] = $bundle;
   if (!$bundle) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
         "Unknown bundle. Could not publish record: @error",
@@ -85,8 +87,6 @@ function chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
-
-  // @performance remove after development: 0.05065393447876s
 
   // Get the mapping of the bio data type to the Chado table.
   $chado_bundle = db_select('chado_bundle', 'cb')
@@ -100,19 +100,19 @@ function chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
 
+  // Load the term for use in setting the alias for each entity created.
+  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $cache['term'] = $term;
+
   $table = $chado_bundle->data_table;
   $type_column = $chado_bundle->type_column;
   $type_linker_table = $chado_bundle->type_linker_table;
   $cvterm_id  = $chado_bundle->type_id;
   $type_value = $chado_bundle->type_value;
 
-  // @performance remove after development:0.051163911819458s
-
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
-
-  // @performance remove after development:0.05134105682373s
 
   // Construct the SQL for identifying which records should be published.
   // @performance find a way to optimize this?
@@ -198,17 +198,12 @@ function chado_publish_records($values, $job_id = NULL) {
     }
   }
 
-  // @performance remove after development:0.060441970825195s
-
   // First get the count
   // @performance optimize, estimate or remove this. It's only used for reporting progress on the command-line.
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
   print "\nThere are $count records to publish.\n";
-
-  // @performance remove after development:0.25212502479553s
-  // @performance print 'Count amount to do :' . (microtime(true) - $started_at) . "s.\n";
 
   print "\nNOTE: publishing records is performed using database transactions. If the job fails\n" .
           "or is terminated prematurely then the current set of $chunk_size is rolled back with\n" .
@@ -246,22 +241,17 @@ function chado_publish_records($values, $job_id = NULL) {
     // transactions. A better albeit more complicated approach might be to break the job into
     // chunks where each one is a single transaction.
     $transaction = db_transaction();
+    $cache['transaction'] = $transaction;
 
     try {
       $i = 0;
       while($record = $records->fetchObject()) {
-
-        // @performance remove after development
-        // @performance print 'Start current entity :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
         // First save the tripal_entity record.
         // @performace This is likely a bottleneck. Too bad we can't create
         // multiple entities at once... sort of like the copy method.
         $record_id = $record->record_id;
         $ec = entity_get_controller('TripalEntity');
-
-        // @performance remove after development
-        // @performance print '  - After get controller :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
         $entity = $ec->create(array(
           'bundle' => $bundle_name,
@@ -275,22 +265,14 @@ function chado_publish_records($values, $job_id = NULL) {
           'bundle_object' => $bundle,
         ));
 
-        // @performance remove after development
-        // @performance print '  - After tripal_chado_entity_create() :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
-
         // We pass in the transaction and tell save not to clear the field cache for
         // for performance reasons. We will clear the field cache in bulk below.
         // @todo clear the field cache in bulk below ;-p
-        $entity = $entity->save($transaction, FALSE);
+        $cache['clear_cached_fields'] = FALSE;
+        $entity = $entity->save($cache);
         if (!$entity) {
           throw new Exception('Could not create entity.');
         }
-
-        // @performance remove after development
-        // @performance print '  - After entity save :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
-
-          // @performance remove after development: this takes 0.2-0.3s.
-          //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";
 
         // Next save the chado entity record.
         $entity_record = array(
@@ -309,9 +291,6 @@ function chado_publish_records($values, $job_id = NULL) {
         if(!$result){
           throw new Exception('Could not create mapping of entity to Chado record.');
         }
-
-        // @performance remove after development: this takes <0.001s.
-        // @performance print '  - Relate back to chado :' . number_format(microtime(true) - $started_at,4) . "s.\n";
 
         $i++;
         $total_published++;
@@ -334,11 +313,7 @@ function chado_publish_records($values, $job_id = NULL) {
     unset($transaction);
   }
 
-  drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
-
-  // @performance remove after development
-  // @performance print 'Complete! Runtime:' . number_format(microtime(true) - $started_at) . " seconds.\n";
-
+  drupal_set_message("Succesfully published $total_published " . $bundle->label . " record(s).");
   return TRUE;
 }
 
