@@ -52,7 +52,6 @@ class GFF3ImporterTest extends TripalTestCase {
 
   /**
    * @group gff
-   * @group failing
    * @ticket 77
    *
    */
@@ -119,12 +118,13 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   private function runGFFLoader($run_args, $file) {
-    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/GFF3Importer');
-    $importer = new \GFF3Importer();
-    $importer->create($run_args, $file);
-    $importer->prepareFiles();
-    $importer->run();
-
+   // silent(function ($run_args, $file) {
+      module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/GFF3Importer');
+      $importer = new \GFF3Importer();
+      $importer->create($run_args, $file);
+      $importer->prepareFiles();
+      $importer->run();
+  //  });
   }
 
   private function loadLandmarks($analysis, $organism) {
@@ -146,10 +146,13 @@ class GFF3ImporterTest extends TripalTestCase {
       'parent_type' => NULL,
     ];
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/FASTAImporter');
-    $importer = new \FASTAImporter();
-    $importer->create($run_args, $landmark_file);
-    $importer->prepareFiles();
-    $importer->run();
+    //silent(function ($run_args, $landmark_file) {
+      $importer = new \FASTAImporter();
+      $importer->create($run_args, $landmark_file);
+      $importer->prepareFiles();
+      $importer->run();
+   // });
+
   }
 
 }

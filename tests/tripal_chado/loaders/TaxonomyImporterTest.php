@@ -5,12 +5,9 @@ namespace Tests\tripal_chado;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-//require_once(__DIR__ . '/../../tripal_chado/includes/TripalImporter/TaxonomyImporter.inc');
-
-module_load_include('inc', 'tripal_chado', 'TripalImporter/TaxonomyImporter.inc');
-
 
 class TaxonomyImporterTest extends TripalTestCase {
+
   use DBTransaction;
 
 
@@ -19,16 +16,18 @@ class TaxonomyImporterTest extends TripalTestCase {
    *
    */
   public function testImportExistingTaxonomyLoader() {
+    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/TaxonomyImporter');
+
     $org = [
       'genus' => 'Armadillo',
       'species' => 'officinalis',
       'abbreviation' => 'A. officinalis',
       'common_name' => 'pillbug',
-      'type_id' => null
+      'type_id' => NULL,
     ];
 
     $organism = factory('chado.organism')->create($org);
-  //  $this->publish('organism');
+    //  $this->publish('organism');
     $file = [];
     $run_args = ['import_existing' => TRUE];
     $importer = new \TaxonomyImporter();
@@ -48,13 +47,16 @@ class TaxonomyImporterTest extends TripalTestCase {
   }
 
   /**
-   * the importer can also load an array of pubmed ids.  We use the pillbug again.
+   * the importer can also load an array of pubmed ids.  We use the pillbug
+   * again.
    *
    * https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=96821
    *
    * @throws \Exception
    */
   public function testImportOrganismFromTaxID() {
+
+    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/TaxonomyImporter');
 
     $file = [];
     $run_args = ['taxonomy_ids' => '96821']; //its the pillbug again!

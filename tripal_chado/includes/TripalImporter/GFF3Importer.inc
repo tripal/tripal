@@ -102,12 +102,12 @@ class GFF3Importer extends TripalImporter {
     );
 
 
-    $form['advanced']['skip_proteins'] = array(
+    $form['advanced']['skip_protein'] = array(
       '#type' => 'checkbox',
       '#title' => t('Skip automatic protein creation'),
       '#required' => FALSE,
       '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
-      '#default_value' => FALSE
+      '#default_value' => 0
     );
 
 
@@ -414,7 +414,7 @@ class GFF3Importer extends TripalImporter {
       $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
       $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
       $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
-      $re_mrna = '', $re_protein = '', $skip_protein = FALSE) {
+      $re_mrna = '', $re_protein = '', $skip_protein = 0) {
 
     $ret = array();
     $date = getdate();
@@ -961,7 +961,7 @@ class GFF3Importer extends TripalImporter {
               $pfmin += $min_phase[0]->phase;
             }
 
-            if ($skip_protein === 0){
+            if ($skip_protein == 0){
               // Add the new protein record.
               $feature = $this->loadFeature($organism, $analysis_id,
                 $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
