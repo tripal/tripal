@@ -7,11 +7,10 @@ use StatonLab\TripalTestSuite\TripalTestCase;
 
 class GFF3ImporterTest extends TripalTestCase {
 
-  // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
 
   /**
-   * Confirm GFF loads.
+   * Confirm basic GFF importer functionality.
    *
    * @group gff
    */
@@ -51,6 +50,9 @@ class GFF3ImporterTest extends TripalTestCase {
 
 
   /**
+   * Add a skip protein option.  Test that when checked, implicit proteins are
+   * not created, but that they are created when unchecked.
+   *
    * @group gff
    * @ticket 77
    *
@@ -117,14 +119,59 @@ class GFF3ImporterTest extends TripalTestCase {
 
   }
 
+  /**
+   * The GFF importer should still create explicitly defined proteins if
+   * skip_protein is true.
+   *
+   * @ticket 77
+   */
+  public function testGFFImporterLoadsExplicitProteins() {
+
+    $gff_file = ['file_local' => __DIR__ . '/../data/simpleGFF.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      //The new argument
+      'skip_protein' => 1,
+      ///
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      ///regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      //optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+    $this->loadLandmarks($analysis, $organism);
+
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $name = 'FRAEX38873_v2_000000010.1.3_test_protein';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->execute()
+      ->fetchField();
+    $this->assertEquals($name, $query);
+  }
+
   private function runGFFLoader($run_args, $file) {
-   // silent(function ($run_args, $file) {
-      module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/GFF3Importer');
-      $importer = new \GFF3Importer();
-      $importer->create($run_args, $file);
-      $importer->prepareFiles();
-      $importer->run();
-  //  });
+    // silent(function ($run_args, $file) {
+    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/GFF3Importer');
+    $importer = new \GFF3Importer();
+    $importer->create($run_args, $file);
+    $importer->prepareFiles();
+    $importer->run();
+    //  });
   }
 
   private function loadLandmarks($analysis, $organism) {
@@ -147,11 +194,11 @@ class GFF3ImporterTest extends TripalTestCase {
     ];
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/FASTAImporter');
     //silent(function ($run_args, $landmark_file) {
-      $importer = new \FASTAImporter();
-      $importer->create($run_args, $landmark_file);
-      $importer->prepareFiles();
-      $importer->run();
-   // });
+    $importer = new \FASTAImporter();
+    $importer->create($run_args, $landmark_file);
+    $importer->prepareFiles();
+    $importer->run();
+    // });
 
   }
 
