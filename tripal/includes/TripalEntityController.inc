@@ -203,6 +203,10 @@ class TripalEntityController extends EntityAPIController {
         // SQL statement that gets called somewhere by Drupal:
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
+        // This happens in drupal_path_alias_whitelist_rebuild(). It appears we can
+        // get around it by whitelisting our paths before it's called...
+        // @lacey: drupal_path_alias_whitelist_rebuild() isn't getting called for me during publish.
+        // @performance
         $values =  array(
           'source' => $source_url,
           'alias' => $alias,
@@ -313,24 +317,29 @@ class TripalEntityController extends EntityAPIController {
    *
    * @param $entity
    *   A TripalEntity object to save.
+   * @param $transaction
+   *   If you have a transaction open, you can pass it through to avoid the overhead of
+   *   creating nested transactions.
+   * @param $clear_cached_fields
+   *   Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
+   *   must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
+   *   The only known reason to set this to FALSE is to clear the cache in bulk for perfomance reasons.
    *
    * @return
    *   The saved entity object with updated properties.
    */
-  public function save($entity, DatabaseTransaction $transaction = NULL) {
+  public function save($entity, DatabaseTransaction $transaction = NULL, $clear_cached_fields = TRUE) {
     global $user;
     $pkeys = array();
 
-    // Get the author information.
-    $author = $user;
-    if (property_exists($entity, 'uid')) {
-      $author = user_load($entity->uid);
-    }
+    // @performance remove after development
+    // @performance $started_at = microtime(true);
 
     $changed_date = time();
     $create_date = $changed_date;
     if (property_exists($entity, 'created')) {
       if (!is_numeric($entity->created)) {
+        print "IM CREATING A DATE!\n";
         $temp = new DateTime($entity->created);
         $create_date = $temp->getTimestamp();
       }
@@ -348,7 +357,7 @@ class TripalEntityController extends EntityAPIController {
       // If our entity has no id, then we need to give it a
       // time of creation.
       if (empty($entity->id)) {
-        $entity->created = time();
+        $entity->created = $created_date;
         $invocation = 'entity_insert';
       }
       else {
@@ -362,13 +371,15 @@ class TripalEntityController extends EntityAPIController {
       // Invoke hook_entity_presave().
       module_invoke_all('entity_presave', $entity, $entity->type);
 
+      // @performance print '      - After entity_presave :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
+
       // Write out the entity record.
       $record = array(
         'term_id'   => $entity->term_id,
         'type'      => $entity->type,
         'bundle'    => $entity->bundle,
         'title'     => $entity->title,
-        'uid'       => $author->uid,
+        'uid'       => $entity->uid,
         'created'   => $create_date,
         'changed'   => $changed_date,
         'status'    => $status,
@@ -384,6 +395,8 @@ class TripalEntityController extends EntityAPIController {
         $entity->id = $record['id'];
       }
 
+      // @performance print '      - After drupal_write_record :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
+
       // Now we need to either insert or update the fields which are
       // attached to this entity. We use the same primary_keys logic
       // to determine whether to update or insert, and which hook we
@@ -391,6 +404,7 @@ class TripalEntityController extends EntityAPIController {
       // This is because a field may have default values and if so, those fields
       // will be attached and the storage backend may then try to insert
       // fields which should not be inserted because they already exist.
+      // @performance print "      - Invocation: $invocation.\n";
       if ($invocation == 'entity_insert') {
         field_attach_insert('TripalEntity', $entity);
       }
@@ -401,17 +415,28 @@ class TripalEntityController extends EntityAPIController {
       // Set the title for this entity.
       $this->setTitle($entity);
 
+      // @performance print '      - After setTitle :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
+
       // Set the path/url alias for this entity.
       $this->setAlias($entity);
 
+      // @performance print '      - After setAlias :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
+
       // Invoke either hook_entity_update() or hook_entity_insert().
       module_invoke_all('entity_postsave', $entity, $entity->type);
+
+      // @performance print '      - After entity_postsave :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
+
       module_invoke_all($invocation, $entity, $entity->type);
+
+      // @performance print "      - After $invocation :" . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
       // Clear any cache entries for this entity so it can be reloaded using
       // the values that were just saved.
-      $cid = 'field:TripalEntity:' . $entity->id;
-      cache_clear_all($cid, 'cache_field', TRUE);
+      if ($clear_cached_fields) {
+        $cid = 'field:TripalEntity:' . $entity->id;
+        cache_clear_all($cid, 'cache_field', TRUE);
+      }
 
       return $entity;
     }

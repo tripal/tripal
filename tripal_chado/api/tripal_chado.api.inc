@@ -252,7 +252,7 @@ function chado_publish_records($values, $job_id = NULL) {
       while($record = $records->fetchObject()) {
 
         // @performance remove after development
-        // print 'Start current entity :' . (microtime(true) - $started_at) . "s.\n";
+        // @performance print 'Start current entity :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
         // First save the tripal_entity record.
         // @performace This is likely a bottleneck. Too bad we can't create
@@ -261,7 +261,7 @@ function chado_publish_records($values, $job_id = NULL) {
         $ec = entity_get_controller('TripalEntity');
 
         // @performance remove after development
-        // print 'After get controller :' . (microtime(true) - $started_at) . "s.\n";
+        // @performance print '  - After get controller :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
         $entity = $ec->create(array(
           'bundle' => $bundle_name,
@@ -276,15 +276,18 @@ function chado_publish_records($values, $job_id = NULL) {
         ));
 
         // @performance remove after development
-        // print 'After tripal_chado_entity_create() :' . (microtime(true) - $started_at) . "s.\n";
+        // @performance print '  - After tripal_chado_entity_create() :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
-        $entity = $entity->save();
+        // We pass in the transaction and tell save not to clear the field cache for
+        // for performance reasons. We will clear the field cache in bulk below.
+        // @todo clear the field cache in bulk below ;-p
+        $entity = $entity->save($transaction, FALSE);
         if (!$entity) {
           throw new Exception('Could not create entity.');
         }
 
         // @performance remove after development
-        // print 'After entity save :' . (microtime(true) - $started_at) . "s.\n";
+        // @performance print '  - After entity save :' . number_format(microtime(true) - $started_at, 4) . "s.\n";
 
           // @performance remove after development: this takes 0.2-0.3s.
           //print 'Create entity itself :' . (microtime(true) - $started_at) . "s.\n";
@@ -308,7 +311,7 @@ function chado_publish_records($values, $job_id = NULL) {
         }
 
         // @performance remove after development: this takes <0.001s.
-        // print 'Relate back to chado :' . (microtime(true) - $started_at) . "s.\n";
+        // @performance print '  - Relate back to chado :' . number_format(microtime(true) - $started_at,4) . "s.\n";
 
         $i++;
         $total_published++;
@@ -332,8 +335,10 @@ function chado_publish_records($values, $job_id = NULL) {
   }
 
   drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
-    // @performance remove after development
-  print 'Complete! Runtime:' . number_format(microtime(true) - $started_at) . " seconds.\n";
+
+  // @performance remove after development
+  // @performance print 'Complete! Runtime:' . number_format(microtime(true) - $started_at) . " seconds.\n";
+
   return TRUE;
 }
 
