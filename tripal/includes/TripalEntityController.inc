@@ -355,8 +355,6 @@ class TripalEntityController extends EntityAPIController {
    * @param $cache
    *   This array is used to store objects you want to cache for performance reasons,
    *   as well as, cache related options. The following are supported:
-   *   - DatabaseTransaction $transaction
-   *       Allows you to pass in your current transaction to save nested transaction overhead.
    *   - boolean $clear_cached_fields
    *       Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
    *       must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
@@ -391,7 +389,7 @@ class TripalEntityController extends EntityAPIController {
       }
     }
 
-    $transaction = isset($cache['transaction']) ? $cache['transaction'] : db_transaction();
+    $transaction = db_transaction();
     try {
       // If our entity has no id, then we need to give it a
       // time of creation.
