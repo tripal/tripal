@@ -5,7 +5,9 @@ namespace Tests\tripal_chado;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-require_once(__DIR__ . '/../../tripal_chado/includes/TripalImporter/TaxonomyImporter.inc');
+//require_once(__DIR__ . '/../../tripal_chado/includes/TripalImporter/TaxonomyImporter.inc');
+
+module_load_include('inc', 'tripal_chado', 'TripalImporter/TaxonomyImporter.inc');
 
 
 class TaxonomyImporterTest extends TripalTestCase {
@@ -14,6 +16,7 @@ class TaxonomyImporterTest extends TripalTestCase {
 
   /*
    * Adds an organism and checks that the importer runs and adds some properties to it.
+   *
    */
   public function testImportExistingTaxonomyLoader() {
     $org = [

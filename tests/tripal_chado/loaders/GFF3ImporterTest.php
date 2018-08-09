@@ -51,8 +51,10 @@ class GFF3ImporterTest extends TripalTestCase {
 
 
   /**
-   *
    * @group gff
+   * @group failing
+   * @ticket 77
+   *
    */
   public function testGFFNoProteinOption() {
 
@@ -61,7 +63,7 @@ class GFF3ImporterTest extends TripalTestCase {
     $organism = factory('chado.organism')->create();
     $run_args = [
       //The new argument
-      'create_proteins' => 0,
+      'skip_protein' => 1,
       ///
       'analysis_id' => $analysis->analysis_id,
       'organism_id' => $organism->organism_id,
@@ -97,23 +99,22 @@ class GFF3ImporterTest extends TripalTestCase {
     $query = db_select('chado.feature', 'f')
       ->fields('f', ['uniquename'])
       ->condition('f.uniquename', $name)
-      ->condition('f.type_id', $protein_type_id)
+      ->condition('f.type_id', $protein_type_id->cvterm_id)
       ->execute()
       ->fetchField();
     $this->assertFalse($query);
 
-    $run_args['create_proteins'] = 1;
+    $run_args['skip_protein'] = 0;
 
     $this->runGFFLoader($run_args, $gff_file);
 
     $query = db_select('chado.feature', 'f')
       ->fields('f', ['uniquename'])
       ->condition('f.uniquename', $name)
-      ->condition('f.type_id', $protein_type_id)
+      ->condition('f.type_id', $protein_type_id->cvterm_id)
       ->execute()
       ->fetchObject();
     $this->assertEquals($name, $query->uniquename);
-
 
   }
 
