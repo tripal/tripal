@@ -231,8 +231,12 @@ function chado_publish_records($values, $job_id = NULL) {
         $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
     }
 
+    // There is no need to cache transactions since Drupal handles nested transactions
+    // "by performing no transactional operations (as far as the database sees) within
+    // the inner nesting layers". Effectively, Drupal ensures nested trasactions work the
+    // same as passing a transaction through to the deepest level and not starting a new
+    // transaction if we are already in one.
     $transaction = db_transaction();
-    $cache['transaction'] = $transaction;
 
     try {
       $i = 0;
