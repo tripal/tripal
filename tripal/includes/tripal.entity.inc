@@ -443,7 +443,10 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
   }
   elseif (intval($entity) !== 0) {
     if (!isset($cache)) {
-      $cache = cache_get("tripal_entity_access_cache")->data;
+      $cache = cache_get("tripal_entity_access_cache");
+      if (isset($cache->data)) {
+        $cache = $cache->data;
+      }
     }
 
     if (empty($cache)) {
