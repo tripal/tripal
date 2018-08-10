@@ -433,8 +433,12 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
 function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
 
-  if ($entity) {
+  if (is_object($entity)) {
     $bundle_name = $entity->bundle;
+  }
+  elseif (intval($entity) !== 0) {
+    $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
+    $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
   }
   else {
     return FALSE;
@@ -444,8 +448,12 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
     $account = $user;
   }
 
-  if (!$entity_type) {
-    $entity_type = $entity->type;
+  if(!$entity_type) {
+    if(is_object($entity)) {
+      $entity_type = $entity->type;
+    } else {
+      $entity_type = 'TripalEntity';
+    }
   }
 
   // See if other modules want to adust permissions.
