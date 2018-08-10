@@ -432,20 +432,27 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
  */
 function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
+  $cache = &drupal_static(__FUNCTION__, NULL);
+
+  if (!isset($account)) {
+    $account = $user;
+  }
 
   if (is_object($entity)) {
     $bundle_name = $entity->bundle;
   }
   elseif (intval($entity) !== 0) {
-    $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
-    $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
+    if (!isset($cache) && ($cache = cache_get("tripal_entity_access:$entity")) && !empty($cache->data)) {
+      $bundle_name = $cache->data;
+    }
+    else {
+      $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
+      $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
+      cache_set("tripal_entity_access:$entity", $bundle_name);
+    }
   }
   else {
     return FALSE;
-  }
-
-  if (!isset($account)) {
-    $account = $user;
   }
 
   if(!$entity_type) {
