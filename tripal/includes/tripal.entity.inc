@@ -443,7 +443,7 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
   }
   elseif (intval($entity) !== 0) {
     if (!isset($cache)) {
-      $cache = cache_get("tripal_entity_access")->data;
+      $cache = cache_get("tripal_entity_access_cache")->data;
     }
 
     if (empty($cache)) {
@@ -457,7 +457,7 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
       $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
       $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
       $cache[$entity] = $bundle_name;
-      cache_set("tripal_entity_access", $cache);
+      cache_set("tripal_entity_access_cache", $cache);
     }
   }
   else {
