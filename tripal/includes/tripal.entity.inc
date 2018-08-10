@@ -442,23 +442,33 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
     $bundle_name = $entity->bundle;
   }
   elseif (intval($entity) !== 0) {
-    if (!isset($cache) && ($cache = cache_get("tripal_entity_access:$entity")) && !empty($cache->data)) {
-      $bundle_name = $cache->data;
+    if (!isset($cache)) {
+      $cache = cache_get("tripal_entity_access")->data;
+    }
+
+    if (empty($cache)) {
+      $cache = [];
+    }
+
+    if (isset($cache[$entity])) {
+      $bundle_name = $cache[$entity];
     }
     else {
       $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
       $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
-      cache_set("tripal_entity_access:$entity", $bundle_name);
+      $cache[$entity] = $bundle_name;
+      cache_set("tripal_entity_access", $cache);
     }
   }
   else {
     return FALSE;
   }
 
-  if(!$entity_type) {
-    if(is_object($entity)) {
+  if (!$entity_type) {
+    if (is_object($entity)) {
       $entity_type = $entity->type;
-    } else {
+    }
+    else {
       $entity_type = 'TripalEntity';
     }
   }
