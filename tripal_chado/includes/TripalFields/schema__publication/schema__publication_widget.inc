@@ -151,8 +151,8 @@ class schema__publication_widget extends ChadoFieldWidget {
     // write a record.
     if (!$title) {
       $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey] = '';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta][$pub_item_id] = '';
+      $form_state['values'][$field_name]['und'][$delta]['value'] = '';
     }
   }
 
