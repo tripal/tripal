@@ -153,6 +153,15 @@ class remote__data extends WebServicesField {
 
     // Make the request.
     $data = $this->makeRemoteRequest($query_str);
+    $context = [];
+    if (is_array($data['@context'])) {
+      $contenxt = $data['@context'];
+    }
+    else {
+      $context = json_decode(file_get_contents($data['@context']), TRUE);
+      $context = $context['@context'];
+    }
+
     if(!$data){
       $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving content for this field.';
       $entity->{$field_name}['und'][0]['admin_message'] =  "The remote service returned no data.";
@@ -201,7 +210,7 @@ class remote__data extends WebServicesField {
       $query_field = $subfields[0];
 
       // Next get the the details about this member.
-      $query_field_url =  $content_type . '/' . $remote_entity_id . '/' . $query_field;
+      $query_field_url =  $context[$content_type] . '/' . $remote_entity_id . '/' . $query_field;
       $field_data = $this->makeRemoteRequest($query_field_url);
       
       // If we encounter any type of error, we'll reset the field and return.
@@ -390,10 +399,8 @@ class remote__data extends WebServicesField {
     return $element;
   }
 
- /**
-   *
-   * @param unknown $form
-   * @param unknown $form_state
+  /**
+   * @see TripalField::instanceSettingsFormValidate()
    */
   public function instanceSettingsFormValidate($form, &$form_state) {
     $site_logo = $form_state['values']['instance']['settings']['data_info']['site_logo'];
