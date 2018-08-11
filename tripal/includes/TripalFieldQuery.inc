@@ -120,13 +120,6 @@ class TripalFieldQuery extends EntityFieldQuery {
       $results = $this->_intersectResults($results, $st_results);
     }
 
-    // If this is a count query then it should return a numeric value.
-    if ($this->count) {
-      if (!$results or !is_array($results)) {
-        return 0;
-      }
-      return count($results['TripalEntity']);
-    }
     return $results;
   }
   
