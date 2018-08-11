@@ -432,20 +432,48 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
  */
 function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
-
-  if ($entity) {
-    $bundle_name = $entity->bundle;
-  }
-  else {
-    return FALSE;
-  }
+  $cache = &drupal_static(__FUNCTION__, NULL);
 
   if (!isset($account)) {
     $account = $user;
   }
 
+  if (is_object($entity)) {
+    $bundle_name = $entity->bundle;
+  }
+  elseif (intval($entity) !== 0) {
+    if (!isset($cache)) {
+      $cache = cache_get("tripal_entity_access_cache");
+      if (isset($cache->data)) {
+        $cache = $cache->data;
+      }
+    }
+
+    if (empty($cache)) {
+      $cache = [];
+    }
+
+    if (isset($cache[$entity])) {
+      $bundle_name = $cache[$entity];
+    }
+    else {
+      $sql = 'SELECT {bundle} FROM tripal_entity WHERE id = :id';
+      $bundle_name = db_query($sql, [':id' => $entity])->fetchField();
+      $cache[$entity] = $bundle_name;
+      cache_set("tripal_entity_access_cache", $cache);
+    }
+  }
+  else {
+    return FALSE;
+  }
+
   if (!$entity_type) {
-    $entity_type = $entity->type;
+    if (is_object($entity)) {
+      $entity_type = $entity->type;
+    }
+    else {
+      $entity_type = 'TripalEntity';
+    }
   }
 
   // See if other modules want to adust permissions.
