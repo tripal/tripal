@@ -69,7 +69,7 @@ class obi__organism extends ChadoField {
 
       // Get the field values.
       $organism_id = $values[$linker_field];
-      if (!$organism_id or $organism_id == 0) {
+      if ((!$organism_id or $organism_id == 0) and !$field_table == 'biomaterial') {
         $errors[$field_name]['und'][0][] = array(
           'message' =>  t("Please specify an organism."),
           'error' => 'obi__organism_id'
@@ -118,6 +118,10 @@ class obi__organism extends ChadoField {
       }
       else {
         $organism = $record->organism_id;
+      }
+      
+      if (!$organism) {
+        return;
       }
       $string = $settings['field_display_string'];
       $label = chado_replace_tokens($string, $organism);

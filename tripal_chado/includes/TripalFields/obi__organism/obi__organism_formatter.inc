@@ -12,7 +12,7 @@ class obi__organism_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    if (count($items) > 0) {
+    if ($items[0]['value']) {
       $content = $items[0]['value']['rdfs:label'];
       if (array_key_exists('entity', $items[0]['value'])) {
         list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity']);
