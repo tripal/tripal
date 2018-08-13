@@ -8,7 +8,7 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
   public static $field_types = array('data__sequence_coordinates');
 
   public static $default_settings = array(
-    'caption' => 'This @content_type is aligned to the following:',
+    'caption' => 'This @content_type has the following sequence coordinates:',
     'expand_strand' => TRUE,
   );
 
