@@ -45,7 +45,12 @@ class TripalEntityController extends EntityAPIController {
     $modules = module_implements('entity_create');
     foreach ($modules as $module) {
       $function = $module . '_entity_create';
-      $function($entity, $values['type']);
+      if (isset($values['bundle_object'])) {
+        $function($entity, $values['type'], $values['bundle_object']);
+      }
+      else {
+        $function($entity, $values['type']);
+      }
     }
     return $entity;
 
@@ -102,20 +107,30 @@ class TripalEntityController extends EntityAPIController {
    *   The entity whose title should be changed.
    * @param $title
    *   The title to use. It can contain tokens the correspond to field values.
-   *   Token should be be compatible with those returned by 
+   *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
+   * @param $cache
+   *   This array is used to store objects you want to cache for performance reasons,
+   *   as well as, cache related options. The following are supported:
+   *   - TripalBundle $bundle
+   *       The bundle for the current entity.
    */
-  public function setTitle($entity, $title = NULL) {
-    
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    
+  public function setTitle($entity, $title = NULL, $cache = array()) {
+
+    if (isset($cache['bundle'])) {
+      $bundle = $cache['bundle'];
+    }
+    else {
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    }
+
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
-    if (!$title) {     
+    if (!$title) {
       $title = tripal_get_title_format($bundle);
     }
     $title = tripal_replace_entity_tokens($title, $entity, $bundle);
-    
+
     if ($title) {
       db_update('tripal_entity')
         ->fields(array(
@@ -128,25 +143,37 @@ class TripalEntityController extends EntityAPIController {
 
   /**
    * Sets the URL alias for an entity.
-   * 
+   *
    * @param $entity
    *   The entity whose URL alias should be changed.
    * @param $alias
    *   The alias to use. It can contain tokens the correspond to field values.
-   *   Token should be be compatible with those returned by 
+   *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
+   * @param $cache
+   *   This array is used to store objects you want to cache for performance reasons,
+   *   as well as, cache related options. The following are supported:
+   *   - TripalBundle $bundle
+   *       The bundle for the current entity.
+   *   - TripalTerm $term
+   *       The term for the current entity.
    */
-  public function setAlias($entity, $alias = NULL) {
+  public function setAlias($entity, $alias = NULL, $cache = array()) {
     $source_url = "bio_data/$entity->id";
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$alias) {
 
-      // Load the TripalBundle entity for this TripalEntity.
+      // Load the TripalBundle entity for this TripalEntity (if it's not cached).
       // First get the format for the url alias based on the bundle of the entity.
       // Then replace all the tokens with values from the entity fields.
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      if (isset($cache['bundle'])) {
+        $bundle_entity = $cache['bundle'];
+      }
+      else {
+        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      }
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
@@ -155,20 +182,25 @@ class TripalEntityController extends EntityAPIController {
     // the term name and entity id.
     if (!$alias) {
 
-      // Load the term for this TripalEntity. Set a default based on the term 
-      // name and entity id. Then replace all the tokens with values from 
+      // Load the term for this TripalEntity. Set a default based on the term
+      // name and entity id. Then replace all the tokens with values from
       // the entity fields.
-      $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+      $term = (isset($cache['term'])) ? $cache['term'] : entity_load('TripalTerm', array('id' => $entity->term_id));
       $term = reset($term);
       $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
-    
-    // Check if the passed alias has tokens. Load the TripalBundle entity for 
-    // this TripalEntity. Then replace all the tokens with values from the 
+
+    // Check if the passed alias has tokens. Load the TripalBundle entity for
+    // this TripalEntity. Then replace all the tokens with values from the
     // entity fields.
     if($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      if (isset($cache['bundle'])) {
+        $bundle_entity = $cache['bundle'];
+      }
+      else {
+        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      }
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
@@ -193,11 +225,13 @@ class TripalEntityController extends EntityAPIController {
         // First delete any previous alias' for this entity.
         // Then save the new one.
 
-        // TODO: publishing an entity can be very slow if there are lots of
+        // @performance: Look into this further.
+        // @spficklin publishing an entity can be very slow if there are lots of
         // entries in the url_alias table, due to this type of
-        // SQL statement that gets called somewhere by Drupal:
+        // SQL statement that gets called in drupal_path_alias_whitelist_rebuild():
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
+        // @lacey: drupal_path_alias_whitelist_rebuild() isn't getting called for me during publish.
         $values =  array(
           'source' => $source_url,
           'alias' => $alias,
@@ -243,11 +277,16 @@ class TripalEntityController extends EntityAPIController {
           drupal_write_record('url_alias', $values);
         }
       }
-      // If there is only one alias matching then it might just be that we 
+      // If there is only one alias matching then it might just be that we
       // already assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
 
-        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        if (isset($cache['bundle'])) {
+          $bundle_entity = $cache['bundle'];
+        }
+        else {
+          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        }
 
         // Check to see if the single alias is for the same entity and if not
         // warn the admin that the alias is already used (ie: not unique?)
@@ -275,7 +314,12 @@ class TripalEntityController extends EntityAPIController {
       // If there are more then one alias' matching what we generated then there's
       // a real problem and we need to warn the administrator.
       else {
-        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        if (isset($cache['bundle'])) {
+          $bundle_entity = $cache['bundle'];
+        }
+        else {
+          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        }
 
         $aliases = db_query('SELECT source FROM {url_alias} WHERE alias=:alias',
           array(':alias' => $alias))->fetchAll();
@@ -308,19 +352,26 @@ class TripalEntityController extends EntityAPIController {
    *
    * @param $entity
    *   A TripalEntity object to save.
+   * @param $cache
+   *   This array is used to store objects you want to cache for performance reasons,
+   *   as well as, cache related options. The following are supported:
+   *   - boolean $clear_cached_fields
+   *       Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
+   *       must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
+   *       The only known reason to set this to FALSE is to clear the cache in bulk for perfomance reasons.
+   *   - TripalBundle $bundle
+   *       The bundle for the current entity.
+   *   - TripalTerm $term
+   *       The term for the current entity.
    *
    * @return
    *   The saved entity object with updated properties.
    */
-  public function save($entity, DatabaseTransaction $transaction = NULL) {
+  public function save($entity, $cache = array()) {
     global $user;
     $pkeys = array();
 
-    // Get the author information.
-    $author = $user;
-    if (property_exists($entity, 'uid')) {
-      $author = user_load($entity->uid);
-    }
+    if (!isset($cache['clear_cached_fields'])) $cache['clear_cached_fields'] = TRUE;
 
     $changed_date = time();
     $create_date = $changed_date;
@@ -338,12 +389,12 @@ class TripalEntityController extends EntityAPIController {
       }
     }
 
-    $transaction = isset($transaction) ? $transaction : db_transaction();
+    $transaction = db_transaction();
     try {
       // If our entity has no id, then we need to give it a
       // time of creation.
       if (empty($entity->id)) {
-        $entity->created = time();
+        $entity->created = $created_date;
         $invocation = 'entity_insert';
       }
       else {
@@ -363,7 +414,7 @@ class TripalEntityController extends EntityAPIController {
         'type'      => $entity->type,
         'bundle'    => $entity->bundle,
         'title'     => $entity->title,
-        'uid'       => $author->uid,
+        'uid'       => $entity->uid,
         'created'   => $create_date,
         'changed'   => $changed_date,
         'status'    => $status,
@@ -394,10 +445,10 @@ class TripalEntityController extends EntityAPIController {
       }
 
       // Set the title for this entity.
-      $this->setTitle($entity);
+      $this->setTitle($entity, NULL, $cache);
 
       // Set the path/url alias for this entity.
-      $this->setAlias($entity);
+      $this->setAlias($entity, NULL, $cache);
 
       // Invoke either hook_entity_update() or hook_entity_insert().
       module_invoke_all('entity_postsave', $entity, $entity->type);
@@ -405,8 +456,12 @@ class TripalEntityController extends EntityAPIController {
 
       // Clear any cache entries for this entity so it can be reloaded using
       // the values that were just saved.
-      $cid = 'field:TripalEntity:' . $entity->id;
-      cache_clear_all($cid, 'cache_field', TRUE);
+      // Also, we don't need to clear cached fields when publishing because we
+      // didn't attach any (see above).
+      if ($cache['clear_cached_fields'] AND ($invocation != 'entity_publish')) {
+        $cid = 'field:TripalEntity:' . $entity->id;
+        cache_clear_all($cid, 'cache_field', TRUE);
+      }
 
       return $entity;
     }
@@ -416,8 +471,6 @@ class TripalEntityController extends EntityAPIController {
       drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
       return FALSE;
     }
-
-
   }
 
   /**

@@ -4,7 +4,7 @@
  * @file
  *
  * This file contains miscellaneous API functions specific to working with
- * records in Chado that do not have a home in any other sub category of 
+ * records in Chado that do not have a home in any other sub category of
  * API functions.
  */
 
@@ -12,9 +12,9 @@
  * @defgroup tripal_chado_api Chado
  *
  * @ingroup tripal_api
- * The Tripal Chado API is a set of functions for interacting with data 
+ * The Tripal Chado API is a set of functions for interacting with data
  * inside of a Chado relational database. Entities (or pages) in Drupal
- * that are provided by Tripal can supply data from any supported database 
+ * that are provided by Tripal can supply data from any supported database
  * back-end, and Chado is the default. This API contains a variety of sub
  * categories (or groups) where functions are organized.  Any extension module
  * that desires to work with data in Chado will find these functions useful.
@@ -39,6 +39,9 @@
  */
 function chado_publish_records($values, $job_id = NULL) {
 
+  // Used for adding runtime to the progress report.
+  $started_at = microtime(true);
+
   // We want the job object in order to report progress.
   if (is_object($job_id)) {
     $job = $job_id;
@@ -51,6 +54,9 @@ function chado_publish_records($values, $job_id = NULL) {
   if (is_object($job)) {
     $report_progress = TRUE;
   }
+
+  // Start an array for caching objects to save performance.
+  $cache = array();
 
   // Make sure we have the required options: bundle_name.
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
@@ -65,9 +71,15 @@ function chado_publish_records($values, $job_id = NULL) {
   $filters = array_key_exists('filters', $values) ? $values['filters'] : array();
   $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
+  // We want to break the number of records to publish into chunks in order to ensure
+  // transactions do not run for too long (performance issue). The number of records
+  // to be processed per chunk is set here:
+  $chunk_size = 500;
+
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $cache['bundle'] = $bundle;
   if (!$bundle) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
         "Unknown bundle. Could not publish record: @error",
@@ -75,7 +87,6 @@ function chado_publish_records($values, $job_id = NULL) {
     return FALSE;
   }
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
-
 
   // Get the mapping of the bio data type to the Chado table.
   $chado_bundle = db_select('chado_bundle', 'cb')
@@ -88,6 +99,10 @@ function chado_publish_records($values, $job_id = NULL) {
         "Cannot find mapping of bundle to Chado tables. Could not publish record.");
     return FALSE;
   }
+
+  // Load the term for use in setting the alias for each entity created.
+  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $cache['term'] = $term;
 
   $table = $chado_bundle->data_table;
   $type_column = $chado_bundle->type_column;
@@ -181,86 +196,115 @@ function chado_publish_records($values, $job_id = NULL) {
       }
     }
   }
+
   // First get the count
+  // @performance optimize, estimate or remove this. It's only used for reporting progress on the command-line.
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
+  print "\nThere are $count records to publish.\n";
 
-  // calculate the interval for updates
-  $interval = intval($count / 50);
-  if ($interval < 1) {
-    $interval = 1;
-  }
+  print "\nNOTE: publishing records is performed using database transactions. If the job fails\n" .
+          "or is terminated prematurely then the current set of $chunk_size is rolled back with\n" .
+          "no changes to the database. Simply re-run the publishing job to publish any remaining\n".
+          "content after fixing the issue that caused the job to fail.\n\n" .
+          "Also, the following progress only updates every $chunk_size records.\n";
 
   // Perform the query.
-  $sql = $select . $from . $where;
-  $records = chado_query($sql, $args);
-  $transaction = db_transaction();
+  $sql = $select . $from . $where . ' LIMIT '.$chunk_size;
+  $more_records_to_publish = TRUE;
+  $total_published = 0;
+  while ($more_records_to_publish) {
 
-  print "\nNOTE: publishing records is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "is rolled back with no changes to the database\n\n";
+    $records = chado_query($sql, $args);
 
-  $i = 0;
-  printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
-  try {
-    while($record = $records->fetchObject()) {
-
-      // update the job status every interval
-      if ($i % $interval == 0) {
-        $complete = ($i / $count) * 33.33333333;
-        // Currently don't support setting job progress within a transaction.
-        // if ($report_progress) { $job->setProgress(intval($complete * 3)); }
-        printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
-      }
-
-      // First save the tripal_entity record.
-      $record_id = $record->record_id;
-      $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
-        'bundle' => $bundle_name,
-        'term_id' => $bundle->term_id,
-        // Add in the Chado details for when the hook_entity_create()
-        // is called and our tripal_chado_entity_create() implementation
-        // can deal with it.
-        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
-        'chado_record_id' => $record_id,
-        'publish' => TRUE,
-      ));
-      $entity = $entity->save();
-      if (!$entity) {
-        throw new Exception('Could not create entity.');
-      }
-
-      // Next save the chado entity record.
-      $entity_record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-      );
-
-      // For the Tv2 to Tv3 migration we want to add the nid to the
-      // entity so we can associate the node with the entity.
-      if (property_exists($record, 'nid')) {
-        $entity_record['nid'] = $record->nid;
-      }
-      $result = db_insert($chado_entity_table)
-        ->fields($entity_record)
-        ->execute();
-      if(!$result){
-        throw new Exception('Could not create mapping of entity to Chado record.');
-      }
-
-      $i++;
+    // Update the job status every chunk start.
+    // Because this is outside of hte transaction, we can update the admin through the jobs UI.
+    $complete = ($total_published / $count) * 33.33333333;
+    if ($report_progress) { $job->setProgress(intval($complete * 3)); }
+    if ($total_published === 0) {
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
+        $i, $count, 0, number_format(memory_get_usage()), 0);
     }
+    else {
+      printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
+        $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
+    }
+
+    // There is no need to cache transactions since Drupal handles nested transactions
+    // "by performing no transactional operations (as far as the database sees) within
+    // the inner nesting layers". Effectively, Drupal ensures nested trasactions work the
+    // same as passing a transaction through to the deepest level and not starting a new
+    // transaction if we are already in one.
+    $transaction = db_transaction();
+
+    try {
+      $i = 0;
+      while($record = $records->fetchObject()) {
+
+        // First save the tripal_entity record.
+        // @performace This is likely a bottleneck. Too bad we can't create
+        // multiple entities at once... sort of like the copy method.
+        $record_id = $record->record_id;
+        $ec = entity_get_controller('TripalEntity');
+
+        $entity = $ec->create(array(
+          'bundle' => $bundle_name,
+          'term_id' => $bundle->term_id,
+          // Add in the Chado details for when the hook_entity_create()
+          // is called and our tripal_chado_entity_create() implementation
+          // can deal with it.
+          'chado_record' => chado_generate_var($table, array($pkey_field => $record_id), array('include_fk' => 0)),
+          'chado_record_id' => $record_id,
+          'publish' => TRUE,
+          'bundle_object' => $bundle,
+        ));
+
+        $entity = $entity->save($cache);
+        if (!$entity) {
+          throw new Exception('Could not create entity.');
+        }
+
+        // Next save the chado entity record.
+        $entity_record = array(
+          'entity_id' => $entity->id,
+          'record_id' => $record_id,
+        );
+
+        // For the Tv2 to Tv3 migration we want to add the nid to the
+        // entity so we can associate the node with the entity.
+        if (property_exists($record, 'nid')) {
+          $entity_record['nid'] = $record->nid;
+        }
+        $result = db_insert($chado_entity_table)
+          ->fields($entity_record)
+          ->execute();
+        if(!$result){
+          throw new Exception('Could not create mapping of entity to Chado record.');
+        }
+
+        $i++;
+        $total_published++;
+      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      $error = $e->getMessage();
+      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
+      drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
+      return FALSE;
+    }
+
+    // If we get through the loop and haven't completed 100 records, then we're done!
+    if ($i < $chunk_size) {
+      $more_records_to_publish = FALSE;
+    }
+
+    // Commit our current chunk.
+    unset($transaction);
   }
-  catch (Exception $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
-    drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
-    return FALSE;
-  }
-  drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
+
+  drupal_set_message("Succesfully published $total_published " . $bundle->label . " record(s).");
   return TRUE;
 }
 
@@ -271,7 +315,7 @@ function chado_publish_records($values, $job_id = NULL) {
  *    The name of a base table in Chado.
  * @return
  *    An array of tokens where the key is the machine_name of the token.
- * 
+ *
  * @ingroup tripal_chado_api
  */
 function chado_get_tokens($base_table) {
@@ -329,7 +373,7 @@ function chado_get_tokens($base_table) {
  *
  * @return
  *   The string will all tokens replaced with values.
- * 
+ *
  *  @ingroup tripal_chado_api
  */
 function chado_replace_tokens($string, $record) {

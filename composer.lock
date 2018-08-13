@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "adeee18e119693b993349d81c922f961",
+    "content-hash": "fd3ab0a8fd06e0532a7764f20a9aa52b",
     "packages": [],
     "packages-dev": [
         {
@@ -1657,16 +1657,17 @@
         },
         {
             "name": "statonlab/tripal-test-suite",
-            "version": "1.3.0",
+
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/statonlab/TripalTestSuite.git",
-                "reference": "1e616e426faf46b2c2c7cecc43741ee462387433"
+                "reference": "e469f7fde2cf69303dc22315b142b46b027c9931"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/1e616e426faf46b2c2c7cecc43741ee462387433",
-                "reference": "1e616e426faf46b2c2c7cecc43741ee462387433",
+                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/e469f7fde2cf69303dc22315b142b46b027c9931",
+                "reference": "e469f7fde2cf69303dc22315b142b46b027c9931",
                 "shasum": ""
             },
             "require": {
@@ -1701,7 +1702,7 @@
                     "email": "bcondon@utk.edu"
                 }
             ],
-            "time": "2018-08-03T14:20:13+00:00"
+            "time": "2018-08-06T19:38:14+00:00"
         },
         {
             "name": "symfony/console",

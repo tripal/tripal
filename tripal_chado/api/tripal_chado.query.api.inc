@@ -1671,7 +1671,7 @@ function chado_query($sql, $args = array()) {
   // names with 'chado'.
   if ($is_local) {
     // Remove carriage returns from the SQL.
-    $sql = preg_replace('/\n/', '', $sql);
+    $sql = preg_replace('/\n/', ' ', $sql);
 
     // Prefix the tables with their correct schema.
     // Chado tables should be enclosed in curly brackets (ie: {feature} )

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Tripal offers a job management subsystem for managing tasks that may require 
+ * Tripal offers a job management subsystem for managing tasks that may require
  * an extended period of time for completion.
  */
 
@@ -39,7 +39,7 @@
  * @param $uid
  *    The uid of the user adding the job
  * @param $priority
- *    The priority at which to run the job where the highest priority is 10 and 
+ *    The priority at which to run the job where the highest priority is 10 and
  *    the lowest priority is 1. The default priority is 10.
  * @param $includes
  *    An array of paths to files that should be included in order to execute
@@ -60,7 +60,7 @@
  *         $user->uid, $analysis_id, $match_type);
  *
  *   $includes = array()
- *   $includes[] = module_load_include('inc', 'tripal_chado', 
+ *   $includes[] = module_load_include('inc', 'tripal_chado',
  *                                'includes/loaders/tripal_chado.fasta_loader');
  *
  *   tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
@@ -237,7 +237,7 @@ function tripal_max_jobs_exceeded($max_jobs) {
  * @param $job_id
  *   The job_id of the job to be re-ran
  * @param $goto_jobs_page
- *   If set to TRUE then after the re run job is added Drupal will redirect to 
+ *   If set to TRUE then after the re run job is added Drupal will redirect to
  *   the jobs page
  *
  * @ingroup tripal_jobs_api
@@ -337,7 +337,7 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
  * @param $max_jobs
- *   The maximum number of jobs that should be run concurrently. If -1 then 
+ *   The maximum number of jobs that should be run concurrently. If -1 then
  *   unlimited.
  * @param $single
  *   Ensures only a single job is run rather then the entire queue.
@@ -533,7 +533,7 @@ function tripal_get_active_jobs($modulename = NULL) {
 
   $jobs = array();
   while($job = $results->fetchobject()) {
-    $jobs->arguments = unserialize($job->arguments);
+    $job->arguments = unserialize($job->arguments);
     $jobs[] = $job;
   }
   return $jobs;

@@ -621,10 +621,11 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
 
   // Make sure we have a value.
   if (!$object) {
+    $trace = (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
     tripal_report_error('tripal_chado',
       TRIPAL_ERROR,
-      'Cannot pass non array as argument, $object, to chado_expand_var function.',
-      array());
+      'Missing $object argument to the chado_expand_var function from %caller (line: %line)',
+      array('%caller' => $trace[1]['function'], '%line' => $trace[0]['line']));
     return $object;
   }
 

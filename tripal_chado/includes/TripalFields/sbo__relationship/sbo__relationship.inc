@@ -304,10 +304,18 @@ class sbo__relationship extends ChadoField {
 
     // If the subject or object have a unqiuename then add that in for refernce.
     if (property_exists($relationship->$subject_id_key, 'uniquename')) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;;
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;
     }
     if (property_exists($relationship->$object_id_key, 'uniquename')) {
       $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
+    }
+
+    // If the subject or object have an organism then add that in for reference.
+    if (property_exists($relationship->$subject_id_key, 'organism_id')) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['OBI:0100026'] = $relationship->$subject_id_key->organism_id->genus . ' ' . $relationship->$subject_id_key->organism_id->species;
+    }
+    if (property_exists($relationship->$object_id_key, 'organism_id')) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['OBI:0100026'] = $relationship->$object_id_key->organism_id->genus . ' ' . $relationship->$object_id_key->organism_id->species;
     }
 
     // Add in the TripalEntity ids if these base records in the relationship
@@ -376,6 +384,11 @@ class sbo__relationship extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
+    // If we don't have a chado record return before creating a stub for this field!
+    if (!$record) {
+      return;
+    }
+    
     // Not all tables have the columns named 'subject_id' and 'object_id'.
     // some have variations on that name and we need to determine what they are.
     $fkeys = $schema['foreign keys'];
@@ -430,9 +443,11 @@ class sbo__relationship extends ChadoField {
         'type_id' => 1,
         $object_id_key => array(
           'type_id' => 1,
+          'organism_id' => 1,
         ),
         $subject_id_key  => array(
           'type_id' => 1,
+          'organism_id' => 1,
         ),
       ),
     );

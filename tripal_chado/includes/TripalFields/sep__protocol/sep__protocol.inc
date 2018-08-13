@@ -117,16 +117,21 @@ class sep__protocol extends ChadoField {
     $base_table = $this->instance['settings']['base_table'];
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
 
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = [
-      'value' => [],
-    ];
-
     if (!$record) {
       return;
     }
     
     $protocol = $record->{$field_column};
+    // If this record does not have a protcol then just return.
+    if (!$protocol) {
+      return;
+    }
+    
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
+    
     $entity_id = $record->entity_id;
 
     // Get the Protocol controlled vocabulary terms.

@@ -86,3 +86,26 @@ Factory::define('chado.analysis', function (Faker\Generator $faker) {
     'sourceuri' => $faker->name,
   ];
 });
+/** @see  StatonLab\TripalTestSuite\Database\Factory::define() */
+Factory::define('tripal_jobs', function (Faker\Generator $faker) {
+  return [
+    'uid' => 1,
+    'job_name' => $faker->sentence,
+    'modulename' => $faker->word,
+    'callback' => $faker->word,
+    'arguments' => serialize(['arg' => $faker->word]),
+    'progress' => 0,
+    'status' => $faker->randomElement([
+      'Waiting',
+      'Cancelled',
+      'Error',
+      'Completed',
+    ]),
+    'submit_date' => time(),
+    'start_time' => NULL,
+    'end_time' => NULL,
+    'error_msg' => NULL,
+    'pid' => $faker->numberBetween(1, 10000),
+    'priority' => $faker->numberBetween(1, 10),
+  ];
+}, 'job_id');
