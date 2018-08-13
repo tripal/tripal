@@ -689,7 +689,9 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // TODO: this should not call the chado functions because we're in the
     // tripal module.
     $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    if ($terms) {
+      $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    }
     $num_terms = 0;
     $selected_term = '';  
 
@@ -712,7 +714,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '#attributes' => $attrs,
         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
         '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-        '<br><b>Definition:</b>  ' . $term->definition,
+        '<br><b>Definition:</b>  ' . property_exists($term, 'definition') ? $term->definition : '',
         '#ajax' => array(
           'callback' => "tripal_get_term_lookup_form_ajax_callback",
           'wrapper' => $ajax_wrapper_id,
