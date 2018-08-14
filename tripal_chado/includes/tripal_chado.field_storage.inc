@@ -33,7 +33,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // Convert the Tripal term entity into the appropriate record in Chado.
   $dbxref = chado_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
   $cvterm = chado_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
-
+  dpm($entity);
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
   $type_field = $entity->chado_column;
@@ -46,7 +46,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   list($field_vals, $field_items) = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-  // dpm($field_vals);  
+  dpm($field_vals);  
   
   // First, write the record for the base table.
   $values = $field_vals[$base_table];
@@ -67,6 +67,8 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   
   // For content types that use a linker table we need to add a record into
   // the linker table.
+  dpm($linker);
+  dpm($type_field);
   if ($type_field and $linker) {
     // If this is for a property table then there will be a value.
     if ($type_value) {
@@ -78,10 +80,17 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     }
     // If there is no value then this is a dbxref table
     else {
+      $args = array(':title' => NULL);
+      $sql = "
+        SELECT *
+        FROM {pub}
+        WHERE title = :title
+      ";
+      $pub_id = chado_query($sql, $args)->fetchObject();
       $field_vals[$linker] = [
         $base_pkey => $base_record_id,
         'cvterm_id' => $cvterm->cvterm_id,
-        'pub_id' => 1, // TODO: don't hard code this. Lookup the NULL pub.
+        'pub_id' => $pub_id->pub_id,
       ];
     }
   }
