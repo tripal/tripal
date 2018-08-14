@@ -105,7 +105,7 @@ class remote__data extends WebServicesField {
     // We don't want remote content to be available in web services.  There
     // is an if statement to not show this field in the web services but the
     // entity_load function doesn't know this field shouldn't be loaded so
-    // we need to short-circuit that.  
+    // we need to short-circuit that.
     if (preg_match('/web-services/', $_SERVER['REQUEST_URI'])) {
       $this->loaded_via_ws = TRUE;
       return;
@@ -127,7 +127,7 @@ class remote__data extends WebServicesField {
    * @see WebServicesField::load()
    */
   public function load($entity) {
-    
+
     // If this field is being loaded via web services then just return.
     if ($this->loaded_via_ws == TRUE) {
       return;
@@ -159,7 +159,7 @@ class remote__data extends WebServicesField {
       $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
       $entity->{$field_name}['und'][0]['error'] = TRUE;
       $entity->{$field_name}['und'][0]['warning'] = FALSE;
-      $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);      
+      $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);
       return;
     }
     // Make sure we didn't have a problem
@@ -185,7 +185,7 @@ class remote__data extends WebServicesField {
       $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_str);
       return;
     }
-    
+
     // Iterate through the members returned and save those for the field.
     for ($i = 0; $i < $num_items; $i++) {
       $member = $data['member'][$i];
@@ -203,9 +203,9 @@ class remote__data extends WebServicesField {
       // Next get the the details about this member.
       $query_field_url =  $content_type . '/' . $remote_entity_id . '/' . $query_field;
       $field_data = $this->makeRemoteRequest($query_field_url);
-      
+
       // If we encounter any type of error, we'll reset the field and return.
-      if (array_key_exists('error', $field_data)) {
+      if ($field_data && array_key_exists('error', $field_data)) {
         $entity->{$field_name} = [];
         $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving secific content for this field.';
         $entity->{$field_name}['und'][0]['admin_message'] = "While iterating through the list of results, the " .
@@ -216,7 +216,7 @@ class remote__data extends WebServicesField {
         $entity->{$field_name}['und'][0]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_field_url);
         return;
       }
-      
+
       // Set the field data as the value.
       $field_data_type = $field_data['@type'];
       $entity->{$field_name}['und'][$i]['value'] = $field_data;
@@ -227,7 +227,7 @@ class remote__data extends WebServicesField {
       $entity->{$field_name}['und'][$i]['query_str'] = $this->buildRemoteURL($this->remote_site, $query_field_url);;
     }
   }
-  
+
   /**
    * Used to build the full URL for the query.
    */
@@ -237,6 +237,11 @@ class remote__data extends WebServicesField {
     if (preg_match('/\?/', $query)) {
       list($path, $q) = explode('?', $query);
     }
+
+    if(empty($remote_site)) {
+      return null;
+    }
+
     return tripal_build_remote_content_url($remote_site, $path, $q);
   }
    /**
@@ -245,6 +250,7 @@ class remote__data extends WebServicesField {
     * @param $query
     *   The query string. This string is added to the URL for the remote
     *   website.
+    * @return array on success or null if request fails.
     */
    private function makeRemoteRequest($query) {
      $path = $query;
@@ -252,7 +258,16 @@ class remote__data extends WebServicesField {
      if (preg_match('/\?/', $query)) {
        list($path, $q) = explode('?', $query);
      }
-     $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
+
+    if(empty($this->remote_site)) {
+      return null;
+    }
+
+     try {
+       $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
+     } catch (Exception $exception) {
+       return null;
+     }
 
      return $data;
    }
@@ -306,19 +321,19 @@ class remote__data extends WebServicesField {
     $element['data_info']['query'] = array(
       '#type' => 'textarea',
       '#title' => 'Query to Execute',
-      '#description' => 'Enter the query that will retreive the remote records. ' . 
+      '#description' => 'Enter the query that will retreive the remote records. ' .
         'If the full URL to the content web service is ' .
         'https://[tripal_site]/web-services/content/v0.1/. Then this field should ' .
         'contain the text immediately after the content/v0.1 portion of the URL. ' .
         'For information about building web services queries see the ' .
-        'online documentation at ' . l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services') . '. ' . 
+        'online documentation at ' . l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services') . '. ' .
         'For example, suppose this field is attached to an ' .
         'Organism content type on the local site, and you want to retrieve a ' .
         'field for the same organism on a remote Tripal site then you will ' .
         'want to query on the genus and species. Also, you want the genus and ' .
         'species to match the organism that this field is attached to. You can ' .
         'use tokens to do this (see the "Available Tokesn" fieldset below). ' .
-        'For this example, the query text should be ' . 
+        'For this example, the query text should be ' .
         'Organism?genus=[taxrank__genus]&species=[taxrank__species].',
       '#default_value' => $this->instance['settings']['data_info']['query'],
       '#rows' => 5,
