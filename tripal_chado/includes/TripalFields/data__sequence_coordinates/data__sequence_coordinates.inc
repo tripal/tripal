@@ -243,8 +243,11 @@ class data__sequence_coordinates extends ChadoField {
         if ($featureloc->strand == 1) {
           $strand = '+';
         }
-        else {
+        elseif ($featureloc->strand == -1) {
           $strand = '-';
+        }
+        else {
+          $strand = '';
         }
         $fmin = $featureloc->fmin + 1;
         $fmax = $featureloc->fmax;
