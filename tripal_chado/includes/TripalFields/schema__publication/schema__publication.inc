@@ -83,13 +83,18 @@ class schema__publication extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    
+
     // These fields are used when the publications come through a linker table.
     $pkey = '';
     $fkey_lcolumn = '';
     $fkey_rcolumn = '';
-    $linker_table = '';   
-    
+    $linker_table = '';
+
+    // If we don't have a chado record return before creating a stub for this field!
+    if (!$record) {
+      return;
+    }
+
     // If the field table and the base table are not the same thing then
     // we are going through a linker table.
     if ($field_table != $base_table) {
@@ -116,10 +121,6 @@ class schema__publication extends ChadoField {
         'chado-' . $field_table . '__' . $field_column => '',
       );
     }
-    
-    if (!$record) {
-      return;
-    }
 
     // Get the list of publications
     $pubs = array();
@@ -132,7 +133,7 @@ class schema__publication extends ChadoField {
         $i = 0;
         foreach ($record->$linker_table as $index => $linker) {
           $pub = $linker->pub_id;
-          $pubs[$pub->pub_id] = $pub;          
+          $pubs[$pub->pub_id] = $pub;
         }
       }
     }
@@ -142,7 +143,13 @@ class schema__publication extends ChadoField {
         $pubs[$pub->pub_id] = $pub;
       }
     }
-    
+
+    // Ensure we don't have a value if there are no publications.
+    // This is needed due to stubbing out the field above.
+    if (sizeof($pubs) == 0) {
+      unset($entity->{$field_name});
+    }
+
     $i = 0;
     foreach ($pubs as $pub_id => $pub) {
       $pub_details = chado_get_minimal_pub_info($pub);

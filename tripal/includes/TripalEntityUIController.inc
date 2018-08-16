@@ -60,7 +60,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     }
 
     // Link for viewing a tripal data type.
-    $items['bio_data/' . $wildcard] = array(
+    $items['bio_data/%'] = array(
       'title callback' => 'tripal_entity_title',
       'title arguments' => array(1),
       'page callback' => 'tripal_view_entity',
@@ -71,7 +71,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // 'View' tab for an individual entity page.
-    $items['bio_data/' . $wildcard . '/view'] = array(
+    $items['bio_data/%/view'] = array(
       'title' => 'View',
       'page callback' => 'tripal_view_entity',
       'page arguments' => array(1),
@@ -115,7 +115,20 @@ class TripalEntityUIController extends EntityDefaultUIController {
  * @see hook_entity_view_alter()
  */
 function tripal_view_entity($entity, $view_mode = 'full') {
-   $content = '';
+   if(!is_object($entity)) {
+     $id = intval($entity);
+     if($id === 0) {
+       return drupal_not_found();
+     }
+
+     $entities = tripal_load_entity('TripalEntity', [$id]);
+     if(empty($entities)) {
+       return drupal_not_found();
+     }
+
+     $entity = reset($entities);
+   }
+
    $controller = entity_get_controller($entity->type);
    $content = $controller->view(array($entity->id => $entity));
    drupal_set_title($entity->title);

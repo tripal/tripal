@@ -121,3 +121,5 @@ DRUPAL_ROOT=/var/www/html
 Then run PHPUnit from your root Tripal directory.
 
 PHPUnit tests will also be run in the Travis CI build.
+
+Read our [testing guidelines](tests/README.md)

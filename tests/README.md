@@ -11,6 +11,7 @@ For a basic introduction of Tripal Testing, please see the [Test Suite repo](htt
 
 After cloning the [Tripal github repo](https://github.com/tripal/tripal), you will need to install the developer dependencies required to run tests locally.  To do this, you'll need to [install Composer](https://getcomposer.org/doc/00-intro.md), and then execute `composer install` in your project root.
 
+Remember to run `composer update` to update TripalTestSuite before writing and running new tests. This is especially important when running pull requests that contribute unit tests. If tests are passing on the Travis environment but not on your machine, running composer update might resolve the problem.
 
 ## Testing criteria
 For facilitate accepting your pull requests, your code should include tests.  The tests should meet the following guidelines:

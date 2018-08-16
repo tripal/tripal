@@ -32,24 +32,25 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    if (count($items) > 0) {
+    if ($items[0]['value']) {
       
       $protocol_name_term = chado_get_semweb_term('protocol', 'name');
       $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');    
 
       $protocol_name =  $items[0]['value'][$protocol_name_term];
       $content = $protocol_name;
-      list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity_id']);
-      if ($entity_id) {
-        $content = l($protocol_name, 'bio_data/' . $entity_id);
+      if (array_key_exists('entity_id', $items[0]['value'])) {
+        list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity_id']);
+        if ($entity_id) {
+          $content = l($protocol_name, 'bio_data/' . $entity_id);
+        }
       }
+      //cardinality for this field is 1
+      $element[0] = [
+        '#type' => 'markup',
+        '#markup' => $content,
+      ];
     }
-
-    //cardinality for this field is 1
-    $element[0] = [
-      '#type' => 'markup',
-      '#markup' => $content,
-    ];
   }
 
 
