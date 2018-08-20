@@ -239,6 +239,7 @@ class remote__data extends WebServicesField {
     }
 
     if(empty($remote_site)) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote_site in remote__data field while attempting to build the remote URL.');
       return null;
     }
 
@@ -260,12 +261,14 @@ class remote__data extends WebServicesField {
      }
 
     if(empty($this->remote_site)) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote_site while attempting to make the request.');
       return null;
     }
 
      try {
        $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
      } catch (Exception $exception) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, $exception->getMessage());
        return null;
      }
 

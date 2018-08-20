@@ -148,6 +148,10 @@ class remote__data_formatter extends WebServicesFieldFormatter {
             ['attributes' => ["target" => '_blank']])
         ]);
     }
+    else  {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote site while attempting to format results.');
+    }
+
     if (is_object($site_logo)) {
       $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
     }
