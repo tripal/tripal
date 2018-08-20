@@ -1083,17 +1083,16 @@ class OBOImporter extends TripalImporter {
       if (is_numeric($accession_num)) {
         // Before running the oboEbiLookup check for it in the local chado and
         // the tripal_obo_temp table.
-        $term_with_quotes = '"' . $term_id . '"';
+        // $term_with_quotes = '"' . $term_id . '"';
         $sql = " 
           SELECT * 
           FROM {tripal_obo_temp} tot
           WHERE tot.id = :term_id 
           ";
-        $result = chado_query($sql, array(':term_id' => $term_with_quotes, ))->fetchObject();
+        $result = chado_query($sql, array(':term_id' => $term_id . '_lookup'))->fetchObject();
         $oterm = unserialize(base64_decode($result->stanza));
-        $rel_name = $oterm['label'];
+        if (empty($oterm['label'])){
 
-        if (empty($oterm)){
           // Is this ontology is in the local chado?
           $sql = "SELECT * FROM {db} db WHERE db.name = :ontology_id ";
           $db = chado_query($sql, array(':ontology_id' => $ontology_id, ))->fetchObject();
@@ -1157,16 +1156,14 @@ class OBOImporter extends TripalImporter {
               }
             }
           }
+          // Write the term to the tripal_obo_temp table for future reference
+          $values = array(
+            'id' => $term_id . '_lookup',
+            'stanza' => base64_encode(serialize($oterm)),
+            'type' => 'lookup',
+          );
+          chado_insert_record('tripal_obo_temp', $values);
         }
-
-
-        // Write the term to the tripal_obo_temp table for future reference
-        $values = array(
-          'id' => $term_id,
-          'stanza' => base64_encode(serialize($oterm)),
-          'type' => 'lookup',
-        );
-        chado_insert_record('tripal_obo_temp', $values);
       }
     }    
     // Make sure the relationship cvterm exists.
