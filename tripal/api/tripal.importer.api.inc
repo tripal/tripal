@@ -18,7 +18,7 @@
  */
 
 /**
- * Implements hook_handle_uplaoded_file().
+ * Implements hook_handle_uploaded_file().
  *
  * This is a Tripal hook that allows the module to set the proper
  * parameters for a file uploaded via the Tripal HTML5 uploader.
@@ -35,6 +35,37 @@
  */
 function hook_handle_uploaded_file($file, $type) {
 
+}
+
+/**
+ * Implements hook_importer_finish().
+ *
+ * This hook is executed before a TripalImporter has started.  This allows 
+ * modules to implement specific actions prior to execution.
+ *
+ * @param $importer
+ *   The instance of the TripalImporter class that just completed its run.
+ * @param $job_id
+ *   The job_id
+ */
+function hook_importer_start($importer) {
+  
+}
+
+/**
+ * Implements hook_importer_finish().
+ * 
+ * This hook is executed once a TripalImporter has completed but it's run
+ * and post run activities.  This allows modules to implement specific actions
+ * once loaders are completed.
+ * 
+ * @param $importer
+ *   The instance of the TripalImporter class that just completed its run.
+ * @param $job_id
+ *   The job_id 
+ */
+function hook_importer_finish($importer) {
+  
 }
 
 /**
@@ -126,11 +157,25 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
         "updates are rolled back and will not be found in the database\n\n";
 
   try {
+    // Call the hook_importer_start functions.
+    $modules = module_implements('importer_start');
+    foreach ($modules as $module) {
+      $function = $module . '_importer_start';
+      $function($loader);
+    }
+    
     // Run the loader
     tripal_run_importer_run($loader, $job);
 
     // Handle the post run.
     tripal_run_importer_post_run($loader, $job);
+    
+    // Call the hook_importer_finish functions.
+    $modules = module_implements('importer_finish');
+    foreach ($modules as $module) {
+      $function = $module . '_importer_finish';
+      $function($loader);
+    }
 
     // Check for tables with new cvterms
     print "Remapping Chado Controlled vocabularies to Tripal Terms...";
