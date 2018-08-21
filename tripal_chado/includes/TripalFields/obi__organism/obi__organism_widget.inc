@@ -70,6 +70,13 @@ class obi__organism_widget extends ChadoFieldWidget {
 
     // Make sure the value is set to the organism_id
     $organism_id = $form_state['values'][$field_name]['und'][0][$linker_field];
-    $form_state['values'][$field_name]['und'][0]['value'] = $organism_id;
+    if ($organism_id > 0) {
+      $form_state['values'][$field_name]['und'][0]['value'] = $organism_id;
+      $form_state['values'][$field_name]['und'][$delta][$linker_field] = $organism_id;
+    }
+    else {
+      $form_state['values'][$field_name]['und'][0]['value'] = '__NULL__';
+      $form_state['values'][$field_name]['und'][$delta][$linker_field] = '__NULL__';
+    }
   }
 }
