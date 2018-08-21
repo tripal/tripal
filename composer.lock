@@ -1657,6 +1657,7 @@
         },
         {
             "name": "statonlab/tripal-test-suite",
+
             "version": "1.4.0",
             "source": {
                 "type": "git",

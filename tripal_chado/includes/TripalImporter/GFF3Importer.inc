@@ -101,6 +101,16 @@ class GFF3Importer extends TripalImporter {
       you may specify the name of the attribute to use for the name."),
     );
 
+
+    $form['advanced']['skip_protein'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Skip automatic protein creation'),
+      '#required' => FALSE,
+      '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
+      '#default_value' => 0
+    );
+
+
     $form['advanced']['protein_names'] = array(
       '#type' => 'fieldset',
       '#title' => t('Protein Names'),
@@ -134,7 +144,6 @@ class GFF3Importer extends TripalImporter {
        mRNA regular expression "^(.*?)-R()[A-Z]+)$", the corresponding protein regular
        expression would be "$1-P$2".')
     );
-
 
     $form['advanced']['use_transaction']= array(
       '#type' => 'checkbox',
@@ -315,12 +324,14 @@ class GFF3Importer extends TripalImporter {
     $create_organism = $arguments['create_organism'];
     $re_mrna = $arguments['re_mrna'];
     $re_protein = $arguments['re_protein'];
+    $skip_protein = $arguments['skip_protein'];
+
 
     $this->loadGFF3($file_path, $organism_id, $analysis_id,
         $add_only, $update, $refresh, $remove, $use_transaction,
         $target_organism_id, $target_type,  $create_target,
         $start_line, $landmark_type, $alt_id_attr,  $create_organism,
-        $re_mrna, $re_protein);
+        $re_mrna, $re_protein, $skip_protein);
   }
 
   /**
@@ -394,6 +405,8 @@ class GFF3Importer extends TripalImporter {
    *          regular expression to extract portions from mRNA id
    * @param $re_protein A
    *          replacement string to generate the protein id
+   * @PARAM $skip_protein
+   *        BOOL: Will the loader create the proteins inferred from the CDS?
    *
    * @ingroup gff3_loader
    */
@@ -401,7 +414,7 @@ class GFF3Importer extends TripalImporter {
       $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
       $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
       $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
-      $re_mrna = '', $re_protein = '') {
+      $re_mrna = '', $re_protein = '', $skip_protein = 0) {
 
     $ret = array();
     $date = getdate();
@@ -948,17 +961,19 @@ class GFF3Importer extends TripalImporter {
               $pfmin += $min_phase[0]->phase;
             }
 
-            // Add the new protein record.
-            $feature = $this->loadFeature($organism, $analysis_id,
+            if ($skip_protein == 0){
+              // Add the new protein record.
+              $feature = $this->loadFeature($organism, $analysis_id,
                 $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
-            // Add the derives_from relationship.
-            $cvterm = chado_get_cvterm(array('cvterm_id' => $result->cvterm_id));
-            $this->loadDerivesFrom($feature, $cvterm,
+              // Add the derives_from relationship.
+              $cvterm = chado_get_cvterm(array('cvterm_id' => $result->cvterm_id));
+              $this->loadDerivesFrom($feature, $cvterm,
                 $result->uniquename, $organism, $pfmin, $pfmax);
-            // Add the featureloc record. Set the start of the protein to
-            // be the start of the coding sequence minus the phase.
-            $this->loadFeatureLoc($feature, $organism, $result->landmark,
+              // Add the featureloc record. Set the start of the protein to
+              // be the start of the coding sequence minus the phase.
+              $this->loadFeatureLoc($feature, $organism, $result->landmark,
                 $pfmin, $pfmax, $result->strand, '', 'f', 'f', '', 0);
+            }
           }
         }
       }
