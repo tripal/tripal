@@ -879,8 +879,10 @@ function tripal_admin_access($entity) {
   }
 
   // Identify the administrative user roles.
-  $admin_role = user_role_load_by_name('administrator');
+  $admin_rid = variable_get('user_admin_role');  
+  $admin_role = user_role_load($admin_rid);
   $roles = array($admin_role->rid => $admin_role->name);
+  
   // Define the permissions.
   $permission_for_role = array(
     'create ' . $bundle->name => TRUE,
