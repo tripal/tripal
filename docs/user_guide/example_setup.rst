@@ -1,0 +1,4 @@
+Example Setup
+===============
+
+Lorem ipsum

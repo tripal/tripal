@@ -5,3 +5,4 @@ tests/.env
 .buildpath
 .project
 .settings/
+docs/_build/

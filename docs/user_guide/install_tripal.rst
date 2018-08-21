@@ -1,0 +1,4 @@
+Install Tripal
+===============
+
+Lorem ipsum
