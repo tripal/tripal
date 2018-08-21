@@ -1,4 +1,4 @@
-Lorem Ipsum
-===============
+Materialized Views
+==================
 
 Lorem ipsum

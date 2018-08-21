@@ -1,4 +1,4 @@
-Lorem Ipsum
+Searching
 ===============
 
 Lorem ipsum

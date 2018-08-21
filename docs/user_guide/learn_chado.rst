@@ -1,4 +1,4 @@
-Lorem Ipsum
+Learn Chado
 ===============
 
 Lorem ipsum

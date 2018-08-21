@@ -1,4 +1,4 @@
-Lorem Ipsum
-===============
+Setting Up a Custom Theme
+========================================
 
 Lorem ipsum

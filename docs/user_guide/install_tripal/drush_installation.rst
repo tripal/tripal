@@ -1,4 +1,4 @@
-Lorem Ipsum
-===============
+Installing Tripal With Drush
+========================================
 
 Lorem ipsum

@@ -1,4 +1,4 @@
-Lorem Ipsum
-===============
+Installing Tripal Manually
+========================================
 
 Lorem ipsum

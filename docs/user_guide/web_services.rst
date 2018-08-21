@@ -1,4 +1,4 @@
-Lorem Ipsum
+Web Services
 ===============
 
 Lorem ipsum

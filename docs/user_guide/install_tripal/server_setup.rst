@@ -1,4 +1,4 @@
-Lorem Ipsum
+Server Setup
 ===============
 
 Lorem ipsum

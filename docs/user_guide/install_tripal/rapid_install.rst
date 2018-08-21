@@ -1,4 +1,4 @@
-Lorem Ipsum
+Rapid Install
 ===============
 
 Lorem ipsum

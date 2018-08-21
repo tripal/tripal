@@ -1,4 +1,4 @@
-Lorem Ipsum
+Job Management
 ===============
 
 Lorem ipsum
