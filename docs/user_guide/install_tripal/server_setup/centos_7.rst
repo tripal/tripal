@@ -11,24 +11,23 @@ Please follow the online instructions for download and installation of CentOS 7.
 - A user account with administrative access (i.e. sudo privilege).
 - A graphical desktop.
 - An installed web browser.
-
 - The "Development Tools" should be installed.  To install the development tools issue this command:
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  sudo yum groupinstall "Development Tools"
+    sudo yum groupinstall "Development Tools"
 
 - A graphical text editor such as 'gedit'.  To Install gedit issue this command:
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  sudo yum install gedit
+    sudo yum install gedit
 
 - The 'wget' utilty for retrieving files from remote web services.  To install wget issue this command:
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  sudo yum install wget
+    sudo yum install wget
 
 The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the `Oracle VirtualBox <https://www.virtualbox.org/>`_ or `VMWare <http://www.vmware.com/>`_.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
 
