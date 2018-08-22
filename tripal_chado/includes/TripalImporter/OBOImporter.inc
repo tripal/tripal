@@ -586,7 +586,7 @@ class OBOImporter extends TripalImporter {
           continue;
         }
         if ($stanza === TRUE && (substr($line, 0, 3) === "id:")) {
-          $parts = explode(':', $line);
+          $parts = explode(':', $line, 2);
           $short_name = strtolower($parts[1]);
           $short_name = preg_replace('/\s+/', '', $short_name);
           break;
@@ -608,6 +608,8 @@ class OBOImporter extends TripalImporter {
         else {
           $results = $short_name;
         }
+        print_r('$results');
+        print_r($results);
         $defaultcv = tripal_insert_cv(strtoupper($results), '');
         $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
       }
@@ -632,7 +634,9 @@ class OBOImporter extends TripalImporter {
     if (!$this->processTerms($defaultcv, $default_db)) {
       throw new Exception('Cannot add terms from this ontology');
     }
-
+    // Empty the temp table.
+    $sql = "DELETE FROM {tripal_obo_temp}";
+    chado_query($sql);
   }
 
   /**
@@ -776,7 +780,7 @@ class OBOImporter extends TripalImporter {
     // Check the id isn't a reference to another term.
     //TODO: Check chado for the accession, so we can avoid lookups where possible.
     if (strpos($t['id'], ':')) {
-      $pair = explode(":", $t['id']);
+      $pair = explode(":", $t['id'], 2);
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       if (is_numeric($accession_num) && ($ontology_id != $default_db)) {
@@ -1072,56 +1076,95 @@ class OBOImporter extends TripalImporter {
       elseif (strpos($objname, ':')) {
         $term_id = $objname;
       }
-
       $reference_term = TRUE;
-      $pair = explode(":", $term_id);    
+      $pair = explode(":", $term_id, 2);
       $ontology_id = $pair[0];
       $accession_num = $pair[1];
       $rel_name = '';
 
       if (is_numeric($accession_num)) {
-        $results = $this->oboEbiLookup($term_id, 'term');
-        if (isset($results['label'])) {
-          $rel_name = $results['label'];
-          $oterm = $results;
-        } 
-        if (empty($rel_name)) {
-          $results = $this->oboEbiLookup($term_id, 'query');
-          if (array_key_exists('docs', $results['response'])){
-            if(!empty($results['response']['docs'])) {
-              if (count($results['response']['docs']) > 1) {
-                foreach ($results['response']['docs'] as $doc) {
-                  if ($doc['obo_id'] == $term_id) {
-                    $rel_name = $doc['label'];
-                    $oterm = $doc;
-                  }
-                }
-              } 
-              else {
-                $rel_name = $results['response']['docs'][0]['label'];
-                $oterm = $results['response']['docs'][0];
-              }
+        // Before running the oboEbiLookup check for it in the local chado and
+        // the tripal_obo_temp table.
+        // $term_with_quotes = '"' . $term_id . '"';
+        $sql = " 
+          SELECT * 
+          FROM {tripal_obo_temp} tot
+          WHERE tot.id = :term_id 
+          ";
+        $result = chado_query($sql, array(':term_id' => $term_id . '_lookup'))->fetchObject();
+        $oterm = unserialize(base64_decode($result->stanza));
+        if (empty($oterm['label'])){
+
+          // Is this ontology is in the local chado?
+          $sql = "SELECT * FROM {db} db WHERE db.name = :ontology_id ";
+          $db = chado_query($sql, array(':ontology_id' => $ontology_id, ))->fetchObject();
+
+          if (!empty($db)){
+            // Find the accession.
+            $sql = "
+              SELECT * 
+              FROM {dbxref} dbx 
+              WHERE dbx.db_id = :db_id 
+              AND accession = :accession_num ";
+            $v = chado_query($sql, array(':db_id' => $db->db_id, ':accession_num' => $accession_num))->fetchObject();
+            if (!empty($dbxref)) {
+              $sql = "SELECT * FROM {cvterm} WHERE dbxref_id = $dbxref->dbxref_id ";
+              $oterm = chado_query($sql)->fetchObject();
+              $rel_name = $oterm->name;
             }
           }
-        } 
-        if (empty($rel_name)) {
+          
+          if (empty($dbxref)){
+            $results = $this->oboEbiLookup($term_id, 'term');
+            if (isset($results['label'])) {
+              $rel_name = $results['label'];
+              $oterm = $results;
+            }
+            if (empty($rel_name)) {
+              $results = $this->oboEbiLookup($term_id, 'query');
+              if (array_key_exists('docs', $results['response'])) {
+                if (!empty($results['response']['docs'])) {
+                  if (count($results['response']['docs']) > 1) {
+                    foreach ($results['response']['docs'] as $doc) {
+                      if ($doc['obo_id'] == $term_id) {
+                        $rel_name = $doc['label'];
+                        $oterm = $doc;
+                      }
+                    }
+                  } else {
+                    $rel_name = $results['response']['docs'][0]['label'];
+                    $oterm = $results['response']['docs'][0];
+                  }
+                }
+              }
+            }
+            if (empty($rel_name)) {
           // The first search doesn't work, so let's try a broader one.
-          $results = $this->oboEbiLookup($term_id, 'query-non-local');
-          if (!empty($results)) {
-            if (array_key_exists('docs', $results['response'])) {
-              if (!empty($results['response']['docs'])) {
-                foreach ($results['response']['docs'] as $item) {
-                  if ($item['obo_id'] == $term_id) {
+              $results = $this->oboEbiLookup($term_id, 'query-non-local');
+              if (!empty($results)) {
+                if (array_key_exists('docs', $results['response'])) {
+                  if (!empty($results['response']['docs'])) {
+                    foreach ($results['response']['docs'] as $item) {
+                      if ($item['obo_id'] == $term_id) {
                     //Found the first place a label is other than the accession is used, so take
                     // that info and then end the loop.
-                    $rel_name = $item['label'];
-                    $oterm = $item;
-                    break;
+                        $rel_name = $item['label'];
+                        $oterm = $item;
+                        break;
+                      }
+                    }
                   }
                 }
               }
             }
           }
+          // Write the term to the tripal_obo_temp table for future reference
+          $values = array(
+            'id' => $term_id . '_lookup',
+            'stanza' => base64_encode(serialize($oterm)),
+            'type' => 'lookup',
+          );
+          chado_insert_record('tripal_obo_temp', $values);
         }
       }
     }    
@@ -1158,8 +1201,8 @@ class OBOImporter extends TripalImporter {
     // Get the object term.
     if ($reference_term === TRUE && !empty($oterm)) {
       $objterm = array();
-      $objterm['id'] = $oterm['label'];
-      $objterm['name'] = $oterm['obo_id'];
+      $objterm['id'] = $oterm['obo_id'];
+      $objterm['name'] = $oterm['label'];
       if (array_key_exists('def', $oterm)) {
         $objterm['definition'] = $oterm['def'];
       }
@@ -1198,6 +1241,8 @@ class OBOImporter extends TripalImporter {
     $objterm['cv_name' ] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
+    print_r('$objterm');
+    print_r($objterm);
     $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
       throw new Exception("Cannot add cvterm " . $objterm['name']);
@@ -1464,6 +1509,8 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function addCvtermDbxref($cvterm, $xref) {
+    print_r('addCvtermDbxref');
+    print_r($cvterm);
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
