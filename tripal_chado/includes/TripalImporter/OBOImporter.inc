@@ -586,7 +586,7 @@ class OBOImporter extends TripalImporter {
           continue;
         }
         if ($stanza === TRUE && (substr($line, 0, 3) === "id:")) {
-          $parts = explode(':', $line);
+          $parts = explode(':', $line, 2);
           $short_name = strtolower($parts[1]);
           $short_name = preg_replace('/\s+/', '', $short_name);
           break;
@@ -608,6 +608,8 @@ class OBOImporter extends TripalImporter {
         else {
           $results = $short_name;
         }
+        print_r('$results');
+        print_r($results);
         $defaultcv = tripal_insert_cv(strtoupper($results), '');
         $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
       }
@@ -1199,8 +1201,8 @@ class OBOImporter extends TripalImporter {
     // Get the object term.
     if ($reference_term === TRUE && !empty($oterm)) {
       $objterm = array();
-      $objterm['id'] = $oterm['label'];
-      $objterm['name'] = $oterm['obo_id'];
+      $objterm['id'] = $oterm['obo_id'];
+      $objterm['name'] = $oterm['label'];
       if (array_key_exists('def', $oterm)) {
         $objterm['definition'] = $oterm['def'];
       }
@@ -1239,6 +1241,8 @@ class OBOImporter extends TripalImporter {
     $objterm['cv_name' ] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
+    print_r('$objterm');
+    print_r($objterm);
     $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
       throw new Exception("Cannot add cvterm " . $objterm['name']);
@@ -1505,6 +1509,8 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function addCvtermDbxref($cvterm, $xref) {
+    print_r('addCvtermDbxref');
+    print_r($cvterm);
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
