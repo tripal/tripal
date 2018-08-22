@@ -17,7 +17,7 @@ The following figure describes the heirarchical relationship between Drupal Enti
    :alt: Entity terminology guide
 
 
-Furthermore, fields are "attached" to a Bundle and hold unique values for each Entity. The following figure describes this relationship for a Gene Bundle that has several fields attached: name, description and organism.  Note that in this figure the Entity and each of the Fields are defined using a controlled vocabulary term.  As a result, bundles and fields can be described using the Semantic Web concepts of a "subject", "predicate" and "object".  We will discuss more on controlled vocabularies a bit later in the Handbook.
+Furthermore, fields are "attached" to a Bundle and hold unique values for each Entity. The following figure describes this relationship for a Gene Bundle that has several fields attached: name, description and organism.  Note that in this figure the Entity and each of the Fields are defined using a controlled vocabulary term.  As a result, bundles and fields can be described using the `Semantic Web <https://en.wikipedia.org/wiki/Semantic_Web>`_ concepts of a "subject", "predicate" and "object".  We will discuss more on controlled vocabularies a bit later in the Handbook.
 
 
 
@@ -44,7 +44,7 @@ An entity is a discrete data record.  Entities are most commonly seen as "pages"
 Fields
 =======
 
-A field is a reusable "data container" that is attached to a Bundle. Programmatically, each field provides one or more primitive data types, with validators and widgets for editing and formatters for display. Each field independently manages the data to which it assigned.  Just like with Bundles, Fields are also described using controlled vocabulary terms.  For example, a gene Bundle has a field attached that provides the name of the gene.   This field only provides the name and nothing more.  Tripal uses the schema:name vocabulary term to describe the field.  
+A field is a reusable "data container" that is attached to a Bundle. Programmatically, each field provides one or more primitive data types, with validators and widgets for editing and formatters for display. Each field independently manages the data to which it assigned.  Just like with Bundles, Fields are also described using controlled vocabulary terms.  For example, a gene Bundle has a field attached that provides the name of the gene.   This field only provides the name and nothing more.  Tripal uses the `schema:name <http://schema.org/name>`_ vocabulary term to describe the field.  
 
 Field Instances
 ================
