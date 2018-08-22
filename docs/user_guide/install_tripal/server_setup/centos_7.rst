@@ -1,6 +1,11 @@
 Server Setup (CentOS 7)
 =======================
 
+.. note::
+
+  Tripal can be installed on multiple UNIX/Linux based systems. These instructions are for just CentOS 7.  However, this guide provides
+  instructions for a several systems. Please choose the one that best suits your needs.  If you install on a different platform please consider sharing your notes and experience to add to this guide!
+
 The following sections provide step-by-step instructions for installation of Tripal on a CentOS 7 server.  They provide details for setup of the server, including installation of the Apache web server and the PostgreSQL database server; installation of Drupal; installation of Drush, the command-line interface for Drupal; prerequisites for Tripal; and installation of Tripal within Drupal.
 
 CentOS 7 Installation

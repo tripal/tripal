@@ -1,6 +1,11 @@
 Server Setup (Ubuntu 18.04 LTS)
 ===============================
 
+.. note::
+
+  Tripal can be installed on multiple UNIX/Linux based systems. These instructions are for just Ubuntu 18.04.  However, this guide provides
+  instructions for a several systems. Please choose the one that best suits your needs.  If you install on a different platform please consider sharing your notes and experience to add to this guide!
+
 The following instructions are for setup of Tripal on an Ubuntu version 18.04 LTS Desktop edition. Ubuntu v18.04 is a long-term support version of Ubuntu, meaning that Ubuntu guarantees patches and security fixes for up to five years.  These instructions do not provide guidance for proper configuration settings for the server to handle load, nor for security settings.   Consult the software documentation for proper load handling and security settings before your site is made public.
 
 Ubuntu Installation
