@@ -11,9 +11,9 @@ The easiest way to download Tripal is to use the Drush command-line interface fo
 - Chage directories to your Drupal installation
 - Execute the following drush command
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  drush pm-download tripal
+    drush pm-download tripal
 
 Alternatively, you can download Tripal using the Drupal web interface as per the instructions provided on the `Installing modules <https://www.drupal.org/documentation/install/modules-themes/modules-7>`_ documentation at Drupal.org.  The Tripal project page at Drupal.org can be found here:  https://www.drupal.org/project/tripal.
 

@@ -1,6 +1,10 @@
 Upgrade from Tripal v2 to v3
 ================================
 
+.. note::
+
+  If you are installing Tripal v3 for the first time you can ignore these upgrade instructions.
+
 Step 1: Upgrade Tripal
 ----------------------
 
@@ -95,6 +99,7 @@ Step 1: Upgrade Tripal
 10. Return to your Tripal site, and click the link that appears for preparing Chado and launch the job.
 
   .. image:: upgrade_from_tripal2.step1-10.png
+
 
   .. note::
 
