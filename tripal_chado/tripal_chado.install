@@ -1568,4 +1568,23 @@ function tripal_chado_update_7327() {
   }
 }
 
+/**
+ * Don't count relationship cvterms as ontology roots.
+ */
+function tripal_chado_update_7328() {
+  try {
+    $mv_name = 'cv_root_mview';
+    // Remove the old mview.
+    $mview_id = chado_get_mview_id($mv_name);
+    chado_delete_mview($mview_id);
+    module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+    // Re-add the mview.
+    tripal_chado_add_cv_root_mview_mview();
+    $mview_id = chado_get_mview_id($mv_name);
+    chado_populate_mview($mview_id);
+  } catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 

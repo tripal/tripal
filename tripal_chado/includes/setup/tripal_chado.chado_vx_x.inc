@@ -512,6 +512,7 @@ function tripal_chado_add_cv_root_mview_mview() {
       INNER JOIN cv CV on CV.cv_id = CVT.cv_id
     WHERE CVTR.object_id not in
       (SELECT subject_id FROM cvterm_relationship)
+    AND CVT.is_relationshiptype = 0
   ";
 
   // Create the MView
