@@ -712,22 +712,10 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
-    // Get the list of existing property types for this table.
-    $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
-    $props = chado_query($sql);
-    while ($prop = $props->fetchObject()) {
-      $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
-
-      // The tripal_analysis_KEGG, tripal_analysis_blast, and
-      // tripal_analysis_interpro modules store results in the analysisprop
-      // table which is probably not the best place, but we don't want to
-      // create a ton of fields for this, so skip them.
-      if ($prop_table == 'analysisprop' and
-          ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
-           $term->dbxref_id->db_id->name == 'tripal')) {
-        continue;
-      }
-
+    
+    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
+    foreach ($props as $term) {
+          
       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
 
       // The field name can only be 32 chars, but if our name is longer we need
@@ -2489,144 +2477,63 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
-     $tschema = chado_get_schema($table_name);
-     $schema = chado_get_schema($prop_table);
-     $tpkey = $tschema['primary key'][0];
-     $pkey = $schema['primary key'][0];
 
-     // Property tables can be a bit tricky because not all property types
-     // in the prop table are appropriate for each type of data.  Also som
-     // bundle types are resolved via a property.  So, we have to distinguish
-     // between these two cases.
-     $sql = '';
-     $args = array();
+    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
+    foreach ($props as $term) {     
 
-     // First, is this the case where all of the records in the table are
-     // of this type?  If so, then all properties apply
-     if (!$type_column) {
-        $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
-        $props = chado_query($sql, $args);
-     }
-     // Second, if this is the case where a content type is uniquely identified
-     // by a type_id value in the base table, then only properties associated
-     // with that type ID should be used.
-     else if ($type_column and !$type_table) {
-      $sql = "
-        SELECT DISTINCT P.type_id
-        FROM {" . $prop_table . "} P
-          INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-        WHERE T.$type_column = :cvterm_id
-      ";
-      $args[':cvterm_id'] = $cvterm_id;
-      $props = chado_query($sql, $args);
-     }
-     // Third, if this is the case where a content type is uniquely identified
-     // via a term/value pair in the prop table.
-     else if ($type_column and $type_table == $prop_table and !empty($type_value)) {
-       $sql = "
-        SELECT DISTINCT P2.type_id
-        FROM {" . $prop_table . "} P1
-          INNER JOIN {" . $table_name . "} T on T.$tpkey = P1.$tpkey
-          INNER JOIN {" . $prop_table . "} P2 on T.$tpkey = P2.$tpkey
-        WHERE P1.$type_column = :cvterm_id AND P1.value = :prop_value AND
-          P2.type_id != P1.type_id
-       ";
-       $args[':cvterm_id'] = $cvterm_id;
-       $args[':prop_value'] = $type_value;
-       $props = chado_query($sql, $args);
-     }
-     // Fourth, if this is the case where the content type is uinquely identifed
-     // via another table (e.g. cvterm linking table) and not this prop table.
-     else if ($type_column and $type_table != $prop_table and empty($type_value)) {
-       $sql = "
-         SELECT DISTINCT P.type_id
-         FROM {" . $prop_table . "} P
-           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-           INNER JOIN {" . $type_table . "} TT on TT.$tpkey = T.$tpkey
-         WHERE TT.$type_column = :cvterm_id
-       ";
-       $args[':cvterm_id'] = $cvterm_id;
-       $props = chado_query($sql, $args);
-     }
-     else {
-       // Do nothing;
-     }
-
-     if ($props) {
-       while ($prop = $props->fetchObject()) {
-
-         $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
-         $term = chado_expand_var($term, 'field', 'cvterm.definition');
-
-         // Skip the Publiation Type property for pubs as this is
-         // already handled by the pub.type_id field.
-         if ($term->name == 'Publication Type' and $term->cv_id->name == 'tripal_pub') {
-           continue;
-         }
-
-         // The tripal_analysis_KEGG, tripal_analysis_blast, and
-         // tripal_analysis_interpro modules store results in the analysisprop
-         // table which is probably not the best place, but we don't want to
-         // create a ton of fields for this.
-         if ($prop_table == 'analysisprop' and
-             ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
-              $term->dbxref_id->db_id->name == 'tripal')) {
-           continue;
-         }
-
-         $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
-         // The field name can only be 32 chars, but if our name is longer we need
-         // to add some random chars to ensure we don't have naming conflicts
-         // with other terms (e.g. mitochondrial_genetic_code and
-         // mitochondrial_genetic_code_name)
-         if (strlen($field_name) >= 32) {
-           $field_name = substr($field_name, 0, 20) . '_' . $term->cvterm_id;
-         }
-         $info[$field_name] = array(
-           'field_name' => $field_name,
-           'entity_type' => $entity_type,
-           'bundle' => $bundle->name,
-           'label' => ucwords(preg_replace('/_/', ' ', $term->name)),
-           'description' => $term->definition,
-           'required' => FALSE,
+       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
+       
+       // The field name can only be 32 chars, but if our name is longer we need
+       // to add some random chars to ensure we don't have naming conflicts
+       // with other terms (e.g. mitochondrial_genetic_code and
+       // mitochondrial_genetic_code_name)
+       if (strlen($field_name) >= 32) {
+         $field_name = substr($field_name, 0, 20) . '_' . $term->cvterm_id;
+       }
+       $info[$field_name] = array(
+         'field_name' => $field_name,
+         'entity_type' => $entity_type,
+         'bundle' => $bundle->name,
+         'label' => ucwords(preg_replace('/_/', ' ', $term->name)),
+         'description' => $term->definition,
+         'required' => FALSE,
+         'settings' => array(
+           'auto_attach' => TRUE,
+           'term_vocabulary' => $term->dbxref_id->db_id->name,
+           'term_accession' => $term->dbxref_id->accession,
+           'term_name' => $term->name,
+           'base_table' => $table_name,
+           'chado_table' => $prop_table,
+           'chado_column' => $pkey,
+         ),
+         'widget' => array(
+           'type' => 'chado_linker__prop_widget',
            'settings' => array(
-             'auto_attach' => TRUE,
-             'term_vocabulary' => $term->dbxref_id->db_id->name,
-             'term_accession' => $term->dbxref_id->accession,
-             'term_name' => $term->name,
-             'base_table' => $table_name,
-             'chado_table' => $prop_table,
-             'chado_column' => $pkey,
+             'display_label' => 1,
            ),
-           'widget' => array(
-             'type' => 'chado_linker__prop_widget',
-             'settings' => array(
-               'display_label' => 1,
-             ),
+         ),
+         'display' => array(
+           'default' => array(
+             'label' => 'hidden',
+             'type' => 'chado_linker__prop_formatter',
+             'settings' => array(),
            ),
-           'display' => array(
-             'default' => array(
-               'label' => 'hidden',
-               'type' => 'chado_linker__prop_formatter',
-               'settings' => array(),
-             ),
-           ),
-         );
+         ),
+       );
 
-         // Make some customizations to some fields
-         if ($term->name == 'Citation' and $term->cv_id->name == 'tripal_pub') {
-           $info[$field_name]['required'] = TRUE;
-           $info[$field_name]['description'] = t('All publications must have a unique citation.
-            Please enter the full citation for this publication.  For PubMed style citations list
-            the last name of the author followed by initials. Each author should be separated by a comma. Next comes
-            the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.
-            Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations
-              suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>');
-           $info[$field_name]['settings']['rows'] = 3;
-         }
-         if ($term->name == 'Abstract' and $term->cv_id->name == 'tripal_pub') {
-           $info[$field_name]['settings']['rows'] = 5;
-         }
+       // Make some customizations to some fields
+       if ($term->name == 'Citation' and $term->cv_id->name == 'tripal_pub') {
+         $info[$field_name]['required'] = TRUE;
+         $info[$field_name]['description'] = t('All publications must have a unique citation.
+          Please enter the full citation for this publication.  For PubMed style citations list
+          the last name of the author followed by initials. Each author should be separated by a comma. Next comes
+          the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.
+          Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations
+            suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>');
+         $info[$field_name]['settings']['rows'] = 3;
+       }
+       if ($term->name == 'Abstract' and $term->cv_id->name == 'tripal_pub') {
+         $info[$field_name]['settings']['rows'] = 5;
        }
      }
    }
@@ -2828,6 +2735,128 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 
 }
 
+/**
+ * Used to find all of the properties for a given table.
+ *  
+ * @param $table_name
+ *   The name of the base table.
+ * @param unknown $prop_table
+ *   The name of the property table.
+ * @param $type_table
+ *   The name of the table that contains the type specifier.
+ * @param $type_column
+ *   The name of the column that contains the type specifier.
+ *   
+ * @return
+ *   An array of cvterm objects for the properties to be added as fields.
+ */
+function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column) {
+  
+  $tschema = chado_get_schema($table_name);
+  $schema = chado_get_schema($prop_table);
+  $tpkey = $tschema['primary key'][0];
+  $pkey = $schema['primary key'][0];
+  
+  $props = NULL;
+  
+  // Property tables can be a bit tricky because not all property types
+  // in the prop table are appropriate for each type of data.  Also som
+  // bundle types are resolved via a property.  So, we have to distinguish
+  // between these two cases.
+  $sql = '';
+  $args = array();
+  
+  // First, is this the case where all of the records in the table are
+  // of this type?  If so, then all properties apply
+  if (!$type_column) {
+    $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+    $props = chado_query($sql, $args);
+  }
+  // Second, if this is the case where a content type is uniquely identified
+  // by a type_id value in the base table, then only properties associated
+  // with that type ID should be used.
+  else if ($type_column and !$type_table) {
+    $sql = "
+        SELECT DISTINCT P.type_id
+        FROM {" . $prop_table . "} P
+          INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+        WHERE T.$type_column = :cvterm_id
+      ";
+    $args[':cvterm_id'] = $cvterm_id;
+    $props = chado_query($sql, $args);
+  }
+  // Third, if this is the case where a content type is uniquely identified
+  // via a term/value pair in the prop table.
+  else if ($type_column and $type_table == $prop_table and !empty($type_value)) {
+    $sql = "
+        SELECT DISTINCT P2.type_id
+        FROM {" . $prop_table . "} P1
+          INNER JOIN {" . $table_name . "} T on T.$tpkey = P1.$tpkey
+          INNER JOIN {" . $prop_table . "} P2 on T.$tpkey = P2.$tpkey
+        WHERE P1.$type_column = :cvterm_id AND P1.value = :prop_value AND
+          P2.type_id != P1.type_id
+       ";
+    $args[':cvterm_id'] = $cvterm_id;
+    $args[':prop_value'] = $type_value;
+    $props = chado_query($sql, $args);
+  }
+  // Fourth, if this is the case where the content type is uinquely identifed
+  // via another table (e.g. cvterm linking table) and not this prop table.
+  else if ($type_column and $type_table != $prop_table and empty($type_value)) {
+    $sql = "
+         SELECT DISTINCT P.type_id
+         FROM {" . $prop_table . "} P
+           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+           INNER JOIN {" . $type_table . "} TT on TT.$tpkey = T.$tpkey
+         WHERE TT.$type_column = :cvterm_id
+       ";
+    $args[':cvterm_id'] = $cvterm_id;
+    $props = chado_query($sql, $args);
+  }
+  
+  // Iterate through all of the properties and do some final checks to see
+  // which ones should be added.
+  $prop_arr = [];
+  while ($prop = $props->fetchObject()) {
+    $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
+    $term = chado_expand_var($term, 'field', 'cvterm.definition');
+    
+   
+    // The tripal_analysis_KEGG, tripal_analysis_blast, and
+    // tripal_analysis_interpro modules store results in the analysisprop
+    // table which is probably not the best place, but we don't want to
+    // create a ton of fields for this.
+    if ($prop_table == 'analysisprop' and
+        ($term->dbxref_id->db_id->name == 'KEGG_BRITE' or
+         $term->dbxref_id->db_id->name == 'tripal')) {
+      continue;
+    }
+    
+    // The Tripal publication importer adds properties to publications that
+    // are also represented in the table fields.  We want editing of pub
+    // related fields to always go back to the pub table, so we do not
+    // want prop fields to show up.
+    if ($table_name == 'pub') {
+      $skip_pub_property = FALSE;
+      $pub_terms = chado_get_semweb_terms('pub', ['return_object' => TRUE]);
+      foreach ($pub_terms as $pub_column => $mapped_term) {
+        $term_accession = $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession;
+        $mapped_accession = $mapped_term->dbxref_id->db_id->name . ':' . $mapped_term->dbxref_id->accession;
+        if ($term_accession == $mapped_accession) {
+          $skip_pub_property = TRUE;
+        }
+      }
+      if ($skip_pub_property) {
+        continue;
+      }
+    }
+    
+    // Add the term to our list!
+    $prop_arr[] = $term;
+  }
+  return $prop_arr;
+
+}
 /**
  * Implements hook_bundle_create_user_field().
  *

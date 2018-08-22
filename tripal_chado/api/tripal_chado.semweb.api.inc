@@ -216,6 +216,53 @@ function chado_get_semweb_term($chado_table, $chado_column, $options = array()) 
 }
 
 /**
+ * Retrieves the terms that maps to the given Chado table.
+ *
+ * @param $chado_table
+ *   The name of the Chado table.
+ * @param $options
+ *   An associative array of one or more of the following keys:
+ *     -return_object:  Set to TRUE to return the cvterm object rather than
+ *      the string version of the term.
+ *
+ * @return
+ *   An array of terms with the table column name as the key and the term 
+ *   details as the avlue. If the 'return_object' options is provided then 
+ *   a cvterm object is used as the value. A NULL value is used if no term is 
+ *   mapped to a column.
+ *
+ *  @ingroup tripal_chado_semweb_api
+ */
+function chado_get_semweb_terms($chado_table, $options = array()) {
+  
+  $terms = [];
+  
+  $schema = chado_get_schema($chado_table);
+  foreach ($schema['fields'] as $chado_column => $details) {
+    $terms[$chado_column] = NULL;
+    
+    $cvterm_id = db_select('chado_semweb', 'CS')
+      ->fields('CS', array('cvterm_id'))
+      ->condition('chado_column', $chado_column)
+      ->condition('chado_table', $chado_table)
+      ->execute()
+      ->fetchField();
+    
+    if ($cvterm_id) {
+      $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      if (array_key_exists('return_object', $options)) {
+        $terms[$chado_column] = $cvterm;
+      }
+      else {
+        $terms[$chado_column] = chado_format_semweb_term($cvterm);
+      }
+    }
+    
+  }
+  return $terms;
+}
+
+/**
  * Formats a controlled vocabulary term from Chado for use with Tripal.
  *
  * @param $cvterm
