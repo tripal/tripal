@@ -185,7 +185,7 @@ You have now completed the migration process and can safely disable the Tripal v
 Troubleshooting
 ---------------
 
-1. For sites that have upgrading from Drupal 6 (i.e. field not shown after the migration):
+1. For sites that have upgrading from Drupal 6:
 
   If your site was upgraded from Drupal 6, you'll need to add a new text format with a machine name called 'full_html' as this is the default formatter that Tripal v3 uses. As in Drupal 6, the 'Full HTML' text format has a numeric machine name (usually '2') that was later changed to 'full_html' in Drupal 7.
 
