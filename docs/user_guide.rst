@@ -10,7 +10,7 @@ User's Guide
    user_guide/what_is_tripal
    user_guide/install_tripal
    user_guide/drupal_overview
-   user_guide/example_setup
+   user_guide/example_genomics
    user_guide/learn_chado
    user_guide/creating_content
    user_guide/setting_page_urls
