@@ -18,12 +18,12 @@ Developer's Guide
 
 
 Introduction to the Tripal API
-==============================
+-------------------------------
 
 Tripal provides an Application Programming Interfaces (API) that allows developers to interact with and customize Tripal. Using the API, developers can customize the way data is presented or create custom modules that provide new or different functionality. These custom modules can in turn be shared with the Tripal community. The Tripal API is documented online at http://api.tripal.info/api/tripal/3.x (COMING SOON). This document provides examples and best practices for using the Tripal API. 
 
 Requirements
-==============================
+-------------------------------
 
 In order to use the Tripal API the developer should have the following skills: 
 
