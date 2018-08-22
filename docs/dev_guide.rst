@@ -5,7 +5,6 @@ Developer's Guide
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents
-   :glob:
 
    dev_guide/data_structures
    dev_guide/best_practices
@@ -13,7 +12,6 @@ Developer's Guide
    dev_guide/custom_field
    dev_guide/custom_data_loader
    dev_guide/custom_web_services
-
 
 
 
