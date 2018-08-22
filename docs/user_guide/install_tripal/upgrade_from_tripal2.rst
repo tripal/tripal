@@ -26,7 +26,7 @@ Step 1: Upgrade Tripal
 
     If you have made customizations to Chado you may encounter problems during the upgrade.  It is not recommended to ever change any of the existing tables of Chado. However, if you have and if you do encounter such issues, please use the Tripal Issue queue to request help: https://github.com/tripal/tripal/issues
 
-2. Put the site in maintenance mode. Before completing any upgrade you should put your site into "maintenance mode". This ensures that users are isolated from any temporary error messages generated through the process. To put the site in maintenance mode, navigate to ** Administrative > Configuration > Maintenance Mode** . Then click the **Put site into maintenance mode** checkbox and click **Save Configuration**. Additionally, there is a text area on this page that allows you to customize the message displayed to your users while your site is in maintenance mode.
+2. Put the site in maintenance mode. Before completing any upgrade you should put your site into "maintenance mode". This ensures that users are isolated from any temporary error messages generated through the process. To put the site in maintenance mode, navigate to **Administration > Configuration > Maintenance Mode** . Then click the **Put site into maintenance mode** checkbox and click **Save Configuration**. Additionally, there is a text area on this page that allows you to customize the message displayed to your users while your site is in maintenance mode.
 
   .. image:: upgrade_from_tripal2.step1-2.png
 
@@ -79,7 +79,7 @@ Step 1: Upgrade Tripal
 
       drush pm-enable tripal_ds tripal_ws
 
-9. Tripal Daemon provides automatic job execution and was previously a trip is now part of the main Tripal. If you had Tripal Daemon installed with Tripal 2 and you would like to continue using it follow these instructions. First, disable the module and remove the module directory.
+9. Tripal Daemon provides automatic job execution and was previously a tripal extension module but is now part of the main Tripal package. If you had Tripal Daemon installed with Tripal 2 and you would like to continue using it follow these instructions. First, disable the module and remove the module directory.
 
   .. code-block:: bash
 
@@ -151,7 +151,7 @@ Step 3: Use Legacy Templates (optional)
 
 This step is completely optional and not necessarily recommended. It was provided to aid the upgrade process for Tripal sites with lots of customizations who may not have the developers or time to create new Tripal 3 fields to replace their old templates.
 
-All customizations involving re-ordering or re-naming of existing fields can now be done through the Drupal "Manage Fields" Admin interface found under Administration > Structure > Tripal Content Types > [Type you are interested in] > "manage fields". You can also use this interface to switch from Tripal Panes to a long listing of content, fieldsets, tables, tabs, accordions, etc. I suggest playing around with this new interface and looking into Drupal Field Group and/or Display Suite to explore your options for customizing page display through the interface, since this will ease the transition to Drupal 8.
+All customizations involving re-ordering or re-naming of existing fields can now be done through the Drupal "Manage Fields" Admin interface found under **Administration > Structure > Tripal Content Types > [Type you are interested in] > "manage fields"**. You can also use this interface to switch from Tripal Panes to a long listing of content, fieldsets, tables, tabs, accordions, etc. I suggest playing around with this new interface and looking into Drupal Field Group and/or Display Suite to explore your options for customizing page display through the interface, since this will ease the transition to Drupal 8.
 
 That said, if you decide to stick with your current customized templates, the following instructions will show you how. Keep in mind this is done on a per content type basis allowing you to do use the new interface on less customized content while still relying on your templates for highly customized content.
 
