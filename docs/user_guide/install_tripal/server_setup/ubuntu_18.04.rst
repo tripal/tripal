@@ -1,12 +1,12 @@
 Server Setup (Ubuntu 18.04 LTS)
 ===============================
 
-The following instructions are for setup of Tripal on an Ubuntu version 16.04 LTS Desktop edition. Ubuntu v16.04 is a long-term support version of Ubuntu, meaning that Ubuntu guarantees patches and security fixes for up to five years.  These instructions do not provide guidance for proper configuration settings for the server to handle load, nor for security settings.   Consult the software documentation for proper load handling and security settings before your site is made public.
+The following instructions are for setup of Tripal on an Ubuntu version 18.04 LTS Desktop edition. Ubuntu v18.04 is a long-term support version of Ubuntu, meaning that Ubuntu guarantees patches and security fixes for up to five years.  These instructions do not provide guidance for proper configuration settings for the server to handle load, nor for security settings.   Consult the software documentation for proper load handling and security settings before your site is made public.
 
 Ubuntu Installation
 -------------------
 
-Please follow the online instructions for download and installation of Ubuntu 16.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the Oracle VirtualBox of VMWare.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
+Please follow the online instructions for download and installation of Ubuntu 16.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the `Oracle VirtualBox <https://www.virtualbox.org/>`_ or `VMWare <http://www.vmware.com/>`_.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
 
 Apache Setup
 ------------

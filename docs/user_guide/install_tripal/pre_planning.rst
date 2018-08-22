@@ -21,7 +21,9 @@ Selection of an appropriate machine
 
 Databases are typically bottle-necked by RAM and disk speed. Selection of the correct balance of RAM, disk speed, disk size and CPU speed is important and dependent on the size of the data. The best advice is to consult an IT professional who can recommend a server installation tailored for the expected size of your data.
 
-**Note**: Tripal does require command-line access to the web server with adequate local file storage for loading of large data files. Be sure to check with your service provider to make sure command-line access is possible.
+.. note::
+
+  Tripal does require command-line access to the web server with adequate local file storage for loading of large data files. Be sure to check with your service provider to make sure command-line access is possible.
 
 Technical Skills
 ----------------

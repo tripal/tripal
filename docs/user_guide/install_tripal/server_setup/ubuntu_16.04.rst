@@ -6,7 +6,7 @@ The following instructions are for setup of Tripal on an Ubuntu version 16.04 LT
 Ubuntu Installation
 -------------------
 
-Please follow the online instructions for download and installation of Ubuntu 16.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the Oracle VirtualBox of VMWare.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
+Please follow the online instructions for download and installation of Ubuntu 16.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the `Oracle VirtualBox <https://www.virtualbox.org/>`_ or `VMWare <http://www.vmware.com/>`_.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
 
 Apache Setup
 ------------
