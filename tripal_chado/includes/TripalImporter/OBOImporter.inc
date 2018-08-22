@@ -577,7 +577,8 @@ class OBOImporter extends TripalImporter {
     }
     // If the 'default-namespace' is missing.
     else {
-      // Grab the first term accession from the file and get the short name for the cv
+      // Grab the first term accession from the file and get the short 
+      // name for looking up the term in EBI.
       $fh = fopen($file, 'r');
       while ($line = fgets($fh)) {
         // Grab the first item's id info to break apart.
@@ -593,6 +594,7 @@ class OBOImporter extends TripalImporter {
         }
       }
       fclose($fh);
+      
       // Check if the EBI ontology search has this ontology:
       try {
         $results = $this->oboEbiLookup($short_name, 'ontology');
@@ -608,9 +610,8 @@ class OBOImporter extends TripalImporter {
         else {
           $results = $short_name;
         }
-        print_r('$results');
-        print_r($results);
-        $defaultcv = tripal_insert_cv(strtoupper($results), '');
+
+        $defaultcv = tripal_insert_cv($results, '');
         $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
       }
       catch (Exception $e) {
@@ -755,11 +756,18 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function processTerm($term, $defaultcv, $is_relationship = 0, $default_db) {
+    
     // make sure we have a namespace for this term
     if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
       throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
     }
-   // construct the term array for sending to the tripal_chado_add_cvterm function
+    
+    // The term may have a namespace but before we determine what it is, let's
+    // pre-set the default namespace using the defaultcv.
+    $namespace = $defaultcv;
+    $short_name = $default_db;
+    
+    // construct the term array for sending to the tripal_chado_add_cvterm function
     // for adding a new cvterm
     $t = array();
     $t['id'] = $term['id'][0];
@@ -772,24 +780,24 @@ class OBOImporter extends TripalImporter {
     }
     if (array_key_exists('namespace', $term)) {
       $t['namespace'] = $term['namespace'][0];
+      $namespace = $t['namespace'];
     }
     if (array_key_exists('is_obsolete', $term)) {
       $t['is_obsolete'] = $term['is_obsolete'][0];
     }
 
     // Check the id isn't a reference to another term.
-    //TODO: Check chado for the accession, so we can avoid lookups where possible.
     if (strpos($t['id'], ':')) {
       $pair = explode(":", $t['id'], 2);
-      $ontology_id = $pair[0];
+      $short_name = $pair[0];
       $accession_num = $pair[1];
-      if (is_numeric($accession_num) && ($ontology_id != $default_db)) {
+      if (is_numeric($accession_num) && ($short_name != $default_db)) {
         // Check that the term isn't already in Chado.
         $results = $this->oboEbiLookup($t['id'], 'term');
         if (isset($results['label'])) {
           $t['name'] = $results['label'];
-          $defaultcv = $results['ontology_name'];
-          $default_db = $results['ontology_prefix'];
+          $namespace = $results['ontology_name'];
+          $short_name = $results['ontology_prefix'];
           $external = TRUE;
         } 
         if (!isset($results['label'])) {
@@ -800,15 +808,16 @@ class OBOImporter extends TripalImporter {
                 foreach ($results['response']['docs'] as $doc) {
                   if ($doc['obo_id'] == $t['id']) {
                     $t['name']  = $doc['label'];
-                    $defaultcv = $doc['ontology_name'];
-                    $default_db = $doc['ontology_prefix'];
+                    $namespace = $doc['ontology_name'];
+                    $short_name = $doc['ontology_prefix'];
                     $external = true;
                   }
                 }
-              } else {
+              } 
+              else {
                 $t['name']  = $results['response']['docs'][0]['label'];
-                $defaultcv = $results['response']['docs'][0]['ontology_name'];
-                $default_db = $results['response']['docs'][0]['ontology_prefix'];
+                $namespace = $results['response']['docs'][0]['ontology_name'];
+                $short_name = $results['response']['docs'][0]['ontology_prefix'];
                 $external = true;
               }
             }
@@ -827,8 +836,8 @@ class OBOImporter extends TripalImporter {
                     //Found the first place a label is other than the accession is used, so take
                     // that info and then end the loop.
                     $t['name'] = $item['label'];
-                    $defaultcv = $item['ontology_name'];
-                    $default_db = $item['ontology_prefix'];
+                    $namespace = $item['ontology_name'];
+                    $short_name = $item['ontology_prefix'];
                     $external = true;
                     break;
                   }
@@ -840,16 +849,17 @@ class OBOImporter extends TripalImporter {
       }
     } 
 
-    // Check that the default_cv is in the cv table.
+    // Check that the namespace is in the cv table.
     $sql =  "
       SELECT CV.name 
       FROM {cv} CV 
-      WHERE CV.name = '$defaultcv'
+      WHERE CV.name = :namespace
     ";
-    $results = chado_query($sql)->fetchObject();
+    $args = [':namespace' => $namespace];
+    $results = chado_query($sql, $args)->fetchObject();
     if (!$results){
-      //The controlled vocabulary is not in the cv term table and needs to be added.
-      $ontology_info = $this->oboEbiLookup($defaultcv, 'ontology');
+      // The controlled vocabulary is not in the cv table and needs to be added.
+      $ontology_info = $this->oboEbiLookup($namespace, 'ontology');
       if (!empty($ontology_info['config'])){
         // CV Name.
         if (array_key_exists('namespace', $ontology_info['config'])) {
@@ -868,7 +878,7 @@ class OBOImporter extends TripalImporter {
         }
         $cv_returned = chado_insert_cv($cv_info, $description);
         if($cv_returned) {
-          $defaultcv = $cv_returned->name;
+          $namespace = $cv_returned->name;
           // Now add the db entry.
           $values = array(
             'name' => $ontology_info['config']['preferredPrefix'],
@@ -878,16 +888,15 @@ class OBOImporter extends TripalImporter {
           
           $db_returned = chado_insert_db($values);
           if ($db_returned) {
-            $default_db = $db_returned->name;
+            $short_name = $db_returned->name;
           }
-
         }
       }
     }
 
-    $t['cv_name'] = $defaultcv;
+    $t['cv_name'] = $namespace;
     $t['is_relationship'] = $is_relationship;
-    $t['db_name'] = $default_db;
+    $t['db_name'] = $short_name;
 
     // The name being empty regularly causes problems, so let's check it's there.
     if (empty($t['name'])){
@@ -896,7 +905,7 @@ class OBOImporter extends TripalImporter {
         $t['name'] = $results['label'];
       } 
     }
-
+    
     $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
@@ -1241,8 +1250,7 @@ class OBOImporter extends TripalImporter {
     $objterm['cv_name' ] = $defaultcv;
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
-    print_r('$objterm');
-    print_r($objterm);
+
     $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
       throw new Exception("Cannot add cvterm " . $objterm['name']);
@@ -1509,8 +1517,6 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function addCvtermDbxref($cvterm, $xref) {
-    print_r('addCvtermDbxref');
-    print_r($cvterm);
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
