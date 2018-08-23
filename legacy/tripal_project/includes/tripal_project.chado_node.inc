@@ -16,7 +16,7 @@
 function tripal_project_node_info() {
   return array(
     'chado_project' => array(
-      'name'        => t('Project'),
+      'name'        => t('Project (Tripal v2 legacy)'),
       'base'        => 'chado_project',
       'description' => t('A project from the Chado database'),
       'has_title'   => TRUE,
