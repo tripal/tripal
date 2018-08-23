@@ -198,11 +198,29 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
       ),
     );
     $dbxref = chado_generate_var('dbxref', $values);
+
     if (!$dbxref) {
-      $errors['dbxref'] = t('The dbxref provided does not exist in the database: %dbxref.', array('%dbxref' => $dbxref));
-      return FALSE;
+
+      $db = chado_generate_var('db', array( 'name' => $db_name));
+
+      if (!$db){
+              $errors['dbxref'] = t('
+              dbxref could not be created for db: %dbxref.', array('%dbxref' => $dbxref));
+              return FALSE;
+      }
+    $dbxref =  chado_insert_record('dbxref', $values);
+
+    if (!$dbxref){
+            $errors['dbxref'] = t('
+            dbxref could not be created for db: %dbxref.', array('%dbxref' => $dbxref));
+            return FALSE;
     }
+  }
+  if (is_array($dbxref)){
+    $options['dbxref_id'] = $dbxref['dbxref_id'];
+    }else {
     $options['dbxref_id'] = $dbxref->dbxref_id;
+  }
   }
 
   // Make sure the tree name is unique.
