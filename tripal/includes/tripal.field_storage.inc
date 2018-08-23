@@ -78,7 +78,7 @@ function tripal_field_storage_query($query) {
   $select->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
   $select->fields('TE', array('id'));
   $select->fields('TB', array('name'));
-  
+
   // Apply any entity condition filters.
   if ($query->entityConditions) {
     if (array_key_exists('bundle', $query->entityConditions)) {
@@ -86,11 +86,11 @@ function tripal_field_storage_query($query) {
     }
   }
 
-  if ($query->relationshipConditions) {
+  if (property_exists($query, 'relationshipConditions') && $query->relationshipConditions) {
     foreach ($query->relationshipConditions as $table_alias => $reldetails) {
       $field = $reldetails['field'];
       $value = $reldetails['value'];
-      $op = $reldetails['op'];        
+      $op = $reldetails['op'];
       $relationship = $query->relationships[$table_alias];
       $table = $relationship['table'];
       $select->join($table, $table_alias, 'TE.id = ' . $table_alias . '.' . $relationship['field']);
@@ -101,7 +101,7 @@ function tripal_field_storage_query($query) {
   // Add in any filters to the query.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
-    
+
     // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'tripal_no_storage') {
       continue;
@@ -129,17 +129,17 @@ function tripal_field_storage_query($query) {
       $select->orderBy('TB.label', $direction);
     }
   }
-  
+
   // Add a range of records to retrieve
   if ($query->range) {
     $select->range($query->range['start'], $query->range['length']);
   }
-  
+
   // Only include records that are deleted.  Tripal doesn't keep track of
   // records that are deleted that need purging separately so we can do nothing
   // with this.
   if (property_exists($query, 'deleted') and $query->deleted) {
-    // There won't ever be field data marked as deleted so just created a 
+    // There won't ever be field data marked as deleted so just created a
     // condition that always evaluates to false.
     $select->where('1=0');
   }
@@ -147,10 +147,10 @@ function tripal_field_storage_query($query) {
 //   dpm($query);
 //   dpm($select->__toString());
 //   dpm($select->getArguments());
-  
+
   // Perform the query and return the results.
   $entities = $select->execute();
-  
+
   $result = array(
     'TripalEntity' => array(),
   );
