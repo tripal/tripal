@@ -68,7 +68,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       $ctype_lookup = array();
       $found = FALSE;
       while ($bundle = $bundles->fetchObject()) {
-        // Check the label by replacing non alpha-numeric characters with 
+        // Check the label by replacing non alpha-numeric characters with
         // an underscore and is case-insensitive
         $label = preg_replace('/[^\w]/', '_', $bundle->label);
         if (preg_match("/^$label$/i", $ctype)) {
@@ -278,7 +278,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       }
       // Get the information about this field.
       $field = field_info_field($field_name);
-      
+
       // If the field has the $no_data turned on then we should exclude it.
       if (tripal_load_include_field_class($field['type'])) {
         $field_class = $field['type'];
@@ -885,8 +885,7 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // Perform the query just as a count first to get the number of records.
     $cquery = clone $query;
-    $cquery->count();
-    $num_records = $cquery->execute();
+    $num_records = $cquery->count();
 
     if (!$num_records) {
       $num_records = 0;
