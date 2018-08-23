@@ -125,7 +125,7 @@ class NewickImporter extends TripalImporter {
         tree. In this case, the word 'taxonomy' should be used."),
       '#required' => TRUE,
       '#default_value' => $leaf_type,
-      '#autocomplete_path' => "admin/tripal/legacy/tripal_cv/cvterm/auto_name/$cv_id",
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
     ];
 
     $form['dbxref'] = [
@@ -173,13 +173,11 @@ class NewickImporter extends TripalImporter {
   public function formValidate($form, &$form_state) {
 
     $values = $form_state['values'];
-
     $options = [
       'name' => trim($values["tree_name"]),
       'description' => trim($values["description"]),
       'analysis_id' => $values["analysis_id"],
       'leaf_type' => $values["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
@@ -216,15 +214,15 @@ class NewickImporter extends TripalImporter {
     $arguments = $this->arguments['run_args'];
 
     $options = array(
-      'name'         => $this->arguments["tree_name"],
-      'description'  => $this->arguments["description"],
-      'analysis_id'  => $this->arguments["analysis_id"],
-      'leaf_type'    => $this->arguments["leaf_type"],
+      'name'         => $arguments["tree_name"],
+      'description'  => $arguments["description"],
+      'analysis_id'  => $arguments["analysis_id"],
+      'leaf_type'    => $arguments["leaf_type"],
       'tree_file'    => $this->arguments['files'][0]['file_path'],
       'format'       => 'newick',
-      'dbxref'       => $this->arguments["dbxref"],
-      'match'        => $this->arguments["match"],
-      'name_re'      => $this->arguments["name_re"],
+      'dbxref'       => $arguments["dbxref"],
+      'match'        => $arguments["match"],
+      'name_re'      => $arguments["name_re"],
     );
     $errors = array();
     $warnings = array();

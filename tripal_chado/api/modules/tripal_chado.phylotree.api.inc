@@ -3,7 +3,7 @@
 /**
  * @file
  * Provides API functions specificially for managing phylogenetic and taxonomic
- * tree records in Chado.  
+ * tree records in Chado.
  */
 
 /**
@@ -11,8 +11,8 @@
  * @ingroup tripal_chado_api
  * @{
  * Provides API functions specificially for managing phylogenetic and taxonomic
- * tree records in Chado.  The API consists of functions for creation, 
- * retrieval, update and deltion (CRUD) for phylogenetic tree records as 
+ * tree records in Chado.  The API consists of functions for creation,
+ * retrieval, update and deltion (CRUD) for phylogenetic tree records as
  * well as importing of trees in the newick file format.
  * @}
  */
@@ -83,10 +83,6 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     }
     if (!array_key_exists('description', $options)) {
       $errors['description'] = t('Please provide a description for this tree.');
-      return FALSE;
-    }
-    if (!array_key_exists('tree_file', $options)) {
-      $errors['tree_file'] = t('Please provide either the full path to the tree_file or a Drupal managed file ID number.');
       return FALSE;
     }
     if (!array_key_exists('format', $options) or !$options['format']) {
@@ -254,7 +250,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick is supported'.
- * 
+ *
  *  Optional keys:
  *     'dbxref':     A database cross-reference of the form DB:ACCESSION.
  *                   Where DB is the database name, which is already present
@@ -312,6 +308,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
     'comment' => $options['description'],
     'type_id' => $options['type_id'],
   );
+
   $phylotree = chado_insert_record('phylotree', $values);
   if (!$phylotree) {
     drupal_set_message(t('Unable to add phylotree.'), 'warning');
@@ -675,7 +672,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arra
       if (!empty($tree['name']) and $tree['name'] != '') {
         if (!$options['taxonomy']) {
 
-          // This is a sequence-based tree. Try to match leaf nodes with 
+          // This is a sequence-based tree. Try to match leaf nodes with
           // features.
           // First, Get the Name and uniquename for the feature.
           $matches = array();
@@ -751,9 +748,9 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = arra
 /**
  * Get the vocabulary terms used to describe nodes in the tree.
  *
- * @return 
+ * @return
  *  Array of vocab info or FALSE on failure.
- * 
+ *
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_get_node_types_vocab() {
