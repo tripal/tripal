@@ -2769,7 +2769,7 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   // First, is this the case where all of the records in the table are
   // of this type?  If so, then all properties apply
   if (!$type_column) {
-    $sql = 'SELECT DISTINCT type_id FROM {' . $prop_table . '}';
+    $sql = 'SELECT DISTINCT type_id FROM {' . db_escape_table($prop_table) . '}';
     $props = chado_query($sql, $args);
   }
   // Second, if this is the case where a content type is uniquely identified
@@ -2778,8 +2778,8 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   else if ($type_column and !$type_table) {
     $sql = "
         SELECT DISTINCT P.type_id
-        FROM {" . $prop_table . "} P
-          INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
+        FROM {" . db_escape_table($prop_table) . "} P
+          INNER JOIN {" . db_escape_table($table_name) . "} T on T.$tpkey = P.$tpkey
         WHERE T.$type_column = :cvterm_id
       ";
     $args[':cvterm_id'] = $cvterm_id;
@@ -2790,9 +2790,9 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   else if ($type_column and $type_table == $prop_table and !empty($type_value)) {
     $sql = "
         SELECT DISTINCT P2.type_id
-        FROM {" . $prop_table . "} P1
-          INNER JOIN {" . $table_name . "} T on T.$tpkey = P1.$tpkey
-          INNER JOIN {" . $prop_table . "} P2 on T.$tpkey = P2.$tpkey
+        FROM {" . db_escape_table($prop_table) . "} P1
+          INNER JOIN {" . db_escape_table($table_name) . "} T on T.$tpkey = P1.$tpkey
+          INNER JOIN {" . db_escape_table($prop_table) . "} P2 on T.$tpkey = P2.$tpkey
         WHERE P1.$type_column = :cvterm_id AND P1.value = :prop_value AND
           P2.type_id != P1.type_id
        ";
@@ -2805,9 +2805,9 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   else if ($type_column and $type_table != $prop_table and empty($type_value)) {
     $sql = "
          SELECT DISTINCT P.type_id
-         FROM {" . $prop_table . "} P
-           INNER JOIN {" . $table_name . "} T on T.$tpkey = P.$tpkey
-           INNER JOIN {" . $type_table . "} TT on TT.$tpkey = T.$tpkey
+         FROM {" . db_escape_table($prop_table) . "} P
+           INNER JOIN {" . db_escape_table($table_name) . "} T on T.$tpkey = P.$tpkey
+           INNER JOIN {" . db_escape_table($type_table) . "} TT on TT.$tpkey = T.$tpkey
          WHERE TT.$type_column = :cvterm_id
        ";
     $args[':cvterm_id'] = $cvterm_id;
