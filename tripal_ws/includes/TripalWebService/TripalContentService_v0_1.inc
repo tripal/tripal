@@ -886,7 +886,6 @@ class TripalContentService_v0_1 extends TripalWebService {
     // Perform the query just as a count first to get the number of records.
     $cquery = clone $query;
     $num_records = $cquery->count();
-    //$num_records = $cquery->execute();
 
     if (!$num_records) {
       $num_records = 0;
