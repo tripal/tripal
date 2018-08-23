@@ -6,25 +6,25 @@ Database Setup
 
 Before we can install Tripal we must have a database ready for it.  In the server setup instructions were provided to set up a PostgreSQL database server. Now, we need to create the Drupal database. To do so we must first become the PostgreSQL user.
 
-.. code-block: bash
+.. code-block:: bash
 
   sudo su - postgres
 
 Next, create the new 'drupal' user account. This account will not be a "superuser' nor allowed to create new roles, but should be allowed to create a database.
 
-.. code-block: bash
+.. code-block:: bash
 
   createuser -P drupal
 
 When requested, enter an appropriate password. Finally, create the new database:
 
-.. code-block: bash
+.. code-block:: bash
 
   createdb drupal -O drupal
 
 We no longer need to be the postgres user so exit
 
-.. code-block: bash
+.. code-block:: bash
 
   exit
 
@@ -33,7 +33,7 @@ Tripal Installation
 
 Navigate to the directory you want to create the website. For this example it will be /var/www/html (the typical home location for Ubuntu and CentOS)
 
-.. code-block: bash
+.. code-block:: bash
 
   cd /var/www/html
 
@@ -43,23 +43,21 @@ Navigate to the directory you want to create the website. For this example it wi
 
 Clone the tripal_install project using the git command and move the contents up one level into the web document directory:
 
-.. code-block: bash
+.. code-block:: bash
 
   git clone https://github.com/tripal/tripal_install.git
   mv tripal_install/* ./
 
 Begin the installation for a generic installation with the following command:
 
-.. code-block: bash
+.. code-block:: bash
 
   drush --include=. tripal-generic-install
 
-From this point onward, you will be asked a series of questions in the terminal window.  First you will be asked for the name of the site (this will appear at the top of your site after creation), the site administrator's email address, a username for the administrator to log on, and the password for the adminstrator:
+From this point onward, you will be asked a series of questions in the terminal window.  First you will be asked for the name of the site (this will appear at the top of your site after creation), the site administrator's email address, a username for the administrator to log on, and the password for the administrator:
 
 ::
 
-  parallels@parattets-vm:/var/www/htmt$ mv parallels@
-  parallets-vm: /var/www/htmt$ drush - -include=. tripal-generic-instatl
   Name of the site : Tripal
   Admin email for the site : admin@gmail.com
   Name for your admin user on the site : admin
