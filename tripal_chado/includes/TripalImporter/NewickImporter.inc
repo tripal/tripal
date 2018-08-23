@@ -29,7 +29,7 @@ class NewickImporter extends TripalImporter {
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
    */
-  public static $upload_description = 'Please provide the Newick formatted tree file.  The file must have a .txt or .tree extension.';
+  public static $upload_description = 'Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension.';
 
   /**
    * The title that should appear above the file upload section.
