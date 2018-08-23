@@ -58,7 +58,37 @@ class TripalContentTest extends TripalTestCase{
     $this->assertEquals($json['label'], "$label Collection");
   }
 
+  /** @test */
   public function testGettingAFeatureResource() {
-    // Call /web-services/content/v0.1/mRNA/1428
+    // Create an mRNA feature
+    $mRNA_term = db_query('SELECT * FROM chado.cvterm WHERE name=:name',
+      [':name' => 'mRNA'])->fetchObject();
+    $this->assertNotEmpty($mRNA_term);
+
+    $feature = factory('chado.feature')->create([
+      'type_id' => $mRNA_term->cvterm_id,
+    ]);
+    $this->publish('feature', [$feature->feature_id]);
+
+    // Get the entity to retrieve the ID
+    $entity_id = chado_get_record_entity_by_table('feature', $feature->feature_id);
+    $this->assertNotEmpty($entity_id);
+
+    // Call the web services url
+    $response = $this->get("/web-services/content/v0.1/mRNA/$entity_id");
+    $response->assertSuccessful();
+
+    $response->assertJsonStructure([
+      '@context',
+      '@id',
+      '@type',
+      'label',
+      'ItemPage',
+      'type',
+    ]);
+
+    // Check that the feature name is what we have expected
+    $data = $response->json();
+    $this->assertEquals($feature->name, $data['name']);
   }
 }
