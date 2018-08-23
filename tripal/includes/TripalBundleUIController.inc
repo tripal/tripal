@@ -878,10 +878,29 @@ function tripal_admin_access($entity) {
     return FALSE;
   }
 
-  // Identify the administrative user roles.
-  $admin_rid = variable_get('user_admin_role');  
-  $admin_role = user_role_load($admin_rid);
-  $roles = array($admin_role->rid => $admin_role->name);
+  // Get the administrative user roles.
+  $admin_role = NULL;
+  $admin_rid = variable_get('user_admin_role'); 
+  if (!$admin_rid) {
+    // If we couldn't identify a single role from the 'user_admin_role' variable
+    // then let's get the role that is currently set to administer tripal. If
+    // there is more than one then we don't really know which to choose unless
+    // the default rid of '3' is present.
+    $admin_roles = user_roles(FALSE, 'administer tripal');
+    if (count(array_keys($admin_roles)) == 1) {
+      $admin_rid = key($admin_roles);
+    }
+    // The rid 3 is Drupal's default for the admin user.
+    else if (in_array(3, array_keys($admin_roles))) {
+      $admin_rid = 3;
+    }
+  }
+  
+  // If we can't find a unique admin role then just don't add one and
+  // the user will be forced to manually set permissions for the admin.
+  if (!$admin_rid) {
+    return FALSE;
+  }
   
   // Define the permissions.
   $permission_for_role = array(
@@ -890,11 +909,9 @@ function tripal_admin_access($entity) {
     'edit ' . $bundle->name => TRUE,
     'delete ' . $bundle->name => TRUE,
   );
-
+  
   // Assign the permissions
-  foreach($roles as $role => $value){
-    user_role_change_permissions($role, $permission_for_role);
-  }
+  user_role_change_permissions($admin_rid, $permission_for_role);
 
   return TRUE;
 }
