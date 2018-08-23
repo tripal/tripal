@@ -1,6 +1,11 @@
 Creating Content Types
 ======================
 
+.. note::
+
+  Prior to creating a new content type you should understand the structure of Chado and how others use Chado to store similar types of data.
+
+
 Tripal v3 comes with some pre-defined content types, however you have the ability to create new Content Types through the Administrative user interface! In Tripal v3, all content types are defined by `Controlled Vocabulary (CV) terms <https://en.wikipedia.org/wiki/Controlled_vocabulary>`_. This has a number of advantages:
 
 1. Facilitates sharing between Tripal sites.
@@ -32,10 +37,6 @@ Alternatively, you can add terms one at a time. To add a single term either from
 
 Create a Tripal Content Type
 ----------------------------
-
-.. note::
-
-  Prior to creating a new content type you should understand the structure of Chado and how others store similar types of data.
 
 Creation of a new content type requires familiarity with Chado.  This is because data records used by content types must be mapped to actual data and the data lives in Chado.  Tripal's interface for creating content types allows you to provide the CV term for the type and then indicate where in Chado the data is/will be stored.  Chado is a flexible relational database schema.  Thus, it is possible for different sites to store data in different ways.  It is best practice however to follow community standards when storing data.  Therefore, please review the online documentation for Chado. If you are unclear how data for your content type should be stored in Chado please consider emailing the `Chado mailing list <http://gmod.org/wiki/GMOD_Mailing_Lists>`_ to ask for help or add a request for help on the Tripal issue queue.
 
