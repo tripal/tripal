@@ -620,8 +620,8 @@ function tripal_chado_chado_bundle_schema() {
       ),
       'type_id' => array(
         'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
-        'type' => 'varchar',
-        'length' => 128,
+        'size' => 'big',
+        'type' => 'int',
         'not null' => TRUE,
         'default' => '',
       ),
@@ -1561,6 +1561,25 @@ function tripal_chado_update_7327() {
       'cv_name' => 'EDAM',
       'definition' => 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.',
     ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Fixing the chado_bundle.type_id type.
+ */
+function tripal_chado_update_7329() {
+  try {
+    db_change_field('chado_bundle', 'type_id', 'type_id', [
+      'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
+      'size' => 'big',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => '',      
+    ]);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
