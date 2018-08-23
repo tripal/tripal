@@ -16,7 +16,7 @@ function tripal_contact_node_info() {
 
   return array(
     'chado_contact' => array(
-      'name'        => t('Contact'),
+      'name'        => t('Contact (Tripal v2 legacy)'),
       'base'        => 'chado_contact',
       'description' => t('A contact from the Chado database'),
       'has_title'   => TRUE,

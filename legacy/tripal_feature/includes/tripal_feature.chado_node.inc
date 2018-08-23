@@ -16,7 +16,7 @@ function tripal_feature_node_info() {
   $nodes = array();
 
   $nodes['chado_feature'] = array(
-    'name'        => t('Feature'),
+    'name'        => t('Feature (Tripal v2 legacy)'),
     'base'        => 'chado_feature',
     'description' => t('A feature from the chado database'),
     'has_title'   => TRUE,
