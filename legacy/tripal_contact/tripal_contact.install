@@ -51,14 +51,6 @@ function tripal_contact_requirements($phase) {
  */
 function tripal_contact_install() {
 
-  // Add the contactprop table to Chado.
-  //tripal_contact_add_custom_tables();
-
-  // Add loading of the the tripal contact ontology to the job queue.
-  //$obo_path = '{tripal_contact}/files/tcontact.obo';
-  //$obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  //tripal_submit_obo_job(array('obo_id' => $obo_id));
-
   // Add cvterms for relationship types.
   tripal_contact_add_cvs();
   tripal_contact_add_cvterms();
@@ -75,13 +67,7 @@ function tripal_contact_install() {
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_uninstall() {
-  /*
-  // remove our custom block visibility settings per node type
-  db_delete('block_node_type')
-    ->condition('module', 'chado_contact')
-    ->condition('delta', 'contbase')
-    ->execute();
-    */
+
 }
 
 /**
@@ -166,71 +152,3 @@ function tripal_contact_schema() {
   return $schema;
 }
 
-/**
- * Add any custom tables needed by this module.
- * - Contactprop: keep track of properties of contact
- *
- * @ingroup tripal_legacy_contact
- */
-// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
-/* function tripal_contact_add_custom_tables(){
-  $schema = array (
-    'table' => 'contactprop',
-    'fields' => array (
-      'contactprop_id' => array (
-        'type' => 'serial',
-        'not null' => true,
-      ),
-      'contact_id' => array (
-        'type' => 'int',
-        'not null' => true,
-      ),
-      'type_id' => array (
-        'type' => 'int',
-        'not null' => true,
-      ),
-      'value' => array (
-        'type' => 'text',
-        'not null' => false,
-      ),
-      'rank' => array (
-        'type' => 'int',
-        'not null' => true,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array (
-      0 => 'contactprop_id',
-    ),
-    'unique keys' => array (
-      'contactprop_c1' => array (
-        0 => 'contact_id',
-        1 => 'type_id',
-        2 => 'rank',
-      ),
-    ),
-    'indexes' => array (
-      'contactprop_idx1' => array (
-        0 => 'contact_id',
-      ),
-      'contactprop_idx2' => array (
-        0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'cvterm' => array (
-        'table' => 'cvterm',
-        'columns' => array (
-          'type_id' => 'cvterm_id',
-        ),
-      ),
-      'contact' => array (
-        'table' => 'contact',
-        'columns' => array (
-          'contact_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
-  chado_create_custom_table('contactprop', $schema, TRUE);
-} */
