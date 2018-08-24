@@ -84,36 +84,42 @@ function tripal_chado_drush_command() {
     ),
   );
 
+  //
   // Drush commands for publications
+  //
   $items['trp-import-pubs'] = array(
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
     'options' => array(
-      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
+      'create_contacts' => dt('Create or update contacts for authors. This option is only available with the --dxref option because creation of contacts is otherwise set for each importer.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
-      'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
+      'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added. Not applicable with the --dbxref option."),
       'update' => dt("Set to 'Y' to update existing pubs.  By default only new pubs are inserted."),
+      'publish' => dt("Set to 'Y' to publish publications after import into Chado. (default: Y)."),
+      'sync' => dt("For Tripal v3 legacy mode only. Set to 'Y' to sync publications after import into Chado. This will create legacy \"nodes\" rather than the newer Tripal v3 entities."),
       'username' => array(
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
       ),
     ),
     'examples' => array(
-      'Standard example' => 'drush tripal-pubs-import',
-      'Standard example' => 'drush -l http://[site url] tripal-pubs-import --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
-      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',
+      'Standard example' => 'drush trp-import-pubs --username=[username] --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
+      'Import single publication' => 'drush tripal-pub-import --username=[username] --dbxref=PMID:23582642',
     ),
   );
   $items['trp-update-pubs'] = array(
     'description' => dt('Updates publication information for publications with a supported database cross-reference.'),
     'options' => array(
-      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642)'),
       'db' => dt('The database name (e.g. PMID or AGL)'),
     ),
+    'publish' => dt("Set to 'Y' to publish publications after import into Chado. (default: Y)."),
+    'sync' => dt("For Tripal v3 legacy mode only. Set to 'Y' to sync publications after import into Chado. This will create legacy \"nodes\" rather than the newer Tripal v3 entities."),
+    'username' => array(
+      'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+    ),
     'examples' => array(
-      'Standard example' => 'drush tripal-pubs-update',
-      'Create contacts during update' => 'drush tripal-pubs-update --create_contacts=1',
-      'Update a single record' => 'drush tripal-pubs-update --dbxref=PMID:23582642',
-      'Update all records for a single database' => 'drush tripal-pubs-update --db=PMID'
+      'Standard example' => 'drush trp-update-pubs --username=[username]',
+      'Update a single record' => 'drush trp-update-pubs --username=[username] --dbxref=PMID:23582642',
+      'Update all records for a single database' => 'drush trp-update-pubs --username=[username] --db=PMID'
     ),
   );
 
@@ -126,9 +132,14 @@ function tripal_chado_drush_command() {
  * @ingroup tripal_drush
  */
 function drush_tripal_chado_trp_import_pubs() {
+  // The create contacts only goes with the dbxref argument
   $create_contacts = drush_get_option('create_contacts');
   $dbxref = drush_get_option('dbxref');
+  
+  // The do_report, publish, sync only go with the normal importer.
   $do_report = drush_get_option('report');
+  $publish = drush_get_option('publish');
+  $sync = drush_get_option('sync');
   $update = drush_get_option('update');
   $uname = drush_get_option('username');
 
@@ -140,13 +151,29 @@ function drush_tripal_chado_trp_import_pubs() {
   else {
     $update = FALSE;
   }
+  
+  if ($publish == 'Y' and $sync == 'Y' ) {
+    $publish = 'both';
+  }
+  elseif ($publish  != 'Y' and $sync == 'Y' ) {
+    $publish = 'sync';
+  }
+  elseif ($publish  == 'Y'  and $sync  != 'Y' ) {
+    $publish = TRUE;
+  }
+  
+  // Set a default to 'Y' if not specified.
+  if (!$publish) {
+    $publish == TRUE;
+  }
+  
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
   if ($dbxref) {
-    chado_import_pub_by_dbxref($dbxref, $create_contacts, $update);
+    chado_import_pub_by_dbxref($dbxref, $create_contacts, $publish, $update);
   }
   else {
-    chado_execute_active_pub_importers($do_report, $update);
+    chado_execute_active_pub_importers($do_report, $publish, $update);
   }
 }
 
@@ -159,9 +186,30 @@ function drush_tripal_chado_trp_update_pubs() {
   $create_contacts = drush_get_option('create_contacts');
   $dbxref = drush_get_option('dbxref');
   $db = drush_get_option('db');
+  $publish = drush_get_option('publish');
+  $sync = drush_get_option('sync');
+  
+  $uname = drush_get_option('username');
+  
+  drush_tripal_set_user($uname);
+  
+  if ($publish == 'Y' and $sync == 'Y' ) {
+    $publish = 'both';
+  }
+  elseif ($publish  != 'Y' and $sync == 'Y' ) {
+    $publish = 'sync';
+  }
+  elseif ($publish  == 'Y'  and $sync  != 'Y' ) {
+    $publish = TRUE;
+  }
+  
+  // Set a default to 'Y' if not specified.
+  if (!$publish) {
+    $publish == TRUE;
+  }
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
-  chado_reimport_publications($create_contacts, $dbxref, $db);
+  chado_reimport_publications($create_contacts, $dbxref, $db, $publish);
 }
 
 /**

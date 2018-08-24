@@ -50,15 +50,15 @@ function tripal_pub_install() {
   global $base_path;
 
   // add loading of the the tripal pub ontology to the job queue
-  $obo_path = '{tripal_pub}/files/tpub.obo';
-  $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
+  //$obo_path = '{tripal_pub}/files/tpub.obo';
+  //$obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
+  //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
-  tripal_pub_add_cvs();
-  tripal_pub_add_cvterms();
+  //tripal_pub_add_cvs();
+  //tripal_pub_add_cvterms();
 
   // add the custom tables
-  tripal_pub_add_custom_tables();
+  //tripal_pub_add_custom_tables();
 
   // set the default vocabularies
   tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
@@ -126,7 +126,9 @@ function tripal_pub_schema() {
     'primary key' => array('nid'),
   );
 
-  $schema['tripal_pub_import'] = array(
+  /* 
+   * The following table is now created in the tripal_chado.instal 
+   $schema['tripal_pub_import'] = array(
     'fields' => array(
       'pub_import_id' => array(
         'type' => 'serial',
@@ -160,7 +162,7 @@ function tripal_pub_schema() {
     'indexes' => array(
       'name' => array('name')
     ),
-  );
+  ); */
 
   return $schema;
 }

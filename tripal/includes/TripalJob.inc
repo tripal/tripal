@@ -595,6 +595,15 @@ class TripalJob {
    * Logging works regardless if the job uses a transaction. If the
    * transaction must be rolled back to to an error the error messages will
    * persist.
+   * 
+   * If a function can be executed by the Tripal job system (and hence the
+   * job object is passed in) then you can directly use this function to
+   * log messages. However, if the function can be run via drush on the 
+   * command-line, consider using the tripal_report_error() function which can
+   * accept a job object as an $option and will print to both the terminal
+   * and to the job object.  If you use the tripal_report_error() be sure
+   * to set the 'watchdog' option only if you need log messages also going 
+   * to the watchdog.
    *
    * @param $message
    *   The message to store in the log. Keep $message translatable by not

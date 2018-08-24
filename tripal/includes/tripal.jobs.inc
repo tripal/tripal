@@ -362,7 +362,7 @@ function tripal_jobs_view($job_id) {
   );
   $content['log_fset']['job_logs'] = array(
     '#type' => 'markup',
-    '#markup' => '<pre>' . $job->error_msg . '</pre>',
+    '#markup' => '<pre class="tripal-job-logs">' . $job->error_msg . '</pre>',
   );
   return $content;
 }

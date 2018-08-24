@@ -331,13 +331,20 @@ function chado_autocomplete_pub($string = '') {
  * @param $do_contact
  *   Set to TRUE if authors should automatically have a contact record added
  *   to Chado.
+ * @param $publish
+ *   Set to TRUE if publications should be published after import.  For Tripal
+ *   v3 this value can be set to the string 'sync' or 'both' in the event that
+ *   the site is in "legacy" mode.  Setting this value to 'sync' will create
+ *   nodes, setting to 'both' will create nodes and entities.  If set to TRUE
+ *   only entities are created.
  * @param $do_update
  *   If set to TRUE then the publication will be updated if it already exists
  *   in the database.
  *
  * @ingroup tripal_pub_api
  */
-function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
+function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, 
+    $publish = TRUE, $do_update = TRUE) {
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -376,21 +383,9 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update
       tripal_pub_add_publications($pubs, $do_contact, $do_update);
     }
 
-    // For backwards compatibility check to see if the legacy pub module
-    // is enabled. If so, then sync the nodes.
-    if (module_exists('tripal_pub')) {
-
-      // Sync the newly added publications with Drupal.
-      print "Syncing publications with Drupal...\n";
-      chado_node_sync_records('pub');
-
-      // If any of the importers wanted to create contacts from the authors 
-      // then sync them.
-      if($do_contact) {
-        print "Syncing contacts with Drupal...\n";
-        chado_node_sync_records('contact');
-      }
-    }
+    // Publish as requested by the caller.
+    _chado_execute_pub_importer_publish($publish, NULL, $message_type, $message_opts);
+    
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -407,107 +402,212 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update
  * @param $report_email
  *   A list of email address, separated by commas, that should be notified
  *   once importing has completed.
+ * @param $publish
+ *   Set to TRUE if publications should be published after import.  For Tripal
+ *   v3 this value can be set to the string 'sync' or 'both' in the event that
+ *   the site is in "legacy" mode.  Setting this value to 'sync' will create
+ *   nodes, setting to 'both' will create nodes and entities.  If set to TRUE
+ *   only entities are created.
  * @param $do_update
  *   If set to TRUE then publications that already exist in the Chado database
  *   will be updated, whereas if FALSE only new publications will be added.
  *
  * @ingroup tripal_pub_api
  */
-function chado_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
-  $num_to_retrieve = 100;
-  $page = 0;
+function chado_execute_active_pub_importers($report_email = FALSE, 
+  $publish = TRUE, $do_update = FALSE) {
 
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
+  // Get all of the loaders.
+  $args = array();
+  $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
+  $importers = db_query($sql, $args);
+  $do_contact = FALSE;
+  $reports = array();
+  while ($import = $importers->fetchObject()) {
+    chado_execute_pub_importer($import->pub_import_id, $publish, $do_update);
+  }
 
+  // Iterate through each of the reports and generate a final report with HTML
+  // links.
+  $HTML_report = '';
+  if ($report_email) {
+    $HTML_report .= "<html>";
+    global $base_url;
+    foreach ($reports as $importer => $report) {
+      $total = count($report['inserted']);
+      $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
+      foreach ($report['inserted'] as $pub) {
+        $item = $pub['Title'];
+        if (array_key_exists('pub_id', $pub)) {
+          $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
+        }
+        $HTML_report .= "<li>$item</li>\n";
+      }
+      $HTML_report .= "</ol>\n";
+    }
+    $HTML_report .= "</html>";
+    $site_email = variable_get('site_mail', '');
+    $params = array(
+      'message' => $HTML_report
+    );
+    drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
+  }
+  print "Done.\n";
+}
+
+
+/**
+ * Imports all publications for a given publication import setup.
+ *
+ * @param $import_id
+ *   The ID of the import setup to use
+ * @param $publish
+ *   Set to TRUE if publications should be published after import.  For Tripal
+ *   v3 this value can be set to the string 'sync' or 'both' in the event that
+ *   the site is in "legacy" mode.  Setting this value to 'sync' will create
+ *   nodes, setting to 'both' will create nodes and entities.  If set to TRUE
+ *   only entities are created.
+ * @param $do_update
+ *   If set to TRUE then publications that already exist in the Chado database
+ *   will be updated, whereas if FALSE only new publications will be added.
+ * @param $job
+ *   The jobs management object for the job if this function is run as a job. 
+ *   This argument is added by Tripal during a job run and is not needed if
+ *   this function is run directly.
+ *   
+ * @return
+ *   TRUE if importing occured with on errors. FALSE otherwise. If failed, 
+ *   all database changes are rolled back.
+ *
+ * @ingroup tripal_pub
+ */
+function chado_execute_pub_importer($import_id, $publish = TRUE, $do_update = FALSE, $job = NULL) {
+  
+  // These are options for the tripal_report_error function. We do not
+  // want to log messages to the watchdog but we do for the job and to
+  // the terminal
+  $message_type = 'pub_import';
+  $message_opts = [
+    'watchdog' == FALSE,
+    'job' => $job,
+    'print' => TRUE,
+  ];
+  
+  $message = "Importing of publications for this importer is performed using a database transaction. " .
+    "If the load fails or is terminated prematurely then the entire set of " .
+    "deletions is rolled back and will not be found in the database";  
+  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  
+   
   // start the transaction
   $transaction = db_transaction();
-
+  
   try {
-    // Get all of the loaders.
-    $args = array();
-    $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
-    $results = db_query($sql, $args);
+    $page = 0;
     $do_contact = FALSE;
-    $reports = array();
-    foreach ($results as $import) {
-      $page = 0;
-      print "Executing importer: '" . $import->name . "'\n";
-      // Keep track if any of the importers want to create contacts from authors.
-      if ($import->do_contact == 1) {
-        $do_contact = TRUE;
-      }
-      $criteria = unserialize($import->criteria);
-      $remote_db = $criteria['remote_db'];
-      do {
-        // Retrieve the pubs for this page. We'll retreive 100 at a time.
-        $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
-        $pubs = $results['pubs'];
-        $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
-        $page++;
-      }
-      // Continue looping until we have a $pubs array that does not have
-      // our requested numer of records.  This means we've hit the end.
-      while (count($pubs) == $num_to_retrieve);
+    $num_to_retrieve = 100;
+    
+    // get all of the loaders
+    $args = array(':import_id' => $import_id);
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+    $import = db_query($sql, $args)->fetchObject();
+    
+    tripal_report_error($message_type, TRIPAL_INFO, 
+      "Executing Importer: !name.", ['!name' => $import->name], $message_opts);
+    
+    $criteria = unserialize($import->criteria);
+    $remote_db = $criteria['remote_db'];
+    $total_pubs = 0;
+    
+    // Loop until we have a $pubs array that does not have
+    // our requested numer of records.  This means we've hit the end    
+    do {
+      // retrieve the pubs for this page. We'll retreive 100 at a time
+      tripal_report_error($message_type, TRIPAL_INFO,
+        "Querying !remote_db for up to !num pubs that match the criteria.", 
+        ['!num' => $num_to_retrieve, '!remote_db' => $remote_db], $message_opts);
+      $results  = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs     = $results['pubs'];
+      $num_pubs = $results['total_records'];
+      $total_pubs += $num_pubs;
+      tripal_report_error($message_type, TRIPAL_INFO,
+        "Adding %num new publications.",
+        ['%num' => $num_pubs], $message_opts);
+      
+      tripal_pub_add_publications($pubs, $import->do_contact, $do_update, $job);
+      $page++;
     }
-
-    // Sync the newly added publications with Drupal. If the user
-    // requested a report then we don't want to print any syncing information
-    // so pass 'FALSE' to the sync call.
-    // For backwards compatibility check to see if the legacy pub module
-    // is enabled. If so, then sync the nodes.
-    if (module_exists('tripal_pub')) {
-      print "Syncing publications with Drupal...\n";
-      chado_node_sync_records('pub');
-    }
-
-    // Iterate through each of the reports and generate a final report with HTML
-    // links.
-    $HTML_report = '';
-    if ($report_email) {
-      $HTML_report .= "<html>";
-      global $base_url;
-      foreach ($reports as $importer => $report) {
-        $total = count($report['inserted']);
-        $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
-        foreach ($report['inserted'] as $pub) {
-          $item = $pub['Title'];
-          if (array_key_exists('pub_id', $pub)) {
-            $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
-          }
-          $HTML_report .= "<li>$item</li>\n";
-        }
-        $HTML_report .= "</ol>\n";
-      }
-      $HTML_report .= "</html>";
-      $site_email = variable_get('site_mail', '');
-      $params = array(
-        'message' => $HTML_report
-      );
-      drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
-    }
-
-    // For backwards compatibility check to see if the legacy pub module
-    // is enabled. If so, then sync the nodes.
-    if (module_exists('tripal_pub')) {
-      // If any of the importers wanted to create contacts from the authors then 
-      // sync them.
-      if($do_contact) {
-        print "Syncing contacts with Drupal...\n";
-        chado_node_sync_records('contact');
-      }
+    while (count($pubs) == $num_to_retrieve);
+    
+    // Publish as requested by the caller.
+    _chado_execute_pub_importer_publish($publish, $job, $message_type, $message_opts);
+    
+    if ($job) {
+      $job->setProgress(100);
     }
   }
   catch (Exception $e) {
     $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-    print "FAILED: Rolling back database changes...\n";
-    return;
+    tripal_report_error($message_type, TRIPAL_ERROR,
+      "Rolling back database changes... !message", 
+      ['!message' => $e->getMessage()], $message_opts);
+    return FALSE;
   }
-  print "Done.\n";
+  
+  tripal_report_error($message_type, TRIPAL_INFO,
+    "Done.", [], $message_opts);
+  
+  return TRUE;
 }
+
+
+/**
+ * A helper function to dermine if imported publications should be published.
+ * 
+ * It supports backwards compatibility with Tripal v2 legacy mode.
+ * 
+ * @param $publish
+ *   Set to TRUE if publications should be published after import.  For Tripal
+ *   v3 this value can be set to the string 'sync' or 'both' in the event that
+ *   the site is in "legacy" mode.  Setting this value to 'sync' will create
+ *   nodes, setting to 'both' will create nodes and entities.  If set to TRUE
+ *   only entities are created.
+ */
+function _chado_execute_pub_importer_publish($publish, $job, $message_type, $message_opts) {
+  
+  // If the user wants to publish then do so.
+  if ($publish === TRUE or $publish === 'both') {
+    
+    // Get the bundle for the Publication content type.
+    $bundle_term = tripal_load_term_entity(['vocabulary' => 'TPUB', 'accession' => '0000002']);
+    $bundle = tripal_load_bundle_entity(['term_id' => $bundle_term->id]);
+    if ($bundle) {
+      tripal_report_error($message_type, TRIPAL_INFO,
+        "Publishing publications with Drupal...", [], $message_opts);
+      chado_publish_records(['bundle_name' => $bundle->name], $job);
+    }
+    // Note: we won't publish contacts as Tripal v2 did because there is
+    // no consisten way to do that. Each site my use a different term for
+    // different contact content types (e.g. all as one 'Contact' type or
+    // specific such as 'Person', 'Organization', etc.).
+  }
+  
+  // For backwords compatibility with legacy module do a sync.
+  if ($publish === 'sync' or $publish === 'both') {
+    if (module_exists('tripal_pub')) {
+      tripal_report_error($message_type, TRIPAL_INFO,
+        "Syncing publications with Drupal...", [], $message_opts);
+      chado_node_sync_records('pub');
+      if($import->do_contact) {
+        tripal_report_error($message_type, TRIPAL_INFO,
+          "Syncing contacts with Drupal...", [], $message_opts);
+        chado_node_sync_records('contact');
+      }
+    }
+  }
+}
+
 
 /**
  * Updates publication records.
@@ -528,10 +628,17 @@ function chado_execute_active_pub_importers($report_email = FALSE, $do_update = 
  *   The name of the remote database to update.  If this value is provided and
  *   no dbxref then all of the publications currently in the Chado database
  *   for this remote database will be updated.
- *
+ * @param $publish
+ *   Set to TRUE if publications should be published after import.  For Tripal
+ *   v3 this value can be set to the string 'sync' or 'both' in the event that
+ *   the site is in "legacy" mode.  Setting this value to 'sync' will create
+ *   nodes, setting to 'both' will create nodes and entities.  If set to TRUE
+ *   only entities are created.
+
  * @ingroup tripal_pub_api
  */
-function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
+function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, 
+    $db = NULL, $publish = TRUE) {
 
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
@@ -597,19 +704,8 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = 
       $i++;
     }
 
-    // For backwards compatibility check to see if the legacy pub module
-    // is enabled. If so, then sync the nodes.
-    if (module_exists('tripal_pub')) {
-      // Sync the newly added publications with Drupal.
-      print "Syncing publications with Drupal...\n";
-      chado_node_sync_records('pub');
-
-      // If the caller wants to create contacts then we should sync them.
-      if ($do_contact) {
-        print "Syncing contacts with Drupal...\n";
-        chado_node_sync_records('contact');
-      }
-    }
+    // Publish as requested by the caller.
+    _chado_execute_pub_importer_publish($publish, NULL, $message_type, $message_opts);
   }
   catch (Exception $e) {
     $transaction->rollback();

@@ -104,3 +104,9 @@ div.messages.tripal-site-admin-only {
  }
  
  #tripal-entity-type-chart .x.axis text { display: none; }
+ 
+ .tripal-job-logs {
+  height: 500px;
+  overflow: scroll;
+  font-framily: Courier New, monospace;
+}

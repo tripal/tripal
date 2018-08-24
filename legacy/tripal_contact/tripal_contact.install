@@ -52,12 +52,12 @@ function tripal_contact_requirements($phase) {
 function tripal_contact_install() {
 
   // Add the contactprop table to Chado.
-  tripal_contact_add_custom_tables();
+  //tripal_contact_add_custom_tables();
 
   // Add loading of the the tripal contact ontology to the job queue.
-  $obo_path = '{tripal_contact}/files/tcontact.obo';
-  $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
+  //$obo_path = '{tripal_contact}/files/tcontact.obo';
+  //$obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
+  //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
   // Add cvterms for relationship types.
   tripal_contact_add_cvs();

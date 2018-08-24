@@ -26,10 +26,10 @@
  * @param $values
  *   A key/value associative array that supports the following keys:
  *   - bundle_name:  The name of the the TripalBundle (e.g. bio_data-12345).
- * @param $job_id
- *   (Optional) The numeric job ID as provided by the Tripal jobs system. There
- *   is no need to specify this argument if this function is being called
- *   outside of the jobs systems.
+ * @param $job
+ *   The jobs management object for the job if this function is run as a job. 
+ *   This argument is added by Tripal during a job run and is not needed if
+ *   this function is run directly.
  *
  * @return boolean
  *   TRUE if all of the records of the given bundle type were published, and
@@ -37,23 +37,27 @@
  *
  * @ingroup tripal_chado_api
  */
-function chado_publish_records($values, $job_id = NULL) {
-
+function chado_publish_records($values, $job = NULL) {
+ 
   // Used for adding runtime to the progress report.
   $started_at = microtime(true);
 
-  // We want the job object in order to report progress.
-  if (is_object($job_id)) {
-    $job = $job_id;
-  }
-  if (is_numeric($job_id)) {
+  // We want the job object in order to report progress with the job.
+  if (is_numeric($job)) {
+    $job_id = $job;
     $job = new TripalJob();
     $job->load($job_id);
   }
-  $report_progress = FALSE;
-  if (is_object($job)) {
-    $report_progress = TRUE;
-  }
+  
+  // These are options for the tripal_report_error function. We do not
+  // want to log messages to the watchdog but we do for the job and to
+  // the terminal
+  $message_type = 'publish_records';
+  $message_opts = [
+    'watchdog' == FALSE,
+    'job' => $job,
+    'print' => TRUE,
+  ];
 
   // Start an array for caching objects to save performance.
   $cache = array();
@@ -62,7 +66,7 @@ function chado_publish_records($values, $job_id = NULL) {
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       "Could not publish record: @error",
-      array('@error' => 'The bundle name must be provided'));
+     ['@error' => 'The bundle name must be provided'], $message_opts);
     return FALSE;
   }
 
@@ -81,9 +85,9 @@ function chado_publish_records($values, $job_id = NULL) {
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
   $cache['bundle'] = $bundle;
   if (!$bundle) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "Unknown bundle. Could not publish record: @error",
-        array('@error' => 'The bundle name must be provided'));
+    tripal_report_error($message_type, TRIPAL_ERROR,
+      "Unknown bundle. Could not publish record: @error",
+      ['@error' => 'The bundle name must be provided'], $message_opts);
     return FALSE;
   }
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
@@ -95,8 +99,9 @@ function chado_publish_records($values, $job_id = NULL) {
     ->execute()
     ->fetchObject();
   if(!$chado_bundle) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "Cannot find mapping of bundle to Chado tables. Could not publish record.");
+    tripal_report_error($message_type, TRIPAL_ERROR,
+      "Cannot find mapping of bundle to Chado tables. Could not publish record.",
+      [], $message_opts);
     return FALSE;
   }
 
@@ -202,13 +207,10 @@ function chado_publish_records($values, $job_id = NULL) {
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
-  print "\nThere are $count records to publish.\n";
-
-  print "\nNOTE: publishing records is performed using database transactions. If the job fails\n" .
-          "or is terminated prematurely then the current set of $chunk_size is rolled back with\n" .
-          "no changes to the database. Simply re-run the publishing job to publish any remaining\n".
-          "content after fixing the issue that caused the job to fail.\n\n" .
-          "Also, the following progress only updates every $chunk_size records.\n";
+  
+  tripal_report_error($message_type, TRIPAL_INFO,
+    "There are !count records to publish.",
+    ['!count' => $count], $message_opts);
 
   // Perform the query.
   $sql = $select . $from . $where . ' LIMIT '.$chunk_size;
@@ -220,7 +222,10 @@ function chado_publish_records($values, $job_id = NULL) {
 
     // Update the job status every chunk start.
     // Because this is outside of hte transaction, we can update the admin through the jobs UI.
-    $complete = ($total_published / $count) * 33.33333333;
+    $complete = 0;
+    if ($count > 0) {
+      $complete = ($total_published / $count) * 33.33333333;
+    }
     if ($report_progress) { $job->setProgress(intval($complete * 3)); }
     if ($total_published === 0) {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
@@ -290,7 +295,7 @@ function chado_publish_records($values, $job_id = NULL) {
     catch (Exception $e) {
       $transaction->rollback();
       $error = $e->getMessage();
-      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
+      tripal_report_error($message_type, TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
       drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
       return FALSE;
     }
@@ -304,7 +309,10 @@ function chado_publish_records($values, $job_id = NULL) {
     unset($transaction);
   }
 
-  drupal_set_message("Succesfully published $total_published " . $bundle->label . " record(s).");
+  tripal_report_error($message_type, TRIPAL_INFO,
+    "Succesfully published %count %type record(s).",
+    ['%count' => $total_published, '%type' => $bundle->label], $message_opts);
+  
   return TRUE;
 }
 

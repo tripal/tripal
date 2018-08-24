@@ -1266,7 +1266,7 @@ subset: MeSH_Publication_Type
 
 [Term]
 id: TPUB:0000231
-name: Video Audio Media
+name: Video-Audio Media
 def: Used with articles which include video files or clips, or for articles which are entirely video.
 is_a: TPUB:0000015 ! Publication Type
 subset: MeSH_Publication_Type

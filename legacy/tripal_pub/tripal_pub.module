@@ -338,7 +338,7 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
 function tripal_pub_job_describe_args($callback, $args) {
 
   $new_args = array();
-  if ($callback == 'tripal_execute_pub_importer') {
+  if ($callback == 'chado_execute_pub_importer') {
     // get all of the loaders
     $qargs = array(':import_id' => $args[0]);
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
