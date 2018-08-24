@@ -345,6 +345,7 @@ function chado_autocomplete_pub($string = '') {
  */
 function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, 
     $publish = TRUE, $do_update = TRUE) {
+    
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -352,10 +353,21 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
   $pub_id = NULL;
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
-
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
+  
+  // These are options for the tripal_report_error function. We do not
+  // want to log messages to the watchdog but we do for the job and to
+  // the terminal
+  $message_type = 'pub_import';
+  $message_opts = [
+    'watchdog' == FALSE,
+    'print' => TRUE,
+  ];
+  
+  $message = "Importing of publications is performed using a database transaction. " .
+    "If the load fails or is terminated prematurely then the entire set of " .
+    "deletions is rolled back and will not be found in the database";
+  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  
 
   $transaction = db_transaction();
   try {
@@ -377,8 +389,8 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
       );
       $remote_db = $criteria['remote_db'];
       $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
-      $pubs          = $results['pubs'];
-      $search_str    = $results['search_str'];
+      $pubs = $results['pubs'];
+      $search_str = $results['search_str'];
       $total_records = $results['total_records'];
       tripal_pub_add_publications($pubs, $do_contact, $do_update);
     }
@@ -575,7 +587,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE, $do_update = FA
  *   only entities are created.
  */
 function _chado_execute_pub_importer_publish($publish, $job, $message_type, $message_opts) {
-  
+    
   // If the user wants to publish then do so.
   if ($publish === TRUE or $publish === 'both') {
     
@@ -640,9 +652,20 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
 function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL, 
     $db = NULL, $publish = TRUE) {
 
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
+  // These are options for the tripal_report_error function. We do not
+  // want to log messages to the watchdog but we do for the job and to
+  // the terminal
+  $message_type = 'pub_import';
+  $message_opts = [
+    'watchdog' == FALSE,
+    'print' => TRUE,
+  ];
+  
+  $message = "Importing of publications for this importer is performed using a database transaction. " .
+    "If the load fails or is terminated prematurely then the entire set of " .
+    "deletions is rolled back and will not be found in the database";
+  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  
   $transaction = db_transaction();
   try {
 
@@ -650,10 +673,10 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
     // databases.
     $sql = "
       SELECT DB.name as db_name, DBX.accession
-      FROM pub P
-        INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
-        INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
-        INNER JOIN db DB           ON DB.db_id = DBX.db_id
+      FROM {pub} P
+        INNER JOIN {pub_dbxref} PDBX ON P.pub_id = PDBX.pub_id
+        INNER JOIN {dbxref} DBX      ON DBX.dbxref_id = PDBX.dbxref_id
+        INNER JOIN {db} DB           ON DB.db_id = DBX.db_id
     ";
     $args = array();
     if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
@@ -698,7 +721,8 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
           ),
         ),
       );
-      $pubs = tripal_get_remote_pubs($remote_db, $search, 1, 0);
+      $qresults = tripal_get_remote_pubs($remote_db, $search, 1, 0);
+      $pubs = $qresults['pubs'];      
       tripal_pub_add_publications($pubs, $do_contact, TRUE);
 
       $i++;
@@ -709,10 +733,10 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
   }
   catch (Exception $e) {
     $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-    print "FAILED: Rolling back database changes...\n";
-    return;
+    tripal_report_error($message_type, TRIPAL_ERROR,
+      "Rolling back database changes... !message",
+      ['!message' => $e->getMessage()], $message_opts);return;
   }
   print "Done.\n";
 }

@@ -110,11 +110,11 @@ function tripal_chado_drush_command() {
     'options' => array(
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642)'),
       'db' => dt('The database name (e.g. PMID or AGL)'),
-    ),
-    'publish' => dt("Set to 'Y' to publish publications after import into Chado. (default: Y)."),
-    'sync' => dt("For Tripal v3 legacy mode only. Set to 'Y' to sync publications after import into Chado. This will create legacy \"nodes\" rather than the newer Tripal v3 entities."),
-    'username' => array(
-      'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+      'publish' => dt("Set to 'Y' to publish publications after import into Chado. (default: Y)."),
+      'sync' => dt("For Tripal v3 legacy mode only. Set to 'Y' to sync publications after import into Chado. This will create legacy \"nodes\" rather than the newer Tripal v3 entities."),
+      'username' => array(
+        'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+      ),
     ),
     'examples' => array(
       'Standard example' => 'drush trp-update-pubs --username=[username]',
@@ -161,12 +161,9 @@ function drush_tripal_chado_trp_import_pubs() {
   elseif ($publish  == 'Y'  and $sync  != 'Y' ) {
     $publish = TRUE;
   }
-  
-  // Set a default to 'Y' if not specified.
-  if (!$publish) {
-    $publish == TRUE;
-  }
-  
+  else {
+    $publish = TRUE;
+  } 
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
   if ($dbxref) {
@@ -190,7 +187,6 @@ function drush_tripal_chado_trp_update_pubs() {
   $sync = drush_get_option('sync');
   
   $uname = drush_get_option('username');
-  
   drush_tripal_set_user($uname);
   
   if ($publish == 'Y' and $sync == 'Y' ) {
@@ -202,10 +198,8 @@ function drush_tripal_chado_trp_update_pubs() {
   elseif ($publish  == 'Y'  and $sync  != 'Y' ) {
     $publish = TRUE;
   }
-  
-  // Set a default to 'Y' if not specified.
-  if (!$publish) {
-    $publish == TRUE;
+  else {
+    $publish = TRUE;
   }
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');

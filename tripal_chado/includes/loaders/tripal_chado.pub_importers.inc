@@ -1068,8 +1068,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   }
   else {
     tripal_report_error($message_type, TRIPAL_ERROR,
-      "The Publication Type is a required property but is missing", 
-      [], $error_opts);
+      "The Publication Type is a required property but is missing", [], $error_opts);
     $action = 'error';
     return FALSE;
   }
