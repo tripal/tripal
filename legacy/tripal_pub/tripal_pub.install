@@ -49,17 +49,6 @@ function tripal_pub_requirements($phase) {
 function tripal_pub_install() {
   global $base_path;
 
-  // add loading of the the tripal pub ontology to the job queue
-  //$obo_path = '{tripal_pub}/files/tpub.obo';
-  //$obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  //tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  //tripal_pub_add_cvs();
-  //tripal_pub_add_cvterms();
-
-  // add the custom tables
-  //tripal_pub_add_custom_tables();
-
   // set the default vocabularies
   tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
   tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
@@ -126,97 +115,9 @@ function tripal_pub_schema() {
     'primary key' => array('nid'),
   );
 
-  /* 
-   * The following table is now created in the tripal_chado.instal 
-   $schema['tripal_pub_import'] = array(
-    'fields' => array(
-      'pub_import_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'name' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE
-      ),
-      'criteria' => array(
-        'type' => 'text',
-        'size' => 'normal',
-        'not null' => TRUE,
-        'description' => 'Contains a serialized PHP array containing the search criteria'
-      ),
-      'disabled'  => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not NULL' => TRUE,
-        'default' => 0
-      ),
-      'do_contact'  => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not NULL' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array('pub_import_id'),
-    'indexes' => array(
-      'name' => array('name')
-    ),
-  ); */
-
   return $schema;
 }
 
-/**
- * Add custom table related to publications
- *  - pubauthor_contact
- *
- * @ingroup tripal_legacy_pub
- */
-// This function was moved to tripal_chado/includes/setup/tripal_chado.setup.inc
-/* function tripal_pub_add_custom_tables() {
-  $schema = array (
-    'table' => 'pubauthor_contact',
-    'fields' => array (
-      'pubauthor_contact_id' => array (
-        'type' => 'serial',
-        'not null' => true,
-      ),
-      'contact_id' => array (
-        'type' => 'int',
-        'not null' => true,
-      ),
-      'pubauthor_id' => array (
-        'type' => 'int',
-        'not null' => true,
-      ),
-    ),
-    'primary key' => array (
-      0 => 'pubauthor_contact_id',
-    ),
-    'unique keys' => array (
-      'pubauthor_contact_c1' => array (
-        0 => 'contact_id',
-        1 => 'pubauthor_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'contact' => array (
-        'table' => 'contact',
-        'columns' => array (
-          'contact_id' => 'contact_id',
-        ),
-      ),
-      'pubauthor' => array (
-        'table' => 'pubauthor',
-        'columns' => array (
-          'pubauthor_id' => 'pubauthor_id',
-        ),
-      ),
-    ),
-  );
-  chado_create_custom_table('pubauthor_contact', $schema, TRUE);
-} */
 
 /**
  * This is the required update for tripal_pub when upgrading from Drupal core API 6.x.
