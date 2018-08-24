@@ -1209,7 +1209,7 @@ function tripal_chado_mail($key, &$message, $params) {
         '#markup' => '<h3>Tripal Bulk Publication Report</h3>'
       ];
       $report = $params['report'];
-      print_r($report);
+
       foreach ($report as $action => $pubs) {
         if (count($pubs) > 0) {
           $title = count($pubs) . ' publication(s) were ' . $action . ":";
