@@ -266,31 +266,6 @@ function tripal_pub_permission() {
 }
 
 /**
- * Implements hook_mail().
- *
- * @ingroup tripal_legacy_pub
- */
-function tripal_pub_mail($key, &$message, $params) {
-  $site_name = variable_get('site_name');
-  $language = $message['language'];
-  switch($key) {
-    case 'import_report':
-      $headers = array(
-        'MIME-Version' => '1.0',
-        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
-        'Content-Transfer-Encoding' => '8Bit',
-        'X-Mailer' => 'Drupal'
-      );
-      foreach ($headers as $key => $value) {
-        $message['headers'][$key] = $value;
-      }
-      $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
-      $message['body'][] = $params['message'];
-      break;
-  }
-}
-
-/**
  * Implementation of hook_form_alter().
  *
  * @param $form

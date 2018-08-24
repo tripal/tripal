@@ -1190,6 +1190,66 @@ function tripal_feature_match_features_page($id) {
     ));
     return $output;
   }
-
-
 }
+
+/**
+ * Implements hook_mail().
+ *
+ * @ingroup tripal_legacy_pub
+ */
+function tripal_chado_mail($key, &$message, $params) {
+  $site_name = variable_get('site_name');
+  $language = $message['language'];
+  switch($key) {
+    case 'import_report':
+      
+      $content = [];
+      $content[] = [
+        '#type' => 'markup',
+        '#markup' => '<h3>Tripal Bulk Publication Report</h3>'
+      ];
+      $report = $params['report'];
+      print_r($report);
+      foreach ($report as $action => $pubs) {
+        if (count($pubs) > 0) {
+          $title = count($pubs) . ' publication(s) were ' . $action . ":";
+          if ($action == 'error') {
+            $title = count($pubs) . ' publications were not imported due to errors:';
+          }
+          $content[] = [
+            '#type' => 'item',
+            '#title' => $title, 
+            '#markup' => theme_item_list([
+              'title' => '',
+              'type' => 'ol', 
+              'items' => $pubs,
+              'attributes' => [],
+            ]),
+          ];
+        }
+      }
+      $content = '<html>' . drupal_render($content) . '</html';
+      
+      $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
+      
+      
+      if (module_exists('htmlmail') or module_exists('mimemail')) {
+        $headers = array(
+          'MIME-Version' => '1.0',
+          'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+          'Content-Transfer-Encoding' => '8Bit',
+          'X-Mailer' => 'Drupal'
+        );
+        foreach ($headers as $key => $value) {
+          $message['headers'][$key] = $value;
+        }
+        $message['body'][] = $content;
+      }
+      else {
+        $message['body'][] =  drupal_html_to_text($content);
+      }
+            
+      break;
+  }
+}
+

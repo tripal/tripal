@@ -367,7 +367,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   );
   $dbs = chado_select_record('db', array('*'), $values);
   foreach ($dbs as $index => $db) {
-    $remote_dbs[$db->name] = $db->description;
+    $remote_dbs[$db->name] = $db->description ? $db->description : $db->name;
   };
   // use PubMed as the default
   if (!$remote_db) {
@@ -876,7 +876,7 @@ function tripal_pub_importer_delete($import_id) {
  *
  * @param $pubs
  *   An array containing a list of publications to add to Chado.  The
- *   array contains a set of details for the publication.
+ *   array contains a set of details for the publication. 
  * @param $do_contact
  *   Set to TRUE if authors should automatically have a contact record added
  *   to Chado.
@@ -906,10 +906,11 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
     'print' => TRUE,
   ];
   
-  $report = array();
-  $report['error'] = 0;
-  $report['inserted'] = array();
-  $report['skipped'] = array();
+  $report = [];
+  $report['error'] = [];
+  $report['inserted'] = [];
+  $report['skipped'] = [];
+  $report['updated'] = [];
   $total_pubs = count($pubs);
 
   // iterate through the publications and add each one
@@ -942,21 +943,20 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
 
     switch ($action) {
       case 'error':
-        $report['error']++;
+        $report['error'][] = $pub['Citation'];
         break;
       case 'inserted':
-        $report['inserted'][] = $pub;
+        $report['inserted'][] = $pub['Citation'];
         break;
       case 'updated':
-        $report['updated'][] = $pub;
+        $report['updated'][] = $pub['Citation'];
         break;
       case 'skipped':
-        $report['skipped'][] = $pub;
+        $report['skipped'][] = $pub['Citation'];
         break;
     }
     $i++;
   }
-  print "\n";
   return $report;
 }
 
@@ -972,24 +972,26 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
  *   This variable will get set to a text value indicating the action that was
  *   performed. The values include 'skipped', 'inserted', 'updated' or 'error'.
  * @param $do_contact
- *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
- *   for authors of the publication.
+ *   Optional. Set to TRUE if a contact entry should be added to the Chado 
+ *   contact table for authors of the publication.
  * @param $update_if_exists
  *   Optional.  If the publication already exists then this function will return
  *   without adding a new publication.  However, set this value to TRUE to force
- *   the function to pudate the publication using the $pub_details that are provided.
+ *   the function to pudate the publication using the $pub_details that are 
+ *   provided.
  * @param $job
  *   The jobs management object for the job if this function is run as a job. 
  *   This argument is added by Tripal during a job run and is not needed if
  *   this function is run directly.
  * @return
- *   If the publication already exists, is inserted or updated then the publication
- *   ID is returned, otherwise FALSE is returned. If the publication already exists
- *   and $update_if_exists is not TRUE then the $action variable is set to 'skipped'.
- *   If the publication already exists and $update_if_exists is TRUE and if the update
- *   was successful then $action is set to 'updated'.  Otherwise on successful insert
- *   the $action variable is set to 'inserted'.  If the function failes then the
- *   $action variable is set to 'error'
+ *   If the publication already exists, is inserted or updated then the 
+ *   publication ID is returned, otherwise FALSE is returned. If the publication
+ *   already exists and $update_if_exists is not TRUE then the $action variable 
+ *   is set to 'skipped'. If the publication already exists and 
+ *   $update_if_exists is TRUE and if the update was successful then $action 
+ *   is set to 'updated'.  Otherwise on successful insert the $action variable 
+ *   is set to 'inserted'.  If the function failes then the $action variable 
+ *   is set to 'error'
  *
  * @ingroup tripal_pub
  */
@@ -1118,7 +1120,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   }
 
   // If there is a pub_id and we've been told to update, then do the update.
-  if ($pub_id and $update_if_exists) {
+  else if ($pub_id and $update_if_exists) {
     $match = array('pub_id' => $pub_id);
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');
     $success = chado_update_record('pub', $match, $values, $options);
