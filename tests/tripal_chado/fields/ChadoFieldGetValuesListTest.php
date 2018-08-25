@@ -67,6 +67,60 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
+   * Test for fields based on columns in the base table that are also foreign keys.
+   *
+   * @group fields
+   * @group getValueList
+   */
+  public function testBaseTableForeignKey() {
+    include_once(drupal_get_path('tripal_chado', 'module') . '/includes/TripalFields/ChadoField.inc');
+
+    // Retrieve a list of fields to test.
+    // Note: this list is cached to improve performance.
+    $fields = $this->retrieveFieldList();
+
+    // Only iterate through fields that store their data in chado and
+    // specifically, where the field stores it's data in the base table of the bundle
+    // and IS a foreign key.
+    foreach ($fields['field_chado_storage']['foreign key'] as $key => $info) {
+        $field_name = $info['field_name'];
+        
+        // Construct the Field instance we want the values for.
+        // Specifying "ChadoField" here ensures we are only testing our 
+        // implementation of getValueList() and not the custom version for any
+        // given field.
+        // YOU SHOULD TEST CUSTOM FIELD IMPLEMENTATIONS SEPARATELY.
+        $instance = new \ChadoField($info['field_info'], $info['instance_info']);
+        
+        // Retrieve the values using defaults.
+        // $values will be an array containing the distinct set of values for this field instance.
+        $values = $instance->getValueList(array('limit' => 5));
+        
+        // Ensure we have values returned!
+        $this->assertTrue(
+          is_array($values),
+          t(
+            'No values returned for @field_name with no label string set (bundle: @bundle_name, bundle base table: @bundle_base_table, chado table: @chado_table, chado column: @chado_column).',
+            array(
+              '@field_name' => $field_name, 
+              '@bundle_name' => $info['bundle_name'], 
+              '@bundle_base_table' => $info['bundle_base_table'], 
+              '@chado_table' => $info['instance_info']['settings']['chado_table'], 
+              '@chado_column' => $info['instance_info']['settings']['chado_column'],
+            ) 
+          )   
+        );    
+      
+      // Ensure there are no more then 5 as specified in the limit above.
+      $this->assertLessThanOrEqual(5, sizeof($values),
+        t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
+
+      // @todo Ensure it works with a label string set.
+
+    }
+  }
+
+  /**
    * Returns a list of Fields sorted by their backend, etc. for use in tests.
    */
   private function retrieveFieldList() {

@@ -227,17 +227,7 @@ class ChadoField extends TripalField {
       // If so we would like to travel through the relationship
       // to capture a better human-readable option.
       if ($is_fk) {
-/*
-    dpm(array(
-      'chado table' => $chado_table,
-      'chado column' => $chado_column,
-      'base table' => $base_table,
-      'base schema' => $bschema,
-      'Is foreign key?' => $is_fk,
-      'Foreign Table' => $fk_table,
-      'Foreign column' => $fk_column,
-    ), 'info');
-*/
+
         // Determine the query.
         $sql = "SELECT base.$chado_column as id, fk.*
                 FROM {".$chado_table."} base
@@ -253,6 +243,12 @@ class ChadoField extends TripalField {
           }
           elseif (isset($fkschema['fields']['uniquename'])) {
             $options['label_string'] = '[uniquename]';
+          }
+          elseif (isset($fkschema['fields']['accession'])) {
+            $options['label_string'] = '[accession]';
+          }
+          elseif (isset($fkschema['fields']['title'])) {
+            $options['label_string'] = '[title]';
           }
           elseif ($fk_table == 'organism') {
             $options['label_string'] = '[genus] [species]';
@@ -291,17 +287,6 @@ class ChadoField extends TripalField {
       return FALSE;
     }
 
-/*
-    dpm(array(
-      'chado table' => $chado_table,
-      'chado column' => $chado_column,
-      'base table' => $base_table,
-      'base schema' => $bschema,
-      'Is foreign key?' => $is_fk,
-      'Foreign Table' => $fk_table,
-      'Foreign column' => $fk_column,
-    ), 'info');
-*/
     $results = chado_query($sql);
 
     // Pre-process the label string for better performance.
