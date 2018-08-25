@@ -277,7 +277,7 @@ class tripal_views_query extends views_plugin_query {
           // really should create a new tripal_views_plugin_pager class
           // and call the corresponding function here, but due to time
           // constraints this is the shortcut.
-          $total_items = $cquery->execute();
+          $total_items = $this->cquery->execute();
           $this->pager->total_items = $total_items;
           if (!empty($this->pager->options['offset'])) {
             $this->pager->total_items -= $this->pager->options['offset'];

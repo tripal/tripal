@@ -143,11 +143,22 @@ abstract class TripalFieldDownloader {
 
     // Make sure the user directory exists
     $user = user_load($this->collection->uid);
-    $user_dir = 'public://tripal/users/' . $user->uid;
+    $user_dir = tripal_get_user_files_dir($user);
+    if (!tripal_is_user_files_dir_writeable($user)) {
+      throw new Exception(t("The user's data directory is not writeable: !user_dir.", array('!user_dir' => $user_dir)));
+    }
 
     // Set the collection ID of the collection that this downloader will use.
     $this->collection_id = $collection_id;
-    $this->outfile = $user_dir . '/' . $outfile_name;
+    
+    // Make sure the data_collections directory exists.
+    $collections_dir = $user_dir . '/data_collections';
+    if (!file_exists($collections_dir)) {
+      if (!file_prepare_directory($collections_dir, [FILE_CREATE_DIRECTORY])) {
+        throw new Exception(t("The data_collection directory cannot be created: !collections_dir.", array('!collections_dir' => $collections_dir)));
+      }
+    }
+    $this->outfile = $collections_dir . '/' . $outfile_name;
 
     // A data collection may have multiple bundles.  We'll need to get
     // them all and store them.
@@ -161,11 +172,6 @@ abstract class TripalFieldDownloader {
       $this->collection_bundles[] = $collection_bundle;
     }
  
-    $user_dir = tripal_get_user_files_dir($user);
-    if (!tripal_is_user_files_dir_writeable($user)) {
-      throw new Exception(t("The user's data directory is not writeable: !user_dir.", array('!user_dir' => $user_dir)));
-    }
-
     // Map the fields to their term accessions.
     $this->setFields();
     $this->setFields2Terms();
@@ -294,15 +300,12 @@ abstract class TripalFieldDownloader {
       $fid = $file->fid;
       $file = file_load($fid);
     }
-
-    // We use the fid for the last argument because these files
-    // aren't really associated with any entity, but we need a value./
-    // But, only add the usage if it doens't already exists.
+    
+    // Associate this file with data collections if it isn't already
     $usage = file_usage_list($file);
-    if (array_key_exists('tripal', $usage)) {
-      if (!array_key_exists('data-collection', $usage['tripal'])) {
-        file_usage_add($file, 'tripal', 'data-collection', $fid);
-      }
+    if (!array_key_exists('tripal', $usage) or 
+        !array_key_exists('data_collection', $usage['tripal'])) {
+      file_usage_add($file, 'tripal', 'data_collection', $this->collection_id);
     }
   }
 

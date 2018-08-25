@@ -114,7 +114,7 @@ function tripal_expire_files(TripalJob $job = NULL) {
  *   The file ID of the file to reset.
  *   
  * @return
- *   TRUE on success, FALSE on failure.
+ *   The new expiration date on success, FALSE on failure.
  */
 function tripal_reset_file_expiration($fid) {
   
@@ -138,5 +138,5 @@ function tripal_reset_file_expiration($fid) {
     tripal_report_error('trp_quota', TRIPAL_ERROR, $e->getMessage());
     return FALSE;
   }
-  return TRUE;
+  return $expiration_date;
 }

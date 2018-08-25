@@ -1,85 +1,6 @@
 <?php
 
 
-/**
- *
- */
-function tripal_user_collections_page() {
-  global $user;
-
-  $headers = array('Name', 'Description', 'Create Date', 'Download Formats',
-    'Generate File', 'Actions');
-  $rows = array();
-
-  $collections = db_select('tripal_collection', 'tc')
-    ->fields('tc', array('collection_id'))
-    ->condition('uid', $user->uid)
-    ->orderBy('tc.collection_name')
-    ->execute();
-
-  while ($collection_id = $collections->fetchField()) {
-    $collection = new TripalEntityCollection();
-    $collection->load($collection_id);
-
-    $downloads = array();
-    $formatters = $collection->getFormatters();
-
-    foreach ($formatters as $class_name => $label) {
-
-      $outfile = $collection->getOutfilePath($class_name);
-
-      if (file_exists($outfile)) {
-        $outfileURL = file_create_url($outfile);
-        $downloads[] = l($label, $outfileURL);
-      }
-      else {
-        $downloads[] = 'Waiting on ' . $label . '...';
-      }
-    }
-    $download_list = theme_item_list(array(
-      'items' => $downloads,
-      'title' => '',
-      'type' => 'ul',
-      'attributes' => array(),
-    ));
-
-    $rows[] = array(
-      'data' => array(
-        $collection->getName(),
-        $collection->getDescription(),
-        $collection->getCreateDate(),
-        $download_list,
-        l('Generate File for Download', 'user/' . $user->uid . '/data-collections/generate/' . $collection_id),
-        l('View', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/view') . ' ' .
-        l('Delete', 'user/' . $user->uid . '/data-collections/' . $collection_id . '/delete'),
-      ),
-    );
-  }
-
-  $content['instructions'] = array(
-    '#type' => 'markup',
-    '#markup' => '<p>' .  t('Data collections allow you to store sets of data
-       for download or later use by other tools on this site.  Typically data
-       collections are created using search tools.  The following data
-       collections are available to you.  Some files take time to generate
-       before they can be downloaded.') . '</p>',
-  );
-  $content['files_table'] = array(
-    '#type' => 'item',
-    '#title' => 'Data Collections',
-    '#markup' => theme_table(array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(),
-      'caption' => '',
-      'colgroups' => array(),
-      'sticky' => TRUE,
-      'empty' => t('You currently have no data collections.')
-    )),
-  );
-
-  return $content;
-}
 
 /**
  * Renders a view of a data collection
@@ -91,7 +12,7 @@ function tripal_user_collections_view_page($uid, $collection_id) {
   $breadcrumb = array();
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l($user->name, 'user/' . $uid);
-  $breadcrumb[] = l('Data Collections', 'user/' . $uid . '/data-collections');
+  $breadcrumb[] = l('Files', 'user/' . $uid . '/files');
   drupal_set_breadcrumb($breadcrumb);
 
   $collection = new TripalEntityCollection();
@@ -161,13 +82,6 @@ function tripal_user_collections_view_page($uid, $collection_id) {
     '#markup' => number_format($num_entities),
   );
 
-  $contents['peek'] = array(
-    '#type' => 'item',
-    '#title' => 'Data View',
-    '#markup' => 'Coming soon...',
-  );
-
-
   return $contents;
 }
 /**
@@ -182,7 +96,7 @@ function tripal_user_collections_delete_form($form, &$form_state,  $uid, $collec
 
   $form = confirm_form($form,
       t('Click the delete button below to confirm deletion of the collection titled: %title',
-          array('%title' => $collection->getName())), 'user/' . $uid . '/data-collections',
+          array('%title' => $collection->getName())), 'user/' . $uid . '/files',
       '<p>' .t('This action cannot be undone.') .'</p>', t('Delete'), t('Cancel'), 'confirm');
 
   return $form;
@@ -206,10 +120,11 @@ function tripal_user_collections_delete_form_submit($form, &$form_state) {
     }
     catch (Exception $e) {
       drupal_set_message(t('There was a problem deleting the data collection ' .
-          'please contact the site to report the error: !message', array('!message', $e->getMessage())), 'error');
+        'please contact the site to report the error: !message', 
+        array('!message'=> $e->getMessage())), 'error');
     }
   }
-  drupal_goto('user/' . $user->uid . '/data-collections');
+  drupal_goto('user/' . $user->uid . '/files');
 }
 
 function tripal_user_collections_generate_file_form($form, &$form_state,  $uid, $collection_id) {
@@ -220,7 +135,7 @@ function tripal_user_collections_generate_file_form($form, &$form_state,  $uid, 
   $collection->load($collection_id);
   $form = confirm_form($form,
       t('Confirm creation of files for the data collection named: "%title"',
-          array('%title' => $collection->getName())), 'user/' . $uid . '/data-collections',
+          array('%title' => $collection->getName())), 'user/' . $uid . '/files',
       '<p>' .t('It may take some time for the file(s) to be generated.  An email will be sent when files are ready.') .'</p>', t('Generate File'), t('Cancel'), 'confirm');
 
   return $form;
@@ -249,5 +164,5 @@ function tripal_user_collections_generate_file_form_submit($form, &$form_state) 
     }
   }
 
-  drupal_goto('user/' . $user->uid . '/data-collections');
+  drupal_goto('user/' . $user->uid . '/files');
 }
