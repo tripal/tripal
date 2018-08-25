@@ -16,6 +16,10 @@ class tripal_views_handler_area_collections extends views_handler_area_result {
     if (!$collections_enabled) {
       return '';
     }
+    
+    if (user_is_anonymous()) {
+      return '';
+    }
 
     // We need a specific form to work with Tripal content types and the tripal_views_query plugin.
     if ($this->query->plugin_name == 'tripal_views_query') {
