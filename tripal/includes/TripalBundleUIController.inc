@@ -839,15 +839,16 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
         'storage_args' => $storage_args,
       );
 
-      $bundle = tripal_create_bundle($args, $error);
-      if (!$bundle) {
+      global $user;
+      $job_id = tripal_add_job("Create content type: " . $term_name . ' ('. $vocabulary . ':' . $accession . ')', 
+        'tripal', 'tripal_create_bundle', [$args], $user->uid);
+
+      if (!$job_id) {
         drupal_set_message($error, 'error');
         $form_state['redirect'] = "admin/structure/bio_data";
       }
       else {
-        drupal_set_message('New content type created!');
-        drupal_set_message('Please ' . l("set the user permissions", "admin/people/permissions") . ' for this new content type.');
-        tripal_admin_access($bundle);
+        drupal_set_message('After the content type is created, please ' . l("set the user permissions", "admin/people/permissions") . ' for this new content type.');
         $form_state['redirect'] = "admin/structure/bio_data";
       }
     }
