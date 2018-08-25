@@ -1,5 +1,5 @@
 Tripal Elasticsearch Module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+========================================
 
 
 Tripal Elasticsearch is a module that integrates the `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_ search engine with Tripal sites. By enabling the module, you are provided with a set of tools to index and search your Tripal 3 or Tripal 2 site. It provides an easy to set up site wide search and gene search blocks out of the box. Tripal Elasticsearch also provides support for Cross-site querying, which allows users to search multiple websites in a fast and asynchronous manner in one query.
