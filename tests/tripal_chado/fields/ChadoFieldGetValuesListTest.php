@@ -121,6 +121,60 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
+   * Test for fields based on tables besides the base one for the bundle.
+   *
+   * CURRENTLY RETRIEVING VALUES FOR THESE TABLES IS NOT SUPPORTED.
+   *
+   * @group fields
+   * @group getValueList
+   */
+  public function testNonBaseTable() {
+    include_once(drupal_get_path('tripal_chado', 'module') . '/includes/TripalFields/ChadoField.inc');
+
+    // Retrieve a list of fields to test.
+    // Note: this list is cached to improve performance.
+    $fields = $this->retrieveFieldList();
+
+    // Only iterate through fields that store their data in chado and
+    // specifically, where the field stores it's data in the base table of the bundle
+    // and is not a foreign key.
+    foreach ($fields['field_chado_storage']['referring'] as $key => $info) {
+        $field_name = $info['field_name'];
+
+        // Construct the Field instance we want the values for.
+        // Specifying "ChadoField" here ensures we are only testing our
+        // implementation of getValueList() and not the custom version for any
+        // given field.
+        // YOU SHOULD TEST CUSTOM FIELD IMPLEMENTATIONS SEPARATELY.
+        $instance = new \ChadoField($info['field_info'], $info['instance_info']);
+
+        // Supress tripal errors
+        putenv("TRIPAL_SUPPRESS_ERRORS=TRUE");
+        ob_start();
+
+        try {
+
+        // Retrieve the values.
+        // $values will be an array containing the distinct set of values for this field instance.
+        $values = $instance->getValueList(array('limit' => 5));
+
+        // @todo Check that we got the correct warning message.
+        // Currently we can't check this because we need to supress the error in order to keep it from printing
+        // but once we do, we can't access it ;-P
+
+        } catch (Exception $e) {
+          $this->fail("Although we don't support values lists for $field_name, it still shouldn't produce an exception!");
+        }
+
+        // Clean the buffer and unset tripal errors suppression
+        ob_end_clean();
+        putenv("TRIPAL_SUPPRESS_ERRORS");
+
+        $this->assertFalse($values, "We don't support retrieving values for $field_name since it doesn't store data in the base table.");
+ 
+     }
+  }
+  /**
    * Returns a list of Fields sorted by their backend, etc. for use in tests.
    */
   private function retrieveFieldList() {
