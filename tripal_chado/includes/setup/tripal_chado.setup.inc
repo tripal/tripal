@@ -250,6 +250,9 @@ function tripal_chado_prepare_chado($job = NULL) {
     $job->logMessage($e);
     throw new Exception($e);
   }
+  
+  // Clear the Drupal menu cache so that the new content types have "add" links.
+  menu_cache_clear_all();
 }
 
 /**

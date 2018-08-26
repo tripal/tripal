@@ -604,10 +604,10 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   return $form;
 }
 
- /**
-  * Implements hook_validate() for the tripal_entity_form.
-  */
- function tripal_entity_form_validate($form, &$form_state) {
+/**
+ * Implements hook_validate() for the tripal_entity_form.
+ */
+function tripal_entity_form_validate($form, &$form_state) {
 
    // If the user is cancelling or deleting the entity then don't validate.
    if (array_key_exists('clicked_button', $form_state) and
@@ -631,12 +631,12 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    catch (Exception $e) {
      form_set_error('author_date', 'Please provide a valid authored on date.');
    }
- }
+}
 
- /**
-  * Implements hook_submit() for the tripal_entity_form.
-  */
- function tripal_entity_form_submit($form, &$form_state) {
+/**
+ * Implements hook_submit() for the tripal_entity_form.
+ */
+function tripal_entity_form_submit($form, &$form_state) {
    $entity = $form_state['TripalEntity'];
 
    if ($form_state['clicked_button']['#name'] =='cancel_data') {
@@ -691,63 +691,79 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    else {
      drupal_set_message('Cannot save entity', 'error');
    }
+}
 
- }
 
-
- /**
-  * Provides a list of TripalEntity types (bundles) for the user to add.
-  *
-  * This function is a callback in a menu item which is set in the
-  * TripalEntityUIController class.
-  */
- function tripal_add_page() {
-//    $item = menu_get_item();
-//    $content = system_admin_menu_block($item);
-//    // Bypass the node/add listing if only one content type is available.
-//    if (count($content) == 1) {
-//      $item = array_shift($content);
-//      drupal_goto($item['href']);
-//    }
-//    return theme('tripal_add_list', array('content' => $content));
+/**
+ * Provides a list of TripalEntity types (bundles) for the user to add.
+ *
+ * This function is a callback in a menu item which is set in the
+ * TripalEntityUIController class.
+ */
+function tripal_add_page() {
+  
   $select = "
     SELECT TB.id, TB.label, TBV.value as category, TV.name as variable_type, TV.description
     FROM tripal_bundle TB
       LEFT JOIN tripal_bundle_variables TBV on TB.id = TBV.bundle_id
       LEFT JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
     WHERE TV.name = 'bundle_category'
-    ORDER BY TV.description, TB.label 
+    ORDER BY TBV.value, TB.label 
   ";
   $bundles = db_query($select);  
   
   $content = [];
   $category = 'Other';
   $machine_name = preg_replace('/[^\w]/', '_', $category);
-  $content[$machine_name . '_fieldset'] = array(
+  $content['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => 'This page provides links for creating pages for Tripal supported content types. These types are organized by categories. Please note, however, that the categorization is the most common use for a given type. Some types may be useful in other "categoreis" as well.',
+  ];
+  $content[$machine_name . '_fieldset'] = [
     '#type' => 'fieldset',
     '#title' => $category,
-  ); 
+    '#weight' => 100,
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#attributes' => array(
+      'class' => array('collapsible', 'collapsed'),
+    ),
+    '#attached' => array(
+      'js' => array('misc/collapse.js', 'misc/form.js')
+    ),
+  ]; 
   while ($bundle = $bundles->fetchObject()) {
     if ($category != $bundle->category) {
       $category = $bundle->category;
+      if (!$category) {
+        $category = 'Other';
+      }
       $machine_name = preg_replace('/[^\w]/', '_', $category);
-      $content[$machine_name . '_fieldset'] = array(
+      $content[$machine_name . '_fieldset'] = [
         '#type' => 'fieldset',
         '#title' => $category,
-      ); 
+        '#collapsed' => TRUE,
+        '#collapsible' => TRUE,
+        '#attributes' => array(
+          'class' => array('collapsible', 'collapsed', 'tripal-content-list'),
+        ),
+        '#attached' => array(
+          'js' => array('misc/collapse.js', 'misc/form.js')
+        ),
+      ]; 
     }
     $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
     if (!$bundle) {
-      dpm('No bundle');
       continue;
     }
-    $content[$machine_name . '_fieldset'][$bundle->name] = array(
-      '#type' => '#markup',
-      '#markup' => $bundle->label,
-    );
+    $content[$machine_name . '_fieldset'][$bundle->name] = [
+      '#type' => 'item',
+      '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
+      '#description' => $bundle->term->definition
+    ];
   }
   return $content;
- }
+}
 
  /**
   * Returns HTML for a list of available node types for node creation.
