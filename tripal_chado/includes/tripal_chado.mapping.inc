@@ -87,11 +87,18 @@ function tripal_chado_map_cvterms() {
   print "\nDone.\n";
 }
 
-/*
+/**
  * Add a cvterm mapping record
  *
  * Check if the cvterm mapping record exists. If not, add it to the chado_cvterm_mapping
  * table
+ * 
+ * @param $cvterm_id
+ *   The cvterm_id to map.
+ * @param $tablename
+ *   The name of the table that the term maps to.
+ * @param $chado_field
+ *   The field that the term maps to.
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists

@@ -225,265 +225,20 @@ function tripal_chado_prepare_chado($job = NULL) {
     $mview_id = chado_get_mview_id('db2cv_mview');
     chado_populate_mview($mview_id);
     
+    
     drush_print("Creating common Tripal Content Types...");
     drush_print("This may take awhile if you are upgrading a site that has lots of data...");
-
-    // Create the 'Organism' entity type. This uses the obi:organism term.
-    drush_print("Creating Organism...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'OBI',
-      'accession' => '0100026',
-      'term_name' => 'organism',
-      'storage_args' => array(
-        'data_table' => 'organism',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Organism" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(74);
-    }
-
-    // Create the 'Analysis' entity type. This uses the local:analysis term.
-    drush_print("Creating Analysis...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'operation',
-      'accession' => '2945',
-      'term_name' => 'Analysis',
-      'storage_args' => array(
-        'data_table' => 'analysis',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'operation', 'accession' => '2945'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Analysis" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(78);
-    }
-
-    // Create the 'Project' entity type. This uses the local:project term.
-    drush_print("Creating Project...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'local',
-      'accession' => 'project',
-      'term_name' => 'project',
-      'storage_args' => array(
-        'data_table' => 'project',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Project" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(82);
-    }
-
-    // Create the 'Map' entity type. This uses the local:project term.
-    drush_print("Creating Map...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'data',
-      'accession' => '1274',
-      'term_name' => 'Map',
-      'storage_args' => array(
-        'data_table' => 'featuremap',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Map" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    // Add cvterm mapping for the Map entity type
-    $identifier = array(
-      'cv_id' => array('name' => 'EDAM'),
-      'name' => 'Map'
-    );
-    $cvterm = chado_get_cvterm($identifier);
-    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
-    if ($report_progress) {
-      $job->setProgress(86);
-    }
-
-    // Import a publication so we get all of the properties before
-    // creating the content type.
-    chado_import_pub_by_dbxref('PMID:24163125');
-
-    // Create the 'Publication' entity type.
-    drush_print("Creating Publication...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'TPUB',
-      'accession' => '0000002',
-      'term_name' => 'Publication',
-      'storage_args' => array(
-        'data_table' => 'pub',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
-    if ($term) {
-        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Publication" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    // Add cvterm mapping for the Publication entity type
-    $identifier = array(
-      'cv_id' => array('name' => 'tripal_pub'),
-      'name' => 'Publication'
-    );
-    $cvterm = chado_get_cvterm($identifier);
-    tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
-
-    // Now remove the publication that was added above.
-    $values = array(
-      'dbxref_id' => array(
-        'accession' => '24163125',
-        'db_id' => array(
-          'name' => 'PMID',
-        ),
-      ),
-    );
-    $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
-    chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+    tripal_chado_prepare_general_types();
+    
     if ($report_progress) {
       $job->setProgress(90);
     }
 
-    // Create the 'Gene' entity type.
-    drush_print("Creating Gene...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'SO',
-      'accession' => '0000704',
-      'term_name' => 'gene',
-      'storage_args' => array(
-        'data_table' => 'feature',
-        'type_column' => 'type_id',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Gene" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(94);
-    }
+    
 
-    // Create the 'mRNA' entity type.
-    drush_print("Creating mRNA...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'SO',
-      'accession' => '0000234',
-      'term_name' => 'mRNA',
-      'storage_args' => array(
-        'data_table' => 'feature',
-        'type_column' => 'type_id',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered  creating "mRNA" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(98);
-    }
+   
 
-    // Create the 'biological sample' entity type.
-    drush_print("Creating Biological Sample...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'sep',
-      'accession' => '00195',
-      'term_name' => 'biological sample',
-      'storage_args' => array(
-        'data_table' => 'biomaterial',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'sep', 'accession' => '00195'));
-    if ($term) {
-        $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Biological Sample" Tripal Content Type.';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(99);
-    }
-
-    // Create the 'Phylogenetic tree' entity type.
-    drush_print("Creating Phylogenetic tree...");
-    $error = '';
-    $args = array(
-      'vocabulary' => 'data',
-      'accession' => '0872',
-      'term_name' => 'Phylogenetic tree',
-      'storage_args' => array(
-        'data_table' => 'phylotree',
-      )
-    );
-    $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
-    if ($term) {
-      $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-    if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Phylogenetic tree" Tripal Content Type';
-        throw new Exception($msg);
-      }
-    }
-    if ($report_progress) {
-      $job->setProgress(99);
-    }
+    
 
     // Add the supported loaders
     variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
@@ -495,6 +250,420 @@ function tripal_chado_prepare_chado($job = NULL) {
     $job->logMessage($e);
     throw new Exception($e);
   }
+}
+
+/**
+ * Creates the "General" category of content types.
+ */
+function tripal_chado_prepare_general_types() {
+  
+  //
+  // Create the 'Organism' entity type. This uses the obi:organism term.
+  //
+  drush_print("Creating Organism...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'OBI',
+    'accession' => '0100026',
+    'term_name' => 'organism',
+    'storage_args' => array(
+      'data_table' => 'organism',
+    ),
+    'category' => 'General'
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'OBI', 'accession' => '0100026'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Organism" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  if ($report_progress) {
+    $job->setProgress(74);
+  }
+  
+  //
+  // Create the 'Analysis' entity type. This uses the local:analysis term.
+  //
+  drush_print("Creating Analysis...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'operation',
+    'accession' => '2945',
+    'term_name' => 'Analysis',
+    'storage_args' => array(
+      'data_table' => 'analysis',
+    ),
+    'category' => 'General'
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'operation', 'accession' => '2945'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Analysis" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  if ($report_progress) {
+    $job->setProgress(78);
+  }
+  
+  //
+  // Create the 'Project' entity type. This uses the local:project term.
+  //
+  drush_print("Creating Project...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'local',
+    'accession' => 'project',
+    'term_name' => 'project',
+    'storage_args' => array(
+      'data_table' => 'project',
+    ),
+    'category' => 'General'
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'project'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Project" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  if ($report_progress) {
+    $job->setProgress(82);
+  }
+  
+  //
+  // Create the 'Contact' entity type. This uses the local:contact term.
+  //
+  drush_print("Creating Contact...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'local',
+    'accession' => 'contact',
+    'term_name' => 'contact',
+    'storage_args' => array(
+      'data_table' => 'contact',
+    ),
+    'category' => 'General'
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'local', 'accession' => 'contact'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Contact" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  if ($report_progress) {
+    $job->setProgress(82);
+  }
+
+  //
+  // Create the 'Publication' entity type.
+  //
+  drush_print("Creating Publication...");
+    
+  // Import a publication so we get all of the properties before
+  // creating the content type.
+  chado_import_pub_by_dbxref('PMID:24163125');
+  
+  $error = '';
+  $args = array(
+    'vocabulary' => 'TPUB',
+    'accession' => '0000002',
+    'term_name' => 'Publication',
+    'storage_args' => array(
+      'data_table' => 'pub',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'TPUB', 'accession' => '0000002'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Publication" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  // Add cvterm mapping for the Publication entity type
+  $identifier = array(
+    'cv_id' => array('name' => 'tripal_pub'),
+    'name' => 'Publication'
+  );
+  $cvterm = chado_get_cvterm($identifier);
+  tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'pub', NULL);
+  
+  // Now remove the publication that was added above.
+  $values = array(
+    'dbxref_id' => array(
+      'accession' => '24163125',
+      'db_id' => array(
+        'name' => 'PMID',
+      ),
+    ),
+  );
+  $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
+  chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+}
+
+/**
+ * Creates the "Genomic" category of content types.
+ */
+function tripal_chado_prepare_genomic_types() {
+  //
+  // Create the 'Gene' entity type.
+  //
+  drush_print("Creating Gene...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'SO',
+    'accession' => '0000704',
+    'term_name' => 'gene',
+    'storage_args' => array(
+      'data_table' => 'feature',
+      'type_column' => 'type_id',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000704'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Gene" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  
+  //
+  // Create the 'mRNA' entity type.
+  //
+  drush_print("Creating mRNA...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'SO',
+    'accession' => '0000234',
+    'term_name' => 'mRNA',
+    'storage_args' => array(
+      'data_table' => 'feature',
+      'type_column' => 'type_id',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'SO', 'accession' => '0000234'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered  creating "mRNA" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  
+  //
+  // Create the 'Phylogenetic tree' entity type.
+  //
+  drush_print("Creating Phylogenetic tree...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'data',
+    'accession' => '0872',
+    'term_name' => 'Phylogenetic tree',
+    'storage_args' => array(
+      'data_table' => 'phylotree',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '0872'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Phylogenetic tree" Tripal Content Type';
+      throw new Exception($msg);
+    }
+  }
+  
+  // Create the 'Physical Map' entity type. This uses the local:project term.
+  drush_print("Creating Physical Map...");
+  $cvterm = tripal_get_cvterm(['id' => 'local:Map Type']);
+  $error = '';
+  $args = array(
+    'vocabulary' => 'data',
+    'accession' => '1280',
+    'term_name' => 'Physical Map',
+    'storage_args' => array(
+      'data_table' => 'featuremap',
+      'type_linker_table' => 'featuremapprop',
+      'type_column' => 'type_id',
+      'type_id' => $cvterm->cvterm_id,
+      'type_value' => 'physical'
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1280'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Physical Map" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  
+  // Create the 'DNA Library' entity type. This uses the local:project term.
+  drush_print("Creating DNA Library...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'NCIT',
+    'accession' => 'C16223',
+    'term_name' => 'DNA Library',
+    'storage_args' => array(
+      'data_table' => 'library',
+      'type_column' => 'type_id',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'NCIT', 'accession' => 'C16223'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "DNA Library" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  
+  // Create the 'Genome Assembly' entity type. This uses the local:project term.
+  drush_print("Genome Assembly...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'operation',
+    'accession' => '0525',
+    'term_name' => 'Genome Assembly',
+    'storage_args' => array(
+      'data_table' => 'analysis',
+      'type_linker_table' => 'analysisprop',
+      'type_column' => 'type_id',
+      'type_id' => $cvterm->cvterm_id,
+      'type_value' => 'genome_assembly'
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'NCIT', 'accession' => 'C16223'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "DNA Library" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  
+  // Create the 'DNA Library' entity type. This uses the local:project term.
+  drush_print("Creating DNA Library...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'NCIT',
+    'accession' => 'C16223',
+    'term_name' => 'DNA Library',
+    'storage_args' => array(
+      'data_table' => 'library',
+      'type_column' => 'type_id',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'NCIT', 'accession' => 'C16223'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "DNA Library" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+}
+
+/**
+ * Creates the "Expression" category of content types.
+ */
+function tripal_chado_prepare_expression_types() {
+  //
+  // Create the 'biological sample' entity type.
+  //
+  drush_print("Creating Biological Sample...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'sep',
+    'accession' => '00195',
+    'term_name' => 'biological sample',
+    'storage_args' => array(
+      'data_table' => 'biomaterial',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'sep', 'accession' => '00195'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Biological Sample" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+}
+
+/**
+ * Creates the "Germplasm/Breeding" category of content types.
+ */
+function tripal_chado_prepare_germplasm_types() {
+  
+}
+
+/**
+ * Creates the "Genetic" category of content types.
+ */
+function tripal_chado_prepare_genetic_types() {
+  // Create the 'Map' entity type. This uses the local:project term.
+  drush_print("Creating Map...");
+  $error = '';
+  $args = array(
+    'vocabulary' => 'data',
+    'accession' => '1274',
+    'term_name' => 'Map',
+    'storage_args' => array(
+      'data_table' => 'featuremap',
+    )
+  );
+  $term = tripal_load_term_entity(array('vocabulary' => 'data', 'accession' => '1274'));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+  if (!$term or !$bundle) {
+    if (!tripal_create_bundle($args, $error)) {
+      $msg = (isset($error['!message'])) ? $error['!message'] : 'Error Encountered creating "Map" Tripal Content Type.';
+      throw new Exception($msg);
+    }
+  }
+  // Add cvterm mapping for the Map entity type
+  $identifier = array(
+    'cv_id' => array('name' => 'EDAM'),
+    'name' => 'Map'
+  );
+  $cvterm = chado_get_cvterm($identifier);
+  tripal_chado_add_cvterm_mapping($cvterm->cvterm_id, 'featuremap', NULL);
 }
 
 /**

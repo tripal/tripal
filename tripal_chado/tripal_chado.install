@@ -39,6 +39,8 @@ function tripal_chado_install() {
     ";
     chado_query($sql);
   }
+  
+  tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
 }
 
 /**
@@ -1561,6 +1563,19 @@ function tripal_chado_update_7327() {
       'cv_name' => 'EDAM',
       'definition' => 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.',
     ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adding terms for sequence visualization.
+ */
+function tripal_chado_update_7330() {
+  try {
+    tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
