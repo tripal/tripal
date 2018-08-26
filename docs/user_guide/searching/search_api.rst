@@ -2,10 +2,10 @@ Search API Module: Site-Wide Searching
 ========================================
 
 Installing Drupal Search API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
-* **`Search API <https://www.drupal.org/project/search_api>`_**: This module provides an interface for much more powerful, efficient searching than the Drupal core search module. Specifically, it allows you to use more powerful engines such as `Elastic Search <https://www.drupal.org/project/search_api_elasticsearch>`_ and `Apache Solr <https://www.drupal.org/project/search_api_solr>`_, as well as, advanced features such as facets (for narrowing down search results based on fields or entity type), fuzzy search, etc.
-* **`Search API Database Service <https://www.drupal.org/project/search_api_db>`_**: This module provides a Search Backend/Server defining how your search index should be stored. Specifically, it just stores the index in your current drupal database.
+- `Search API <https://www.drupal.org/project/search_api>`_: This module provides an interface for much more powerful, efficient searching than the Drupal core search module. Specifically, it allows you to use more powerful engines such as `Elastic Search <https://www.drupal.org/project/search_api_elasticsearch>`_ and `Apache Solr <https://www.drupal.org/project/search_api_solr>`_, as well as, advanced features such as facets (for narrowing down search results based on fields or entity type), fuzzy search, etc.
+- `Search API Database Service <https://www.drupal.org/project/search_api_db>`_: This module provides a Search Backend/Server defining how your search index should be stored. Specifically, it just stores the index in your current drupal database.
 
 Install the **Search API** and **Database search** modules as you would any other Drupal module. This can be done using Drupal's module installation page as shown in the screenshot below. For installation instructions reference the `Drupal.org Tutorial <https://www.drupal.org/documentation/install/modules-themes/modules-7>`_.
 
@@ -24,7 +24,7 @@ Alternatively, installation can be accomplished on the command-line by executing
 
 
 Define your Search Backend/Server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 This tutorial covers using a basic Drupal database storage backend for your search. For large sites, it is recommended to use Elastic Search or Apache Solr. First, we need to tell the Search API where we want our index stored.  Navigate, to the configuration page for the Search API. You can either click on the **Configure** link shown in the above screenshot or navigate to ``Configuration > Search API`` through the administrative toolbar. You should see the following screen:
 
@@ -43,7 +43,7 @@ You should see the following screen--assuming all went well. Click on Search API
 .. figure:: ./search_api.4.config3_server.png
 
 Define a Search Index
-~~~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 Now that we have created a server where the Search API will store our index, we have to define the index itself.  On the Search API Configuration page click on the **Add index** link. The resulting page appears in the following screenshot. Name your index something descriptive. Consider including the word "search" somewhere in the name as this name will be used when setting up the search form/listing (view). For example, enter the name "Tripal Content Search." Next, select "Tripal Content" as the **Item Type**. The item type defines what content types should be indexed. One thing to keep in mind, is that the Search API currently does not support multi-entity (ie: Both Tripal and Node content) search in the same index without the `Search API Multi-index Search <https://www.drupal.org/project/search_api_multi>`_ extension module. Notice that we didn't check any of the **Bundles**. By not selecting bundles, this ensures that all Tripal Content will be indexed by the search. Finally, select from the Server dropdown the server created in the previous step and click the Create Index button.
 
@@ -74,9 +74,9 @@ Your index is now scheduled for building! Depending upon the amount of content y
 
 
 Creating a Search Interface for your users
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------
 
-At this point you should have an index for your Tripal Content. However, you still have not created any functionality for end users—the data might be indexed, but they can't search it, yet. To create the Search page we are going to use views. Start by going to the Views Administration UI (``Structure > Views``) and click on **Add new view.**
+At this point you should have an index for your Tripal Content. However, you still have not created any functionality for end users—the data might be indexed, but they can't search it, yet. To create the Search page we are going to use views. Start by going to the Views Administration UI (**Structure > Views**) and click on **Add new view.**
 
 .. figure:: ./search_api.10.png
 
@@ -95,7 +95,7 @@ Next,  will appear is the Edit Views UI which can be intimidating, even if you'v
 
 
 Configuring What is displayed for each Search Result
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------------------
  
 First, we are going to change what is displayed for each result. By default just the unique identifier is displayed which of course is not useful to the user. We want to hide that field by clicking on its name, **Indexed Tripal Content: Tripal content id** which opens the configuration pop-up and then checking **Exclude from display**. Since we will be using this field to create our link, we also want to change the **Thousands marker** to **-None-**.  Click **Apply (all displays)** to save these changes.
 
@@ -122,7 +122,7 @@ On the resulting page, be sure to uncheck the box **Create** a label just as you
 Now that we have a title and excerpt in our Fields section, if you click on the **Update Preview** button you will see a list of titles for your content and then emptiness underneath each title since there was no keyword entered yet so an excerpt could not be generated.
 
 Adding the Keywords Search Box
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 Click on the **Add** button beside **Filter Criteria** and in the resulting pop-up, select **Search** for the filter and then check **Search: Fulltext Search**. Click the **Apply (all displays)** button to add the filter.
 
@@ -139,7 +139,7 @@ Save your view and navigate go to the new search page you created with this new 
 .. figure:: ./search_api.19.view.png
 
 Sort by "Relevance"
-~~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Next, we want to sort our results.  To do this, return to the view configuration page.  Click on the **Add** button beside **Sort Criteria** and in the pop-up select **Search** in the **Filter** drop-down.  Next, check the **Search: Relevance** field. Apply it and configure it to **Sort descending** so that higher scoring results are shown first.  Apply the the configuration settings.
 
@@ -147,7 +147,7 @@ Next, we want to sort our results.  To do this, return to the view configuration
 
 
 Only Show results when user clicks Search
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------
 
 Finally, we do not want search results to automatically appear. We want the user to click the **Apply** button on the search form first. To do this use the right-side of the Views UI to expand the **Advanced** field set and under **Exposed Form** click on **Exposed form Style: Basic**. Change the setting  to **Input Required** and click **Apply**. In the following configuration page change the **Submit button** text to "Search", and uncheck **Expose Sort** order.
 

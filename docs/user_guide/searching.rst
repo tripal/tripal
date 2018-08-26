@@ -5,23 +5,21 @@ Drupal and Tripal offer a variety of methods for searching biological content on
 
 There are several options for the addition of both site-wide and content-specific search tools which include:
 
-**For site-wide searching you can:
-**
+**For site-wide searching you can:**
 
-* Use the Default Drupal Search
-* Use the Search API Module
-* Use an independent search tool. Two popular tools that integrate with Drupal include:
-  * ElasticSearch
-  * Apache Solr
+- Use the Default Drupal Search
+- Use the Search API Module
+- Use an independent search tool. Two popular tools that integrate with Drupal include:
+  - ElasticSearch
+  - Apache Solr
 
-**For content-specific searching you can:
-**
-* Use the search tools that Tripal provides
-* Develop your own search tools using Drupal Views
-* Write your own custom search tools using PHP and Tripal's API functions.
+**For content-specific searching you can:**
+
+- Use the search tools that Tripal provides
+- Develop your own search tools using Drupal Views
+- Write your own custom search tools using PHP and Tripal's API functions.
 
 You may not want to consider using multiple search tools, such as a site-wide tool and content-specific tools.  The following sections provide a description for use and setup of some of these different options.
-
 
 
 .. toctree::
