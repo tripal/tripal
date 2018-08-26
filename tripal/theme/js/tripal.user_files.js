@@ -21,11 +21,20 @@
       // causing collapse.
       $('.tree-node-file').click(function(event) {
       	event.stopPropagation();
+      	
+      	// Reset the colors for all of the elements.
+        $('li.even').css("background-color", "#EEEEEE");
+        $('li.odd').css("background-color", "#FFFFFF");
+        
+        // Get the file details.
       	showFileDetails($(this));
+      	
+      	// Higlight the selected file.
+      	$(this).css("background-color", "#FFAAAA");
       });
     }
   }
-  
+
   /**
    * Prints the details of the selected file from the tree.
    */
@@ -37,7 +46,7 @@
       success: function(data) {
         $('#tripal-user-file-details').html(data);
       }
-    });
+    });  	
   }
   
   /**

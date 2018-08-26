@@ -106,9 +106,9 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
       }
       $expiration = $file->expiration_date ? date('Y-m-d', $file->expiration_date) : '';
       $items[] = [
-        'data' => '<span class="file-name">' . $filename . '</span>' . 
+        'data' => '<span class="file-details"><span class="file-name">' . $filename . '</span>' . 
           '<span class="file-expires">' . $dayleft . ' days</span>' . 
-          '<span class="file-size">' . tripal_format_bytes($file->filesize) . '</span>' ,
+          '<span class="file-size">' . tripal_format_bytes($file->filesize) . '</span></span>' ,
         'class' => ['tree-node-file', ($i % 2 == 0) ? 'even' : 'odd'],
         'fid' => $file->fid,
         'uid' => $file->uid,
