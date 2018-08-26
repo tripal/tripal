@@ -702,15 +702,51 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   * TripalEntityUIController class.
   */
  function tripal_add_page() {
-   $item = menu_get_item();
-   $content = system_admin_menu_block($item);
-   // Bypass the node/add listing if only one content type is available.
-   if (count($content) == 1) {
-     $item = array_shift($content);
-     drupal_goto($item['href']);
-   }
-   return theme('tripal_add_list', array('content' => $content));
-
+//    $item = menu_get_item();
+//    $content = system_admin_menu_block($item);
+//    // Bypass the node/add listing if only one content type is available.
+//    if (count($content) == 1) {
+//      $item = array_shift($content);
+//      drupal_goto($item['href']);
+//    }
+//    return theme('tripal_add_list', array('content' => $content));
+  $select = "
+    SELECT TB.id, TB.label, TBV.value as category, TV.name as variable_type, TV.description
+    FROM tripal_bundle TB
+      LEFT JOIN tripal_bundle_variables TBV on TB.id = TBV.bundle_id
+      LEFT JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
+    WHERE TV.name = 'bundle_category'
+    ORDER BY TV.description, TB.label 
+  ";
+  $bundles = db_query($select);  
+  
+  $content = [];
+  $category = 'Other';
+  $machine_name = preg_replace('/[^\w]/', '_', $category);
+  $content[$machine_name . '_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => $category,
+  ); 
+  while ($bundle = $bundles->fetchObject()) {
+    if ($category != $bundle->category) {
+      $category = $bundle->category;
+      $machine_name = preg_replace('/[^\w]/', '_', $category);
+      $content[$machine_name . '_fieldset'] = array(
+        '#type' => 'fieldset',
+        '#title' => $category,
+      ); 
+    }
+    $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
+    if (!$bundle) {
+      dpm('No bundle');
+      continue;
+    }
+    $content[$machine_name . '_fieldset'][$bundle->name] = array(
+      '#type' => '#markup',
+      '#markup' => $bundle->label,
+    );
+  }
+  return $content;
  }
 
  /**
