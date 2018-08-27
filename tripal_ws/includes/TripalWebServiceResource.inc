@@ -43,10 +43,6 @@ class TripalWebServiceResource {
 
     // First, add the RDFS and Hydra vocabularies to the context.  All Tripal
     // web services should use these.
-    $vocab = tripal_get_vocabulary_details('rdf');
-
-    $this->addContextItem('rdf', $vocab['sw_url']);
-
     $vocab = tripal_get_vocabulary_details('rdfs');
     $this->addContextItem('rdfs', $vocab['sw_url']);
 

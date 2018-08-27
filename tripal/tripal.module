@@ -358,17 +358,6 @@ function tripal_menu() {
   /**
    * Data Collections
    */
-  $items['user/%/data-collections'] = array (
-    'title' => 'Data Collections',
-    'description' => 'Your list of saved data collections',
-    'page callback' => 'tripal_user_collections_page',
-    'access callback' => 'tripal_accesss_user_collections',
-    'access arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/tripal.collections.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-  );
-
   $items['user/%/data-collections/%/delete'] = array (
     'title' => 'Delete a Collections',
     'description' => 'Deletes a data collection.',
@@ -511,11 +500,11 @@ function tripal_menu() {
   
   // User view quota (Tab)
   $items['user/%/files'] = [
-    'title' => 'Uploads',
+    'title' => 'Files',
     'description' => 'Monitors what files that have been uploaded by user through the tripal module',
     'page callback' => 'tripal_user_files_page',
     'page arguments' => [1],
-    'access callback' => 'tripal_access_user_uploads',
+    'access callback' => 'tripal_access_user_files',
     'access arguments' => ['view', 1],
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/tripal.user.inc',
@@ -528,19 +517,20 @@ function tripal_menu() {
     'description' => "View details about the file",
     'page callback' => 'tripal_view_file',
     'page arguments' => [1, 3],
-    'access callback' => 'tripal_access_user_uploads',
+    'access callback' => 'tripal_access_user_files',
     'access arguments' => ['renew', 1, 3],
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.user.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
+  
   // User file renew.
   $items['user/%/files/%/renew'] = [
     'title' => 'Renew File',
     'description' => "Renew a user's file",
     'page callback' => 'tripal_renew_file',
     'page arguments' => [3],
-    'access callback' => 'tripal_access_user_uploads',
+    'access callback' => 'tripal_access_user_files',
     'access arguments' => ['renew', 1, 3],
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.user.inc',
@@ -553,7 +543,7 @@ function tripal_menu() {
     'page callback' => 'tripal_download_file',
     'page arguments' => [3],
     'access arguments' => ['download', 1, 3],
-    'access callback' => 'tripal_access_user_uploads',
+    'access callback' => 'tripal_access_user_files',
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.user.inc',
     'file path' => drupal_get_path('module', 'tripal'),
@@ -564,7 +554,7 @@ function tripal_menu() {
     'description' => "Delete a user's file based on either user action or expired file",
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_delete_file_form', 1, 3],
-    'access callback' => 'tripal_access_user_uploads',
+    'access callback' => 'tripal_access_user_files',
     'access arguments' => ['delete', 1, 3],
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal.user.inc',
@@ -584,7 +574,7 @@ function tripal_menu() {
  * @param $fid
  *   The file ID.
  */
-function tripal_access_user_uploads($op, $uid, $fid = NULL) {
+function tripal_access_user_files($op, $uid, $fid = NULL) {
   global $user;
   
   // The site admin can do anything.
