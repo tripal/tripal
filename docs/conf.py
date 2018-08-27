@@ -20,8 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Tripal'
-copyright = u'2018, Stephen Ficklin, Lacey Sanderson, Bradford Condon et al'
-author = u'Stephen Ficklin, Lacey Sanderson, Bradford Condon et al'
+author = u''
 
 # The short X.Y version
 version = u''
