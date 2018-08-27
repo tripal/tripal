@@ -458,11 +458,11 @@ function tripal_views_handler_area_collections_search_api_form_submit($form, $fo
   }
 
   // Finally, tell the user we're done and link them to the collection.
-  drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
+  drupal_set_message(t("Collection '%name' created with %num_recs record(s). Files for this collection have not yet been created. To create files for download or use with other tools, check the !view.",
     array(
       '%name' => $collection_details['collection_name'],
       '%num_recs' => count($results),
-      '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+      '!view' => l('files page', 'user/' . $user->uid . '/files'),
     ))
   );
 }
