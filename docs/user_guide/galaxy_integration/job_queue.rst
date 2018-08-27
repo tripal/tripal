@@ -1,2 +1,0 @@
-The Galaxy Job Queue
-========================
