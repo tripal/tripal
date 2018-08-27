@@ -66,4 +66,4 @@ Tripal version 3 has incorporated the Tripal Daemon module.  This module was pre
 
   drush pm-enable tripal_daemon
 
-Further documentation for setup of the Tripal Daemon will appear here in the future.  For now, please see the `Tripal Daemon Module <https://www.drupal.org/project/tripal_daemon>`_ page for usage instructions.
+Further documentation for setup of the Tripal Daemon will appear here in the future.  For now, please see Job Management :doc:` </user_guide/job_management>` page for usage instructions.
