@@ -131,7 +131,7 @@ The process allows you to create Tripal 3 content types exposing the same data a
 
 2. Select an individual content type to migrate from the Tripal v2 Content Type drop-down.
 
-  .. image:: upgrade_from_tripal2.step2-1.png
+  .. image:: upgrade_from_tripal2.step2-2.png
 
 3. Click the 'Get Tripal v3 Types' button to retrieve a list of Tripal v3 content types to which this Tripal v2 type can be converted. This may take a while depending on the size of your database.
 

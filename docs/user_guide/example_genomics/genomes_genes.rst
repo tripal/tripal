@@ -73,7 +73,9 @@ Using the Tripal GFF3 loader we were able to populate the database with the geno
 
 Before loading the FASTA file we must first know the Sequence Ontology (SO) term that describes the sequences we are about to upload. We can find the appropriate SO terms from our GFF file. In the GFF file we see the SO terms that correspond to our FASTA files are 'scaffold' and 'mRNA'.
 
-It is important to ensure prior to importing, that the FASTA loader will be able to appropriately match the sequence in the FASTA file with existing sequences in the database. Before loading FASTA files, take special care to ensure the definition line of your FASTA file can uniquely identify the feature for the specific organism and sequence type.
+.. note::
+
+  It is important to ensure prior to importing, that the FASTA loader will be able to appropriately match the sequence in the FASTA file with existing sequences in the database. Before loading FASTA files, take special care to ensure the definition line of your FASTA file can uniquely identify the feature for the specific organism and sequence type.
 
 For example, in our GFF file an mRNA feature appears as follows:
 
@@ -211,7 +213,7 @@ Now, repeat the steps above to publish the mRNA content type.  You should see th
 
 Now, we can view our gene and mRNA pages. Click the Find Tripal Content link. Find and click the new page titled **orange1.1g015632m.g**. Here we can see the gene feature we added and its corresponding mRNA's.
 
-.. image:: genomes_genes.4.png
+.. image:: genomes_genes.5.png
 
 Next find an mRNA page to view.  Remember when we loaded our FASTA file for mRNA that we associated the record with Phytozome.  On these mRNA pages you will see a link in the left side bar titled **Database Cross Reference**.  Clicking that will open a panel with a link to Phytozome.  This link appears because:
 

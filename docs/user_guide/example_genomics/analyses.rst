@@ -32,4 +32,4 @@ Here you can provide the necessary details to help others understand the source 
 
 After saving, you should have the following analysis page:
 
-.. image:: analyses.1.png
+.. image:: analyses.2.png

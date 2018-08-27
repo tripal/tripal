@@ -11,7 +11,7 @@ The following instructions are for setup of Tripal on an Ubuntu version 18.04 LT
 Ubuntu Installation
 -------------------
 
-Please follow the online instructions for download and installation of Ubuntu 16.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the `Oracle VirtualBox <https://www.virtualbox.org/>`_ or `VMWare <http://www.vmware.com/>`_.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
+Please follow the online instructions for download and installation of Ubuntu 18.04 Desktop edition.   Please be sure to install the 'Desktop' edition rather than the 'Server' edition.  The tutorial below will provide the necessary steps to install the server components needed.   If you are using this tutorial to test Tripal you can use a virtual machine such as the `Oracle VirtualBox <https://www.virtualbox.org/>`_ or `VMWare <http://www.vmware.com/>`_.  The virtual machine allows you to install Ubuntu as a "guest" operating system within your existing "host" operating system (e.g. Windows).
 
 Apache Setup
 ------------
@@ -33,7 +33,7 @@ Drupal works best with the Apache rewrite module enabled. Within the Ubuntu serv
    cd /etc/apache2/mods-enabled
    sudo ln -s ../mods-available/rewrite.load
 
-Next we need to edit the web site configuration file.  The configuration file specific for the default website is found here: /etc/apache2/sites-available/000-default.conf. Drupal needs permission to override some default restrictions set by the Apache web server, but it only needs to do so in the directory where it will be installed.  By default in Ubuntu 16.04, the web document root is the /var/www/html directory.  This is where all web files will be placed.  Therefore, we need to adjust the default settings for that directory for Drupal.  To do so, edit this file using the 'gedit' graphical text editor that comes with Ubuntu. Because this file is owned by the 'root' user, we must use the 'sudo' command to run 'gedit' with administrative privileges:
+Next we need to edit the web site configuration file.  The configuration file specific for the default website is found here: /etc/apache2/sites-available/000-default.conf. Drupal needs permission to override some default restrictions set by the Apache web server, but it only needs to do so in the directory where it will be installed.  By default in Ubuntu 18.04, the web document root is the /var/www/html directory.  This is where all web files will be placed.  Therefore, we need to adjust the default settings for that directory for Drupal.  To do so, edit this file using the 'gedit' graphical text editor that comes with Ubuntu. Because this file is owned by the 'root' user, we must use the 'sudo' command to run 'gedit' with administrative privileges:
 
 .. code-block:: bash
 
@@ -59,7 +59,7 @@ Now restart your Apache again.
 Setup PHP
 ---------
 
-Drupal uses PHP.   In Ubuntu 16.04 there are two different instances of PHP that will be installed: a version for apache and another for use on the command-line. To install PHP we can use Ubuntu's apt-get utility.
+Drupal uses PHP.   In Ubuntu 18.04 there are two different instances of PHP that will be installed: a version for apache and another for use on the command-line. To install PHP we can use Ubuntu's apt-get utility.
 
 .. code-block:: bash
 
@@ -92,7 +92,7 @@ Now, restart the webserver so that it picks up the new changes to the PHP settin
 PostgreSQL Server
 -----------------
 
-PostgreSQL is the database software that will be used to house both the Drupal and Tripal databases.  PostgreSQL can be installed on Ubuntu 16.04 simply by issuing the following command.
+PostgreSQL is the database software that will be used to house both the Drupal and Tripal databases.  PostgreSQL can be installed on Ubuntu 18.04 simply by issuing the following command.
 
 .. code-block:: bash
 
