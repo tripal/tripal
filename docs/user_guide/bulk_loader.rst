@@ -14,7 +14,9 @@ The following commands can be executed to install the Tripal Bulk Loader using D
 Plan How to Store Data
 ----------------------
 
-To demonstrate use of the Bulk Loader, a brief example that imports a list of organisms and associates them with their NCBI taxonomy IDs will be performed. The input tab-delimited file will contains the list of all *Fragaria* (strawberry) species in NCBI at the time of the writing of this document.
+To demonstrate use of the Bulk Loader, a brief example that imports a list of organisms and associates them with their NCBI taxonomy IDs will be performed. The input tab-delimited file will contains the list of all *Fragaria* (strawberry) species in NCBI at the time of the writing of this document.  Click the file link below and download it to ``/var/www/html/sites/default/files``.
+
+* `Fragaria.txt <http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt>`_
 
 .. code-block bash
 
