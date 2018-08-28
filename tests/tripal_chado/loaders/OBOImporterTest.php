@@ -15,13 +15,23 @@ class OBOImporterTest extends TripalTestCase {
      * @group obo
      * @ticket 525
      */
-    public function test_PTO_loads() {
+    public function test_PTO_loads_colon_issue() {
       $this->load_pto_mini();
 
       $exists = db_select('chado.cv', 'c')
         ->fields('c', ['cv_id'])
-        ->condition('name', 'core_test_PTO_mini');
+        ->condition('name', 'core_test_PTO_mini')
+        ->execute()
+        ->fetchField();
       $this->assertNotNull($exists);
+
+      //hte colon splitting issue: a new CV will created named fatty acid 18
+      $exists = db_select('chado.cv', 'c')
+        ->fields('c', ['cv_id'])
+        ->condition('name', 'fatty acid 18')
+        ->execute()
+        ->fetchField();
+      $this->assertFalse($exists);
 
     }
 
@@ -29,7 +39,7 @@ class OBOImporterTest extends TripalTestCase {
    * @group obo
    */
 
-  public function testGO_SLIM_loads() {
+  public function testGO_SLIM_load() {
     $this->load_goslim_plant();
 
     $exists = db_select('chado.cv', 'c')
