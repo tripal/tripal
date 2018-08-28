@@ -33,31 +33,66 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // Convert the Tripal term entity into the appropriate record in Chado.
   $dbxref = chado_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
   $cvterm = chado_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
-
+  dpm($entity);
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
   $type_field = $entity->chado_column;
   $record     = $entity->chado_record;
   $record_id  = $entity->chado_record_id;
   $linker     = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
+  $type_value = property_exists($entity, 'chado_type_value') ? $entity->chado_type_value : '';
   $base_schema = chado_get_schema($base_table);
   $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
   list($field_vals, $field_items) = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-  // dpm($field_vals);  
+  dpm($field_vals);  
   
   // First, write the record for the base table.
   $values = $field_vals[$base_table];
   if ($record_id) {
     $values[$base_pkey] = $record_id;
   }
+  // For content types that use a type_id in the base table then we need
+  // to add in the type_id value.
   elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
+  
+  // Insert the record into the base table and get the record ID.
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values, $base_table);
   if (!$base_record_id) {
     throw new Exception('Unable to write fields to Chado: ' . print_r($field_items, TRUE));
+  }
+  
+  // For content types that use a linker table we need to add a record into
+  // the linker table.
+  dpm($linker);
+  dpm($type_field);
+  if ($type_field and $linker) {
+    // If this is for a property table then there will be a value.
+    if ($type_value) {
+      $field_vals[$linker] = [
+        $base_pkey => $base_record_id, 
+        'type_id' => $cvterm->cvterm_id,
+        'value' => $type_value,
+      ];
+    }
+    // If there is no value then this is a dbxref table
+    else {
+      $args = array(':title' => NULL);
+      $sql = "
+        SELECT *
+        FROM {pub}
+        WHERE title = :title
+      ";
+      $pub_id = chado_query($sql, $args)->fetchObject();
+      $field_vals[$linker] = [
+        $base_pkey => $base_record_id,
+        'cvterm_id' => $cvterm->cvterm_id,
+        'pub_id' => $pub_id->pub_id,
+      ];
+    }
   }
 
   // If this is an insert then add the chado_entity record.
