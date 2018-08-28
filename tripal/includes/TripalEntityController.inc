@@ -394,7 +394,7 @@ class TripalEntityController extends EntityAPIController {
       // If our entity has no id, then we need to give it a
       // time of creation.
       if (empty($entity->id)) {
-        $entity->created = $created_date;
+        $entity->created = time();
         $invocation = 'entity_insert';
       }
       else {
