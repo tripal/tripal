@@ -1,5 +1,5 @@
 Creating a Custom Field
-========================
+=======================
 
 The most common way that new content will be added to an existing site is by creating new fields, or field displays.  In Tripal v2 customizations were added by editing PHP templates files.  These template files were  relatively easy to create and customize, but they provided less flexibility and did not integrate well with other Drupal features such as GUI-based page layout and Drupal Views.  Tripal v3 fields now provide this flexibility.  They also support data exchange and data collections!
 
@@ -32,6 +32,7 @@ The process for creating a custom field are as follows:
 * Decide if you need the Chado field classes or the base Tripal field classes.  If you intend to work with data housed in Chado then you should use the Chado field classes.
 * Decide if you want to build your class manually from the ground up or speed development by using the Staton Lab Fields Generator tool.
 * Create new implementations of classes that extend those listed in the table above.  If you implement the functions properly your field is plug-and-play!  Tripal will find it and be able to use it.
+
 The rest of this section will walk you through these steps.
 
 

@@ -17,6 +17,7 @@ After selection of one of the options above you can arrange your database/webser
 
 - **Arrangement #1**: The database and web server are housed on a single server. This is the approach taken by this course. It is necessary to gain access to a machine with enough memory (RAM), hard disk speed and space, and processor power to handle both services.
 - **Arrangement #2**: The database and web server are housed on different servers. This provides dedicated resources to each service (i.e. web and database).
+
 Selection of an appropriate machine
 
 Databases are typically bottle-necked by RAM and disk speed. Selection of the correct balance of RAM, disk speed, disk size and CPU speed is important and dependent on the size of the data. The best advice is to consult an IT professional who can recommend a server installation tailored for the expected size of your data.

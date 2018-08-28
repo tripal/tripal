@@ -20,5 +20,4 @@ User's Guide
    user_guide/job_management
    user_guide/web_services
    user_guide/bulk_loader
-   user_guide/galaxy_integration
    user_guide/customize_site

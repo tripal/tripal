@@ -102,6 +102,7 @@ Some things to know about the publication importer:
 2. If a publication with an accession (e.g. PubMed ID) already exists in the local database, the record will be updated.
 3. If a publication in the local database matches by title, journal and year with one that is to be imported, then the record will be updated. Y
 4. Run the newly created Tripal Job to finish:
+
   ::
 
     cd /var/www/html
