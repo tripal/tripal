@@ -1,7 +1,7 @@
 format-version: 1.2
 data-version: releases/2018-03-09
 saved-by: cooperl
-default-namespace: plant_trait_ontology
+default-namespace: core_test_PTO_mini
 import: http://purl.obolibrary.org/obo/to/imports/chebi_import.owl
 
 ontology: to
