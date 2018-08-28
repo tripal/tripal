@@ -1,0 +1,18 @@
+format-version: 1.2
+data-version: releases/2018-03-09
+saved-by: cooperl
+default-namespace: plant_trait_ontology
+import: http://purl.obolibrary.org/obo/po.owl
+import: http://purl.obolibrary.org/obo/to/imports/chebi_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/envo_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/go_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/ncbitaxon_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/pato_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/peco_import.owl
+import: http://purl.obolibrary.org/obo/to/imports/ro_import.owl
+import: http://purl.obolibrary.org/obo/to/patterns/merge_patterns.owl
+ontology: to
+
+
+[Term]
+id: CHEBI:132502 ! fatty acid 18:3

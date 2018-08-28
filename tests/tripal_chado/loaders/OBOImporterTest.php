@@ -11,18 +11,19 @@ class OBOImporterTest extends TripalTestCase {
   use DBTransaction;
 
 
-  //  /**
-  //   * @group obo
-  //   */
-  //  public function test_PTO_loads() {
-  //    $this->load_pto_full();
-  //
-  //    $exists = db_select('chado.cv', 'c')
-  //      ->fields('c', ['cv_id'])
-  //      ->condition('name', 'plaint_trait_ontology');
-  //    $this->assertNotNull($exists);
-  //
-  //  }
+    /**
+     * @group obo
+     * @ticket 525
+     */
+    public function test_PTO_loads() {
+      $this->load_pto_mini();
+
+      $exists = db_select('chado.cv', 'c')
+        ->fields('c', ['cv_id'])
+        ->condition('name', 'core_test_PTO_mini');
+      $this->assertNotNull($exists);
+
+    }
 
   /**
    * @group obo
@@ -41,10 +42,11 @@ class OBOImporterTest extends TripalTestCase {
 
   }
 
-  private function load_pto_full() {
+  private function load_pto_mini() {
 
     $name = 'core_test_PTO_mini';
-    $path = 'http://purl.obolibrary.org/obo/to.obo';
+
+    $path = __DIR__ . '/../example_files/pto_colon.obo';
 
     $obo_id = db_select('public.tripal_cv_obo', 't')
       ->fields('t', ['obo_id'])
@@ -55,7 +57,6 @@ class OBOImporterTest extends TripalTestCase {
       $obo_id = db_insert('public.tripal_cv_obo')
         ->fields(['name' => $name, 'path' => $path])
         ->execute();
-
     }
 
     $run_args = ['obo_id' => $obo_id];
