@@ -845,10 +845,6 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
       and $form_state['values']['type_column']) {
     $default['type_column'] = $form_state['values']['type_column'];
   }
-  if (array_key_exists('type_column_ignore', $form_state['values'])
-    and $form_state['values']['type_column_ignore']) {
-      $default['type_column_ignore'] = $form_state['values']['type_column_ignore'];
-  } 
   if (array_key_exists('prop_term_name', $form_state['values'])
       and $form_state['values']['prop_term_name']) {
     $default['prop_term_name'] = $form_state['values']['prop_term_name'];
@@ -865,6 +861,8 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
       and $form_state['values']['chado_type_cv_id']) {
     $default['cv_id'] = $form_state['values']['chado_type_cv_id'];
   }
+  
+  dpm($default);
 
   $form['selected_cvterm_id'] = array(
     '#type' => 'value',
@@ -929,17 +927,11 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state,
 
   // If the type_column is set then we're done!  We know the deafult table
   // and column to map this data type.
-  if (!empty($default['type_column'])) {
+  if (!empty($default['type_column']) and $default['type_column'] != 'none') {
     $submit_disabled = FALSE;
     return $form;
   }
-  
-  // If the type column is not disabled and the user has not selected
-  // a type then return.
-  if (!$default['type_column_ignore'] and empty($default['type_column'])) {
-    return $form;
-  }
-    
+     
   // Let's set the names of the linker and prop table for use below.
   $linker_table = $default['table'] . '_cvterm';
   $prop_table = $default['table']. 'prop';
@@ -1025,7 +1017,7 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
     '#description' => 'Please select the column in the "' .
       $default['table'] . '" table that will identify a record as being of type "' .
       $term_name . '". If you select "--None--" then you will be asked
-      if you the type can be identified using a property or linker table.
+      if the type can be identified using a property or linker table.
       Only fields that have a foreign key to the cvterm table will be listed.',
     '#default_value' => $default_column,
     '#ajax' => array(
@@ -1035,17 +1027,6 @@ function tripal_chado_field_storage_bundle_mapping_form_add_type(&$form,
       'method' => 'replace'
     ),
     '#disabled' => $default_column_ignore,
-  );
-  $form['type_column_ignore'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'The type column does not distinguish the type',
-    '#default_value' => $default_column_ignore,
-    '#ajax' => array(
-      'callback' => "tripal_admin_add_type_form_ajax_callback",
-      'wrapper' => "tripal-vocab-select-form",
-      'effect' => 'fade',
-      'method' => 'replace'
-    ),
   );
 
   // Set the default value so we can short circuit the form.
@@ -1140,90 +1121,61 @@ function tripal_chado_field_storage_bundle_mapping_form_add_prop(&$form,
   );
 
   if ($default['use_prop'] == 'Yes') {
+    
     $prop_term_name = $default['prop_term_name'];
     $prop_term_value = $default['prop_term_value'];
-
-    $form['prop_term_name'] = array(
-      '#title'       => t('Property Type'),
-      '#type'        => 'textfield',
-      '#description' => t('The content type "' . $term->name . '" must be
+    
+    // We need a term lookup form for the property type.
+    $description = t('The content type "' . $term->name . '" must be
           associated with a property type.  The property type must be the
           name of a term in a controlled vocabulary and the controlled
           vocabulary should already be loaded into Tripal. Please select
           the property type that will be used to identify records of this
-          type'),
-      '#required'    => TRUE,
-      '#default_value' => $prop_term_name,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-    );
-    $form['prop_term_select_button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Lookup Term'),
-      '#name' => 'select_prop_cvterm',
-      '#ajax' => array(
-        'callback' => "tripal_admin_add_type_form_ajax_callback",
-        'wrapper' => "tripal-vocab-select-form",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
-    // If the term has been provided by the user then we want to search for
-    // matching terms in the database and let them select among any matches.
-    if ($prop_term_name) {
-      $form['prop_terms_list'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Matching Terms'),
-        '#description' => t('Please select the term the best matches the
-          property type.')
-      );
-      $match = array(
-        'name' => $prop_term_name,
-      );
-      $pterms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-      $pterms = chado_expand_var($pterms, 'field', 'cvterm.definition');
-      $num_terms = 0;
-
-      // Let the user select from any matching terms. Sometimes there may be
-      // more than one that match.
-      foreach ($pterms as $pterm) {
-        // Save the user a click by setting the default value as 1 if there's
-        // only one matching term.
-        $default = FALSE;
-        $attrs = array();
-        if ($num_terms == 0 and count($pterms) == 1) {
-          $default = TRUE;
-          $attrs = array('checked' => 'checked');
+          type');
+    tripal_get_term_lookup_form($form, $form_state, $prop_term_name,
+      'Property Type', $description, TRUE, '', 1,
+      'tripal_admin_add_type_form_ajax_callback');
+    
+    // If a base table has a 'type_id' field then we must have the user
+    // specify the base table type as well.
+    $base_type_column = FALSE;
+    $schema = chado_get_schema($default['table']);
+    foreach ($schema['foreign keys'] as $fk_id => $details) { 
+      if ($details['table'] == 'cvterm') {
+        foreach ($details['columns'] as $fk_left => $fk_right) {
+          if ($fk_left == 'type_id') {
+            $base_type_column = 'type_id';
+          }
         }
-        $term_element_name = 'prop_term-' . $pterm->cvterm_id;
-        $form['prop_terms_list'][$term_element_name] = array(
-          '#type' => 'checkbox',
-          '#title' =>  $pterm->name,
-          '#default_value' => $default,
-          '#attributes' => $attrs,
-          '#description' => '<b>Vocabulary:</b> ' . $pterm->cv_id->name . ' (' . $pterm->dbxref_id->db_id->name . ') ' . $pterm->cv_id->definition .
-            '<br><b>Term: </b> ' . $pterm->dbxref_id->db_id->name . ':' . $pterm->dbxref_id->accession . '.  ' .
-            '<br><b>Definition:</b>  ' . $pterm->definition,
-          '#ajax' => array(
-            'callback' => "tripal_admin_add_type_form_ajax_callback",
-            'wrapper' => "tripal-vocab-select-form",
-            'effect' => 'fade',
-            'method' => 'replace'
-          ),
-        );
-        $num_terms++;
       }
-
-      $form['prop_term_value'] = array(
-        '#type' => 'textfield',
-        '#title' => 'Property Value',
-        '#description' => t('All properties have a type and a value.  Above you
-            indicated the type of property. Now you must specify the value
-            that this properly must have in order to be considered of
-            type "' . $term->name . '".'),
-        '#default_value' => $prop_term_value,
-        '#required' => TRUE,
-      );
     }
+    
+    if ($base_type_column) {
+      $description = t('The ' . $default['table'] . ' table of Chado requires 
+        that each record have a type.  You have indicated that this
+        content type is not distinguished by a column in the base tabe but
+        instead by a property.  However, the ' . $default['table'] . ' requires 
+        that a value be given for the ' . $base_type_column . '. Please indicate 
+        what this type should be.  For example.  If you are storing genetic 
+        markers in the feature table and you want to refer to all markers as
+        genetic markers but you specify the type of marker in the featureprop table
+        then here you would enter the term for the genetic marker and in the
+        Property Type you would indicate the term for the marker type.');
+      tripal_get_term_lookup_form($form, $form_state, $prop_term_name,
+        'Base Type', $description, TRUE, '', 1,
+        'tripal_admin_add_type_form_ajax_callback');
+    }
+
+    $form['prop_term_value'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Property Value',
+      '#description' => t('All properties have a type and a value.  Above you
+          indicated the type of property. Now you must specify the value
+          that this properly must have in order to be considered of
+          type "' . $term->name . '".'),
+      '#default_value' => $prop_term_value,
+      '#required' => TRUE,
+    );
   }
 }
 
