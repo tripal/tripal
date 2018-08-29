@@ -55,6 +55,11 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     $this->assertLessThanOrEqual(5, sizeof($values),
       t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
 
+    // @todo Ensure a known value is in the list.
+    // Note: This requires insertion of data using factories. However, there are not yet
+    // factories for all chado tables and I don't know how to test if there is one for the
+    // current bundle base table. See issue statonlab/TripalTestSuite#92
+
   }
 
   /**
@@ -121,6 +126,10 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
       t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
 
     // @todo Ensure it works with a label string set.
+    // @todo Ensure a known value is in the list.
+    // Note: This requires insertion of data using factories. However, there are not yet
+    // factories for all chado tables and I don't know how to test if there is one for the
+    // current bundle base table. See issue statonlab/TripalTestSuite#92
 
   }
 
@@ -221,17 +230,23 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
       $this->field_list = array();
 
+      // field_info_instances() retrieves a list of all the field instances in the current site,
+      // indexed by the bundle it is attached to.
+      // @todo use fake bundles here to make these tests less dependant upon the current site.
       $bundles = field_info_instances('TripalEntity');
       foreach($bundles as $bundle_name => $fields) {
 
+        // Load the bundle object to later determine the chado table.
         $bundle = tripal_load_bundle_entity(array('name'=> $bundle_name));
 
+        // For each field instance...
         foreach ($fields as $field_name => $instance_info) {
           $bundle_base_table = $base_schema = NULL;
 
           // Load the field info.
           $field_info = field_info_field($field_name);
 
+          // Determine the storage backend.
           $storage = $field_info['storage']['type'];
 
           // If this field stores it's data in chado...
@@ -263,6 +278,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
             }
           }
 
+          // Store all the info about bundle, field, instance, schema for use in the test.
           $info = array(
             'field_name' => $field_name,
             'bundle_name' => $bundle_name,
@@ -273,8 +289,11 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
             'instance_info' => $instance_info,
           );
 
+          // Create a unique key.
           $key = $bundle_name . '--' . $field_name;
 
+          // If this bundle uses chado and we know the fields relationship to the base
+          // chado table, then we want to index the field list by that relationship.
           if ($rel) {
             $this->field_list[$storage][$rel][$key] = array(
               $field_name,
