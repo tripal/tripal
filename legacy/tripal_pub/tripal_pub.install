@@ -16,7 +16,7 @@ function tripal_pub_disable() {
   require_once("tripal_pub.views_default.inc");
   $views = tripal_pub_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE);
   }
 
 }
@@ -54,11 +54,11 @@ function tripal_pub_install() {
   $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
   tripal_submit_obo_job(array('obo_id' => $obo_id));
 
-  tripal_pub_add_cvs();
-  tripal_pub_add_cvterms();
+  //tripal_pub_add_cvs();
+  //tripal_pub_add_cvterms();
 
   // add the custom tables
-  tripal_pub_add_custom_tables();
+  //tripal_pub_add_custom_tables();
 
   // set the default vocabularies
   tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
@@ -73,7 +73,13 @@ function tripal_pub_install() {
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_uninstall() {
+  if(db_table_exists('chado_pub')) {
+    db_drop_table('chado_pub');
+  }
 
+  if(db_table_exists('tripal_pub_import')) {
+    db_drop_table('tripal_pub_import');
+  }
 }
 
 /**
@@ -380,13 +386,9 @@ function tripal_pub_update_7201() {
 function tripal_pub_update_7202() {
   try {
     // Remove duplicates.
-    db_delete('tripal_cv_obo')
-      ->condition('name', 'Tripal Publication')
-      ->execute();
-
-    // Add in the updated path.
-    $obo_path = '{tripal_pub}/files/tpub.obo';
-    $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
+    //db_delete('tripal_cv_obo')
+    //  ->condition('name', 'Tripal Publication')
+    //  ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

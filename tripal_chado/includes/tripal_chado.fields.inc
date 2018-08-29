@@ -239,7 +239,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
-  
+
   // BASE ARRAYDESIGN TABLE
   if ($table_name == 'arraydesign') {
     $field_name = 'ncit__technology_platform';
@@ -253,7 +253,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ),
     );
-    
+
     $field_name = 'efo__substrate_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -506,7 +506,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   }
 
   // Protocol.
-  if ($table_name != 'protocol' and 
+  if ($table_name != 'protocol' and
       array_key_exists('protocol_id', $schema['fields'])) {
     $field_name = 'sep__protocol';
     $field_type = 'sep__protocol';
@@ -520,7 +520,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
-  
+
   // Assay operator.
   if ($table_name == 'assay') {
       $field_name = 'assay__operator_id';
@@ -546,15 +546,15 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         ),
       );
     }
-  
+
   // For the pub_id field in the base table.
   $schema = chado_get_schema($table_name);
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
-    
+
     // Remove the schema__publication added by the
     // tripal_chado_bunde_instnaces_info_base function.
     unset($info['schema__publication']);
-    
+
     $field_name = 'schema__publication_single';
     $field_type = 'schema__publication';
     $info[$field_name] = array(
@@ -566,7 +566,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ),
     );
-  } 
+  }
 
   // Analysis Id
   if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
@@ -712,24 +712,24 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
-    
+
     $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
     foreach ($props as $term) {
-          
+
       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
 
       // The field name can only be 32 chars, but if our name is longer we need
-      // to add some random chars to ensure we don't have naming conflicts 
-      // with other terms (e.g. mitochondrial_genetic_code and 
+      // to add some random chars to ensure we don't have naming conflicts
+      // with other terms (e.g. mitochondrial_genetic_code and
       // mitochondrial_genetic_code_name)
       if (strlen($field_name) >= 32) {
         $field_name = substr($field_name, 0, 20) . '_' . $term->cvterm_id;
       }
       $field_type = 'chado_linker__prop';
-      
+
       // Don't try to add a property that uses the same term as another field.
       if (array_key_exists($field_name, $info)) {
-        tripal_report_error('chado_fields', TRIPAL_WARNING, 
+        tripal_report_error('chado_fields', TRIPAL_WARNING,
           'A field of type !type already exists, yet a property wants to use the same term. The property cannot be added.',
          ['!type' => $field_name],
          ['drupal_set_message' => TRUE]);
@@ -1243,7 +1243,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
     // ARRAYDESIGN TABLE
     //
     if ($table_name == 'arraydesign') {
-      if ($column_name == 'name' or $column_name == 'version' or 
+      if ($column_name == 'name' or $column_name == 'version' or
           $column_name == 'array_dimensions' or $column_name == 'element_dimensions') {
         $base_info['widget']['type'] = 'text_textfield';
         $base_info['settings']['text_processing'] = '0';
@@ -1257,7 +1257,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       if ($column_name == 'manufacturer_id') {
         $base_info['label'] = 'Manufacturer';
       }
-      
+
     }
 
     $info[$field_name] = $base_info;
@@ -1343,7 +1343,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
-  
+
   if ($table_name == 'arraydesign') {
     $field_name = 'ncit__technology_platform';
     $default_vocab = '';
@@ -1381,7 +1381,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-    
+
     $field_name = 'efo__substrate_type';
     $default_vocab = '';
     $parent_term = '';
@@ -2040,15 +2040,15 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-  } 
+  }
   // pub_id field in table.
   $schema = chado_get_schema($table_name);
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
-    
-    // Remove the schema__publication added by the 
+
+    // Remove the schema__publication added by the
     // tripal_chado_bunde_instnaces_info_base function.
     unset($info['schema__publication']);
-      
+
     $field_name = 'schema__publication_single';
     $info[$field_name] =  array(
       'field_name' => $field_name,
@@ -2080,13 +2080,13 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-  } 
-  
-  if ($table_name == 'assay') {      
+  }
+
+  if ($table_name == 'assay') {
     // Remove the ncit__operator added by the
     // tripal_chado_bunde_instnaces_info_base function.
     unset($info['ncit__operator']);
-    
+
     $field_name = 'assay__operator_id';
     $info[$field_name] =  array(
       'field_name' => $field_name,
@@ -2103,7 +2103,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'NCIT',
         'term_name' => 'Operator',
         'term_accession' => 'C48036',
-        
+
       ),
       'widget' => array(
         'type' => 'local__contact_widget',
@@ -2119,7 +2119,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-    
+
     $field_name = 'efo__array_design';
     $info[$field_name] =  array(
       'field_name' => $field_name,
@@ -2136,7 +2136,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'EFO',
         'term_name' => 'array design',
         'term_accession' => '0000269',
-        
+
       ),
       'widget' => array(
         'type' => 'efo__array_design_widget',
@@ -2152,7 +2152,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ),
       ),
     );
-  } 
+  }
   // Analysis Id
   if (array_key_exists('analysis_id', $schema['fields']) and $table_name != 'analysis') {
     $field_name = 'operation__analysis';
@@ -2176,7 +2176,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'term_vocabulary' => 'operation',
         'term_name' => 'Analysis',
         'term_accession' => '2945',
-        
+
       ),
       'widget' => array(
         'type' => 'operation__analysis_widget',
@@ -2479,10 +2479,10 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   if (chado_table_exists($prop_table)) {
 
     $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
-    foreach ($props as $term) {     
+    foreach ($props as $term) {
 
        $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
-       
+
        // The field name can only be 32 chars, but if our name is longer we need
        // to add some random chars to ensure we don't have naming conflicts
        // with other terms (e.g. mitochondrial_genetic_code and
@@ -2737,7 +2737,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 
 /**
  * Used to find all of the properties for a given table.
- *  
+ *
  * @param $table_name
  *   The name of the base table.
  * @param unknown $prop_table
@@ -2746,26 +2746,26 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
  *   The name of the table that contains the type specifier.
  * @param $type_column
  *   The name of the column that contains the type specifier.
- *   
+ *
  * @return
  *   An array of cvterm objects for the properties to be added as fields.
  */
 function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column) {
-  
+
   $tschema = chado_get_schema($table_name);
   $schema = chado_get_schema($prop_table);
   $tpkey = $tschema['primary key'][0];
   $pkey = $schema['primary key'][0];
-  
+
   $props = NULL;
-  
+
   // Property tables can be a bit tricky because not all property types
   // in the prop table are appropriate for each type of data.  Also som
   // bundle types are resolved via a property.  So, we have to distinguish
   // between these two cases.
   $sql = '';
   $args = array();
-  
+
   // First, is this the case where all of the records in the table are
   // of this type?  If so, then all properties apply
   if (!$type_column) {
@@ -2813,15 +2813,19 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
     $args[':cvterm_id'] = $cvterm_id;
     $props = chado_query($sql, $args);
   }
-  
+
   // Iterate through all of the properties and do some final checks to see
   // which ones should be added.
   $prop_arr = [];
+  if($props === null) {
+    return $prop_arr;
+  }
+
   while ($prop = $props->fetchObject()) {
     $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
     $term = chado_expand_var($term, 'field', 'cvterm.definition');
-    
-   
+
+
     // The tripal_analysis_KEGG, tripal_analysis_blast, and
     // tripal_analysis_interpro modules store results in the analysisprop
     // table which is probably not the best place, but we don't want to
@@ -2831,7 +2835,7 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
          $term->dbxref_id->db_id->name == 'tripal')) {
       continue;
     }
-    
+
     // The Tripal publication importer adds properties to publications that
     // are also represented in the table fields.  We want editing of pub
     // related fields to always go back to the pub table, so we do not
@@ -2850,7 +2854,7 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
         continue;
       }
     }
-    
+
     // Add the term to our list!
     $prop_arr[] = $term;
   }
