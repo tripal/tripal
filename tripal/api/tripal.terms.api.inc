@@ -579,7 +579,7 @@ function tripal_get_vocabularies() {
  *
  * @ingroup tripal_terms_api
  */
-function tripal_get_term_lookup_form(&$form, $form_state, $default_name = '',
+function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $title = 'Vocabulary Term', $description = '', $is_required,
     $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [], $weight = 0) {
   
@@ -787,7 +787,7 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
   if ($field_name) {
     if (array_key_exists('term_match' . $delta, $form_state['values'][$field_name]['und'][$delta]) and 
         array_key_exists('terms_list' . $delta, $form_state['values'][$field_name]['und'][$delta]['term_match'. $delta])) {
-      $values = $form_state['values'][$field_name]['und'][$delta]['term_match']['terms_list'];
+      $values = $form_state['values'][$field_name]['und'][$delta]['term_match'. $delta]['terms_list'. $delta];
     }
   }
   else {
