@@ -106,7 +106,7 @@ function chado_publish_records($values, $job = NULL) {
   }
 
   // Load the term for use in setting the alias for each entity created.
-  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
   $cache['term'] = $term;
 
   $table = $chado_bundle->data_table;
