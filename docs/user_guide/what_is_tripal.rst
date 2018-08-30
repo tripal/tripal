@@ -1,0 +1,6 @@
+What Is Tripal?
+===============
+
+Tripal is a toolkit that facilitates construction of online genomic, genetic, breeding or other biological databases.  It uses `Drupal <http://www.drupal.org/>`_, a popular Content Management System (CMS), and by default integrates with `Chado <http://gmod.org/wiki/Chado>`_, a community-derived relational database schema for storage of biological data.  However, Tripal v3 is designed such that it can support other data storage solutions, including no-SQL options.  The goal of Tripal is to simplify construction of a community genomics, genetics or biological website to enable individual labs or research communities to construct a high-quality, standards-based website for data sharing and collaboration.  A secondary goal is to support community development.
+
+Tripal is open-source and provides an Application Program Interface (API).  This allows anyone to customize or create their own tools and extensions.  These tools and extensions can in turn be shared with others.  Thus, anyone who adopts Tripal will use common tools and community standards, and can participate with a larger distributed group of developers all using the same infrastructure. 
