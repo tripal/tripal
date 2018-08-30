@@ -110,3 +110,7 @@ div.messages.tripal-site-admin-only {
   overflow: scroll;
   font-framily: Courier New, monospace;
 }
+
+.item-list .action-links li {
+	list-style-type: none;
+} 
