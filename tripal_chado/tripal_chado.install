@@ -1387,8 +1387,8 @@ function tripal_chado_update_7320() {
       $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
     }
     if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+      if (!tripal_create_bundle($args)) {
+        throw new Exception('Error Encountered creating "Phylogenetic tree" Tripal Content Type.');
       }
     }
   }
