@@ -101,17 +101,20 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     }
     // If there is no value then this is a cvterm table
     else {
-      $args = array(':title' => NULL);
+      $args = array(':uniquename' => 'null');
       $sql = "
         SELECT *
         FROM {pub}
-        WHERE title = :title
+        WHERE uniquename = :uniquename
       ";
-      $pub_id = chado_query($sql, $args)->fetchObject();
+      $pub = chado_query($sql, $args)->fetchObject();
+      if (!$pub) {
+        throw new Exception('Unable to save record because the NULL publication is missing from the pub table. Please add a null record where the uniquename value is "null".');
+      }
       $field_vals[$linker][] = [
         $base_pkey => $base_record_id,
         'cvterm_id' => $cvterm->cvterm_id,
-        'pub_id' => $pub_id->pub_id,
+        'pub_id' => $pub->pub_id,
       ];
     }
   }
@@ -826,12 +829,10 @@ function tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $for
   $default = array(
     'table' => '',
     'has_all' => '',
-    'use_cvterm' => '',
-    'cv_id' => '',
     'use_linker' => '',
     'use_prop' => '',
     'type_column' => '',
-    'prop_base_selected_term' => '',
+    'base_selected_term' => '',
     'prop_selected_term' => '',
     'prop_term_value' => '',
     'stage' => 'table-select',
@@ -870,18 +871,9 @@ function tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $for
   if (array_key_exists('prop_term_value', $form_state['values'])
     and $form_state['values']['prop_term_value']) {
     $default['prop_term_value'] = $form_state['values']['prop_term_value'];
-  }
-  if (array_key_exists('chado_type_use_cv', $form_state['values'])
-    and $form_state['values']['chado_type_use_cv']) {
-    $default['use_cvterm'] = $form_state['values']['chado_type_use_cv'];
-  }
-  if (array_key_exists('chado_type_cv_id', $form_state['values'])
-    and $form_state['values']['chado_type_cv_id']) {
-    $default['cv_id'] = $form_state['values']['chado_type_cv_id'];
-  }
-  
+  } 
   if (array_key_exists('term_name1', $form_state['values'])) {
-    $default['prop_base_selected_term'] = tripal_get_term_lookup_form_result($form, $form_state, '', 1);
+    $default['base_selected_term'] = tripal_get_term_lookup_form_result($form, $form_state, '', 1);
   }
   if (array_key_exists('term_name2', $form_state['values'])) {
     $default['prop_selected_term'] = tripal_get_term_lookup_form_result($form, $form_state, '', 2);
@@ -930,17 +922,8 @@ function tripal_chado_field_storage_bundle_mapping_form($form, &$form_state, $te
   else if ($default['stage'] == 'linker-select') {
     tripal_chado_field_storage_bundle_mapping_form_linker_select($form, $form_state, $term, $default);
   }
-  else if ($default['stage'] == 'linker-type-select') {
-    tripal_chado_field_storage_bundle_mapping_form_linker_type_select($form, $form_state, $term, $default);
-  }
-  else if ($default['stage'] == 'linker-cv-settings') {
-    tripal_chado_field_storage_bundle_mapping_form_linker_cv_settings($form, $form_state, $term, $default);
-  }
-  else if ($default['stage'] == 'linker-parent-settings') {
-    tripal_chado_field_storage_bundle_mapping_form_linker_parent_settings($form, $form_state, $term, $default);
-  }
-  else if ($default['stage'] == 'linker-cvterm-settings') {
-    tripal_chado_field_storage_bundle_mapping_form_linker_cvterm_settings($form, $form_state, $term, $default);
+  else if ($default['stage'] == 'linker-settings') {
+    tripal_chado_field_storage_bundle_mapping_form_linker_settings($form, $form_state, $term, $default);
   }
   else if ($default['stage'] == 'complete') {
     $submit_disabled = FALSE;
@@ -992,9 +975,9 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
     '#type' => 'value',
     '#value' => $default['prop_selected_term'],
   ];
-  $form['prop_base_term'] = [
+  $form['base_term'] = [
     '#type' => 'value',
-    '#value' => $default['prop_base_selected_term'],
+    '#value' => $default['base_selected_term'],
   ];
   $form['prop_term_value'] = [
     '#type' => 'value',
@@ -1003,10 +986,6 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
   $form['chado_type_use_linker'] = [
     '#type' => 'value',
     '#value' => $default['use_linker'],
-  ];
-  $form['chado_type_use_cv'] = [
-    '#type' => 'value',
-    '#value' => $default['use_cvterm'],
   ];
   
   //
@@ -1075,8 +1054,8 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
   //
   //  Add the row for the base type for a property mapping
   //
-  if ($default['prop_base_selected_term']) {
-    $term = $default['prop_base_selected_term'][0];
+  if ($default['use_prop'] == 'Yes' and $default['base_selected_term']) {
+    $term = $default['base_selected_term'][0];
     $rows[] = [
       [
         'data' => 'Base Type',
@@ -1117,7 +1096,7 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
   //  Add the row for the linker table selection
   //
   if ($default['use_linker']) {
-    $message = 'Yes. The field is distinguishable using a cvterm linker table.';
+    $message = 'Yes. The field is distinguishable using a cvterm linker table. The Content Type will be used to find records in the linker table';
     if ($default['use_linker'] == 'No') {
       $message = 'No. The field is not distinguishable using a cvterm linker table.';
     }
@@ -1131,21 +1110,18 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
     ];
   }
   
-  if ($default['use_cvterm']) {
-    $message = 'Use a specific vocabulary.';
-    if ($default['use_cvterm'] == 'parent') {
-      $message = 'Use a all children of a parent term.';
-    }
-    if ($default['use_cvterm'] == 'cvterm') {
-      $message = 'Use this content type term.';
-    }
+  //
+  //  Add the row for the base type for a property mapping
+  //
+  if ($default['use_linker'] == 'Yes' and $default['base_selected_term']) {
+    $term = $default['base_selected_term'][0];
     $rows[] = [
       [
-        'data' => 'Linker identifier',
+        'data' => 'Base Type',
         'header' => TRUE,
         'width' => '20%',
       ],
-      $message,
+      $term->name . ' (' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession .')',
     ];
   }
   
@@ -1163,7 +1139,7 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
   $form['chado_settings_summary'] = [
     '#type' => 'markup',
     '#markup' => theme_table($table),
-    '#weight' => -10,
+    '#weight' => -100,
   ];
   
   if ($default['stage'] == 'complete') {
@@ -1339,23 +1315,8 @@ function tripal_chado_field_storage_bundle_mapping_form_has_all_select(&$form, &
  */
 function tripal_chado_field_storage_bundle_mapping_form_type_select(&$form, &$form_state, $term, $default) {
   
-  $term_name = $term->name;
-
-  // Get the list of columns in the default table.
-  $schema = chado_get_schema($default['table']);
-  $column_options = array('none' => '--None--');
-  $cvt_fkeys = (isset($schema['foreign keys']['cvterm'])) ? array_keys($schema['foreign keys']['cvterm']['columns']) : array();
-  foreach ($schema['fields'] as $column_name => $column_details) {
-    if (in_array($column_name, $cvt_fkeys)) {
-      $column_options[$column_name] = $column_name;
-    }
-  }
-
-  // If this table has no types then just return.
-  if (count($column_options) == 1) {
-    $default['type_column'] = '';
-    return;
-  }
+  $term_name = $term->name;  
+  $column_options = tripal_chado_field_storage_bundle_mapping_form_get_type_fks_options($default['table']);
   
   $default_column = !empty($default['type_column']) ? $default['type_column'] : 'type_id';
    
@@ -1417,19 +1378,7 @@ function tripal_chado_field_storage_bundle_mapping_form_prop_settings(&$form, &$
   
   $prop_term_value = $default['prop_term_value'];
   
-  // If a base table has a 'type_id' field then we must have the user
-  // specify the base table type as well.
-  $base_type_column = FALSE;
-  $schema = chado_get_schema($default['table']);
-  foreach ($schema['foreign keys'] as $fk_id => $details) {
-    if ($details['table'] == 'cvterm') {
-      foreach ($details['columns'] as $fk_left => $fk_right) {
-        if ($fk_left == 'type_id') {
-          $base_type_column = 'type_id';
-        }
-      }
-    }
-  }
+  $base_type_column = tripal_chado_field_storage_bundle_mapping_form_get_base_type_column($default['table']);
   
   $validate =[
     'tripal_chado_field_storage_bundle_mapping_form_validate',
@@ -1452,7 +1401,7 @@ function tripal_chado_field_storage_bundle_mapping_form_prop_settings(&$form, &$
     tripal_get_term_lookup_form($form, $form_state, '',
       'Base Type', $description, FALSE, '', 1,
       'tripal_admin_add_type_form_ajax_callback', 'tripal-add-type-form', 
-      $validate, -10);
+      $validate, -2);
   }
   
   // We need a term lookup form for the property type.
@@ -1520,32 +1469,30 @@ function tripal_chado_field_storage_bundle_mapping_form_linker_select(&$form, &$
 /**
  * 
  */
-function tripal_chado_field_storage_bundle_mapping_form_linker_type_select(&$form, &$form_state, $term, $default) {
-
-  $form['chado_type_use_cv'] = array(
-    '#type' => 'radios',
-    '#title' => 'How do you want to distinguish the "' . $term->name . '" records
-      within the cvterm table?',
-    '#options' => array(
-      'cvterm' => 'All records that are associated with this content type term?',
-      'cv' => 'All records that belong to a single controlled vocabulary?',
-      'parent' => 'All child records of the specified term?'
-    ),
-    '#description' => t('Records in the cvterm table are often not used for content
-        types. The records in the cvterm table are meant to be vocabulary terms.
-        However, there are times when records in the cvterm table can be
-        used for a content type. One example is for trait "pages" that
-        use phenotype values stored in the phenotype table.  Because records in
-        the cvterm table are vocabulary terms they do not have "types" so the
-        only ways to distinguish them are 1) to use the controlled vocabulary to
-        distinguish the records or 2) to use all children records of the
-        selected term.  Please select the appropriate value for this case.'),
-    '#default_value' => $default['use_cvterm'],
-  );
-  $form['chado-linker-type-select-continue'] = array(
+function tripal_chado_field_storage_bundle_mapping_form_linker_settings(&$form, &$form_state, $term, $default){
+    
+  $base_type_column = tripal_chado_field_storage_bundle_mapping_form_get_base_type_column($default['table']);
+  
+  $validate =[
+    'tripal_chado_field_storage_bundle_mapping_form_validate',
+    'tripal_admin_add_type_form_validate'
+  ];
+  
+  $description = t('The ' . $default['table'] . ' table of Chado requires
+    that each record have a type.  You have indicated that this
+    content type is not distinguished by a column in the base tabe but
+    instead by a cvterm linker table.  However, the ' . $default['table'] . ' table requires
+    that a value be given for the ' . $base_type_column . '. Please indicate
+    what this type should be.');
+  tripal_get_term_lookup_form($form, $form_state, '',
+    'Base Type', $description, FALSE, '', 1,
+    'tripal_admin_add_type_form_ajax_callback', 'tripal-add-type-form',
+    $validate, -10);
+  
+  $form['chado-linker-settings-continue'] = array(
     '#type' => 'submit',
     '#value' => t('Continue'),
-    '#name' => 'chado-linker-type-select-continue',
+    '#name' => 'chado-linker-settings-continue',
     '#validate' => [
       'tripal_chado_field_storage_bundle_mapping_form_validate',
       'tripal_admin_add_type_form_validate'
@@ -1556,46 +1503,37 @@ function tripal_chado_field_storage_bundle_mapping_form_linker_type_select(&$for
 /**
  * 
  */
-function tripal_chado_field_storage_bundle_mapping_form_linker_cv_settings(&$form, &$form_state, $term, $default) {
-  
-  $cvs = chado_get_cv_select_options();
-  $form['chado_type_cv_id'] = array(
-    '#type' => select,
-    '#options' => $cvs,
-    '#title' => t('Select a controlled vocabulary'),
-    '#default_value' => $default['cv_id'],
-    '#ajax' => array(
-      'callback' => "tripal_admin_add_type_form_ajax_callback",
-      'wrapper' => "tripal-add-type-form",
-      'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
-  $form['chado-linker-cv-settings-continue'] = array(
-    '#type' => 'submit',
-    '#value' => t('Continue'),
-    '#name' => 'chado-linker-cv-settings-continue',
-    '#validate' => [
-      'tripal_chado_field_storage_bundle_mapping_form_validate',
-      'tripal_admin_add_type_form_validate'
-    ],
-  );
+function tripal_chado_field_storage_bundle_mapping_form_get_type_fks_options($table) {
+  // Get the list of columns in the default table.
+  $schema = chado_get_schema($table);
+  $column_options = array('none' => '--None--');
+  $cvt_fkeys = (isset($schema['foreign keys']['cvterm'])) ? array_keys($schema['foreign keys']['cvterm']['columns']) : array();
+  foreach ($schema['fields'] as $column_name => $column_details) {
+    if (in_array($column_name, $cvt_fkeys)) {
+      $column_options[$column_name] = $column_name;
+    }
+  }
+  return $column_options;
 }
-
 /**
- *
+ * 
  */
-function tripal_chado_field_storage_bundle_mapping_form_linker_cvterm_settings(&$form, &$form_state, $term, $default) {
+function tripal_chado_field_storage_bundle_mapping_form_get_base_type_column($table) {
   
-   // TODO:  need to complete this form.  
-}
-
-/**
- *
- */
-function tripal_chado_field_storage_bundle_mapping_form_linker_parent_settings(&$form, &$form_state, $term, $default) {
-  
-  // TODO:  need to complete this form.
+  // If a base table has a 'type_id' field then we must have the user
+  // specify the base table type as well.
+  $base_type_column = FALSE;
+  $schema = chado_get_schema($table);
+  foreach ($schema['foreign keys'] as $fk_id => $details) {
+    if ($details['table'] == 'cvterm') {
+      foreach ($details['columns'] as $fk_left => $fk_right) {
+        if ($fk_left == 'type_id') {
+          $base_type_column = 'type_id';
+        }
+      }
+    }
+  }
+  return $base_type_column;
 }
 
 /**
@@ -1611,7 +1549,13 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
   // Get the form values.
   $default = tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $form_state);  
   $clicked_button = $form_state['clicked_button']['#name'];
-    
+
+  // Check if prop  and linker tables exist. We'll use these values later.
+  $prop_table = $default['table'] . 'prop';
+  $prop_exists = chado_table_exists($prop_table);
+  $linker_table = $default['table'] . '_cvterm';
+  $linker_exists = chado_table_exists($linker_table);
+  
   //
   // Valiate the table select stage
   //
@@ -1632,7 +1576,32 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
       $form_state['chado-stage'] = 'complete';
     }
     else {
-      $form_state['chado-stage'] = 'type-select';
+      $column_options = tripal_chado_field_storage_bundle_mapping_form_get_type_fks_options($default['table']);      
+      // If this table has fields that link to the cvterm table then 
+      // let the user select the type column. The column_options is empty if
+      // it equals 1 because it has the --none-- element.
+      if (count($column_options) > 1) {
+        $form_state['chado-stage'] = 'type-select';
+      }
+      // Otherwise, see if there are other options....
+      else {
+        // If there is no type_id or the type_id column should not be
+        // used then we need to let the user select if they want to
+        // use the prop table or a cvterm linking table. We'll offer the
+        // prop table first.
+        if ($prop_exists) {
+          $form_state['chado-stage'] = 'prop-select';
+        }
+        else {
+          if ($linker_exists) {
+            $form_state['chado-stage'] = 'linker-select';
+          }
+          else {
+            $form_state['chado-stage'] = 'stop';
+          }
+        }
+      }
+
     }
   }
   
@@ -1648,21 +1617,15 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
       // used then we need to let the user select if they want to 
       // use the prop table or a cvterm linking table. We'll offer the
       // prop table first.
-      $prop_table = $default['table']. 'prop';
-      $prop_exists = chado_table_exists($prop_table);
-      $linker_table = $default['table'] . '_cvterm';
-      $linker_exists = chado_table_exists($linker_table);      
       if ($prop_exists) {
         $form_state['chado-stage'] = 'prop-select';
       }
       else {
-        if (!$linker_exists) {
-          $form_state['chado-stage'] = 'stop';
+        if ($linker_exists) {
+          $form_state['chado-stage'] = 'linker-select';
         }
         else {
-          // TODO: add support for cvterm linker tables
-          $form_state['chado-stage'] = 'stop';
-          // $form_state['chado-stage'] = 'linker-select';
+          $form_state['chado-stage'] = 'stop';          
         }
       }
     }
@@ -1676,16 +1639,12 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
       $form_state['chado-stage'] = 'prop-settings';
     }
     else if ($default['use_prop'] == 'No') {
-      $linker_table = $default['table'] . '_cvterm';
-      $linker_exists = chado_table_exists($linker_table);
-      if (!$linker_exists) {
-        $form_state['chado-stage'] = 'stop';
+      if ($linker_exists) {
+        $form_state['chado-stage'] = 'linker-select';      
       }
       else {
-        // TODO: add support for cvterm linker tables
         $form_state['chado-stage'] = 'stop';
-        // $form_state['chado-stage'] = 'linker-select';
-      }      
+      }
     }
     else {
       form_set_error('chado_type_use_prop', 'Please select a value.');
@@ -1700,7 +1659,7 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     // If a base type was needed then make sure we have a value selected.
     $valid = TRUE;
     if (array_key_exists('term_name1', $form_state['values'])) {
-      $base_selected = $default['prop_base_selected_term'];
+      $base_selected = $default['base_selected_term'];
       if (count($base_selected) == 0) {
         form_set_error('term_match1][term_name1', 'Please select a base table type vocabulary term.');
         $valid = FALSE;
@@ -1736,7 +1695,15 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
   //
   if ($clicked_button == 'chado-linker-select-continue') {
     if ($default['use_linker'] == 'Yes') {
-      $form_state['chado-stage'] = 'linker-type-select';
+      // If our base table has a type_id then we need need to make the 
+      // user provide a value for it, otherwise we're done.
+      $base_type_column = tripal_chado_field_storage_bundle_mapping_form_get_base_type_column($default['table']);
+      if ($base_type_column) {
+        $form_state['chado-stage'] = 'linker-settings';
+      }
+      else {
+        $form_state['chado-stage'] = 'complete';
+      }
     }
     else if ($default['use_linker'] == 'No') {
       $form_state['chado-stage'] = 'stop';
@@ -1746,21 +1713,27 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     }
   }
   
-  if ($clicked_button == 'chado-linker-type-select-continue') {
-    if ($default['use_cvterm'] == 'cv') {
-      $form_state['chado-stage'] = 'linker-cv-settings';
+  if ($clicked_button == 'chado-linker-settings-continue') {
+    $valid = TRUE;
+    if (array_key_exists('term_name1', $form_state['values'])) {
+      $base_selected = $default['base_selected_term'];
+      if (count($base_selected) == 0) {
+        form_set_error('term_match1][term_name1', 'Please select a base table type vocabulary term.');
+        $valid = FALSE;
+      }
+      if (count($base_selected) > 1) {
+        form_set_error('term_match1][term_name1', 'Please select only one base table type vocabulary term.');
+        $valid = FALSE;
+      }
     }
-    else if ($default['use_cvterm'] == 'parent') {
-      $form_state['chado-stage'] = 'linker-parent-settings';
+    if (!$valid) {
+      return;
     }
-    else if ($default['use_cvterm'] == 'cvterm') {
-      $form_state['chado-stage'] = 'linker-cvterm-settings';
-    }
-    else {
-      form_set_error('chado_type_use_cv', 'Please select a value.');
-    }    
+    // If we're here then alll validations passed and we are good to go!
+    $form_state['chado-stage'] = 'complete';
   }
   
+ 
   //
   // Check for a reset.
   //
@@ -1781,19 +1754,6 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   $default = tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $form_state);
   
-  // If the user selected to use the cvterm table then we have to
-  // handle it specially.
-  if ($default['use_cvterm'] == 'cv' and !empty($default['cv_id'])) {
-    $storage_args['data_table'] = $default['table'];
-    $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
-    $storage_args['type_value'] = '';
-    if ($default['cv_id']) {
-      $storage_args['type_value'] = $default['cv_id'];
-    }
-    $storage_args['type_column'] = '';
-    return;
-  }
-
   // If we have a type_column then we know this type uses a column in the
   // base table, so we can set the storage args and return.
   if ($default['type_column'] and $default['type_column'] != 'none') {
@@ -1819,8 +1779,8 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $storage_args['type_column'] = 'type_id';
     $storage_args['type_id'] = $form_state['values']['prop_term'][0]->cvterm_id;
     $storage_args['type_value'] = $default['prop_term_value'];
-    if (is_array($form_state['values']['prop_base_term'])) {
-      $storage_args['base_type_id'] = $form_state['values']['prop_base_term'][0]->cvterm_id;
+    if (is_array($form_state['values']['base_term'])) {
+      $storage_args['base_type_id'] = $form_state['values']['base_term'][0]->cvterm_id;
     }
   }
 
@@ -1831,6 +1791,9 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_linker_table'] = $default['table'] . '_cvterm';
     $storage_args['type_column'] = 'cvterm_id';
+    if (is_array($form_state['values']['base_term'])) {
+      $storage_args['base_type_id'] = $form_state['values']['base_term'][0]->cvterm_id;
+    }
   }
 }
 

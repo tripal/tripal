@@ -646,9 +646,10 @@ function tripal_admin_add_type_form_step1_summary(&$form, &$form_state, $selecte
   $form['term_summary']['details'] = [
     '#type' => 'item',
     '#title' => t('Term'),
-    '#markup' => 'Vocabulary: ' . $selected_term->cv_id->name . ' (' . $selected_term->dbxref_id->db_id->name . ') ' . $selected_term->cv_id->definition .
-    '<br>Term: ' . $selected_term->dbxref_id->db_id->name . ':' . $selected_term->dbxref_id->accession . '.  ' .
-    '<br>Definition:  ' . $definition
+    '#markup' => 'Name: ' . $selected_term->name . 
+      '<br>Vocabulary: ' . $selected_term->cv_id->name . ' (' . $selected_term->dbxref_id->db_id->name . ') ' .
+      '<br>Term ID: ' . $selected_term->dbxref_id->db_id->name . ':' . $selected_term->dbxref_id->accession . '.  ' .
+      '<br>Definition:  ' . $definition
   ];
   $form['term_summary']['step1-return'] = array(
     '#type' => 'submit',
@@ -681,12 +682,6 @@ function tripal_admin_add_type_form_step2(&$form, &$form_state, $stores, $select
     '#title' => 'Storage backend',
     '#options' => $store_options,
     '#default_value' => $default_store,
-    '#ajax' => array(
-      'callback' => "tripal_admin_add_type_form_ajax_callback",
-      'wrapper' => "tripal-add-type-form",
-      'effect' => 'fade',
-      'method' => 'replace'
-    ),
     '#description' => 'Select a storage background for this content type.'
   );
   
@@ -797,6 +792,11 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
     $form_state['stage'] = 'step1';
   }
   if ($clicked_button =='step2-continue') {
+    
+    if (!$store_select) {
+      form_set_error('store_select', 'Please select only one vocabulary term.');
+    }
+    
     $form_state['rebuild'] = TRUE;
     $form_state['stage'] = 'step3';
   }
@@ -867,7 +867,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       }
     }
     else {
-      drupal_set_message("The term '$accession' already exists as a content type.", 'warning');
+      drupal_set_message("The term ". $term->name . " (" . $vocabulary . ':' . $accession. ") already exists as a content type.", 'warning');
     }
   }
 }

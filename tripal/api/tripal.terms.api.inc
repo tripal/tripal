@@ -581,7 +581,8 @@ function tripal_get_vocabularies() {
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $title = 'Vocabulary Term', $description = '', $is_required,
-    $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [], $weight = 0) {
+    $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [], 
+    $weight = 0) {
   
   if (!$callback) {
     $callback = 'tripal_get_term_lookup_form_ajax_callback';
@@ -693,14 +694,8 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '#default_value' => $checked,
         '#attributes' => $attrs,
         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+          '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
           '<br><b>Definition:</b>  ' . $definition,
-        '#ajax' => array(
-          'callback' => $callback,
-          'wrapper' => $ajax_wrapper_id,
-          'effect' => 'fade',
-          'method' => 'replace'
-        ),
       );
 
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
@@ -738,12 +733,6 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
         '<br><b>Definition:</b>  ' . $definition . 
         '<br><b>Synonym:</b> ' . $synonym->synonym,
-        '#ajax' => array(
-          'callback' => $callback,
-          'wrapper' => $ajax_wrapper_id,
-          'effect' => 'fade',
-          'method' => 'replace'
-        ),
       );
       
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
