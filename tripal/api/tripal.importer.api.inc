@@ -210,10 +210,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
  */
 function tripal_run_importer_run($loader, $job) {
 
+  // begin the transaction
+  $transaction = db_transaction();
   try {
-    // begin the transaction
-    $transaction = db_transaction();
-
     $loader->run();
 
     if ($job) {
@@ -244,9 +243,9 @@ function tripal_run_importer_run($loader, $job) {
  * @ingroup tripal_importer_api
  */
 function tripal_run_importer_post_run($loader, $job) {
-  try {
-    // the transaction
-    $transaction = db_transaction();
+  // the transaction
+  $transaction = db_transaction();
+  try {    
     $loader->postRun();
   }
   catch (Exception $e) {
