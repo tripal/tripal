@@ -31,7 +31,7 @@ function tripal_views_data() {
   // Job Management System
   tripal_views_data_jobs($data);
   tripal_views_data_tripal_entity($data);
-  //tripal_views_data_fields($data);
+  tripal_views_data_fields($data);
 
   $data['views']['tripal_area_collections'] = array(
     'title' => t('Tripal Content Data Collections'),
