@@ -647,6 +647,7 @@ class TripalEntityController extends EntityAPIController {
           // Add this field to the entity with default value.
           if (!isset($queried_entities[$id]->{$field_name})) {
             $queried_entities[$id]->{$field_name} = array();
+            $entity->{$field_name} = array();
           }
 
           // Options used for the field_attach_load function.
