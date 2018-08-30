@@ -44,7 +44,7 @@ Step 1: Upgrade Tripal
 
     drush pm-disable tripal_core
 
-4. The Tripal modules must also be downloaded and updated. To do this, delete the old Tripal v2 modules directories, usually found in ``/var/www/html/sites/all/modules`` (be sure you have a backup before removing). The following command will retrieve the Tripal 3 version:
+4.  The Tripal modules must also be downloaded and updated. To do this, delete the old Tripal v2 modules directories, located in ``sites/all/modules`` from your Drupal root:  for example ``/var/www/html/sites/all/modules``(be sure you have a backup before removing). The following command will retrieve the Tripal 3 version:
 
   .. code-block:: bash
 
