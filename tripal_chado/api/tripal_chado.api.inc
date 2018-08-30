@@ -94,7 +94,7 @@ function chado_publish_records($values, $job_id = NULL) {
     ->condition('bundle_id', $bundle->id)
     ->execute()
     ->fetchObject();
-  if(!$chado_bundle) {
+  if (!$chado_bundle) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
         "Cannot find mapping of bundle to Chado tables. Could not publish record.");
     return FALSE;

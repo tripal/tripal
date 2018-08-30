@@ -33,23 +33,26 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // Convert the Tripal term entity into the appropriate record in Chado.
   $dbxref = chado_get_dbxref(array('accession' => $term->accession, 'db_id' => array('name' => $term->vocab->vocabulary)));
   $cvterm = chado_get_cvterm(array('dbxref_id' => $dbxref->dbxref_id));
-  dpm($entity);
+
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
   $type_field = $entity->chado_column;
-  $record     = $entity->chado_record;
-  $record_id  = $entity->chado_record_id;
-  $linker     = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
+  $record = $entity->chado_record;
+  $record_id = $entity->chado_record_id;
+  $linker = property_exists($entity, 'chado_linker') ? $entity->chado_linker : '';
+  $type_id = property_exists($entity, 'chado_type_id') ? $entity->chado_type_id : '';
   $type_value = property_exists($entity, 'chado_type_value') ? $entity->chado_type_value : '';
+  $base_type_id = property_exists($entity, 'chado_base_type_id') ? $entity->chado_base_type_id : '';
   $base_schema = chado_get_schema($base_table);
   $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
   list($field_vals, $field_items) = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
-  dpm($field_vals);  
   
-  // First, write the record for the base table.
+  // Start out with the base table fields.
   $values = $field_vals[$base_table];
+  
+  // First, set the pkey for the record if this is an update.
   if ($record_id) {
     $values[$base_pkey] = $record_id;
   }
@@ -57,6 +60,26 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // to add in the type_id value.
   elseif ($type_field and !$linker) {
     $values[$type_field] = $cvterm->cvterm_id;
+  }
+  // If we have a linker table and there is a base_type_id then the base
+  // table requires a type_id and we need to add it in.
+  elseif ($linker and $base_type_id) {
+    // If a base table has a 'type_id' field then we must have the user
+    // specify the base table type as well.
+    $base_type_column = FALSE;
+    $schema = chado_get_schema($base_table);
+    foreach ($schema['foreign keys'] as $fk_id => $details) {
+      if ($details['table'] == 'cvterm') {
+        foreach ($details['columns'] as $fk_left => $fk_right) {
+          if ($fk_left == 'type_id') {
+            $base_type_column = 'type_id';
+          }
+        }
+      }
+    }
+    if ($base_type_column) {
+      $values[$base_type_column] = $base_type_id;
+    }
   }
   
   // Insert the record into the base table and get the record ID.
@@ -67,18 +90,16 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   
   // For content types that use a linker table we need to add a record into
   // the linker table.
-  dpm($linker);
-  dpm($type_field);
   if ($type_field and $linker) {
     // If this is for a property table then there will be a value.
     if ($type_value) {
-      $field_vals[$linker] = [
+      $field_vals[$linker][] = [
         $base_pkey => $base_record_id, 
-        'type_id' => $cvterm->cvterm_id,
+        'type_id' => $type_id,
         'value' => $type_value,
       ];
     }
-    // If there is no value then this is a dbxref table
+    // If there is no value then this is a cvterm table
     else {
       $args = array(':title' => NULL);
       $sql = "
@@ -87,7 +108,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
         WHERE title = :title
       ";
       $pub_id = chado_query($sql, $args)->fetchObject();
-      $field_vals[$linker] = [
+      $field_vals[$linker][] = [
         $base_pkey => $base_record_id,
         'cvterm_id' => $cvterm->cvterm_id,
         'pub_id' => $pub_id->pub_id,
@@ -150,7 +171,7 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
   $schema = chado_get_schema($table_name);
   $fkeys = $schema['foreign keys'];
   $pkey = $schema['primary key'][0];
-
+  
   // Fields with a cardinality greater than 1 will often submit an
   // empty form.  We want to remove these empty submissions.  We can detect
   // them if all of the fields are empty.
@@ -444,49 +465,51 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     $items = field_get_items($entity_type, $entity, $field_name);
     $temp = array();
     $field_items[$field_name] = $items;
-    foreach ($items as $delta => $item) {
-
-      // A field may have multiple items. The field can use items
-      // indexed with "chado-" to represent values that should map directly
-      // to chado tables and fields.
-      $value_set = FALSE;
-      foreach ($item as $item_name => $value) {
-        $matches = array();
-        if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
-          $table_name = $matches[1];
-          $column_name = $matches[2];
+    if (is_array($items)) {
+      foreach ($items as $delta => $item) {
+  
+        // A field may have multiple items. The field can use items
+        // indexed with "chado-" to represent values that should map directly
+        // to chado tables and fields.
+        $value_set = FALSE;
+        foreach ($item as $item_name => $value) {
+          $matches = array();
+          if (preg_match('/^chado-(.*?)__(.*?)$/', $item_name, $matches)) {
+            $table_name = $matches[1];
+            $column_name = $matches[2];
+            // If this field belongs to the base table then we just add
+            // those values in... there's no delta.
+            if ($table_name == $base_table) {
+              $base_fields[$table_name][$column_name] = $value;
+            }
+            else {
+              $temp[$table_name][$delta][$column_name] = $value;
+            }
+            $value_set = TRUE;
+          }
+        }
+  
+        // If there is no value set for the field using the
+        // chado-[table_name]__[field name] naming schema then check if a 'value'
+        // item is present and if so use that for the table column value.
+        if (!$value_set and array_key_exists('value', $items[$delta]) and
+            !is_array($items[$delta]['value'])) {
           // If this field belongs to the base table then we just add
           // those values in... there's no delta.
-          if ($table_name == $base_table) {
-            $base_fields[$table_name][$column_name] = $value;
+          if ($base_table == $chado_table) {
+            $base_fields[$chado_table][$chado_column] = $item['value'];
           }
           else {
-            $temp[$table_name][$delta][$column_name] = $value;
+            $temp[$chado_table][$delta][$chado_column] = $item['value'];
           }
-          $value_set = TRUE;
         }
       }
 
-      // If there is no value set for the field using the
-      // chado-[table_name]__[field name] naming schema then check if a 'value'
-      // item is present and if so use that for the table column value.
-      if (!$value_set and array_key_exists('value', $items[$delta]) and
-          !is_array($items[$delta]['value'])) {
-        // If this field belongs to the base table then we just add
-        // those values in... there's no delta.
-        if ($base_table == $chado_table) {
-          $base_fields[$chado_table][$chado_column] = $item['value'];
+      // Now merge the records for this field with the $new_fields array
+      foreach ($temp as $table_name => $details) {
+        foreach ($details as $delta => $list) {
+          $all_fields[$table_name][] = $list;
         }
-        else {
-          $temp[$chado_table][$delta][$chado_column] = $item['value'];
-        }
-      }
-    }
-
-    // Now merge the records for this field with the $new_fields array
-    foreach ($temp as $table_name => $details) {
-      foreach ($details as $delta => $list) {
-        $all_fields[$table_name][] = $list;
       }
     }
   }
@@ -796,7 +819,10 @@ function tripal_chado_field_storage_query($query) {
 
 function tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $form_state) {
 
-    // Get the form default values.
+  // The term for the content type should already be set in the form state.
+  $term = $form_state['values']['term'];
+  
+  // Get the form default values.
   $default = array(
     'table' => '',
     'has_all' => '',
@@ -820,7 +846,7 @@ function tripal_chado_field_storage_bundle_mapping_form_get_defaults($form, $for
     $default['table'] = $form_state['values']['base_chado_table'];
   }
   else {
-    $mapped_table = chado_get_cvterm_mapping(['cvterm_id' => $selected_term_id]);
+    $mapped_table = chado_get_cvterm_mapping(['cvterm_id' => $term->cvterm_id]);
     if ($mapped_table) {
       $default['table'] = $mapped_table->chado_table;
     }
@@ -1793,6 +1819,9 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
     $storage_args['type_column'] = 'type_id';
     $storage_args['type_id'] = $form_state['values']['prop_term'][0]->cvterm_id;
     $storage_args['type_value'] = $default['prop_term_value'];
+    if (is_array($form_state['values']['prop_base_term'])) {
+      $storage_args['base_type_id'] = $form_state['values']['prop_base_term'][0]->cvterm_id;
+    }
   }
 
   // If the user indicated they wanted to use the linker tables then we'll

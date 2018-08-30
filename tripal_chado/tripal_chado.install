@@ -635,8 +635,6 @@ function tripal_chado_chado_bundle_schema() {
         'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
         'size' => 'big',        
         'type' => 'int',
-        'not null' => FALSE,
-        'default' => '',
       )
     ),
     'indexes' => array(
@@ -1595,18 +1593,23 @@ function tripal_chado_update_7328() {
   }
 }
 
+# tripal_chado_update_7329 is in PR #579 and changes the chado_bundle.type_id
+# to a big int.
+
+# tripal_chado_update_7330 is in PR #596 and adds categories for content types.
+
 /**
  * Adds a base_type_id to the chado_bundle table.
  */
 function tripal_chado_update_7331() {
   try {
-    db_add_field('chado_bundle', 'base_type_id', [
-      'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
-      'size' => 'big',
-      'type' => 'int',
-      'not null' => FALSE,
-      'default' => '',
-    ]);
+    if (!db_field_exists('chado_bundle', 'base_type_id')) {
+      db_add_field('chado_bundle', 'base_type_id', [
+        'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
+        'size' => 'big',
+        'type' => 'int',
+      ]);
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

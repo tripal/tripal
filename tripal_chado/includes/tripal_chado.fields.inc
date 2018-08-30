@@ -19,8 +19,10 @@ function tripal_chado_bundle_fields_info($entity_type, $bundle) {
     'chado_cvterm_id' => $chado_bundle->type_id,
     'chado_table' => $chado_bundle->data_table,
     'chado_type_table' => $chado_bundle->type_linker_table,
+    'chado_type_id' => $chado_bundle->type_id,
     'chado_type_column' => $chado_bundle->type_column,
     'chado_type_value' => $chado_bundle->type_value,
+    'chado_base_type_id' => $chado_bundle->base_type_id,
   );
 
   $info = array();
