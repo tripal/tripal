@@ -38,7 +38,7 @@ Alternatively, you can add terms one at a time. To add a single term either from
 Create a Tripal Content Type
 ----------------------------
 
-Creation of a new content type requires familiarity with Chado.  This is because data records used by content types must be mapped to actual data and the data lives in Chado.  Tripal's interface for creating content types allows you to provide the CV term for the type and then indicate where in Chado the data is/will be stored.  Chado is a flexible relational database schema.  Thus, it is possible for different sites to store data in different ways.  It is best practice however to follow community standards when storing data.  Therefore, please review the online documentation for Chado. If you are unclear how data for your content type should be stored in Chado please consider emailing the `Chado mailing list <http://gmod.org/wiki/GMOD_Mailing_Lists>`_ to ask for help or add a request for help on the Tripal issue queue.
+Creation of a new content type requires familiarity with Chado.  This is because data records used by content types must be mapped to actual data and the data lives in Chado.  Tripal's interface for creating content types allows you to provide the CV term for the type and then indicate where in Chado the data is/will be stored.  Chado is a flexible relational database schema.  Thus, it is possible for different sites to store data in different ways.  It is best practice however to follow community standards when storing data.  Therefore, please review the online documentation for Chado. If you are unclear how data for your content type should be stored in Chado please consider emailing the `Chado mailing list <http://gmod.org/wiki/GMOD_Mailing_Lists>`_ or posting an issue on the `Chado GitHub issue queue <https://github.com/GMOD/Chado>`_ to ask for help or add a request for help on the Tripal issue queue.
 
 To add a new content type, start by navigating to **Structure → Tripal Content Types** and  click on the **Add Tripal Content Type** link at the top. This will take you to a web form that leads you through the process of creating a custom Tripal Content Type.
 
@@ -52,7 +52,7 @@ During content type creation there is as a section to specify which Chado tables
 
 .. image:: creating_content.create2.png
 
-Next, you will be asked if all of the records in the selected table are of the desired content type.  Usually the answer to this is "No", especially if the Chado table has a **type_id** column.  In our case. The **feature** table does have a **type_id** column so we must select "No"
+Next, you will be asked if all of the records in the selected table are of the desired content type.  Usually the answer to this is "No", especially if the Chado table has a **type_id** column.  In our case. The **feature** table does have a **type_id** column so we must select "No".
 
 .. image:: creating_content.create3.png
 
@@ -75,7 +75,7 @@ Once the content type is created, you can create pages for site visitors. This w
 
   Each time you create a new content type, you get several new things:
 
-  - A new search tool will be created automatically for the content type
+  - A new search tool will be created automatically for the content type.
   - A new set of permissions to help you control access is created.
 
 SNP Example
@@ -99,4 +99,4 @@ To accomplish this we can walk through the content type creation form and set th
 
 .. image:: creating_content.create7.png
 
-After clicking the "Create content type" button a job will be submitted and we will have a new SNP content type whose data is saved to both the feature and featureprop tables.
+After clicking the **Create content type** button a job will be submitted and we will have a new SNP content type whose data is saved to both the feature and featureprop tables.
