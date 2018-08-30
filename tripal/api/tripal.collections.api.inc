@@ -54,11 +54,13 @@ function tripal_create_collection($details) {
     $collection_id = $collection->getCollectionID();
     $collection->addBundle($details);
 
-    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Check the !view to generate file links.",
+    
+    
+    drupal_set_message(t("Collection '%name' created with %num_recs record(s). Files for this collection are not yet created.  To generate files, check the !view.",
       array(
         '%name' => $details['collection_name'],
         '%num_recs' => count($details['ids']),
-        '!view' => l('data collections page', 'user/' . $user->uid . '/data-collections'),
+        '!view' => l('files page', 'user/' . $user->uid . '/files'),
       ))
     );
     return $collection;

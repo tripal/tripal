@@ -839,15 +839,16 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
         'storage_args' => $storage_args,
       );
 
-      $bundle = tripal_create_bundle($args, $error);
-      if (!$bundle) {
+      global $user;
+      $job_id = tripal_add_job("Create content type: " . $term_name . ' ('. $vocabulary . ':' . $accession . ')', 
+        'tripal', 'tripal_create_bundle', [$args], $user->uid);
+
+      if (!$job_id) {
         drupal_set_message($error, 'error');
         $form_state['redirect'] = "admin/structure/bio_data";
       }
       else {
-        drupal_set_message('New content type created!');
-        drupal_set_message('Please ' . l("set the user permissions", "admin/people/permissions") . ' for this new content type.');
-        tripal_admin_access($bundle);
+        drupal_set_message('After the content type is created, please ' . l("set the user permissions", "admin/people/permissions") . ' for this new content type.');
         $form_state['redirect'] = "admin/structure/bio_data";
       }
     }
@@ -878,9 +879,30 @@ function tripal_admin_access($entity) {
     return FALSE;
   }
 
-  // Identify the administrative user roles.
-  $admin_role = user_role_load_by_name('administrator');
-  $roles = array($admin_role->rid => $admin_role->name);
+  // Get the administrative user roles.
+  $admin_role = NULL;
+  $admin_rid = variable_get('user_admin_role'); 
+  if (!$admin_rid) {
+    // If we couldn't identify a single role from the 'user_admin_role' variable
+    // then let's get the role that is currently set to administer tripal. If
+    // there is more than one then we don't really know which to choose unless
+    // the default rid of '3' is present.
+    $admin_roles = user_roles(FALSE, 'administer tripal');
+    if (count(array_keys($admin_roles)) == 1) {
+      $admin_rid = key($admin_roles);
+    }
+    // The rid 3 is Drupal's default for the admin user.
+    else if (in_array(3, array_keys($admin_roles))) {
+      $admin_rid = 3;
+    }
+  }
+  
+  // If we can't find a unique admin role then just don't add one and
+  // the user will be forced to manually set permissions for the admin.
+  if (!$admin_rid) {
+    return FALSE;
+  }
+  
   // Define the permissions.
   $permission_for_role = array(
     'create ' . $bundle->name => TRUE,
@@ -888,11 +910,9 @@ function tripal_admin_access($entity) {
     'edit ' . $bundle->name => TRUE,
     'delete ' . $bundle->name => TRUE,
   );
-
+  
   // Assign the permissions
-  foreach($roles as $role => $value){
-    user_role_change_permissions($role, $permission_for_role);
-  }
+  user_role_change_permissions($admin_rid, $permission_for_role);
 
   return TRUE;
 }
