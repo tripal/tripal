@@ -89,7 +89,7 @@ class sep__protocol_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name]['und'][0]['value'] = $protocol_id;
     }
     else {
-      $form_state['values'][$field_name]['und'][0]['value'] = '__NULL__';
+      $form_state['values'][$field_name]['und'][0]['value'] = '';
       $form_state['values'][$field_name]['und'][0][$linker_field] = '__NULL__';
     }
   }

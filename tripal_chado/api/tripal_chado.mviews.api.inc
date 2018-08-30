@@ -355,6 +355,13 @@ function chado_delete_mview($mview_id) {
       $sql = "DROP TABLE {" . $mview->mv_table . "}";
       $success = chado_query($sql);
       if ($success) {
+        //unset the variable
+        global $databases;
+        $default_db = $databases['default']['default']['database'];
+        $chado_schema = chado_get_schema_name('chado');
+        if (isset($GLOBALS["chado_tables"][$default_db][$chado_schema][$mview->mv_table])){
+          unset($GLOBALS["chado_tables"][$default_db][$chado_schema][$mview->mv_table]);
+        }
         drupal_set_message(t("Materialized view, %name, deleted.", array('%name' => $mview->name)));
         return TRUE;
       }

@@ -721,5 +721,15 @@ class TripalImporter {
    */
   public function postRun() {
   }
+  
+  /**
+   * Retrieves the list of arguments that were provided to the importer.
+   * 
+   * @return
+   *   The array of arguments as passed to create function.
+   */
+  public function getArguments() {
+    return $this->arguments;
+  }
 
 }
