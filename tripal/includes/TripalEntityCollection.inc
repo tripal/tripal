@@ -463,9 +463,10 @@ class TripalEntityCollection {
     }
 
     $outfile = $this->getOutfile($formatter);
+    
     // Make sure the user directory exists
     $user_dir = 'public://tripal/users/' . $this->user->uid;
-    $outfilePath = $user_dir. '/' . $outfile;
+    $outfilePath = $user_dir. '/data_collections/' . $outfile;
     return $outfilePath;
   }
 

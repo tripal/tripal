@@ -79,6 +79,11 @@ class so__cds extends ChadoField {
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
     $featurelocs = $feature->featureloc->feature_id;
 
+    // Verify that we have featurelocs before entering the loop
+    if(!is_array($featurelocs)) {
+      return;
+    }
+
     foreach($featurelocs as $featureloc){
       // Generate a CDS sequence if one exsits for this feature alignment.
       $cds_sequence = chado_get_feature_sequences(

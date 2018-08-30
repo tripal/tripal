@@ -1,0 +1,56 @@
+#tripal-user-file-tree {
+  margin: 0;
+  padding: 10px;
+  height: 250px;
+  overflow: auto;
+  border: 1px solid #AAAAAA;
+}
+#tripal-user-file-tree li.tree-node-folder {
+  background: url(../images/directory.png) no-repeat;
+  background-size: 22px 22px;
+  cursor: pointer;
+}
+#tripal-user-file-tree li.tree-node-file {
+  background: url(../images/txt.png) no-repeat;
+  background-size: 22px 22px;
+  cursor: pointer;
+}
+#tripal-user-file-tree li.odd {
+  
+}
+#tripal-user-file-tree li.even {
+  background-color: #EEEEEE;
+}
+#tripal-user-file-tree ul {
+  margin: 0;
+  padding: 0;
+}
+#tripal-user-file-tree li {
+	list-style-type: none;
+  margin: 0px;
+  padding: 0px 0px 0px 30px;
+  line-height: 22px;
+}
+#tripal-user-file-tree .file-name {
+  color: #369;	
+}
+#tripal-user-file-tree .file-size {
+  float: right; 
+  padding-left: 10px;
+  font-size: 0.8em; 
+  width: 60px;
+  text-align: right;
+}
+#tripal-user-file-tree .file-expires {
+  float: right; 
+  padding-left: 10px;
+  font-size: 0.8em; 
+  width: 60px;
+  text-align: right;
+}
+#tripal-user-file-tree a {
+  border-bottom-width: 1px;
+  border-bottom-style: dotted;
+}
+#tripal-user-file-details {
+}
