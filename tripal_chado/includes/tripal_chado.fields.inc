@@ -2817,6 +2817,9 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   // Iterate through all of the properties and do some final checks to see
   // which ones should be added.
   $prop_arr = [];
+  if (!$props) {
+    return $prop_arr;
+  }
   while ($prop = $props->fetchObject()) {
     $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
     $term = chado_expand_var($term, 'field', 'cvterm.definition');

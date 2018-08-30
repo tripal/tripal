@@ -579,28 +579,33 @@ function tripal_get_vocabularies() {
  *
  * @ingroup tripal_terms_api
  */
-function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
+function tripal_get_term_lookup_form(&$form, $form_state, $default_name = '',
     $title = 'Vocabulary Term', $description = '', $is_required,
-    $field_name = '', $delta = 0, $callback = '') {
-  
-  $ajax_wrapper_id = 'tripal-vocab-select-form-' . $delta;
-  if ($field_name) {
-    $ajax_wrapper_id = $field_name . '-' . $delta;
-  }
+    $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [], $weight = 0) {
   
   if (!$callback) {
     $callback = 'tripal_get_term_lookup_form_ajax_callback';
   }
-
-  $term_name = $default_name;
-  if (array_key_exists('values', $form_state) and array_key_exists('term_name', $form_state['values'])) {
-    $term_name = $form_state['values']['term_name'];
+  
+  if (!$wrapper) {
+    $ajax_wrapper_id = 'tripal-vocab-select-form-' . $delta;
+    if ($field_name) {
+      $ajax_wrapper_id = $field_name . '-' . $delta;
+    }
   }
-  if (array_key_exists('input', $form_state) and array_key_exists('term_name', $form_state['input'])) {
-    $term_name = $form_state['input']['term_name'];
+  else {
+    $ajax_wrapper_id = $wrapper;
+  }
+  
+  $term_name = $default_name;
+  if (array_key_exists('values', $form_state) and array_key_exists('term_name' . $delta, $form_state['values'])) {
+    $term_name = $form_state['values']['term_name' . $delta];
+  }
+  if (array_key_exists('input', $form_state) and array_key_exists('term_name' . $delta, $form_state['input'])) {
+    $term_name = $form_state['input']['term_name' . $delta];
   }
   if ($field_name and array_key_exists('input', $form_state) and array_key_exists($field_name, $form_state['input'])) {
-    $term_name = $form_state['input'][$field_name]['und'][$delta]['term_match']['term_name'];
+    $term_name = $form_state['input'][$field_name]['und'][$delta]['term_match' . $delta]['term_name' . $delta];
   }
 
   if (!$description) {
@@ -619,6 +624,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     '#title' => t($title),
     '#prefix' => '<div id = "' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
+    '#weight' => $weight,
   );
   $form['term_match' . $delta]['term_name' . $delta] = array(
     '#title'  => t('Type'),
@@ -632,8 +638,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     '#type' => 'button',
     '#value' => t('Lookup Term'),
     '#name' => 'select_cvterm_' . $ajax_wrapper_id,
-    '#validate' => array(),
-    '#limit_validation_errors' => array(),
+    '#validate' => $validate,
     '#ajax' => array(
       'callback' => $callback,
       'wrapper' => $ajax_wrapper_id,
@@ -641,6 +646,10 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       'method' => 'replace'
     ),
   );
+  if (empty($validate)) {
+    $form['term_match' . $delta]['select_button' . $delta]['#limit_validation_errors'] = [];
+  }
+  
 
   // If the term has been provided by the user then we want to search for
   // matching terms in the database and let them select among any matches.
@@ -782,7 +791,7 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
     }
   }
   else {
-    $values = $form_state['values'];
+    $values = array_key_exists('values', $form_state) ? $form_state['values'] : [];
   }
 
   if (is_array($values)) {

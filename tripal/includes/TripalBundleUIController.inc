@@ -559,7 +559,9 @@ function tripal_admin_add_type_form($form, &$form_state) {
   }
   else {
     $selected = tripal_get_term_lookup_form_result($form, $form_state);
-    $selected_term = $selected[0];
+    if ($selected) {
+      $selected_term = $selected[0];
+    }
   }
     
   // Get the selected storage element.
@@ -644,9 +646,9 @@ function tripal_admin_add_type_form_step1_summary(&$form, &$form_state, $selecte
   $form['term_summary']['details'] = [
     '#type' => 'item',
     '#title' => t('Term'),
-    '#markup' => '<b>Vocabulary:</b> ' . $selected_term->cv_id->name . ' (' . $selected_term->dbxref_id->db_id->name . ') ' . $selected_term->cv_id->definition .
-    '<br><b>Term: </b> ' . $selected_term->dbxref_id->db_id->name . ':' . $selected_term->dbxref_id->accession . '.  ' .
-    '<br><b>Definition:</b>  ' . $definition
+    '#markup' => 'Vocabulary: ' . $selected_term->cv_id->name . ' (' . $selected_term->dbxref_id->db_id->name . ') ' . $selected_term->cv_id->definition .
+    '<br>Term: ' . $selected_term->dbxref_id->db_id->name . ':' . $selected_term->dbxref_id->accession . '.  ' .
+    '<br>Definition:  ' . $definition
   ];
   $form['term_summary']['step1-return'] = array(
     '#type' => 'submit',
@@ -658,7 +660,7 @@ function tripal_admin_add_type_form_step1_summary(&$form, &$form_state, $selecte
 /**
  * Builds step1 of the tripal_admin_add_type_form()
  */
-function tripal_admin_add_type_form_step2(&$form, &$form_state, $stores) {
+function tripal_admin_add_type_form_step2(&$form, &$form_state, $stores, $selected_term, $default_store) {
   
   // Now let the user select where the data type will be stored.
   $form['storage'] = array(
@@ -700,7 +702,7 @@ function tripal_admin_add_type_form_step2(&$form, &$form_state, $stores) {
 /**
  * Provides a summary of values selected in Step 1.
  */
-function tripal_admin_add_type_form_step2_summary(&$form, &$form_state, $stores) {
+function tripal_admin_add_type_form_step2_summary(&$form, &$form_state, $stores, $selected_term, $default_store) {
   $default_store = $form_state['values']['store_select'];
   $selected_store_module = $stores[$default_store]['module'];
   
@@ -731,22 +733,28 @@ function tripal_admin_add_type_form_step2_summary(&$form, &$form_state, $stores)
 /**
  * Builds step1 of the tripal_admin_add_type_form()
  */
-function tripal_admin_add_type_form_step3(&$form, &$form_state, $stores) {
+function tripal_admin_add_type_form_step3(&$form, &$form_state, $stores, $selected_term, $default_store) {
   $default_store = $form_state['values']['store_select'];
   
   $selected_store_module = $stores[$default_store]['module'];
   
+  $form['store_settings'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Step 3: Storage Settings'),
+    '#description' => '',
+  ];
+
   $function = $selected_store_module . '_field_storage_bundle_mapping_form';
   if (function_exists($function)) {
     $store_form = $function($form, $form_state, $selected_term, $submit_disabled);
-    $form['storage'][$store_type] = $store_form;
+    $form['store_settings'][$default_store] = $store_form;
   }
   
   // Add in the button for the cases of no terms or too many.
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Create content type'),
-    '#name' => 'use_cvterm',
+    '#name' => 'create-content',
     '#disabled' => $submit_disabled,
   );
 }
@@ -754,6 +762,7 @@ function tripal_admin_add_type_form_step3(&$form, &$form_state, $stores) {
  * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
  */
 function tripal_admin_add_type_form_ajax_callback($form, $form_state) {
+
   return $form;
 }
 /**
@@ -764,6 +773,11 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
   $stores = module_invoke_all('vocab_storage_info');
   $store_select = (isset($form_state['values']['store_select'])) ? $form_state['values']['store_select'] : NULL;
   $clicked_button = $form_state['clicked_button']['#name'];
+  
+  // Don't do validation on an ajax callback.
+  if (array_key_exists('#ajax', $form_state['triggering_element'])) {
+    return;
+  }
 
   if ($clicked_button =='step1-continue') {
     $form_state['rebuild'] = TRUE;
@@ -787,43 +801,16 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
     $form_state['stage'] = 'step3';
   }
   
-  if ($clicked_button =='use_cvterm') {       
-    $cvterm_id = NULL;
+  if ($clicked_button == 'create-content') {           
+    // Call the submit hook for this form for the storage method that
+    // will be responsible for this cotent type.
+    $stores = module_invoke_all('vocab_storage_info');
+    $selected_store_module = $stores[$store_select]['module'];
+    $selected_term = $form_state['values']['term'];
 
-    // Make sure we have a cvterm selected
-    $num_selected = 0;
-    foreach ($form_state['values'] as $key => $value) {
-      $matches = array();
-      if (preg_match("/^term-(\d+)$/", $key, $matches) and
-          $form_state['values']['term-' . $matches[1]]) {
-        $cvterm_id = $matches[1];
-        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-        $num_selected++;
-      }
-    }
-
-    if ($num_selected == 0) {
-      form_set_error('', 'Please select at least one term.');
-    }
-    else if ($num_selected > 1) {
-      form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
-    }
-    else {
-      // Add the term to the form state so we can access it later.
-      $form_state['term']['vocabulary'] = $term->dbxref_id->db_id->name;
-      $form_state['term']['accession'] = $term->dbxref_id->accession;
-      $form_state['term']['term_name'] = $term->name;
-
-      // Call the submit hook for this form for the storage method that
-      // will be responsible for this cotent type.
-      $stores = module_invoke_all('vocab_storage_info');
-      $selected_store_module = $stores[$store_select]['module'];
-      $selected_term = $form_state['term'];
-
-      $function = $selected_store_module . '_field_storage_bundle_mapping_form_validate';
-      if (function_exists($function)) {
-        $function($form, $form_state, $selected_term);
-      }
+    $function = $selected_store_module . '_field_storage_bundle_mapping_form_validate';
+    if (function_exists($function)) {
+      $function($form, $form_state, $selected_term);
     }
   }
   else {
@@ -836,16 +823,16 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
 function tripal_admin_add_type_form_submit($form, &$form_state) {
   $vocabulary = '';
   $accession = '';
-  if (array_key_exists('term', $form_state)) {
-    $selected_term = $form_state['term'];
+  if (array_key_exists('term', $form_state['values'])) {
+    $selected_term = $form_state['values']['term'];
     $store_select = $form_state['values']['store_select'];
-    $vocabulary = array_key_exists('vocabulary', $selected_term) ? $selected_term['vocabulary'] : '';
-    $accession = array_key_exists('accession', $selected_term) ? $selected_term['accession'] : '';
-    $term_name = array_key_exists('term_name', $selected_term) ? $selected_term['term_name'] : '';
+    $vocabulary = $selected_term->dbxref_id->db_id->name;
+    $accession = $selected_term->dbxref_id->accession;
+    $term_name = $selected_term->name;
 
     // Before we try to add this type, check to see if it already exists
     // as a bundle.
-    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
+    $term = tripal_load_term_entity(['vocabulary' => $vocabulary, 'accession' => $accession]);
     if (!$term) {
 
       // Call the submit hook for this form for the storage method that
