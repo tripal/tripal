@@ -876,7 +876,7 @@ function tripal_pub_importer_delete($import_id) {
  *
  * @param $pubs
  *   An array containing a list of publications to add to Chado.  The
- *   array contains a set of details for the publication. 
+ *   array contains a set of details for the publication.
  * @param $do_contact
  *   Set to TRUE if authors should automatically have a contact record added
  *   to Chado.
@@ -961,7 +961,9 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
 }
 
 /**
- * Adds a new publication to the Chado, along with all properties and
+ * Adds a new publication to Chado.
+ * 
+ * In addition, all properties and
  * database cross-references. If the publication does not already exist
  * in Chado then it is added.  If it does exist nothing is done.  If
  * the $update parameter is TRUE then the publication is updated if it exists.
@@ -975,23 +977,23 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
  *   Optional. Set to TRUE if a contact entry should be added to the Chado 
  *   contact table for authors of the publication.
  * @param $update_if_exists
- *   Optional.  If the publication already exists then this function will return
- *   without adding a new publication.  However, set this value to TRUE to force
- *   the function to pudate the publication using the $pub_details that are 
- *   provided.
+ *   Optional.  If the publication already exists then this function will 
+ *   return without adding a new publication.  However, set this value to 
+ *   TRUE to force the function to pudate the publication using the 
+ *   $pub_details that are provided.   
  * @param $job
  *   The jobs management object for the job if this function is run as a job. 
  *   This argument is added by Tripal during a job run and is not needed if
  *   this function is run directly.
  * @return
  *   If the publication already exists, is inserted or updated then the 
- *   publication ID is returned, otherwise FALSE is returned. If the publication
- *   already exists and $update_if_exists is not TRUE then the $action variable 
- *   is set to 'skipped'. If the publication already exists and 
- *   $update_if_exists is TRUE and if the update was successful then $action 
- *   is set to 'updated'.  Otherwise on successful insert the $action variable 
- *   is set to 'inserted'.  If the function failes then the $action variable 
- *   is set to 'error'
+ *   publication ID is returned, otherwise FALSE is returned. If the 
+ *   publication already exists and $update_if_exists is not TRUE then the 
+ *   $action variable is set to 'skipped'. If the publication already exists 
+ *   and $update_if_exists is TRUE and if the update was successful then 
+ *   $action is set to 'updated'.  Otherwise on successful insert the 
+ *   $action variable is set to 'inserted'.  If the function failes then the
+ *   $action variable is set to 'error'
  *
  * @ingroup tripal_pub
  */
@@ -1159,6 +1161,12 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     if($key == 'raw') {
       continue;
     }
+    
+    // Since we're not updating the 'Publication Dbxref' on an update
+    // skip this property.
+    if ($update_if_exists and $key == 'Publication Dbxref') {
+      continue;
+    }
 
     // Get the cvterm by name.
     $identifiers = array(
@@ -1224,7 +1232,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     }
     if (!$success) {
       tripal_report_error($message_type, TRIPAL_ERROR, 
-        "Cannot add property '%prop' to publication. Skipping.",
+        "Cannot add property '%prop' to pubprop table. Skipping.",
         ['%prop' => $key], $error_opts);
       continue;
     }

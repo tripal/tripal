@@ -152,18 +152,19 @@ function drush_tripal_chado_trp_import_pubs() {
     $update = FALSE;
   }
   
+  
   if ($publish == 'Y' and $sync == 'Y' ) {
     $publish = 'both';
   }
-  elseif ($publish  != 'Y' and $sync == 'Y' ) {
+  elseif ($publish != 'Y' and $sync == 'Y') {
     $publish = 'sync';
   }
-  elseif ($publish  == 'Y'  and $sync  != 'Y' ) {
+  elseif ($publish == 'Y' and $sync != 'Y') {
     $publish = TRUE;
   }
   else {
-    $publish = TRUE;
-  } 
+    $publish = FALSE;
+  }
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
   if ($dbxref) {
@@ -199,7 +200,7 @@ function drush_tripal_chado_trp_update_pubs() {
     $publish = TRUE;
   }
   else {
-    $publish = TRUE;
+    $publish = FALSE;
   }
 
   module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
