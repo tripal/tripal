@@ -98,10 +98,9 @@ function chado_publish_records($values, $job = NULL) {
     ->condition('bundle_id', $bundle->id)
     ->execute()
     ->fetchObject();
-  if(!$chado_bundle) {
-    tripal_report_error($message_type, TRIPAL_ERROR,
-      "Cannot find mapping of bundle to Chado tables. Could not publish record.",
-      [], $message_opts);
+  if (!$chado_bundle) {
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+        "Cannot find mapping of bundle to Chado tables. Could not publish record.");
     return FALSE;
   }
 
@@ -236,13 +235,13 @@ function chado_publish_records($values, $job = NULL) {
         $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
     }
 
-    // There is no need to cache transactions since Drupal handles nested transactions
-    // "by performing no transactional operations (as far as the database sees) within
-    // the inner nesting layers". Effectively, Drupal ensures nested trasactions work the
-    // same as passing a transaction through to the deepest level and not starting a new
-    // transaction if we are already in one.
+    // There is no need to cache transactions since Drupal handles nested 
+    // transactions "by performing no transactional operations (as far as the 
+    // database sees) within the inner nesting layers". Effectively, Drupal 
+    // ensures nested trasactions work the same as passing a transaction 
+    // through to the deepest level and not starting a new transaction if we 
+    // are already in one.
     $transaction = db_transaction();
-
     try {
       $i = 0;
       while($record = $records->fetchObject()) {
