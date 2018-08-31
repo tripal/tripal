@@ -428,7 +428,7 @@ function tripal_chado_prepare_genomic_types($job) {
   _tripal_chado_preapre_create_bundle($args, $job);
   
   // Create the 'Physical Map' entity type.  
-  $cvterm = tripal_get_cvterm(['id' => 'local:Map Type']);
+  $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
   $args = array(
     'vocabulary' => 'data',
     'accession' => '1280',
@@ -458,7 +458,7 @@ function tripal_chado_prepare_genomic_types($job) {
   _tripal_chado_preapre_create_bundle($args, $job);
   
   // Create the 'Genome Assembly' entity type.  
-  $cvterm = tripal_get_cvterm(['id' => 'local:Analysis Type']);
+  $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
   $args = array(
     'vocabulary' => 'operation',
     'accession' => '0525',
@@ -475,7 +475,7 @@ function tripal_chado_prepare_genomic_types($job) {
   _tripal_chado_preapre_create_bundle($args, $job);
   
   // Create the 'Genome Annotation' entity type.  
-  $cvterm = tripal_get_cvterm(['id' => 'local:Analysis Type']);
+  $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
   $args = array(
     'vocabulary' => 'operation',
     'accession' => '0362',
@@ -492,7 +492,7 @@ function tripal_chado_prepare_genomic_types($job) {
   _tripal_chado_preapre_create_bundle($args, $job);
   
   // Create the 'Genome Annotation' entity type.  
-  $cvterm = tripal_get_cvterm(['id' => 'local:Project Type']);
+  $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
   $args = array(
     'vocabulary' => 'local',
     'accession' => 'Genome Project',
@@ -652,7 +652,7 @@ function tripal_chado_prepare_genetic_types($job) {
   //
   // Create the 'Genetic Map' entity type.
   //  
-  $cvterm = tripal_get_cvterm(['id' => 'local:Map Type']);
+  $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
   $args = array(
     'vocabulary' => 'data',
     'accession' => '1278',

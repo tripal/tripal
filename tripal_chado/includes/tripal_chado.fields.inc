@@ -19,8 +19,10 @@ function tripal_chado_bundle_fields_info($entity_type, $bundle) {
     'chado_cvterm_id' => $chado_bundle->type_id,
     'chado_table' => $chado_bundle->data_table,
     'chado_type_table' => $chado_bundle->type_linker_table,
+    'chado_type_id' => $chado_bundle->type_id,
     'chado_type_column' => $chado_bundle->type_column,
     'chado_type_value' => $chado_bundle->type_value,
+    'chado_base_type_id' => $chado_bundle->base_type_id,
   );
 
   $info = array();
@@ -220,13 +222,16 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
   $type_value = $details['chado_type_value'];
+  $base_type_id = $details['chado_base_type_id'];
 
   $schema = chado_get_schema($table_name);
 
-  // Handle type_id fields that are not the type_column, except for the
-  // organism type_id as that is handled by the taxrank__infraspecific_taxon
-  // field.
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
+  // Add the additional_type field to all tables with a type_id that is not used
+  // as the type column nor has a $base_type_id (i.e. the content type uses a 
+  // prop or linker table to resolve the type).
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and 
+      !$base_type_id and $table_name != 'organism') {    
+
     $field_name = 'schema__additional_type';
     $field_type = 'schema__additional_type';
     $info[$field_name] = array(
@@ -713,7 +718,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
     
-    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
+    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column, $cvterm_id);
     foreach ($props as $term) {
           
       $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
@@ -855,8 +860,10 @@ function tripal_chado_bundle_instances_info($entity_type, $bundle) {
     'chado_cvterm_id' => $chado_bundle->type_id,
     'chado_table' => $chado_bundle->data_table,
     'chado_type_table' => $chado_bundle->type_linker_table,
+    'chado_type_id' => $chado_bundle->type_id,
     'chado_type_column' => $chado_bundle->type_column,
     'chado_type_value' => $chado_bundle->type_value,
+    'chado_base_type_id' => $chado_bundle->base_type_id,
   );
 
   $info = array();
@@ -1280,10 +1287,14 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   $type_column = $details['chado_type_column'];
   $cvterm_id  = $details['chado_cvterm_id'];
   $type_value = $details['chado_type_value'];
+  $base_type_id = $details['chado_base_type_id'];  
   $schema = chado_get_schema($table_name);
 
-  // An additional type for publications
-  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and $table_name != 'organism') {
+  // Add the additional_type field to all tables with a type_id that is not used
+  // as the type column nor has a $base_type_id (i.e. the content type uses a
+  // prop or linker table to resolve the type).
+  if (array_key_exists('type_id', $schema['fields']) and 'type_id' != $type_column and
+      !$base_type_id and $table_name != 'organism') { 
     $field_name = 'schema__additional_type';
     $is_required = FALSE;
     if (array_key_exists('not null', $schema['fields']['type_id']) and
@@ -2478,7 +2489,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
 
-    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column);
+    $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column, $cvterm_id);
     foreach ($props as $term) {     
 
        $field_name = strtolower(preg_replace('/[^\w]/','_', $term->dbxref_id->db_id->name . '__' . $term->name));
@@ -2750,7 +2761,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
  * @return
  *   An array of cvterm objects for the properties to be added as fields.
  */
-function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column) {
+function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column, $cvterm_id) {
   
   $tschema = chado_get_schema($table_name);
   $schema = chado_get_schema($prop_table);
@@ -2820,6 +2831,9 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
   // Iterate through all of the properties and do some final checks to see
   // which ones should be added.
   $prop_arr = [];
+  if (!$props) {
+    return $prop_arr;
+  }
   while ($prop = $props->fetchObject()) {
     $term = chado_generate_var('cvterm', array('cvterm_id' => $prop->type_id));
     $term = chado_expand_var($term, 'field', 'cvterm.definition');

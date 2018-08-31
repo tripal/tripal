@@ -353,8 +353,6 @@ function tripal_load_bundle_entity($values) {
     list($vocab, $accession) = explode(':', $values['accession'], 2);
     $term = tripal_load_term_entity(['vocabulary' => $vocab, 'accession' => $accession]);
     if (!$term) {
-      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not find bundle with term accession: !accession", 
-        ['!accession' => $values['accession']]);
       return NULL;
     }
     $query->condition('tb.term_id', $term->id);
@@ -392,15 +390,14 @@ function tripal_load_bundle_entity($values) {
  */
 function tripal_add_notification($title, $details, $type, $actions, $submitter_id) {
   $transaction = db_transaction();
-
-  // Check the notification isn't already in the admin notification table.
-  $dedup = db_select('tripal_admin_notfications', 'tan')
-    ->fields('tan')
-    ->condition('submitter_id', $submitter_id, '=')
-    ->execute()->fetchAll();
-
-  if (empty($dedup)) {
-    try {
+  try {
+    // Check the notification isn't already in the admin notification table.
+    $dedup = db_select('tripal_admin_notfications', 'tan')
+      ->fields('tan')
+      ->condition('submitter_id', $submitter_id, '=')
+      ->execute()->fetchAll();
+  
+    if (empty($dedup)) {
       $record = new stdClass;
       $record->details = $details;
       $record->title = $title;
@@ -410,10 +407,10 @@ function tripal_add_notification($title, $details, $type, $actions, $submitter_i
       $record->type = $type;
       $success = drupal_write_record('tripal_admin_notfications', $record);
     }
-    catch (Exception $e) {
-      $transaction->rollback();
-      watchdog('tripal_cron', 'Could not write notification to database.');
-    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog('tripal_cron', 'Could not write notification to database.');
   }
 }
 
