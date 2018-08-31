@@ -16,7 +16,7 @@ function tripal_pub_disable() {
   require_once("tripal_pub.views_default.inc");
   $views = tripal_pub_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE);
   }
 
 }

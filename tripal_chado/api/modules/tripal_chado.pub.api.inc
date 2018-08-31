@@ -429,41 +429,29 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
 function chado_execute_active_pub_importers($report_email = FALSE, 
   $publish = TRUE, $do_update = FALSE) {
 
+  $report = [];
+  $report['error'] = [];
+  $report['inserted'] = [];
+  $report['skipped'] = [];
+  $report['updated'] = [];
+    
   // Get all of the loaders.
   $args = array();
   $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
   $importers = db_query($sql, $args);
   $do_contact = FALSE;
-  $reports = array();
   while ($import = $importers->fetchObject()) {
-    chado_execute_pub_importer($import->pub_import_id, $publish, $do_update);
+    $importer_report = chado_execute_pub_importer($import->pub_import_id, $publish, $do_update);
+    foreach ($importer_report as $action => $pubs) {
+      $report[$action] = array_merge($report[$action], $pubs);
+    }
   }
 
-  // Iterate through each of the reports and generate a final report with HTML
-  // links.
-  $HTML_report = '';
-  if ($report_email) {
-    $HTML_report .= "<html>";
-    global $base_url;
-    foreach ($reports as $importer => $report) {
-      $total = count($report['inserted']);
-      $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
-      foreach ($report['inserted'] as $pub) {
-        $item = $pub['Title'];
-        if (array_key_exists('pub_id', $pub)) {
-          $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
-        }
-        $HTML_report .= "<li>$item</li>\n";
-      }
-      $HTML_report .= "</ol>\n";
-    }
-    $HTML_report .= "</html>";
-    $site_email = variable_get('site_mail', '');
-    $params = array(
-      'message' => $HTML_report
-    );
-    drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
-  }
+  $site_email = variable_get('site_mail', '');
+  $params = array(
+    'report' => $report
+  );
+  drupal_mail('tripal_chado', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
   print "Done.\n";
 }
 
@@ -488,12 +476,20 @@ function chado_execute_active_pub_importers($report_email = FALSE,
  *   this function is run directly.
  *   
  * @return
- *   TRUE if importing occured with on errors. FALSE otherwise. If failed, 
- *   all database changes are rolled back.
+ *   Returns an array containing the number of publications that were
+ *   inserted, updated, skipped and which had an error during import.
  *
  * @ingroup tripal_pub
  */
-function chado_execute_pub_importer($import_id, $publish = TRUE, $do_update = FALSE, $job = NULL) {
+function chado_execute_pub_importer($import_id, $publish = TRUE, 
+  $do_update = FALSE, $job = NULL) {
+  
+  // Holds the list of imported pubs which includes their ID and Citation.
+  $report = [];
+  $report['error'] = [];
+  $report['inserted'] = [];
+  $report['skipped'] = [];
+  $report['updated'] = [];
   
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -538,15 +534,18 @@ function chado_execute_pub_importer($import_id, $publish = TRUE, $do_update = FA
       tripal_report_error($message_type, TRIPAL_INFO,
         "Querying !remote_db for up to !num pubs that match the criteria.", 
         ['!num' => $num_to_retrieve, '!remote_db' => $remote_db], $message_opts);
-      $results  = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
-      $pubs     = $results['pubs'];
+      $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs = $results['pubs'];
       $num_pubs = $results['total_records'];
       $total_pubs += $num_pubs;
       tripal_report_error($message_type, TRIPAL_INFO,
-        "Adding %num new publications.",
+        "Found %num publications.",
         ['%num' => $num_pubs], $message_opts);
       
-      tripal_pub_add_publications($pubs, $import->do_contact, $do_update, $job);
+      $subset_report = tripal_pub_add_publications($pubs, $import->do_contact, $do_update, $job);
+      foreach ($subset_report as $action => $pubs) {
+        $report[$action] = array_merge($report[$action], $pubs);
+      }
       $page++;
     }
     while (count($pubs) == $num_to_retrieve);
@@ -570,7 +569,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE, $do_update = FA
   tripal_report_error($message_type, TRIPAL_INFO,
     "Done.", [], $message_opts);
   
-  return TRUE;
+  return $report;
 }
 
 

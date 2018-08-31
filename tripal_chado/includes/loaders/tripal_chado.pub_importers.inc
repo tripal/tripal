@@ -367,7 +367,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   );
   $dbs = chado_select_record('db', array('*'), $values);
   foreach ($dbs as $index => $db) {
-    $remote_dbs[$db->name] = $db->description;
+    $remote_dbs[$db->name] = $db->description ? $db->description : $db->name;
   };
   // use PubMed as the default
   if (!$remote_db) {
@@ -906,10 +906,11 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
     'print' => TRUE,
   ];
   
-  $report = array();
-  $report['error'] = 0;
-  $report['inserted'] = array();
-  $report['skipped'] = array();
+  $report = [];
+  $report['error'] = [];
+  $report['inserted'] = [];
+  $report['skipped'] = [];
+  $report['updated'] = [];
   $total_pubs = count($pubs);
 
   // iterate through the publications and add each one
@@ -942,21 +943,20 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
 
     switch ($action) {
       case 'error':
-        $report['error']++;
+        $report['error'][] = $pub['Citation'];
         break;
       case 'inserted':
-        $report['inserted'][] = $pub;
+        $report['inserted'][] = $pub['Citation'];
         break;
       case 'updated':
-        $report['updated'][] = $pub;
+        $report['updated'][] = $pub['Citation'];
         break;
       case 'skipped':
-        $report['skipped'][] = $pub;
+        $report['skipped'][] = $pub['Citation'];
         break;
     }
     $i++;
   }
-  print "\n";
   return $report;
 }
 
@@ -1122,7 +1122,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   }
 
   // If there is a pub_id and we've been told to update, then do the update.
-  if ($pub_id and $update_if_exists) {
+  else if ($pub_id and $update_if_exists) {
     $match = array('pub_id' => $pub_id);
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');
     $success = chado_update_record('pub', $match, $values, $options);
