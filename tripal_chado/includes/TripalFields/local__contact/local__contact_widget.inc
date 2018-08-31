@@ -106,7 +106,7 @@ class local__contact_widget extends ChadoFieldWidget {
     }
     // If no name is provided then we want to set the field for deletion.
     else {
-      $form_state['values'][$field_name]['und'][$delta][$linker_field] = '';
+      $form_state['values'][$field_name]['und'][$delta][$linker_field] = '__NULL__';
     }
   }
 }

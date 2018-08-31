@@ -17,7 +17,7 @@
 function tripal_analysis_node_info() {
   $nodes = array();
   $nodes['chado_analysis'] = array(
-    'name'        => t('Analysis'),
+    'name'        => t('Analysis (Tripal v2 legacy)'),
     'base'        => 'chado_analysis',
     'description' => t('An analysis'),
     'has_title'   => TRUE,

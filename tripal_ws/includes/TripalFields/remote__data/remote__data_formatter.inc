@@ -15,7 +15,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     $content = '';
-    
+
     // Get the settings
     $settings = $display['settings'];
     $field_name = $this->field['field_name'];
@@ -51,7 +51,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
       $value = $item['value'];
       $error = $item['error'];
       $warning = $item['warning'];
-      
+
       // If there is an error or warning then clear the cache for this field
       // so that next time the page is loaded it will try to reload again.
       if ($error or $warning) {
@@ -68,7 +68,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         $rows[] = [$value];
         continue;
       }
-      
+
       $remote_entity_label = array_key_exists('label', $item) ? $item['remote_entity']['label'] : '';
       $remote_entity_page = $item['remote_entity']['ItemPage'];
       $remote_entity_link = t('View !data on %site',
@@ -98,7 +98,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         }
       }
     }
-    
+
     // TODO: we need to handle paged elements.
 
     $has_sub_tables = FALSE;
@@ -139,19 +139,27 @@ class remote__data_formatter extends WebServicesFieldFormatter {
         $content .= $rows[$i][0];
       }
     }
-    
+
     $content .= '<p>';
 
-    $content .=  t('This content provided by !site.',
-      array('!site' => l($site->name, $site->url, array('attributes' => array("target" => '_blank')))));
+    if($site) {
+      $content .= t('This content provided by !site.', [
+          '!site' => l($site->name, $site->url,
+            ['attributes' => ["target" => '_blank']])
+        ]);
+    }
+    else  {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote site while attempting to format results.');
+    }
+
     if (is_object($site_logo)) {
       $content .= '<img class="tripal-remote--data-field-logo" src="' . file_create_url($site_logo->uri) . '"><br/>';
     }
     if (count($items) == 1) {
-      $content .= $remote_entity_link;
+      $content .= isset($remote_entity_link) ? $remote_entity_link : '';
     }
     $content .= '</p>';
-    
+
     // Return the content for this field.
     $element[0] = array(
       '#type' => 'markup',

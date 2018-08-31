@@ -129,6 +129,11 @@ class sbo__database_cross_reference extends ChadoField {
     $accession_term = chado_get_semweb_term('dbxref', 'accession');
     $dburl_term = chado_get_semweb_term('db', 'url');
 
+    // If we don't have a chado record return before creating a stub for this field!
+    if (!$record) {
+      return;
+    }
+    
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',

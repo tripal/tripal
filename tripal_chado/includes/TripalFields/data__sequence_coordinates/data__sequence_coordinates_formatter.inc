@@ -2,7 +2,7 @@
 
 class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
   // The default lable for this field.
-  public static $default_label = 'Sequence Coordinates';
+  public static $default_label = 'Sequence Coordinate List';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('data__sequence_coordinates');

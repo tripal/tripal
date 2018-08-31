@@ -380,15 +380,14 @@ function tripal_load_bundle_entity($values) {
  */
 function tripal_add_notification($title, $details, $type, $actions, $submitter_id) {
   $transaction = db_transaction();
-
-  // Check the notification isn't already in the admin notification table.
-  $dedup = db_select('tripal_admin_notfications', 'tan')
-    ->fields('tan')
-    ->condition('submitter_id', $submitter_id, '=')
-    ->execute()->fetchAll();
-
-  if (empty($dedup)) {
-    try {
+  try {
+    // Check the notification isn't already in the admin notification table.
+    $dedup = db_select('tripal_admin_notfications', 'tan')
+      ->fields('tan')
+      ->condition('submitter_id', $submitter_id, '=')
+      ->execute()->fetchAll();
+  
+    if (empty($dedup)) {
       $record = new stdClass;
       $record->details = $details;
       $record->title = $title;
@@ -398,10 +397,10 @@ function tripal_add_notification($title, $details, $type, $actions, $submitter_i
       $record->type = $type;
       $success = drupal_write_record('tripal_admin_notfications', $record);
     }
-    catch (Exception $e) {
-      $transaction->rollback();
-      watchdog('tripal_cron', 'Could not write notification to database.');
-    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog('tripal_cron', 'Could not write notification to database.');
   }
 }
 
@@ -417,20 +416,31 @@ function tripal_add_notification($title, $details, $type, $actions, $submitter_i
  *     - term_name: A human-readable name for this term.  This will became
  *       the name that appears for the content type.  In practice, this
  *       should be the name of the term. (E.g. the name for SO:0000704 is gene).
- * @param $error
- *  A string, passed by reference, that is filled with the error message
- *  if the function fails.
+ * @param $job
+ *  The job ID if this is launched via a job.
  *
  * @return
  *   The bundle object or FALSE if failure.
  *
  * @ingroup tripal_entities_api
  */
-function tripal_create_bundle($args, &$error = '') {
+function tripal_create_bundle($args, $job = NULL) {
   $vocabulary = $args['vocabulary'];
   $accession = $args['accession'];
   $term_name = $args['term_name'];
   $storage_args = $args['storage_args'];
+  
+  $message_args = [
+    'job' => $job,
+    'print' => TRUE,
+    'watchdog' => TRUE,
+  ];
+  
+  tripal_report_error('tripal_entities', TRIPAL_INFO, 
+   "Creation of a content type is performed using a database transaction. " .
+    "If it fails or is terminated prematurely then all insertions and " .
+    "updates are rolled back and will not be found in the database", 
+    [], $message_args);
 
   $transaction = db_transaction();
   try {
@@ -444,7 +454,7 @@ function tripal_create_bundle($args, &$error = '') {
       else {
         $transaction->rollback();
         tripal_report_error('tripal_entities', TRIPAL_ERROR, 
-          'Unable to create TripalVocab :vocab', array(':vocab' => $vocabulary));
+          'Unable to create TripalVocab :vocab', array(':vocab' => $vocabulary), $message_args);
         return FALSE;
       }
     }
@@ -463,7 +473,7 @@ function tripal_create_bundle($args, &$error = '') {
       else {
         $transaction->rollback();
         tripal_report_error('tripal_entities', TRIPAL_ERROR,
-          'Unable to create TripalTerm :term', array(':term' => $term_name));
+          'Unable to create TripalTerm :term', array(':term' => $term_name), $message_args);
         return FALSE;
       }
     }
@@ -493,7 +503,7 @@ function tripal_create_bundle($args, &$error = '') {
     if (!$bundle) {
       $transaction->rollback();
       tripal_report_error('tripal_entities', TRIPAL_ERROR,
-        'Unable to create Tripal Bundle :name.', array(':name' => $bundle_name));
+        'Unable to create Tripal Bundle :name.', array(':name' => $bundle_name), $message_args);
       return FALSE;
     }
 
@@ -517,7 +527,7 @@ function tripal_create_bundle($args, &$error = '') {
     if (!$bundle) {
       $transaction->rollback();
       tripal_report_error('tripal_entities', TRIPAL_ERROR,
-        'Unable to load Tripal Bundle :name after cache clear.', array(':name' => $bundle_name));
+        'Unable to load Tripal Bundle :name after cache clear.', array(':name' => $bundle_name), $message_args);
       return FALSE;
     }
 
@@ -532,8 +542,9 @@ function tripal_create_bundle($args, &$error = '') {
   }
   catch (Exception $e) {
     $transaction->rollback();
-    drupal_set_message(t("Failed to create content type: %message.",
-      array('%message' => $e->getMessage())), 'error');
+    $message_args['drupal_set_message'] = TRUE;
+    tripal_report_error('tripal_entities', TRIPAL_ERROR,
+      "Failed to create content type: %message.", ['%message' => $e->getMessage()], $message_args);
     return FALSE;
   }
 
@@ -549,6 +560,12 @@ function tripal_create_bundle($args, &$error = '') {
     }
   }
 
+  // Set admin access for the new bundle.
+  tripal_admin_access($bundle);
+  
+  // Report that we're done.
+  tripal_report_error('tripal_entities', TRIPAL_INFO, "Done.", [], $message_args);
+  
   return $bundle;
 }
 

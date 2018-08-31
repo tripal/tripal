@@ -137,6 +137,11 @@ class chado_linker__contact extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
+    // If we don't have a chado record return before creating a stub for this field!
+    if (!$record) {
+      return;
+    }
+    
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),

@@ -102,7 +102,9 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
   if (!$result) {
-    drupal_set_message("Could not find details about the vocabulary: $vocabulary");
+    drupal_set_message("Could not find details about the vocabulary: $vocabulary. Note: ".
+      "if this vocabulary does exist, try re-populating the db2cv_mview materialized " .
+      "view at Admin > Tripal > Data Storage > Chado > Materialized views.");
     return FALSE;
   }
 

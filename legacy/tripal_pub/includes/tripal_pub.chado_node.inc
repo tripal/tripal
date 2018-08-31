@@ -17,7 +17,7 @@
 function tripal_pub_node_info() {
   $nodes = array();
   $nodes['chado_pub'] = array(
-    'name'        => t('Publication'),
+    'name'        => t('Publication (Tripal v2 legacy)'),
     'base'        => 'chado_pub',
     'description' => t('A publication from the Chado database'),
     'has_title'   => TRUE,

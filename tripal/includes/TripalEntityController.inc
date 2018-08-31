@@ -91,7 +91,9 @@ class TripalEntityController extends EntityAPIController {
       }
     }
     catch (Exception $e) {
-      $transaction->rollback();
+      if ($transaction) {
+        $transaction->rollback();
+      }
       watchdog_exception('tripal', $e);
       throw $e;
       return FALSE;
@@ -394,7 +396,7 @@ class TripalEntityController extends EntityAPIController {
       // If our entity has no id, then we need to give it a
       // time of creation.
       if (empty($entity->id)) {
-        $entity->created = $created_date;
+        $entity->created = $create_date;
         $invocation = 'entity_insert';
       }
       else {
@@ -468,7 +470,7 @@ class TripalEntityController extends EntityAPIController {
     catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
-      drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
+      drupal_set_message("Could not save the TripalEntity: " . $e->getMessage(), "error");
       return FALSE;
     }
   }
