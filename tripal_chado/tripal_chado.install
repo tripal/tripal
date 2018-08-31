@@ -1,15 +1,6 @@
 <?php
 
 function tripal_chado_install() {
-//   // The foreign key specification doesn't really add one to the
-//   // Drupal schema, it is just used internally, but we want one.
-//   db_query('
-//       ALTER TABLE {tripal_custom_tables}
-//       ADD CONSTRAINT tripal_custom_tables_fk1
-//       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-//       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-//   ');
-
   if (chado_is_installed()) {
     // For an upgraded site we need to move some vocabulary terms over
     // to the new 'local' vocabulary:
@@ -622,10 +613,8 @@ function tripal_chado_chado_bundle_schema() {
       ),
       'type_id' => array(
         'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
+        'size' => 'big',
+        'type' => 'int',
       ),
       'type_value' => array(
         'description' => 'If a property table is used for a linker, then the value that should be matched to identify this content type is stored here.',
@@ -1592,86 +1581,15 @@ function tripal_chado_update_7328() {
 }
 
 /**
- * Associates categories with content types.
+ * Fixing the chado_bundle.type_id type.
  */
-function tripal_chado_update_7330() {
+function tripal_chado_update_7329() {
   try {
-    tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
-    
-    $bundles = [
-      'General' => [
-        // Organism
-        'OBI:0100026',
-        // Analyis
-        'operation:2945',
-        // Project
-        'NCIT:C47885',
-        // Study
-        'SIO:001066',
-        // Contact
-        'local:contact',
-        // Publication
-        'TPUB:0000002',
-        // Protocol
-        'sep:00101',        
-      ],
-      'Genomic' => [
-        // Gene
-        'SO:0000704',
-        // mRNA
-        'SO:0000234',
-        // Phylogenetci Tree
-        'data:0872',
-        // Physical Map
-        'data:1280',
-        // DNA Library
-        'NCIT:C16223',
-        // Genome Assembly
-        'operation:0525',
-        // Genome Annotation
-        'operation:0362',
-        // Genome Project
-        'local:Genome Project',                
-      ],
-      'Genetic' => [
-        // Genetic Map
-        'data:1278',
-        // QTL
-        'SO:0000771',
-        // Sequence Variant
-        'SO:0001060',
-        // Genetic Marker
-        'SO:0001645',
-        // Heritable Phenotypic Marker
-        'SO:0001500',        
-      ],
-      'Germplasm/Breeding' => [
-        // Germplasm Accession
-        'CO_010:0000044',
-        // Breeding Cross
-        'CO_010:0000255',
-        // Cutlivar
-        'CO_010:0000029',
-        // Recombinant Inbred Line
-        'CO_010:0000162',        
-      ],
-      'Expression' => [
-        // Biological Sample
-        'sep:00195',
-        // Assay
-        'OBI:0000070',
-        // Array Design 
-        'EFO:0000269',
-      ]
-    ];
-    foreach ($bundles as $category => $accessions) {
-      foreach ($accessions as $accession) {
-        $bundle = tripal_load_bundle_entity(['accession' => $accession]);
-        if ($bundle) {
-          tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
-        }
-      }      
-    }    
+    db_change_field('chado_bundle', 'type_id', 'type_id', [
+      'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
+      'size' => 'big',
+      'type' => 'int',
+    ]);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
