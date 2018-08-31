@@ -25,7 +25,6 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    */
   public function testBaseTableColumns($field_name, $bundle_name, $info) {
     include_once(drupal_get_path('tripal_chado', 'module') . '/includes/TripalFields/ChadoField.inc');
-    $faker = \Faker\Factory::create();
 
     // Construct the Field instance we want the values for.
     // Specifying "ChadoField" here ensures we are only testing our
@@ -379,7 +378,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    * @return
    *   Returns FALSE if it was unable to create fake data.
    */
-  function generateFakeData($chado_table, $schema, $fixed_column = FALSE, $fk_table = FALSE) {
+  private function generateFakeData($chado_table, $schema, $fixed_column = FALSE, $fk_table = FALSE) {
+    $faker = \Faker\Factory::create();
 
     // First, do we have a factory? We can't generate data without one...
     if (!Factory::exists('chado.'.$chado_table)) {
@@ -412,7 +412,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
         factory('chado.'.$chado_table)->create(array(
           $fixed_column => $fake_value,
         ));
-        return fake_value;
+        return $fake_value;
       }
     }
     // Otherwise, we need to create a fixed fake record in the related table and then
