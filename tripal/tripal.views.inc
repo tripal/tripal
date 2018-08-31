@@ -127,7 +127,7 @@ function tripal_views_data_fields(&$data) {
       INNER JOIN {tripal_term} TT on TT.id = TB.term_id
       INNER JOIN {tripal_vocab} TV on TV.id = TT.vocab_id
   ";
-  $results = db_query($sql, [':bundle_name' => $bundle_name]);
+  $results = db_query($sql);
   while ($bundle = $results->fetchObject()) {
     $all_bundles[$bundle->name] = $bundle;
   }
