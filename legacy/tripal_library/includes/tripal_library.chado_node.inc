@@ -15,7 +15,7 @@
 function tripal_library_node_info() {
   $nodes = array();
   $nodes['chado_library'] = array(
-    'name'        => t('Library'),
+    'name'        => t('Library (Tripal v2 legacy)'),
     'base'        => 'chado_library',
     'description' => t('A library from the chado database'),
     'has_title'   => TRUE,

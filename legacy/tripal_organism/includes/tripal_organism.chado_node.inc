@@ -15,7 +15,7 @@
 function tripal_organism_node_info() {
   $nodes = array();
   $nodes['chado_organism'] = array(
-    'name'        => t('Organism'),
+    'name'        => t('Organism (Tripal v2 legacy)'),
     'base'        => 'chado_organism',
     'description' => t('An organism'),
     'has_title'   => TRUE,

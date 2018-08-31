@@ -16,7 +16,7 @@
 function tripal_phylogeny_node_info() {
   $nodes = array();
   $nodes['chado_phylotree'] = array(
-    'name'        => t('Phylotree'),
+    'name'        => t('Phylotree (Tripal v2 legacy)'),
     'base'        => 'chado_phylotree',
     'description' => t('A phylotree from the chado database'),
     'has_title'   => TRUE,
