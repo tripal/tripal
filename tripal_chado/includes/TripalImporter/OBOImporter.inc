@@ -1251,9 +1251,9 @@ class OBOImporter extends TripalImporter {
     $objterm['is_relationship'] = $object_is_relationship;
     $objterm['db_name'] = $default_db;
 
-    $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
+    $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
     if (!$objcvterm) {
-      throw new Exception("Cannot add cvterm " . $objterm['name']);
+      throw new Exception("Cannot add cvterm '" . $objterm['name'] . "' (" . $objterm['id'] . ").");
     }
 
     // check to see if the cvterm_relationship already exists, if not add it
