@@ -1365,7 +1365,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_updat
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_execute_active_pub_importers($report_email = false, $do_update = false) {
-  return chado_execute_active_pub_importers($report_email, $do_update);
+  return chado_execute_active_pub_importers($report_email, TRUE, $do_update);
 }
 
 /**

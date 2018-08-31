@@ -32,7 +32,8 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       $value = $items[0]['value'];
     }
 
-    if (array_key_exists('values', $form_state) and array_key_exists($field_name, $form_state['values'])) {
+    if (array_key_exists('values', $form_state) and array_key_exists($field_name, $form_state['values']) and 
+        array_key_exists('value', $form_state['values'][$field_name][$langcode][$delta])) {
       $type_id = $form_state['values'][$field_name][$langcode][$delta]['value'];
     }
 

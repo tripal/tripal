@@ -129,11 +129,11 @@ function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL)
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_pub_import_publications_by_import_id',
-      '%new_function' => 'tripal_execute_pub_importer'
+      '%new_function' => 'chado_execute_pub_importer'
     )
   );
 
-  return tripal_execute_pub_importer($import_id, $job_id);
+  return chado_execute_pub_importer($import_id, TRUE, FALSE, $job_id);
 }
 
 /**
