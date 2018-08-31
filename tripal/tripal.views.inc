@@ -28,9 +28,11 @@ function tripal_views_plugins() {
  */
 function tripal_views_data() {
   $data = array();
-  // Job Management System
+  // Job Management System.
   tripal_views_data_jobs($data);
-  tripal_views_data_tripal_entity($data);
+  // Add all TripalEntity bundles. 
+  tripal_views_data_tripal_bundles($data);
+  // Add all the TripalFields for each bundle.
   tripal_views_data_fields($data);
 
   $data['views']['tripal_area_collections'] = array(
@@ -116,60 +118,91 @@ function tripal_views_data_alter(&$data) {
  * Integreates the Tripal fields with Views.
  */
 function tripal_views_data_fields(&$data) {
-
+  
+  // Get the bundle details so we only look this up once.
+  $all_bundles = [];
+  $sql = "
+    SELECT TB.name, TV.vocabulary, TT.accession
+    FROM {tripal_bundle} TB
+      INNER JOIN {tripal_term} TT on TT.id = TB.term_id
+      INNER JOIN {tripal_vocab} TV on TV.id = TT.vocab_id
+  ";
+  $results = db_query($sql);
+  while ($bundle = $results->fetchObject()) {
+    $all_bundles[$bundle->name] = $bundle;
+  }
+  
+  // Get all of the TripalField types.
+  $tripal_field_types = tripal_get_field_types();
+  
   // Iterate through the fields.
   $fields = field_info_fields();
   foreach ($fields as $field) {
+    $field_type = $field['type'];
 
     // Skip fields that aren't attached to TripalEntity entities.
     if (!array_key_exists('TripalEntity', $field['bundles'])) {
       continue;
     }
 
-    // Fields that don't connect to the Tripal Storage API should be added differently
+    // Fields that don't connect to the Tripal Storage API should be added 
+    // differently
     if (!array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
       continue;
+    }    
+
+    // Get the field data for views.
+    $fdata = [];    
+
+    // Iterate through the bundles to which this field is attached. If the field
+    // is attached to only one bundle then it comes as a scalar and we need
+    // to make it an array.
+    $bundles = $field['bundles']['TripalEntity'];
+    if (!is_array($bundles)) {
+      $bundles = [$bundles];
     }
+    foreach ($bundles as $bundle_name) {
+      
+      // Sometimes a field may be attached to a bundle that may have been
+      // deleted.  Let's skip those.
+      if (!in_array($bundle_name, array_keys($all_bundles))) {
+        continue;
+      }        
 
-    // TODO: do we really need this hook? Just substitute the code here
-    // for what that hook does... it's only called in one plac.e
-    // Call the hook_field_views_data() but only for the tripal module.
-    // Otherwise the other modules will expect that this is an SQL-based
-    // view.
-    $result = (array) module_invoke('tripal', 'field_views_data', $field);
-
-    // Set defaults for the field if no data array was returned.
-    if (empty($result)) {
-      // Iterate through the bundles to which this field is attached and
-      // if it is a TripalField field then we'll call the viewsData function.
-      $bundles = $field['bundles']['TripalEntity'];
-      $result = array();
-      foreach ($bundles as $bundle_name) {
-        $field_name = $field['field_name'];
-
-        // Fields should be associated with the bundle's term identifier
-        // (i.e. [vocab]__[accession].
-        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-        $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-        $view_base_id = $term->vocab->vocabulary . '__' . $term->accession;
-
-        $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+      // Fields should be associated with the bundle's term identifier
+      // (i.e. [vocab]__[accession].
+      $vocabulary = $all_bundles[$bundle_name]->vocabulary;
+      $accession = $all_bundles[$bundle_name]->accession;
+      $view_base_id = $vocabulary . '__' . $accession;
+            
+      // Fields that aren't a TripalField class should be handled using the 
+      // generic TripalField::viewsData function.
+      $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+      if (!in_array($field_type, $tripal_field_types)) {
         $tfield = new TripalField($field, $instance);
-        $result += $tfield->viewsData($view_base_id);
+        $fdata += $tfield->viewsData($view_base_id);
+      }
+      // Fields that are a TripalField class can call the viewsData function
+      // for that class.
+      else {
+        $tfield = new $field_type($field, $instance);
+        $fdata += $tfield->viewsData($view_base_id);
       }
     }
 
-    drupal_alter('field_views_data', $result, $field, $module);
+    // Call the hook_field_views_data_alter function.
+    drupal_alter('field_views_data', $fdata, $field);
 
-    if (is_array($result)) {
-      $data = drupal_array_merge_deep($result, $data);
+    if (is_array($fdata)) {
+      $data = drupal_array_merge_deep($fdata, $data);
     }
   }
 }
+
 /**
- * Integrates the TripalEntity entities with Drupal Views.
+ * Integrates the TripalEntity bundles with Drupal Views.
  */
-function tripal_views_data_tripal_entity(&$data) {
+function tripal_views_data_tripal_bundles(&$data) {
 
   // Get the list of all of the bundles (entity types) and add them
   // as "base tables" for views.
