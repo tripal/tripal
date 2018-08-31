@@ -31,8 +31,13 @@ define('TRIPAL_DEBUG',7);
 /**
  * Provide better error notice for Tripal.
  *
+ * Please be sure to set the $options array as desired. For example, by default
+ * this function sends all messages to the Drupal watchdog. If a long running
+ * job uses this function and prints status messages you may not want to have
+ * those go to the watchdog as it can dramatically affect performance. 
+ * 
  * If the environment variable 'TRIPAL_DEBUG' is set to 1 then this function
- * will add backtrace information to the message.
+ * will add backtrace information to the message.  
  *
  * @param $type
  *   The catagory to which this message belongs. Can be any string, but the
@@ -60,6 +65,12 @@ define('TRIPAL_DEBUG',7);
  *       display is the command-line
  *     - drupal_set_message: set to TRUE to call drupal_set_message with the 
  *       same error.
+ *     - drupal_set_message:  set to TRUE then send the message to the
+ *       drupal_set_message function.
+ *     - watchdog:  set to FALSE to disable logging to Drupal's watchdog.
+ *     - job: The jobs management object for the job if this function is run 
+ *       as a job. Adding the job object here ensures that any status or error
+ *       messages are also logged with the job.
  *
  * @ingroup tripal_notify_api
  */
@@ -110,13 +121,15 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     }
   }
 
-  // Send to watchdog.
-  try {
-    watchdog($type, $message, $variables, $severity);
-  }
-  catch (Exception $e) {
-    print "CRITICAL (TRIPAL): Unable to add error message with watchdog: " . $e->getMessage(). "\n.";
-    $options['print'] = TRUE;
+  // Send to watchdog if the user wants.
+  if (array_key_exists('watchdog', $options) and $options['watchdog'] !== FALSE) {   
+    try {
+      watchdog($type, $message, $variables, $severity);
+    }
+    catch (Exception $e) {
+      print "CRITICAL (TRIPAL): Unable to add error message with watchdog: " . $e->getMessage(). "\n.";
+      $options['print'] = TRUE;
+    }
   }
 
   // Format the message for printing (either to the screen, log or both).
@@ -149,7 +162,10 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
   if (($severity != TRIPAL_INFO)) {
     tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
   }
-
+  
+  if (array_key_exists('job', $options) and is_a($options['job'], 'TripalJob')) {   
+    $options['job']->logMessage($message, $variables, $severity);
+  }
 }
 
 /**
@@ -231,8 +247,12 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
 }
 
 /**
- * File-based logging for Tripal.
- *
+ * File-based error logging for Tripal.
+ * 
+ * Consider using the tripal_report_error function rather than
+ * calling this function directly, as that function calls this one for non
+ * INFO messages and has greater functionality. 
+ * 
  * @param $message
  *   The message to be logged. Need not contain date/time information.
  * @param $log_type
@@ -240,7 +260,7 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
- *     - first_progress_bar: this sohuld be used for the first log call for a
+ *     - first_progress_bar: this should be used for the first log call for a
  *       progress bar.
  *     - is_progress_bar: this option should be used for all but the first print
  *       of a progress bar to allow it all to be printed on the same line
