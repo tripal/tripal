@@ -335,7 +335,7 @@ function chado_update_property($record, $property, $options = array()) {
 
   // First see if the property is missing (we can't update a missing property.
   $prop = chado_get_property($record, $property);
-  if (count($prop) == 0) {
+  if (!is_array($prop) or count($prop) == 0) {
     if ($insert_if_missing) {
       return chado_insert_property($record, $property);
     }

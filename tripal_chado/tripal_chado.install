@@ -1,15 +1,6 @@
 <?php
 
 function tripal_chado_install() {
-//   // The foreign key specification doesn't really add one to the
-//   // Drupal schema, it is just used internally, but we want one.
-//   db_query('
-//       ALTER TABLE {tripal_custom_tables}
-//       ADD CONSTRAINT tripal_custom_tables_fk1
-//       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-//       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-//   ');
-
   if (chado_is_installed()) {
     // For an upgraded site we need to move some vocabulary terms over
     // to the new 'local' vocabulary:
@@ -620,10 +611,8 @@ function tripal_chado_chado_bundle_schema() {
       ),
       'type_id' => array(
         'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
+        'size' => 'big',
+        'type' => 'int',
       ),
       'type_value' => array(
         'description' => 'If a property table is used for a linker, then the value that should be matched to identify this content type is stored here.',
@@ -1587,14 +1576,29 @@ function tripal_chado_update_7328() {
     tripal_chado_add_cv_root_mview_mview();
     $mview_id = chado_get_mview_id($mv_name);
     chado_populate_mview($mview_id);
-  } catch (\PDOException $e) {
+  } 
+  catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
 
-# tripal_chado_update_7329 is in PR #579 and changes the chado_bundle.type_id
-# to a big int.
+/**
+ * Fixing the chado_bundle.type_id type.
+ */
+function tripal_chado_update_7329() {
+  try {
+    db_change_field('chado_bundle', 'type_id', 'type_id', [
+      'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
+      'size' => 'big',
+      'type' => 'int',
+    ]);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 
 # tripal_chado_update_7330 is in PR #596 and adds categories for content types.
 
