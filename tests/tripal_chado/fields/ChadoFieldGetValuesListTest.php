@@ -3,6 +3,7 @@ namespace Tests\tripal_chado\fields;
 
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
+use StatonLab\TripalTestSuite\Database\Factory;
 
 /**
  * Test ChadoField->getValueList() Method.
@@ -24,6 +25,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    */
   public function testBaseTableColumns($field_name, $bundle_name, $info) {
     include_once(drupal_get_path('tripal_chado', 'module') . '/includes/TripalFields/ChadoField.inc');
+    $faker = \Faker\Factory::create();
 
     // Construct the Field instance we want the values for.
     // Specifying "ChadoField" here ensures we are only testing our
@@ -55,10 +57,25 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     $this->assertLessThanOrEqual(5, sizeof($values),
       t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
 
-    // @todo Ensure a known value is in the list.
-    // Note: This requires insertion of data using factories. However, there are not yet
-    // factories for all chado tables and I don't know how to test if there is one for the
-    // current bundle base table. See issue statonlab/TripalTestSuite#92
+    // Ensure a known value is in the list.
+    // Note: The following generates fake data with a fixed value for the column this
+    // field is based on. This allows us to check that fixed value is one of those
+    // returned by ChadoField->getValueList().
+    $fake_value = $this->generateFakeData($info['bundle_base_table'], $info['base_schema'], $info['instance_info']['settings']['chado_column']);
+    if ($fake_value !== FALSE) {
+
+      // Re-generate the values...
+      $values = $instance->getValueList(array('limit' => 200));
+
+      // And ensure our fake value is in the returned list.
+      // We can only check this if all the results are returned.
+      // As such, we set the limit quite high above and if we have
+      // less then the limit, we will go ahead with the test.
+      // @note: this tests all fields on TravisCI since there is no pre-existing data.
+      if (sizeof($values) < 200) {
+        $this->assertContains($fake_value, $values, "\nThe following array should but does not contain our fake value ('$fake_value'): '" . implode("', '", $values) . '.');
+      }
+    }
 
   }
 
@@ -88,7 +105,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    * Test for fields based on columns in the base table that are also foreign keys.
    *
    * @dataProvider getBaseFkFields
-   *
+   * @group current
    * @group fields
    * @group getValueList
    */
@@ -125,11 +142,42 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     $this->assertLessThanOrEqual(5, sizeof($values),
       t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
 
-    // @todo Ensure it works with a label string set.
-    // @todo Ensure a known value is in the list.
-    // Note: This requires insertion of data using factories. However, there are not yet
-    // factories for all chado tables and I don't know how to test if there is one for the
-    // current bundle base table. See issue statonlab/TripalTestSuite#92
+    // Ensure it works with a label string set.
+    // Ensure a known value is in the list.
+    // Note: The following generates fake data with a fixed value for the column this
+    // field is based on. This allows us to check that fixed value is one of those
+    // returned by ChadoField->getValueList().
+    $fake_fk_record = $this->generateFakeData($info['bundle_base_table'], $info['base_schema'], $info['instance_info']['settings']['chado_column'], $info['fk_table']);
+    if ($fake_fk_record !== FALSE) {
+
+      // We also want to test the label string functionality.
+      // Grab two columns at random from the related table...
+      $schema = chado_get_schema($info['fk_table']);
+      $fk_table_fields = array_keys($schema['fields']);
+      $use_in_label = array_rand($fk_table_fields, 2);
+      $column1 = $fk_table_fields[$use_in_label[0]];
+      $column2 = $fk_table_fields[$use_in_label[1]];
+      // The label string consists of tokens of the form [column_name].
+      $label_string = '['.$column2.'] (['.$column1.'])';
+
+      // Re-generate the values...
+      $values = $instance->getValueList(array('limit' => 200, 'label_string' => $label_string));
+
+      // And ensure our fake value is in the returned list.
+      // We can only check this if all the results are returned.
+      // As such, we set the limit quite high above and if we have
+      // less then the limit, we will go ahead with the test.
+      // @note: this tests all fields on TravisCI since there is no pre-existing data.
+      if (sizeof($values) < 200) {
+        $fixed_key = $fake_fk_record->{$info['fk_table'].'_id'};
+        $this->assertArrayHasKey($fixed_key, $values, "\nThe following array should but does not contain our fake record: " . print_r($fake_fk_record, TRUE));
+
+        // Now test the label of the fake record option is what we expect
+        // based on the label string we set above.
+        $expected_label = $fake_fk_record->{$column2} . ' (' . $fake_fk_record->{$column1} . ')';
+        $this->assertEquals($expected_label, $values[$fixed_key], "\nThe label should have been '$label_string' with the column values filled in.");
+      }
+    }
 
   }
 
@@ -264,6 +312,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
             // By default we simply assume there is some relationship.
             $rel = 'referring';
+            $rel_table = NULL;
             // If the field and bundle store their data in the same table
             // then it's either a "base" or "foreign key" relationship
             // based on the schema.
@@ -273,7 +322,10 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
               $rel = 'base';
               // and then check the schema to see if we're wrong :-)
               foreach ($base_schema['foreign keys'] as $schema_info) {
-                if (isset($schema_info['columns'][ $field_column ])) { $rel = 'foreign key'; }
+                if (isset($schema_info['columns'][ $field_column ])) {
+                  $rel = 'foreign key';
+                  $rel_table = $schema_info['table'];
+                }
               }
             }
           }
@@ -287,6 +339,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
             'base_schema' => $base_schema,
             'field_info' => $field_info,
             'instance_info' => $instance_info,
+            'fk_table' => $rel_table,
           );
 
           // Create a unique key.
@@ -316,4 +369,74 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     return $this->field_list;
   }
 
+  /**
+   * Generate fake data for a given bundle.
+   *
+   * If only the first parameter is provided this function adds fake data to the indicated
+   * chado table. If the third parameter is provided the generated fake data will
+   * have a fixed value for the indicated column.
+   *
+   * @return
+   *   Returns FALSE if it was unable to create fake data.
+   */
+  function generateFakeData($chado_table, $schema, $fixed_column = FALSE, $fk_table = FALSE) {
+
+    // First, do we have a factory? We can't generate data without one...
+    if (!Factory::exists('chado.'.$chado_table)) {
+      return FALSE;
+    }
+
+    // Create fake data -TripalTestSuite will use faker for all values.
+    if ($fixed_column === FALSE) {
+      factory('chado.'.$chado_table, 50)->create();
+      return TRUE;
+    }
+
+
+    // Attempt to create a fixed fake value.
+    // This needs to match the column type in the chado table and if the column is a
+    // foreign key, this value should match a fake record in the related table.
+    $fake_value = NULL;
+
+    // If we weren't told the related table then we assume this is a simple column (not a foreign key).
+    if ($fk_table === FALSE) {
+      $column_type = $schema[$fixed_column]['type'];
+      if (($column_type == 'int')) {
+        $fake_value = $faker->randomNumber();
+      }
+      elseif (($column_type == 'varchar') OR ($column_type == 'text')) {
+        $fake_value = $faker->words(2,TRUE);
+      }
+
+      if ($fake_value !== NULL) {
+        factory('chado.'.$chado_table)->create(array(
+          $fixed_column => $fake_value,
+        ));
+        return fake_value;
+      }
+    }
+    // Otherwise, we need to create a fixed fake record in the related table and then
+    // use it in our fake data for the chado table.
+    else {
+      // Create our fixed fake record in the related table.
+      $fake_table_record = factory('chado.'.$fk_table)->create();
+
+      // Again, if we don't have a factory :-( there's nothing we can do.
+      if (!Factory::exists('chado.'.$fk_table)) {
+        return FALSE;
+      }
+
+      // Now create our fake records.
+      if (isset($fake_table_record->{$fk_table.'_id'})) {
+        factory('chado.'.$chado_table)->create(array(
+          $fixed_column => $fake_table_record->{$fk_table.'_id'},
+        ));
+
+        return $fake_table_record;
+      }
+    }
+
+    return FALSE;
+
+  }
 }

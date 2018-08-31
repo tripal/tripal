@@ -1548,16 +1548,16 @@
         },
         {
             "name": "statonlab/tripal-test-suite",
-            "version": "1.4.0",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/statonlab/TripalTestSuite.git",
-                "reference": "badb19172e7ae2f334b2e07f4aae701ad6cdf431"
+                "reference": "3a4867edf3c1c6457e47aa692b2b750ba92b6254"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/badb19172e7ae2f334b2e07f4aae701ad6cdf431",
-                "reference": "badb19172e7ae2f334b2e07f4aae701ad6cdf431",
+                "url": "https://api.github.com/repos/statonlab/TripalTestSuite/zipball/3a4867edf3c1c6457e47aa692b2b750ba92b6254",
+                "reference": "3a4867edf3c1c6457e47aa692b2b750ba92b6254",
                 "shasum": ""
             },
             "require": {
@@ -1592,7 +1592,7 @@
                     "email": "bcondon@utk.edu"
                 }
             ],
-            "time": "2018-08-10T19:35:12+00:00"
+            "time": "2018-08-29T23:01:33+00:00"
         },
         {
             "name": "symfony/console",

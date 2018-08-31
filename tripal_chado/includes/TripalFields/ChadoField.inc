@@ -302,6 +302,9 @@ class ChadoField extends TripalField {
         if (isset($r->{$column})) {
           $replace[ "[$column]" ] = $r->{$column};
         }
+        else {
+          $replace[ "[$column]" ] = "";
+        }
       }
 
       // Set the value.
