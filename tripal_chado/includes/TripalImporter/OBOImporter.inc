@@ -747,7 +747,7 @@ class OBOImporter extends TripalImporter {
    * 
    * @param $t
    *   A term array that contains these keys at a minimum: id, name,
-   *   definition, subset, namepace, is_obsolete.
+   *   definition, subset, namespace, is_obsolete.
    * @param $default_db
    *   The default database.
    */
@@ -782,7 +782,7 @@ class OBOImporter extends TripalImporter {
     if ($oterm['label']) {
       $t['name'] = $oterm['label'];
       $t['definition'] = $oterm['def'];
-      $t['namepace'] = $oterm['ontology_name'];
+      $t['namespace'] = $oterm['ontology_name'];
       $t['is_obsolete'] = $oterm['is_obsolete'];
       $t['subset'] =  $oterm['subset'];
       $t['db_name'] = $oterm['ontology_prefix'];
@@ -810,7 +810,7 @@ class OBOImporter extends TripalImporter {
         $cvterm = chado_query($sql, [':dbxref_id' => $dbxref->dbxref_id])->fetchObject();
         $t['name'] = $cvterm->name;
         $t['definition'] = $cvterm->definition;
-        $t['namepace'] = $cvterm->namespace;
+        $t['namespace'] = $cvterm->namespace;
         $t['is_obsolete'] = $cvterm->is_obsolete;
         $t['db_name'] = $db->name;
         return TRUE;
@@ -872,7 +872,7 @@ class OBOImporter extends TripalImporter {
     if ($oterm) {
       $t['name'] = $oterm['label'];
       $t['definition'] = $oterm['def'];
-      $t['namepace'] = $oterm['ontology_name'];
+      $t['namespace'] = $oterm['ontology_name'];
       $t['is_obsolete'] = $oterm['is_obsolete'];
       $t['subset'] =  $oterm['subset'];
       $t['db_name'] = $oterm['ontology_prefix'];
@@ -935,69 +935,9 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('is_obsolete', $term)) {
       $t['is_obsolete'] = $term['is_obsolete'][0];
     }
-
-    // Check the id isn't a reference to another term.
-    if (strpos($t['id'], ':')) {
-      $pair = explode(":", $t['id'], 2);
-      $short_name = $pair[0];
-      $accession_num = $pair[1];
-      if (is_numeric($accession_num) && ($short_name != $default_db)) {
-        // Check that the term isn't already in Chado.
-        $results = $this->oboEbiLookup($t['id'], 'term');
-        if (isset($results['label'])) {
-          $t['name'] = $results['label'];
-          $namespace = $results['ontology_name'];
-          $short_name = $results['ontology_prefix'];
-          $external = TRUE;
-        } 
-        if (!isset($results['label'])) {
-          $results = $this->oboEbiLookup($t['id'], 'query');
-          if (array_key_exists('docs', $results)) {
-            if (!empty($results['response']['docs'])) {
-              if (count($results['response']['docs']) > 1) {
-                foreach ($results['response']['docs'] as $doc) {
-                  if ($doc['obo_id'] == $t['id']) {
-                    $t['name']  = $doc['label'];
-                    $namespace = $doc['ontology_name'];
-                    $short_name = $doc['ontology_prefix'];
-                    $external = true;
-                  }
-                }
-              } 
-              else {
-                $t['name']  = $results['response']['docs'][0]['label'];
-                $namespace = $results['response']['docs'][0]['ontology_name'];
-                $short_name = $results['response']['docs'][0]['ontology_prefix'];
-                $external = true;
-              }
-            }
-          }
-        } 
-        if ($results['response']['numFound'] == 0 && !isset($results['label'])) {
-          // The first search doesn't work, so let's try a broader one.
-          $results = $this->oboEbiLookup($t['id'], 'query-non-local');
-          if (!empty($results)) {
-            if (array_key_exists('docs', $results)) {
-              if (!empty($results['docs'])) {
-                $accession = $t['id'];
-                $accession_underscore = str_replace(":", "_", $accession);
-                foreach ($results['response']['docs'] as $item) {
-                  if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
-                    //Found the first place a label is other than the accession is used, so take
-                    // that info and then end the loop.
-                    $t['name'] = $item['label'];
-                    $namespace = $item['ontology_name'];
-                    $short_name = $item['ontology_prefix'];
-                    $external = true;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    } 
+    
+    // If this term doesn't belong to this OBO then resolve it's details.
+    $this->_resolveTerm($t, $default_db);
 
     // Check that the namespace is in the cv table.
     $sql =  "
@@ -1241,10 +1181,8 @@ class OBOImporter extends TripalImporter {
       $term['is_obsolete'] = 0;
       $term['cv_name'] = $defaultcv;
       $term['is_relationship'] = TRUE;
-      $term['db_name'] = $default_db;
-      
+      $term['db_name'] = $default_db;      
       $this->_resolveTerm($term, $default_db);
-      print_r($term);
       
       $relcvterm = chado_insert_cvterm($term, array('update_existing' => FALSE));
       if (!$relcvterm) {
@@ -1280,23 +1218,13 @@ class OBOImporter extends TripalImporter {
         $objterm = array();
         $objterm['id'] = $oterm['id'][0];
         $objterm['name'] = $oterm['name'][0];
-        if (array_key_exists('def', $oterm)) {
-          $objterm['definition'] = $oterm['def'][0];
-        }
-        if (array_key_exists('subset', $oterm)) {
-          $objterm['subset'] = $oterm['subset'][0];
-        }
-        if (array_key_exists('namespace', $oterm)) {
-          $objterm['namespace'] = $oterm['namespace'][0];
-        }
-        if (array_key_exists('is_obsolete', $oterm)) {
-          $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
-        }
-        $t['db_name'] = $oterm['ontology_prefix'];
+        $objterm['definition'] = $oterm['def'][0];
+        $objterm['subset'] = $oterm['subset'][0];
+        $objterm['namespace'] = $oterm['namespace'][0];
+        $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
+        $objterm['db_name'] = $oterm['ontology_prefix'];
       }
-  
-      $objterm['is_relationship'] = $object_is_relationship;
-  
+      
       $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
       if (!$objcvterm) {
         throw new Exception("Cannot add cvterm '" . $objterm['name'] . "' (" . $objterm['id'] . ").");

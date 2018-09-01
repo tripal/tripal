@@ -1095,7 +1095,7 @@ function chado_insert_cvterm($term, $options = array()) {
         $cvterm_check = new ChadoRecord('cvterm');
         $cvterm_check->setValues(['dbxref_id' => $dbxref->getID()]);
         if ($cvterm_check->find()) {
-          tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref, is already " .
+          tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref is already " .
             "used by another cvterm record: '!other_cvterm'.  It ".
             "cannot be used for updating the existing term: '!term'",
             ['!other_cvterm' => $cvterm_check->getValue('name'), '!term' => $cvterm->getValue('name')]);
@@ -1137,9 +1137,9 @@ function chado_insert_cvterm($term, $options = array()) {
       $cvterm_check = new ChadoRecord('cvterm');
       $cvterm_check->setValues(['dbxref_id' => $dbxref->getID()]);
       if ($cvterm_check->find()) {
-        tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref, is already " . 
+        tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref is already " . 
           "used by another cvterm record: '!other_cvterm'.  It ".
-          "cannot be used for new term: '!term'",
+          "cannot be used for a new term: '!term'",
           ['!other_cvterm' => $cvterm_check->getValue('name'), '!term' => $cvterm->getValue('name')]);
         return FALSE;
       }
