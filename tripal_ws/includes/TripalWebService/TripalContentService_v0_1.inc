@@ -10,10 +10,7 @@ class TripalContentService_v0_1 extends TripalWebService {
   /**
    * A bit of text to describe what this service provides.
    */
-  public static $description = 'Provides acesss to the biological and ' .
-    'ancilliary data available on this site. Each content type represents ' .
-    'biological data that is defined in a controlled vocabulary (e.g. ' .
-    'Sequence Ontology term: gene (SO:0000704)).';
+  public static $description = 'Provides acesss to the biological and ancilliary data available on this site. Each content type represents biological data that is defined in a controlled vocabulary (e.g. Sequence Ontology term: gene (SO:0000704)).';
 
   /**
    * A machine-readable type for this service. This name must be unique
