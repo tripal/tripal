@@ -343,7 +343,7 @@ class OBOImporter extends TripalImporter {
       $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
       if (!file_exists($dfile)) {
         if (!file_exists($uobo_file)) {
-          form_set_error('uobo_file', 'The specified path does not exist or cannot be read.');
+          form_set_error('uobo_file', t('The specified path, !path, does not exist or cannot be read.'), ['!path' => $dfile]);
         }
       }
       if (!$uobo_url and !$uobo_file) {
@@ -367,7 +367,7 @@ class OBOImporter extends TripalImporter {
       $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
       if (!file_exists($dfile)) {
         if (!file_exists($obo_file)) {
-          form_set_error('obo_file', 'The specified path does not exist or cannot be read.');
+          form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.'), ['!path' => $dfile]);
         }
       }
       if (!$obo_url and !$obo_file) {
@@ -739,6 +739,156 @@ class OBOImporter extends TripalImporter {
     $this->setItemsHandled($i);
     return 1;
   }
+  
+  /**
+   * A helper function to get details about a foreign term.
+   * 
+   * A foreign term is one that does not belong to the ontology.
+   * 
+   * @param $t
+   *   A term array that contains these keys at a minimum: id, name,
+   *   definition, subset, namepace, is_obsolete.
+   * @param $default_db
+   *   The default database.
+   */
+  private function _resolveTerm(&$t, $default_db) {
+    
+    // We only check terms that have proper accessions (ie. short_name:accession)
+    if (strpos($t['id'], ':') === FALSE) {
+      return NULL;
+    }
+    
+    // Get the short name and accession for the term.
+    $pair = explode(":", $t['id'], 2);
+    $short_name = $pair[0];
+    $accession_num = $pair[1];
+    
+    // If the short name is the same as the deafult database then this
+    // term belongs in this ontology and should be defined in the file. We
+    // don't need to look it up.
+    if ($short_name == $default_db) {
+      return NULL;
+    }
+  
+    // Before running the oboEbiLookup check for it in the local chado and
+    // the tripal_obo_temp table.
+    $sql = "
+      SELECT *
+      FROM {tripal_obo_temp} tot
+      WHERE tot.id = :term_id
+    ";
+    $result = chado_query($sql, array(':term_id' => $t['id'] . '_lookup'))->fetchObject();
+    $oterm = unserialize(base64_decode($result->stanza));
+    if ($oterm['label']) {
+      $t['name'] = $oterm['label'];
+      $t['definition'] = $oterm['def'];
+      $t['namepace'] = $oterm['ontology_name'];
+      $t['is_obsolete'] = $oterm['is_obsolete'];
+      $t['subset'] =  $oterm['subset'];
+      $t['db_name'] = $oterm['ontology_prefix'];
+      return TRUE;
+    }
+      
+    // Is the term in the local chado?
+    $sql = "SELECT * FROM {db} db WHERE db.name = :short_name ";
+    $db = chado_query($sql, array(':short_name' => $short_name))->fetchObject();
+    if (!empty($db)){
+      // Find the accession.
+      $sql = "
+          SELECT *
+          FROM {dbxref} dbx
+          WHERE dbx.db_id = :db_id
+          AND accession = :accession_num ";
+      $dbxref = chado_query($sql, array(':db_id' => $db->db_id, ':accession_num' => $accession_num))->fetchObject();
+      if (!empty($dbxref)) {
+        $sql = "
+          SELECT CVT.*, CV.name as namespace
+          FROM {cvterm} CVT
+            INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+          WHERE dbxref_id = :dbxref_id
+        ";
+        $cvterm = chado_query($sql, [':dbxref_id' => $dbxref->dbxref_id])->fetchObject();
+        $t['name'] = $cvterm->name;
+        $t['definition'] = $cvterm->definition;
+        $t['namepace'] = $cvterm->namespace;
+        $t['is_obsolete'] = $cvterm->is_obsolete;
+        $t['db_name'] = $db->name;
+        return TRUE;
+      }
+    }
+    
+    // Check for the ID of the term in EBI.
+    $oterm = NULL;
+    $results = $this->oboEbiLookup($t['id'], 'term');
+    if (isset($results['label'])) {
+      $oterm = $results;
+    }
+    
+    // If we did not get a name for the term from a direct term
+    // lookup then let's try a query.,
+    if (!isset($results['label'])) {
+      $results = $this->oboEbiLookup($t['id'], 'query');
+      if (array_key_exists('docs', $results)) {
+        if (!empty($results['response']['docs'])) {
+          if (count($results['response']['docs']) > 1) {
+            foreach ($results['response']['docs'] as $doc) {
+              if ($doc['obo_id'] == $t['id']) {
+                $external = TRUE;
+                $oterm = $doc;
+              }
+            }
+          }
+          else {
+            $external = true;
+            $oterm = $results['response']['docs'][0];
+          }
+        }
+      }
+    }
+    
+    // If the accession could not be found in EBI.
+    if ($results['response']['numFound'] == 0 && !isset($results['label'])) {
+      // The first search doesn't work, so let's try a broader one.
+      $results = $this->oboEbiLookup($t['id'], 'query-non-local');
+      if (!empty($results)) {
+        if (array_key_exists('docs', $results)) {
+          if (!empty($results['docs'])) {
+            $accession = $t['id'];
+            $accession_underscore = str_replace(":", "_", $accession);
+            foreach ($results['response']['docs'] as $item) {
+              if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
+                // Found the first place a label is other than the accession 
+                // is used, so take that info and then end the loop.
+                $external = TRUE;
+                $oterm = $item;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    if ($oterm) {
+      $t['name'] = $oterm['label'];
+      $t['definition'] = $oterm['def'];
+      $t['namepace'] = $oterm['ontology_name'];
+      $t['is_obsolete'] = $oterm['is_obsolete'];
+      $t['subset'] =  $oterm['subset'];
+      $t['db_name'] = $oterm['ontology_prefix'];
+      
+      // Write the term to the tripal_obo_temp table for future reference
+      $values = array(
+        'id' => $term_id . '_lookup',
+        'stanza' => base64_encode(serialize($oterm)),
+        'type' => 'lookup',
+      );
+      chado_insert_record('tripal_obo_temp', $values);
+      return TRUE;
+    }
+    // TODO: we couldn't find the term. What do we do!!!
+    return FALSE;
+  }
 
   /**
    * Uses the provided term array to add/update information to Chado about the
@@ -906,7 +1056,7 @@ class OBOImporter extends TripalImporter {
       } 
     }
     
-    $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
+    $cvterm = chado_insert_cvterm($t, array('update_existing' => TRUE));
     if (!$cvterm) {
       throw new Exception("Cannot add the term " . $term['id'][0]);
     }
@@ -1074,204 +1224,101 @@ class OBOImporter extends TripalImporter {
    */
   private function addRelationship($cvterm, $defaultcv, $rel,
       $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
+            
     $reference_term = FALSE;
     $in_obo = $this->getTerm($objname);
-    // If an accession was passed we need to see if we can find the actual label.
-    if (strpos($rel, ':') || strpos($objname, ':') && empty($in_obo['name'])) {
-
-      if (strpos($rel, ':')) {
-        $term_id = $rel;
-      }
-      elseif (strpos($objname, ':')) {
-        $term_id = $objname;
-      }
-      $reference_term = TRUE;
-      $pair = explode(":", $term_id, 2);
-      $ontology_id = $pair[0];
-      $accession_num = $pair[1];
-      $rel_name = '';
-
-      if (is_numeric($accession_num)) {
-        // Before running the oboEbiLookup check for it in the local chado and
-        // the tripal_obo_temp table.
-        // $term_with_quotes = '"' . $term_id . '"';
-        $sql = " 
-          SELECT * 
-          FROM {tripal_obo_temp} tot
-          WHERE tot.id = :term_id 
-          ";
-        $result = chado_query($sql, array(':term_id' => $term_id . '_lookup'))->fetchObject();
-        $oterm = unserialize(base64_decode($result->stanza));
-        if (empty($oterm['label'])){
-
-          // Is this ontology is in the local chado?
-          $sql = "SELECT * FROM {db} db WHERE db.name = :ontology_id ";
-          $db = chado_query($sql, array(':ontology_id' => $ontology_id, ))->fetchObject();
-
-          if (!empty($db)){
-            // Find the accession.
-            $sql = "
-              SELECT * 
-              FROM {dbxref} dbx 
-              WHERE dbx.db_id = :db_id 
-              AND accession = :accession_num ";
-            $v = chado_query($sql, array(':db_id' => $db->db_id, ':accession_num' => $accession_num))->fetchObject();
-            if (!empty($dbxref)) {
-              $sql = "SELECT * FROM {cvterm} WHERE dbxref_id = $dbxref->dbxref_id ";
-              $oterm = chado_query($sql)->fetchObject();
-              $rel_name = $oterm->name;
-            }
-          }
-          
-          if (empty($dbxref)){
-            $results = $this->oboEbiLookup($term_id, 'term');
-            if (isset($results['label'])) {
-              $rel_name = $results['label'];
-              $oterm = $results;
-            }
-            if (empty($rel_name)) {
-              $results = $this->oboEbiLookup($term_id, 'query');
-              if (array_key_exists('docs', $results['response'])) {
-                if (!empty($results['response']['docs'])) {
-                  if (count($results['response']['docs']) > 1) {
-                    foreach ($results['response']['docs'] as $doc) {
-                      if ($doc['obo_id'] == $term_id) {
-                        $rel_name = $doc['label'];
-                        $oterm = $doc;
-                      }
-                    }
-                  } else {
-                    $rel_name = $results['response']['docs'][0]['label'];
-                    $oterm = $results['response']['docs'][0];
-                  }
-                }
-              }
-            }
-            if (empty($rel_name)) {
-          // The first search doesn't work, so let's try a broader one.
-              $results = $this->oboEbiLookup($term_id, 'query-non-local');
-              if (!empty($results)) {
-                if (array_key_exists('docs', $results['response'])) {
-                  if (!empty($results['response']['docs'])) {
-                    foreach ($results['response']['docs'] as $item) {
-                      if ($item['obo_id'] == $term_id) {
-                    //Found the first place a label is other than the accession is used, so take
-                    // that info and then end the loop.
-                        $rel_name = $item['label'];
-                        $oterm = $item;
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          // Write the term to the tripal_obo_temp table for future reference
-          $values = array(
-            'id' => $term_id . '_lookup',
-            'stanza' => base64_encode(serialize($oterm)),
-            'type' => 'lookup',
-          );
-          chado_insert_record('tripal_obo_temp', $values);
+    
+    // If the relationship term or the relationship object are defined using
+    // accession IDs then we need to break them apart and look them up to get
+    // the term name.
+    if (strpos($rel, ':') || strpos($objname, ':') && empty($in_obo['name'])) {  
+    
+      // Make sure the relationship cvterm exists.
+      $term = [];
+      $term['name'] = $rel;
+      $term['id'] = "$default_db:$rel";
+      $term['definition'] = '';
+      $term['is_obsolete'] = 0;
+      $term['cv_name'] = $defaultcv;
+      $term['is_relationship'] = TRUE;
+      $term['db_name'] = $default_db;
+      
+      $this->_resolveTerm($term, $default_db);
+      print_r($term);
+      
+      $relcvterm = chado_insert_cvterm($term, array('update_existing' => FALSE));
+      if (!$relcvterm) {
+        // If the relationship term couldn't be found in the default_db provided
+        // then do one more check to find it in the relationship ontology
+        $term = array(
+          'name' => $rel,
+          'id' => "OBO_REL:$rel",
+          'definition' => '',
+          'is_obsolete' => 0,
+          'cv_name' => $defaultcv,
+          'is_relationship' => TRUE,
+          'db_name' => 'OBO_REL'
+        );        
+        $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
+        if (!$relcvterm) {
+          throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
         }
       }
-    }    
-    // Make sure the relationship cvterm exists.
-    $term = array(
-      'name' => $rel,
-      'id' => "$default_db:$rel",
-      'definition' => '',
-      'is_obsolete' => 0,
-      'cv_name' => $defaultcv,
-      'is_relationship' => TRUE,
-      'db_name' => $default_db
-    );
-    $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
-
-    if (!$relcvterm) {
-      // If the relationship term couldn't be found in the default_db provided
-      // then do on more check to find it in the relationship ontology
-      $term = array(
-        'name' => $rel,
-        'id' => "OBO_REL:$rel",
-        'definition' => '',
-        'is_obsolete' => 0,
-        'cv_name' => $defaultcv,
-        'is_relationship' => TRUE,
-        'db_name' => 'OBO_REL'
+  
+      // Try to resolve the object term.
+      $objterm = ['id' => $objname];
+      $found = $this->_resolveTerm($objterm, $default_db);
+      
+      // If the $found var is NULL it means the term does not need resolving as
+      // it's local to this ontology. In that case we can pull it from the
+      // obo lookup table.
+      if ($found === NULL) {
+        $oterm = $this->getTerm($objname);
+        if (!$oterm) {
+          throw new Exception("Could not find object term $objname\n");
+        }
+        $objterm = array();
+        $objterm['id'] = $oterm['id'][0];
+        $objterm['name'] = $oterm['name'][0];
+        if (array_key_exists('def', $oterm)) {
+          $objterm['definition'] = $oterm['def'][0];
+        }
+        if (array_key_exists('subset', $oterm)) {
+          $objterm['subset'] = $oterm['subset'][0];
+        }
+        if (array_key_exists('namespace', $oterm)) {
+          $objterm['namespace'] = $oterm['namespace'][0];
+        }
+        if (array_key_exists('is_obsolete', $oterm)) {
+          $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
+        }
+        $t['db_name'] = $oterm['ontology_prefix'];
+      }
+  
+      $objterm['is_relationship'] = $object_is_relationship;
+  
+      $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
+      if (!$objcvterm) {
+        throw new Exception("Cannot add cvterm '" . $objterm['name'] . "' (" . $objterm['id'] . ").");
+      }
+  
+      // check to see if the cvterm_relationship already exists, if not add it
+      $values = array(
+        'type_id'    => $relcvterm->cvterm_id,
+        'subject_id' => $cvterm->cvterm_id,
+        'object_id'  => $objcvterm->cvterm_id
       );
-      $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
-      if (!$relcvterm) {
-        throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
+      $result = chado_select_record('cvterm_relationship', array('*'), $values);
+      if (count($result) == 0) {
+        $options = array('return_record' => FALSE);
+        $success = chado_insert_record('cvterm_relationship', $values, $options);
+        if (!$success) {
+          throw new Exception("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
+        }
       }
-    }
 
-    // Get the object term.
-    if ($reference_term === TRUE && !empty($oterm)) {
-      $objterm = array();
-      $objterm['id'] = $oterm['obo_id'];
-      $objterm['name'] = $oterm['label'];
-      if (array_key_exists('def', $oterm)) {
-        $objterm['definition'] = $oterm['def'];
-      }
-      if (array_key_exists('subset', $oterm)) {
-        $objterm['subset'] = $oterm['subset'];
-      }
-      if (array_key_exists('namespace', $oterm)) {
-        $objterm['namespace'] = $oterm['ontology_name'];
-      }
-      if (array_key_exists('is_obsolete', $oterm)) {
-        $objterm['is_obsolete'] = $oterm['is_obsolete'];
-      }
+      return TRUE;
     }
-    else {
-      $oterm = $this->getTerm($objname);
-      if (!$oterm) {
-        throw new Exception("Could not find object term $objname\n");
-      }
-      $objterm = array();
-      $objterm['id'] = $oterm['id'][0];
-      $objterm['name'] = $oterm['name'][0];
-      if (array_key_exists('def', $oterm)) {
-        $objterm['definition'] = $oterm['def'][0];
-      }
-      if (array_key_exists('subset', $oterm)) {
-        $objterm['subset'] = $oterm['subset'][0];
-      }
-      if (array_key_exists('namespace', $oterm)) {
-        $objterm['namespace'] = $oterm['namespace'][0];
-      }
-      if (array_key_exists('is_obsolete', $oterm)) {
-        $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
-      }
-    }
-
-    $objterm['cv_name' ] = $defaultcv;
-    $objterm['is_relationship'] = $object_is_relationship;
-    $objterm['db_name'] = $default_db;
-
-    $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
-    if (!$objcvterm) {
-      throw new Exception("Cannot add cvterm '" . $objterm['name'] . "' (" . $objterm['id'] . ").");
-    }
-
-    // check to see if the cvterm_relationship already exists, if not add it
-    $values = array(
-      'type_id'    => $relcvterm->cvterm_id,
-      'subject_id' => $cvterm->cvterm_id,
-      'object_id'  => $objcvterm->cvterm_id
-    );
-    $result = chado_select_record('cvterm_relationship', array('*'), $values);
-    if (count($result) == 0) {
-      $options = array('return_record' => FALSE);
-      $success = chado_insert_record('cvterm_relationship', $values, $options);
-      if (!$success) {
-        throw new Exception("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
-      }
-    }
-
-    return TRUE;
   }
 
   /**
