@@ -631,9 +631,9 @@ class TripalEntityController extends EntityAPIController {
         $function = 'field_attach_load';
       }
       foreach ($queried_entities as $id => $entity) {
-        $info = entity_get_info($entity->type);
+        $info = entity_get_info($queried_entities[$id]->type);
         $field_cache = array_key_exists('field cache', $info) ? $info['field cache'] : FALSE;
-        $bundle_name = $entity->bundle;
+        $bundle_name = $queried_entities[$id]->bundle;
 
         // Iterate through the field instances and find those that are set to
         // 'auto_attach' and which are attached to this bundle. Add all
@@ -647,7 +647,6 @@ class TripalEntityController extends EntityAPIController {
           // Add this field to the entity with default value.
           if (!isset($queried_entities[$id]->{$field_name})) {
             $queried_entities[$id]->{$field_name} = array();
-            $entity->{$field_name} = array();
           }
 
           // Options used for the field_attach_load function.
@@ -672,11 +671,11 @@ class TripalEntityController extends EntityAPIController {
           // to only load the  fields specified.
           if (count($field_ids) > 0) {
             if (in_array($field_id, $field_ids)) {
-              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+              $function($this->entityType, array($id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
-                cache_set($cfid, $entity->{$field_name}, 'cache_field');
+                cache_set($cfid, $queried_entities[$id]->{$field_name}, 'cache_field');
               }
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
@@ -701,12 +700,12 @@ class TripalEntityController extends EntityAPIController {
                $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
             }
             else {
-              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+              $function($this->entityType, array($id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
-                if (property_exists($entity, $field_name)) {
-                  cache_set($cfid, $entity->{$field_name}, 'cache_field');
+                if (property_exists($queried_entities[$id], $field_name)) {
+                  cache_set($cfid, $queried_entities[$id]->{$field_name}, 'cache_field');
                 }
               }
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
