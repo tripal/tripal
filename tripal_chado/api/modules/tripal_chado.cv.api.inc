@@ -924,7 +924,7 @@ function chado_insert_cv($name, $definition) {
  *      automatically updated.
  *
  * @return
- *   A cvterm object
+ *   A cvterm object.
  *
  * @ingroup tripal_chado_cv_api
  */
@@ -1043,7 +1043,7 @@ function chado_insert_cvterm($term, $options = array()) {
   $db->setValues(['name' => $dbname]);
   if (!$db->find()) {
     $db->insert();
-  }  
+  }
 
   // The cvterm table has two unique dependencies:
   //

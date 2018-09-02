@@ -1620,3 +1620,34 @@ function tripal_chado_update_7331() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds the NCIT subgroup term for use by the OBO loader when setting vocabulary subsets.
+ */
+function tripal_chado_update_7332() {
+  try {
+    // We have to add the db and cv in case the user hasn't yet prepared Chado.
+    // If they have prepared Chado then no harm done.
+    chado_insert_db([
+      'name' => 'NCI Thesaurus OBO Edition',
+      'description' => 'NCI Thesaurus OBO Edition.',
+      'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
+      'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
+    ]);
+    chado_insert_cv(
+      'ncit',
+      'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+    );
+    
+    $term = chado_insert_cvterm([
+      'id' => 'NCIT:C25693',
+      'name' => 'Subgroup',
+      'cv_name' => 'ncit',
+      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+    ]);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

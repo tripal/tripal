@@ -1995,6 +1995,14 @@ function tripal_chado_populate_vocab_NCIT() {
     'cv_name' => 'ncit',
     'definition' => 'Any formal business entity for profit, which may be a corporation, a partnership, association or individual proprietorship. [ NCI http://dictionary.law.com ]',
   ));
+  
+  $term = chado_insert_cvterm(array(
+    'id' => 'NCIT:C25693',
+    'name' => 'Subgroup',
+    'cv_name' => 'ncit',
+    'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+  ));
+  
 }
 
 /**

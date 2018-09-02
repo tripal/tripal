@@ -98,7 +98,75 @@ class OBOImporter extends TripalImporter {
    * @var array
    */
   private $newcvs = array();
+  
+  
+  /**
+   * Holds the list of all CVs on this site. By storing them here it saves
+   * us query time later.
+   */
+  private $all_cvs = [];
+  
+  /**
+   * Holds the list of all DBs on this site.  By storing them here it saves
+   * us query time later.
+   * 
+   * @var array
+   */
+  private $all_dbs = [];
 
+  
+  // An alternative cache to the temp_obo table.
+  private $termStanzaCache = [
+    'ids' => [],
+    'count' => [
+      'Typedef' => 0,
+      'Term' => 0,
+      'Instance' => 0,
+    ],
+    'types' => [
+      'Typedef' => [],
+      'Term' => [],
+      'Instance' => [],
+    ],
+  ];
+  
+  /**
+   * Indicates how terms are cached. Values can be 'memory' or 'table'. If
+   * 'memory' then the $termStanzaCache variable is used. If 'table', then the
+   * tripal_obo_temp table is used.
+   * @var string
+   */
+  private $cache_type = 'memory';
+  
+  /**
+   * The default namespace for all terms that don't have a 'namespace' in their
+   * term stanza.
+   * 
+   * @var string
+   */
+  private $default_namespace = '';
+  
+  /**
+   * The default database preix for this ontology.
+   * 
+   * @var string
+   */
+  private $default_db = '';
+  
+  
+  /**
+   * An array of used cvterm objects so that we don't have to lookup them
+   * up repeatedly.
+   */
+  private $used_terms = [];
+  
+  /**
+   * A flag to keep track if the user was warned about slownesss when doing
+   * EBI Lookups.
+   * 
+   * @var string
+   */
+  private $ebi_warned = FALSE;
 
   /**
    * @see TripalImporter::form()
@@ -386,7 +454,7 @@ class OBOImporter extends TripalImporter {
    *     - obo_id:  (required) The ID of the ontology to be imported.
    */
   public function run() {
-
+    
     $arguments = $this->arguments['run_args'];
     $obo_id = $arguments['obo_id'];
 
@@ -399,7 +467,26 @@ class OBOImporter extends TripalImporter {
     if (!$obo) {
       throw new Exception("Invalid OBO ID provided: '$obo_id'.");
     }
+    
+    // Get the list of all CVs so we can save on lookups later
+    $sql =  "SELECT * FROM {cv} CV";
+    $cvs = chado_query($sql);
+    while ($cv = $cvs->fetchObject()) {
+      $this->all_cvs[$cv->name] = $cv;
+    }
+    
+    // Get the list of all DBs so we can save on lookups later
+    $sql =  "SELECT * FROM {db} DB";
+    $dbs = chado_query($sql);
+    while ($db = $dbs->fetchObject()) {
+      $this->all_dbs[$db->name] = $db;
+    }
 
+    // Get the 'Subgroup' term that we will use for adding subsets.
+    $term = chado_get_cvterm(['id' => 'NCIT:C25693']);
+    $this->used_terms['NCIT:C25693'] = $term->cvterm_id;
+    
+    // Run the importer!
     $this->loadOBO_v1_2_id($obo);
   }
   /**
@@ -419,9 +506,9 @@ class OBOImporter extends TripalImporter {
 
     // Upate the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
-    foreach ($this->newcvs as $namespace => $cvid) {
+    foreach ($this->newcvs as $namespace => $cv_id) {
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
-      tripal_update_cvtermpath($cvid);
+      tripal_update_cvtermpath($cv_id);
     }
   }
   /**
@@ -556,190 +643,209 @@ class OBOImporter extends TripalImporter {
     $ret = array();
 
     // Empty the temp table.
-    $sql = "DELETE FROM {tripal_obo_temp}";
-    chado_query($sql);
+    $this->clearTermStanzaCache();
 
-    $this->logMessage("Step 1: Preloading File $file...");
-
-    // parse the obo file
-    $default_db = $this->parse($file, $header);
-
-    // Add the CV for this ontology to the database.  The v1.2 definition
-    // specifies a 'default-namespace' to be used if a 'namespace' is not
-    // present for each stanza.  Some ontologies have adopted the v1.4 method
-    // in their v1.2 files and not including it.
-    if (array_key_exists('default-namespace', $header)) {
-      $defaultcv = tripal_insert_cv($header['default-namespace'][0], '');
-      if (!$defaultcv) {
-        throw new Exception('Cannot add namespace ' . $header['default-namespace'][0]);
-      }
-      $this->newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
-    }
-    // If the 'default-namespace' is missing.
-    else {
-      // Grab the first term accession from the file and get the short 
-      // name for looking up the term in EBI.
-      $fh = fopen($file, 'r');
-      while ($line = fgets($fh)) {
-        // Grab the first item's id info to break apart.
-        if (preg_match('/^\s*\[/', $line)) {
-          $stanza = TRUE;
-          continue;
-        }
-        if ($stanza === TRUE && (substr($line, 0, 3) === "id:")) {
-          $parts = explode(':', $line, 2);
-          $short_name = strtolower($parts[1]);
-          $short_name = preg_replace('/\s+/', '', $short_name);
-          break;
-        }
-      }
-      fclose($fh);
-      
-      // Check if the EBI ontology search has this ontology:
-      try {
-        $results = $this->oboEbiLookup($short_name, 'ontology');
-        if (array_key_exists('default-namespace', $results['config']['annotations'])) {
-          $results = $results['config']['annotations']['default-namespace'];
-          if (is_array($results)) {
-            $results = $results[0];
-          }
-        }
-        elseif (array_key_exists('namespace', $results['config'])) {
-          $results = $results['config']['namespace'];
-        }
-        else {
-          $results = $short_name;
-        }
-
-        $defaultcv = tripal_insert_cv($results, '');
-        $this->newcvs[$defaultcv->name] = $defaultcv->cv_id;
-      }
-      catch (Exception $e) {
-        watchdog_exception('OBOImporter no such accession found in EBI Ontology Search', $e);
-      }
+    // Parse the obo file.
+    $this->parse($file, $header);
     
-      if (empty($defaultcv)) {
-        throw new Exception("Could not find a namespace for this OBO file: $file");
-      }
-      $this->logMessage("This OBO is missing the 'default-namespace' header. It " .
-        "is not possible to determine which vocabulary terms without a 'namespace' key " .
-        "should go.  Instead, those terms will be placed in the '!vocab' vocabulary.",
-        array('!vocab' => $defaultcv->name), TRIPAL_WARNING);
-    }
+    // Cache the relationships of terms.
+    $this->cacheRelationships();
+ 
     // Add any typedefs to the vocabulary first.
-    $this->logMessage("Step 2: Loading type defs...");
-    $this->loadTypeDefs($defaultcv, $default_db);
+    $this->processTypeDefs();
 
     // Next add terms to the vocabulary.
-    $this->logMessage("Step 3: Loading terms...");
-    if (!$this->processTerms($defaultcv, $default_db)) {
+    if (!$this->processTerms()) {
       throw new Exception('Cannot add terms from this ontology');
     }
-    // Empty the temp table.
-    $sql = "DELETE FROM {tripal_obo_temp}";
-    chado_query($sql);
+    // Empty the term cache.
+    $this->clearTermStanzaCache();
   }
 
   /**
    * OBO files are divided into a typedefs terms section and vocabulary terms section.
    * This function loads the typedef terms from the OBO.
    *
-   * @param $defaultcv
-   *   A database object containing a record from the cv table for the
-   *   default controlled vocabulary
-   * @param $default_db
-   *   The name of the default database.
-   *
    * @ingroup tripal_obo_loader
    */
-  private function loadTypeDefs($defaultcv, $default_db) {
-    $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
-    $typedefs = chado_query($sql);
-
-    $sql = "
-      SELECT count(*) as num_terms
-      FROM {tripal_obo_temp}
-      WHERE type = 'Typedef'
-    ";
-    $result = chado_query($sql)->fetchObject();
-    $count = $result->num_terms;
+  private function processTypeDefs() {
+    
+    $this->logMessage("Step 3: Loading type defs...");
+    $typedefs = $this->getCachedTermStanzas('Typedef');
+    $count = $this->getCacheSize('Typedef');
     $this->setTotalItems($count);
     $this->setItemsHandled(0);
+    $this->setInterval(5);
 
-    $i = 0;
-    foreach ($typedefs as $typedef) {
-      $this->setItemsHandled($i);
-      $term = unserialize(base64_decode($typedef->stanza));
-      $this->processTerm($term, $defaultcv->name, 1, $default_db);
-      $i++;
+    $i = 1;
+    foreach ($typedefs as $t) {
+      
+      // TODO: it would be better if we had a term iterator so that we
+      // don't have to distringuish here between the table vs memory cache type.
+      if ($this->cache_type == 'table') {
+        $term = unserialize(base64_decode($t->stanza));
+      }
+      else {
+        $term = $this->termStanzaCache['ids'][$t];
+      }
+      $this->setItemsHandled($i++);
+      $this->processTerm($term, TRUE);
     }
 
     $this->setItemsHandled($i);
     return 1;
   }
 
-  /**
-   * OBO files are divided into a typedefs section and a terms section.
-   *
-   * This function loads the typedef terms from the OBO.
-   *
-   * @param $defaultcv
-   *   A database object containing a record from the cv table for the
-   *   default controlled vocabulary
-   * @param $default_db
-   *   The name of the default database.
+  /** 
+   * This function loads all of the [Term] termsfrom the OBO.
    */
-  private function processTerms($defaultcv, $default_db) {
+  private function processTerms() {
     $i = 0;
     $external = FALSE;
-    // Iterate through each term from the OBO file and add it.
-    $sql = "
-      SELECT * FROM {tripal_obo_temp}
-      WHERE type = 'Term'
-      ORDER BY id
-    ";
-    $terms = chado_query($sql);
-
-    $sql = "
-      SELECT count(*) as num_terms
-      FROM {tripal_obo_temp}
-      WHERE type = 'Term'
-    ";
-    $result = chado_query($sql)->fetchObject();
-    $count = $result->num_terms;
+    
+    $this->logMessage("Step 4: Loading terms...");
+    $terms = $this->getCachedTermStanzas('Term');
+    $count = $this->getCacheSize('Term');
     $this->setTotalItems($count);
     $this->setItemsHandled(0);
+    $this->setInterval(1);
 
     // Iterate through the terms.
     foreach ($terms as $t) {
-      $term = unserialize(base64_decode($t->stanza));
+      // TODO: it would be better if we had a term iterator so that we 
+      // don't have to distringuish here between the table vs memory cache type.
+      if ($this->cache_type == 'table') {
+        $term = unserialize(base64_decode($t->stanza));
+      }
+      else {
+        $term = $this->termStanzaCache['ids'][$t];
+      }
       $this->setItemsHandled($i);
 
       // Add/update this term.
-      $status = $this->processTerm($term, $defaultcv->name, 0, $default_db);
-      if (!$status) {
-        throw new Exception("Failed to process terms from the ontology");
-      }
-      else if ($status === 2 && $external == FALSE) {
-        $this->logMessage(
-          "A term that belongs to another ontology is used within this " .
-            "vocabulary.  Therefore a lookup was performed with the EBI Ontology " .
-            "Lookup Service to retrieve the information for this term. " .
-            "Please note, that vocabularies with many non-local terms " .
-            "require remote lookups and these lookups can dramatically " . 
-            "decrease loading time. " ,
-          array('!vocab' => $defaultcv->name),
-          TRIPAL_WARNING
-        );
-        $external = TRUE;
-      }
-
+      $this->processTerm($term, FALSE);
       $i++;
     }
     $this->setItemsHandled($i);
     return 1;
   }
   
+  /**
+   * Sets the default CV and DB for this loader.
+   * 
+   * Unfortunately, not all OBOs include both the 'ontology' and the
+   * 'default-namespace' in their headers, so we have to do our best to
+   * work out what these two should be.
+   * 
+   */
+  private function getDefaults($header) {
+    $short_name = '';
+    $namespace = '';
+    
+    // Get the 'ontology' and 'default-namespace' headers.  Unfortunately,
+    // not all OBO files contain these.
+    if (array_key_exists('ontology', $header)) {
+      $short_name = strtoupper($header['ontology'][0]);
+    }
+    if (array_key_exists('default-namespace', $header)) {
+      $namespace = $header['default-namespace'][0];
+    }
+    
+    // If we have the DB short name (or ontology header) but not the default
+    // namespace then we may be able to find it via an EBI lookup.
+    if (!$namespace and $short_name) {
+      $namespace = $this->findEBIOntologyNamespace($short_name);
+    }
+    
+    // If we have the namespace but not the short name then we have to
+    // do an exhaustive search of EBI to find it.
+    if ($namespace and !$short_name) {
+      $short_name = $this->findEBIOntologyPrefix($namespace);
+    }
+    
+    // If we can't find the namespace or the short_name then bust.
+    if (!$namespace and !$short_name) {
+      throw new ErrorException('Cannot determine the namespace or ontology prefix from this OBO file. It is missing both the "default-namespace" and "ontology" headers.');
+    }
+    
+    // Set the defaults.
+    $this->default_namespace = $namespace;
+    $this->default_db = $short_name;
+    
+    // TODO: we need to get the description and title from EBI for these
+    // ontology so that we can put something in the proper fields when
+    // adding a new CV or DB.
+    
+    // Add the CV record if it doesn't exist.
+    $cv = new ChadoRecord('cv');
+    $cv->setValues(['name' => $namespace]);
+    if (!$cv->find()) {
+      $cv->insert();
+    }
+    $this->newcvs[$namespace] = $cv->getID();
+    
+    // Add the DB record if it doesn't exist.
+    $db = new ChadoRecord('db');
+    $db->setValues(['name' => $this->default_db]);
+    if (!$db->find()) {
+      $db->insert();
+    }
+  }
+  
+  /**
+   * This function searches EBI to find the ontology details for this OBO.
+   * 
+   * @param $ontology
+   *   The ontology name from the OBO headers.
+   *   
+   * @throws Exception
+   */
+  private function findEBIOntologyNamespace($ontology) {
+    
+    // Check if the EBI ontology search has this ontology:
+    try {
+      $results = $this->oboEbiLookup($ontology, 'ontology');
+      if (array_key_exists('default-namespace', $results['config']['annotations'])) {
+        $namespace = $results['config']['annotations']['default-namespace'];
+        if (is_array($namespace)) {
+          $namespace = $namespace[0];
+        }
+      }
+      elseif (array_key_exists('namespace', $results['config'])) {
+        $namespace = $results['config']['namespace'];
+      }
+      // If we can't find the namespace at EBI, then just default to using the
+      // same namespace as the DB short name.
+      else {
+        $namespace = $this->default_db;
+      }
+      
+      return $namespace;
+    }
+    catch (Exception $e) {
+      watchdog_exception('Cannot find the namespace for this ontology.', $e);
+      throw $e;
+    }
+  }
+  
+  /**
+   * Finds the ontology prefix (DB short name) using EBI.
+   * 
+   * @param $namespace
+   *   The namespace for ontology.
+   */
+  private function findEBIOntologyPrefix($namespace) {
+    
+    $options = array();
+    $page = 1;
+    $size = 25;
+    $full_url = 'https://www.ebi.ac.uk/ols/api/ontologies?page=' . $page. '&size=' . $size;
+    while ($response = drupal_http_request($full_url, $options)) {
+      $response = drupal_json_decode($response->data);
+      $page++;
+      $full_url = 'https://www.ebi.ac.uk/ols/api/ontologies?page=' . $page. '&size=' . $size;
+    }
+  }
   /**
    * A helper function to get details about a foreign term.
    * 
@@ -748,86 +854,25 @@ class OBOImporter extends TripalImporter {
    * @param $t
    *   A term array that contains these keys at a minimum: id, name,
    *   definition, subset, namespace, is_obsolete.
-   * @param $default_db
-   *   The default database.
    */
-  private function _resolveTerm(&$t, $default_db) {
-    
-    // We only check terms that have proper accessions (ie. short_name:accession)
-    if (strpos($t['id'], ':') === FALSE) {
-      return NULL;
-    }
-    
+  private function findEBITerm($id) {
+        
     // Get the short name and accession for the term.
-    $pair = explode(":", $t['id'], 2);
+    $pair = explode(":", $id, 2);
     $short_name = $pair[0];
     $accession_num = $pair[1];
     
-    // If the short name is the same as the deafult database then this
-    // term belongs in this ontology and should be defined in the file. We
-    // don't need to look it up.
-    if ($short_name == $default_db) {
-      return NULL;
-    }
-  
-    // Before running the oboEbiLookup check for it in the local chado and
-    // the tripal_obo_temp table.
-    $sql = "
-      SELECT *
-      FROM {tripal_obo_temp} tot
-      WHERE tot.id = :term_id
-    ";
-    $result = chado_query($sql, array(':term_id' => $t['id'] . '_lookup'))->fetchObject();
-    $oterm = unserialize(base64_decode($result->stanza));
-    if ($oterm['label']) {
-      $t['name'] = $oterm['label'];
-      $t['definition'] = $oterm['def'];
-      $t['namespace'] = $oterm['ontology_name'];
-      $t['is_obsolete'] = $oterm['is_obsolete'];
-      $t['subset'] =  $oterm['subset'];
-      $t['db_name'] = $oterm['ontology_prefix'];
-      return TRUE;
-    }
-      
-    // Is the term in the local chado?
-    $sql = "SELECT * FROM {db} db WHERE db.name = :short_name ";
-    $db = chado_query($sql, array(':short_name' => $short_name))->fetchObject();
-    if (!empty($db)){
-      // Find the accession.
-      $sql = "
-          SELECT *
-          FROM {dbxref} dbx
-          WHERE dbx.db_id = :db_id
-          AND accession = :accession_num ";
-      $dbxref = chado_query($sql, array(':db_id' => $db->db_id, ':accession_num' => $accession_num))->fetchObject();
-      if (!empty($dbxref)) {
-        $sql = "
-          SELECT CVT.*, CV.name as namespace
-          FROM {cvterm} CVT
-            INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
-          WHERE dbxref_id = :dbxref_id
-        ";
-        $cvterm = chado_query($sql, [':dbxref_id' => $dbxref->dbxref_id])->fetchObject();
-        $t['name'] = $cvterm->name;
-        $t['definition'] = $cvterm->definition;
-        $t['namespace'] = $cvterm->namespace;
-        $t['is_obsolete'] = $cvterm->is_obsolete;
-        $t['db_name'] = $db->name;
-        return TRUE;
-      }
-    }
-    
     // Check for the ID of the term in EBI.
     $oterm = NULL;
-    $results = $this->oboEbiLookup($t['id'], 'term');
+    $results = $this->oboEbiLookup($id, 'term');
     if (isset($results['label'])) {
       $oterm = $results;
     }
     
     // If we did not get a name for the term from a direct term
-    // lookup then let's try a query.,
+    // lookup then let's try a query.
     if (!isset($results['label'])) {
-      $results = $this->oboEbiLookup($t['id'], 'query');
+      $results = $this->oboEbiLookup($id, 'query');
       if (array_key_exists('docs', $results)) {
         if (!empty($results['response']['docs'])) {
           if (count($results['response']['docs']) > 1) {
@@ -868,26 +913,88 @@ class OBOImporter extends TripalImporter {
         }
       }
     }
-    
+    // If we found a term then return it.
     if ($oterm) {
-      $t['name'] = $oterm['label'];
-      $t['definition'] = $oterm['def'];
-      $t['namespace'] = $oterm['ontology_name'];
-      $t['is_obsolete'] = $oterm['is_obsolete'];
-      $t['subset'] =  $oterm['subset'];
-      $t['db_name'] = $oterm['ontology_prefix'];
-      
-      // Write the term to the tripal_obo_temp table for future reference
-      $values = array(
-        'id' => $term_id . '_lookup',
-        'stanza' => base64_encode(serialize($oterm)),
-        'type' => 'lookup',
-      );
-      chado_insert_record('tripal_obo_temp', $values);
-      return TRUE;
+      // Make an OBO stanza array as if this term were in the OBO file and
+      // return it.
+      $stanza = [];
+      $stanza['id'][] = $oterm['label'];
+      $stanza['name'][] = $oterm['label'];
+      $stanza['def'][] = $oterm['def'];
+      $stanza['namespace'][] = $oterm['ontology_name'];
+      $stanza['is_obsolete'][] = $oterm['is_obsolete'];
+      $stanza['subset'][] =  $oterm['subset'];
+      $stanza['db_name'][] = $short_name;
+      return $stanza;
     }
-    // TODO: we couldn't find the term. What do we do!!!
     return FALSE;
+  }
+  
+  /**
+   * Inserts a new cvterm using the OBO stanza array provided.
+   * 
+   * The stanza passed to this function should always come from the term cache, 
+   * not directly from the OBO file because the cached terms have been 
+   * updated to include all necessary values.  This function also removes
+   * all properties assocaited with the term so that those can be added 
+   * fresh.
+   * 
+   * @param $stanza
+   *   An OBO stanza array as returned by getCachedTermStanza().
+   * @param $is_relationship 
+   *   Set to TRUE if this term is a relationship term.
+   * @param $update_if_exists
+   *   Set to TRUE to update the term if it exists.
+   *   
+   * @return
+   *   A cvterm object. 
+   */
+  private function saveTerm($stanza, $is_relationship = FALSE, $update_if_exists = FALSE) {
+    
+    $id = $stanza['id'][0];
+    
+    // First check if we've already used this term.
+    if ($this->used_terms[$id]) {
+      return $this->used_terms[$id];
+    }
+    
+    // Convert the stanza into a term array that we can pass to
+    // chado_insert_cvterm().
+    $t = array();
+    $t['id'] = $stanza['id'][0];
+    $t['name'] = $stanza['name'][0];
+    $t['namespace'] = $stanza['namespace'][0];
+    $t['cv_name'] = $stanza['namespace'][0];
+    $t['is_relationship'] = $is_relationship;
+    $t['db_name'] = $stanza['db_name'][0];
+    
+    if (array_key_exists('def', $stanza)) {
+      $t['definition'] = $stanza['def'][0];
+    }
+    if (array_key_exists('subset', $stanza)) {
+      $t['subset'] = $stanza['subset'][0];
+    }
+    if (array_key_exists('is_obsolete', $stanza)) {
+      $t['is_obsolete'] = $stanza['is_obsolete'][0];
+    }
+    $cvterm = chado_insert_cvterm($t, ['update_existing' => $update_if_exists]);
+    if (!$cvterm) {
+      throw new Exception("Cannot add the term " . $term['id'][0]);
+    }
+    
+    // Remove any relationships that this term already has (in case it was
+    // updated) and we'll re-add them.
+    $sql = "
+      DELETE FROM {cvterm_relationship} CVTR
+      WHERE CVTR.subject_id = :cvterm_id
+    ";
+    chado_query($sql, array(':cvterm_id' => $cvterm->cvterm_id));
+    
+    // Save the cvterm_id for this term so we don't look it up again.
+    $this->used_terms[$id] = $cvterm->cvterm_id;
+    
+    // Return the cvterm_id.
+    return $cvterm->cvterm_id;
   }
 
   /**
@@ -896,357 +1003,214 @@ class OBOImporter extends TripalImporter {
    *
    * @param $term
    *   An array representing the cvterm.
-   * @param $defaultcv
-   *   The name of the default controlled vocabulary
    * @is_relationship
    *   Set to 1 if this term is a relationship term
-   * @default_db
-   *   The name of the default database.
    *
    * @ingroup tripal_obo_loader
    */
-  private function processTerm($term, $defaultcv, $is_relationship = 0, $default_db) {
+  private function processTerm($stanza, $is_relationship = 0) {
     
-    // make sure we have a namespace for this term
-    if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
-      throw new Exception("Cannot add the term: no namespace defined. " . $term['id'][0]);
-    }
+    //
+    // First things first--save the term.
+    //
+    $cvterm_id = $this->saveTerm($stanza, FALSE, TRUE);
+
     
-    // The term may have a namespace but before we determine what it is, let's
-    // pre-set the default namespace using the defaultcv.
-    $namespace = $defaultcv;
-    $short_name = $default_db;
-    
-    // construct the term array for sending to the tripal_chado_add_cvterm function
-    // for adding a new cvterm
-    $t = array();
-    $t['id'] = $term['id'][0];
-    $t['name'] = $term['name'][0];
-    if (array_key_exists('def', $term)) {
-      $t['definition'] = $term['def'][0];
-    }
-    if (array_key_exists('subset', $term)) {
-      $t['subset'] = $term['subset'][0];
-    }
-    if (array_key_exists('namespace', $term)) {
-      $t['namespace'] = $term['namespace'][0];
-      $namespace = $t['namespace'];
-    }
-    if (array_key_exists('is_obsolete', $term)) {
-      $t['is_obsolete'] = $term['is_obsolete'][0];
-    }
-    
-    // If this term doesn't belong to this OBO then resolve it's details.
-    $this->_resolveTerm($t, $default_db);
-
-    // Check that the namespace is in the cv table.
-    $sql =  "
-      SELECT CV.name 
-      FROM {cv} CV 
-      WHERE CV.name = :namespace
-    ";
-    $args = [':namespace' => $namespace];
-    $results = chado_query($sql, $args)->fetchObject();
-    if (!$results){
-      // The controlled vocabulary is not in the cv table and needs to be added.
-      $ontology_info = $this->oboEbiLookup($namespace, 'ontology');
-      if (!empty($ontology_info['config'])){
-        // CV Name.
-        if (array_key_exists('namespace', $ontology_info['config'])) {
-          $cv_info = $ontology_info['config']['namespace'];
-        }
-        elseif (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
-          $cv_info = $ontology_info['config']['annotations']['default-namespace'];
-        }
-
-        //CV Description.
-        if (array_key_exists('description', $ontology_info['config'])) {
-          $description = $ontology_info['config']['description'];
-        }
-        else {
-          $description = '';
-        }
-        $cv_returned = chado_insert_cv($cv_info, $description);
-        if($cv_returned) {
-          $namespace = $cv_returned->name;
-          // Now add the db entry.
-          $values = array(
-            'name' => $ontology_info['config']['preferredPrefix'],
-            'description' => $ontology_info['config']['description'],
-            'url' => $ontology_info['config']['versionIri'],
-          );
-          
-          $db_returned = chado_insert_db($values);
-          if ($db_returned) {
-            $short_name = $db_returned->name;
-          }
-        }
-      }
-    }
-
-    $t['cv_name'] = $namespace;
-    $t['is_relationship'] = $is_relationship;
-    $t['db_name'] = $short_name;
-
-    // The name being empty regularly causes problems, so let's check it's there.
-    if (empty($t['name'])){
-      $results = $this->oboEbiLookup($t['id'], 'term');
-      if (isset($results['label'])) {
-        $t['name'] = $results['label'];
-      } 
-    }
-    
-    $cvterm = chado_insert_cvterm($t, array('update_existing' => TRUE));
-    if (!$cvterm) {
-      throw new Exception("Cannot add the term " . $term['id'][0]);
-    }
-
-    // Remove any relationships that this term already has (in case it was
-    // updated) and we'll re-add them.
-    $sql = "
-      DELETE FROM {cvterm_relationship} CVTR
-      WHERE CVTR.subject_id = :cvterm_id
-    ";
-    chado_query($sql, array(':cvterm_id' => $cvterm->cvterm_id));
-
-    if (array_key_exists('namespace', $term)) {
-      $this->newcvs[$term['namespace'][0]] = $cvterm->cv_id;
-    }
-
-    // now handle other properites
-    if (array_key_exists('is_anonymous', $term)) {
-      //print "WARNING: unhandled tag: is_anonymous\n";
-    }
-    if (array_key_exists('alt_id', $term)) {
-      foreach ($term['alt_id'] as $alt_id) {
-        if (!$this->addCvtermDbxref($cvterm, $alt_id)) {
+    //
+    // Handle:  alt_id
+    //
+    if (array_key_exists('alt_id', $stanza)) {
+      foreach ($stanza['alt_id'] as $alt_id) {
+        if (!$this->addCvtermDbxref($cvterm_id, $alt_id)) {
           throw new Exception("Cannot add alternate id $alt_id");
         }
       }
     }
-
-    if (array_key_exists('subset', $term)) {
-      //print "WARNING: unhandled tag: subset\n";
-    }
-    // add synonyms for this cvterm
-    if (array_key_exists('synonym', $term)) {
-      if (!$this->addSynonym($term, $cvterm)) {
+    
+    //
+    // Handle:  synonym
+    //
+    if (array_key_exists('synonym', $stanza)) {
+      if (!$this->addSynonym($stanza, $cvterm_id)) {
         throw new Exception("Cannot add synonyms");
       }
     }
 
-    // reformat the deprecated 'exact_synonym, narrow_synonym, and broad_synonym'
-    // types to be of the v1.2 standard
-    if (array_key_exists('exact_synonym', $term) or array_key_exists('narrow_synonym', $term) or array_key_exists('broad_synonym', $term)) {
-      if (array_key_exists('exact_synonym', $term)) {
-        foreach ($term['exact_synonym'] as $synonym) {
-          $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 EXACT $2', $synonym);
-          $term['synonym'][] = $new;
+    //
+    // Handle:  exact_synonym
+    //
+    if (array_key_exists('exact_synonym', $stanza)) {
+      foreach ($stanza['exact_synonym'] as $synonym) {
+        $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 EXACT $2', $synonym);
+        $term['synonym'][] = $new;
+        if (!$this->addSynonym($term, $cvterm_id)) {
+          throw new Exception("Cannot add/update synonyms");
         }
       }
-      if (array_key_exists('narrow_synonym', $term)) {
-        foreach ($term['narrow_synonym'] as $synonym) {
-          $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 NARROW $2', $synonym);
-          $term['synonym'][] = $new;
+    }
+    
+    //
+    // Handle: narrow_synonym
+    //
+    if (array_key_exists('narrow_synonym', $stanza)) {
+      foreach ($stanza['narrow_synonym'] as $synonym) {
+        $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 NARROW $2', $synonym);
+        $term['synonym'][] = $new;
+        if (!$this->addSynonym($term, $cvterm_id)) {
+          throw new Exception("Cannot add/update synonyms");
         }
       }
-      if (array_key_exists('broad_synonym', $term)) {
-        foreach ($term['broad_synonym'] as $synonym) {
-          $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 BROAD $2', $synonym);
-          $term['synonym'][] = $new;
+    }
+    
+    //
+    // Handle:  broad_synonym
+    //
+    if (array_key_exists('broad_synonym', $stanza)) {
+      foreach ($stanza['broad_synonym'] as $synonym) {
+        $new = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 BROAD $2', $synonym);
+        $term['synonym'][] = $new;
+        if (!$this->addSynonym($term, $cvterm_id)) {
+          throw new Exception("Cannot add/update synonyms");
         }
-      }
-
-      if (!$this->addSynonym($term, $cvterm)) {
-        throw new Exception("Cannot add/update synonyms");
       }
     }
 
-    // add the comment to the cvtermprop table
-    if (array_key_exists('comment', $term)) {
-      $comments = $term['comment'];
+    //
+    // Handle:  comment
+    //
+    if (array_key_exists('comment', $stanza)) {
+      $comments = $stanza['comment'];
       $j = 0;
       foreach ($comments as $comment) {
-        if (!$this->addCvtermProp($cvterm, 'comment', $comment, $j)) {
+        if (!$this->addCvtermProp($cvterm_id, 'comment', $comment, $j)) {
           throw new Exception("Cannot add/update cvterm property");
         }
         $j++;
       }
     }
 
-    // add any other external dbxrefs
-    if (array_key_exists('xref', $term)) {
-      foreach ($term['xref'] as $xref) {
-        if (!$this->addCvtermDbxref($cvterm, $xref)) {
+    //
+    // Handle:  xref
+    //
+    if (array_key_exists('xref', $stanza)) {
+      foreach ($stanza['xref'] as $xref) {
+        if (!$this->addCvtermDbxref($cvterm_id, $xref)) {
           throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
 
-    if (array_key_exists('xref_analog', $term)) {
-      foreach ($term['xref_analog'] as $xref) {
-        if (!$this->addCvtermDbxref($cvterm, $xref)) {
+    //
+    // Handle:  xref_analog
+    //
+    if (array_key_exists('xref_analog', $stanza)) {
+      foreach ($stanza['xref_analog'] as $xref) {
+        if (!$this->addCvtermDbxref($cvterm_id, $xref)) {
           throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
-    if (array_key_exists('xref_unk', $term)) {
-      foreach ($term['xref_unk'] as $xref) {
-        if (!$this->addCvtermDbxref($cvterm, $xref)) {
+    
+    //
+    // Handle:  xref_unk
+    //
+    if (array_key_exists('xref_unk', $stanza)) {
+      foreach ($stanza['xref_unk'] as $xref) {
+        if (!$this->addCvtermDbxref($cvterm_id, $xref)) {
           throw new Exception("Cannot add/update cvterm database reference (dbxref).");
         }
       }
     }
 
-    // add is_a relationships for this cvterm
-    if (array_key_exists('is_a', $term)) {
-      foreach ($term['is_a'] as $is_a) {
-        if (!$this->addRelationship($cvterm, $defaultcv, 'is_a', $is_a, $is_relationship, $default_db)) {
+    //
+    // Handle:  is_a
+    //
+    if (array_key_exists('is_a', $stanza)) {
+      foreach ($stanza['is_a'] as $is_a) {
+        if (!$this->addRelationship($cvterm_id, 'is_a', $is_a)) {
           throw new Exception("Cannot add relationship is_a: $is_a");
         }
       }
     }
-
-    if (array_key_exists('intersection_of', $term)) {
-      //print "WARNING: unhandled tag: intersection_of\n";
-    }
-    if (array_key_exists('union_of', $term)) {
-      //print "WARNING: unhandled tag: union_on\n";
-    }
-    if (array_key_exists('disjoint_from', $term)) {
-      //print "WARNING: unhandled tag: disjoint_from\n";
-    }
-    if (array_key_exists('relationship', $term)) {
-      foreach ($term['relationship'] as $value) {
+    
+    //
+    // Handle:  relationship
+    //
+    if (array_key_exists('relationship', $stanza)) {
+      foreach ($stanza['relationship'] as $value) {
         $rel = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
         $object = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
-        if (!$this->addRelationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
+        if (!$this->addRelationship($cvterm_id, $rel, $object)) {
           throw new Exception("Cannot add relationship $rel: $object");
         }
       }
     }
-    if (array_key_exists('replaced_by', $term)) {
-      //print "WARNING: unhandled tag: replaced_by\n";
+    
+    //
+    // Handle:  subset
+    //
+    if (array_key_exists('subset', $stanza)) {
+      foreach ($stanza['subset'] as $subset) {
+        if (!$this->addSubset($cvterm_id, $subset)) {
+          throw new Exception("Cannot add subset $subset");
+        }
+      }
     }
-    if (array_key_exists('consider', $term)) {
-      //print "WARNING: unhandled tag: consider\n";
-    }
-    if (array_key_exists('use_term', $term)) {
-      //print "WARNING: unhandled tag: user_term\n";
-    }
-    if (array_key_exists('builtin', $term)) {
-      //print "WARNING: unhandled tag: builtin\n";
-    }
-    if ($external ) {
-      return 2;
-    }
-    return 1;
+
+    /**
+     * The following properties are currently unsupported:
+     * 
+     * - intersection_of
+     * - union_of
+     * - disjoint_from
+     * - replaced_by
+     * - consider
+     * - use_term
+     * - builtin
+     * - is_anonymous
+     * 
+     */
   }
 
   /**
    * Adds a cvterm relationship
    *
-   * @param $cvterm
-   *   A database object for the cvterm
-   * @param $rel
-   *   The relationship name
-   * @param $objname
-   *   The relationship term name
-   * @param $defaultcv
-   *   A database object containing a record from the cv table for the
-   *   default controlled vocabulary
-   * @object_is_relationship
-   *   Set to 1 if this term is a relationship term
-   * @default_db
-   *   The name of the default database.
+   * @param $cvterm_id
+   *   A cvterm_id of the term to which the relationship will be added.
+   * @param $rel_id
+   *   The relationship term ID
+   * @param $obj_id
+   *   The relationship object term ID.
    *
    * @ingroup tripal_obo_loader
    */
-  private function addRelationship($cvterm, $defaultcv, $rel,
-      $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
+  private function addRelationship($cvterm_id, $rel_id, $obj_id) {
             
-    $reference_term = FALSE;
-    $in_obo = $this->getTerm($objname);
-    
-    // If the relationship term or the relationship object are defined using
-    // accession IDs then we need to break them apart and look them up to get
-    // the term name.
-    if (strpos($rel, ':') || strpos($objname, ':') && empty($in_obo['name'])) {  
-    
-      // Make sure the relationship cvterm exists.
-      $term = [];
-      $term['name'] = $rel;
-      $term['id'] = "$default_db:$rel";
-      $term['definition'] = '';
-      $term['is_obsolete'] = 0;
-      $term['cv_name'] = $defaultcv;
-      $term['is_relationship'] = TRUE;
-      $term['db_name'] = $default_db;      
-      $this->_resolveTerm($term, $default_db);
-      
-      $relcvterm = chado_insert_cvterm($term, array('update_existing' => FALSE));
-      if (!$relcvterm) {
-        // If the relationship term couldn't be found in the default_db provided
-        // then do one more check to find it in the relationship ontology
-        $term = array(
-          'name' => $rel,
-          'id' => "OBO_REL:$rel",
-          'definition' => '',
-          'is_obsolete' => 0,
-          'cv_name' => $defaultcv,
-          'is_relationship' => TRUE,
-          'db_name' => 'OBO_REL'
-        );        
-        $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
-        if (!$relcvterm) {
-          throw new Exception("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
-        }
-      }
-  
-      // Try to resolve the object term.
-      $objterm = ['id' => $objname];
-      $found = $this->_resolveTerm($objterm, $default_db);
-      
-      // If the $found var is NULL it means the term does not need resolving as
-      // it's local to this ontology. In that case we can pull it from the
-      // obo lookup table.
-      if ($found === NULL) {
-        $oterm = $this->getTerm($objname);
-        if (!$oterm) {
-          throw new Exception("Could not find object term $objname\n");
-        }
-        $objterm = array();
-        $objterm['id'] = $oterm['id'][0];
-        $objterm['name'] = $oterm['name'][0];
-        $objterm['definition'] = $oterm['def'][0];
-        $objterm['subset'] = $oterm['subset'][0];
-        $objterm['namespace'] = $oterm['namespace'][0];
-        $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
-        $objterm['db_name'] = $oterm['ontology_prefix'];
-      }
-      
-      $objcvterm = chado_insert_cvterm($objterm, array('update_existing' => TRUE));
-      if (!$objcvterm) {
-        throw new Exception("Cannot add cvterm '" . $objterm['name'] . "' (" . $objterm['id'] . ").");
-      }
-  
-      // check to see if the cvterm_relationship already exists, if not add it
-      $values = array(
-        'type_id'    => $relcvterm->cvterm_id,
-        'subject_id' => $cvterm->cvterm_id,
-        'object_id'  => $objcvterm->cvterm_id
-      );
-      $result = chado_select_record('cvterm_relationship', array('*'), $values);
-      if (count($result) == 0) {
-        $options = array('return_record' => FALSE);
-        $success = chado_insert_record('cvterm_relationship', $values, $options);
-        if (!$success) {
-          throw new Exception("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
-        }
-      }
-
-      return TRUE;
+    // Get the cached terms for both the relationship and the object. They 
+    // shold be there, but just in case something went wrong, we'll throw
+    // an exception if we can't find them.
+    $rel_stanza = $this->getCachedTermStanza($rel_id);
+    if (!$rel_stanza) {      
+      throw new Exception(t('Cannot find term, "!name", in the term cache.', ['!name' => $rel_id]));
     }
+    $rel_cvterm_id = $this->saveTerm($rel_stanza, TRUE);
+    
+    // Make sure the object term exists in the cache.
+    $obj_stanza = $this->getCachedTermStanza($obj_id);
+    if (!$obj_stanza) {
+      throw new Exception(t('Cannot find term "!name" in the term cache.', ['!name' => $obj_id]));
+    }
+    $obj_cvterm_id = $this->saveTerm($obj_stanza);
+
+    // Add the cvterm_relationship.
+    $cvterm_relationship = new ChadoRecord('cvterm_relationship');
+    $cvterm_relationship->setValues([
+      'type_id'    => $rel_cvterm_id,
+      'subject_id' => $cvterm_id,
+      'object_id'  => $obj_cvterm_id
+    ]);
+    $cvterm_relationship->insert();
+    return TRUE;
   }
 
   /**
@@ -1257,13 +1221,173 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function getTerm($id) {
-    $values = array('id' => $id);
-    $result = chado_select_record('tripal_obo_temp', array('stanza'), $values);
-    if (count($result) == 0) {
+  private function getCachedTermStanza($id) {
+    if ($this->cache_type == 'table') {
+      $values = array('id' => $id);
+      $result = chado_select_record('tripal_obo_temp', array('stanza'), $values);
+      if (count($result) == 0) {
+        return FALSE;
+      }
+      return unserialize(base64_decode($result['stanza']));
+    }
+    
+    if (array_key_exists($id, $this->termStanzaCache['ids'])) {
+      return $this->termStanzaCache['ids'][$id];
+    }
+    else {
       return FALSE;
     }
-    return unserialize(base64_decode($result[0]->stanza));
+  }
+  
+  /**
+   * Adds a term stanza from the OBO file to the cache for easier lookup.
+   * 
+   * @param $stanza
+   *   The stanza from the OBO file for the term.
+   * @throws Exception
+   */
+  private function addCacheTermStanza($stanza, $type) {
+
+    // Make sure we have defaults.
+    if (!$this->default_namespace) {
+      throw new Exception('Cannot cache terms without a default CV.' . print_r($stanza, TRUE));
+    }
+    if (!$this->default_db) {
+      throw new Exception('Cannot cache terms without a default DB.' . print_r($stanza, TRUE));
+    }
+    
+    $id = $stanza['id'][0];
+    
+    // First check if this term is already in the cache, if so then skip it.
+    if ($this->getCachedTermStanza($id)) {
+      return;
+    }
+    
+    // Does this term have a database short name prefix in the ID (accession)?
+    // If not then we'll add the default CV as the namespace. If it does and
+    // the short name is not the default for this vocabulary then we'll look
+    // it up.
+    $matches = [];
+    if (preg_match('/^(.+):(.+)$/', $id, $matches)) {
+      $short_name = $matches[1];
+      $accession = $matches[2];
+      
+      // If the DB short name and the default DB short name don't match then
+      // let's do a lookup on EBI to get the term details.
+      if ($short_name != $this->default_db) {
+        
+        if ($this->ebi_warned == FALSE) {
+          $this->logMessage(
+            "A term that belongs to another ontology is used within this " .
+            "vocabulary.  Therefore a lookup will be performed with the EBI Ontology " .
+            "Lookup Service to retrieve the information for this term. " .
+            "Please note, that vocabularies with many non-local terms " .
+            "require remote lookups and these lookups can dramatically " .
+            "decrease loading time. " ,
+            ['!vocab' => $this->default_namespace], TRIPAL_WARNING);
+          $this->ebi_warned = TRUE;
+        }
+        
+        // If we found a term then let's create a new stanza as if it existed
+        // in the original OBO file but with all the necessary details.
+        $oterm = $this->findEBITerm($id);
+        if ($oterm) {
+          $stanza = $oterm;
+        }
+        else {
+          throw new Exception(t('Cannot find the term defined in the ontology or via an EBI OLS lookup: !term', 
+            ['!term' => $id]));
+        }
+      }
+      // If the term belongs to this OBO then let's set the 'db_name'.
+      else {
+        if (!array_key_exists('namespace', $stanza)) {
+          $stanza['namespace'][] = $this->default_namespace;
+        }
+        $stanza['db_name'][] = $short_name;
+      }
+    }
+    // If there is no DB short name prefix for the id.
+    else {
+      if (!array_key_exists('namespace', $stanza)) {
+        $stanza['namespace'][] = $this->default_namespace;
+      }
+      $stanza['db_name'][] = $this->default_db;
+    }
+      
+    if ($this->cache_type == 'table') {
+      // Add the term to the temp table.
+      $values = [
+        'id' => $id,
+        'stanza' => base64_encode(serialize($stanza)),
+        'type' => $type,
+      ];
+      $success = chado_insert_record('tripal_obo_temp', $values);
+      if (!$success) {
+        throw new Exception("Cannot insert stanza into temporary table.");
+      }
+      return;
+    }    
+    $this->termStanzaCache['ids'][$id] = $stanza;
+    $this->termStanzaCache['count'][$type]++;
+    $this->termStanzaCache['types'][$type][] = $id;
+  }
+  
+  /**
+   * Returns the size of a given term type from the cache.
+   * @param $type
+   *   The term type: Typedef, Term, etc.
+   */
+  private function getCacheSize($type) {
+    if ($this->cache_type == 'table') {
+      $sql = "
+        SELECT count(*) as num_terms
+        FROM {tripal_obo_temp}
+        WHERE type = :type
+      ";
+      $result = chado_query($sql, [':type' => $type])->fetchObject();
+      return $result->num_terms;
+    }
+    return $this->termStanzaCache['count'][$type];
+  }
+  
+  /**
+   * Retrieves all term IDs for a given type.
+   * 
+   * If the cache is using the tripal_obo_temp table then it 
+   * returns an iterable Database handle.
+   */
+  private function getCachedTermStanzas($type) {
+    if ($this->cache_type == 'table') {
+      $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
+      $typedefs = chado_query($sql);
+      return $typdefs; 
+    }
+    return $this->termStanzaCache['types'][$type];
+  }
+  
+  /**
+   * Clear's the term cache.
+   */
+  private function clearTermStanzaCache() {
+    if ($this->cache_type == 'table') {
+      $sql = "DELETE FROM {tripal_obo_temp}";
+      chado_query($sql);
+      return;
+    }
+    $this->termStanzaCache = [
+      'ids' => [],
+      'count' => [
+        'Typedef' => 0,
+        'Term' => 0,
+        'Instance' => 0,
+      ],
+      'types' => [
+        'Typedef' => [],
+        'Term' => [],
+        'Instance' => [],
+      ],
+    ];
   }
 
   /**
@@ -1271,12 +1395,12 @@ class OBOImporter extends TripalImporter {
    *
    * @param term
    *   An array representing the cvterm. It must have a 'synonym' key/value pair.
-   * @param cvterm
-   *   The database object of the cvterm to which the synonym will be added.
+   * @param $cvterm_id
+   *   The cvterm_id of the term to which the synonym will be added.
    *
    * @ingroup tripal_obo_loader
    */
-  private function addSynonym($term, $cvterm) {
+  private function addSynonym($term, $cvterm_id) {
 
     // make sure we have a 'synonym_type' vocabulary
     $syncv = tripal_insert_cv(
@@ -1324,20 +1448,20 @@ class OBOImporter extends TripalImporter {
 
         // make sure the synonym doesn't already exists
         $values = array(
-          'cvterm_id' => $cvterm->cvterm_id,
+          'cvterm_id' => $cvterm_id,
           'synonym' => $def
         );
         $results = chado_select_record('cvtermsynonym', array('*'), $values);
         if (count($results) == 0) {
           $values = array(
-            'cvterm_id' => $cvterm->cvterm_id,
+            'cvterm_id' => $cvterm_id,
             'synonym' => $def,
             'type_id' => $syntype->cvterm_id
           );
           $options = array('return_record' => FALSE);
           $success = chado_insert_record('cvtermsynonym', $values, $options);
           if (!$success) {
-            throw new Exception("Failed to insert the synonym for term: $cvterm->name ($def)");
+            throw new Exception("Failed to insert the synonym for term: $cvterm_id ($def)");
           }
         }
 
@@ -1373,16 +1497,22 @@ class OBOImporter extends TripalImporter {
    * @ingroup tripal_obo_loader
    */
   private function parse($obo_file, &$header) {
-    $in_header = 1;
+    // Set to 1 if we are in the top header lines of the file.
+    $in_header = TRUE;
+    // Holds the full stanza for the term.
     $stanza = array();
-    $default_db = '';
+    // Holds the default database for the term.
+    $db_short_name = '';
     $line_num = 0;
     $num_read = 0;
+    // The type of term:  Typedef or Term (inside the [] brackets]
     $type = '';
 
+    $this->logMessage("Step 1: Preloading File $file...");
     $filesize = filesize($obo_file);
     $this->setTotalItems($filesize);
     $this->setItemsHandled(0);
+    $this->setInterval(1);
 
     // iterate through the lines in the OBO file and parse the stanzas
     $fh = fopen($obo_file, 'r');
@@ -1404,8 +1534,8 @@ class OBOImporter extends TripalImporter {
         continue;
       }
 
-      //remove comments from end of lines
-      $line = preg_replace('/^(.*?)\!.*$/', '\1', $line);  // TODO: if the explamation is escaped
+      // Remove comments from end of lines.
+      $line = preg_replace('/^(.*?)\!.*$/', '\1', $line); 
       
       // Remove annotations surrounded by brackets. These are found
       // in the Trait Ontology (e.g. TO:1000023 {is_inferred="true"})
@@ -1413,25 +1543,21 @@ class OBOImporter extends TripalImporter {
       // specifications.
       $line = preg_replace('/\{.*?\}/', '', $line);
 
-      // at the first stanza we're out of header
+      // At the first stanza we're out of header.
       if (preg_match('/^\s*\[/', $line)) {
-        $in_header = 0;
-
-        // store the stanza we just finished reading
-        if (sizeof($stanza) > 0) {
-          // add the term to the temp table
-          $values = array(
-            'id' => $stanza['id'][0],
-            'stanza' => base64_encode(serialize($stanza)),
-            'type' => $type,
-          );
-          $success = chado_insert_record('tripal_obo_temp', $values);
-          if (!$success) {
-            throw new Exception("Cannot insert stanza into temporary table.");
-          }
-
+        
+        // After parsing the header we need to get information about this OBO.
+        if ($in_header == TRUE) {
+          $this->getDefaults($header);
+          $in_header = FALSE;
         }
-        // get the stanza type:  Term, Typedef or Instance
+        
+        // Store the stanza we just finished reading.
+        if (sizeof($stanza) > 0) {
+          $this->addCacheTermStanza($stanza, $type);
+        }
+        
+        // Get the stanza type:  Term, Typedef or Instance
         $type = preg_replace('/^\s*\[\s*(.+?)\s*\]\s*$/', '\1', $line);
 
         // start fresh with a new array
@@ -1445,10 +1571,10 @@ class OBOImporter extends TripalImporter {
       $tag = $pair[0];
       $value = ltrim(rtrim($pair[1]));// remove surrounding spaces
 
-      // if this is the ID then look for the default DB
+      // if this is the ID line then get the database short name from the ID.
       $matches = array();
       if ($tag == 'id' and preg_match('/^(.+?):.*$/', $value, $matches)) {
-        $default_db = $matches[1];
+        $db_short_name = $matches[1];
       }
       $tag = preg_replace("/\|-\|-\|/", "\:", $tag); // return the escaped colon
       $value = preg_replace("/\|-\|-\|/", "\:", $value);
@@ -1467,31 +1593,158 @@ class OBOImporter extends TripalImporter {
     }
     // now add the last term in the file
     if (sizeof($stanza) > 0) {
-      $values = array(
-        'id' => $stanza['id'][0],
-        'stanza' => base64_encode(serialize($stanza)),
-        'type' => $type,
-      );
-      chado_insert_record('tripal_obo_temp', $values);
-      if (!$success) {
-        throw new Exception("Cannot insert stanza into temporary table.");
-      }
+      $this->addCacheTermStanza($stanza, $type);
       $this->setItemsHandled($num_read);
     }
-    return $default_db;
+  }
+  
+  /**
+   * Iterates through all of the cached terms and caches any relationships
+   */
+  private function cacheRelationships() {
+    
+    // Now that we have all of the terms parsed and loaded into the cache,
+    // lets run through them one more time cache any terms in relationships
+    // as well.
+    $this->logMessage("Step 2: Examining relationships...");
+    $terms = $this->getCachedTermStanzas('Term');
+    $count = $this->getCacheSize('Term');
+    $this->setTotalItems($count);
+    $this->setItemsHandled(0);
+    $this->setInterval(25);
+    
+    // Iterate through the terms.
+    $i = 1;
+    foreach ($terms as $t) {
+      
+      // TODO: it would be better if we had a term iterator so that we
+      // don't have to distinguish here between the table vs memory cache type.
+      if ($this->cache_type == 'table') {
+        $stanza = unserialize(base64_decode($t->stanza));
+      }
+      else {
+        $stanza = $this->termStanzaCache['ids'][$t];
+      }
+    
+      // Check if this stanza has an is_a relationship that needs lookup.
+      if (array_key_exists('is_a', $stanza)) {
+        foreach ($stanza['is_a'] as $object_term) {
+          $rstanza = [];
+          $rstanza['id'][] = $object_term;
+          $this->addCacheTermStanza($stanza, 'Term');
+        }
+      }
+      
+      // Check if this stanza has any additional relationships for lookup.
+      if (array_key_exists('relationship', $stanza)) {
+        foreach ($stanza['relationship'] as $value) {
+          
+          // Get the relationship term and the object term
+          $rel_term = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
+          $object_term = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
+          
+          $rstanza = [];
+          $rstanza['id'][] = $rel_term;
+          $this->addCacheTermStanza($stanza, 'Typedef');
+          
+          $rstanza = [];
+          $rstanza['id'][] = $object_term;
+          $this->addCacheTermStanza($stanza, 'Term');
+        }
+      }
+    }
+    $this->setItemsHandled($i++);
+    
+    // Last of all, we need to add the "is_a" relationship It's part of the
+    // OBO specification as a built-in relationship but not all vocabularies 
+    // include that term.
+    if (!$this->getCachedTermStanza('is_a')) {
+      $stanza = [];
+      $stanza['id'][] = 'is_a';
+      $stanza['name'][] = 'is_a';
+      $stanza['namespace'][] = $this->default_namespace;
+      $stanza['db_name'][] = $this->default_db;
+      $this->addCacheTermStanza($stanza, 'Typedef');
+    }
+  }
+  
+  /**
+   * Adds a new namespace to the database by performing an EBI Lookup.
+   * 
+   * @param $namespace
+   */
+  private function addNamespace($namespace) {
+    // The controlled vocabulary is not in the cv table and needs to be added.
+    $ontology_info = $this->oboEbiLookup($namespace, 'ontology');
+    if (!empty($ontology_info['config'])){
+      // CV Name.
+      if (array_key_exists('namespace', $ontology_info['config'])) {
+        $cv_info = $ontology_info['config']['namespace'];
+      }
+      elseif (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
+        $cv_info = $ontology_info['config']['annotations']['default-namespace'];
+      }
+      
+      //CV Description.
+      if (array_key_exists('description', $ontology_info['config'])) {
+        $description = $ontology_info['config']['description'];
+      }
+      else {
+        $description = '';
+      }
+      $cv_returned = chado_insert_cv($cv_info, $description);
+      if($cv_returned) {
+        $this->all_cvs[$cv_returned->name] = $cv_returned;
+        
+        $namespace = $cv_returned->name;
+        // Now add the db entry.
+        $values = array(
+          'name' => $ontology_info['config']['preferredPrefix'],
+          'description' => $ontology_info['config']['description'],
+          'url' => $ontology_info['config']['versionIri'],
+        );
+        
+        $db_returned = chado_insert_db($values);
+        if ($db_returned) {
+          $short_name = $db_returned->name;
+        }
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+  
+  /**
+   * Adds a property to the cvterm indicating it belongs to a subset.
+   * @param $cvterm_id
+   *   The cvterm_id of the term to which the subset will be added.
+   * @param $subset
+   *   The name of the subset.
+   */
+  private function addSubset($cvterm_id, $subset) {
+    $cvtermprop = new ChadoRecord('cvtermprop');
+    $cvtermprop->setValues([
+      'cvterm_id' => $cvterm_id,
+      'type_id' => $this->used_terms['NCIT:C25693'],
+      'value' => $subset
+    ]);
+    if (!$cvtermprop->find()){
+      $cvtermprop->insert();
+    }
+    return TRUE;
   }
 
   /**
    * Adds a database reference to a cvterm
    *
-   * @param cvterm
-   *   The database object of the cvterm to which the synonym will be added.
+   * @param $cvterm_id
+   *   The cvterm_id of the term to which the synonym will be added.
    * @param xref
    *   The cross refernce.  It should be of the form from the OBO specification
    *
    * @ingroup tripal_obo_loader
    */
-  private function addCvtermDbxref($cvterm, $xref) {
+  private function addCvtermDbxref($cvterm_id, $xref) {
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
@@ -1522,7 +1775,7 @@ class OBOImporter extends TripalImporter {
 
     // finally add the cvterm_dbxref but first check to make sure it exists
     $values = array(
-      'cvterm_id' => $cvterm->cvterm_id,
+      'cvterm_id' => $cvterm_id,
       'dbxref_id' => $dbxref->dbxref_id,
     );
     $result = chado_select_record('cvterm_dbxref', array('*'), $values);
@@ -1540,8 +1793,8 @@ class OBOImporter extends TripalImporter {
   /**
    * Adds a property to a cvterm
    *
-   * @param cvterm
-   *   A database object for the cvterm to which properties will be added
+   * @param $cvterm_id
+   *   A cvterm_id of the term to which properties will be added
    * @param $property
    *   The name of the property to add
    * @param $value
@@ -1551,7 +1804,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addCvtermProp($cvterm, $property, $value, $rank) {
+  private function addCvtermProp($cvterm_id, $property, $value, $rank) {
 
     // make sure the 'cvterm_property_type' CV exists
     $cv = tripal_insert_cv('cvterm_property_type', '');
@@ -1585,7 +1838,7 @@ class OBOImporter extends TripalImporter {
 
     // remove any properties that currently exist for this term.  We'll reset them
     if ($rank == 0) {
-      $values = array('cvterm_id' => $cvterm->cvterm_id);
+      $values = array('cvterm_id' => $cvterm_id);
       $success = chado_delete_record('cvtermprop', $values);
       if (!$success) {
         throw new Exception("Could not remove existing properties to update property $property for term\n");
@@ -1594,7 +1847,7 @@ class OBOImporter extends TripalImporter {
 
     // now add the property
     $values = array(
-      'cvterm_id' => $cvterm->cvterm_id,
+      'cvterm_id' => $cvterm_id,
       'type_id' => $cvproptype->cvterm_id,
       'value' => $value,
       'rank' => $rank,
@@ -1700,7 +1953,6 @@ class OBOImporter extends TripalImporter {
     return $response;
   }
 }
-
 /**
  * Ajax callback for the OBOImporter::form() function.
  */
