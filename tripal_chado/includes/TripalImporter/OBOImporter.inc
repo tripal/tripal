@@ -735,15 +735,15 @@ class OBOImporter extends TripalImporter {
     foreach ($typedefs as $t) {
       
       // TODO: it would be better if we had a term iterator so that we
-      // don't have to distringuish here between the table vs memory cache type.
+      // don't have to distinguish here between the table vs memory cache type.
       if ($this->cache_type == 'table') {
-        $term = unserialize(base64_decode($t->stanza));
+        $stanza = unserialize(base64_decode($t->stanza));
       }
       else {
-        $term = $this->termStanzaCache['ids'][$t];
+        $stanza = $this->termStanzaCache['ids'][$t];
       }
       $this->setItemsHandled($i++);
-      $this->processTerm($term, TRUE);
+      $this->processTerm($stanza, TRUE);
     }
 
     $this->setItemsHandled($i);
@@ -791,7 +791,7 @@ class OBOImporter extends TripalImporter {
    * work out what these two should be.
    * 
    */
-  private function getDefaults($header) {
+  private function setDefaults($header) {
     $short_name = '';
     $namespace = '';
     
@@ -824,25 +824,9 @@ class OBOImporter extends TripalImporter {
     // Set the defaults.
     $this->default_namespace = $namespace;
     $this->default_db = $short_name;
-    
-    // TODO: we need to get the description and title from EBI for these
-    // ontology so that we can put something in the proper fields when
-    // adding a new CV or DB.
-    
-    // Add the CV record if it doesn't exist.
-    $cv = new ChadoRecord('cv');
-    $cv->setValues(['name' => $namespace]);
-    if (!$cv->find()) {
-      $cv->insert();
-    }
-    $this->obo_namespaces[$namespace] = $cv->getID();
-    
-    // Add the DB record if it doesn't exist.
-    $db = new ChadoRecord('db');
-    $db->setValues(['name' => $this->default_db]);
-    if (!$db->find()) {
-      $db->insert();
-    }
+    $this->addDB($this->default_db);
+    $this->addCV($this->default_namespace);
+
   }
   
   /**
@@ -1450,6 +1434,10 @@ class OBOImporter extends TripalImporter {
             "decrease loading time. " ,
             ['!vocab' => $this->default_namespace], TRIPAL_WARNING);
           $this->ebi_warned = TRUE;
+          // This ontology may havem ultiple remote terms and that takes a while
+          // to load so lets change the progress interval down to give 
+          // updates more often.
+          $this->setInterval(1);
         }
         
         // If we found a term then let's create a new stanza as if it existed
@@ -1648,7 +1636,7 @@ class OBOImporter extends TripalImporter {
         
         // After parsing the header we need to get information about this OBO.
         if ($in_header == TRUE) {
-          $this->getDefaults($header);
+          $this->setDefaults($header);
           $in_header = FALSE;
         }
         
@@ -1873,6 +1861,30 @@ class OBOImporter extends TripalImporter {
       $this->all_dbs[$dbname] = $db;
     }
     return $db;
+  }
+  
+  /**
+   * Adds a vocabulary to Chado if it doesn't exist.
+   *
+   * @param $cvname
+   *   The name of the vocabulary to add.
+   *
+   * @return
+   *   A Chado cv object.
+   */
+  private function addCV($cvname) {
+    // TODO: we need to get the description and title from EBI for these
+    // ontology so that we can put something in the proper fields when
+    // adding a new CV or DB.
+    
+    // Add the CV record if it doesn't exist.
+    $cv = new ChadoRecord('cv');
+    $cv->setValues(['name' => $cvname]);
+    if (!$cv->find()) {
+      $cv->insert();
+    }
+    $this->all_cvs[$cvname] = (object) $cv->getValues();
+    $this->obo_namespaces[$namespace] = $cv->getID();
   }
   
   /**
