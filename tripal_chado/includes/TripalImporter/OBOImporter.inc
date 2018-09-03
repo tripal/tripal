@@ -811,9 +811,15 @@ class OBOImporter extends TripalImporter {
     }
     
     // If we have the namespace but not the short name then we have to
-    // do an exhaustive search of EBI to find it.
+    // do an exhaustive search of EBI to find it if we don't alread have it in
+    // chado.
     if ($namespace and !$short_name) {
-      $short_name = $this->findEBIOntologyPrefix($namespace);
+      $sql = "SELECT dbname FROM {db2cv_mview} WHERE cvname = :cvname";
+      $short_name = chado_query($sql, [':cvname' => $namespace])->fetchField();
+      
+      if (!$short_name) {
+       $short_name = $this->findEBIOntologyPrefix($namespace);
+      }
     }
     
     // If we can't find the namespace or the short_name then bust.
@@ -1095,15 +1101,13 @@ class OBOImporter extends TripalImporter {
         // We found the term so do an update and change the dbxref_id.
         if (!$is_borrowed) {
           // This is a borrowed term so just update the dbxref_id.
-          $cvterm->setvalue('dbxref_id', $dbxref->getID());
+          $cvterm->setValue('dbxref_id', $dbxref->getID());
           $cvterm->update();
         }
         else {
-          $cvterm->setValues([
-            $cvterm->setvalue('definition', $definition),
-            $cvterm->setvalue('dbxref_id', $dbxref->getID()),
-            $cvterm->setvalue('is_obsolete', $is_obsolete),
-          ]);
+          $cvterm->setValue('definition', $definition);
+          $cvterm->setValue('dbxref_id', $dbxref->getID());
+          $cvterm->setValue('is_obsolete', $is_obsolete);
           $cvterm->update();
         }
       }
@@ -1601,15 +1605,16 @@ class OBOImporter extends TripalImporter {
     $num_read = 0;
     // The type of term:  Typedef or Term (inside the [] brackets]
     $type = '';
-
+    
     $filesize = filesize($obo_file);
     $this->setTotalItems($filesize);
     $this->setItemsHandled(0);
     $this->setInterval(5);
+    
 
     // iterate through the lines in the OBO file and parse the stanzas
     $fh = fopen($obo_file, 'r');
-    while ($line = fgets($fh)) {
+    while ($line = fgets($fh)) {      
       $line_num++;
       $size = drupal_strlen($line);
       $num_read += $size;
@@ -1635,9 +1640,9 @@ class OBOImporter extends TripalImporter {
       if (preg_match('/^\s*\[/', $line)) {
         
         // After parsing the header we need to get information about this OBO.
-        if ($in_header == TRUE) {
+        if ($in_header == TRUE) {          
           $this->setDefaults($header);
-          $in_header = FALSE;
+          $in_header = FALSE;          
         }
         
         // Store the stanza we just finished reading.
@@ -1884,7 +1889,7 @@ class OBOImporter extends TripalImporter {
       $cv->insert();
     }
     $this->all_cvs[$cvname] = (object) $cv->getValues();
-    $this->obo_namespaces[$namespace] = $cv->getID();
+    $this->obo_namespaces[$cvname] = $cv->getID();
   }
   
   /**
@@ -1955,11 +1960,9 @@ class OBOImporter extends TripalImporter {
       throw new Exception("Cannot add an xref without an accession: '$xref'");
     }
 
-    // If the xref is a database link then use a dbname of 'URL'.
-    // TODO: does this make sense to add a URL database?
+    // If the xref is a database link then skip those for now.
     if (strcmp($dbname, 'http') == 0) {
-      $accession = $xref;
-      $dbname = 'URL';
+      return;
     }
 
     // Add the database if it doesn't exist.

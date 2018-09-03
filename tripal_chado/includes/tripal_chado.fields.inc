@@ -1313,7 +1313,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         break;
       case 'contact':
         $default_vocab = 'tripal_contact';
-        $parent_term = 'TContact:0000001';
+        $parent_term = 'TCONTACT:0000001';
         $description = 'Select the type.';
         break;
       default:

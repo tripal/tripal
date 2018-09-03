@@ -323,8 +323,8 @@ class ChadoRecord {
         $this->values[$column] = $value;
       }
       else {
-        $message = t('ChadoRecord::setValues(). The column named, "!column", does not exist in table: "!table".', 
-          ['!column' => $column, '!table' => $this->table_name]);
+        $message = t('ChadoRecord::setValues(). The column named, "!column", does not exist in table: "!table". Values: !values".', 
+          ['!column' => $column, '!table' => $this->table_name, '!values' => print_r($values, TRUE)]);
         throw new Exception($message);
       }
     }

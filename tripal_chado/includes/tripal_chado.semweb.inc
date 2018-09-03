@@ -1735,10 +1735,10 @@ function tripal_chado_populate_vocab_SWO() {
  */
 function tripal_chado_populate_vocab_TCONTACT() {
   chado_insert_db(array(
-    'name' => 'TContact',
+    'name' => 'TCONTACT',
     'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
-    'url' => 'cv/lookup/TContact',
-    'urlprefix' => 'cv/lookup/TContact/{accession}',
+    'url' => 'cv/lookup/TCONTACT',
+    'urlprefix' => 'cv/lookup/TCONTACT/{accession}',
   ));
   chado_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 }

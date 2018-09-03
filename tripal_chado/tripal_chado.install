@@ -1670,3 +1670,16 @@ function tripal_chado_update_7332() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Renames the TContact vocabulary database entry to TCONTACT as it should be.
+ */
+function tripal_chado_update_7333() {
+  try {
+    chado_update_record('db', ['name' => 'TContact'], ['name' => 'TCONTACT']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

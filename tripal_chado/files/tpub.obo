@@ -1,6 +1,7 @@
 format-version: 1.2
 default-namespace: tripal_pub
 subsetdef: MeSH_Publication_Type "MeSH Publication Types"
+ontology: tpub
 
 [Term]
 id: TPUB:0000001
@@ -740,8 +741,6 @@ id: TPUB:0000156
 name: Forms
 def: Works consisting of or containing a substantial number of blank forms.
 is_a: TPUB:0000015 ! Publication Type
-subset: MeSH_Publication_Type
-
 subset: MeSH_Publication_Type
 
 [Term]
