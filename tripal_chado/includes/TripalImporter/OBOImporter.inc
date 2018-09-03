@@ -811,14 +811,24 @@ class OBOImporter extends TripalImporter {
     }
     
     // If we have the namespace but not the short name then we have to
-    // do an exhaustive search of EBI to find it if we don't alread have it in
-    // chado.
+    // do a few tricks to try and find it.
     if ($namespace and !$short_name) {
+      
+      // First see if we've seen this ontology before and get it's currently
+      // loaded database.
       $sql = "SELECT dbname FROM {db2cv_mview} WHERE cvname = :cvname";
       $short_name = chado_query($sql, [':cvname' => $namespace])->fetchField();
       
+      if (!$short_name and array_key_exists('namespace-id-rule', $header)) {
+        $matches = [];
+        if (preg_match('/^.*\s(.+?):.+$/', $header['namespace-id-rule'][0],$matches)){
+          $short_name = $matches[1];
+        }
+      }
+      
+      // Try the EBI Lookup: still experimental.
       if (!$short_name) {
-       $short_name = $this->findEBIOntologyPrefix($namespace);
+        //$short_name = $this->findEBIOntologyPrefix($namespace);
       }
     }
     
@@ -879,12 +889,18 @@ class OBOImporter extends TripalImporter {
    */
   private function findEBIOntologyPrefix($namespace) {
     
+    // NOTE: this code is not yet completed.. It's not clear it will 
+    // actually work.
+    
     $options = array();
     $page = 1;
     $size = 25;
     $full_url = 'https://www.ebi.ac.uk/ols/api/ontologies?page=' . $page. '&size=' . $size;
     while ($response = drupal_http_request($full_url, $options)) {
       $response = drupal_json_decode($response->data);
+      foreach ($response['_embedded']['ontologies'] as $ontology) {
+        $namespace = $ontology['config']['namespace'];
+      }
       $page++;
       $full_url = 'https://www.ebi.ac.uk/ols/api/ontologies?page=' . $page. '&size=' . $size;
     }
