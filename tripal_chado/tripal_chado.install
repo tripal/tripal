@@ -1622,7 +1622,7 @@ function tripal_chado_update_7331() {
 }
 
 /**
- * Adds the NCIT subgroup term for use by the OBO loader when setting vocabulary subsets.
+ * Adds additional vocabs for the OBO Importer.
  */
 function tripal_chado_update_7332() {
   try {
@@ -1645,6 +1645,25 @@ function tripal_chado_update_7332() {
       'cv_name' => 'ncit',
       'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
     ]);
+    
+    
+    // Add the rdfs:comment vocabulary.
+    chado_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+    ));
+    chado_insert_cv(
+      'rdfs',
+      'Resource Description Framework Schema'
+      );
+    $name = chado_insert_cvterm(array(
+      'id' => 'rdfs:comment',
+      'name' => 'comment',
+      'cv_name' => 'rdfs',
+      'definition' => 'A human-readable description of a resource\'s name.',
+    ));
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

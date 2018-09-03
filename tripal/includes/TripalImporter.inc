@@ -204,6 +204,11 @@ class TripalImporter {
   protected $is_prepared;
 
 
+  /**
+   * Stores the last percentage that progress was reported.
+   * @var integer
+   */
+  protected $reported = 0;
 
   // --------------------------------------------------------------------------
   //                          CONSTRUCTORS
@@ -644,7 +649,7 @@ class TripalImporter {
     $ipercent  = (int) $percent;
     
     // If we've reached our interval then print update info.
-    if ($ipercent > 0 and $ipercent % $this->interval == 0) {
+    if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
       $memory = number_format(memory_get_usage());
       $spercent = sprintf("%.2f", $percent);
       print t("Percent complete: !percent %. Memory: !memory bytes.", 
@@ -654,6 +659,7 @@ class TripalImporter {
       if ($this->job) {
         $this->job->setProgress($percent);
       }
+      $this->reported = $ipercent;
     }
   }
 

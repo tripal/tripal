@@ -156,6 +156,12 @@ function tripal_chado_populate_vocab_RDFS() {
     'cv_name' => 'rdfs',
     'definition' => 'A human-readable version of a resource\'s name.',
   ));
+  $name = chado_insert_cvterm(array(
+    'id' => 'rdfs:comment',
+    'name' => 'comment',
+    'cv_name' => 'rdfs',
+    'definition' => 'A human-readable description of a resource\'s name.',
+  ));
 }
 /**
  * Adds the Schema.org database and terms.

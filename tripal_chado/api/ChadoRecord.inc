@@ -134,7 +134,7 @@ class ChadoRecord {
   public function getSchema() {
     return $this->schema;
   }
-  
+
   /**
    * Creates a clone of this record, but without the record ID.
    * 
@@ -208,6 +208,9 @@ class ChadoRecord {
       implode(", ", $insert_vals) . ')';
     try {
       chado_query($sql, $insert_args);
+      // TODO: we can speed up inserts if we can find a way to not have to
+      // run the find(), but get the newly inserted record_id directly
+      // from the insert command.
       $this->find();
     }
     catch (Exception $e) {
