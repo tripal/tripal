@@ -1173,6 +1173,7 @@ class OBOImporter extends TripalImporter {
         }
       }
       else {
+
         // The term doesnt exist, so let's just do our insert.
         $cvterm->setValues([
           'cv_id' => $cv->cv_id,
@@ -1556,12 +1557,23 @@ class OBOImporter extends TripalImporter {
         // First try to lookup the term and replace the stanza with the updated
         // details. 
         $found = $this->lookupTerm($short_name, $accession);
+
         if ($found) {
           $stanza = $found;
         }
         // If we can't find the term in the database then do an EBI lookup.
         else {          
           $stanza = $this->findEBITerm($id);
+          $db_name = $stanza['db_name'][0];
+          $db = $this->all_dbs[$db_name];
+          if (!$db){
+            $db = $this->addDB($short_name);
+          }
+          $cv_name = $stanza['namespace'][0];
+          $cv = $this->all_cvs[$cv_name];
+          if (!$cv){
+            $cv = $this->addCV($cv_name);
+          }
         }
       }
       // If the term belongs to this OBO then let's set the 'db_name'.
@@ -2009,6 +2021,7 @@ class OBOImporter extends TripalImporter {
     }
     $this->all_cvs[$cvname] = (object) $cv->getValues();
     $this->obo_namespaces[$cvname] = $cv->getID();
+    return $cv->getValues();
   }
   
   /**

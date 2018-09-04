@@ -39,17 +39,16 @@ class OBOImporterTest extends TripalTestCase {
    * @group obo
    */
 
-//   public function testGO_SLIM_load() {
-// //    $this->load_goslim_plant();
-// //
-// //    $exists = db_select('chado.cv', 'c')
-// //      ->fields('c', ['cv_id'])
-// //      ->condition('name', 'core_test_goslim_plant')
-// //      ->execute()
-// //      ->fetchField();
-// //    $this->assertNotFalse($exists);
-// //
-//   }
+   public function testGO_SLIM_load() {
+     $this->load_goslim_plant();
+
+     $exists = db_select('chado.cv', 'c')
+       ->fields('c', ['cv_id'])
+       ->condition('name', 'core_test_goslim_plant')
+       ->execute()
+       ->fetchField();
+     $this->assertNotFalse($exists);
+   }
 
   private function load_pto_mini() {
 
