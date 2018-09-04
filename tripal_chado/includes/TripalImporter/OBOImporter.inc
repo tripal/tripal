@@ -1216,17 +1216,9 @@ class OBOImporter extends TripalImporter {
     $cvterm_id = $this->saveTerm($stanza, FALSE);
     $id = $stanza['id'][0];
     
-    
-    // If this term was obtained from an EBI lookup then we do want to add the
-    // term and ancillary data.
-    $from_ebi = FALSE;
-    if (array_key_exists('from_ebi', $stanza)) {
-      $from_ebi = TRUE;
-    }
-    
     // If this term is borrowed from another ontology? If so then we will
     // not update it.
-    if ($this->isTermBorrowed($stanza) and !$from_ebi) {
+    if ($this->isTermBorrowed($stanza)) {
       return;
     }
     
