@@ -1571,6 +1571,10 @@ class OBOImporter extends TripalImporter {
         }
         $stanza['db_name'][] = $short_name;
       }
+      
+      // Make sure the db for this term is added to Chado. If it already is
+      // then this function won't re-add it.
+      $this->addDB($short_name);
     }
     // If there is no DB short name prefix for the id.
     else {
