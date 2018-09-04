@@ -929,7 +929,6 @@ function chado_insert_cv($name, $definition) {
  * @ingroup tripal_chado_cv_api
  */
 function chado_insert_cvterm($term, $options = array()) {
-
   // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
   $name = '';
@@ -937,7 +936,6 @@ function chado_insert_cvterm($term, $options = array()) {
   $definition = '';
   $is_obsolete = 0;
   $accession = '';
-
   // Set Defaults.
   if (isset($term['cv_name'])) {
     $cvname = $term['cv_name'];
@@ -950,36 +948,30 @@ function chado_insert_cvterm($term, $options = array()) {
   if (array_key_exists('namespace', $term)) {
     $cvname = $term['namespace'];
   }
-
   if (isset($term['is_relationship'])) {
     $is_relationship = $term['is_relationship'];
   }
   else {
     $is_relationship = 0;
   }
-
   if (isset($term['db_name'])) {
     $dbname = $term['db_name'];
   }
   else {
     $dbname = 'internal';
   }
-
   if (isset($options['update_existing'])) {
     $update = $options['update_existing'];
   }
   else {
     $update = 1;
   }
-
   if (array_key_exists('name', $term)) {
     $name = $term['name'];
   }
   else {
     $name = $id;
   }
-
-
   if (array_key_exists('definition', $term)) {
     $definition = preg_replace('/^\"(.*)\"/', '\1', $term['definition']);
   }
@@ -999,17 +991,14 @@ function chado_insert_cvterm($term, $options = array()) {
   if (!$id) {
     $id = $name;
   }
-
   // Get the accession and the database from the cvterm id.
   if ($dbname) {
     $accession = $id;
   }
-
   if (preg_match('/^.+?:.*$/', $id)) {
     $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
     $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
   }
-
   // Check that we have a database name, give a different message if it's a
   // relationship.
   if ($is_relationship and !$dbname) {
@@ -1020,7 +1009,6 @@ function chado_insert_cvterm($term, $options = array()) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "A database identifier is missing from the term: $id", NULL);
     return 0;
   }
-
   // Make sure the CV name exists.
   $cv = chado_get_cv(array('name' => $cvname));
   if (!$cv) {
@@ -1030,7 +1018,6 @@ function chado_insert_cvterm($term, $options = array()) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);
     return 0;
   }
-
   // This SQL statement will be used a lot to find a cvterm so just set it
   // here for easy reference below.  Because CV terms can change their names
   // but accessions don't change, the following SQL finds cvterms based on
@@ -1044,7 +1031,6 @@ function chado_insert_cvterm($term, $options = array()) {
       INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
     WHERE DBX.accession = :accession and DB.name = :name
   ";
-
   // Add the database. The function will just return the DB object if the
   // database already exists.
   $db = chado_get_db(array('name' => $dbname));
@@ -1055,7 +1041,6 @@ function chado_insert_cvterm($term, $options = array()) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
     return 0;
   }
-
   // The cvterm table has two unique dependencies. We need to check both.
   // first check the (name, cv_id, is_obsolete) constraint.
   $values = array(
@@ -1068,7 +1053,6 @@ function chado_insert_cvterm($term, $options = array()) {
   $result = chado_select_record('cvterm', array('*'), $values);
   if (count($result) == 1) {
     $cvterm = $result[0];
-
     // Get the dbxref record.
     $values = array('dbxref_id' => $cvterm->dbxref_id);
     $result = chado_select_record('dbxref', array('*'), $values);
@@ -1080,18 +1064,15 @@ function chado_insert_cvterm($term, $options = array()) {
       );
       return FALSE;
     }
-
     // Get the db.
     $values = array('db_id' => $dbxref->db_id);
     $result = chado_select_record('db', array('*'), $values);
     $db_check = $result[0];
-
     //     // The database name for this existing term does not match that of the
     //     // one provided to this function.  The CV name matches otherwise we
     //     // wouldn't have made it this far. So, let's swap the database for
     //     // this term.
     //     if ($db_check->name != $db->name) {
-
     //       // Look to see if the correct dbxref record already exists for this
     //       // database.
     //       $values = array(
@@ -1099,7 +1080,6 @@ function chado_insert_cvterm($term, $options = array()) {
     //         'accession' => $accession,
     //       );
     //       $result = chado_select_record('dbxref', array('*'), $values);
-
     //       // If we already have a good dbxref then we want to update our cvterm
     //       // to use this dbxref.
     //       if (count($result) > 0) {
@@ -1120,13 +1100,11 @@ function chado_insert_cvterm($term, $options = array()) {
     //         chado_delete_record('cvterm', $match);
     //       }
     //     }
-
     // Check that the accession matches.  Sometimes an OBO can define a term
     // multiple times but with different accessions.  If this is the case we
     // can't do an insert or it will violate the constraint in the cvterm table.
     // So we'll need to add the record to the cvterm_dbxref table instead.
     if ($dbxref->accession != $accession) {
-
       // Get/add the dbxref for his term.
       $dbxref_new = chado_insert_dbxref(array(
         'db_id' => $db->db_id,
@@ -1137,7 +1115,6 @@ function chado_insert_cvterm($term, $options = array()) {
             "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
-
       // Check to see if the cvterm_dbxref record already exists.
       $values = array(
         'cvterm_id' => $cvterm->cvterm_id,
@@ -1145,7 +1122,6 @@ function chado_insert_cvterm($term, $options = array()) {
         'is_for_definition' => 1,
       );
       $result = chado_select_record('cvterm_dbxref', array('*'), $values);
-
       // if the cvterm_dbxref record does not exists then add it
       if (count($result)==0) {
         $options = array(
@@ -1166,12 +1142,10 @@ function chado_insert_cvterm($term, $options = array()) {
     // Continue on, we've fixed the record if the db_id did not match.
     // We can now perform and updated if we need to.
   }
-
   // Get the CVterm record.
   $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
   $cvterm = $result->fetchObject();
   if (!$cvterm) {
-
     // Check to see if the dbxref exists if not, add it.
     $dbxref = chado_insert_dbxref(array(
       'db_id' => $db->db_id,
@@ -1182,7 +1156,6 @@ function chado_insert_cvterm($term, $options = array()) {
           "$name (id: $accession), for database $dbname", NULL);
       return 0;
     }
-
     // Check to see if the dbxref already has an entry in the cvterm table.
     $values = array('dbxref_id' => $dbxref->dbxref_id);
     $check = chado_select_record('cvterm', array('cvterm_id'), $values);
@@ -1218,7 +1191,6 @@ function chado_insert_cvterm($term, $options = array()) {
   }
   // Update the cvterm.
   elseif ($update) {
-
     // First, basic update of the term.
     $match = array('cvterm_id' => $cvterm->cvterm_id);
     $upd_values = array(
@@ -1232,7 +1204,6 @@ function chado_insert_cvterm($term, $options = array()) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
       return 0;
     }
-
     // Second, check that the dbxref has not changed and if it has then update 
     // it.
     $checksql = "
@@ -1245,7 +1216,6 @@ function chado_insert_cvterm($term, $options = array()) {
     ";
     $check = chado_query($checksql, array(':accession' => $accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
     if (!$check) {
-
       // Check to see if the dbxref exists if not, add it.
       $dbxref = chado_insert_dbxref(array(
         'db_id' => $db->db_id,
@@ -1256,7 +1226,6 @@ function chado_insert_cvterm($term, $options = array()) {
             "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
-
       $match = array('cvterm_id' => $cvterm->cvterm_id);
       $upd_values = array(
         'dbxref_id' => $dbxref->dbxref_id,
@@ -1267,7 +1236,6 @@ function chado_insert_cvterm($term, $options = array()) {
         return 0;
       }
     }
-
     // Finally grab the updated details.
     $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
     $cvterm = $result->fetchObject();

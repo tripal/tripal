@@ -1,0 +1,18 @@
+format-version: 1.2
+data-version: releases/2018-03-09
+saved-by: cooperl
+default-namespace: core_test_PTO_mini
+import: http://purl.obolibrary.org/obo/to/imports/chebi_import.owl
+
+ontology: to
+
+
+[Term]
+id: CHEBI:132502 ! fatty acid 18:3
+
+
+[Term]
+id: TO:1000066
+name: shoot system nickel content
+def: "A nickel content trait (TO:0006051) which is the nickel cation (CHEBI:25516) composition in a shoot system (PO:0009006)." [https://search.proquest.com/docview/1426182399, TO:cooperl]
+synonym: "shoot Ni content (related)" RELATED []

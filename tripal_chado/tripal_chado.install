@@ -1620,3 +1620,66 @@ function tripal_chado_update_7331() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds additional vocabs for the OBO Importer.
+ */
+function tripal_chado_update_7332() {
+  try {
+    // We have to add the db and cv in case the user hasn't yet prepared Chado.
+    // If they have prepared Chado then no harm done.
+    chado_insert_db([
+      'name' => 'NCI Thesaurus OBO Edition',
+      'description' => 'NCI Thesaurus OBO Edition.',
+      'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
+      'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
+    ]);
+    chado_insert_cv(
+      'ncit',
+      'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+    );
+    
+    $term = chado_insert_cvterm([
+      'id' => 'NCIT:C25693',
+      'name' => 'Subgroup',
+      'cv_name' => 'ncit',
+      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+    ]);
+    
+    
+    // Add the rdfs:comment vocabulary.
+    chado_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+    ));
+    chado_insert_cv(
+      'rdfs',
+      'Resource Description Framework Schema'
+      );
+    $name = chado_insert_cvterm(array(
+      'id' => 'rdfs:comment',
+      'name' => 'comment',
+      'cv_name' => 'rdfs',
+      'definition' => 'A human-readable description of a resource\'s name.',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Renames the TContact vocabulary database entry to TCONTACT as it should be.
+ */
+function tripal_chado_update_7333() {
+  try {
+    chado_update_record('db', ['name' => 'TContact'], ['name' => 'TCONTACT']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
