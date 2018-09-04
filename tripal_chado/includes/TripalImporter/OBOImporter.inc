@@ -967,7 +967,7 @@ class OBOImporter extends TripalImporter {
         throw new Exception(t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
           'EBI Reported: !message. ' .
           'Consider finding the OBO file for this ontology and manually loading it first.',
-          ['!message' => $results['message'], '!short_name' => $short_name]));
+          ['!message' => $ontology_results['message'], '!short_name' => $short_name]));
       }
       $base_iri = $ontology_results['config']['baseUris'][0];
       $ontologyID = $ontology_results['ontologyId'];
@@ -1173,6 +1173,7 @@ class OBOImporter extends TripalImporter {
         }
       }
       else {
+
         // The term doesnt exist, so let's just do our insert.
         $cvterm->setValues([
           'cv_id' => $cv->cv_id,
@@ -1556,12 +1557,23 @@ class OBOImporter extends TripalImporter {
         // First try to lookup the term and replace the stanza with the updated
         // details. 
         $found = $this->lookupTerm($short_name, $accession);
+
         if ($found) {
           $stanza = $found;
         }
         // If we can't find the term in the database then do an EBI lookup.
         else {          
           $stanza = $this->findEBITerm($id);
+          $db_name = $stanza['db_name'][0];
+          $db = $this->all_dbs[$db_name];
+          if (!$db){
+            $db = $this->addDB($short_name);
+          }
+          $cv_name = $stanza['namespace'][0];
+          $cv = $this->all_cvs[$cv_name];
+          if (!$cv){
+            $cv = $this->addCV($cv_name);
+          }
         }
       }
       // If the term belongs to this OBO then let's set the 'db_name'.
@@ -1616,7 +1628,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('synonym', $stanza)) {
       foreach ($stanza['synonym'] as $index => $synonym) {
         if (preg_match('/\"(.*?)\".*(EXACT|NARROW|BROAD|RELATED)/', $synonym, $matches)) {
-          $stanza['synonym'][$index] = '"' . $matches[1] . '" ' . $maches[2];
+          $stanza['synonym'][$index] = '"' . $matches[1] . '" ' . $matches[2];
         }
       }
     }
@@ -1664,7 +1676,7 @@ class OBOImporter extends TripalImporter {
     if ($this->cache_type == 'table') {
       $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
       $typedefs = chado_query($sql);
-      return $typdefs; 
+      return $typedefs;
     }
     return $this->termStanzaCache['types'][$type];
   }
@@ -2013,6 +2025,7 @@ class OBOImporter extends TripalImporter {
     }
     $this->all_cvs[$cvname] = (object) $cv->getValues();
     $this->obo_namespaces[$cvname] = $cv->getID();
+    return $cv->getValues();
   }
   
   /**

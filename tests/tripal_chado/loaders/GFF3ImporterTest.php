@@ -123,6 +123,7 @@ class GFF3ImporterTest extends TripalTestCase {
    * The GFF importer should still create explicitly defined proteins if
    * skip_protein is true.
    *
+   * @group gff
    * @ticket 77
    */
   public function testGFFImporterLoadsExplicitProteins() {
@@ -176,11 +177,11 @@ class GFF3ImporterTest extends TripalTestCase {
 
   private function loadLandmarks($analysis, $organism) {
     $landmark_file = ['file_remote' => 'https://raw.githubusercontent.com/statonlab/tripal_dev_seed/master/Fexcel_mini/sequences/empty_landmarks.fasta'];
-
+    
     $run_args = [
       'organism_id' => $organism->organism_id,
       'analysis_id' => $analysis->analysis_id,
-      'seqtype' => 'scaffold',
+      'seqtype' => 'supercontig',
       'method' => 2, //default insert and update
       'match_type' => 1, //unique name default
       //optional
