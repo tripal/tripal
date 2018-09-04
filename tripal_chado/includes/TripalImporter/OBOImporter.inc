@@ -967,7 +967,7 @@ class OBOImporter extends TripalImporter {
         throw new Exception(t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
           'EBI Reported: !message. ' .
           'Consider finding the OBO file for this ontology and manually loading it first.',
-          ['!message' => $results['message'], '!short_name' => $short_name]));
+          ['!message' => $ontology_results['message'], '!short_name' => $short_name]));
       }
       $base_iri = $ontology_results['config']['baseUris'][0];
       $ontologyID = $ontology_results['ontologyId'];
@@ -1612,7 +1612,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('synonym', $stanza)) {
       foreach ($stanza['synonym'] as $index => $synonym) {
         if (preg_match('/\"(.*?)\".*(EXACT|NARROW|BROAD|RELATED)/', $synonym, $matches)) {
-          $stanza['synonym'][$index] = '"' . $matches[1] . '" ' . $maches[2];
+          $stanza['synonym'][$index] = '"' . $matches[1] . '" ' . $matches[2];
         }
       }
     }
@@ -1660,7 +1660,7 @@ class OBOImporter extends TripalImporter {
     if ($this->cache_type == 'table') {
       $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
       $typedefs = chado_query($sql);
-      return $typdefs; 
+      return $typedefs;
     }
     return $this->termStanzaCache['types'][$type];
   }
