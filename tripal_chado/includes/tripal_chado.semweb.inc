@@ -1851,7 +1851,7 @@ function tripal_chado_populate_vocab_TAXRANK() {
  */
 function tripal_chado_populate_vocab_NCIT() {
   chado_insert_db(array(
-    'name' => 'NCI Thesaurus OBO Edition',
+    'name' => 'NCIT',
     'description' => 'NCI Thesaurus OBO Edition.',
     'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
     'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
