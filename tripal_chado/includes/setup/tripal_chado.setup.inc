@@ -71,6 +71,45 @@ function tripal_chado_prepare_drush_submit() {
  *
  */
 function tripal_chado_load_ontologies() {
+  
+  // Before we can load ontologies we need a few terms that unfortunately 
+  // don't get added until later. We'll add them now so the loader works.
+  chado_insert_db([
+    'name' => 'NCIT',
+    'description' => 'NCI Thesaurus OBO Edition.',
+    'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
+    'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
+  ]);
+  chado_insert_cv(
+    'ncit',
+    'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+    );
+  
+  $term = chado_insert_cvterm([
+    'id' => 'NCIT:C25693',
+    'name' => 'Subgroup',
+    'cv_name' => 'ncit',
+    'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+  ]);
+  
+  
+  // Add the rdfs:comment vocabulary.
+  chado_insert_db(array(
+    'name' => 'rdfs',
+    'description' => 'Resource Description Framework Schema',
+    'url' => 'https://www.w3.org/TR/rdf-schema/',
+    'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+  ));
+  chado_insert_cv(
+    'rdfs',
+    'Resource Description Framework Schema'
+    );
+  $name = chado_insert_cvterm(array(
+    'id' => 'rdfs:comment',
+    'name' => 'comment',
+    'cv_name' => 'rdfs',
+    'definition' => 'A human-readable description of a resource\'s name.',
+  ));
 
   // Insert commonly used ontologies into the tables.
   $ontologies = array(
