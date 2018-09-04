@@ -745,4 +745,25 @@ class TripalField {
   public function queryOrder($query, $order) {
 
   }
+
+  /**
+   * Used to retrieve a distinct list of values already used for the current field instance.
+   *
+   * @param $keyword
+   *   A string option used to filter the distinct list. This is used when creating an
+   *   autocomplete. For all distinct values, set this to NULL.
+   * @param $options
+   *   An array where options for how to generate this list can be specified. 
+   *   Supported options include:
+   *     - limit: how many results to limit to (Default: 25)
+   *     - label_string: a string with tokens that should be used to generate the
+   *         human-readable values in the returned list.
+   *
+   * @return
+   *   An array of values.
+   */
+  public function getValueList($options = array(), $keyword = NULL) {
+  
+  }
+
 }
