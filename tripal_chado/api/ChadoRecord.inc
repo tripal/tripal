@@ -136,22 +136,6 @@ class ChadoRecord {
   }
 
   /**
-   * Creates a clone of this record, but without the record ID.
-   * 
-   * @return ChadoRecord
-   *   Returns a new ChadoRecord but with all of the same values but
-   *   without the record ID.
-   */
-  public function clone() {
-    $clone = new ChadoRecord($this->table_name);
-    $clone_values = $this->values;
-    unset($clone_values[$this->pkey]);
-    $clone->setValues($clone_values);
-    
-    return $clone;
-  }
-  
-  /**
    * Performs either an update or insert into the table using the values.
    * 
    * If the record already exists it will be updated. If the record does not
@@ -373,14 +357,14 @@ class ChadoRecord {
     // Make sure the column is valid.
     if (!in_array($column_name, $this->column_names)) {
       $message = t('ChadoRecord::setValue(). The column named, "!column", does not exist in table: "!table".',
-        ['!column' => $column, '!table' => $this->table_name]);
+        ['!column' => $column_name, '!table' => $this->table_name]);
       throw new Exception($message);
     }
     
     // Make sure that the value is not NULL if this is a required field.
     if (!in_array($column_name, $this->required_cols) and $value == '__NULL__') {
       $message = t('ChadoRecord::setValue(). The column named, "!column", requires a value for the table: "!table".',
-        ['!column' => $rcol, '!table' => $this->table_name]);
+        ['!column' => $column_name, '!table' => $this->table_name]);
       throw new Exception($message);
     }
     
@@ -397,7 +381,7 @@ class ChadoRecord {
     // Make sure the column is valid.
     if (!in_array($column_name, $this->column_names)) {
       $message = t('ChadoRecord::getValue(). The column named, "!column", does not exist in table: "!table".',
-        ['!column' => $column, '!table' => $this->table_name]);
+        ['!column' => $column_name, '!table' => $this->table_name]);
       throw new Exception($message);
     }
     
