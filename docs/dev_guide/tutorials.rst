@@ -1,7 +1,12 @@
 Video Tutorials
 =================
 
-The following are user-contributed tutorial videos for module development.  Like the rest of the documentation, please feel free to add links to your own tutorial videos by submitting changes to the documentation code on `Github <https://github.com/tripal/tripal>`_.
+.. note::
+
+
+  The following videos are provided by members of the community. While we don't ensure the videos are up to date, we would appreciate being `contacted through the issue queue <https://github.com/tripal/tripal/issues/new/choose>`_ if you find a broken link. Also, if you have your own video and would like to contribute, we would love to hear from you!
+
+
 
 Testing
 ~~~~~~~~~
