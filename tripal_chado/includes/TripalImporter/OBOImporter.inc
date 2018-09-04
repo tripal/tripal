@@ -2024,7 +2024,7 @@ class OBOImporter extends TripalImporter {
       $cv->insert();
       $cv = (object) $cv->getValues();
       $this->all_cvs[$cvname] = $cv;
-      $this->obo_namespaces[$cvname] = $cv->getID();
+      $this->obo_namespaces[$cvname] = $cv->cv_id;
     }
     
     return $cv;
