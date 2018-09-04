@@ -11,44 +11,44 @@ class OBOImporterTest extends TripalTestCase {
   use DBTransaction;
 
 
-    /**
-     * @group obo
-     * @ticket 525
-     */
-    public function test_PTO_loads_colon_issue() {
-      $this->load_pto_mini();
+  /**
+   * @group obo
+   * @ticket 525
+   */
+  public function test_PTO_loads_colon_issue() {
+    $this->load_pto_mini();
 
-      $exists = db_select('chado.cv', 'c')
-        ->fields('c', ['cv_id'])
-        ->condition('name', 'core_test_PTO_mini')
-        ->execute()
-        ->fetchField();
-      $this->assertNotFalse($exists);
+    $exists = db_select('chado.cv', 'c')
+      ->fields('c', ['cv_id'])
+      ->condition('name', 'core_test_PTO_mini')
+      ->execute()
+      ->fetchField();
+    $this->assertNotFalse($exists);
 
-      //hte colon splitting issue: a new CV will created named fatty acid 18
-      $exists = db_select('chado.cv', 'c')
-        ->fields('c', ['cv_id'])
-        ->condition('name', 'fatty acid 18')
-        ->execute()
-        ->fetchField();
-      $this->assertFalse($exists);
+    //hte colon splitting issue: a new CV will created named fatty acid 18
+    $exists = db_select('chado.cv', 'c')
+      ->fields('c', ['cv_id'])
+      ->condition('name', 'fatty acid 18')
+      ->execute()
+      ->fetchField();
+    $this->assertFalse($exists);
 
-    }
+  }
 
   /**
    * @group obo
    */
 
-   public function testGO_SLIM_load() {
-     $this->load_goslim_plant();
+  public function testGO_SLIM_load() {
+    $this->load_goslim_plant();
 
-     $exists = db_select('chado.cv', 'c')
-       ->fields('c', ['cv_id'])
-       ->condition('name', 'core_test_goslim_plant')
-       ->execute()
-       ->fetchField();
-     $this->assertNotFalse($exists);
-   }
+    $exists = db_select('chado.cv', 'c')
+      ->fields('c', ['cv_id'])
+      ->condition('name', 'core_test_goslim_plant')
+      ->execute()
+      ->fetchField();
+    $this->assertNotFalse($exists);
+  }
 
   private function load_pto_mini() {
 
@@ -102,6 +102,24 @@ class OBOImporterTest extends TripalTestCase {
     $importer->create($run_args);
     $importer->prepareFiles();
     $importer->run();
+
+  }
+
+  public function test_relationships_in_SO_exist() {
+   $sql = " SELECT CVT.name, DB.name, DBX.accession, CVTSYN.synonym
+FROM cvterm CVT
+  INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+  INNER JOIN db on DB.db_id = DBX.db_id
+  LEFT JOIN cvtermsynonym CVTSYN on CVTSYN.cvterm_id = CVT.cvterm_id
+WHERE DB.name = 'SO' and CVT.name = 'supercontig'
+ORDER BY DBX.accession";
+
+
+   $results = chado_db_select($sql);
+
+   $this->assertNotNull($results);
+   $this->assertNotEmpty($results);
+   $this->assertEquals("scaffold", $results->synonym);
 
   }
 
