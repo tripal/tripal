@@ -3197,7 +3197,7 @@ function tripal_chado_form_tripalbundle_form_alter(&$form, $form_state) {
 /**
  * Implements hook_field_views_data_alter();
  */
-function tripal_chado_field_views_data_alter(&$result, $field, $module) {
+function tripal_chado_field_views_data_alter(&$result, $field) {
 
   // This module creates the data__image field for managing images on
   // bio_data content types. But we want it to render correctly
