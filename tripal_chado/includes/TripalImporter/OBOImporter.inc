@@ -1564,16 +1564,10 @@ class OBOImporter extends TripalImporter {
         // If we can't find the term in the database then do an EBI lookup.
         else {          
           $stanza = $this->findEBITerm($id);
-          $db_name = $stanza['db_name'][0];
-          $db = $this->all_dbs[$db_name];
-          if (!$db){
-            $db = $this->addDB($short_name);
-          }
-          $cv_name = $stanza['namespace'][0];
-          $cv = $this->all_cvs[$cv_name];
-          if (!$cv){
-            $cv = $this->addCV($cv_name);
-          }
+          
+          // Make sure the DBs and CVs exist and are added to our cache.
+          $this->addDB($stanza['db_name'][0]);
+          $this->addCV($stanza['namespace'][0]);
         }
       }
       // If the term belongs to this OBO then let's set the 'db_name'.
@@ -1994,6 +1988,7 @@ class OBOImporter extends TripalImporter {
       $db = $this->all_dbs[$dbname];
     }
     else {
+      // If it's not in the cache we can assume it doesn't exist and insert.
       $db = new ChadoRecord('db');
       $db->setValues(['name' => $dbname]);
       $db->insert();
@@ -2018,14 +2013,21 @@ class OBOImporter extends TripalImporter {
     // adding a new CV or DB.
     
     // Add the CV record if it doesn't exist.
-    $cv = new ChadoRecord('cv');
-    $cv->setValues(['name' => $cvname]);
-    if (!$cv->find()) {
-      $cv->insert();
+    $cv = NULL;
+    if (array_key_exists($cvname, $this->all_cvs)) {
+      $cv = $this->all_dbs[$cvname];
     }
-    $this->all_cvs[$cvname] = (object) $cv->getValues();
-    $this->obo_namespaces[$cvname] = $cv->getID();
-    return $cv->getValues();
+    else {
+      // If it's not in the cache we can assume it doesn't exist and insert.
+      $cv = new ChadoRecord('cv');
+      $cv->setValues(['name' => $cvname]);
+      $cv->insert();
+      $cv = (object) $cv->getValues();
+      $this->all_cvs[$cvname] = $cv;
+      $this->obo_namespaces[$cvname] = $cv->getID();
+    }
+    
+    return $cv;
   }
   
   /**
