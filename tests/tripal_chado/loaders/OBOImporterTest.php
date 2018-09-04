@@ -104,7 +104,7 @@ class OBOImporterTest extends TripalTestCase {
 
     $this->load_obo($name, $path);
 
-   $sql = " SELECT CVT.name, DB.name, DBX.accession, CVTSYN.synonym
+   $sql = "SELECT CVT.name, CVTSYN.synonym
 FROM {cvterm} CVT
   INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
   INNER JOIN {db} on DB.db_id = DBX.db_id
@@ -113,11 +113,12 @@ WHERE DB.name = 'SO' and CVT.name = 'supercontig'
 ORDER BY DBX.accession";
 
 
-   $results = chado_db_select($sql);
+   $results = chado_query($sql)->fetchAll();
+  $result = $results[0];
 
-   $this->assertNotNull($results);
-   $this->assertNotEmpty($results);
-   $this->assertEquals("scaffold", $results->synonym);
+   $this->assertNotNull($result);
+   $this->assertNotEmpty($result);
+   $this->assertEquals("scaffold", $result->synonym);
 
   }
 
