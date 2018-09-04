@@ -49,7 +49,7 @@ before_script:
 
 script:
   # Run the drush server
-  - drush runserver 127.0.0.1:8888 &
+  - php -S 127.0.0.1:8888 &
   # Link our repo to the modules directory
   - mv ../tripal sites/all/modules/tripal
   - curl http://127.0.0.1:8888
