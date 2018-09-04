@@ -173,6 +173,13 @@ class OBOImporter extends TripalImporter {
    */
   private $used_terms = [];
   
+  
+  /**
+   * An array of base IRIs returned from the EBI OLS lookup servcie.  We 
+   * don't want to continually query OLS for the same ontology base IRIs.
+   */
+  private $baseIRIs = [];
+  
   /**
    * A flag to keep track if the user was warned about slownesss when doing
    * EBI Lookups.
@@ -940,89 +947,76 @@ class OBOImporter extends TripalImporter {
     // Get the short name and accession for the term.
     $pair = explode(":", $id, 2);
     $short_name = $pair[0];
-    $accession_num = $pair[1];
+    $accession = $pair[1];
     
-    // Check for the ID of the term in EBI.
-    $oterm = NULL;
-    $results = $this->oboEbiLookup($id, 'term');
-    
-    // If this term is not defined by this ontology then we shouldn't 
-    // be creating a new stanza to represent it.
-    if ($results['is_defining_ontology'] != 1) {
-      return FALSE;
+    // First get the ontology so we can build an IRI for the term
+    $base_iri = '';
+    $ontologyID = '';
+    if (array_key_exists($short_name, $this->baseIRIs)) {
+      list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
+    }
+    else {
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $short_name;
+      $response = drupal_http_request($full_url, []);
+      if (!$response) {
+        throw new Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !ontology', 
+          ['!ontology' => $short_name]));
+      }
+      $ontology_results = drupal_json_decode($response->data);
+      if ($ontology_results['error']) {
+        throw new Exception(t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
+          'EBI Reported: !message. ' .
+          'Consider finding the OBO file for this ontology and manually loading it first.',
+          ['!message' => $results['message'], '!short_name' => $short_name]));
+      }
+      $base_iri = $ontology_results['config']['baseUris'][0];
+      $ontologyID = $ontology_results['ontologyId'];
+      $this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
     }
     
-    if ($results['label']) {
-      $oterm = $results;
+    // Next get the term.
+    $iri = urlencode(urlencode($base_iri . $accession));
+    $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
+    $response = drupal_http_request($full_url, []);
+    if(!$response){
+      throw new Exception(t('Did not get a response from EBI OLS trying to lookup term: !id',
+        ['!id' => $id]));
+    }
+    $results = drupal_json_decode($response->data);
+    
+    // If EBI sent an error message then throw an error.
+    if ($results['error']) {
+      print_r($ontology_results);
+      print_r($results);
+      throw new Exception(t('Cannot find the term via an EBI OLS lookup: !term. ' .
+        'EBI Reported: !message.' .
+        'Consider finding the OBO file for this ontology and manually loading it first.',
+        ['!message' => $results['message'], '!term' => $id]));
     }
 
-    
-   /*  // If we did not get a name for the term from a direct term
-    // lookup then let's try a query.
-    if (!$oterm) {
-      $results = $this->oboEbiLookup($id, 'query');
-      if (array_key_exists('docs', $results)) {
-        if (!empty($results['response']['docs'])) {
-          if (count($results['response']['docs']) > 1) {
-            foreach ($results['response']['docs'] as $doc) {
-              if ($doc['obo_id'] == $t['id']) {
-                $external = TRUE;
-                $oterm = $doc;
-              }
-            }
-          }
-          else {
-            $external = true;
-            $oterm = $results['response']['docs'][0];
-          }
-        }
-      }
-    }
-    
-    // If the accession could not be found in EBI.
-    if ($results['response']['numFound'] == 0 && !isset($results['label'])) {
-      // The first search doesn't work, so let's try a broader one.
-      $results = $this->oboEbiLookup($t['id'], 'query-non-local');
-      if (!empty($results)) {
-        if (array_key_exists('docs', $results)) {
-          if (!empty($results['docs'])) {
-            $accession = $t['id'];
-            $accession_underscore = str_replace(":", "_", $accession);
-            foreach ($results['response']['docs'] as $item) {
-              if ($item['label'] != $accession && $item['label'] != $accession_underscore) {
-                // Found the first place a label is other than the accession 
-                // is used, so take that info and then end the loop.
-                $external = TRUE;
-                $oterm = $item;
-                break;
-              }
-            }
-          }
-        }
-      }
-    } */
-    // If we found a term then return it.
-    if ($oterm) {
-      // Make an OBO stanza array as if this term were in the OBO file and
-      // return it.    
-      $stanza = [];
-      $stanza['id'][] = $id;
-      $stanza['name'][] = $oterm['label'];
-      $stanza['def'][] = $oterm['def'];
-      $stanza['namespace'][] = $oterm['ontology_name'];
-      $stanza['is_obsolete'][] = $oterm['is_obsolete'];
-      $stanza['subset'][] =  $oterm['subset'];
-      $stanza['db_name'][] = $short_name;
+    // TODO: what do we do if the term is not defined by this ontology?
+    if ($results['is_defining_ontology'] != 1) {
       
-      // If this term has been replaced then get the new term.
-      if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
-        $replaced_by = $results['term_replaced_by'];
-        $replaced_by = preg_replace('/_/', ':', $replaced_by);
-        $stanza = $this->findEBITerm($replaced_by);
-      }
-      return $stanza;
     }
-    return FALSE;
+  
+    // Make an OBO stanza array as if this term were in the OBO file and
+    // return it.    
+    $stanza = [];
+    $stanza['id'][] = $id;
+    $stanza['name'][] = $results['label'];
+    $stanza['def'][] = $results['def'];
+    $stanza['namespace'][] = $results['ontology_name'];
+    $stanza['is_obsolete'][] = $results['is_obsolete'];
+    $stanza['subset'][] =  $results['subset'];
+    $stanza['db_name'][] = $short_name;
+    
+    // If this term has been replaced then get the new term.
+    if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
+      $replaced_by = $results['term_replaced_by'];
+      $replaced_by = preg_replace('/_/', ':', $replaced_by);
+      $stanza = $this->findEBITerm($replaced_by);
+    }
+    return $stanza;
   }
   
   /**
@@ -1248,7 +1242,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('alt_id', $stanza)) {
       foreach ($stanza['alt_id'] as $alt_id) {
-        $this->addAltID($cvterm_id, $alt_id);
+        $this->addAltID($id, $cvterm_id, $alt_id);
       }
     }
 
@@ -1257,7 +1251,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('synonym', $stanza)) {
       foreach ($stanza['synonym'] as $synonym) {
-        $this->addSynonym($cvterm_id, $synonym);
+        $this->addSynonym($id, $cvterm_id, $synonym);
       }
     }
 
@@ -1267,7 +1261,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('exact_synonym', $stanza)) {
       foreach ($stanza['exact_synonym'] as $synonym) {
         $fixed = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 EXACT $2', $synonym);
-        $this->addSynonym($cvterm_id, $fixed);
+        $this->addSynonym($id, $cvterm_id, $fixed);
       }
     }
     
@@ -1277,7 +1271,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('narrow_synonym', $stanza)) {
       foreach ($stanza['narrow_synonym'] as $synonym) {
         $fixed = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 NARROW $2', $synonym);
-        $this->addSynonym($cvterm_id, $fixed);
+        $this->addSynonym($id, $cvterm_id, $fixed);
       }
     }
     
@@ -1287,7 +1281,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('broad_synonym', $stanza)) {
       foreach ($stanza['broad_synonym'] as $synonym) {
         $fixed = preg_replace('/^\s*(\".+?\")(.*?)$/', '$1 BROAD $2', $synonym);
-        $this->addSynonym($cvterm_id, $fixed);
+        $this->addSynonym($id, $cvterm_id, $fixed);
       }
     }
 
@@ -1297,7 +1291,7 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('comment', $stanza)) {
       $comments = $stanza['comment'];
       foreach ($comments as $rank => $comment) {
-        $this->addComment($cvterm_id, $comment, $rank);
+        $this->addComment($id, $cvterm_id, $comment, $rank);
       }
     }
 
@@ -1306,7 +1300,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('xref', $stanza)) {
       foreach ($stanza['xref'] as $xref) {
-        $this->addXref($cvterm_id, $xref);
+        $this->addXref($id, $cvterm_id, $xref);
       }
     }
 
@@ -1315,7 +1309,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('xref_analog', $stanza)) {
       foreach ($stanza['xref_analog'] as $xref) {
-        $this->addXref($cvterm_id, $xref);
+        $this->addXref($id, $cvterm_id, $xref);
       }
     }
     
@@ -1324,7 +1318,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('xref_unk', $stanza)) {
       foreach ($stanza['xref_unk'] as $xref) {
-        $this->addXref($cvterm_id, $xref);
+        $this->addXref($id, $cvterm_id, $xref);
       }
     }
     
@@ -1333,7 +1327,7 @@ class OBOImporter extends TripalImporter {
     //
     if (array_key_exists('subset', $stanza)) {
       foreach ($stanza['subset'] as $subset) {
-        $this->addSubset($cvterm_id, $subset);
+        $this->addSubset($id, $cvterm_id, $subset);
       }
     }
     
@@ -1414,8 +1408,17 @@ class OBOImporter extends TripalImporter {
       'subject_id' => $cvterm_id,
       'object_id'  => $obj_cvterm_id
     ]);
-    $cvterm_relationship->insert();
-    return TRUE;
+    
+    // If the insert fails then catch the error and generate a more meaningful
+    // message that helps with debugging.
+    try {
+      $cvterm_relationship->insert();
+    }
+    catch (Exception $e) {
+      throw new Exception(t('Cannot add relationship: "!source !rel !object". ' .
+        'ERROR: !error.',
+        ['!source' => $id, '!rel' => $rel_id, '!object' => $obj_id, '!error' => $e->getMessage()]));
+    }
   }
 
   /**
@@ -1501,7 +1504,7 @@ class OBOImporter extends TripalImporter {
    *   The stanza from the OBO file for the term.
    * @throws Exception
    */
-  private function addCacheTermStanza($stanza, $type) {
+  private function cacheTermStanza($stanza, $type) {
 
     // Make sure we have defaults.
     if (!$this->default_namespace) {
@@ -1538,17 +1541,7 @@ class OBOImporter extends TripalImporter {
         }
         // If we can't find the term in the database then do an EBI lookup.
         else {
-
-          // If we found a term then let's create a new stanza as if it existed
-          // in the original OBO file but with all the necessary details.
-          $oterm = $this->findEBITerm($id);
-          if ($oterm) {
-            $stanza = $oterm;
-          }
-          else {
-            throw new Exception(t('Cannot find the term defined in the ontology or via an EBI OLS lookup: !term', 
-              ['!term' => $id]));
-          }
+          $stanza = $this->findEBITerm($id);
         }
       }
       // If the term belongs to this OBO then let's set the 'db_name'.
@@ -1585,15 +1578,35 @@ class OBOImporter extends TripalImporter {
     // We need to remove those if they exist.
     if (array_key_exists('is_a', $stanza)) {
       foreach ($stanza['is_a'] as $index => $is_a) {
-        $stanza['is_a'][$index] = preg_replace('/\{.+?\}/', '', $is_a);
+        $stanza['is_a'][$index] = trim(preg_replace('/\{.+?\}/', '', $is_a));
       }
     }
     if (array_key_exists('relationship', $stanza)) {
       foreach ($stanza['relationship'] as $index => $relationship) {
-        $stanza['relationship'][$index] = preg_replace('/\{.+?\}/', '', $relationship);
+        $stanza['relationship'][$index] = trim(preg_replace('/\{.+?\}/', '', $relationship));
       }
     }
     
+    // Clean up any synonym definitions. We only handle the synonym in
+    // quotes and the type.
+    if (array_key_exists('synonym', $stanza)) {
+      foreach ($stanza['synonym'] as $index => $synonym) {
+        if (preg_match('/\"(.*?)\".*(EXACT|NARROW|BROAD|RELATED)/', $synonym, $matches)) {
+          $stanza['synonym'][$index] = '"' . $matches[1] . '" ' . $maches[2];
+        }
+      }
+    }
+    
+    // Now before saving, remove any duplicates.  Sometimes the OBOs have
+    // the same item duplicated in the stanza multiple times. This will 
+    // result in duplicate contraint violations in the tables. We can either
+    // check on every insert if the record exists increasing loading time or
+    // remove duplicates here.
+    foreach ($stanza as $key => $values) {
+      $stanza[$key] = array_unique($values);
+    }
+    
+
     $this->termStanzaCache['ids'][$id] = $stanza;
     $this->termStanzaCache['count'][$type]++;
     $this->termStanzaCache['types'][$type][] = $id;
@@ -1666,13 +1679,13 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addSynonym($cvterm_id, $synonym) {
+  private function addSynonym($id, $cvterm_id, $synonym) {
     $def = $synonym;
     $syn_type = '';
 
     // Separate out the synonym definition and type (e.g. EXACT).
     $matches = [];
-    if (preg_match('/^\s*"(.*)"\s+(.*?)\s+.*$/', $synonym, $matches)) {
+    if (preg_match('/\"(.*?)\".*(EXACT|NARROW|BROAD|RELATED)/', $synonym, $matches)) {
       $def = $matches[1];
       $syn_type = $matches[2];
     }
@@ -1690,7 +1703,17 @@ class OBOImporter extends TripalImporter {
       'synonym' => $def,
       'type_id' => $syn_type->cvterm_id
     ]);
-    $cvtermsynonym->insert();
+    
+    // If the insert fails then catch the error and generate a more meaningful
+    // message that helps with debugging.
+    try {
+      $cvtermsynonym->insert();
+    }
+    catch (Exception $e) {
+      throw new Exception(t('Cannot add synonym, "!synonym" to term: !id. ' .
+        'ERROR: !error.',
+        ['!synonym' => $def, '!id' => $id, '!error' => $e->getMessage()]));
+    }
   }
 
   /**
@@ -1720,7 +1743,6 @@ class OBOImporter extends TripalImporter {
     $this->setTotalItems($filesize);
     $this->setItemsHandled(0);
     $this->setInterval(5);
-    
 
     // iterate through the lines in the OBO file and parse the stanzas
     $fh = fopen($obo_file, 'r');
@@ -1764,7 +1786,7 @@ class OBOImporter extends TripalImporter {
             $cv = $this->all_cvs[$namespace];
             $this->obo_namespaces[$namespace] = $cv->cv_id;
           }
-          $this->addCacheTermStanza($stanza, $type);
+          $this->cacheTermStanza($stanza, $type);
           
         }
         
@@ -1810,12 +1832,16 @@ class OBOImporter extends TripalImporter {
         $cv = $this->all_cvs[$namespace];
         $this->obo_namespaces[$namespace] = $cv->cv_id;
       }
-      $this->addCacheTermStanza($stanza, $type);    
+      $this->cacheTermStanza($stanza, $type);    
       $this->setItemsHandled($num_read);
     }
     
+    // Make sure there are CV records for all namespaces.
     $message = t('Found the following namespaces: !namespaces.', 
       ['!namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
+    foreach ($this->obo_namespaces as $namespace => $cv_id) {
+      $this->addCV($namespace);
+    }
     $this->logMessage($message);
   }
   
@@ -1851,7 +1877,7 @@ class OBOImporter extends TripalImporter {
         foreach ($stanza['is_a'] as $object_term) {
           $rstanza = [];
           $rstanza['id'][] = $object_term;
-          $this->addCacheTermStanza($rstanza, 'Term');
+          $this->cacheTermStanza($rstanza, 'Term');
         }
       }
       
@@ -1865,11 +1891,11 @@ class OBOImporter extends TripalImporter {
           
           $rstanza = [];
           $rstanza['id'][] = $rel_term;
-          $this->addCacheTermStanza($rstanza, 'Typedef');
+          $this->cacheTermStanza($rstanza, 'Typedef');
           
           $rstanza = [];
           $rstanza['id'][] = $object_term;
-          $this->addCacheTermStanza($rstanza, 'Term');
+          $this->cacheTermStanza($rstanza, 'Term');
         }
       }
     }
@@ -1884,55 +1910,10 @@ class OBOImporter extends TripalImporter {
       $stanza['name'][] = 'is_a';
       $stanza['namespace'][] = $this->default_namespace;
       $stanza['db_name'][] = $this->default_db;
-      $this->addCacheTermStanza($stanza, 'Typedef');
+      $this->cacheTermStanza($stanza, 'Typedef');
     }
   }
-  
-  /**
-   * Adds a new namespace to the database by performing an EBI Lookup.
-   * 
-   * @param $namespace
-   */
-  private function addNamespace($namespace) {
-    // The controlled vocabulary is not in the cv table and needs to be added.
-    $ontology_info = $this->oboEbiLookup($namespace, 'ontology');
-    if (!empty($ontology_info['config'])){
-      // CV Name.
-      if (array_key_exists('namespace', $ontology_info['config'])) {
-        $cv_info = $ontology_info['config']['namespace'];
-      }
-      elseif (array_key_exists('default-namespace', $ontology_info['config']['annotations'])) {
-        $cv_info = $ontology_info['config']['annotations']['default-namespace'];
-      }
-      
-      //CV Description.
-      if (array_key_exists('description', $ontology_info['config'])) {
-        $description = $ontology_info['config']['description'];
-      }
-      else {
-        $description = '';
-      }
-      $cv_returned = chado_insert_cv($cv_info, $description);
-      if($cv_returned) {
-        $this->all_cvs[$cv_returned->name] = $cv_returned;
-        
-        $namespace = $cv_returned->name;
-        // Now add the db entry.
-        $values = array(
-          'name' => $ontology_info['config']['preferredPrefix'],
-          'description' => $ontology_info['config']['description'],
-          'url' => $ontology_info['config']['versionIri'],
-        );
-        
-        $db_returned = chado_insert_db($values);
-        if ($db_returned) {
-          $short_name = $db_returned->name;
-        }
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
+ 
   
   /**
    * Adds a property to the cvterm indicating it belongs to a subset.
@@ -1941,7 +1922,7 @@ class OBOImporter extends TripalImporter {
    * @param $subset
    *   The name of the subset.
    */
-  private function addSubset($cvterm_id, $subset) {
+  private function addSubset($id, $cvterm_id, $subset) {
     $cvtermprop = new ChadoRecord('cvtermprop');
     $cvtermprop->setValues([
       'cvterm_id' => $cvterm_id,
@@ -2024,7 +2005,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addAltID($cvterm_id, $alt_id) {
+  private function addAltID($id, $cvterm_id, $alt_id) {
     
     $dbname = '';
     $accession = '';
@@ -2071,7 +2052,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addXref($cvterm_id, $xref) {
+  private function addXref($id, $cvterm_id, $xref) {
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
@@ -2122,7 +2103,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function addComment($cvterm_id, $comment, $rank) {
+  private function addComment($id, $cvterm_id, $comment, $rank) {
 
     // Get the comment type id.
     $comment_type_id = $this->used_terms['rdfs:comment'];
