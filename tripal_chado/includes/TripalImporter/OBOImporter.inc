@@ -986,8 +986,6 @@ class OBOImporter extends TripalImporter {
     
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
-      print_r($ontology_results);
-      print_r($results);
       throw new Exception(t('Cannot find the term via an EBI OLS lookup: !term. ' .
         'EBI Reported: !message.' .
         'Consider finding the OBO file for this ontology and manually loading it first.',
@@ -1000,20 +998,45 @@ class OBOImporter extends TripalImporter {
     }
   
     // Make an OBO stanza array as if this term were in the OBO file and
-    // return it.    
+    // return it.   
+    $this->logMessage("Found !term in EBI OLS.", ['!term' => $id]);
     $stanza = [];
     $stanza['id'][] = $id;
     $stanza['name'][] = $results['label'];
     $stanza['def'][] = $results['def'];
     $stanza['namespace'][] = $results['ontology_name'];
     $stanza['is_obsolete'][] = $results['is_obsolete'];
-    $stanza['subset'][] =  $results['subset'];
     $stanza['db_name'][] = $short_name;
+    $stanza['comment'][] = 'Term obtained using the EBI Ontology Lookup Service.';
+    if (array_key_exists('subset', $results)) {
+      $stanza['subset'][] =  $results['subset'];
+    }
     
     // If this term has been replaced then get the new term.
     if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
       $replaced_by = $results['term_replaced_by'];
       $replaced_by = preg_replace('/_/', ':', $replaced_by);
+      $this->logMessage("The term, !term, is replaced by, !replaced",
+        ['!term' => $id, '!replaced' => $replaced_by]);
+      
+      // Before we try to look for the replacement term, let's try to find it.
+      // in our list of cached terms.
+      if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
+        $this->logMessage("Found term, !replaced in the term cache.", 
+          ['!term' => $id, '!replaced' => $replaced_by]);
+        return $this->termStanzaCache['ids'][$id];
+      }
+      
+      // Next look in the database.
+      $rpair = explode(":", $replaced_by, 2);
+      $found = $this->lookupTerm($rpair[0], $rpair[1]);
+      if ($found) {
+        $this->logMessage("Found term, !replaced in the local data store.",
+          ['!term' => $id, '!replaced' => $replaced_by]);
+        return $found;
+      }
+      
+      // Look for this new term.
       $stanza = $this->findEBITerm($replaced_by);
     }
     return $stanza;
@@ -1139,13 +1162,10 @@ class OBOImporter extends TripalImporter {
         'name' => $name,
       ]);
       if ($cvterm->find()) {
-        // We found the term so do an update and change the dbxref_id.
+        // We found the term so that means it's assocaited with a different
+        // dbxref.  We need to correct it.
         if (!$is_borrowed) {
-          // This is a borrowed term so just update the dbxref_id.
           $cvterm->setValue('dbxref_id', $dbxref->getID());
-          $cvterm->update();
-        }
-        else {
           $cvterm->setValue('definition', $definition);
           $cvterm->setValue('dbxref_id', $dbxref->getID());
           $cvterm->setValue('is_obsolete', $is_obsolete);
@@ -1196,9 +1216,17 @@ class OBOImporter extends TripalImporter {
     $cvterm_id = $this->saveTerm($stanza, FALSE);
     $id = $stanza['id'][0];
     
+    
+    // If this term was obtained from an EBI lookup then we do want to add the
+    // term and ancillary data.
+    $from_ebi = FALSE;
+    if (array_key_exists('from_ebi', $stanza)) {
+      $from_ebi = TRUE;
+    }
+    
     // If this term is borrowed from another ontology? If so then we will
     // not update it.
-    if ($this->isTermBorrowed($stanza)) {
+    if ($this->isTermBorrowed($stanza) and !$from_ebi) {
       return;
     }
     
@@ -1540,7 +1568,7 @@ class OBOImporter extends TripalImporter {
           $stanza = $found;
         }
         // If we can't find the term in the database then do an EBI lookup.
-        else {
+        else {          
           $stanza = $this->findEBITerm($id);
         }
       }
@@ -1929,8 +1957,17 @@ class OBOImporter extends TripalImporter {
       'type_id' => $this->used_terms['NCIT:C25693'],
       'value' => $subset
     ]);
-    $cvtermprop->insert();
-    return TRUE;
+
+    // If the insert fails then catch the error and generate a more meaningful
+    // message that helps with debugging.
+    try {
+      $cvtermprop->insert();
+    }
+    catch (Exception $e) {
+      throw new Exception(t('Cannot add subset, "!subset" to term: !id. ' .
+        'ERROR: !error.',
+        ['!subset' => $subset, '!id' => $id, '!error' => $e->getMessage()]));
+    }
   }
   
   /**
@@ -2116,7 +2153,17 @@ class OBOImporter extends TripalImporter {
       'value' => $comment,
       'rank' => $rank,
     ]);
-    $cvtermprop->insert();
+    
+    // If the insert fails then catch the error and generate a more meaningful
+    // message that helps with debugging.
+    try {
+      $cvtermprop->insert();
+    }
+    catch (Exception $e) {
+      throw new Exception(t('Cannot add comment, "!comment" to term: !id. ' .
+        'ERROR: !error.',
+        ['!comment' => $comment, '!id' => $id, '!error' => $e->getMessage()]));
+    }
   }
 
   /**
