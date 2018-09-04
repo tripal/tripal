@@ -701,7 +701,7 @@ function tripal_entity_form_submit($form, &$form_state) {
  * TripalEntityUIController class.
  */
 function tripal_add_page() {
-  
+   
   $select = "
     SELECT TB.id, TB.label, TBV.value as category, TV.name as variable_type, TV.description
     FROM tripal_bundle TB
@@ -717,8 +717,15 @@ function tripal_add_page() {
   $machine_name = preg_replace('/[^\w]/', '_', $category);
   $content['instructions'] = [
     '#type' => 'markup',
-    '#markup' => 'This page provides links for creating pages for Tripal supported content types. These types are organized by categories. Please note, however, that the categorization is the most common use for a given type. Some types may be useful in other "categoreis" as well.',
+    '#markup' => 'This page provides links for creating pages for Tripal ' . 
+      'supported content types. These types are organized by categories. ' . 
+      'Please note, however, that the categorization is the most common use ' . 
+      'for a given type. Some types may be useful in other "categoreis" as well.',
+    '#weight' => -10,
   ];
+  
+  // Create the "other" fieldset, and set it's weight to 100 so it goes to
+  // the bottom.
   $content[$machine_name . '_fieldset'] = [
     '#type' => 'fieldset',
     '#title' => $category,
@@ -731,7 +738,10 @@ function tripal_add_page() {
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
     ),
+    
   ]; 
+  
+  $category_weight = 0;
   while ($bundle = $bundles->fetchObject()) {
     if ($category != $bundle->category) {
       $category = $bundle->category;
@@ -750,17 +760,21 @@ function tripal_add_page() {
         '#attached' => array(
           'js' => array('misc/collapse.js', 'misc/form.js')
         ),
+        '#weight' => $category_weight,
       ]; 
+      $category_weight++;
     }
     $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
     if (!$bundle) {
       continue;
     }
-    $content[$machine_name . '_fieldset'][$bundle->name] = [
-      '#type' => 'item',
-      '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
-      '#description' => $bundle->term->definition
-    ];
+    if (user_access('create ' . $bundle->name)) {
+      $content[$machine_name . '_fieldset'][$bundle->name] = [
+        '#type' => 'item',
+        '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
+        '#description' => $bundle->term->definition
+      ];
+    }
   }
   return $content;
 }
