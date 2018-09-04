@@ -16,7 +16,12 @@ class OBOImporterTest extends TripalTestCase {
    * @ticket 525
    */
   public function test_PTO_loads_colon_issue() {
-    $this->load_pto_mini();
+
+    $name = 'core_test_PTO_mini';
+
+    $path = __DIR__ . '/../example_files/pto_colon.obo';
+
+    $this->load_obo($name, $path);
 
     $exists = db_select('chado.cv', 'c')
       ->fields('c', ['cv_id'])
@@ -40,7 +45,11 @@ class OBOImporterTest extends TripalTestCase {
    */
 
   public function testGO_SLIM_load() {
-    $this->load_goslim_plant();
+
+    $name = 'core_test_goslim_plant';
+    $path = 'http://www.geneontology.org/ontology/subsets/goslim_plant.obo';
+
+    $this->load_obo($name, $path);
 
     $exists = db_select('chado.cv', 'c')
       ->fields('c', ['cv_id'])
@@ -50,37 +59,8 @@ class OBOImporterTest extends TripalTestCase {
     $this->assertNotFalse($exists);
   }
 
-  private function load_pto_mini() {
 
-    $name = 'core_test_PTO_mini';
-
-    $path = __DIR__ . '/../example_files/pto_colon.obo';
-
-    $obo_id = db_select('public.tripal_cv_obo', 't')
-      ->fields('t', ['obo_id'])
-      ->condition('t.name', $name)->execute()->fetchField();
-
-    if (!$obo_id) {
-
-      $obo_id = db_insert('public.tripal_cv_obo')
-        ->fields(['name' => $name, 'path' => $path])
-        ->execute();
-    }
-
-    $run_args = ['obo_id' => $obo_id];
-
-    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
-    $importer = new \OBOImporter();
-    $importer->create($run_args);
-    $importer->prepareFiles();
-    $importer->run();
-
-  }
-
-  private function load_goslim_plant() {
-
-    $name = 'core_test_goslim_plant';
-    $path = 'http://www.geneontology.org/ontology/subsets/goslim_plant.obo';
+  private function load_obo($name,$path){
 
     $obo_id = db_select('public.tripal_cv_obo', 't')
       ->fields('t', ['obo_id'])
@@ -103,14 +83,32 @@ class OBOImporterTest extends TripalTestCase {
     $importer->prepareFiles();
     $importer->run();
 
+
   }
 
+  /**
+   * @throws \Exception
+   * @group obo
+   * @ticket 525
+   */
   public function test_relationships_in_SO_exist() {
+
+    // step 1: drop the SO CV and CASCADE.
+
+    $result = chado_query("DELETE FROM {cv} WHERE name = 'sequence'");
+    $result = chado_query("DELETE FROM {db} WHERE name = 'SO'");
+
+    // step 2: re-add SO.
+    $name = 'Sequence Ontology';
+    $path = 'http://purl.obolibrary.org/obo/so.obo';
+
+    $this->load_obo($name, $path);
+
    $sql = " SELECT CVT.name, DB.name, DBX.accession, CVTSYN.synonym
-FROM cvterm CVT
-  INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
-  INNER JOIN db on DB.db_id = DBX.db_id
-  LEFT JOIN cvtermsynonym CVTSYN on CVTSYN.cvterm_id = CVT.cvterm_id
+FROM {cvterm} CVT
+  INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
+  INNER JOIN {db} on DB.db_id = DBX.db_id
+  LEFT JOIN {cvtermsynonym} CVTSYN on CVTSYN.cvterm_id = CVT.cvterm_id
 WHERE DB.name = 'SO' and CVT.name = 'supercontig'
 ORDER BY DBX.accession";
 
