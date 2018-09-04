@@ -726,7 +726,7 @@ function tripal_add_page() {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
+      'class' => array('collapsible'),
     ),
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
@@ -745,7 +745,7 @@ function tripal_add_page() {
         '#collapsed' => TRUE,
         '#collapsible' => TRUE,
         '#attributes' => array(
-          'class' => array('collapsible', 'collapsed', 'tripal-content-list'),
+          'class' => array('collapsible', 'tripal-content-list'),
         ),
         '#attached' => array(
           'js' => array('misc/collapse.js', 'misc/form.js')
