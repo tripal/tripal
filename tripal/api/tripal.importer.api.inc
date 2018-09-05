@@ -185,7 +185,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
     tripal_tripal_cron_notification();
 
     // Clear the Drupal cache
-    cache_clear_all();
+    //cache_clear_all();
   }
   catch (Exception $e) {
     if ($job) {

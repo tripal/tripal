@@ -2824,6 +2824,9 @@ function tripal_chado_bundle_get_properties($table_name, $prop_table, $type_tabl
     $args[':cvterm_id'] = $cvterm_id;
     $props = chado_query($sql, $args);
   }
+  if (!$props) {
+    return [];
+  }
   
   // Iterate through all of the properties and do some final checks to see
   // which ones should be added.

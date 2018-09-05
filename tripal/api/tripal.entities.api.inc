@@ -326,6 +326,7 @@ function tripal_load_vocab_entity($values) {
  *     - name:  the bundle name (e.g. 'bio_data_234')
  *     - label: the bundle label (e.g. 'Organism')
  *     - term_id: the term ID to which the bundle belongs
+ *     - accession: the full acccession for the bundle (e.g. OBI:0100026)
  *
  * @return
  *   A TripalBundle entity object or NULL if not found.
@@ -347,6 +348,15 @@ function tripal_load_bundle_entity($values) {
   }
   if (array_key_exists('term_id', $values)) {
     $query->condition('tb.term_id', $values['term_id']);
+  }
+  if (array_key_exists('accession', $values)) {
+    list($vocab, $accession) = explode(':', $values['accession'], 2);
+    $term = tripal_load_term_entity(['vocabulary' => $vocab, 'accession' => $accession]);
+    if (!$term) {
+      return NULL;
+    }
+    $query->condition('tb.term_id', $term->id);
+    
   }
   $bundle = $query->execute()->fetchObject();
 
@@ -436,11 +446,11 @@ function tripal_create_bundle($args, $job = NULL) {
     'watchdog' => TRUE,
   ];
   
-  tripal_report_error('tripal_entities', TRIPAL_INFO, 
-   "Creation of a content type is performed using a database transaction. " .
-    "If it fails or is terminated prematurely then all insertions and " .
-    "updates are rolled back and will not be found in the database", 
-    [], $message_args);
+//   tripal_report_error('tripal_entities', TRIPAL_INFO, 
+//    "Creation of a content type is performed using a database transaction. " .
+//     "If it fails or is terminated prematurely then all insertions and " .
+//     "updates are rolled back and will not be found in the database", 
+//     [], $message_args);
 
   $transaction = db_transaction();
   try {
@@ -530,7 +540,12 @@ function tripal_create_bundle($args, $job = NULL) {
         'Unable to load Tripal Bundle :name after cache clear.', array(':name' => $bundle_name), $message_args);
       return FALSE;
     }
+    
+    // Set the bundle category
+    $category = array_key_exists('bundle_category', $args) ? $args['bundle_category'] : 'Other';
+    tripal_set_bundle_variable($variable_name, $bundle->id, $category);
 
+    // Attache the bundle fields.
     tripal_create_bundle_fields($bundle, $term);
 
     // Specifically commiting here since we have a fully featured bundle.
