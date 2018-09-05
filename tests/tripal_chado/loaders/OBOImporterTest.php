@@ -53,10 +53,37 @@ class OBOImporterTest extends TripalTestCase {
 
     $exists = db_select('chado.cv', 'c')
       ->fields('c', ['cv_id'])
-      ->condition('name', 'core_test_goslim_plant')
+      ->condition('name', 'biological_process')
       ->execute()
       ->fetchField();
     $this->assertNotFalse($exists);
+    
+    $exists = db_select('chado.cv', 'c')
+      ->fields('c', ['cv_id'])
+      ->condition('name', 'cellular_component')
+      ->execute()
+      ->fetchField();
+    $this->assertNotFalse($exists);
+    
+    $exists = db_select('chado.cv', 'c')
+      ->fields('c', ['cv_id'])
+      ->condition('name', 'molecular_function')
+      ->execute()
+      ->fetchField();
+    $this->assertNotFalse($exists);
+    
+    
+    $sql = "
+      SELECT DISTINCT CVTP.value
+      FROM {cvtermprop} CVTP
+        INNER JOIN {cvterm} CVTPT on CVTPT.cvterm_id = CVTP.type_id
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = CVTP.cvterm_id
+        INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+        INNER JOIN {db} DB on DB.db_id = DBX.db_id
+      WHERE CVTPT.name = 'Subgroup' and DB.name = 'GO' and CVTP.value = 'goslim_plant'
+    ";
+    $exists = chado_query($sql)->fetchField();
+    $this->assertNotFalse($exists);    
   }
 
 
