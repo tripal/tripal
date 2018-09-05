@@ -187,6 +187,14 @@ class OBOImporter extends TripalImporter {
    * @var string
    */
   private $ebi_warned = FALSE;
+  
+  /**
+   * A flag that indicates if this ontology is just a subset of a much larger
+   * one. Examples include the GO slims.
+   *  
+   * @var string
+   */
+  private $is_subset = FALSE;
 
   /**
    * @see TripalImporter::form()
@@ -809,6 +817,15 @@ class OBOImporter extends TripalImporter {
     }
     if (array_key_exists('default-namespace', $header)) {
       $namespace = $header['default-namespace'][0];
+    }
+    
+    // The OBO specification allows the 'ontology' header tag to be nested for
+    // subsets (e.g. go/subsets/goslim_plant).  We need to simplify that down
+    // to the top-level item. 
+    $matches = [];
+    if (preg_match('/^(.+?)\/.*/', $short_name, $matches)) {
+      $short_name = $matches[1];
+      $this->is_subset = TRUE;
     }
     
     // If we have the DB short name (or ontology header) but not the default
