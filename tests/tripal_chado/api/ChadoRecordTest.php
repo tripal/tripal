@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use PHPUnit\Exception;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
@@ -39,8 +40,6 @@ class ChadoRecordTest extends TripalTestCase {
    * @dataProvider recordProvider
    */
   public function testInitClass($table, $id, $factory) {
-    $record = new \ChadoRecord($table);
-    $this->assertNotNull($record);
     $record = new \ChadoRecord($table, $id);
     $this->assertNotNull($record);
   }
@@ -116,16 +115,51 @@ class ChadoRecordTest extends TripalTestCase {
     if (!$id) {
       $returned_id = $record->getValue($table . '_id');
       $this->assertNull($returned_id);
-      //need to set first.
-
     }
     else {
-
       foreach ($factory as $key => $value) {
         $returned_value = $record->getValue($key);
         $this->assertEquals($value, $returned_value);
       }
     }
+  }
+
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   * @dataProvider recordProvider
+   */
+
+  public function testFind($table, $id, $factory) {
+
+    $record = new \ChadoRecord($table);
+
+    $values = (array) $factory;
+    $record->setValues($values);
+    if ($id) {
+      $found = $record->find();
+
+      $this->assertNotNull($found);
+      $this->assertEquals(1, $found);
+    }
+    else {
+      //There isnt a record in the DB, so find should throw an exception
+      $record->setValue($table . '_id', 'unfindable');
+      $this->expectException(Exception);
+      $found = $record->find();
+    }
+  }
+
+  /**
+   * This test will not use providers.
+   */
+  public function testSetValue() {
+
+    $record = new \ChadoRecord('feature');
+    $values = [];
+    $record->setValues($values);
+
   }
 
 }
