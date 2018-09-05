@@ -13,3 +13,4 @@ Developer's Guide
    dev_guide/custom_field
    dev_guide/custom_data_loader
    dev_guide/custom_web_services
+   dev_guide/tutorials
