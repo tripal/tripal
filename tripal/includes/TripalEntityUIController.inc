@@ -604,10 +604,10 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   return $form;
 }
 
- /**
-  * Implements hook_validate() for the tripal_entity_form.
-  */
- function tripal_entity_form_validate($form, &$form_state) {
+/**
+ * Implements hook_validate() for the tripal_entity_form.
+ */
+function tripal_entity_form_validate($form, &$form_state) {
 
    // If the user is cancelling or deleting the entity then don't validate.
    if (array_key_exists('clicked_button', $form_state) and
@@ -631,12 +631,12 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    catch (Exception $e) {
      form_set_error('author_date', 'Please provide a valid authored on date.');
    }
- }
+}
 
- /**
-  * Implements hook_submit() for the tripal_entity_form.
-  */
- function tripal_entity_form_submit($form, &$form_state) {
+/**
+ * Implements hook_submit() for the tripal_entity_form.
+ */
+function tripal_entity_form_submit($form, &$form_state) {
    $entity = $form_state['TripalEntity'];
 
    if ($form_state['clicked_button']['#name'] =='cancel_data') {
@@ -691,27 +691,116 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    else {
      drupal_set_message('Cannot save entity', 'error');
    }
+}
 
- }
 
+/**
+ * Provides a list of TripalEntity types (bundles) for the user to add.
+ *
+ * This function is a callback in a menu item which is set in the
+ * TripalEntityUIController class.
+ */
+function tripal_add_page() {
+  
+  // The content array to be returned.
+  $content = [];
+   
+  $content['instructions'] = [
+    '#type' => 'markup',
+    '#markup' => 'This page provides links for creating pages for Tripal ' . 
+      'supported content types. These content types are organized by categories. ' . 
+      'Please note, however, that the categorization is the most common use ' . 
+      'for a given type. Some types may be useful in other "categories" as well.',
+    '#weight' => -15,
+  ];
+  
 
- /**
-  * Provides a list of TripalEntity types (bundles) for the user to add.
-  *
-  * This function is a callback in a menu item which is set in the
-  * TripalEntityUIController class.
-  */
- function tripal_add_page() {
-   $item = menu_get_item();
-   $content = system_admin_menu_block($item);
-   // Bypass the node/add listing if only one content type is available.
-   if (count($content) == 1) {
-     $item = array_shift($content);
-     drupal_goto($item['href']);
-   }
-   return theme('tripal_add_list', array('content' => $content));
-
- }
+  // Get the list of categories.
+  $select = "
+    SELECT TBV.value as category
+    FROM tripal_bundle_variables TBV
+      INNER JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
+    WHERE TV.name = 'bundle_category'
+  ";
+  $categories = db_query($select);
+  
+  
+  // Build the fieldsets for the categories.
+  $fieldsets = [];
+  $category_weight = 1;
+  while ($category = $categories->fetchField()) {
+    $machine_name = preg_replace('/[^\w]/', '_', $category);
+    $fieldsets[$machine_name . '_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $category,
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+      '#attributes' => array(
+        'class' => array('collapsible', 'tripal-content-list'),
+      ),
+      '#attached' => array(
+        'js' => array('misc/collapse.js', 'misc/form.js')
+      ),
+      '#weight' => $category == 'General' ? -10 : $category_weight++,
+    ];
+  }
+  
+  // Create the "other" fieldset, and set it's weight to 100 so it goes to
+  // the bottom.
+  $fieldsets['Other_fieldset'] = [
+    '#type' => 'fieldset',
+    '#title' => 'Other',
+    '#weight' => 100,
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#attributes' => array(
+      'class' => array('collapsible'),
+    ),
+    '#attached' => array(
+      'js' => array('misc/collapse.js', 'misc/form.js')
+    ),
+  ]; 
+  
+  
+  // Get the list of bundles and iterate through them.
+  $select = "SELECT id, name, label FROM tripal_bundle ORDER BY label";
+  $bundles = db_query($select);
+  while ($bundle = $bundles->fetchObject()) {
+    
+    // Lookup the bundle category.
+    $sql = "
+      SELECT TBV.value as category
+      FROM tripal_bundle TB
+        INNER JOIN tripal_bundle_variables TBV on TB.id = TBV.bundle_id
+        INNER JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
+      WHERE TV.name = 'bundle_category' and TB.id = :id;
+    ";
+  
+    $category = db_query($sql, [':id' => $bundle->id])->fetchField();
+    if (!$category) {
+      $category = 'Other';
+    }
+    
+    $machine_name = preg_replace('/[^\w]/', '_', $category);
+    $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
+    if (!$bundle) {
+      continue;
+    }
+    if (user_access('create ' . $bundle->name)) {
+      if (!array_key_exists($machine_name . '_fieldset', $content)) {
+        $content[$machine_name . '_fieldset'] = $fieldsets[$machine_name . '_fieldset'];
+      }
+      $content[$machine_name . '_fieldset'][$bundle->name] = [
+        '#type' => 'item',
+        '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
+        '#description' => $bundle->term->definition
+      ];
+    }
+  }
+  
+  // Now iterate through the fieldsets and set their weight
+  return $content;
+}
 
  /**
   * Returns HTML for a list of available node types for node creation.

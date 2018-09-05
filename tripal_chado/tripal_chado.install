@@ -30,6 +30,8 @@ function tripal_chado_install() {
     ";
     chado_query($sql);
   }
+  
+  tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
 }
 
 /**
@@ -1600,7 +1602,93 @@ function tripal_chado_update_7329() {
   }
 }
 
-# tripal_chado_update_7330 is in PR #596 and adds categories for content types.
+/**
+ * Associates categories with content types.
+ */
+function tripal_chado_update_7330() {
+  try {
+    tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
+    
+    $bundles = [
+      'General' => [
+        // Organism
+        'OBI:0100026',
+        // Analyis
+        'operation:2945',
+        // Project
+        'NCIT:C47885',
+        // Study
+        'SIO:001066',
+        // Contact
+        'local:contact',
+        // Publication
+        'TPUB:0000002',
+        // Protocol
+        'sep:00101',        
+      ],
+      'Genomic' => [
+        // Gene
+        'SO:0000704',
+        // mRNA
+        'SO:0000234',
+        // Phylogenetci Tree
+        'data:0872',
+        // Physical Map
+        'data:1280',
+        // DNA Library
+        'NCIT:C16223',
+        // Genome Assembly
+        'operation:0525',
+        // Genome Annotation
+        'operation:0362',
+        // Genome Project
+        'local:Genome Project',                
+      ],
+      'Genetic' => [
+        // Genetic Map
+        'data:1278',
+        // QTL
+        'SO:0000771',
+        // Sequence Variant
+        'SO:0001060',
+        // Genetic Marker
+        'SO:0001645',
+        // Heritable Phenotypic Marker
+        'SO:0001500',        
+      ],
+      'Germplasm/Breeding' => [
+        // Germplasm Accession
+        'CO_010:0000044',
+        // Breeding Cross
+        'CO_010:0000255',
+        // Cutlivar
+        'CO_010:0000029',
+        // Recombinant Inbred Line
+        'CO_010:0000162',        
+      ],
+      'Expression' => [
+        // Biological Sample
+        'sep:00195',
+        // Assay
+        'OBI:0000070',
+        // Array Design 
+        'EFO:0000269',
+      ]
+    ];
+    foreach ($bundles as $category => $accessions) {
+      foreach ($accessions as $accession) {
+        $bundle = tripal_load_bundle_entity(['accession' => $accession]);
+        if ($bundle) {
+          tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
+        }
+      }      
+    }    
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 
 /**
  * Adds a base_type_id to the chado_bundle table.
