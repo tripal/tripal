@@ -701,34 +701,55 @@ function tripal_entity_form_submit($form, &$form_state) {
  * TripalEntityUIController class.
  */
 function tripal_add_page() {
-   
-  $select = "
-    SELECT TB.id, TB.label, TBV.value as category, TV.name as variable_type, TV.description
-    FROM tripal_bundle TB
-      LEFT JOIN tripal_bundle_variables TBV on TB.id = TBV.bundle_id
-      LEFT JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
-    WHERE TV.name = 'bundle_category'
-    ORDER BY TBV.value, TB.label 
-  ";
-  $bundles = db_query($select);  
   
+  // The content array to be returned.
   $content = [];
-  $category = 'Other';
-  $machine_name = preg_replace('/[^\w]/', '_', $category);
+   
   $content['instructions'] = [
     '#type' => 'markup',
     '#markup' => 'This page provides links for creating pages for Tripal ' . 
       'supported content types. These types are organized by categories. ' . 
       'Please note, however, that the categorization is the most common use ' . 
       'for a given type. Some types may be useful in other "categoreis" as well.',
-    '#weight' => -10,
+    '#weight' => -15,
   ];
+  
+
+  // Get the list of categories.
+  $select = "
+    SELECT TBV.value as category
+    FROM tripal_bundle_variables TBV
+      INNER JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
+    WHERE TV.name = 'bundle_category'
+  ";
+  $categories = db_query($select);
+  
+  
+  // Build the fieldsets for the categories.
+  $fieldsets = [];
+  $category_weight = 1;
+  while ($category = $categories->fetchField()) {
+    $machine_name = preg_replace('/[^\w]/', '_', $category);
+    $fieldsets[$machine_name . '_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $category,
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+      '#attributes' => array(
+        'class' => array('collapsible', 'tripal-content-list'),
+      ),
+      '#attached' => array(
+        'js' => array('misc/collapse.js', 'misc/form.js')
+      ),
+      '#weight' => $category == 'General' ? -10 : $category_weight++,
+    ];
+  }
   
   // Create the "other" fieldset, and set it's weight to 100 so it goes to
   // the bottom.
-  $content[$machine_name . '_fieldset'] = [
+  $fieldsets['Other_fieldset'] = [
     '#type' => 'fieldset',
-    '#title' => $category,
+    '#title' => 'Other',
     '#weight' => 100,
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
@@ -738,37 +759,37 @@ function tripal_add_page() {
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
     ),
-    
   ]; 
   
-  $category_weight = 0;
+  
+  // Get the list of bundles and iterate through them.
+  $select = "SELECT id, name, label FROM tripal_bundle ORDER BY label";
+  $bundles = db_query($select);
   while ($bundle = $bundles->fetchObject()) {
-    if ($category != $bundle->category) {
-      $category = $bundle->category;
-      if (!$category) {
-        $category = 'Other';
-      }
-      $machine_name = preg_replace('/[^\w]/', '_', $category);
-      $content[$machine_name . '_fieldset'] = [
-        '#type' => 'fieldset',
-        '#title' => $category,
-        '#collapsed' => TRUE,
-        '#collapsible' => TRUE,
-        '#attributes' => array(
-          'class' => array('collapsible', 'tripal-content-list'),
-        ),
-        '#attached' => array(
-          'js' => array('misc/collapse.js', 'misc/form.js')
-        ),
-        '#weight' => $category_weight,
-      ]; 
-      $category_weight++;
+    
+    // Lookup the bundle category.
+    $sql = "
+      SELECT TBV.value as category
+      FROM tripal_bundle TB
+        INNER JOIN tripal_bundle_variables TBV on TB.id = TBV.bundle_id
+        INNER JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
+      WHERE TV.name = 'bundle_category' and TB.id = :id;
+    ";
+  
+    $category = db_query($sql, [':id' => $bundle->id])->fetchField();
+    if (!$category) {
+      $category = 'Other';
     }
+    
+    $machine_name = preg_replace('/[^\w]/', '_', $category);
     $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
     if (!$bundle) {
       continue;
     }
     if (user_access('create ' . $bundle->name)) {
+      if (!array_key_exists($machine_name . '_fieldset', $content)) {
+        $content[$machine_name . '_fieldset'] = $fieldsets[$machine_name . '_fieldset'];
+      }
       $content[$machine_name . '_fieldset'][$bundle->name] = [
         '#type' => 'item',
         '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
@@ -776,6 +797,8 @@ function tripal_add_page() {
       ];
     }
   }
+  
+  // Now iterate through the fieldsets and set their weight
   return $content;
 }
 
