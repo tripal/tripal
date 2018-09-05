@@ -708,9 +708,9 @@ function tripal_add_page() {
   $content['instructions'] = [
     '#type' => 'markup',
     '#markup' => 'This page provides links for creating pages for Tripal ' . 
-      'supported content types. These types are organized by categories. ' . 
+      'supported content types. These content types are organized by categories. ' . 
       'Please note, however, that the categorization is the most common use ' . 
-      'for a given type. Some types may be useful in other "categoreis" as well.',
+      'for a given type. Some types may be useful in other "categories" as well.',
     '#weight' => -15,
   ];
   
