@@ -1,12 +1,14 @@
 <?php
 
 /**
- * Provide a class for basic querying of Chado; specifically, select, insert, update and delete.
+ * Provide a class for basic querying of Chado.
+ * 
+ * Specifically tihs class provides select, insert, update and delete.
  *
- * Eventually this class is meants to replace the existing chado_select_record(),
- * chado_insert_record(), chado_update_record() and chado_delete_record() API
- * functions to create a cleaner, more maintainable and more easily tested
- * interface to querying Chado.
+ * Eventually this class is meants to replace the existing 
+ * chado_select_record(), chado_insert_record(), chado_update_record() and 
+ * chado_delete_record() API functions to create a cleaner, more maintainable 
+ * and more easily tested interface to querying Chado.
  *
  * @todo Add documentation for save() and delete().
  *
@@ -505,6 +507,7 @@ class ChadoRecord {
         ['!column' => $column_name, '!table' => $this->table_name]);
       throw new Exception($message);
     }
+    
     // Remove from the missing list if it was there.
     elseif (isset($this->missing_required_cols[$column])) {
       unset($this->missing_required_cols[$column]);
@@ -593,6 +596,10 @@ class ChadoRecord {
         $this->values[$column] = $value;
       }
       $this->record_id = $record[$this->pkey];
+      
+      // We are no longer missing any required columns because we loaded
+      // from the database record.
+      $this->missing_required_col = [];
     }
 
     // Return the number of matches.
