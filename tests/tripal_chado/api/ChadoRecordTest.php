@@ -3,6 +3,7 @@
 namespace Tests;
 
 use PHPUnit\Exception;
+use Faker\Factory;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
@@ -21,13 +22,23 @@ class ChadoRecordTest extends TripalTestCase {
    */
   public function recordProvider() {
     //table, factory or NULL, record_id or NULL
-    $a = factory('chado.feature')->create();
-    $b = factory('chado.organism')->create();
+
+    $faker = \Faker\Factory::create();
+    $analysis = [
+      'name' => $faker->word,
+      'description' => $faker->text,
+      'program' => $faker->word,
+      'programversion' => $faker->word,
+    ];
+    $organism = [
+      'genus' => $faker->word,
+      'species' => $faker->word,
+      'common_name' => $faker->word,
+    ];
 
     return [
-      ['feature', NULL, NULL],
-      ['feature', $a->feature_id, $a],
-      ['organism', $b->organism_id, $b],
+      ['analysis', $analysis],
+      ['organism', $organism],
     ];
   }
 
@@ -39,10 +50,16 @@ class ChadoRecordTest extends TripalTestCase {
    * @group wip
    * @dataProvider recordProvider
    */
-  public function testInitClass($table, $id, $factory) {
-    $record = new \ChadoRecord($table, $id);
+  public function testInitClass($table, $values) {
+    $record = new \ChadoRecord($table);
+    $this->assertNotNull($record);
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+
+    $record = new \ChadoRecord($table, $chado_record->$record_column);
     $this->assertNotNull($record);
   }
+
 
   /**
    * @group api
@@ -52,8 +69,8 @@ class ChadoRecordTest extends TripalTestCase {
    * @dataProvider recordProvider
    */
 
-  public function testGetTable($table, $id, $factory) {
-    $record = new \ChadoRecord($table, $id);
+  public function testGetTable($table, $values) {
+    $record = new \ChadoRecord($table);
     $this->assertEquals($table, $record->getTable());
   }
 
@@ -65,15 +82,14 @@ class ChadoRecordTest extends TripalTestCase {
    *
    * @throws \Exception
    */
-  public function testGetID($table, $id, $factory) {
+  public function testGetID($table, $values) {
+    $chado_record = factory('chado.' . $table)->create();
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
+
     $record = new \ChadoRecord($table, $id);
     $returned_id = $record->getID();
-    if ($id) {
-      $this->assertEquals($id, $returned_id);
-    }
-    else {
-      $this->assertNull($returned_id);
-    }
+    $this->assertEquals($id, $returned_id);
   }
 
   /**
@@ -84,21 +100,17 @@ class ChadoRecordTest extends TripalTestCase {
    *
    *
    */
-  public function testGetValues($table, $id, $factory) {
+  public function testGetValues($table, $values) {
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
     $record = new \ChadoRecord($table, $id);
 
-    if (!$id) {
-      $returned_vals = $record->getValues();
-      $this->assertEmpty($returned_vals);
-    }
-    else {
-      $values = $record->getValues();
-      $this->assertNotEmpty($values);
-      foreach ($factory as $key => $value) {
-        $this->assertArrayHasKey($key, $values);
-        $this->assertEquals($value, $values[$key]);
-      }
-
+    $values = $record->getValues();
+    $this->assertNotEmpty($values);
+    foreach ($values as $key => $value) {
+      $this->assertArrayHasKey($key, $values);
+      $this->assertEquals($value, $values[$key]);
     }
   }
 
@@ -109,18 +121,16 @@ class ChadoRecordTest extends TripalTestCase {
    * @dataProvider recordProvider
    *
    */
-  public function testGetValue($table, $id, $factory) {
-    $record = new \ChadoRecord($table, $id);
+  public function testGetValue($table, $values) {
 
-    if (!$id) {
-      $returned_id = $record->getValue($table . '_id');
-      $this->assertNull($returned_id);
-    }
-    else {
-      foreach ($factory as $key => $value) {
-        $returned_value = $record->getValue($key);
-        $this->assertEquals($value, $returned_value);
-      }
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
+
+    $record = new \ChadoRecord($table, $id);
+    foreach ($values as $key => $value) {
+      $returned_value = $record->getValue($key);
+      $this->assertEquals($value, $returned_value);
     }
   }
 
@@ -131,35 +141,183 @@ class ChadoRecordTest extends TripalTestCase {
    * @dataProvider recordProvider
    */
 
-  public function testFind($table, $id, $factory) {
+  public function testFind($table, $values) {
+
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
 
     $record = new \ChadoRecord($table);
 
-    $values = (array) $factory;
     $record->setValues($values);
-    if ($id) {
-      $found = $record->find();
+    $found = $record->find();
 
-      $this->assertNotNull($found);
-      $this->assertEquals(1, $found);
-    }
-    else {
-      //There isnt a record in the DB, so find should throw an exception
-      $record->setValue($table . '_id', 'unfindable');
-      $this->expectException(Exception);
-      $found = $record->find();
+    $this->assertNotNull($found);
+    $this->assertEquals(1, $found);
+
+  }
+
+  /**
+   * Check that the find method throws an exception when it cant find anything.
+   *
+   * @throws \Exception
+   */
+
+  public function testFindFail() {
+    $table = 'organism';
+    $record = new \ChadoRecord($table);
+
+    $record->setValue($table . '_id', 'unfindable');
+    $this->expectException(Exception);
+    $found = $record->find();
+  }
+
+  /**
+   * @param $table
+   * @param $values
+   *
+   * @throws \Exception
+   */
+  public function testSetandGetValue($table, $values) {
+
+    $record = new \ChadoRecord($table);
+    $record->setValues($values);
+    $vals = $record->getValues();
+
+    foreach ($vals as $val_key => $val) {
+      $this->assertEquals($values[$val_key], $val, "The getValues did not match what was provided for setValues");
     }
   }
 
   /**
-   * This test will not use providers.
+   * Save should work for both an update and an insert
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
    */
-  public function testSetValue() {
-
-    $record = new \ChadoRecord('feature');
-    $values = [];
+  public function testSave($table, $values){
+    //first, test the insert case
+    $record = new \ChadoRecord($table);
     $record->setValues($values);
+    $record->save();
+    $record_column = $table.'_id';
 
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
+
+    //change the last key
+    //NOTE this will break if the last key isn't a string!
+    $values[$key] = 'new_value_that_i_wantTOBEUNIQUE';
+    $record->setValues($values);
+    $record->save();
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'Our record wasnt updated when saving!');
+  }
+
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
+   */
+  public function testInsert($table, $values){
+    //first, test the insert case
+    $record = new \ChadoRecord($table);
+    $record->setValues($values);
+    $record->insert();
+    $record_column = $table.'_id';
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
+
+    //If we insert again, it should fail
+    $this->expectException(EXCEPTION);
+    $record->insert();
+  }
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
+   */
+  public function testUpdate($table, $values){
+    $id = $this->genChadoRecord($table, $values);
+    $record = new \ChadoRecord($table, $id);
+    $record_column = $table.'_id';
+
+    //$dump_vals = $record->getValues();
+   // var_dump($dump_vals);
+
+    $key = array_keys($values)[0];
+    $string = 'some_random_new_string34792387';
+    $values[$key] = $string;
+
+    $record->setValues($values);
+    $record->update();
+
+    //$dump_vals = $record->getValues();
+   // var_dump($dump_vals);
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$key]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchField();
+    $this->assertNotFalse($result, 'we couldnt update our record.');
+    $this->assertEquals($string, $result);
+  }
+
+
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider recordProvider
+   *
+   */
+  public function testDelete($table, $values){
+    $id = $this->genChadoRecord($table, $values);
+    $record = new \ChadoRecord($table, $id);
+    $record_column = $table.'_id';
+
+    $record->delete();
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+   $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertEmpty($result, 'we couldnt delete our record!');
+  }
+
+
+  private function genChadoRecord($table, $values){
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
+    return $id;
   }
 
 }

@@ -128,6 +128,9 @@ class ChadoRecord {
    * 
    * @param string $table_name
    *   The name of the table that the record belongs to.
+   *
+   * @param string $record_id
+   *  An optional record ID if this record is already present in Chado.
    */
   public function __construct($table_name, $record_id = NULL) {
     
@@ -201,7 +204,7 @@ class ChadoRecord {
    *   The name of the table that the record belongs to.
    */
   public function getTable() {
-    return $this->table;
+    return $this->table_name;
   }
   
   /**
@@ -219,7 +222,7 @@ class ChadoRecord {
    * 
    * If the record already exists it will be updated. If the record does not
    * exist it will be inserted.  This function adds a bit more overhead by
-   * checking for the existance of the record and performing the appropriate
+   * checking for the existence of the record and performing the appropriate
    * action. You can save time by using the insert or update functions directly
    * if you only need to do one of those actions specifically.
    * 
