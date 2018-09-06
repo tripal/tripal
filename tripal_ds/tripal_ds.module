@@ -487,23 +487,6 @@ function tripal_ds_field_display_alter(&$display, $context){
         }
       }
     }
-    if ($field_name && ($ajax_variable == TRUE)) {
-      $item = field_get_items('TripalEntity', $context['entity'], $field_name);
-      $field = field_info_field($field_name);
-      if ($item) {
-        if (tripal_field_is_empty($item[0], $field)) {
-          $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
-          if (!empty($parent_field_info)) {
-            foreach ($parent_field_info as $parent_key => $parent_field) {
-               // We want to use JavaScript to remove the fields rather than
-               // CSS to hide them so that when users theme the table of
-               // contents using CSS they aren't theming empty rows.
-              drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
-            }
-          }
-        }
-      }
-    }
     drupal_add_js(array('tripal_ds' => array('tripal_field_settings_hide' => $hide_variable, 'tripal_field_settings_ajax' => $ajax_variable)), 'setting');
   }
 }
