@@ -1158,6 +1158,27 @@ class OBOImporter extends TripalImporter {
           $cvterm->setValue('name', $name);
           $cvterm->setValue('definition', $definition);
           $cvterm->setValue('is_obsolete', $is_obsolete);
+          // Before we update this cvterm we need to check if the 
+          // term changed names. An example occured with GO when
+          // "pexophage" (GO:000425 was previously GO:0030242) but
+          // the name was changed to "autophage of pexoxisome". The
+          // term "macropexophagy" (previously GO:000425) is no 
+          // longer its own term but a synonym of for the same
+          // accession.  "Autophagy of pexoxisome" is now GO:0030242.
+          // So, when we try to update GO:000425 to have the name
+          // "pexophage" it conflicts with the older term that
+          // has not yet been updated GO:0030242 which also has the
+          // name "pexophagy" and that will break the unique constraint
+          // on the cvterm table.
+          $check_cvterm = new ChadoRecord('cvterm');
+          $check_cvterm->setValues(['cv_id' => $cv->cv_id, 'name' => $name]);
+          if ($check_cvterm->find()) {
+             // Oh no, we have a naming conflict. Let's assume that this
+             // term will be updated by this OBO, so let's change the 
+             // name so this current term can be updated 
+             $check_cvterm->setValue('name', 'DEPRECATED: ' . $check_cvterm->getValue('name'));
+             $check_cvterm->update();
+          }
           $cvterm->update();
         }
       }
@@ -1188,6 +1209,15 @@ class OBOImporter extends TripalImporter {
         // We found the term so that means it's assocaited with a different
         // dbxref.  We need to correct it.
         if (!$is_borrowed) {
+          $old_dbxref = new ChadoRecord('dbxref');
+          $old_dbxref->setValues(['dbxref_id' => $cvterm->getValue('dbxref_id')]);
+          $old_dbxref->find();
+          $old_db = new ChadoRecord('db');
+          $old_db->setValues(['db_id' => $dbxref->getValue('db_id')]);
+          $old_db->find();
+          $this->logMessage('Correcting misassigned accession: !id => "!name". Previously was: !old_id.', 
+            ['!id' => $id, '!name' => $name, 
+             '!old_id' => $old_db->getValue('name') . ':' . $old_dbxref->getValue('accession')]);
           $cvterm->setValue('dbxref_id', $dbxref->getID());
           $cvterm->setValue('definition', $definition);
           $cvterm->setValue('dbxref_id', $dbxref->getID());
