@@ -173,8 +173,12 @@ class ChadoRecordTest extends TripalTestCase {
   }
 
   /**
-   * @param $table
-   * @param $values
+   *
+   *
+   * @group chado
+   * @group api
+   *
+   * @dataProvider recordProvider
    *
    * @throws \Exception
    */
@@ -191,7 +195,7 @@ class ChadoRecordTest extends TripalTestCase {
 
   /**
    * Save should work for both an update and an insert
-   * @group wip
+   *
    * @group chado
    * @group api
    *
@@ -228,7 +232,7 @@ class ChadoRecordTest extends TripalTestCase {
   }
 
   /**
-   * @group wip
+   *
    * @group chado
    * @group api
    *
@@ -254,7 +258,7 @@ class ChadoRecordTest extends TripalTestCase {
     $record->insert();
   }
   /**
-   * @group wip
+   *
    * @group chado
    * @group api
    *
@@ -290,7 +294,7 @@ class ChadoRecordTest extends TripalTestCase {
 
 
   /**
-   * @group wip
+   * 
    * @group chado
    * @group api
    *
