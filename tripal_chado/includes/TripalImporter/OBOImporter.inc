@@ -1285,6 +1285,16 @@ class OBOImporter extends TripalImporter {
     ";
     chado_query($sql, array(':cvterm_id' => $cvterm_id));
     
+    // If this is an obsolete term then clear out the relationships where
+    // this term is the object.
+    if (in_array('is_obsolete', $stanza) and $stanza['is_obsolete' == 'true']) {
+      $sql = "
+        DELETE FROM {cvterm_relationship}
+        WHERE object_id = :cvterm_id
+      ";
+      chado_query($sql, array(':cvterm_id' => $cvterm_id));
+    }
+    
     $sql = "
       DELETE FROM {cvtermprop}
       WHERE cvterm_id = :cvterm_id
