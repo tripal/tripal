@@ -483,6 +483,17 @@ class ChadoRecord {
         ['!column' => $column_name, '!table' => $this->table_name]);
       throw new Exception($message);
     }
+    // Remove from the missing list if it was there.
+    elseif (isset($this->missing_required_cols[$column])) {
+      unset($this->missing_required_cols[$column]);
+    }
+
+    // Ensure that no values are arrays.
+    if (is_array($value)) {
+      $message = t('ChadoRecord::setValue(). The column named, "!column", must be a single value but is currently: "!values". NOTE: we currently don\'t support expanding foreign key relationships or multiple values for a given column.',
+        ['!column' => $column, '!table' => $this->table_name, '!values' => implode('", "', $value)]);
+      throw new Exception($message);
+    }
 
     $this->values[$column_name] = $value;
   }
