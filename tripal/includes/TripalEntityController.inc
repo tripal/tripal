@@ -689,7 +689,7 @@ class TripalEntityController extends EntityAPIController {
           else {
             // We only load via AJAX if empty fields are not hidden.
             $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-            $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle->id, TRUE);
+            $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
             if (array_key_exists('settings', $instance) and
                 array_key_exists('auto_attach', $instance['settings']) and
                 $instance['settings']['auto_attach'] == FALSE and
