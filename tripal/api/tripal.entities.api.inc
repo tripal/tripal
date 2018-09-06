@@ -981,7 +981,6 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
     ->condition('var.variable_id', $variable->variable_id)
     ->execute()
     ->fetchField();
-  watchdog('debug', '<pre>$tripal_get_bundle_variable value: ' . print_r($value, true) . '</pre>');
 
   // Warn if the value appears to be empty.
   if (!$value) {
