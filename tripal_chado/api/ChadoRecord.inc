@@ -440,6 +440,15 @@ class ChadoRecord {
     if (in_array($this->pkey, array_keys($values))) {
       $this->record_id = $values[$this->pkey];
     }
+
+    // Ensure that no values are arrays.
+    foreach ($values as $column => $value) {
+      if (is_array($value)) {
+        $message = t('ChadoRecord::setValues(). The column named, "!column", must be a single value but is currently: "!values". NOTE: we currently don\'t support expanding foreign key relationships or multiple values for a given column.',
+          ['!column' => $column, '!table' => $this->table_name, '!values' => implode('", "', $value)]);
+        throw new Exception($message);
+      }
+    }
   }
 
   /**
