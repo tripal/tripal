@@ -1196,6 +1196,7 @@ class OBOImporter extends TripalImporter {
                 $check_cvterm->setValue('name', $check_cvterm->getValue('name') . ' (removed from . ' . $check_db->getValue('name') . ')');
                 $check_cvterm->update();
               }
+              
               // Case 2b:  The other term is in the OBO file (ie. has a stanza).
               // That means that there has been some name swapping between 
               // terms. We need to temporarily rename that term so that
@@ -1208,6 +1209,7 @@ class OBOImporter extends TripalImporter {
                 $check_cvterm->update();
               }             
             }
+            
             // Case 2c:  The name has changed but there is no ther term
             // with the same new name. We are good!  
             else {
@@ -1325,7 +1327,7 @@ class OBOImporter extends TripalImporter {
     
     // If this is an obsolete term then clear out the relationships where
     // this term is the object.
-    if (in_array('is_obsolete', $stanza) and $stanza['is_obsolete' == 'true']) {
+    if (in_array('is_obsolete', $stanza) and $stanza['is_obsolete'] == 'true') {
       $sql = "
         DELETE FROM {cvterm_relationship}
         WHERE object_id = :cvterm_id
