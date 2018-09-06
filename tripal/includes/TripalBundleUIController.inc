@@ -240,6 +240,14 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#description' => t('Uncheck this box if you do not want field data to load by ajax, this may signifiantly increase page load times.'),
     '#default_value' => $ajax_field_var,
   );
+  $form['ajax_field disclaimer'] = array(
+    '#type' => 'item',
+    '#markup' => t(
+      '<p>Please note, if both "Hide empty fields" and "Load field using AJAX" 
+      are checked empty fields will be hidden using javascript which may result
+       in some jumpiness of content as the page finishes loading.</p>'
+    ),
+  );
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,
