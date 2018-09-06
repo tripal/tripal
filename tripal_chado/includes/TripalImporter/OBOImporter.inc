@@ -1155,30 +1155,68 @@ class OBOImporter extends TripalImporter {
       $cvterm->setValues(['dbxref_id' => $dbxref->getID()]);
       if ($cvterm->find()) {
         if (!$is_borrowed) {
+
           $cvterm->setValue('name', $name);
           $cvterm->setValue('definition', $definition);
-          $cvterm->setValue('is_obsolete', $is_obsolete);
-          // Before we update this cvterm we need to check if the 
-          // term changed names. An example occured with GO when
-          // "pexophage" (GO:000425 was previously GO:0030242) but
-          // the name was changed to "autophage of pexoxisome". The
-          // term "macropexophagy" (previously GO:000425) is no 
-          // longer its own term but a synonym of for the same
-          // accession.  "Autophagy of pexoxisome" is now GO:0030242.
-          // So, when we try to update GO:000425 to have the name
-          // "pexophage" it conflicts with the older term that
-          // has not yet been updated GO:0030242 which also has the
-          // name "pexophagy" and that will break the unique constraint
-          // on the cvterm table.
-          $check_cvterm = new ChadoRecord('cvterm');
-          $check_cvterm->setValues(['cv_id' => $cv->cv_id, 'name' => $name]);
-          if ($check_cvterm->find()) {
-             // Oh no, we have a naming conflict. Let's assume that this
-             // term will be updated by this OBO, so let's change the 
-             // name so this current term can be updated 
-             $check_cvterm->setValue('name', 'DEPRECATED: ' . $check_cvterm->getValue('name'));
-             $check_cvterm->update();
+          $cvterm->setValue('is_obsolete', $is_obsolete);          
+          
+          // Case #1:  The name of the cvterm with this accession matches
+          // the name in the stanza. All is well and we can update.
+          if ($cvterm->getValue('name') == $stanza['name'][0]) {
+            // We'll do the upate at the end of this large if block.
           }
+          // Case #2:  The name of this cvterm is different from the stanza.
+          else {
+          
+            // So the names are different, Does a term exist with
+            // the name for this term already?  We can't update a term to
+            // have the same name as another. It will break the cvterm 
+            // unique constraints.  
+            $check_cvterm = new ChadoRecord('cvterm');
+            $check_cvterm->setValues(['cv_id' => $cv->cv_id, 'name' => $name]);
+            if ($check_cvterm->find()) {
+              
+              // Get the accession of this conflicting term and see if it 
+              // exists in the OBO that's being loaded.
+              $check_dbxref = new ChadoRecord('dbxref', $cvterm->getValue('dbxref_id'));
+              $check_db = new ChadoRecord('db', $check_dbxref->getValue('db_id'));
+              $check_accession = $check_db->getValue('name') . ':' . $check_dbxref->getValue('accession');
+              $check_stanza = $this->getCachedTermStanza($check_accession);
+                            
+              // Case 2a:  The other term that currently has the same name is 
+              // missing in the OBO file (i.e. no stanza).  So, that means
+              // that this term probably got relgated to an alt_id.  We do 
+              // not want to delete this term because it may be linked to other
+              // records. Instead, let's update it's name to let folks know
+              // what happend to it and so we can get around the unique
+              // constraint.  An example of this is the GO:0015881 and
+              // GO:1902598 terms where the latter became an alt_id of the 
+              // first and no longer has its own entry.
+              if (!$check_stanza) {
+                $check_cvterm->setValue('name', $check_cvterm->getValue('name') . ' (removed from . ' . $check_db->getValue('name') . ')');
+                $check_cvterm->update();
+              }
+              // Case 2b:  The other term is in the OBO file (ie. has a stanza).
+              // That means that there has been some name swapping between 
+              // terms. We need to temporarily rename that term so that
+              // we don't have a unique constraint violation when we update
+              // this one.  An example of this is where GO:000425 and 
+              // GO:0030242 changed names and one was renamed to the previous 
+              // name of the other.
+              else {
+                $check_cvterm->setValue('name', $check_cvterm->getValue('name') . ' (term name needs update)');
+                $check_cvterm->update();
+              }             
+            }
+            // Case 2c:  The name has changed but there is no ther term
+            // with the same new name. We are good!  
+            else {
+              // Do nothing, let the update for this term occur at the 
+              // end of the if block.
+            }
+          }
+          
+          // Now update this cvterm record.
           $cvterm->update();
         }
       }
