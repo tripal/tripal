@@ -55,6 +55,7 @@ class ChadoRecordTest extends TripalTestCase {
     $this->assertNotNull($record);
     $chado_record = factory('chado.' . $table)->create($values);
     $record_column = $table.'_id';
+
     $record = new \ChadoRecord($table, $chado_record->$record_column);
     $this->assertNotNull($record);
   }
@@ -145,7 +146,7 @@ class ChadoRecordTest extends TripalTestCase {
     $chado_record = factory('chado.' . $table)->create($values);
     $record_column = $table.'_id';
     $id = $chado_record->$record_column;
-    
+
     $record = new \ChadoRecord($table);
 
     $record->setValues($values);
@@ -186,6 +187,136 @@ class ChadoRecordTest extends TripalTestCase {
     foreach ($vals as $val_key => $val) {
       $this->assertEquals($values[$val_key], $val, "The getValues did not match what was provided for setValues");
     }
+  }
+
+  /**
+   * Save should work for both an update and an insert
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
+   */
+  public function testSave($table, $values){
+    //first, test the insert case
+    $record = new \ChadoRecord($table);
+    $record->setValues($values);
+    $record->save();
+    $record_column = $table.'_id';
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
+
+    //change the last key
+    //NOTE this will break if the last key isn't a string!
+    $values[$key] = 'new_value_that_i_wantTOBEUNIQUE';
+    $record->setValues($values);
+    $record->save();
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'Our record wasnt updated when saving!');
+  }
+
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
+   */
+  public function testInsert($table, $values){
+    //first, test the insert case
+    $record = new \ChadoRecord($table);
+    $record->setValues($values);
+    $record->insert();
+    $record_column = $table.'_id';
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
+
+    //If we insert again, it should fail
+    $this->expectException(EXCEPTION);
+    $record->insert();
+  }
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider  recordProvider
+   */
+  public function testUpdate($table, $values){
+    $id = $this->genChadoRecord($table, $values);
+    $record = new \ChadoRecord($table, $id);
+    $record_column = $table.'_id';
+
+    //$dump_vals = $record->getValues();
+   // var_dump($dump_vals);
+
+    $key = array_keys($values)[0];
+    $string = 'some_random_new_string34792387';
+    $values[$key] = $string;
+
+    $record->update($values);
+
+    //$dump_vals = $record->getValues();
+   // var_dump($dump_vals);
+
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$key]);
+    foreach ($values as $key => $val){
+      $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchField();
+    $this->assertNotFalse($result, 'we couldnt update our record.');
+    $this->assertEquals($string, $result);
+  }
+
+
+  /**
+   * @group wip
+   * @group chado
+   * @group api
+   *
+   * @dataProvider recordProvider
+   *
+   */
+  public function testDelete($table, $values){
+    $id = $this->genChadoRecord($table, $values);
+    $record = new \ChadoRecord($table, $id);
+    $record_column = $table.'_id';
+
+    $record->delete();
+    $query = db_select('chado.' . $table, 't')
+      ->fields('t', [$record_column]);
+    foreach ($values as $key => $val){
+   $query->condition($key, $val);
+    }
+    $result =$query->execute()->fetchAll();
+    $this->assertEmpty($result, 'we couldnt delete our record!');
+  }
+
+
+  private function genChadoRecord($table, $values){
+    $chado_record = factory('chado.' . $table)->create($values);
+    $record_column = $table.'_id';
+    $id = $chado_record->$record_column;
+    return $id;
   }
 
 }
