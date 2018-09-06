@@ -125,7 +125,7 @@ class ChadoRecord {
    *   The name of the table that the record belongs to.
    */
   public function getTable() {
-    return $this->table;
+    return $this->table_name;
   }
   
   /**

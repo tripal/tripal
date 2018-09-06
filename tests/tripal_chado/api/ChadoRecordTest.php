@@ -272,7 +272,8 @@ class ChadoRecordTest extends TripalTestCase {
     $string = 'some_random_new_string34792387';
     $values[$key] = $string;
 
-    $record->update($values);
+    $record->setValues($values);
+    $record->update();
 
     //$dump_vals = $record->getValues();
    // var_dump($dump_vals);
