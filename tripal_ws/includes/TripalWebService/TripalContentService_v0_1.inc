@@ -248,7 +248,7 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, TRUE);
 
     // Get information about the fields attached to this bundle and sort them
     // in the order they were set for the display.
@@ -340,7 +340,7 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, TRUE);
 
     // Get the field  settings.
     $field_name = $field['field_name'];
@@ -436,7 +436,7 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, TRUE);
 
     $new_value = '';
     // If the value is an array rather than a scalar then map the sub elements

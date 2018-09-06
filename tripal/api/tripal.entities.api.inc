@@ -967,8 +967,9 @@ function tripal_update_bundle_field($field_name, $field_info, $entity_type_name,
  * @ingroup tripal_entities_api
  */
 function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE) {
-
+  watchdog('debug', '<pre>$tripal_get_bundle_variable: ' . print_r($bundle_id, true) . '</pre>');
   $variable = tripal_get_variable($variable_name);
+  watchdog('debug', '<pre>$tripal_get_bundle_variable variable: ' . print_r($variable, true) . '</pre>');
 
   // Warn if we can't find the tripal_variable.
   if (!$variable) {
@@ -982,6 +983,7 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
     ->condition('var.variable_id', $variable->variable_id)
     ->execute()
     ->fetchField();
+  watchdog('debug', '<pre>$tripal_get_bundle_variable value: ' . print_r($value, true) . '</pre>');
 
   // Warn if the value appears to be empty.
   if (!$value) {
@@ -1015,6 +1017,16 @@ function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
       $variable = tripal_get_variable($variable_name);
       if (!$variable) {
         return FALSE;
+      }
+    }
+    else if ($variable_name === 'ajax_field') {
+      tripal_insert_variable(
+        'ajax_field',
+        'Structure->Tripal Content Type->edit checkbox to allow for ajax fields for that bundle.'
+      );
+      $variable = tripal_get_variable($variable_name);
+      if (!$variable) {
+        return false;
       }
     }
     else {

@@ -1524,8 +1524,8 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
 
   // Hide fields that are empty, but only if the hide_empty_field variable
   // is set to 'hide' for this bundel.
-  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
-  if($hide_variable == 'hide'){
+  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, TRUE);
+  if($hide_variable == TRUE){
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
@@ -1557,8 +1557,8 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
 
       // If the hide empty variable is turned on then remove fields from
       // the field group.
-      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
-      if($hide_variable == 'hide'){
+      $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, TRUE);
+      if($hide_variable == TRUE){
         $items = $element[$child]['#items'];
         // Case #1: there are no items.
         if (count($items) == 0) {
