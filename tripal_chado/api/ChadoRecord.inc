@@ -1,16 +1,97 @@
 <?php
 
+/**
+ * Provide a class for basic querying of Chado; specifically, select, insert, update and delete.
+ *
+ * Eventually this class is meants to replace the existing chado_select_record(),
+ * chado_insert_record(), chado_update_record() and chado_delete_record() API
+ * functions to create a cleaner, more maintainable and more easily tested
+ * interface to querying Chado.
+ *
+ * @todo Add documentation for save() and delete().
+ *
+ * Basic Usage:
+ * - Select/Find
+ *     The following example selects an organism with the scientific name
+ *     "Tripalus databasica" from the organism table of Chado.
+ *     @code
+             // First we create an instance of the ChadoRecord class
+             // specifying the table we want to query.
+             $record = new \ChadoRecord('organism');
+
+             // Next we indicate the values we know.
+             $record->setValues([
+               'genus' => 'Tripalus',
+               'species' => 'databasica',
+             ]);
+
+             // And finally we simply ask the class to find the chado record
+             // we indicated when we set the values above.
+             $success = $record->find();
+             if ($success) {
+               // Retrieve the values if we were successful in finding the record.
+               $result = $record->getValues();
+             }
+ *     @endcode
+ * - Insert:
+ *     The following example inserts a sample record into the stock table.
+ *     @code
+             // First we create an instance of the ChadoRecord class
+             // specifying the table we want to query.
+             $record = new \ChadoRecord('stock');
+
+             // Next we indicate the values we know.
+             $record->setValues([
+               'name' => 'My Favourite Plant',
+               'uniquename' => 'Plectranthus scutellarioides Trailing Plum Brocade',
+               'organism_id' => [ 'genus' => 'Tripalus', 'species' => 'databasica' ],
+               'type_id' => [ 'name' => 'sample', 'cv_id' => [ 'name' => 'Sample processing and separation techniques' ] ],
+             ]);
+
+             // And finally, we ask the class to insert the chado record
+             // we described when we set the values above.
+             $result = $record->insert();
+ *     @endcode
+ * - Update:
+ *     The following example updates the "Tripalus databasica" record to specify the common name.
+ *     @code
+             // For brevity we're going to hardcode the original record
+             // including the id although you would Never do this in practice.
+             // Rather you would first find the record as shown in a previous example.
+             $original_record = [
+               'organism_id' => 1,
+               'genus' => 'Tripalus',
+               'species' => 'databasica',
+             ];
+
+             // First we create an instance of the ChadoRecord class
+             // specifying the table we want to query.
+             // NOTICE: this time we set the record_id when creating the instance.
+             $record = new \ChadoRecord('organism', $original_record['organism_id']);
+
+             // Now we set the values we want to change.
+             $record->setValues([
+               'common_name' => 'Tripal',
+             ]);
+
+             // And then tell the class to update the record.
+             $record->update();
+ *     @endcode
+ */
 class ChadoRecord {
+
   /**
    * @var string
    *   Holds the name of the table that this record belogns to.
    */
   protected $table_name = '';
+
   /**
    * @var array
    *   Holds the Drupal schema definition for this table.
    */
   protected $schema = [];
+
   /**
    * @var array
    *   Holds the values for the columns of the record
@@ -29,20 +110,18 @@ class ChadoRecord {
    */
   protected $record_id = NULL;
   
-  
   /**
    * @var string
    *   The column name for the primary key.
    */
   protected $pkey = '';
-  
-  
+
   /**
    * The list of column names in the table.
    * @var array
    */
   protected $column_names = [];
-  
+
   
   /**
    * The ChadoRecord constructor
@@ -164,6 +243,7 @@ class ChadoRecord {
       throw new Exception($message);
     }
   }
+
   /**
    * Inserts the values of this object as a new record.
    * 
@@ -190,6 +270,7 @@ class ChadoRecord {
     $sql = 'INSERT INTO {' . $this->table_name . '} (' . 
       implode(", ", $insert_cols) . ') VALUES (' . 
       implode(", ", $insert_vals) . ')';
+
     try {
       chado_query($sql, $insert_args);
       // TODO: we can speed up inserts if we can find a way to not have to
@@ -283,6 +364,7 @@ class ChadoRecord {
         throw new Exception($message);
     }
   }
+
   /**
    * A general-purpose setter function to set the column values for the record.
    * 
@@ -370,6 +452,7 @@ class ChadoRecord {
     
     $this->values[$column_name] = $value;
   }
+
   /**
    * Returns the value of a specific column.
    * 
