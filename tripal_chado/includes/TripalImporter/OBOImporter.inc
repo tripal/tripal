@@ -521,7 +521,7 @@ class OBOImporter extends TripalImporter {
     // Make sure we have a 'synonym_type' vocabulary.
     $syn_cv = new ChadoRecord('cv');
     $syn_cv->setValues(['name' => 'synonym_type']);
-    $syn_cv->save();
+    $syn_cv->save();    
     $this->all_cvs['synonym_type'] = (object) $syn_cv->getValues();
     
     // Make sure we have a 'synonym_type' database.
@@ -542,13 +542,19 @@ class OBOImporter extends TripalImporter {
       $syn_term = new ChadoRecord('cvterm');
       $syn_term->setValues([
         'name' => $syn_type,
-        'definition' => '',
-        'is_obsolete' => 0,
         'cv_id' => $syn_cv->getID(),
-        'is_relationshiptype' => 0,
-        'dbxref_id' => $syn_dbxref->getID(),
       ]);
-      $syn_term->save();
+      if (!$syn_term->find()) {
+        $syn_term->setValues([
+          'name' => $syn_type,
+          'definition' => '',
+          'is_obsolete' => 0,
+          'cv_id' => $syn_cv->getID(),
+          'is_relationshiptype' => 0,
+          'dbxref_id' => $syn_dbxref->getID(),
+        ]);
+        $syn_term->insert();
+      }
       $this->syn_types[$syn_type] = (object) $syn_term->getValues();
     }
     
