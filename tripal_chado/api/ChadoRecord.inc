@@ -258,6 +258,9 @@ class ChadoRecord {
   /**
    * Inserts the values of this object as a new record.
    *
+   * @todo Support options from chado_insert_record: return_record.
+   * @todo check for violation of unique constraint.
+   *
    * @throws Exception
    */
   public function insert() {
@@ -306,6 +309,11 @@ class ChadoRecord {
 
   /**
    * Updates the values of this object as a new record.
+   *
+   * @todo set defaults for columns not already set in values.
+   * @todo Support options from chado_update_record: return_record.
+   * @todo check for violation of unique constraint.
+   * @todo if record_id not set then try finding it.
    *
    * @throws Exception
    */
@@ -398,6 +406,12 @@ class ChadoRecord {
    * an update, be sure to include the record ID in the list of values passed
    * to the function.
    *
+   * @todo Support options from chado_insert_record: skip_validation.
+   * @todo Validate the types match what is expected based on the schema.
+   * @todo Set default values for columns not in this array?
+   * @todo Support foreign key relationships: lookup the key.
+   * @todo Support value = [a, b, c] for IN select statements?
+   *
    * @param array $values
    *    An associative array where the keys are the table column names and
    *    the values are the record values for each column.
@@ -454,6 +468,8 @@ class ChadoRecord {
   /**
    * Returns all values for the record.
    *
+   * @todo We need to follow foreign key constraints.
+   *
    * @return array
    */
   public function getValues() {
@@ -462,6 +478,12 @@ class ChadoRecord {
 
   /**
    * Sets the value for a specific column.
+   *
+   * @todo Support options from chado_insert_record: skip_validation.
+   * @todo Validate the types match what is expected based on the schema.
+   * @todo Set default values for columns not in this array?
+   * @todo Support foreign key relationships: lookup the key.
+   * @todo Support value = [a, b, c] for IN select statements?
    *
    * @param string $column_name
    *   The name of the column to which the value should be set.
@@ -522,6 +544,13 @@ class ChadoRecord {
    * Use the setValues function first to set values for searching, then call
    * this function to find matching record.  The values provided to the
    * setValues function must uniquely identify a record.
+   *
+   * @todo Support options from chado_select_record: skip_validation, has_record,
+   *   return_sql, case_insensitive_columns, regex_columns, order_by, is_duplicate,
+   *   pager, limit, offset.
+   * @todo Support following the foreign key
+   * @todo Support complex filtering (e.g. fmin > 50)
+   * @todo Support multiple records being returned?
    *
    * @return
    *   The number of matches found.  If 1 is returned then the query
