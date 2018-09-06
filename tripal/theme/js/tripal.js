@@ -8,8 +8,10 @@
         return;
       }
 
-      var use_ajax    = settings.tripal_ds.tripal_field_settings_ajax;
-      var hide_fields = settings.tripal_ds.tripal_field_settings_hide !== 'show';
+      var use_ajax    = parseInt(settings.tripal_ds.tripal_field_settings_ajax) === 1;
+      var hide_fields = settings.tripal_ds.tripal_field_settings_hide !== false;
+
+      console.log(use_ajax, hide_fields, settings.tripal_ds)
 
       if (!use_ajax) {
         return;
@@ -90,7 +92,6 @@
     var field   = $('#' + id);
     var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
     var pane_id = this.extractPaneID(classes);
-
     $('#' + id + ' .field-items').replaceWith(content);
 
     // Hiding of content is not set
