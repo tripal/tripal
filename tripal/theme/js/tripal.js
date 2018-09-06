@@ -3,11 +3,26 @@
   // Store our function as a property of Drupal.behaviors.
   Drupal.behaviors.tripal = {
     attach: function (context, settings) {
+      // If we don't have any settings, this is not a entity page so exit
+      if (!settings.tripal_ds) {
+        return;
+      }
+
+      var use_ajax    = settings.tripal_ds.tripal_field_settings_ajax;
+      var hide_fields = settings.tripal_ds.tripal_field_settings_hide !== 'show';
+
+      if (!use_ajax) {
+        return;
+      }
+
       $('.tripal-entity-unattached .field-items').replaceWith('<div class="field-items">Loading... <img src="' + tripal_path + '/theme/images/ajax-loader.gif"></div>');
       $('.tripal-entity-unattached').each(function () {
         var id = $(this).attr('id');
         if (id) {
-          var field = new AjaxField(id);
+          var field = new AjaxField(id, hide_fields);
+          if (hide_fields) {
+            field.hidePaneTitle();
+          }
           field.load();
         }
       });
@@ -17,13 +32,13 @@
   /**
    * AjaxField Constructor.
    *
-   * @param id
+   * @param {Number} id
+   * @param {Boolean} hide_fields
    * @constructor
    */
-  function AjaxField(id) {
-    this.id = id;
-
-    this.hidePaneTitle();
+  function AjaxField(id, hide_fields) {
+    this.id          = id;
+    this.hide_fields = hide_fields;
   }
 
   /**
@@ -77,6 +92,11 @@
     var pane_id = this.extractPaneID(classes);
 
     $('#' + id + ' .field-items').replaceWith(content);
+
+    // Hiding of content is not set
+    if (!this.hide_fields) {
+      return;
+    }
 
     // If the field has no content, check to verify the pane is empty
     // then remove it.
