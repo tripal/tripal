@@ -967,9 +967,7 @@ function tripal_update_bundle_field($field_name, $field_info, $entity_type_name,
  * @ingroup tripal_entities_api
  */
 function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE) {
-  watchdog('debug', '<pre>$tripal_get_bundle_variable: ' . print_r($bundle_id, true) . '</pre>');
   $variable = tripal_get_variable($variable_name);
-  watchdog('debug', '<pre>$tripal_get_bundle_variable variable: ' . print_r($variable, true) . '</pre>');
 
   // Warn if we can't find the tripal_variable.
   if (!$variable) {
