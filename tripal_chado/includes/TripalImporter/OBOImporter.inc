@@ -195,6 +195,15 @@ class OBOImporter extends TripalImporter {
    * @var string
    */
   private $is_subset = FALSE;
+  
+  /**
+   * Sometimes an OBO can define two terms with the same name but different 
+   * IDs (e.g. GO:0001404 and GO:0007125). We need to find these and 
+   * deal with them.  This array keeps track of term names as we see them for
+   * easy lookup later.
+   * @var array
+   */
+  private $term_names = [];
 
   /**
    * @see TripalImporter::form()
@@ -1128,15 +1137,15 @@ class OBOImporter extends TripalImporter {
     // Is this term borrowed from another ontology?  
     $is_borrowed = $this->isTermBorrowed($stanza);
     
-    // The cvterm ChadoRecord object.
+    // Will hold the cvterm ChadoRecord object.
     $cvterm = NULL;
-    
+        
     // Get the CV and DB objects.
     $cv = $this->all_cvs[$cvname];
     $db = $this->all_dbs[$dbname];
-    
+        
     // If this is set to TRUE then we should insert the term.
-    $do_cvterm_insert = FALSE;
+    $do_cvterm_insert = TRUE;
     
     // We need to locate terms using their dbxref. This is because term names
     // can sometimes change, so we don't want to look up the term by it's name.
@@ -1147,136 +1156,86 @@ class OBOImporter extends TripalImporter {
       'accession' => $accession
     ]);
     if ($dbxref->find()) {
-      // Now see if there is a cvterm for this dbxref. A dbxref can only be 
-      // used one time. If so, then update the term, but only if this term
-      // belongs to namespace created by this OBO. We don't want to update
-      // terms from other OBOs that may be borrowed by this one.
-      $cvterm = new ChadoRecord('cvterm');
-      $cvterm->setValues(['dbxref_id' => $dbxref->getID()]);
-      if ($cvterm->find()) {
+      
+      // Does this accession already have a cvterm it's associated with? Then
+      // we need to make we will update the name. Names change but accessions
+      // always refer to the same term.
+      $dbx_cvterm = new ChadoRecord('cvterm');
+      $dbx_cvterm->setValues(['dbxref_id' => $dbxref->getID()]);
+      if ($dbx_cvterm->find()) {
+        $do_cvterm_insert = FALSE;
+        $cvterm = $dbx_cvterm;
+        
+        // We don't want to do any updates for borrowed terms. Just leave them
+        // as they are.
         if (!$is_borrowed) {
-
-          $cvterm->setValue('name', $name);
-          $cvterm->setValue('definition', $definition);
-          $cvterm->setValue('is_obsolete', $is_obsolete);          
           
-          // Case #1:  The name of the cvterm with this accession matches
-          // the name in the stanza. All is well and we can update.
-          if ($cvterm->getValue('name') == $stanza['name'][0]) {
-            // We'll do the upate at the end of this large if block.
-          }
-          // Case #2:  The name of this cvterm is different from the stanza.
-          else {
-          
-            // So the names are different, Does a term exist with
-            // the name for this term already?  We can't update a term to
-            // have the same name as another. It will break the cvterm 
-            // unique constraints.  
-            $check_cvterm = new ChadoRecord('cvterm');
-            $check_cvterm->setValues(['cv_id' => $cv->cv_id, 'name' => $name]);
-            if ($check_cvterm->find()) {
-              
-              // Get the accession of this conflicting term and see if it 
-              // exists in the OBO that's being loaded.
-              $check_dbxref = new ChadoRecord('dbxref', $cvterm->getValue('dbxref_id'));
-              $check_db = new ChadoRecord('db', $check_dbxref->getValue('db_id'));
-              $check_accession = $check_db->getValue('name') . ':' . $check_dbxref->getValue('accession');
-              $check_stanza = $this->getCachedTermStanza($check_accession);
-                            
-              // Case 2a:  The other term that currently has the same name is 
-              // missing in the OBO file (i.e. no stanza).  So, that means
-              // that this term probably got relgated to an alt_id.  We do 
-              // not want to delete this term because it may be linked to other
-              // records. Instead, let's update it's name to let folks know
-              // what happend to it and so we can get around the unique
-              // constraint.  An example of this is the GO:0015881 and
-              // GO:1902598 terms where the latter became an alt_id of the 
-              // first and no longer has its own entry.
-              if (!$check_stanza) {
-                $check_cvterm->setValue('name', $check_cvterm->getValue('name') . ' (removed from . ' . $check_db->getValue('name') . ')');
-                $check_cvterm->update();
-              }
-              
-              // Case 2b:  The other term is in the OBO file (ie. has a stanza).
-              // That means that there has been some name swapping between 
-              // terms. We need to temporarily rename that term so that
-              // we don't have a unique constraint violation when we update
-              // this one.  An example of this is where GO:000425 and 
-              // GO:0030242 changed names and one was renamed to the previous 
-              // name of the other.
-              else {
-                $check_cvterm->setValue('name', $check_cvterm->getValue('name') . ' (term name needs update)');
-                $check_cvterm->update();
-              }             
-            }
-            
-            // Case 2c:  The name has changed but there is no ther term
-            // with the same new name. We are good!  
-            else {
-              // Do nothing, let the update for this term occur at the 
-              // end of the if block.
-            }
-          }
+          // Let's make sure we don't have a conflict in term naming 
+          // if we change the name of this term.
+          $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
           
           // Now update this cvterm record.
-          $cvterm->update();
-        }
-      }
-      else {
-        $do_cvterm_insert = TRUE;
-      }
+          $cvterm->setValue('name', $name);
+          $cvterm->setValue('definition', $definition);
+          $cvterm->setValue('is_obsolete', $is_obsolete);
+          
+          try {
+            $cvterm->update();
+          }
+          catch (Exception $e) {
+            $this->logMessage('Could not update the term, "!term", with name, "!name" for vocabulary, "!vocab". ERROR: !error.',
+              ['!term' => $id,
+                '!name' => $name,
+                '!vocab' => $cv->name,
+                '!error' => $e->getMessage(),
+              ],
+              TRIPAL_ERROR);
+            throw $e;
+          }
+        }                                    
+      }      
     }
-    else {
-      // The dbxref doesn't exist, so let's add it.
+    // The dbxref doesn't exist, so let's add it.
+    else {      
       $dbxref->insert();
-      $do_cvterm_insert = TRUE;
     }
     
+    // Add the cvterm if we didn't do an update.
     if ($do_cvterm_insert) {
-      // Before inserting the term let's check to see if it already exists. The
-      // cvterm table has two unique constraints, one on the dbxref and another
-      // on the name, cv_id and is_obsolete columns.  If for some reason the
-      // term exists but is assocaited with a different dbxref we'll have 
-      // a problem.  Because the is_obsolete may be set this time, but the
-      // term may not have it set from a previous load we will check for the
-      // presence of the term without the is_obsolete.
+      
+      // Before updating the term let's check to see if it already exists
+      // and make corrections.
       $cvterm = new ChadoRecord('cvterm');
+      $cvterm->setValue('cv_id', $cv->cv_id);
+      $cvterm->setValue('name', $name);
+      if ($cvterm->find()) {
+        $fixed = $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
+      }
+      
+      // The term doesnt exist, so let's just do our insert.
       $cvterm->setValues([
         'cv_id' => $cv->cv_id,
         'name' => $name,
+        'definition' => $definition,
+        'dbxref_id' => $dbxref->getID(),
+        'is_relationshiptype' => $is_relationship,
+        'is_obsolete' => $is_obsolete,
       ]);
-      if ($cvterm->find()) {
-        // We found the term so that means it's assocaited with a different
-        // dbxref.  We need to correct it.
-        if (!$is_borrowed) {
-          $old_dbxref = new ChadoRecord('dbxref');
-          $old_dbxref->setValues(['dbxref_id' => $cvterm->getValue('dbxref_id')]);
-          $old_dbxref->find();
-          $old_db = new ChadoRecord('db');
-          $old_db->setValues(['db_id' => $dbxref->getValue('db_id')]);
-          $old_db->find();
-          $this->logMessage('Correcting misassigned accession: !id => "!name". Previously was: !old_id.', 
-            ['!id' => $id, '!name' => $name, 
-             '!old_id' => $old_db->getValue('name') . ':' . $old_dbxref->getValue('accession')]);
-          $cvterm->setValue('dbxref_id', $dbxref->getID());
-          $cvterm->setValue('definition', $definition);
-          $cvterm->setValue('dbxref_id', $dbxref->getID());
-          $cvterm->setValue('is_obsolete', $is_obsolete);
-          $cvterm->update();
-        }
-      }
-      else {
-
-        // The term doesnt exist, so let's just do our insert.
-        $cvterm->setValues([
-          'cv_id' => $cv->cv_id,
-          'name' => $name,
-          'definition' => $definition,
-          'dbxref_id' => $dbxref->getID(),
-          'is_relationshiptype' => $is_relationship,
-          'is_obsolete' => $is_obsolete,
-        ]);
+      
+      // If the insert failes lets catch the error so we can
+      // give a more informative message.
+      try {
         $cvterm->insert();
+      }
+      catch (Exception $e) {
+        $this->logMessage('Could not insert the term, "!term", with name, "!name" for vocabulary, "!vocab". ERROR: !error.',
+          ['!term' => $id,
+           '!name' => $name,
+           '!vocab' => $cv->name,
+           '!error' => $e->getMessage(),
+          ], 
+          TRIPAL_ERROR);
+        throw $e;
       }
     }
     
@@ -1288,6 +1247,95 @@ class OBOImporter extends TripalImporter {
     return $cvterm_id;
   }
 
+  /**
+   * Fixes mistmaches between two terms with the same name.
+   * 
+   * If it has been determined that a term's name has changed. Before we update
+   * or insert it we must check to make sure no other terms have that name. If
+   * they do we must make a correction.
+   *
+   * @param $dbxref
+   *   The ChadoRecord object conaining the dbxref record for the term
+   *   to be inserted/updated.
+   * @param $cv
+   *   The cvterm object.
+   * @param $name
+   *   The name of the term that is a potential conflict.
+   *   
+   * @return 
+   *   Returns TRUE if a conflict was found and corrected.
+   */
+  public function fixTermMismatch($stanza, $dbxref, $cv, $name) {
+          
+    $id = $stanza['id'][0];
+    $name =  $stanza['name'][0];
+    
+    // First get the record for any potential conflicting term.
+    $check_cvterm = new ChadoRecord('cvterm');
+    $check_cvterm->setValues(['cv_id' => $cv->cv_id, 'name' => $name]);
+    if ($check_cvterm->find()) {
+                  
+      // If the dbxref of this matched term is the same as the current term 
+      // then it is the same term and there is no conflict.
+      if ($dbxref->getID() == $check_cvterm->getValue('dbxref_id')) {
+        return FALSE;
+      }     
+     
+      // At this point, we have a cvterm with the same name and vocabulary
+      // but with a different dbxref. First let's get that other accession.
+      $check_dbxref = new ChadoRecord('dbxref', $check_cvterm->getValue('dbxref_id'));
+      $check_db = new ChadoRecord('db', $check_dbxref->getValue('db_id'));
+      $check_accession = $check_db->getValue('name') . ':' . $check_dbxref->getValue('accession');
+
+      // Enable this linee for debugging"
+      //$this->logMessage('The term, !id, "!name", has a name that belongs to another term: !id2.',
+      //  ['!id' => $id, '!name' => $name, '!id2' => $check_accession]);
+      
+      
+      // Case 1:  The other term that currently has the same name is
+      // missing in the OBO file (i.e. no stanza).  So, that means that this
+      // term probably got relgated to an alt_id on another term.  We do
+      // not want to delete a term because it may be linked to other
+      // records. Instead, let's update its name to let folks know
+      // what happend to it and so we can get around the unique
+      // constraint.  An example of this is the GO:0015881 and
+      // GO:1902598 terms where the latter became an alt_id of the
+      // first and no longer has its own entry.
+      $check_stanza = $this->getCachedTermStanza($check_accession);
+      if (!$check_stanza) {
+        $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
+        
+        // Enable these lines for debugging"
+        //$this->logMessage('The term, !id, it is no longer a valid term.', 
+        //  ['!id' => $check_accession]);   
+        //$this->logMessage('Renaming !id1 to "!new_name".',
+        //  ['!id1' => $check_accession, '!new_name' => $new_name]);
+        $check_cvterm->setValue('name', $new_name);
+        $check_cvterm->update();
+        
+        return TRUE;
+      }
+      
+      // Case 2:  The conflicting term is in the OBO file (ie. has a stanza).
+      // That means that there has been some name swapping between
+      // terms. We need to temporarily rename the term so that
+      // we don't have a unique constraint violation when we update
+      // the new one.  An example of this is where GO:000425 and
+      // GO:0030242 changed names and one was renamed to the previous
+      // name of the other.
+      else {
+        $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
+        $this->logMessage('Renaming !id1 to "!new_name".',
+          ['!id1' => $check_accession, '!new_name' => $new_name]);
+        $check_cvterm->setValue('name', $new_name);
+        $check_cvterm->update();
+        return TRUE;
+      }
+    }
+    
+    // We have no conflict so it's save to update or insert.
+    return FALSE;
+  }
   /**
    * Uses the provided term array to add/update information to Chado about the
    * term including the term, dbxref, synonyms, properties, and relationships.
@@ -1638,7 +1686,7 @@ class OBOImporter extends TripalImporter {
       throw new Exception('Cannot cache terms without a default DB.' . print_r($stanza, TRUE));
     }
     
-    $id = $stanza['id'][0];
+    $id = $stanza['id'][0]; 
     
     // First check if this term is already in the cache, if so then skip it.
     if ($this->getCachedTermStanza($id)) {
@@ -1740,9 +1788,15 @@ class OBOImporter extends TripalImporter {
     }
     
 
+    // Cache the term stanza
     $this->termStanzaCache['ids'][$id] = $stanza;
     $this->termStanzaCache['count'][$type]++;
     $this->termStanzaCache['types'][$type][] = $id;
+    
+    // Cache the term name so we don't have conflicts.
+    $name = $stanza['name'][0];
+    $this->term_names[$name] = 1;
+    
   }
   
   /**
@@ -1919,6 +1973,15 @@ class OBOImporter extends TripalImporter {
             $cv = $this->all_cvs[$namespace];
             $this->obo_namespaces[$namespace] = $cv->cv_id;
           }
+          
+          // Before caching this stanza, check the term's name to 
+          // make sure it doesn't conflict. If it does we'll just
+          // add the ID to the name to ensure it doesn't.
+          if (array_key_exists($stanza['name'][0], $this->term_names)) {
+            $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] .')';
+            $stanza['name'][0] = $stanza['name'][0];
+          }
+          
           $this->cacheTermStanza($stanza, $type);
           
         }
