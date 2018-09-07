@@ -589,7 +589,13 @@ class OBOImporter extends TripalImporter {
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->obo_namespaces as $namespace => $cv_id) {
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
-      tripal_update_cvtermpath($cv_id);
+      // First, if this is not a subset (e.g. GO Slims) then clear out the 
+      // cvtermpath records first.
+      if (!$this->is_subset) {
+        $sql = "DELETE FROM {cvtermpath} WHERE cv_id = :cv_id";
+        chado_query($sql, [':cv_id' => $cv_id]);
+        tripal_update_cvtermpath($cv_id);
+      }
     }
   }
   /**
