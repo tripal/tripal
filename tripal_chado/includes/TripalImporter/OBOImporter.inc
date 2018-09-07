@@ -1325,8 +1325,9 @@ class OBOImporter extends TripalImporter {
       // name of the other.
       else {
         $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
-        $this->logMessage('Renaming !id1 to "!new_name".',
-          ['!id1' => $check_accession, '!new_name' => $new_name]);
+        // Enable these lines for debugging"
+        //$this->logMessage('Renaming !id1 to "!new_name".',
+        //  ['!id1' => $check_accession, '!new_name' => $new_name]);
         $check_cvterm->setValue('name', $new_name);
         $check_cvterm->update();
         return TRUE;
