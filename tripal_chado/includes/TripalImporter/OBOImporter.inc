@@ -594,8 +594,8 @@ class OBOImporter extends TripalImporter {
       if (!$this->is_subset) {
         $sql = "DELETE FROM {cvtermpath} WHERE cv_id = :cv_id";
         chado_query($sql, [':cv_id' => $cv_id]);
-        tripal_update_cvtermpath($cv_id);
       }
+      chado_update_cvtermpath($cv_id);
     }
   }
   /**

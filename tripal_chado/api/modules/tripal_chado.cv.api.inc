@@ -370,6 +370,50 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
 }
 
 /**
+ * 
+ * @param unknown $cv_id
+ */
+function chado_clear_cvtermpath($cv_id) {
+  $sql = "DELETE FROM {cvtermpath} WHERE cv_id = :cv_id";
+  chado_query($sql, [':cv_id' => $cv_id]);
+}
+
+function _chado_update_cvtermpath_remove_constraints() {
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_c1";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_cv_id_fkey";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_object_id_fkey";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_pkey";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_subject_id_fkey";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} DROP CONSTRAINT IF EXISTS cvtermpath_type_id_fkey";
+  db_query($sql);
+}
+
+function _chado_update_cvtermpath_add_constraints() {
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_c1 " .
+    "UNIQUE (subject_id, object_id, type_id, pathdistance)";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_cv_id_fkey " .
+    "FOREIGN KEY (cv_id) REFERENCES cv(cv_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_object_id_fkey " .
+    "FOREIGN KEY (object_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_pkey " .
+    "PRIMARY KEY (cvtermpath_id)";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_subject_id_fkey " .
+    "FOREIGN KEY (subject_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED";
+  db_query($sql);
+  $sql = "ALTER TABLE {cvtermpath} ADD CONSTRAINT cvtermpath_type_id_fkey " .
+    "FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED";
+  db_query($sql);
+}
+/**
  * Duplicate of fill_cvtermpath() stored procedure in Chado.
  *
  * Identifies all of the root terms of the controlled vocabulary. These
@@ -382,7 +426,210 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath($cv_id, $job_id = NULL){
+function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
+  
+  // The cache is used to limit repetitive queries by storing known data.
+  $cache = [
+    'rels' => [],
+    'processed' => [],
+  ];
+  
+  // TODO: there's a function to determine the current Chado instance.
+  // we should use that.
+  $prev_db = chado_set_active('chado');
+  $transaction = db_transaction();
+  
+  try {
+    // Remove constraints for faster loading.
+    _chado_update_cvtermpath_remove_constraints();
+    
+    // Get the is_a term. The OBO importer adds this for evey vocabulary.
+    $sql = "SELECT * FROM cvterm WHERE name = :is_a and cv_id = :cv_id";
+    $args = [':is_a' => 'is_a', ':cv_id' => $cv_id];
+    $is_a = chado_query($sql, $args)->fetchObject();
+    
+    // First cache all the relationships for this vocaublary.
+    $sql = "
+      SELECT CVTR.subject_id, CVTR.type_id, CVTR.object_id, CVTS.name
+      FROM {cvterm_relationship} CVTR
+        INNER JOIN {cvterm} CVTO on CVTO.cvterm_id = CVTR.object_id
+        INNER JOIN {cvterm} CVTS on CVTS.cvterm_id = CVTR.subject_id
+      WHERE CVTO.cv_id = :cv_id 
+    ";
+    $rels = chado_query($sql, [':cv_id' => $cv_id]);
+    while ($rel = $rels->fetchObject()) {
+      $cache['rels'][$rel->object_id][] = [$rel->subject_id, $rel->type_id, $rel->name];
+    }
+    
+    // Next get the tree roots. These are terms that are in relationships as
+    // an object but never as a subject.
+    $sql = "
+      SELECT DISTINCT CVT.cvterm_id, CVT.name
+      FROM {cvterm} CVT
+        LEFT JOIN {cvterm_relationship} CVTR ON CVT.cvterm_id = CVTR.subject_id
+        INNER JOIN {cvterm_relationship} CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+      WHERE CVT.cv_id = :cvid AND CVTR.subject_id is NULL and 
+        CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+    ";
+    $roots = chado_query($sql, [':cvid' => $cv_id]);
+     
+    // Iterate through the tree roots.
+    while ($root = $roots->fetchObject()) {
+      $root_id =  $root->cvterm_id;
+      $root_name = $root->name;
+      $num_handled = 0;
+      
+      // Add each root as a reference to itself in the cvtermpath table.
+      $cvtermpath = new ChadoRecord('cvtermpath');
+      $cvtermpath->setValues([
+        'type_id' => $is_a->cvterm_id,
+        'object_id' => $root_id,
+        'subject_id' => $root_id,
+        'cv_id' => $cv_id,
+        'pathdistance' => 1,
+      ]);
+      if (!$cvtermpath->find()) {
+        $cvtermpath->insert();
+      }
+      
+      _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job, $num_handled);
+    }
+    
+    // Restore the table constraints and indexes.
+    _chado_update_cvtermpath_add_constraints();
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    chado_set_active($prev_db);
+    throw $e;
+  }
+}
+
+function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache, TripalJob $job, &$num_handled, $root_depth = 0) {
+  
+  // Mark this node as having been processed as a root node.
+  $cache['processed'][$root_id] = TRUE;
+  
+  // An array to keep track of which terms have been visited when descending
+  // the tree. We'll use this to avoid loops.
+  $visited = [];
+  
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$root_id];
+  
+  // If there are no children do nothing.
+  if (!$children) {
+    return;
+  }
+  
+  // Iterate through the children and descend the tree.
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $type_id = $child[1];
+    $name = $child[2];
+    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, $cache, $visited, 1);
+  }
+  
+  // Now that we've descended the tree we can calculate how many entries we
+  // will add to the cvterm table. We only want to do this with a root_depth
+  // level of 0 because this is the top level root term.
+  if ($root_depth == 0) {
+    $num_records = 0;
+    foreach ($visited as $subject_id => $details) {
+      $depth = $details[4];
+      $num_records += $depth; 
+    }
+    print "Adding " . number_format($num_records) . " paths for root: '$root_name'\n";
+    if ($job) {
+      $job->setTotalItems($num_records);
+    }
+  }
+
+  
+  // Insert into the cvtermpath table.
+  _chado_update_cvtermpath_process_visited($visited, $job, $num_handled, 1);
+  
+  
+  // Next make each child of this node a root and recurse again.
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $type_id = $child[1];
+    $name = $child[2];
+    
+    // Don't use a node as a root if we've already used it once before.
+    if (array_key_exists($child_id, $cache['processed'])) {
+      continue;
+    }
+    
+    // Process this child as a root.
+    _chado_update_cvtermpath_root($cv_id, $child_id, $name, $cache, $job, $num_handled, $root_depth + 1);
+  }
+}  
+
+function _chado_update_cvtermpath_item($cv_id, $root_id, $cvterm_id, $type_id, &$cache, &$visited, $depth = 1) {
+  
+  // Have we visited this node before?  If so then this is a loop. We do not
+  // want to mark this node as having been visited before. Just return.
+  if (array_key_exists($cvterm_id, $visited)) {
+    return;
+  }
+  
+  // Indicate we have visited this node in the tree and store the cvterm
+  // path details that we need for inserting into the cvtermpath table.
+  $visited[$cvterm_id] = [$type_id, $cvterm_id, $root_id, $cv_id, $depth + 1];
+  
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$cvterm_id];
+  
+  // If this term does not have children then return.
+  if (!$children) {
+    return;
+  }
+  
+  // If the term has children then recurse on those.
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $type_id = $child[1];
+    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, $cache, $visited, $depth + 1);
+  }
+}
+
+function _chado_update_cvtermpath_process_visited($visited, TripalJob $job, &$num_handled, $depth  = 1) {
+  
+  foreach ($visited as $subjectid_id => $details) {
+    $num_handled++;
+    if ($job) {
+      $job->setItemsHandled($num_handled);
+    }
+    list ($type_id, $subject_id, $object_id, $cv_id, $pathdistance) = $details;
+    $cvtermpath = new ChadoRecord('cvtermpath');
+    $cvtermpath->setValues([
+      'type_id' =>  $type_id,
+      'subject_id' => $subject_id,
+      'object_id' => $object_id,
+      'cv_id'  => $cv_id,
+      'pathdistance'  => $pathdistance,
+    ]);
+    if (!$cvtermpath->find()) {
+      $cvtermpath->insert();
+    }
+  }
+}
+
+/**
+ * Duplicate of fill_cvtermpath() stored procedure in Chado.
+ *
+ * Identifies all of the root terms of the controlled vocabulary. These
+ * root terms are then processed by calling the
+ * _chado_update_cvtermpath_root_loop() function on each one.
+ *
+ * @param $cvid
+ *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
+ * @param $job_id
+ *
+ * @ingroup tripal_chado_cv_api
+ */
+function chado_update_cvtermpath_orig($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');
@@ -436,8 +683,8 @@ function chado_update_cvtermpath($cv_id, $job_id = NULL){
  * @ingroup tripal_chado_cv_api
  */
 function _chado_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
-  $ttype = db_query(
-    'SELECT cv.cvterm_id 
+  $ttype = db_query('
+     SELECT cv.cvterm_id 
     FROM cvterm cv
     WHERE cv.name = :isa 
           OR cv.name = :is_a

@@ -40,6 +40,20 @@ class TripalJob {
    * used to calculate if the $interval has passed for the next update.
    */
   private $prev_update;
+  
+  
+  /**
+   * The time stamp when the job begins.
+   * 
+   * @var integer
+   */
+  private $start_time;
+  /**
+   * The time from when the setTotalItems is called to the present time.
+   * 
+   * @var
+   */
+  private $progress_start_time;
 
   /**
    * Instantiates a new TripalJob object.
@@ -277,6 +291,9 @@ class TripalJob {
    * Executes the job.
    */
   public function run() {
+    
+    $this->start_time = time();
+    $this->progress_start_time = time();
 
     if (!$this->job) {
       throw new Exception('Cannot launch job as no job is associated with this object.');
@@ -296,7 +313,7 @@ class TripalJob {
       // Set the start time for this job.
       $record = new stdClass();
       $record->job_id = $this->job->job_id;
-      $record->start_time = time();
+      $record->start_time = $this->start_time;
       $record->status = 'Running';
       $record->pid = getmypid();
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -447,6 +464,8 @@ class TripalJob {
    *   The total number of items to process.
    */
   public function setTotalItems($total_items) {
+    $this->progress_start_time = time();
+    
     $this->total_items = $total_items;
   }
 
@@ -472,6 +491,7 @@ class TripalJob {
    *   The total number of items that have been processed.
    */
   public function setItemsHandled($total_handled) {
+    
     // First set the number of items handled.
     $this->num_handled = $total_handled;
 
@@ -487,9 +507,10 @@ class TripalJob {
     $diff = $percent - $this->prev_update;
 
     if ($diff >= $this->interval) {
-
+      $duration = (time() - $this->progress_start_time) / 60;
+      $duration = sprintf("%.2f", $duration);
       $memory = number_format(memory_get_usage());
-      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes.\r";
+      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes. Duration: " . $duration . " mins\r";
       $this->prev_update = $diff;
       $this->setProgress($percent);
     }
