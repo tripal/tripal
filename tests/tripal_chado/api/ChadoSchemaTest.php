@@ -54,8 +54,8 @@ class ChadoSchemaTest extends TripalTestCase {
     $this->assertEquals(
       $version,
       $retrieved_version,
-      t('The version retrieved via ChadoSchema->getVersion, :ret, should equal that set, :set',
-        array(':ret' => $retrieved_version, ':set' => $version))
+      t('The version retrieved via ChadoSchema->getVersion, "!ret", should equal that set, "!set"',
+        array('!ret' => $retrieved_version, '!set' => $version))
     );
 
     // @todo Check version can be retrieved when it's looked up?
@@ -82,8 +82,8 @@ class ChadoSchemaTest extends TripalTestCase {
     $this->assertEquals(
       $schema_name,
       $retrieved_schema,
-      t('The schema name retrieved via ChadoSchema->getSchemaName, :ret, should equal that set, :set',
-        array(':ret' => $retrieved_schema, ':set' => $schema_name))
+      t('The schema name retrieved via ChadoSchema->getSchemaName, "!ret", should equal that set, "!set"',
+        array('!ret' => $retrieved_schema, '!set' => $schema_name))
     );
 
     // @todo Check schema name can be retrieved when it's looked up?
@@ -109,10 +109,63 @@ class ChadoSchemaTest extends TripalTestCase {
       $this->assertArrayHasKey(
         $table_name,
         $returned_tables,
-        t('The table, :known, should exist in the returned tables list for version :version.',
+        t('The table, "!known", should exist in the returned tables list for version !version.',
           array(':known' => $table_name, ':version' => $version))
       );
     }
+  }
+
+  /**
+   * Tests ChadoSchema->getTableSchema() method.
+   *
+   * @dataProvider chadoTableProvider
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   * @group lacey
+   */
+  public function testGetTableSchema($version, $table_name) {
+
+    // Check: a schema is returned that matches what we expect.
+    $chado_schema = new \ChadoSchema($version);
+
+    $table_schema = $chado_schema->getTableSchema($table_name);
+
+    $this->assertNotEmpty(
+      $table_schema,
+      t('Returned schema for "!table" in chado v!version should not be empty.',
+        array('!table' => $table_name, '!version' => $version))
+    );
+
+    $this->assertArrayHasKey(
+      'fields',
+      $table_schema,
+      t('The schema array for "!table" should have columns listed in an "fields" array',
+        array('!table' => $table_name))
+    );
+
+    $this->assertArrayHasKey(
+      'primary key',
+      $table_schema,
+      t('The schema array for "!table" should have the primary key listed in an "primary key" array',
+        array('!table' => $table_name))
+    );
+
+    $this->assertArrayHasKey(
+      'unique keys',
+      $table_schema,
+      t('The schema array for "!table" should have unique keys listed in an "unique keys" array',
+        array('!table' => $table_name))
+    );
+
+    $this->assertArrayHasKey(
+      'foreign keys',
+      $table_schema,
+      t('The schema array for "!table" should have foreign keys listed in an "foreign keys" array',
+        array('!table' => $table_name))
+    );
+
   }
 
   /**
@@ -128,4 +181,22 @@ class ChadoSchemaTest extends TripalTestCase {
       ['1.3', ['analysis_cvterm', 'dbprop', 'organism_pub']],
     ];
    }
+
+  /**
+   * DataProvider, a list of all chado tables.
+   *
+   * @return array
+   */
+  public function chadoTableProvider() {
+
+    $chado_schema = new \ChadoSchema();
+    $version = $chado_schema->getVersion();
+
+    $dataset = [];
+    foreach ($chado_schema->getTableNames() as $table_name) {
+      $dataset[] = [$version, $table_name];
+    }
+
+    return $dataset;
+  }
 }

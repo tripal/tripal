@@ -11,7 +11,7 @@ module_load_include('inc', 'tripal_chado', 'api/ChadoSchema');
  */
 class ChadoComplianceTest extends TripalTestCase {
   // Uncomment to auto start and rollback db transactions per test method.
-  // use DBTransaction;
+  use DBTransaction;
 
   /**
    * DataProvider, a list of all chado tables.
@@ -20,12 +20,15 @@ class ChadoComplianceTest extends TripalTestCase {
    */
   public function chadoTableProvider() {
 
-    // @todo expose all tables.
-    return [
-      ['organism'],
-      ['feature'],
-      ['stock'],
-    ];
+    $chado_schema = new \ChadoSchema();
+    $version = $chado_schema->getVersion();
+
+    $dataset = [];
+    foreach ($chado_schema->getTableNames() as $table_name) {
+      $dataset[] = [$version, $table_name];
+    }
+
+    return $dataset;
   }
 
   /**
@@ -46,26 +49,35 @@ class ChadoComplianceTest extends TripalTestCase {
    * @group chado-compliance
    * @group lacey
    */
-  public function testTableCompliance($table_name) {
+  public function testTableCompliance($schema_version, $table_name) {
 
     // Create the ChadoSchema class to aid in testing.
     $chado_schema = new \ChadoSchema();
+    $version = $chado_schema->getVersion();
 
     // Check #1: The table exists in the correct schema.
     $this->assertTrue(
       $chado_schema->checkTableExists($table_name),
-      t(':table_name should exist in the :chado schema.',
-        array(':table_name' => $table_name, ':chado' => $schema_name))
+      t('"!table_name" should exist in the "!chado" schema v!version.',
+        array('!table_name' => $table_name, '!chado' => $schema_name, '!version' => $version))
     );
 
     // Retrieve the schema for this table.
+    $table_schema = $chado_schema->getTableSchema($table_name);
+    //print "Table ($table_name)! " . print_r($table_schema,TRUE) . "\n";
 
     // For each column in this table...
+    foreach ($table_schema['fields'] as $column_name => $column_details) {
 
       // Check #2: The given field exists in the table.
+      $this->assertTrue(
+        $chado_schema->checkColumnExists($table_name, $column_name),
+        t('The column "!column" must exist in "!table" for chado v!version.',
+          array('!column' => $column_name, '!table' => $table_name, '!version' => $version))
+      );
 
-      // Check #3: The field is the type we expect.
-
+      // @todo Check #3: The field is the type we expect.
+    }
 
     // For each constraint on this table...
 

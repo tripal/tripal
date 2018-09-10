@@ -110,16 +110,56 @@ class ChadoSchema {
 
     // now add in the custom tables too if requested
     if ($include_custom) {
-      $sql = "SELECT table_name FROM {tripal_custom_tables}";
+      $sql = "SELECT table FROM {tripal_custom_tables}";
       $resource = db_query($sql);
 
       foreach ($resource as $r) {
-        $tables[$r->table_name] = $r->table_name;
+        $tables[$r->table] = $r->table;
       }
     }
 
     asort($tables);
     return $tables;
+
+  }
+
+  /**
+   * Retrieves the chado tables Schema API array.
+   *
+   * @param $table
+   *   The name of the table to retrieve.  The function will use the appopriate
+   *   Tripal chado schema API hooks (e.g. v1.11 or v1.2).
+   *
+   * @returns
+   *   A Drupal Schema API array defining the table.
+   */
+  public function getTableSchema($table) {
+
+    // first get the chado version.
+    $v = $this->version;
+
+    // get the table array from the proper chado schema
+    $v = preg_replace("/\./", "_", $v); // reformat version for hook name
+
+    // Call the module_invoke_all.
+    $hook_name = "chado_schema_v" . $v . "_" . $table;
+    $table_arr = module_invoke_all($hook_name);
+
+    // If the module_invoke_all returned nothing then let's make sure there isn't
+    // An API call we can call directly.  The only time this occurs is
+    // during an upgrade of a major Drupal version and tripal_core is disabled.
+    if ((!$table_arr or !is_array($table_arr)) and
+          function_exists('tripal_chado_' . $hook_name)) {
+      $api_hook = "tripal_chado_" . $hook_name;
+      $table_arr = $api_hook();
+    }
+
+    // if the table_arr is empty then maybe this is a custom table
+    if (!is_array($table_arr) or count($table_arr) == 0) {
+      $table_arr = chado_get_custom_table_schema($table);
+    }
+
+    return $table_arr;
 
   }
 
@@ -139,4 +179,53 @@ class ChadoSchema {
     return chado_table_exists($table);
   }
 
+  /**
+   * Check that any given column in a Chado table exists.
+   *
+   * This function is necessary because Drupal's db_field_exists() will not
+   * look in any other schema but the one were Drupal is installed
+   *
+   * @param $table
+   *   The name of the chado table.
+   * @param $column
+   *   The name of the column in the chado table.
+   *
+   * @return
+   *   TRUE if the column exists for the table in the chado schema and
+   *   FALSE if it does not.
+   *
+   * @ingroup tripal_chado_schema_api
+   */
+  public function checkColumnExists($table, $column) {
+    return chado_column_exists($table, $column);
+  }
+
+  /**
+   * Check that any given column in a Chado table exists.
+   *
+   * This function is necessary because Drupal's db_field_exists() will not
+   * look in any other schema but the one were Drupal is installed
+   *
+   * @param sequence
+   *   The name of the sequence
+   * @return
+   *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
+   *
+   * @ingroup tripal_chado_schema_api
+   */
+  public function checkSequenceExists($sequence) {
+    return chado_sequence_exists($sequence);
+  }
+
+  /**
+   * A Chado-aware replacement for the db_index_exists() function.
+   *
+   * @param $table
+   *   The table to be altered.
+   * @param $name
+   *   The name of the index.
+   */
+  function checkIndexExists($table, $name) {
+    return chado_index_exists($table, $name);
+  }
 }
