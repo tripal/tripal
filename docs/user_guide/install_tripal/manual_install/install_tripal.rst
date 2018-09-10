@@ -1,6 +1,15 @@
 Tripal Installation
 ===================
 
+.. note::
+
+  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.  **YOU MUST SET THIS VARIABLE FOR THE BELOW GUIDE TO SUCCEED**.
+
+  .. code-block:: bash
+
+    DRUPAL_HOME=/var/www/html
+
+
 Before installation of Tripal, you must first have a working Drupal installation.  Please see the previous section of this tutorial for step-by-step examples for server setup and Drupal installation instructions.  After installation of Tripal, you may install any Tripal extension modules you may want.
 
 Download Tripal
@@ -24,15 +33,15 @@ A bug exists in Drupal related to the bytea data type in PostgreSQL. At the writ
 
 .. code-block:: bash
 
-  cd /var/www/html
+  cd $DRUPAL_HOME
   wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
   patch -p1 < drupal.pgsql-bytea.27.patch
 
-There is also a bug in the Drupal Views 3.0 code that prevents Tripal's administrative and search data views from functioning. The patch is provided within the tripal_veiws module. To apply the patch execute the following:
+There is also a bug in the Drupal Views 3.0 code that prevents Tripal's administrative and search data views from functioning. The patch is provided within the tripal_views module. To apply the patch execute the following:
 
 .. code-block:: bash
 
-  cd /var/www/html/sites/all/modules/views
+  cd $DRUPAL_HOME/sites/all/modules/views
   patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
 
 Install Tripal
@@ -74,7 +83,7 @@ Jobs in the queue can be executed using drush to manually launch the job:
 
 .. code-block:: bash
 
-  drush trp-run-jobs --username=administrator --root=/var/www/html
+  drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
 
 As the installation of Chado proceeds, we should see output on the terminal console indicating the progress of the installation.  You should see output similar to the following:
 
@@ -108,7 +117,7 @@ To prepare the site click the button Prepare this site.   A new job is added to 
 
 .. code-block:: bash
 
-  drush trp-run-jobs --username=administrator --root=/var/www/html
+  drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
 
 .. note::
 
@@ -125,4 +134,4 @@ Preparing Chado and Drupal in a previous step resulted in the automatic creation
 
 .. image:: install_tripal.install7.png
 
-Review these permissions and set them according to how you want content to be managed.   Typically, the administrator user receives all permissions, and anonymous and authenticated users receive 'View' permissions for all content types.  If you desire to create other types of users, Drupal allows you to do this by creating new types of roles.  For example, if you know that some users will be responsible for curating content, then you may add a curator role by clicking the Roles link in the top right corner of this permissions page.  After the new role is created you can return to the permission page to set the permissions accordingly.
+Review these permissions and set them according to how you want content to be managed.  Typically, the administrator user receives all permissions, and anonymous and authenticated users receive 'View' permissions for all content types.  If you desire to create other types of users, Drupal allows you to do this by creating new types of roles.  For example, if you know that some users will be responsible for curating content, then you may add a curator role by clicking the **Roles** link in the top right corner of this permissions page.  After the new role is created you can return to the permission page to set the permissions accordingly.

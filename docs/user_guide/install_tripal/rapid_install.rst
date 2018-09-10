@@ -1,8 +1,10 @@
 Installation Method #1: Rapid Installation
 ==========================================
 
-Before installing via the rapid installation process please ensure drush is installed, and the server is setup.    Rapid Installation works with Tripal v3.0-rc2 (release candidate 2) and later.   If you are using a previous version of Tripal, please proceed to the step-by-step instructions.
+Before installing via the rapid installation process please ensure drush is installed, and the server is setup.   Rapid Installation works with Tripal v3.0-rc2 (release candidate 2) and later.  If you are using a previous version of Tripal, please proceed to the step-by-step instructions.
+
 Database Setup
+---------------
 
 Before we can install Tripal we must have a database ready for it.  In the server setup instructions were provided to set up a PostgreSQL database server. Now, we need to create the Drupal database. To do so we must first become the PostgreSQL user.
 
@@ -10,7 +12,7 @@ Before we can install Tripal we must have a database ready for it.  In the serve
 
   sudo su - postgres
 
-Next, create the new 'drupal' user account. This account will not be a "superuser' nor allowed to create new roles, but should be allowed to create a database.
+Next, create the new 'drupal' user account. This account will not be a "superuser" nor allowed to create new roles, but should be allowed to create a database.
 
 .. code-block:: bash
 
@@ -31,17 +33,27 @@ We no longer need to be the postgres user so exit
 Tripal Installation
 -------------------
 
-Navigate to the directory you want to create the website. For this example it will be /var/www/html (the typical home location for Ubuntu and CentOS)
+
+.. note::
+
+  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.  **YOU MUST SET THIS VARIABLE FOR THE BELOW GUIDE TO SUCCEED**.
+
+  .. code-block:: bash
+
+    DRUPAL_HOME=/var/www/html
+
+
+Navigate to your Drupal install directory.
 
 .. code-block:: bash
 
-  cd /var/www/html
+  cd $DRUPAL_HOME
 
 .. note::
 
   Make sure you have write permissions within this directory.
 
-Clone the tripal_install project using the git command and move the contents up one level into the web document directory:
+Clone the tripal_install project using the ``git`` command and move the contents up one level into the web document directory:
 
 .. code-block:: bash
 
@@ -70,7 +82,7 @@ From this point onward, you will be asked a series of questions in the terminal 
      Administrator password: P@55w0rd
   Is this information correct? (y/n): y
 
-Next, you will be asked for the database information: database name, database  username, database  user password, host, and port.  The database name and user should match what you created in the previous section (i.e. database name = 'drupal' and database user = 'drupal').  The 'host' is the name of the server or its IP address, and the port is a numerical value that PostgreSQL uses for communication.  By default PostgreSQL uses the port 5432.  If a mistake is made you can make corrections as shown in the following screenshot:
+Next, you will be asked for the database information: database name, database  username, database  user password, host, and port.  The database name and user should match what you created in the previous section (i.e. database name = 'drupal' and database user = 'drupal').  The 'host' is the name of the server or its IP address, and the port is a numerical value that PostgreSQL uses for communication.  By default PostgreSQL uses the port 5432.  If a mistake is made you can make corrections as shown below:
 
 ::
 

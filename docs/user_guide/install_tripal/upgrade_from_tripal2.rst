@@ -137,7 +137,7 @@ The process allows you to create Tripal 3 content types exposing the same data a
 
 4. Select the checkbox beside each Tripal v3 type you would like to create. The number of entities/pages that will be created for that content type is shown in brackets beside the name.
 
-5. Then click the "Migrate [Tripal v2 Type]" button. This will submit a Tripal job to create the requested content. Submit this job manually on the command-line as follows:
+5. Then click the "Migrate [Tripal v2 Type]" button. This will submit a Tripal job to create the requested content. Submit this job manually on the command-line as follows (note we ``cd`` to the project root at ``/var/www/html``: please navigate to wherever your site is installed):
 
   .. code-block:: bash
 
