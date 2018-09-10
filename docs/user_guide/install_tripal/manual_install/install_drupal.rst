@@ -33,29 +33,36 @@ We no longer need to be the postgres user so exit
 Software Installation
 ---------------------
 
-We want to install Drupal into our web document root (/var/www/html).   Before we can install Drupal we must ensure that that we are allowed to add files into the /var/www/html directory.  Select a user account that will be the owner of all web files and change the owner of the /var/www/html directory to that user:
+.. note::
+
+  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.
+
+  .. code-block:: bash
+
+    DRUPAL_HOME = /var/www/html
+
+
+Before we can install Drupal we must ensure that that we are allowed to add files into the root directory.  Select a user account that will be the owner of all web files and change the owner of the ``$DRUPAL_HOME`` directory to that user:
 
 .. code-block:: bash
 
-  sudo chown -R [user] /var/www/html
+
+  sudo chown -R [user] $DRUPAL_HOME
 
 Substitute [user] for the name of the user that will own the web files.
 
 
 .. note::
 
-  The apache web server runs as the user 'www-data'.  For security reasons you should chose a user other than 'www-data' to be the owner of the /var/www/html directory.
+  The apache web server runs as the user 'www-data'.  For security reasons you should chose a user other than 'www-data' to be the owner of the Drupal root directory.
 
-Tripal 3.x requires version 7.x of Drupal. Drupal can be freely downloaded from the http://www.drupal.org website. At the writing of this Tutorial the most recent version of Drupal 7 is version 7.59. The software can be downloaded manually from the Drupal website through a web browser or we can use the 'wget' command to retrieve it:
+Tripal 3.x requires version 7.x of Drupal. Drupal can be freely downloaded from the http://www.drupal.org website. At the writing of this Tutorial the most recent version of Drupal 7 is version 7.59. The software can be downloaded manually from the Drupal website through a web browser or we can use the ``wget`` command to retrieve it:
 
 .. code-block:: bash
 
-  cd /var/www/html
+  cd $DRUPAL_HOME
   wget http://ftp.drupal.org/files/projects/drupal-7.59.tar.gz
 
-.. note::
-
-  If you are using older version of Ubuntu the web root directory may be /var/www rather than /var/www/html and you may need to change the path accordingly.
 
 Next, we want to install Drupal. We will use the tar command to uncompress the software:
 
@@ -78,11 +85,11 @@ If an index.html file is present (as is the case with Ubuntu installations) you 
 
 .. note::
 
-  It is extremely important the the hidden file .htaccess is also moved (note the second 'mv' command above. Check to make sure this file is there
+  It is extremely important the the hidden file ``.htaccess`` is also moved (note the second ``mv`` command above. Check to make sure this file is there:
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  ls -l .htaccess
+    ls -l .htaccess
 
 Configuration File
 ------------------
@@ -93,15 +100,15 @@ First navigate to the location where the configuration file should go:
 
 .. code-block:: bash
 
-  cd /var/www/html/sites/default/
+  cd $DRUPAL_HOME/sites/default/
 
-Next, copy the example configuration that already exists in the directory to be our actual configuration file by renaming it to settings.php.
+Next, copy the example configuration that already exists in the directory to be our actual configuration file by renaming it to ``settings.php``.
 
 .. code-block:: bash
 
   cp default.settings.php settings.php
 
-Now, we need to edit the configuration file to tell Drupal how to connect to our database server. To do this we'll use an easy to use text editor gedit
+Now, we need to edit the configuration file to tell Drupal how to connect to our database server. To do this we'll use an easy to use text editor **gedit**.
 
 .. code-block:: bash
 
@@ -127,17 +134,19 @@ and then insert the following array just after the above line:
   );
 
 Replace the text '********' with your database password for the user 'drupal' created previously.  Save the configuration file and close the editor.
-Files directory creation
 
-Finally, we need to create the directory where Drupal will have write-access to add files.  By default, Drupal expects to have write permission in the /var/www/html/sites/default/files directory.  Therefore, we will set group ownership of the directory to the group used by the Apache web server.  This will be the user that Drupal uses to write files.
+Files Directory Creation
+--------------------------
+
+Finally, we need to create the directory where Drupal will have write-access to add files.  By default, Drupal expects to have write permission in the ``$DRUPAL_HOME/sites/default/files`` directory.  Therefore, we will set group ownership of the directory to the group used by the Apache web server.  This will be the user that Drupal uses to write files.
 
 .. code-block:: bash
 
-  mkdir -p /var/www/html/sites/default/files
-  sudo chgrp [group] /var/www/html/sites/default/files
-  sudo chmod g+rw /var/www/html/sites/default/files
+  mkdir -p $DRUPAL_HOME/sites/default/files
+  sudo chgrp [group] $DRUPAL_HOME/sites/default/files
+  sudo chmod g+rw $DRUPAL_HOME/sites/default/files
 
-Substitute [group] for the name of the web server's group.  In Ubuntu this is www-data in CentOS this is apache.The above commands creates the directory, sets the group ownership for group. and gives read/write permissions to the group on the directory.
+Substitute [group] for the name of the web server's group.  In Ubuntu this is www-data in CentOS this is apache. The above commands creates the directory, sets the group ownership for group, and gives read/write permissions to the group on the directory.
 
 Web-based Steps
 ---------------
