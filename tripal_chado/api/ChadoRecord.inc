@@ -170,10 +170,7 @@ class ChadoRecord {
       foreach ($col_schema as $param => $val) {
         if (preg_match('/not null/i', $param) and $col_schema[$param]) {
           $this->required_cols[] = $column;
-          // Currently all required columns are missing except the primary key.
-          if ($column == $this->pkey) {
-            continue;
-          }
+          // Currently all required columns are missing.
           $this->missing_required_col[$column] = TRUE;
         }
       }
@@ -307,7 +304,9 @@ class ChadoRecord {
     try {
       $result = chado_query($sql, $insert_args);
       if ($this->pkey) {
-        $this->values[$this->pkey] = $result->fetchField();
+        $record_id = $result->fetchField();
+        $this->values[$this->pkey] = $record_id;
+        $this->record_id = $record_id;
       }
     }
     catch (Exception $e) {

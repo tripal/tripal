@@ -1235,6 +1235,7 @@ class OBOImporter extends TripalImporter {
         'dbxref_id' => $dbxref->getID(),
         'is_relationshiptype' => $is_relationshiptype,
         'is_obsolete' => $is_obsolete,
+        'dbxref_id' => $dbxref->getValue('dbxref_id'),
       ]);
       
       // If the insert failes lets catch the error so we can

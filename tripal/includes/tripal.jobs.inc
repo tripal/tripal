@@ -347,7 +347,7 @@ function tripal_jobs_view($job_id) {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
+      'class' => array('collapsible'),
     ),
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
@@ -363,7 +363,7 @@ function tripal_jobs_view($job_id) {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
+      'class' => array('collapsible'),
     ),
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
