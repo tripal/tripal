@@ -589,14 +589,7 @@ class OBOImporter extends TripalImporter {
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->obo_namespaces as $namespace => $cv_id) {
       $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
-      // First, if this is not a subset (e.g. GO Slims) then clear out the 
-      // cvtermpath records first.
-      if (!$this->is_subset) {
-        chado_update_cvtermpath($cv_id, FALSE, $this->job);
-      }
-      else {
-        chado_update_cvtermpath($cv_id, TRUE, $this->job);
-      }
+      chado_update_cvtermpath($cv_id, $this->job);
     }
   }
   /**

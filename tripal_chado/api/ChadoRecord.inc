@@ -298,14 +298,14 @@ class ChadoRecord {
     $sql = 'INSERT INTO {' . $this->table_name . '} (' .
       implode(", ", $insert_cols) . ') VALUES (' .
       implode(", ", $insert_vals) . ')';
-
+      if ($this->pkey) {
+        $sql .= ' RETURNING ' . $this->pkey;
+      }
     try {
-      chado_query($sql, $insert_args);
-      // @todo we can speed up inserts if we can find a way to not have to
-      // run the find(), but get the newly inserted record_id directly
-      // from the insert command.
-      // One option may be to use the `RETURNING [pkey]` keywords in the SQL statement.
-      $this->find();
+      $result = chado_query($sql, $insert_args);
+      if ($this->pkey) {
+        $this->values[$this->pkey] = $result->fetchField();
+      }
     }
     catch (Exception $e) {
       $message = t('ChadoRecord::insert(). Could not insert a record into the ' . 

@@ -33,14 +33,7 @@ class TripalJob {
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
    */
-  private $interval;
-
-  /**
-   * Each time the job progress is updated this variable gets set.  It is
-   * used to calculate if the $interval has passed for the next update.
-   */
-  private $prev_update;
-  
+  private $interval;  
   
   /**
    * The time stamp when the job begins.
@@ -48,12 +41,19 @@ class TripalJob {
    * @var integer
    */
   private $start_time;
+  
   /**
    * The time from when the setTotalItems is called to the present time.
    * 
    * @var
    */
   private $progress_start_time;
+  
+  /**
+   * Stores the last percentage that progress was reported.
+   * @var integer
+   */
+  private $reported = 0;
 
   /**
    * Instantiates a new TripalJob object.
@@ -503,17 +503,19 @@ class TripalJob {
 
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
-    $percent = sprintf("%.2f", ($this->num_handled / $this->total_items) * 100);
-    $diff = $percent - $this->prev_update;
+    $percent = ($this->num_handled / $this->total_items) * 100;
+    $ipercent = (int) $percent;
 
-    if ($diff >= $this->interval) {
+    // If we've reached our interval then print update info.
+    if ($ipercent > 0 and $ipercent != $this->reported and ($ipercent % $this->interval) == 0) {
       $duration = (time() - $this->progress_start_time) / 60;
       $duration = sprintf("%.2f", $duration);
       $memory = memory_get_usage();
       $fmemory = number_format($memory);
-      print "Percent complete: " . $percent . "%. Memory: " . $fmemory . " bytes. Duration: " . $duration . " mins\r";
-      $this->prev_update = $diff;
+      $spercent = sprintf("%d", $percent);
+      print "Percent complete: " . $spercent . "%. Memory: " . $fmemory . " bytes. Duration: " . $duration . " mins\r";
       $this->setProgress($percent);
+      $this->reported = $ipercent;
     }
   }
 
