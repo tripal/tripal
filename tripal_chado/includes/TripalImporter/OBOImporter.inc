@@ -1901,27 +1901,46 @@ class OBOImporter extends TripalImporter {
     $matches = [];
     if (preg_match('/\"(.*?)\".*(EXACT|NARROW|BROAD|RELATED)/', $synonym, $matches)) {
       $def = $matches[1];
-      $syn_type = $matches[2];
+      $syn_type = strtolower($matches[2]);
     }
     
     // Get the syn type cvterm.
     if (!$syn_type) {  
       $syn_type = 'exact';
     }
-    $syn_type = $this->syn_types[$syn_type];
+    $syn_type_term = $this->syn_types[$syn_type];
+    if (!$syn_type_term) {
+      throw new Exception(t('Cannot find synonym type: !type', ['!type' => $syn_type]));
+    }
+    
+    // The synonym can only be 255 chars in the cvtermsynonym table.
+    // to prevent faling we have to truncate.
+    if (strlen($def) > 255) {
+      $def = substr($def, 0, 252) . "...";
+    }
         
     // Now save the new synonym.
     $cvtermsynonym = new ChadoRecord('cvtermsynonym');
     $cvtermsynonym->setValues([
       'cvterm_id' => $cvterm_id,
       'synonym' => $def,
-      'type_id' => $syn_type->cvterm_id
     ]);
     
     // If the insert fails then catch the error and generate a more meaningful
     // message that helps with debugging.
     try {
-      $cvtermsynonym->insert();
+      // The unique constraint for the cvterm_synonym table is with the
+      // cvterm_id and the synonymn. It does not inclue the type_id.
+      // The CHEBI contains terms with the same synonym but with different
+      // types. For example:
+      // synonym: "2-chloro-N-(2-chloroethyl)-N-methylethanamine hydrochloride" EXACT IUPAC_NAME [IUPAC]
+      // synonym: "2-chloro-N-(2-chloroethyl)-N-methylethanamine hydrochloride" RELATED [ChemIDplus]
+      // In this case on the first one is added.  
+      // @todo: This is a deficiency with Chado that should be corrected.      
+      if (!$cvtermsynonym->find()) {
+        $cvtermsynonym->setValue('type_id', $syn_type_term->cvterm_id);        
+        $cvtermsynonym->insert();
+      }
     }
     catch (Exception $e) {
       throw new Exception(t('Cannot add synonym, "!synonym" to term: !id. ' .
@@ -2280,7 +2299,9 @@ class OBOImporter extends TripalImporter {
       'cvterm_id' => $cvterm_id,
       'dbxref_id' => $dbxref->getID(),
     ]);
-    $cvterm_dbxref->insert();
+    if (!$cvterm_dbxref->find()) {
+      $cvterm_dbxref->insert();
+    }
   }
 
   /**
@@ -2329,7 +2350,9 @@ class OBOImporter extends TripalImporter {
       'cvterm_id' => $cvterm_id,
       'dbxref_id' => $dbxref->getID(),
     ]);
-    $cvterm_dbxref->insert();
+    if (!$cvterm_dbxref->find()) {
+      $cvterm_dbxref->insert();
+    }
   }
 
   /**
