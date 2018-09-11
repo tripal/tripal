@@ -177,11 +177,145 @@ class ChadoSchema {
 
     // if the table_arr is empty then maybe this is a custom table
     if (!is_array($table_arr) or count($table_arr) == 0) {
-      $table_arr = chado_get_custom_table_schema($table);
+      $table_arr = $this->getCustomTableSchema($table);
     }
 
     return $table_arr;
 
+  }
+
+  /**
+   * Retrieves the schema array for the specified custom table.
+   *
+   * @param $table
+   *   The name of the table to create.
+   *
+   * @return
+   *   A Drupal-style Schema API array definition of the table. Returns
+   *   FALSE on failure.
+   */
+  public function getCustomTableSchema($table) {
+
+    $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
+    $results = db_query($sql, array(':table_name' => $table));
+    $custom = $results->fetchObject();
+    if (!$custom) {
+      return FALSE;
+    }
+    else {
+      return unserialize($custom->schema);
+    }
+  }
+
+  /**
+   *  Returns all chado base tables.
+   *
+   *  Base tables are those that contain the primary record for a data type. For
+   *  example, feature, organism, stock, are all base tables.  Other tables
+   *  include linker tables (which link two or more base tables), property tables,
+   *  and relationship tables.  These provide additional information about
+   *  primary data records and are therefore not base tables.  This function
+   *  retreives only the list of tables that are considered 'base' tables.
+   *
+   *  @return
+   *    An array of base table names.
+   *
+   *  @ingroup tripal_chado_schema_api
+   */
+  function getBaseTables() {
+
+    // Initialize the base tables with those tables that are missing a type.
+    // Ideally they should have a type, but that's for a future version of Chado.
+    $base_tables = array('organism', 'project', 'analysis', 'biomaterial',
+      'eimage', 'assay');
+
+    // We'll use the cvterm table to guide which tables are base tables. Typically
+    // base tables (with a few exceptions) all have a type.  Iterate through the
+    // referring tables.
+    $schema = $this->getTableSchema('cvterm');
+    $referring = $schema['referring_tables'];
+    foreach ($referring as $tablename) {
+
+      // Ignore the cvterm tables, relationships, chadoprop tables.
+      if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
+          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+          preg_match('/_cvterm$/', $tablename) ||
+          // Ignore prop tables
+          preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
+          // Ignore nd_tables
+          preg_match('/^nd_/', $tablename)) {
+        continue;
+      }
+      else {
+        array_push($base_tables, $tablename);
+      }
+    }
+
+    // Remove any linker tables that have snuck in.  Linker tables are those
+    // whose foreign key constraints link to two or more base table.
+    $final_list = array();
+    foreach ($base_tables as $i => $tablename) {
+      // A few tables break our rule and seems to look
+      // like a linking table, but we want to keep it as a base table.
+      if ($tablename == 'biomaterial' or $tablename == 'assay' or $tablename == 'arraydesign') {
+        $final_list[] = $tablename;
+        continue;
+      }
+
+      // Remove the phenotype table. It really shouldn't be a base table as
+      // it is meant to store individual phenotype measurements.
+      if ($tablename == 'phenotype') {
+        continue;
+      }
+      $num_links = 0;
+      $schema = $this->getTableSchema($tablename);
+      $fkeys = $schema['foreign keys'];
+      foreach ($fkeys as $fkid => $details) {
+        $fktable = $details['table'];
+        if (in_array($fktable, $base_tables)) {
+          $num_links++;
+        }
+      }
+      if ($num_links < 2) {
+        $final_list[] = $tablename;
+      }
+    }
+
+    // Now add in the cvterm table to the list.
+    $final_list[] = 'cvterm';
+
+    // Sort the tables and return the list.
+    sort($final_list);
+    return $final_list;
+
+  }
+
+  /**
+   * Get information about which Chado base table a cvterm is mapped to.
+   *
+   * Vocbulary terms that represent content types in Tripal must be mapped to
+   * Chado tables.  A cvterm can only be mapped to one base table in Chado.
+   * This function will return an object that contains the chado table and
+   * foreign key field to which the cvterm is mapped.  The 'chado_table' property
+   * of the returned object contains the name of the table, and the 'chado_field'
+   * property contains the name of the foreign key field (e.g. type_id), and the
+   * 'cvterm' property contains a cvterm object.
+   *
+   * @params
+   *   An associative array that contains the following keys:
+   *     - cvterm_id:  the cvterm ID value for the term.
+   *     - vocabulary: the short name for the vocabulary (e.g. SO, GO, PATO)
+   *     - accession:  the accession for the term.
+   *     - bundle_id:  the ID for the bundle to which a term is associated.
+   *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id' can
+   *   be used on it's own.
+   * @return
+   *   An object containing the chado_table and chado_field properties or NULL if
+   *   if no mapping was found for the term.
+   */
+  function getCvtermMapping($params) {
+    return chado_get_cvterm_mapping($params);
   }
 
   /**
