@@ -588,7 +588,7 @@ class OBOImporter extends TripalImporter {
     // Upate the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->obo_namespaces as $namespace => $cv_id) {
-      $this->logMessage("- Loading paths for @vocab", array('@vocab' => $namespace));
+      $this->logMessage("- Loading paths for vocabulary: @vocab", array('@vocab' => $namespace));
       chado_update_cvtermpath($cv_id, $this->job);
     }
   }
@@ -2208,7 +2208,7 @@ class OBOImporter extends TripalImporter {
     // Add the CV record if it doesn't exist.
     $cv = NULL;
     if (array_key_exists($cvname, $this->all_cvs)) {
-      $cv = $this->all_dbs[$cvname];
+      $cv = $this->all_cvs[$cvname];
     }
     else {
       // If it's not in the cache we can assume it doesn't exist and insert.
