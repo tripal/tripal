@@ -232,7 +232,16 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group chado-schema
    */
   public function testGetCvtermMapping($version, $table_name) {
-    // @todo This should be tested...
+
+    // Ideally we would create a new chado table + mapping and then test this pulls it out
+    // since admin can re-map terms. However, that's more then I meant to bite off right
+    // now...
+
+    // @todo Test that known terms match the tables we expect.
+
+    // @todo Test that a non-existent term throws an error.
+
+    // @todo Test that an fake unmapped term returns no mapping.
   }
 
   /**

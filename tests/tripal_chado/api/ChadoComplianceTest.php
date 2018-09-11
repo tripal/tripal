@@ -74,7 +74,13 @@ class ChadoComplianceTest extends TripalTestCase {
           array('!column' => $column_name, '!table' => $table_name, '!version' => $version))
       );
 
-      // @todo Check #3: The field is the type we expect.
+      // Check #3: The field is the type we expect.
+      $this->assertTrue(
+        $chado_schema->checkColumnType($table_name, $column_name, $column_details['type']),
+        t('The column "!table.!column" must be of type "!type" for chado v!version.',
+          array('!column' => $column_name, '!table' => $table_name,
+            '!version' => $version, '!type' => $column_details['type']))
+      );
     }
 
     // For each constraint on this table...

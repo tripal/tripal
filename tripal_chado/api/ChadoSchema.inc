@@ -122,7 +122,7 @@ class ChadoSchema {
         $tables[$table] = $table;
       }
     }
-    if ($this->version == '1.11' or $v == '1.11 or older') {
+    if ($this->version == '1.11' or $this->version == '1.11 or older') {
       $tables_v1_11 = tripal_chado_chado_get_v1_11_tables();
       foreach ($tables_v1_11 as $table) {
         $tables[$table] = $table;
@@ -353,6 +353,105 @@ class ChadoSchema {
    */
   public function checkColumnExists($table, $column) {
     return chado_column_exists($table, $column);
+  }
+
+  /**
+   * Check that any given column in a Chado table exists.
+   *
+   * This function is necessary because Drupal's db_field_exists() will not
+   * look in any other schema but the one were Drupal is installed
+   *
+   * @param $table
+   *   The name of the chado table.
+   * @param $column
+   *   The name of the column in the chado table.
+   * @param $type
+   *   (OPTIONAL) The PostgreSQL type to check for. If not supplied it will be
+   *   looked up via the schema (PREFERRED).
+   *
+   * @return
+   *   TRUE if the column type matches what we expect and
+   *   FALSE if it does not.
+   *
+   * @ingroup tripal_chado_schema_api
+   */
+  public function checkColumnType($table, $column, $expected_type = NULL) {
+
+    // Ensure this column exists before moving forward.
+    if (!$this->checkColumnExists($table, $column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'Unable to check the type of !table!column since it doesn\'t appear to exist in your site database.',
+        array('!column' => $column, '!table' => $table)
+      );
+      return FALSE;
+    }
+
+    // Look up the type using the Schema array.
+    if ($expected_type === NULL) {
+      $schema = $this->getTableSchema($table, $column);
+
+      if (is_array($schema) AND isset($schema['fields'][$column])) {
+        $expected_type = $schema['fields'][$column]['type'];
+      }
+      else {
+        tripal_report_error(
+          'ChadoSchema',
+          TRIPAL_WARNING,
+          'Unable to check the type of !table!column due to being unable to find the schema definition.',
+          array('!column' => $column, '!table' => $table)
+        );
+        return FALSE;
+      }
+    }
+
+    // There is some flexibility in the expected type...
+    // Fix that here.
+    switch ($expected_type) {
+      case 'int':
+        $expected_type = 'integer';
+        break;
+      case 'serial':
+        $expected_type = 'integer';
+        break;
+      case 'varchar':
+        $expected_type = 'character varying';
+        break;
+      case 'datetime':
+        $expected_type = 'timestamp without time zone';
+        break;
+      case 'char':
+        $expected_type = 'character';
+        break;
+    }
+
+    // Grab the type from the current database.
+    $query = 'SELECT data_type
+              FROM information_schema.columns
+              WHERE
+                table_name = :table AND
+                column_name = :column AND
+                table_schema = :schema
+              ORDER  BY ordinal_position
+              LIMIT 1';
+    $type = db_query($query,
+      array(':table' => $table, ':column' => $column, ':schema' => $this->schema_name))->fetchField();
+
+    // Finally we do the check!
+    if ($type === $expected_type) {
+      return TRUE;
+    }
+    elseif (($expected_type == 'float') AND (($type == 'double precision') OR ($type == 'real'))) {
+      return TRUE;
+    }
+    elseif ($type == 'smallint' AND $expected_type == 'integer') {
+      return TRUE;
+    }
+    else {
+      print "$table.$column... Expected: $expected_type, Actual: $type.\n";
+      return FALSE;
+    }
   }
 
   /**
