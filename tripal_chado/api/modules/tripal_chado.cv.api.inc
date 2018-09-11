@@ -436,6 +436,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
         INNER JOIN {cvterm} CVTO on CVTO.cvterm_id = CVTR.object_id
         INNER JOIN {cvterm} CVTS on CVTS.cvterm_id = CVTR.subject_id
       WHERE CVTO.cv_id = :cv_id 
+      ORDER BY CVTR.object_id, CVTR.subject_id
     ";
     $rels = chado_query($sql, [':cv_id' => $cv_id]);
     $total_items;
@@ -618,14 +619,14 @@ function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
   foreach ($children as $child) {
     $child_id = $child[0];
     $child_type_id = $child[1];
-    
-    _chado_update_cvtermpath_add_relationship($child_type_id, $child_id, $root_id,
-      $cv_id, $next_depth);  
-    
+         
     // Don't descend for children we've already seen.
     if (array_key_exists($child_id, $cache['nodes_processed'])) {
       continue;
     }
+    
+    _chado_update_cvtermpath_add_relationship($child_type_id, $child_id, $root_id,
+      $cv_id, $next_depth);
     
     _chado_update_cvtermpath_process_children($cv_id, $root_id, $child_id, $path, $cache, $next_depth);
   }
