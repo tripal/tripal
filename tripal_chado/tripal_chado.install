@@ -1771,3 +1771,32 @@ function tripal_chado_update_7333() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * SQL Fix for the db2cv_mview materialized view.
+ */
+function tripal_chado_update_7334() {
+  
+  try {
+    $query = '
+       SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
+         COUNT(CVT.cvterm_id) as num_terms
+       FROM cv CV
+         INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
+         INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+         INNER JOIN db DB on DB.db_id = DBX.db_id
+       WHERE CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+       GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
+       ORDER BY DB.name
+    ';
+    $mview_id = tripal_get_mview_id('db2cv_mview');
+    if($mview_id) {
+      $sql = "UPDATE {tripal_mviews} set query = :query WHERE mview_id = :mview_id";
+      db_query($sql, [':query' => $query, ':mview_id' => $mview_id]);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

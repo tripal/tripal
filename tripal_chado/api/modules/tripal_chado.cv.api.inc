@@ -413,25 +413,39 @@ function _chado_update_cvtermpath_add_constraints() {
     "FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED";
   db_query($sql);
 }
+
 /**
- * Duplicate of fill_cvtermpath() stored procedure in Chado.
+ * Replacement for the fill_cvtermpath() stored procedure in Chado.
  *
- * Identifies all of the root terms of the controlled vocabulary. These
- * root terms are then processed by calling the
- * _chado_update_cvtermpath_root_loop() function on each one.
+ * Fills the cvtermpath table of Chado with relationships between every
+ * node in the ontology graph and all of it's descendents.  This was 
+ * previously performed using the fill_cvtermpath() stored procedure of Chado
+ * but that function cannot handle loops in the ontology graphs and results
+ * in stack depth errors in PostgreSQL.
  *
- * @param $cvid
+ * @param $cv_id
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
- * @param $job_id
+ * @param $job
+ *   An instance of a TripalJob.
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
+function chado_update_cvtermpath($cv_id, $clear = FALSE, $job = NULL) {
+  
+  $cv = new ChadoRecord('cv', $cv_id);
+  print "Building cvterm paths for vocabulary: " . $cv->getValue('name') ."\n"; 
+  
+  if ($clear) {
+    print "Clearing the cvtermpath table for this vocabulary...\n";
+    chado_clear_cvtermpath($cv_id);  
+    print "Clearing completed.\n";
+  }
   
   // The cache is used to limit repetitive queries by storing known data.
   $cache = [
     'rels' => [],
     'processed' => [],
+    'is_a' => NULL,
   ];
   
   // TODO: there's a function to determine the current Chado instance.
@@ -446,9 +460,11 @@ function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
     // Get the is_a term. The OBO importer adds this for evey vocabulary.
     $sql = "SELECT * FROM cvterm WHERE name = :is_a and cv_id = :cv_id";
     $args = [':is_a' => 'is_a', ':cv_id' => $cv_id];
-    $is_a = chado_query($sql, $args)->fetchObject();
+    $cache['$is_a'] = chado_query($sql, $args)->fetchObject();
     
-    // First cache all the relationships for this vocaublary.
+    // First cache all the relationships for this vocaublary so that we
+    // don't have to do repetitive queries to Chado.
+    print "Retrieving relationships...\n";
     $sql = "
       SELECT CVTR.subject_id, CVTR.type_id, CVTR.object_id, CVTS.name
       FROM {cvterm_relationship} CVTR
@@ -457,8 +473,16 @@ function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
       WHERE CVTO.cv_id = :cv_id 
     ";
     $rels = chado_query($sql, [':cv_id' => $cv_id]);
+    $total_items;
     while ($rel = $rels->fetchObject()) {
       $cache['rels'][$rel->object_id][] = [$rel->subject_id, $rel->type_id, $rel->name];
+    }
+    $total_items = count(array_keys($cache['rels']));
+    if ($job) {
+      $job->setTotalItems($total_items);
+      $job->logMessage('Note: Progress updates occur as each term is processed and ' . 
+        'some terms take longer than others.');
+      $job->setProgress(0);
     }
     
     // Next get the tree roots. These are terms that are in relationships as
@@ -474,25 +498,24 @@ function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
     $roots = chado_query($sql, [':cvid' => $cv_id]);
      
     // Iterate through the tree roots.
+    print "Processing terms...\n";
     while ($root = $roots->fetchObject()) {
       $root_id =  $root->cvterm_id;
       $root_name = $root->name;
-      $num_handled = 0;
       
-      // Add each root as a reference to itself in the cvtermpath table.
-      $cvtermpath = new ChadoRecord('cvtermpath');
-      $cvtermpath->setValues([
-        'type_id' => $is_a->cvterm_id,
-        'object_id' => $root_id,
-        'subject_id' => $root_id,
-        'cv_id' => $cv_id,
-        'pathdistance' => 1,
-      ]);
-      if (!$cvtermpath->find()) {
-        $cvtermpath->insert();
+      if ($job) {
+        $job->logMessage('Processing tree root: ' . $root_name . '...');
       }
       
-      _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job, $num_handled);
+//       _chado_update_cvtermpath_traverse_tree($root_id, $cache, 0);
+//       return;
+      
+      // Now start descending through the tree and add the relationships
+      // to the cvtermpath table.
+      $num_handled = 0;
+      $depth = 0;
+      _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job, 
+        $num_handled, $clear, $depth);
     }
     
     // Restore the table constraints and indexes.
@@ -505,14 +528,17 @@ function chado_update_cvtermpath($cv_id, TripalJob $job = NULL) {
   }
 }
 
-function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache, TripalJob $job, &$num_handled, $root_depth = 0) {
+/**
+ * 
+ */
+function _chado_update_cvtermpath_traverse_tree($root_id, &$cache, $depth) {
+  
+  $mem = memory_get_usage();
+  $memory = number_format($mem);
+  print $memory . " $depth\n";
   
   // Mark this node as having been processed as a root node.
   $cache['processed'][$root_id] = TRUE;
-  
-  // An array to keep track of which terms have been visited when descending
-  // the tree. We'll use this to avoid loops.
-  $visited = [];
   
   // Get this term's children and recurse.
   $children = $cache['rels'][$root_id];
@@ -522,33 +548,101 @@ function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache, Tr
     return;
   }
   
-  // Iterate through the children and descend the tree.
+  $next_depth = $depth +1;
   foreach ($children as $child) {
     $child_id = $child[0];
     $type_id = $child[1];
     $name = $child[2];
-    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, $cache, $visited, 1);
-  }
-  
-  // Now that we've descended the tree we can calculate how many entries we
-  // will add to the cvterm table. We only want to do this with a root_depth
-  // level of 0 because this is the top level root term.
-  if ($root_depth == 0) {
-    $num_records = 0;
-    foreach ($visited as $subject_id => $details) {
-      $depth = $details[4];
-      $num_records += $depth; 
+    
+    // Don't use a node as a root if we've already used it once before.
+    if (array_key_exists($child_id, $cache['processed'])) {
+      continue;
     }
-    print "Adding " . number_format($num_records) . " paths for root: '$root_name'\n";
-    if ($job) {
-      $job->setTotalItems($num_records);
-    }
+    
+    // recurse.
+    _chado_update_cvtermpath_traverse_tree($child_id, $cache, $next_depth);
   }
+}
 
+/**
+ * Treats a term within the ontology as a root. 
+ * 
+ * In order to add all relationships between a term and it's descendents each
+ * term gets it's turn as a "root".  The first time this function is called
+ * it should be called with the actual root's of the ontology.  This function
+ * will then recursively treat each child term within the tree as a root in
+ * order to find all relationships.
+ * 
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $root_name
+ *   The name of this root term.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $job
+ *   The TripalJob instance.
+ * @param $num_handled
+ *   Used to keep track of the number of nodes that have been handled for
+ *   progress reporting.
+ * @param $clear
+ *   A flag indicating if the cvtermpath was cleared for this vocabulary
+ *   prior to processing the tree.
+ * @param $root_depth
+ *   The current depth in the tree of this term.
+ */
+function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache, 
+  $job, &$num_handled, $clear, $root_depth = 0) {
+      
+    
+  $mem = memory_get_usage();
+  $memory = number_format($mem);
+  print $memory . " $root_depth\n";
+    
+  // Mark this node as having been processed as a root node.
+  $cache['processed'][$root_id] = TRUE;
   
-  // Insert into the cvtermpath table.
-  _chado_update_cvtermpath_process_visited($visited, $job, $num_handled, 1);
+  // For the actual tree roots we need to add a relatioship to themselves.
+  if ($root_depth == 0) {
+    $is_a = $cache['$is_a'];
+    $type_id = $is_a->cvterm_id;
+    $depth = 1;
+    _chado_update_cvtermpath_add_relationship($type_id, $root_id, $root_id, $cv_id, $depth, $clear);
+  }
   
+  // The $path variable contains only the current path on the descent. This
+  // is used for detecting loops in the graph. If we encounter a node a 
+  // second time while traversing a single path of the tree then we've hit
+  // a loop.
+  $path = [];
+  $path[] = $root_id;
+  
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$root_id];
+  
+  // If there are no children do nothing.
+  if (!$children) {
+    return;
+  }
+    
+  // Set the job progress.
+  $num_handled++;
+  if ($job) {
+    //print "$root_name\n";
+    //$job->setItemsHandled($num_handled);
+  }
+  
+  // Iterate through the children and descend the tree.
+   foreach ($children as $child) {
+    $child_id = $child[0];
+    $type_id = $child[1];
+    $name = $child[2];
+    $path[$child_id];
+    $next_depth = 1;
+    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, 
+      $path, $cache, $clear, $next_depth);
+  } 
   
   // Next make each child of this node a root and recurse again.
   foreach ($children as $child) {
@@ -561,22 +655,63 @@ function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache, Tr
       continue;
     }
     
-    // Process this child as a root.
-    _chado_update_cvtermpath_root($cv_id, $child_id, $name, $cache, $job, $num_handled, $root_depth + 1);
+    // Process this child as a root. The path is used to catch for loops
+    // in the tree. If we encounter a node on the same path then we've 
+    // found a loop and we should stop.
+    $path[] = $name;
+    $next_depth = $root_depth + 1;
+    _chado_update_cvtermpath_root($cv_id, $child_id, $name, $cache, 
+      $job, $num_handled, $clear, $next_depth);
   }
 }  
-
-function _chado_update_cvtermpath_item($cv_id, $root_id, $cvterm_id, $type_id, &$cache, &$visited, $depth = 1) {
+/**
+ * Handles a single node in the tree.
+ * 
+ * This is a recursive function which calls itself as the tree is descended. It
+ * performs a depth-first search of the tree.
+ * 
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $cvterm_id
+ *   This term's cvterm Id.
+ * @param $type_id
+ *   The type relationship cvterm Id.
+ * @param $path
+ *   An array used for storing the current path down the tree. This is the
+ *   sequence of nodes visited to this point down a single branch.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $depth
+ *   The current depth in the tree. 
+ */
+function _chado_update_cvtermpath_item($cv_id, $root_id, $cvterm_id, $type_id, 
+  $path, &$cache, $clear, $depth = 1) {
   
-  // Have we visited this node before?  If so then this is a loop. We do not
-  // want to mark this node as having been visited before. Just return.
-  if (array_key_exists($cvterm_id, $visited)) {
+  //print implode('-', $path) . "\n";
+    
+  // Have we visited this node before while on this path then we won't
+  // descend further as this means we've hit a loop.
+  if (in_array($cvterm_id, $path)) {
+    foreach ($path as $id) {
+      $t = new ChadoRecord('cvterm', $id);
+     print $t->getValue('name') . '-';
+    }
+    $t = new ChadoRecord('cvterm', $cvterm_id);
+    print $t->getValue('name') . "\n";
+    print "LOOP!!!!!!!!!!!!!!!!!!!!!!\n";
     return;
   }
+
+  // Add this term to the path.
+  $path[] = $cvterm_id;
   
   // Indicate we have visited this node in the tree and store the cvterm
   // path details that we need for inserting into the cvtermpath table.
-  $visited[$cvterm_id] = [$type_id, $cvterm_id, $root_id, $cv_id, $depth + 1];
+  $next_depth = $depth + 1;
+//   _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id, $root_id, 
+//     $cv_id, $next_depth, $clear);
   
   // Get this term's children and recurse.
   $children = $cache['rels'][$cvterm_id];
@@ -590,30 +725,45 @@ function _chado_update_cvtermpath_item($cv_id, $root_id, $cvterm_id, $type_id, &
   foreach ($children as $child) {
     $child_id = $child[0];
     $type_id = $child[1];
-    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, $cache, $visited, $depth + 1);
+    _chado_update_cvtermpath_item($cv_id, $root_id, $child_id, $type_id, 
+      $path, $cache, $clear, $next_depth);
   }
 }
 
-function _chado_update_cvtermpath_process_visited($visited, TripalJob $job, &$num_handled, $depth  = 1) {
+/**
+ * Inserts values into the cvtermpath table.
+ * 
+ * After the entire tree below the current root term is traversed, this
+ * function is called and inserts all of the relationships that were found
+ * into the cvtermpath table. 
+ * 
+ * @param $visited
+ *   The array contaiing relationships for all visited nodes in the tree. These
+ *   elements will become the entries in the cvtermpath table.
+ * @param $job
+ *   The TripalJob instance.
+ * @param $clear
+ *   A flag indicating if the cvtermpath was cleared for this vocabulary
+ *   prior to processing the tree.
+ */
+function _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id, 
+  $root_id, $cv_id, $depth, $clear) {
   
-  foreach ($visited as $subjectid_id => $details) {
-    $num_handled++;
-    if ($job) {
-      $job->setItemsHandled($num_handled);
-    }
-    list ($type_id, $subject_id, $object_id, $cv_id, $pathdistance) = $details;
-    $cvtermpath = new ChadoRecord('cvtermpath');
-    $cvtermpath->setValues([
-      'type_id' =>  $type_id,
-      'subject_id' => $subject_id,
-      'object_id' => $object_id,
-      'cv_id'  => $cv_id,
-      'pathdistance'  => $pathdistance,
-    ]);
-    if (!$cvtermpath->find()) {
-      $cvtermpath->insert();
-    }
-  }
+  $cvtermpath = new ChadoRecord('cvtermpath');
+  $cvtermpath->setValues([
+    'type_id' =>  $type_id,
+    'subject_id' => $cvterm_id,
+    'object_id' => $root_id,
+    'cv_id'  => $cv_id,
+    'pathdistance'  => $depth,
+  ]);
+//   if ($clear) {
+//     $cvtermpath->insert();
+//   }
+//   else 
+//    if (!$cvtermpath->find()) {
+    //$cvtermpath->insert();
+//  } 
 }
 
 /**
@@ -629,7 +779,7 @@ function _chado_update_cvtermpath_process_visited($visited, TripalJob $job, &$nu
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_update_cvtermpath_orig($cv_id, $job_id = NULL){
+function chado_update_cvtermpath_old($cv_id, $job_id = NULL){
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
   $prev_db = chado_set_active('chado');

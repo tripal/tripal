@@ -509,8 +509,9 @@ class TripalJob {
     if ($diff >= $this->interval) {
       $duration = (time() - $this->progress_start_time) / 60;
       $duration = sprintf("%.2f", $duration);
-      $memory = number_format(memory_get_usage());
-      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes. Duration: " . $duration . " mins\r";
+      $memory = memory_get_usage();
+      $fmemory = number_format($memory);
+      print "Percent complete: " . $percent . "%. Memory: " . $fmemory . " bytes. Duration: " . $duration . " mins\r";
       $this->prev_update = $diff;
       $this->setProgress($percent);
     }
