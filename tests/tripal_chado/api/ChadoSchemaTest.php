@@ -21,7 +21,6 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group api
    * @group chado
    * @group chado-schema
-   * @group lacey
    */
   public function testInitClass() {
 
@@ -40,7 +39,6 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group api
    * @group chado
    * @group chado-schema
-   * @group lacey
    */
   public function testGetVersion() {
 
@@ -67,7 +65,6 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group api
    * @group chado
    * @group chado-schema
-   * @group lacey
    */
   public function testGetSchemaName() {
 
@@ -97,7 +94,6 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group api
    * @group chado
    * @group chado-schema
-   * @group lacey
    */
   public function testGetTableNames($version, $known_tables) {
 
@@ -123,7 +119,6 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group api
    * @group chado
    * @group chado-schema
-   * @group lacey
    */
   public function testGetTableSchema($version, $table_name) {
 
@@ -189,12 +184,15 @@ class ChadoSchemaTest extends TripalTestCase {
    */
   public function chadoTableProvider() {
 
-    $chado_schema = new \ChadoSchema();
-    $version = $chado_schema->getVersion();
-
+    // Provide the table list for all versions.
     $dataset = [];
-    foreach ($chado_schema->getTableNames() as $table_name) {
-      $dataset[] = [$version, $table_name];
+    foreach (array('1.11','1.2','1.3') as $version) {
+      $chado_schema = new \ChadoSchema();
+      $version = $chado_schema->getVersion();
+
+      foreach ($chado_schema->getTableNames() as $table_name) {
+        $dataset[] = [$version, $table_name];
+      }
     }
 
     return $dataset;

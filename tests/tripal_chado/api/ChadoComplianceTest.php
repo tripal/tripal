@@ -45,9 +45,7 @@ class ChadoComplianceTest extends TripalTestCase {
    *
    * @group api
    * @group chado
-   * @group chado-schema
    * @group chado-compliance
-   * @group lacey
    */
   public function testTableCompliance($schema_version, $table_name) {
 
