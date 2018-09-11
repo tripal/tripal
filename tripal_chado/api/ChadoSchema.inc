@@ -455,20 +455,126 @@ class ChadoSchema {
   }
 
   /**
-   * Check that any given column in a Chado table exists.
+   * Check that any given sequence in a Chado table exists.
    *
-   * This function is necessary because Drupal's db_field_exists() will not
-   * look in any other schema but the one were Drupal is installed
+   * @param table
+   *   The name of the table the sequence is used in.
+   * @param column
+   *   The name of the column the sequence is used to populate.
    *
-   * @param sequence
-   *   The name of the sequence
    * @return
    *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
    *
    * @ingroup tripal_chado_schema_api
    */
-  public function checkSequenceExists($sequence) {
-    return chado_sequence_exists($sequence);
+  public function checkSequenceExists($table, $column) {
+
+    $prefixed_table = $this->schema_name.'.'.$table;
+    $sequence_name = db_query('SELECT pg_get_serial_sequence(:table, :column);',
+      array(':table' => $prefixed_table, ':column' => $column))->fetchField();
+
+
+    // Remove prefixed table from sequence name
+    $sequence_name = str_replace($this->schema_name.'.', '', $sequence_name);
+
+    return chado_sequence_exists($sequence_name);
+  }
+
+  /**
+   * Check that the primary key exists, has a sequence and a constraint.
+   *
+   * @param $table
+   *   The table you want to check the primary key for.
+   * @param $column
+   *   (OPTIONAL) The name of the primary key column.
+   *
+   * @return
+   *   TRUE if the primary key meets all the requirements and false otherwise.
+   */
+  function checkPrimaryKey($table, $column = NULL) {
+
+    // If they didn't supply the column, then we can look it up.
+    if ($column === NULL) {
+      $table_schema = $this->getTableSchema($table);
+      $column = $table_schema['primary key'][0];
+    }
+
+    // Check the column exists.
+    $column_exists = $this->checkColumnExists($table, $column);
+    if (!$column_exists) {
+      return FALSE;
+    }
+
+    // First check that the sequence exists.
+    $sequence_exists = $this->checkSequenceExists($table, $column);
+    if (!$sequence_exists) {
+      return FALSE;
+    }
+
+    // Next check the constraint is there.
+    $constraint_exists = chado_query(
+      "SELECT 1
+      FROM information_schema.table_constraints
+      WHERE table_name=:table AND constraint_type = 'PRIMARY KEY'",
+      array(':table' => $table))->fetchField();
+    if (!$constraint_exists) {
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * Check that the constraint exists.
+   *
+   * @param $table
+   *   The table the constraint applies to.
+   * @param $constraint_name
+   *   The name of the constraint you want to check.
+   * @param $type
+   *   The type of constraint. Should be one of "PRIMARY KEY", "UNIQUE", or "FOREIGN KEY".
+   *
+   * @return
+   *   TRUE if the constraint exists and false otherwise.
+   */
+  function checkConstraintExists($table, $constraint_name, $type) {
+
+    // Next check the constraint is there.
+    $constraint_exists = chado_query(
+      "SELECT 1
+      FROM information_schema.table_constraints
+      WHERE table_name=:table AND constraint_type = :type AND constraint_name = :name",
+      array(':table' => $table, ':name' => $constraint_name, ':type' => $type))->fetchField();
+    if (!$constraint_exists) {
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * Check the foreign key constrain specified exists.
+   *
+   * @param $base_table
+   *   The name of the table the foreign key resides in. E.g. 'feature' for
+   *     the feature.type_id => cvterm.cvterm_id foreign key.
+   * @param $base_column
+   *   The name of the column that is a foreign key in. E.g. 'type_id' for
+   *     the feature.type_id => cvterm.cvterm_id foreign key.
+   *
+   * @return
+   *   TRUE if the constraint exists and false otherwise.
+   */
+  function checkFKConstraintExists($base_table, $base_column) {
+
+
+    // Since we don't have a constraint name, we have to use the known pattern for
+    // creating these names in order to make this check.
+    // This is due to PostgreSQL not storing column information for constraints
+    // in the information_schema tables.
+    $constraint_name = $base_table . '_' . $base_column . '_fkey';
+
+    return $this->checkConstraintExists($base_table, $constraint_name, 'FOREIGN KEY');
   }
 
   /**
