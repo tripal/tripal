@@ -170,11 +170,14 @@ class ChadoRecord {
       foreach ($col_schema as $param => $val) {
         if (preg_match('/not null/i', $param) and $col_schema[$param]) {
           $this->required_cols[] = $column;
+          // Currently all required columns are missing except the primary key.
+          if ($column == $this->pkey) {
+            continue;
+          }
+          $this->missing_required_col[$column] = TRUE;
         }
       }
     }
-    // Currently all required columns are missing.
-    $this->missing_required_col = $this->required_cols;
 
     // If a record_id was provided then lookup the record and set the values.
     if ($record_id) {
@@ -280,7 +283,7 @@ class ChadoRecord {
       $message = t('ChadoRecord::insert(). The columns named, "!columns", ' . 
         'require a value for the table: "!table". You can set these values ' .
         'using ChadoRecord::setValues(). Current values: !values.',
-        ['!columns' => implode('", "', $this->missing_required_col), 
+        ['!columns' => implode('", "', array_keys($this->missing_required_col)), 
          '!table' => $this->table_name,
          '!values' => print_r($this->values, TRUE)]);
       throw new Exception($message);
@@ -468,7 +471,7 @@ class ChadoRecord {
       }
 
       if (in_array($rcol, array_keys($this->values)) and $this->values[$rcol] === '__NULL__') {
-        $this->missing_required_col[$rcol] = $rcol;
+        $this->missing_required_col[$rcol] = TRUE;
       }
     }
 
@@ -538,8 +541,8 @@ class ChadoRecord {
     }
     
     // Remove from the missing list if it was there.
-    elseif (isset($this->missing_required_cols[$column])) {
-      unset($this->missing_required_cols[$column]);
+    if (isset($this->missing_required_col[$column_name])) {
+      unset($this->missing_required_col[$column_name]);
     }
 
     // Ensure that no values are arrays.
