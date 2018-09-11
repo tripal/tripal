@@ -117,7 +117,7 @@ class ChadoComplianceTest extends TripalTestCase {
 
         // Check #4: The constraint exists.
         $this->assertTrue(
-          $chado_schema->checkFKConstraintExists($table_name, $base_column, 'FOREIGN KEY'),
+          $chado_schema->checkFKConstraintExists($table_name, $base_column),
           t('The foreign key constraint "!name" for "!table.!column" must exist for chado v!version.',
             array('!name' => $constraint_name, '!table' => $table_name,
               '!column' => $column_name, '!version' => $version))

@@ -14,6 +14,30 @@
  * retireve.  The getTableSchema method determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
+ *
+ * Additionally, here are some other examples of how to use this class:
+ * @code
+
+    // Retrieve the schema array for the organism table in chado 1.2
+    $chado_schema = new \ChadoSchema('1.2');
+    $table_schema = $chado_schema->getTableSchema('organism');
+
+    // Retrieve all chado tables.
+    $chado_schema = new \ChadoSchema();
+    $tables = $chado_schema->getTableNames();
+    $base_tables = $chado_schema->getbaseTables();
+
+    // Check the feature.type_id foreign key constraint
+    $chado_schema = new \ChadoSchema();
+    $exists = $chado_schema ->checkFKConstraintExists('feature','type_id');
+
+    // Check Sequence exists
+    $chado_schema = new \ChadoSchema();
+    $exists = $chado_schema->checkSequenceExists('organism','organism_id');
+    // Or just check the primary key directly
+    $compliant = $chado_schema->checkPrimaryKey('organism');
+
+ * @endcode
  */
 class ChadoSchema {
 
@@ -446,6 +470,9 @@ class ChadoSchema {
       return TRUE;
     }
     elseif ($type == 'smallint' AND $expected_type == 'integer') {
+      return TRUE;
+    }
+    elseif ($type == 'bigint' AND $expected_type == 'integer') {
       return TRUE;
     }
     else {
