@@ -2,14 +2,16 @@
 /**
  * Provides an application programming interface (API) for describing Chado tables.
  *
- * The functions provided in this documentation should not be called as is, but if you need
- * the Drupal-style array definition for any table, use the following function
- * call:
- *
- *   $table_desc = chado_get_schema($table)
+ * If you need the Drupal-style array definition for any table, use the following:
+ * @code
+
+    $chado_schema = new \ChadoSchema();
+    $table_schema = $chado_schema->getTableSchema($table_name);
+
+ * @endcode
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The chado_get_schema function determines the appropriate version of
+ * retireve.  The getTableSchema method determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  */
@@ -50,6 +52,25 @@ class ChadoSchema {
     }
     else {
       $this->schema_name = $schema_name;
+    }
+
+    // Check functions require the chado schema be local and installed...
+    // So lets check that now...
+    if (!chado_is_local()) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'The ChadoSchema class requires chado be installed within the drupal database
+          in a separate schema for any compliance checking functionality.'
+      );
+    }
+    if (!chado_is_installed()) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'The ChadoSchema class requires chado be installed
+          for any compliance checking functionality.'
+      );
     }
   }
 
