@@ -31,6 +31,8 @@ before_script:
   - drush dl drupal-7 -y
   - mv drupal-7* drupal
   - cd drupal
+  # Run the php server
+  - php -S 127.0.0.1:8080 &
   - drush si -y --db-url='pgsql://postgres:dbpass@localhost:5432/test_db'
                 --account-name='admin'
                 --account-pass='admin_pass'
@@ -48,11 +50,8 @@ before_script:
 
 
 script:
-  # Run the drush server
-  - php -S 127.0.0.1:8888 &
   # Link our repo to the modules directory
   - mv ../tripal sites/all/modules/tripal
-  - curl http://127.0.0.1:8888
 
   # Run a docker container with tripal 2 pre-installed
   - docker run -it -d --rm --name tripal2 -v "$(pwd)/tripal":/modules/tripal statonlab/tripal2
