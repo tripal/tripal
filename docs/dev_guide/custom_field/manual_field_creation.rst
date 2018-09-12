@@ -36,7 +36,7 @@ The following describes a ChadoField class from top to bottom. The code for the 
 
 .. code-block:: php
 
-  <?php
+  
 
   class obi__organism extends ChadoField {
 
@@ -51,7 +51,7 @@ Next, the TripalField/ChadoField class has a section of public static variables.
 
 .. code-block:: php
 
-  <?php
+  
 
   // The default label for this field.
   public static $default_label = 'Organism';
@@ -64,7 +64,7 @@ As described in the section titled Tripal Data Structures, fields that are attac
 
 .. code-block:: php
 
-  <?php
+  
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
   // then Drupal with automatically change these settings for the instance.
@@ -93,7 +93,7 @@ As you may have noticed, a field requires a widget and a formatter.  This is why
 
 .. code-block:: php
 
-  <?php
+  
   // The default widget for this field.
   public static $default_widget = 'obi__organism_widget';
 
@@ -104,7 +104,7 @@ Drupal allows new instances of fields to be attached to any Bundle.  This is rea
 
 .. code-block:: php
 
-  <?php
+  
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
   // fields can only be created programmatically with field_create_field()
@@ -116,7 +116,7 @@ Sometimes a field is meant to provide a visualization or some other functionalit
 
 .. code-block:: php
 
-  <?php
+  
   // A boolean specifying that the field will not contain any data. This
   // should exclude the field from web serivces or downloads.  An example
   // could be a quick search field that appears on the page that redirects
@@ -133,7 +133,7 @@ Finally, the last item in our Class variables is the **download_formatters**.  T
 
 .. .. code-block::
 
-  <?php
+  
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
@@ -237,7 +237,7 @@ We can easily get all of the values we need from this organism object.   We can 
 
 .. code-block:: php
 
-  <?php
+  
 
       $label = tripal_replace_chado_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
@@ -280,7 +280,7 @@ Notice, though, that we did not add this value inside the 'value' key like we di
 
 .. code-block:: php
 
-  <?php
+  
 
   $entity->{$field_name}['und'][0]['value'])
 
@@ -288,7 +288,7 @@ Instead, we put it in at the same level as 'value':
 
 .. code-block:: php
 
-  <?php
+  
 
   $entity->{$field_name}['und'][0][$linker_field]
 
@@ -314,7 +314,7 @@ The elementInfo() function is necessary to integrate your new field with Drupal 
 
 .. code-block:: php
 
-  <?php
+  
 
   /**
    * @see TripalField::elementInfo()
@@ -393,7 +393,7 @@ The code above generates and returns an associative array that provides metadata
 
 .. code-block:: php
 
-  <?php
+  
 
     $field_term = $this->getFieldTermID();
 
@@ -416,7 +416,7 @@ The array keys just mentioned fully describe our field to Drupal and Tripal.  Ne
 
 .. code-block:: php
 
-  <?php
+  
 
 
         'elements' => array(
@@ -434,7 +434,7 @@ Notice that our field will allow searching, provides a variety of search filter 
 
 .. code-block:: php
 
-  <?php
+  
 
          $genus_term => array(
             'searchable' => TRUE,
@@ -466,7 +466,7 @@ As described above in the elementInfo function section, some fields and elements
 
 .. code-block:: php
 
-  <?php
+  
 
   public function query($query, $condition) {
       $alias = $this->field['field_name'];
@@ -517,7 +517,7 @@ The code above is how the field tells Drupal and Tripal how to find and filter t
 
 .. code-block:: php
 
-  <?php
+  
 
     $alias = $this->field['field_name'];
     $operator = $condition['operator'];

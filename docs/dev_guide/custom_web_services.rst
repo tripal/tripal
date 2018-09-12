@@ -46,7 +46,7 @@ Within this file we will implement our class with the following structure:
 
 .. code-block:: php
 
-	<?php
+	
 	class TripalJobService_v0_1 extends TripalWebService {
 
 	  /**
@@ -146,7 +146,7 @@ For our services we need to provide the information to Tripal so that it can gen
 
 .. code-block:: php
 
-	<?php
+	
 
  	public function getDocumentation() {
         $term = tripal_get_term_details('local', 'computational_jobs');
@@ -219,7 +219,7 @@ in the code above need to determine if the resource is a job collection or a job
 
 .. code-block:: php
 
-	<?php
+	
 
     /**
      * Generates the job collection resource.
@@ -294,7 +294,7 @@ Lastly, we need to add our "members" of the collection.  These are the jobs from
 
 .. code-block:: php
 
-	<?php
+	
 
         foreach ($jobs as $job) {
             $member = new TripalWebServiceResource($service_path);

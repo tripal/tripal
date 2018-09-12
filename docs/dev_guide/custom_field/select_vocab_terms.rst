@@ -31,7 +31,7 @@ Notice how the teal box (the **short name**) is OBI, and the orange box contains
 
 .. code-block:: php
 
-	<?php
+	
 
    $term= tripal_insert_cvterm([
             'id' => 'OBI:0100026',
@@ -49,7 +49,7 @@ Note that in the code above the namespace is provided as the **cv_name** element
 
 .. code-block:: php
 
-  <?php
+  
   tripal_insert_db(array(
     'name' => 'obi',
     'description' => 'The Ontology for Biomedical Investigation.',
@@ -66,7 +66,7 @@ Second, we insert the record for the controlled vocabulary.
 
 .. code-block:: php
 
-  <?php
+  
  	tripal_insert_cv(
     	'OBI',
     	'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.'
@@ -86,7 +86,7 @@ Notice that in the Term Info box on the right there is the term **has_obo_namesp
 
 .. code-block:: php
 
-  <?php
+  
     $term= tripal_insert_cvterm([
             'id' => 'SO:0000316',
             'name' => 'CDS',
@@ -117,7 +117,7 @@ For this case, the **namespace** is EDAM, the short name is **data**, and the ac
 
 .. code-block:: php
 
-  <?php
+  
 	$term= tripal_insert_cvterm([
 	  'id' => 'data:2044',
 	  'name' => 'sequence',
@@ -146,7 +146,7 @@ Sometimes a good CVterm just doesn't exist for what you want to describe. If you
 
 .. code-block:: php
 
-	<?php
+	
 	$term= tripal_insert_cvterm([
 	   'id' => 'local:shame_on_you',
 	   'name' => 'shame_on_you',
