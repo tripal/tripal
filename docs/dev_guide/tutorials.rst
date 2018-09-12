@@ -14,6 +14,7 @@ Testing
 The `Tripal Test Suite module <https://github.com/statonlab/TripalTestSuite>`_ is used by the core Tripal module, and many custom modules, to easily set up PHPUnit and Travis CI.
 
 * `Creating and running Test Suite Tests <https://www.youtube.com/watch?v=hxuiDzRqs9U>`_
+* `Test Suite Factories and DB Transactions <https://www.youtube.com/watch?v=5y8rDtDQEg0>`_
 
 * `Test Driven Development live demo <https://www.youtube.com/watch?v=zmYZ_HV3b9s>`_
 
