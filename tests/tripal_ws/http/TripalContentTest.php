@@ -13,7 +13,7 @@ class TripalContentTest extends TripalTestCase{
   /** @test */
   public function testGettingMainContentList() {
     //call /web-services/content/v0.1
-    $response = $this->get('/web-services/content/v0.1');
+    $response = $this->get('http://127.0.0.1:8080/web-services/content/v0.1');
 
     // Make sure it returned valid json
     $response->assertSuccessful();
@@ -40,7 +40,7 @@ class TripalContentTest extends TripalTestCase{
     $label = db_query('SELECT label FROM tripal_bundle LIMIT 1')->fetchField();
 
     // Call /web-services/content/v0.1/[label]
-    $response = $this->get("/web-services/content/v0.1/$label");
+    $response = $this->get("http://127.0.0.1:8080/web-services/content/v0.1/$label");
 
     // Verify the returned JSON matches the structure
     $response->assertSuccessful();

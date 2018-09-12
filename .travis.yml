@@ -47,8 +47,6 @@ before_script:
   - drush en -y field_group, field_group_table, field_formatter_class, field_formatter_settings, ctools, date, devel,
               ds, link, entity, libraries, redirect, token uuid, jquery_update, views, webform
 
-
-
 script:
   # Link our repo to the modules directory
   - mv ../tripal sites/all/modules/tripal
