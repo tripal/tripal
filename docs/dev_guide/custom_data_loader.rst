@@ -236,26 +236,32 @@ The below code is nothing special: it uses ``chado_select_record`` to match the 
   public function loadMyFile($analysis_id, $file_path, $cvterm){
 
     //Loop through lines of file
-    //
-    //
-    $this_value = null;
-    $feature_name = null;
+    while ($line = fgets($file_path)) {
 
-    //Fetch feature ID
-    //F
-    //F
-    $feature = chado_select_record('feature', ['uniquename' => $feature_name]);
+          //split line on ,
+          $cols = explode(",", $line);
 
-    //prepare and insert the property
-    $record = ['table' => 'feature', 'id' => $feature->feature_id];
-     $property = [
-       'type_id' => $cvterm,
-       'value' => $this_value,
-     ];
+          $feature_name = $cols[0];
+          $this_value = $cols[1];
 
-     $options = ['update_if_present' => TRUE];
-     chado_insert_property($record, $property, $options);
+          //skip headers
+          if ($feature_name == 'Feature name'){
+            continue;
+          }
 
+          //Fetch feature ID
+          $feature_record = chado_select_record('feature', ['feature_id'], ['uniquename' => $feature_name]);
+
+          //prepare and insert the property
+          $record = ['table' => 'feature', 'id' => $feature_record];
+          $property = [
+            'type_id' => $cvterm_id,
+            'value' => $this_value,
+          ];
+
+          $options = ['update_if_present' => TRUE];
+          chado_insert_property($record, $property, $options);
+    }
   }
 
 
@@ -265,7 +271,11 @@ Testing Importers
 
 If you haven't already, look into Tripal Test Suite for adding tests to your Tripal module.  It will automatically set up and bootstrap Drupal and Tripal for your testing environment, as well as provide things like DB Transactions for your tests, factories to quickly generate data.  This demo will use Tripal Test Suite.
 
-For instructions on how to install, configure, and run Tripal Test Suite, `please see the Tripal Test Suite documentation. <https://tripaltestsuite.readthedocs.io/en/latest/>`_
+.. note::
+  Before continuing, please install and configure Tripal Test Suite.
+
+  For instructions on how to install, configure, and run Tripal Test Suite, `please see the Tripal Test Suite documentation. <https://tripaltestsuite.readthedocs.io/en/latest/>`_
+
 
 Example file
 ^^^^^^^^^^^^^^^^
@@ -391,7 +401,9 @@ Below is an example test.  Note that it runs the importer, then uses the values 
 
   }
 
-Note that the test name begins with ``test_``.  This tells Tripal Test Suite that this function is a test and should be run as such.  Note also that we use teh ``@group`` tag: this lets us run specific subsets of tests.
+Note that the test name begins with ``test_``.  This tells Tripal Test Suite that this function is a test and should be run as such.  The test itself runs the loader, then queries the db to retrieve the ``featureprop`` record that should have been created in the first line of the example file.  It then uses an **assertion** to check that the value retrieved is, in fact, the same value in the test file.  PHPUnit has many assertions: please `read the documentation <https://phpunit.de/manual/>`_ for more information on the many assertion types available.
+
+ Note also that we use the ``@group`` tag: this lets us run specific subsets of tests.
 
 To run the test from the command line, we can ``phpunit --group test_exampleImporter`` to **just run tests associated with this importer!**  This is very helpful if you have many tests.
 
