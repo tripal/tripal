@@ -427,9 +427,7 @@ class TripalImporter {
     // Add a job to run the importer.
     try {
       $args = array($this->import_id);
-      $includes = array(
-        module_load_include('inc', 'tripal', 'api/tripal.importer.api'),
-      );
+      $includes = array();
       $job_id = tripal_add_job($class::$button_text, 'tripal',
           'tripal_run_importer', $args, $user->uid, 10, $includes);
 
