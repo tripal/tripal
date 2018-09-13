@@ -1,0 +1,190 @@
+format-version: 1.2
+data-version: releases/2018-08-28
+subsetdef: gocheck_do_not_annotate "Term not to be used for direct annotation"
+subsetdef: gocheck_do_not_manually_annotate "Term not to be used for direct manual annotation"
+subsetdef: goslim_agr "AGR slim"
+subsetdef: goslim_aspergillus "Aspergillus GO slim"
+subsetdef: goslim_candida "Candida GO slim"
+subsetdef: goslim_chembl "ChEMBL protein targets summary"
+subsetdef: goslim_generic "Generic GO slim"
+subsetdef: goslim_metagenomics "Metagenomics GO slim"
+subsetdef: goslim_mouse "Mouse GO slim"
+subsetdef: goslim_pir "PIR GO slim"
+subsetdef: goslim_plant "Plant GO slim"
+subsetdef: goslim_pombe "Fission yeast GO slim"
+subsetdef: goslim_synapse "synapse GO slim"
+subsetdef: goslim_yeast "Yeast GO slim"
+synonymtypedef: syngo_official_label "label approved by the SynGO project"
+synonymtypedef: systematic_synonym "Systematic synonym" EXACT
+default-namespace: gene_ontology
+remark: cvs version: $Revision: 38972$
+remark: Includes Ontology(OntologyID(Anonymous-39)) [Axioms: 277 Logical Axioms: 277]
+remark: Includes Ontology(OntologyID(OntologyIRI(<http://purl.obolibrary.org/obo/go/never_in_taxon.owl>))) [Axioms: 18 Logical Axioms: 0]
+ontology: go
+property_value: http://purl.org/dc/elements/1.1/license http://creativecommons.org/licenses/by/4.0/
+
+
+[Term]
+id: GO:0000156
+name: phosphorelay response regulator activity
+namespace: molecular_function
+def: "Responds to a phosphorelay sensor to initiate a change in cell state or activity. The activity of the response regulator is regulated by transfer of a phosphate from a histidine residue in the sensor, to an aspartate residue in the response regulator. Many but not all response regulators act as transcriptional regulators to elicit a response." [GOC:bf, PMID:10966457, PMID:11842140]
+comment: Added is_a molecular transducer activity see https://github.com/geneontology/go-ontology/issues/15611
+synonym: "two-component response regulator activity" NARROW []
+is_a: GO:0060089 ! molecular transducer activity
+relationship: part_of GO:0000160 ! phosphorelay signal transduction system
+
+
+[Term]
+id: GO:0004679
+name: AMP-activated protein kinase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: ATP + a protein = ADP + a phosphoprotein. This reaction requires the presence of AMP." [GOC:mah]
+synonym: "5'-AMP-activated protein kinase activity" EXACT []
+synonym: "AMPK activity" RELATED [GOC:mah]
+synonym: "SNF1A/AMP-activated protein kinase activity" NARROW []
+xref: EC:2.7.11
+xref: Reactome:REACT_100101 "Phosphorylated AMPK phosphorylates TSC2, Danio rerio"
+xref: Reactome:REACT_100513 "Phosphorylated AMPK phosphorylates TSC2, Xenopus tropicalis"
+xref: Reactome:REACT_101641 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Arabidopsis thaliana"
+xref: Reactome:REACT_102231 "Phosphorylated AMPK phosphorylates TSC2, Bos taurus"
+xref: Reactome:REACT_104140 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Gallus gallus"
+xref: Reactome:REACT_105858 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Saccharomyces cerevisiae"
+xref: Reactome:REACT_107230 "Phosphorylation of ChREBP at Serine 568 by AMPK, Mus musculus"
+xref: Reactome:REACT_107271 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Mus musculus"
+xref: Reactome:REACT_107536 "Phosphorylated AMPK phosphorylates TSC2, Rattus norvegicus"
+xref: Reactome:REACT_11110 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Homo sapiens"
+xref: Reactome:REACT_113551 "Phosphorylation of ChREBP at Serine 568 by AMPK, Danio rerio"
+xref: Reactome:REACT_114056 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Danio rerio"
+xref: Reactome:REACT_115260 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Taeniopygia guttata"
+xref: Reactome:REACT_115507 "Phosphorylation of ChREBP at Serine 568 by AMPK, Xenopus tropicalis"
+xref: Reactome:REACT_1706 "Phosphorylation of rChREBP(Ser 568) by rAMPK, Rattus norvegicus"
+xref: Reactome:REACT_21348 "Phosphorylated AMPK phosphorylates TSC2, Homo sapiens"
+xref: Reactome:REACT_21413 "AMPK phosphorylates Raptor, Homo sapiens"
+xref: Reactome:REACT_28253 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Oryza sativa"
+xref: Reactome:REACT_31105 "Phosphorylation of ChREBP at Serine 568 by AMPK, Bos taurus"
+xref: Reactome:REACT_31214 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Canis familiaris"
+xref: Reactome:REACT_32411 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Drosophila melanogaster"
+xref: Reactome:REACT_32709 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Dictyostelium discoideum"
+xref: Reactome:REACT_33102 "Phosphorylation of ChREBP at Serine 568 by AMPK, Sus scrofa"
+xref: Reactome:REACT_349 "Phosphorylation of ChREBP at Serine 568 by AMPK, Homo sapiens"
+xref: Reactome:REACT_82669 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Rattus norvegicus"
+xref: Reactome:REACT_85819 "Phosphorylation of ChREBP at Serine 568 by AMPK, Canis familiaris"
+xref: Reactome:REACT_86300 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Xenopus tropicalis"
+xref: Reactome:REACT_86799 "Phosphorylated AMPK phosphorylates TSC2, Sus scrofa"
+xref: Reactome:REACT_89177 "Phosphorylation of ChREBP at Serine 568 by AMPK, Gallus gallus"
+xref: Reactome:REACT_93047 "Phosphorylation of ChREBP at Serine 568 by AMPK, Taeniopygia guttata"
+xref: Reactome:REACT_93827 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Schizosaccharomyces pombe"
+xref: Reactome:REACT_95348 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Sus scrofa"
+xref: Reactome:REACT_96631 "Phosphorylated AMPK phosphorylates TSC2, Taeniopygia guttata"
+xref: Reactome:REACT_96928 "Phosphorylated AMPK phosphorylates TSC2, Gallus gallus"
+xref: Reactome:REACT_97108 "Phosphorylated AMPK phosphorylates TSC2, Canis familiaris"
+xref: Reactome:REACT_97911 "Phosphorylated AMPK phosphorylates TSC2, Drosophila melanogaster"
+xref: Reactome:REACT_98167 "pAMPK inactivates ACC2 inhibiting malonyl-CoA synthesis, Bos taurus"
+xref: Reactome:REACT_99741 "Phosphorylated AMPK phosphorylates TSC2, Mus musculus"
+is_a: GO:0004674 ! protein serine/threonine kinase activity
+is_a: GO:0060089 ! molecular transducer activity
+
+
+[Term]
+id: GO:0005072
+name: transforming growth factor beta receptor, cytoplasmic mediator activity
+namespace: molecular_function
+def: "Activity of any of the molecules that transmit the signal from a TGF-beta receptor through the cytoplasm to the nucleus." [GOC:hjd]
+comment: Note that this term and its children are useful for annotating proteins of the SMAD family.
+synonym: "TGF-beta receptor, cytoplasmic mediator activity" EXACT []
+synonym: "TGFbeta receptor, cytoplasmic mediator activity" EXACT []
+is_a: GO:0060089 ! molecular transducer activity
+
+[Term]
+id: GO:0003674
+name: molecular_function
+namespace: molecular_function
+alt_id: GO:0005554
+def: "A molecular process that can be carried out by the action of a single macromolecular machine, usually via direct physical interactions with other molecular entities. Function in this sense denotes an action, or activity, that a gene product (or a complex) performs. These actions are described from two distinct but related perspectives: (1) biochemical activity, and (2) role as a component in a larger system/process." [GOC:pdt]
+comment: Note that, in addition to forming the root of the molecular function ontology, this term is recommended for use for the annotation of gene products whose molecular function is unknown. When this term is used for annotation, it indicates that no information was available about the molecular function of the gene product annotated as of the date the annotation was made; the evidence code "no data" (ND), is used to indicate this. Despite its name, this is not a type of 'function' in the sense typically defined by upper ontologies such as Basic Formal Ontology (BFO). It is instead a BFO:process carried out by a single gene product or complex.
+subset: goslim_aspergillus
+subset: goslim_candida
+subset: goslim_chembl
+subset: goslim_generic
+subset: goslim_metagenomics
+subset: goslim_pir
+subset: goslim_plant
+subset: goslim_yeast
+synonym: "molecular function" EXACT []
+
+
+[Term]
+id: GO:0060089
+name: molecular transducer activity
+namespace: molecular_function
+def: "A compound molecular function in which an effector function is controlled by one or more regulatory components." [GOC:dos, GOC:pdt]
+subset: gocheck_do_not_manually_annotate
+subset: goslim_pir
+is_a: GO:0003674 ! molecular_function
+
+[Term]
+id: GO:0004690
+name: cyclic nucleotide-dependent protein kinase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: ATP + a protein = ADP + a phosphoprotein. This reaction requires the presence of a cyclic nucleotide." [GOC:mah]
+xref: EC:2.7.11
+is_a: GO:0004674 ! protein serine/threonine kinase activity
+is_a: GO:0060089 ! molecular transducer activity
+
+[Term]
+id: GO:0009927
+name: histidine phosphotransfer kinase activity
+namespace: molecular_function
+def: "Serves as a phospho-His intermediate enabling the transfer of phospho group between a hybrid kinase and a response regulator." [PMID:11842140]
+comment: Added is_a molecular transducer activity see https://github.com/geneontology/go-ontology/issues/15611
+is_a: GO:0004672 ! protein kinase activity
+is_a: GO:0060089 ! molecular transducer activity
+
+[Term]
+id: GO:0017132
+name: cAMP-dependent guanyl-nucleotide exchange factor activity
+namespace: molecular_function
+def: "Stimulates the exchange of guanyl nucleotides associated with a GTPase, when activated by cAMP binding." [GOC:mah, PMID:9856955]
+is_a: GO:0005085 ! guanyl-nucleotide exchange factor activity
+is_a: GO:0060089 ! molecular transducer activity
+
+[Term]
+id: GO:0031992
+name: energy transducer activity
+namespace: molecular_function
+def: "The biological transducer activity that accepts energy and converts it to another form, often by transfer to another molecule within the cell." [GOC:go_curators]
+subset: goslim_pir
+synonym: "light harvesting activity" RELATED []
+synonym: "photon capture" RELATED []
+is_a: GO:0060089 ! molecular transducer activity
+
+[Term]
+id: GO:0038023
+name: signaling receptor activity
+namespace: molecular_function
+alt_id: GO:0004872
+alt_id: GO:0019041
+def: "Receiving a signal and transmitting it in the cell to initiate a change in cell activity. A signal is a physical entity or change in state that is used to transfer information in order to trigger a response." [GOC:bf, GOC:signaling]
+subset: goslim_agr
+subset: goslim_chembl
+subset: goslim_metagenomics
+subset: goslim_mouse
+subset: goslim_pir
+subset: goslim_plant
+synonym: "receptor activity" BROAD []
+synonym: "receptor activity involved in signal transduction" EXACT [GOC:bf]
+is_a: GO:0060089 ! molecular transducer activity
+created_by: rfoulger
+creation_date: 2011-08-01T02:45:27Z
+
+[Term]
+id: GO:0097472
+name: cyclin-dependent protein kinase activity
+namespace: molecular_function
+def: "Catalysis of the phosphorylation of an amino acid residue in a protein, usually according to the reaction: a protein + ATP = a phosphoprotein + ADP. This reaction requires the binding of a regulatory cyclin subunit and full activity requires stimulatory phosphorylation by a CDK-activating kinase (CAK)." [GOC:pr]
+is_a: GO:0004672 ! protein kinase activity
+is_a: GO:0060089 ! molecular transducer activity
+relationship: part_of GO:0051726 ! regulation of cell cycle
+created_by: paola
+creation_date: 2013-03-06T13:46:04Z
