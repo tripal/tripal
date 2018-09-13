@@ -507,13 +507,13 @@ function tripal_chado_add_cv_root_mview_mview() {
   );
 
   $sql = "
-    SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
-    FROM cvterm_relationship CVTR
-      INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
-      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
-    WHERE CVTR.object_id not in
-      (SELECT subject_id FROM cvterm_relationship)
-    AND CVT.is_relationshiptype = 0 AND CVT.is_obsolete = 0
+    SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name
+    FROM cvterm CVT
+      LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
+      INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+    INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+    WHERE CVTR.subject_id is NULL and 
+      CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
   ";
 
   // Create the MView
