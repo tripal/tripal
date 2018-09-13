@@ -88,12 +88,15 @@ class ChadoComplianceTest extends TripalTestCase {
 
     // For the primary key:
     // Check #4: The constraint exists.
-    $pkey_column = $table_schema['primary key'][0];
-    $this->assertTrue(
-      $chado_schema->checkPrimaryKey($table_name, $pkey_column),
-      t('The column "!table.!column" must have an associated sequence attached for chado v!version.',
-        array('!column' => $pkey_column, '!table' => $table_name, '!version' => $version))
-    );
+    if (isset($table_schema['primary key']) AND !empty($table_schema['primary key'])) {
+      $pkey_column = $table_schema['primary key'][0];
+      $pkey_compliance = $chado_schema->checkPrimaryKey($table_name, $pkey_column);
+      $this->assertTrue(
+        $pkey_compliance,
+        t('The column "!table.!column" must have an associated sequence attached for chado v!version.',
+          array('!column' => $pkey_column, '!table' => $table_name, '!version' => $version))
+      );
+    }
 
     // For each unique key:
     foreach ($table_schema['unique keys'] as $constraint_name => $columns) {

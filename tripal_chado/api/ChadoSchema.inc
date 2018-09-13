@@ -526,6 +526,18 @@ class ChadoSchema {
       $column = $table_schema['primary key'][0];
     }
 
+    // If there is no primary key then we can't check it.
+    // It neither passes nore fails validation.
+    if (empty($column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'Cannot check the validity of the primary key for "!table" since there is no record of one.',
+        array('!table' => $table)
+      );
+      return NULL;
+    }
+
     // Check the column exists.
     $column_exists = $this->checkColumnExists($table, $column);
     if (!$column_exists) {
