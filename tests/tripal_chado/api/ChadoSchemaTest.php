@@ -143,22 +143,12 @@ class ChadoSchemaTest extends TripalTestCase {
     // Instead of asserting these keys exist. Lets assert that if they do exist,
     // they match the expected format.
 
-/*
-    $this->assertArrayHasKey(
-      'primary key',
-      $table_schema,
-      t('The schema array for "!table" should have the primary key listed in an "primary key" array',
-        array('!table' => $table_name))
-    );
-*/
-/*
-    $this->assertArrayHasKey(
-      'unique keys',
-      $table_schema,
-      t('The schema array for "!table" should have unique keys listed in an "unique keys" array',
-        array('!table' => $table_name))
-    );
-*/
+    if (isset($table_schema['primary key'])) {
+      $this->assertTrue(is_array($table_schema['primary key']),
+	t('The primary key of the Tripal Schema definition for "!table" must be an array.',
+          array('!table' => $table_name)));
+  
+    }
 
     $this->assertArrayHasKey(
       'foreign keys',
