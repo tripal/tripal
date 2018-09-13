@@ -1,0 +1,121 @@
+format-version: 1.2
+default-namespace: cvtermpath_test
+ontology: cvtp
+subsetdef: test_normal "Normal nodes"
+subsetdef: test_crazy "Crazy nodes"
+
+[Term]
+id: CVTP:001
+name: node01
+def: This is node 1
+subset: test_normal
+
+[Term]
+id: CVTP:002
+name: node02
+is_a: CVTP:001
+def: This is node 2
+subset: test_normal
+
+[Term]
+id: CVTP:003
+name: node03
+is_a: CVTP:001
+def: This is node 3
+subset: test_normal
+
+[Term]
+id: CVTP:004
+name: node04
+is_a: CVTP:001
+def: This is node 4
+subset: test_normal
+relationship: has_part CVTP:011
+
+
+[Term]
+id: CVTP:005
+name: node05
+is_a: CVTP:001
+def: This is node 5
+subset: test_normal
+
+[Term]
+id: CVTP:006
+name: node06
+is_a: CVTP:003
+def: This is node 6
+subset: test_normal
+
+[Term]
+id: CVTP:007
+name: node07
+is_a: CVTP:003
+def: This is node 7
+subset: test_normal
+
+[Term]
+id: CVTP:008
+name: node08
+is_a: CVTP:007
+def: This is node 8
+subset: test_normal
+
+[Term]
+id: CVTP:009
+name: node09
+is_a: CVTP:004
+is_a: CVTP:007
+def: This is node 9
+subset: test_normal
+
+[Term]
+id: CVTP:010
+name: node10
+is_a: CVTP:005
+def: This is node 10
+subset: test_normal
+
+[Term]
+id: CVTP:011
+name: node11
+is_a: CVTP:009
+is_a: CVTP:010
+def: This is node 11
+synonym: "crazy node" EXACT []
+xref: GO:0043226
+subset: test_crazy
+
+
+[Term]
+id: CVTP:012
+name: node12
+is_a: CVTP:010
+def: This is node 12
+subset: test_normal
+
+[Term]
+id: CVTP:013
+name: node13
+is_a: CVTP:011
+def: This is node 13
+subset: test_normal
+
+[Term]
+id: CVTP:014
+name: node14
+is_obsolete: true
+def: This is node 14
+
+[Typedef]
+id: has_part
+name: has_part
+namespace: external
+xref: BFO:0000051
+is_transitive: true
+
+
+
+
+
+
