@@ -232,7 +232,6 @@ ORDER BY DBX.accession";
    */
   public function test_cvtermpath_correct($object, $subjects) {
 
-
     $name = 'path_test_mini';
     $path = __DIR__ . '/../example_files/cvtermpath_test.obo';
     $this->load_obo($name, $path);
@@ -252,9 +251,17 @@ ORDER BY DBX.accession";
     $query->join('chado.cvterm', 'subject', 'cp.subject_id = subject.cvterm_id');
     $query->join('chado.cvterm', 'object', 'cp.object_id = object.cvterm_id');
     $query->condition('object.name', $object);
-
     $query->fields('subject', ['name']);
-    // $delete_result = $query->execute()->fetchAll();
+
+    //First, ensure that the number of relationships is correct
+
+    $countquery = clone $query;
+
+    $results = $countquery->execute()->fetchAll();
+
+
+    $this->assertEquals(count($subjects), count($results));
+
 
 
     foreach ($subjects as $subject) {
@@ -299,6 +306,67 @@ ORDER BY DBX.accession";
 
   }
 
+  /**
+   * Test OBO has a synonym.  check its inserted properly.
+   * @group obo
+   * @group wip
+   */
+  public function test_synonyms_are_loaded(){
+    //node11 has a synonym:"crazy node" EXACT []
+
+
+    $name = 'path_test_mini';
+    $path = __DIR__ . '/../example_files/cvtermpath_test.obo';
+    $this->load_obo($name, $path);
+
+    $cv_name = 'cvtermpath_test';
+
+    $query = db_select('chado.cvtermsynonym', 't')
+      ->fields('t', ['synonym']);
+    $query->join('chado.cvterm', 'cvt', 't.cvterm_id = cvt.cvterm_id');
+    $query->condition('cvt.name', 'node11');
+
+    $result = $query->execute()->fetchField();
+
+    $this->assertNotFalse($result);
+
+    $this->assertEquals("crazy node", $result);
+
+
+
+
+  }
+
+
+
+  /**
+   * Test OBO has a xref.  check its inserted properly.
+   * @group obo
+   * @group wip
+   */
+  public function test_dbxref_loaded(){
+    //node11 has a synonym:"crazy node" EXACT []
+
+
+    $name = 'path_test_mini';
+    $path = __DIR__ . '/../example_files/cvtermpath_test.obo';
+    $this->load_obo($name, $path);
+
+    $cv_name = 'cvtermpath_test';
+
+    $query = db_select('chado.cvterm_dbxref', 't');
+    $query->join('chado.cvterm', 'cvt', 't.cvterm_id = cvt.cvterm_id');
+    $query->join('chado.dbxref', 'dbx', 'dbx.dbxref_id = t.dbxref_id');
+    $query->fields('dbx', ['accession']);
+    $query->condition('cvt.name', 'node11');
+
+    $result = $query->execute()->fetchField();
+
+    $this->assertNotFalse($result);
+
+    $this->assertEquals("0043226", $result);
+
+  }
 
   /**
    * ensure that new CV's aren't accidentally created when term names have
