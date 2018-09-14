@@ -142,9 +142,13 @@ function tripal_chado_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
-  if ($type == 'TripalEntity') {
-
+  if ($type !== 'TripalEntity') {
+    return;
   }
+
+  // Delete the removed entity from the corresponding chado_bio_data_x table
+  $bundle = $entity->bundle;
+  db_delete("chado_{$bundle}")->condition('entity_id', $entity->id);
 }
 
 /**
