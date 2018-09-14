@@ -4,12 +4,75 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 @media screen and (min-width: 767px) {
 
    .wy-table-responsive table td {
-      /* !important prevents the common CSS stylesheets from overriding
-         this as on RTD they are loaded after this stylesheet */
       white-space: normal !important;
    }
 
    .wy-table-responsive {
       overflow: visible !important;
    }
+}
+
+
+/** 
+ * BRANDING
+ */
+ 
+/* Sidebar Title */
+.wy-side-nav-search {
+  background: none !important;
+}
+.wy-side-nav-search input[type="text"] {
+  border-color: black;
+}
+.wy-nav-side {
+  color: #CCCCCC !important;
+  background: #2D2D34 !important;
+  background-image: url("hexagon_pattern.png") !important;
+  background-repeat: repeat !important;
+  background: -webkit-linear-gradient(left, $light-grey , $gray-base) !important;
+  background: -o-linear-gradient(right, $light-grey, $gray-base) !important;
+  background: -moz-linear-gradient(right, $light-grey, $gray-base) !important;
+  background: linear-gradient(to right, $light-grey , $gray-base) !important;
+}
+/* Sidebar TOC */
+.wy-menu-vertical li.current {
+  color: #CCCCCC;
+  border-color: black;
+  background: rgba(0,0,0,0.5);
+}
+.wy-menu-vertical li.toctree-l1.current > a {
+  color: black;
+  border-color: whitesmoke;
+  background-color: whitesmoke;
+}
+.wy-menu-vertical li.toctree-l2.current > a,
+  .wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a,
+  .wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
+    color: #CCCCCC;
+    border-color: black;
+    background-color: rgba(0,0,0,0.05);
+}
+.wy-menu-vertical li.current a:hover,
+  .wy-menu-vertical li.toctree-l1.current > a:hover,
+  .wy-menu-vertical li.toctree-l2.current > a:hover,
+  .wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a:hover,
+  .wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a:hover {
+    color: white;
+    border-color: black;
+    font-weight: bold;
+    background-color: rgba(0,0,0);
+}
+.wy-menu-vertical li.toctree-l1 a,
+  .wy-menu-vertical li.toctree-l2 a, 
+  .wy-menu-vertical li.toctree-l3 a, 
+  .wy-menu-vertical li.toctree-l4 a {
+    color: #CCCCCC;
+    border-color: black;
+}
+/* Main Content */
+.wy-nav-content-wrap {
+  background: whitesmoke;
+}
+a, a:hover {
+  color: #990000;
 }
