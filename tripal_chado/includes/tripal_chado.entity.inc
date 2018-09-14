@@ -148,7 +148,7 @@ function tripal_chado_entity_delete($entity, $type) {
 
   // Delete the removed entity from the corresponding chado_bio_data_x table
   $bundle = $entity->bundle;
-  db_delete("chado_{$bundle}")->condition('entity_id', $entity->id);
+  db_delete("chado_{$bundle}")->condition('entity_id', $entity->id)->execute();
 }
 
 /**
