@@ -50,7 +50,7 @@ class OBOImporterTest extends TripalTestCase {
    *
    * @group obo
    */
- /*  public function testRemoteOBO() {
+   public function testRemoteOBO() {
 
     $name = 'core_test_goslim_plant';
     $path = 'http://www.geneontology.org/ontology/subsets/goslim_plant.obo';
@@ -91,7 +91,7 @@ class OBOImporterTest extends TripalTestCase {
       ->fetchField();
     $this->assertNotFalse($go_db_id,
       "Missing the 'GO' database record after loading the GO plant slim.");
-  } */
+  } 
   
   /**
    * Tests that an OBO from a local path can be loaded.
