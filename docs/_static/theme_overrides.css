@@ -30,8 +30,6 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
   background-image: url("hexagon_pattern.png") !important;
   background-repeat: repeat !important;
   background: -webkit-linear-gradient(left, $light-grey , $gray-base) !important;
-  background: -o-linear-gradient(right, $light-grey, $gray-base) !important;
-  background: -moz-linear-gradient(right, $light-grey, $gray-base) !important;
   background: linear-gradient(to right, $light-grey , $gray-base) !important;
 }
 /* Logo */
@@ -82,6 +80,9 @@ a, a:hover {
 }
 a:visited {
   color: #cc0000;
+}
+a.icon-home:visited {
+  color: #ffffff;
 }
 /* Code blocks */
 .highlight {
