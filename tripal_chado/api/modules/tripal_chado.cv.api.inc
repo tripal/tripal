@@ -417,13 +417,12 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
   
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
-  $prev_db = chado_set_active('chado');
   $transaction = db_transaction();
   
   try {
     
     // Get the is_a term. The OBO importer adds this for evey vocabulary.
-    $sql = "SELECT * FROM cvterm WHERE name = :is_a and cv_id = :cv_id";
+    $sql = "SELECT * FROM {cvterm} WHERE name = :is_a and cv_id = :cv_id";
     $args = [':is_a' => 'is_a', ':cv_id' => $cv_id];
     $cache['$is_a'] = chado_query($sql, $args)->fetchObject();
     
@@ -484,8 +483,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
     }
   }
   catch (Exception $e) {
-    $transaction->rollback();
-    chado_set_active($prev_db);
+    $transaction->rollback();    
     throw $e;
   }
 }

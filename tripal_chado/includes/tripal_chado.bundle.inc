@@ -64,7 +64,7 @@ function tripal_chado_bundle_create($bundle, $storage_args) {
       throw new Exception('Cannot create content type. Problem associating type with Chado.');
     }
   }
-
+  
   tripal_chado_create_bundle_table($bundle);
 }
 
@@ -114,6 +114,9 @@ function tripal_chado_create_bundle_table($bundle) {
     ),
   );
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
+  if (!$chado_entity_table) {
+    throw new Exception('Cannot create entity linker table for chado.');
+  }
   db_create_table($chado_entity_table, $schema);
 }
 
