@@ -1326,13 +1326,14 @@ class OBOImporter extends TripalImporter {
       if (!$check_stanza) {
         $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
         $check_cvterm->setValue('name', $new_name);
+        $check_cvterm->setValue('is_obsolete', '1');
         $check_cvterm->update();
         return TRUE;
       }
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and
       // is obsolete and this one is not. Fix it by adding an (obsolete) suffix 
       // to the name to avoid the conflict.
-      else if ($check_stanza['is_obsolete'] == 'true' and $stanza['is_obsolete'] != 'true') {
+      else if ($check_stanza['is_obsolete'][0] == 'true' and $stanza['is_obsolete'][0] != 'true') {
         $new_name = $check_cvterm->getValue('name') . ' (obsolete)';
         $check_cvterm->setValue('name', $new_name);
         $check_cvterm->update();

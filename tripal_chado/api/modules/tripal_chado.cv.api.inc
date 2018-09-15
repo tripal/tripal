@@ -435,7 +435,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
         INNER JOIN {cvterm} CVTO on CVTO.cvterm_id = CVTR.object_id
         INNER JOIN {cvterm} CVTS on CVTS.cvterm_id = CVTR.subject_id
       WHERE CVTO.cv_id = :cv_id 
-      ORDER BY CVTR.object_id, CVTR.subject_id
+      ORDER BY CVTO.name, CVTS.name
     ";
     $rels = chado_query($sql, [':cv_id' => $cv_id]);
     $total_items;
