@@ -17,7 +17,7 @@ Tripal v3 comes with some pre-defined content types, however you have the abilit
 Find a Controlled Vocabulary (CV) Term
 ---------------------------------------
 
-Before creating a new content type for your site you must identify a CV term that best matches the content type you would like to create.  CVs are plentiful and at times selection of the correct term from the right vocabulary can be challenging. If there is any doubt about what term to use, then it is best practice to reach out to others to confirm your selection. The Tripal User community is a great place to do this by posting a description of your content type and your proposed term on the `Tripal Issue Queue <https://github.com/tripal/tripal/issues>`_.  Confirming your term with others will also encourage re-use across Tripal sites and improve data exchagnge capabilities.
+Before creating a new content type for your site you must identify a CV term that best matches the content type you would like to create.  CVs are plentiful and at times selection of the correct term from the right vocabulary can be challenging. If there is any doubt about what term to use, then it is best practice to reach out to others to confirm your selection. The Tripal User community is a great place to do this by posting a description of your content type and your proposed term on the `Tripal Issue Queue <https://github.com/tripal/tripal/issues>`_.  Confirming your term with others will also encourage re-use across Tripal sites and improve data exchange capabilities.
 
 The `EBI's Ontology Lookup Service <http://www.ebi.ac.uk/ols/index>`_ is a great place to locate terms from public vocabularies. At this site you can search for terms for your content type.  If you can not find an appropriate term in a public vocabulary or via discussion with others then you create a new **local** term within the **local** vocabulary that comes with Tripal.
 
@@ -85,15 +85,15 @@ Perhaps we want to be more specific with our genetic marker pages and create pag
 To accomplish this we can walk through the content type creation form and set the following values:
 
 .. csv-table::
-  :header: 'Field', 'Value'
+  :header: Field, Value
 
   "Content Type", "SNP (SO:0000694)"
   "Storage Backend", "Chado"
   "Chado Table", "feature"
-  "Are all records in the 'feature' table of type 'genetic_marker'?", "No"
-  "Type column", "--None--",
-  "Do you want to use the 'featureprop' table to distinguish between content types?", "Yes"
-  "Base Type", "genetic_marker (SO:0001645)"
+  "Are all records in the ``feature`` table of type 'genetic_marker'?", "No"
+  "Type column", "--None--"
+  "Do you want to use the ``featureprop`` table to distinguish between content types?", "Yes"
+  "Base Type", "'genetic_marker' (SO:0001645)"
   "Property Type", "type (rdfs:type)"
   "Property Value", "SNP"
 
