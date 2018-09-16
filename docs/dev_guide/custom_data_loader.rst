@@ -2,34 +2,47 @@ Creating Custom Data Loaders
 ==============================
 
 
+.. warning::
+
+  This documentation is currently under development.  There is a corresponding walkthrough on youtube that will be posted soon.
+
+
+The ``TripalImporter`` class can be extended to create your own data loader.  This class provides many conveniences to simplify loader construction. For example, it simplifies and unifies input form development, automatically handles files upload by the user, provides job submission, logging and progress updates. Using the TripalImporter to create your loader also makes it easy to share your loader with other Tripal users!
+
+To document how to create a new importer, we will describe use of the ``TripalImporter`` class within the context of a new simple importer called the ``ExampleImpoter``. This importer will read in a comma-separated file containing genomic features and their properties.  The loader will split each line into feature and property values, and then insert each property into the ``featureprop`` table of Chado using a controlled vocabulary term (supplied by the user) as the ``type_id`` for the property. 
+
 .. note::
+  Prior to starting your data loader you should plan how the data will be imported into Chado. Chado is a flexible database schema and it may be challenging at times to decide in to which tables data should be placed.  It is recommended to reach out to the Chado community to solicit advice. Doing so will allow you to share your loader will other Tripal users more easily!
 
-  This documentation is currently being developed.  There is a corresponding walkthrough on youtube that will be posted soon.
+Create a Custom Module
+----------------------
+To create your own importer, you first need to have a custom extension module in which the loader will be provided.  If you do not know how to create a module, see the section titled **Creating a Custom Module** for further direction. Providing your new importer within a custom module will allow you to more easily share your loader with other Tripal users. Any site that downloads and enables your extension module will be able to use your data loader.  For this document we will describe creation of a new importer in a module named ``tripal_example_importer``.
 
-
-The ``TripalImporter`` class can be extended to create your own data loader.  This class provides many conveniences: for example, it handles file input, job submission.
-
-Create the File
-----------------
-To create your own Importer, you simply need to define a new class that extends ``TripalImporter``.  You should place this class in its own ``.inc`` file at ``includes/TripalImporter/``.  For our example, we'll place the following file at ``tripal_example_importer/includes/TripalImporter/ExampleImporter.inc``.
+Create the Class File
+---------------------
+To define a new class that extends ``TripalImporter``, you should create a new class file with a ``.inc`` extension within your custom module in the directory: ``includes/TripalImporter/``.  If this is your first importer, then you will need to create this directory. For the example described here, we will create a new ``TripalImporter`` class named ``ExampleImporter``. Therefore, we must name the file the same as the class (with the .inc extension) and place the file here: ``tripal_example_importer/includes/TripalImporter/ExampleImporter.inc``.  Initially, our new class is empty:
 
 .. code-block:: php
 
   class ExampleImporter extends TripalImporter {
   }
 
-There is no need to include the importer in your module: simply placing it in the ``/includes/TripalImporter/`` folder of your module is enough: it will appear at ``admin -> Tripal -> Data Loaders``.  If Tripal cannot find your importer, double check that the file path is correct, and clear your cache (``drush cc all``).
+There is no need to include the importer via a ``require_once`` statement in your module file. Placing it in the ``/includes/TripalImporter/`` directory of your module is all you need for Tripal to find it. Tripal will automatically place a link for your importer at ``admin -> Tripal -> Data Loaders``.  
+
+.. note::
+
+  If after creation of your importer file, Tripal does not show a link for it in the Data Loaders page, check that you have named your class file correctly and it is in the path described above. Sometimes a clear cache is neccessary (``drush cc all``).
 
 
 Static Variables
 -----------------
-
-Your importer should overwrite any of the ``public static`` variables that should be different from the default.
+The next step in creation of your importer is setting the static member variables. Open the ``TripalImporter`` class file that comes with Tripal and found here ``tripal/includes/TripalImporter.inc``. Copy the  ``public static`` member variables at the top of the class into your own class. For your importer, override any of the ``public static`` variables that need to be different from the default.
 
 .. note::
 
-  For the sake of simplicity, we do not override many of the default settings, and we do not include the full inline code documentation.  Please see the class documentation for a full list of options.
+  For the sake of simplicity in this document, many of the default settings are not changed, and threfore, not all are included.
 
+Our ``ExampleImporter`` class now appears as follows:
 
 .. code-block:: php
 
@@ -37,26 +50,53 @@ Your importer should overwrite any of the ``public static`` variables that shoul
   /**
    * @see TripalImporter
    */
-  public static $name = 'Example TST File Importer';
+   class ExampleImporter extends TripalImporter {
+   
+    /**
+     * The name of this loader.  This name will be presented to the site
+     * user.
+     */
+    public static $name = 'Example TST File Importer';
+  
+    /**
+     * The machine name for this loader. This name will be used to construct
+     * the URL for the loader.
+     */
+    public static $machine_name = 'tripal_tst_loader';
+  
+    /**
+     * A brief description for this loader.  This description will be
+     * presented to the site user.
+     */
+    public static $description = 'Loads TST files';
+  
+    /**
+     * An array containing the extensions of allowed file types.
+     */
+    public static $file_types = ['txt', 'tst', 'csv'];
+  
+    /**
+     * Provides information to the user about the file upload.  Typically this
+     * may include a description of the file types allowed.
+     */
+    public static $upload_description = 'TST is a fictional format.  Its a 2-column, CSV file.  The columns should be of the form featurename, and text';
+    
+    /**
+     * Indicates the methods that the file uploader will support.
+     */
+    public static $methods = [
+      // Allow the user to upload a file to the server.
+      'file_upload' => TRUE,
+      // Allow the user to provide the path on the Tripal server for the file.
+      'file_local' => TRUE,
+      // Allow the user to provide a remote URL for the file.
+      'file_remote' => TRUE,
+    ];
+  }
 
-  public static $machine_name = 'tripal_tst_loader';
+.. warning::
 
-  public static $description = 'Loads TST files';
-
-  public static $file_types = ['txt', 'tst', 'csv'];
-
-  public static $upload_description = 'TST is a fictional format.  Its a 2-column, CSV file.  The columns should be of the form featurename, and text';
-
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
-
-The variables that are ``private static`` **should not** be changed.
+  The variables that are ``private static`` **should not** be copied and should not be changed Only copy and change the ``public static`` member variables.
 
 
 Now that we've given our importer a name and description, it will show up at ``/admin/tripal/loaders``:
@@ -67,56 +107,69 @@ Now that we've given our importer a name and description, it will show up at ``/
 Form Components
 -----------------
 
-We next need to create an interface for users to fill out additional information for their data.
+By default, the ``TripalImporter`` class will provide the necessary upload widgets to allow a user to upload files for import.  The static variables we set in the previous step dictate how that uploader appears to the user.  However, for this example, our importer needs additional information from the user before data can be loaded.  We need to provide additional form widgets.  
 
-There are three standard Drupal form hooks: ``form``, ``form_validate``, ``form_submit``. The **TripalImporter** wraps these for us as ``form`` and ``formValidate``: typically the base class's ``formSubmit`` does not need to be modified.
+Typically, to create forms, Drupal provides form hooks: ``form``, ``form_validate``, ``form_submit``. The **TripalImporter** wraps these for us as class functions named ``form``, ``formValidate`` and ``formSubmit``.  We can override these class functions to provide additional widgets to the form.  
+
+.. note::
+  
+  Typically we only need to implement the ``form`` and ``formValidate`` functions. The ``formSubmit`` does not need to be modified.
 
 .. note::
 
-  Please see the Drupal documentation for the Form API reference, available `here for Drupal 7 <https://api.drupal.org/api/drupal/developer%21topics%21forms_api_reference.html/7.x>`_.  This tutorial will only scratch the surface of the Form API.
+  If you are not familiar with form creation in Drupal you may want to find a Drupal reference book that provides step-by-step instructions.  Additionally, you can explore the `API documentation for form construction for Drupal 7 <https://api.drupal.org/api/drupal/developer%21topics%21forms_api_reference.html/7.x>`_.  Here, this example expects you are comfortable with form construction in Drupal.
 
 
-form
-^^^^^^^^^
-
-This function will provide all of the input widgets required for the user to run the form.  The global settings above ::ref:`<Static Variables>`_ provide some elements "out of the box".  A totally empty TripalImporter class can provide the tow below components: the **files** section, and an **analysis** selector.
-
-The **File Upload** area lets users choose to upload a file manually using the interface, or, to provide a **Server path** or **Remote path** for the file.
+The form function
+^^^^^^^^^^^^^^^^^
+To provide custom widgets for our importer we need to implement the ``form`` function.  However, let's review the current form provided by the TripalImporter for us already.  Using the static variables settings specified above the form automatically provides a **File Upload** field set, and an **Analysis** selector.  The **File Upload** area lets users choose to upload a file, provide a **Server path** to a file already on the web server or a **Remote path** for files located via a downloadable link on the web.   The **Analysis** selector is important because it allows the user to specify an analysis that describes how the data file was created. 
 
 .. image:: ./custom_data_loader.1.oob_file_interface.png
 
 .. image:: ./custom_data_loader.2.oob_analysis_select.png
 
-Our overly simplistic TST reader example only needs to do one thing: let the user pick a CVterm.  The importer will then read the file, split it into feature and values, and insert into featureprop using the ``type_id`` the user specified in the form.
+For our example TST file importer these upload options are sufficient.  However, for our data import we want the user provide a CV term.  We want our importer to read the file, split it into feature and values, and insert properties into the ``featureprop`` table of Chado using the the CV term as the ``type_id`` for the table.
 
-Our form might therefore be something as simple as this:
+To add a widget that allows the user to provide a CV term, we must implement the ``form`` function and include code using Drupal's Form API that will add the widget.  
 
 .. code-block:: php
   :name: ExampleImporter::form
 
 
   public function form($form, &$form_state) {
-  $options = [];
+    
 
-      #an array of random sequence ontology terms the user can select from.
-      $terms = [array('id' => 'SO:0000235'), ['id' => 'SO:0000238'], ['id' => 'SO:0000248'] ];
+    // For our example loader let's assume that there is a small list of 
+    // vocbaulry terms that are appropriate as proprties for the genomics
+    // fatures. Therfore, we will provide an array of sequence ontology terms 
+    // the user can select from.
+    $terms = [
+      ['id' => 'SO:0000235'], 
+      ['id' => 'SO:0000238'], 
+      ['id' => 'SO:0000248']
+    ];
 
-      $options[0] = '--please select an option--';
+    // Construct the options for the select drop down.
+    $options = [];
+    $options[0] = '--please select an option--';
+    // Iterate through the terms array and get the term id and name using
+    // appropriate Tripal API functions.  
+    foreach ($terms as $term){
+      $term_object = chado_get_cvterm($term);
+      $id = $term_object->cvterm_id;
+      $options[$id] = $term_object->name;
+    }
 
-      foreach ($terms as $term){
-        $term_object = chado_get_cvterm($term);
-        $id = $term_object->cvterm_id;
-        $options[$id] = $term_object->name;
-      }
+    // Provide the Drupal Form API array for a select box.
+    $form['pick_cvterm'] =  [
+      '#title' => 'CVterm',
+      '#description' => 'Please pick a CVterm.  The loaded TST file will associate the values with this term as a feature property.',
+      '#type' => 'select',
+      '#default_value' => '0',
+      '#options' => $options
+    ];
 
-          $form['pick_cvterm'] =  [
-            '#title' => 'CVterm',
-            '#description' => 'Please pick a CVterm.  The loaded TST file will associate the values with this term as a feature property.',
-            '#type' => 'select',
-            '#default_value' => '0',
-            '#options' => $options
-            ];
-
+    // The form function must always return our form array.
     return $form;
   }
 
@@ -125,46 +178,47 @@ Our form now has a select box!
 .. image:: ./custom_data_loader.3.cvterm_select.png
 
 
-
-What about responsive form elements?
-"""""""""""""""""""""""""""""""""""""
+Using AJAX in forms
+"""""""""""""""""""
 
 .. note::
 
-  This section coming soon. For now, check out the Drupal AJAX guide https://api.drupal.org/api/drupal/includes%21ajax.inc/group/ajax/7.x
+  This section is not yet available. For now, check out the Drupal AJAX guide https://api.drupal.org/api/drupal/includes%21ajax.inc/group/ajax/7.x
 
 
-
-formValidate
-^^^^^^^^^^^^^^^
-
-This function is responsible for verifying that required fields are filled out, and that supplied values are valid.  If something is invalid, use ``form_set_error()`` provide an error message and Drupal will mark that piece of the form in red.
-In our example code, we should check that the user picked a CVterm in the ``pick_cvterm`` element.
+The formValidate function
+^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``formValidate`` function is responsible for verifying that the user supplied values from the form submission are valid.  To warn the user of inappropriate values, the Drupal API function, ``form_set_error()`` is used. It provides an error message, highlights in red the widget containing the bad value, and prevents the form from being submitted--allowing the user to make corrections. In our example code, we will check that the user selected a CV term from the ``pick_cvterm`` widget.
 
 
 .. code-block:: php
 
   public function formValidate($form, &$form_state) {
+  
+    // Always call the TripalImporter (i.e. parent) formValidate as it provides
+    // some important feature needed to make the form work properly.
     parent::formValidate($form, $form_state);
 
+    // Get the chosen CV term form the form state and if there is no value
+    // set warn the user.
     $chosen_cvterm = $form_state['values']['pick_cvterm'];
     if ($chosen_cvterm == 0) {
       form_set_error('pick_cvterm', 'Please choose a CVterm.');
     }
   }
 
-This very simple validation function looks for the ``pick_cvterm`` element of the ``$form_state`` and ensures the user selected something.  Your own validation may be more complex (for example, ensuring a regular expression is valid, or that a term exists in the database) but the principle will be the same.
+The implementation above looks for the ``pick_cvterm`` element of the ``$form_state`` and ensures the user selected something.  This is a simple example. An implementation for a more complex loader with a variety of widgets will require more validation checks.
+
+When an importer form is submitted and passes all validation checks, a job is automatically added to the **Tripal Job** system. The ``TripalImporter`` parent class does this for us! The **Tripal Job** system is meant to allow long-running jobs to execute behind-the-scenes on a regular time schedule.  As jobs are added they are executed in order.  Therefore, if a user submits a job using the importer's form then the **Tripal Job** system will automatically run the job the next time it is scheduled to run or it can be launched manually by the site administrator.
 
 
-Importer Logic
----------------
+Importer Execution
+------------------
+The ``form`` and ``formValidate`` functions allow our Importer to receive an input file and additional values needed for import of the data.  To execute loading a file the ``TripalImporter`` provides several additional overridable functions:  ``run``, ``preRun`` and ``postRun``.  When the importer is executed, the ``preRun`` function is called first. It allows the importer to perform setup prior to full execution.  The ``run`` function is where the full exeuction occurs and the ``postRun`` function is used to perform "cleanup" prior to completion. For our ``ExampleImporter`` class we only need to implement the ``run`` function.  We have no need to perform any setup or cleanup outside of the typical run.
 
-run
-^^^^^^^^^^^^
-
-If ``formValidate`` did not encounter any ``form_set_error``, the importers ``run`` function will execute.  Between the ``formValidate`` and the ``run``, other things have happened: for example, the file was downloaded if a remote URL was given.
-
-The run function should collect the arguments from the importer, and perform the logic of loading your file.
+The run function
+^^^^^^^^^^^^^^^^
+The ``run`` function is called automatically when Tripal runs the importer. For our ``ExampleImporter``, the run function should collect the values provided by the user, read and parse the input file and load the data into Chado. The first step, is to retrieve the user provided values and file details. The inline comments in the code below provide instructions for retrieving these details.
 
 
 .. code-block:: php
@@ -174,21 +228,38 @@ The run function should collect the arguments from the importer, and perform the
      */
     public function run() {
 
+      // All values provided by the user in the Importer's form widgets are
+      // made available to us here by the Class' arguments member variable.  
       $arguments = $this->arguments['run_args'];
+      
+      // The path to the uploaded file is always made avilable using the
+      // 'files' argument. The importer can support multiple files, therefore
+      // this is an array of files, where each has a 'file_path' key specifying
+      // where the file is located on the server.
       $file_path = $this->arguments['files'][0]['file_path'];
 
+      // The analysis that the data being imported is associated with is always
+      // provided as an argument.
       $analysis_id = $arguments['analysis_id'];
-      $cvterm = $arguments['pick_cvterm'];
+      
+      // Any of the widgets on our form are also avilable as an argument.
+      $cvterm_id = $arguments['pick_cvterm'];
 
-      $this->loadMyFile($analysis_id, $file_path, $cvterm);
+      // Now that we have our file path, analysis_id and CV term we can load
+      // the file.  We'll do so by creating a new function in our class
+      // called "loadMyFile" and pass these arguments to it.
+      $this->loadMyFile($analysis_id, $file_path, $cvterm_id);
     }
 
-Loading the File
+.. note::
+
+  We do not need to validate in the ``run`` function that all of the necessary values in the arguments array are valid.  Remember, this was done by the ``formValidate`` function when the user submitted the form.  Threfore, we can trust that all of the necessary values we need for the import are correct.  That is of course provided our ``formValidate`` function sufficiently checks the user input.
+
+Importing the File
 ^^^^^^^^^^^^^^^^^^
+To keep the ``run`` function small, we will implement a new function named ``loadMyFile`` that will perfrom parsing and import of the file into Chado. As seen in the code above, the ``loadMyFile`` function is called in the ``run`` function. 
 
-We've constructed a form and passed the form arguments to our loader.  Now we need to run the logic that will read the file and load the data into the database.
-
-For starters, lets examine how TripalImporters uses Tripal Jobs.  If we make the below our ``loadMyFile`` function, we can confirm that our job runs with all of the expected variables.
+Initially, lets get a feel for how the importer will work.  Lets just print out the values provided to our importer:
 
 
 .. code-block:: php
@@ -197,9 +268,15 @@ For starters, lets examine how TripalImporters uses Tripal Jobs.  If we make the
     var_dump(["this is running!", $analysis_id, $file_path, $cvterm]);
   }
 
+To test our importer navigate to ``admin > Tripal > Data Importers`` and click the link for our TFT importer. Fill out the form and press submit.  If there are no validation errors, we'll receive notice that our job was submitted and given a command to execute the job manually. For example: 
 
-Fill out the form and press submit.  If there are no validation errors, we'll receive notice that our job was submitted and given a command (on my site its: ```drush trp-run-jobs --username=admin --root=/Users/chet/UTK/tripal
-``) to run the job with drush.  Let's run it and see what happens.
+..
+
+  drush trp-run-jobs --username=admin --root=/var/www/html
+
+
+If we execute our importer we should see the following output: 
+
 
 .. code-block:: bash
 
@@ -228,48 +305,135 @@ Fill out the form and press submit.  If there are no validation errors, we'll re
 
 As you can see, running the job executes our run script, and we have all the variables we need to load the data.  All we need to do now is write the code!
 
-The below code is nothing special: it uses ``chado_select_record`` to match the featurename in the input file to the database, and ``chado_insert_property`` to add the property value.
+To import data into Chado we will use the Tripal API. After splitting each line of the input file into a genomic feature and its property, we will use the ``chado_select_record`` to match the feature's name with a record in the ``feature`` table of Chado, and the ``chado_insert_property`` to add the property value.
 
 
 .. code-block:: php
 
-  public function loadMyFile($analysis_id, $file_path, $cvterm){
+  public function loadMyFile($analysis_id, $file_path, $cvterm_id){
 
-    //Loop through lines of file
+    // We want to provide a progress report to the end-user so that they:
+    // 1) Recognize that the loader is not hung if running a large file, but is 
+    //    executing  
+    // 2) Provides some idicatation for how long the file will take to load.
+    //
+    // Here we'll get the size of the file and tell the TripalImporter how
+    // many "items" we have to process (in this case bytes of the file).
+    $filesize = filesize($file_path);
+    $this->setTotalItems($filesize);
+    $this->setItemsHandled(0);
+    
+    // Loop through each line of file.  We use the fgets function so as not
+    // to load the entire file into memory but rather to iterate over each
+    // line seprately.
+    $bytes_read = 0;
     while ($line = fgets($file_path)) {
+    
+      // Caluculate how many bytes we have read from the file and let the 
+      // importer know how many have been processed so it can provide a 
+      // progress indicator.
+      $bytes_read += drupal_strlen($line);
+      $this->setItemsHandled($bytes_read);
 
-          //split line on ,
-          $cols = explode(",", $line);
+      // Remove any trailing white-space from the line.
+      $line = trim($line);
 
-          $feature_name = $cols[0];
-          $this_value = $cols[1];
+      // Split line on a comma into an array.  The feature name appears in the
+      // first "column" of data and the property in the second.
+      $cols = explode(",", $line);
+      $feature_name = $cols[0];
+      $this_value = $cols[1];
 
-          //skip headers
-          if ($feature_name == 'Feature name'){
-            continue;
-          }
+      // Our file has a header with the name 'Feature name' expected as the
+      // title for the first column. If we see this ignore it.
+      if ($feature_name == 'Feature name'){
+         continue;
+      }
 
-          //Fetch feature ID
-          $feature_record = chado_select_record('feature', ['feature_id'], ['uniquename' => $feature_name]);
-
-          //prepare and insert the property
-          $record = ['table' => 'feature', 'id' => $feature_record];
-          $property = [
-            'type_id' => $cvterm_id,
-            'value' => $this_value,
-          ];
-
-          $options = ['update_if_present' => TRUE];
-          chado_insert_property($record, $property, $options);
-    }
+      // Using the name of te feature from the file, see if we can find a
+      // record in the feature table of Chado that matches.  Note: in reality
+      // the feature table of Chado has a unique contraint on the uniquename,
+      // organism_id and type_id columns of the feature table.  So, to ensure
+      // we find a single record ideally we should include the organism_id and
+      // type_id in our filter and that would require more widgets on our form!  
+      // For sipmlicity, we will just search on the uniquename and hope we
+      // find unique features.
+      $match = ['uniquename' => $feature_name];
+      $results = chado_select_record('feature', ['feature_id'], $match);
+      
+      // The chado_select_record funtion always returns an array of matches. If
+      // we found no matches then this feature doesn't exist and we'll skip
+      // this line of the file.  But, log this issue so the user knows about it.
+      if (count($results) == 0) {
+        $this->logMessage('The feature, !feature, does not exist in the database', 
+          ['!feature' => $feature_name], TRIPAL_WARNING); 
+        continue;
+      }
+      
+      // If we failed to find a unique feature then we should warn the user
+      // but keep on going.
+      if (count($results) == 0) {
+        $this->logMessage('The feature, !feature, exists multiple times. ' .
+          'Cannot add a property', ['!feature' => $feature_name], TRIPAL_WARNING); 
+        continue;
+      }
+      
+      // If we've made it this far then we have a feature and we can do the 
+      // insert.
+      $feature = $results[0];
+      $record = [
+        'table' => 'feature', 
+        'id' => $feature->feature_id
+      ];
+      $property = [
+        'type_id' => $cvterm_id,
+        'value' => $this_value,
+      ];
+      $options = ['update_if_present' => TRUE];
+      chado_insert_property($record, $property, $options);
+    } 
   }
 
+Logging and Progress
+--------------------
+During execution of our importer it is often useful to inform the user of progress, status and issues encountered.  There are several functions to assist with this. These include the ``logMessage``,  ``setTotalItems`` and ``setItemsHandled`` functions.  All three of these functions were used in the sample code above of the ``loadMyFile`` function.  Here, we provide a bit more detail.
 
+The logMessage function
+^^^^^^^^^^^^^^^^^^^^^^^
+The ``logMessage`` function is meant to allow the importer to provide status messages to the user while the importer is running.  The function takes three arguments:
+ 
+1) a message string.
+2) an array of substitution values.
+3) a message status.  
+
+The message string contains the message for the user.  You will notice that no variables are included in the string but rather tokens are used as placeholders for variables.  This is a security feature provided by Drupal.  Consider these lines from the code above:
+
+.. code-block:: php
+
+  $this->logMessage('The feature, !feature, does not exist in the database', 
+    ['!feature' => $feature_name], TRIPAL_WARNING); 
+    
+Notice that ``!feature`` is used in the message string as a placeholder for the feature name. The mapping of ``!feature`` to the actualy feature name is providedin the array provided as the second argument.  The third argument supports several message types including ``TRIPAL_NOTICE``, ``TRIPAL_WARNING`` and ``TRIPAL_ERROR``.  The message status indicates a severity level for the message.  By default if no message type is provided the message is of type ``TRIPAL_NOTICE``.
+
+Any time the ``logMessage`` function is used the message is stored in the job log, and a site admin can review these logs by clicking on the job in the ``admin > Tripal > Tripal Jobs`` page.
+
+.. note::
+
+  You should avoid using ``print`` or ``print_r`` statements in a loader to provide messages to the end-user while loading the file.  Always use the ``logMessage`` function to ensure all messages are sent to the job's log.
+
+The setTotalItems and setItemsHandled functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``TripalImporter`` class is capable of providing progress updates to the end-user while the importer job is running. This is useful as it gives the end-user a sense for how long the job will take. As shown in the sample code above for the ``loadMyFile`` function, The first step is to tell the ``TripalImporter`` how many items need processing.  An **item** is an arbitray term indicating some measure of countable "units" that will be processed by our importer.  
+
+In the code above we consider a byte as an item, and when all bytes from a file are read we are done loading that file.  Threfore the ``setTotalItems`` function is used to tell the importer how many bytes we need to process.  As we read each line, we count the number of bytes read and provide that number to the ``setItemsHandled`` function.  The ``TripalImporter`` class will automatically calcaulte progress and print a message to the end-user indicating the percent complete, and some additional details such as the total amount of memory consumed during the loading.
+
+.. note::
+  
+  All importers are different and the "item" need not be the number of bytes in the file.  However, if you want to provide progress reports you must identify an "item" and the total number of items there are for processing.
+          
 Testing Importers
 ------------------
-
-
-If you haven't already, look into Tripal Test Suite for adding tests to your Tripal module.  It will automatically set up and bootstrap Drupal and Tripal for your testing environment, as well as provide things like DB Transactions for your tests, factories to quickly generate data.  This demo will use Tripal Test Suite.
+Unit Testing is a critically important component of any software project. You should always strie to write tests for your software.  Tripal provides unit testing using the ``phpunit`` testing framework. The Tripal Test Suite provides a strategy for adding tests for your new Importer.  It will automatically set up and bootstrap Drupal and Tripal for your testing environment, as well as provide database transactions for your tests, and factories to quickly generate data.  We will use the Tripal Test Suite to provide unit testing for our ``ExampelImporter``.
 
 .. note::
   Before continuing, please install and configure Tripal Test Suite.
@@ -278,9 +442,8 @@ If you haven't already, look into Tripal Test Suite for adding tests to your Tri
 
 
 Example file
-^^^^^^^^^^^^^^^^
-
-Including a small example file is good practice both to ensure that your loader works as intended, and for new developers to easily see what the expected file format is.  For our ExampleImporter, I'll include this sample file with the module at ``tests/data/example.txt``.
+^^^^^^^^^^^^
+When developing tests, consider including a small example file as this is good practice both to ensure that your loader works as intended, and for new developers to easily see the expected file format.  For our ``ExampleImporter``, we'll include the following sample file and store it in this directory of our module:  ``tests/data/example.txt``.
 
 .. csv-table:: Example input file
   :header: "Feature name", "CVterm value"
@@ -289,50 +452,42 @@ Including a small example file is good practice both to ensure that your loader 
   "test_gene_2", "red"
 
 
-
-
 Loading the Importer
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+Testing your loader requires a few setup steps.  First, TripalImporters are not explicitly loaded in your module (note that we never use ``include_once()`` or ``require_once`` in the ``.module`` file).  Normally Tripal finds the importer automatically, but for unit testing we must include it to our test class explicitly.  Second, we must initialize an instance of our importer class. Aftewards we can perform any tests to ensure our loader executed properly.  The following function provides an example for setup of the loader for testing:
 
-Because TripalImporters are not explicitly loaded in your module (note that we never use ``include_once()`` in our ``.module`` file or anything similar), we must add it to our test class explicitly.
+.. code-block:: php
 
-The below code loads the Importer class, creates a new instance, prepares the files (important to support all file types) and then runs the job.
+  private function run_loader(){
+  
+    // Load our importer into scope.
+    module_load_include('inc', 'tripal_example_importer', 'includes/TripalImporter/ExampleImporter');
+
+    // Create an array of arguments we'll use for testing our importer.
+    $run_args = [
+      'analysis_id' => $some_analysis_id,
+      'cvterm' => $some_cvterm_id
+    ];
+    $file = ['file_local' => __DIR__ . '/../data/exampleFile.txt'];
+    
+    // Create a new instance of our importer.
+    $importer = new \ExampleImporter();
+    $importer->create($run_args, $file);
+     
+    // Before we run our loader we must let the TripalImporter prepare the 
+    // files for us.
+    $importer->prepareFiles();
+    $importer->run();
+  }
 
 .. note::
 
   We highly recommend you make use of database transactions in your tests, especially when running loaders.  Simply add ``use DBTransaction;`` at the start of your test class.  Please see the `Tripal Test Suite documentation for more information <https://tripaltestsuite.readthedocs.io/en/latest/>`_.
 
 
-.. code-block:: php
-
-  private function run_loader(){
-
-    $run_args = [
-      'analysis_id' => $some_analysis_id,
-      'cvterm' => $some_cvterm_id
-  ];
-    $file = ['file_local' => __DIR__ . '/../data/exampleFile.txt'];
-
-    module_load_include('inc', 'tripal_example_importer', 'includes/TripalImporter/ExampleImporter');
-     $importer = new \ExampleImporter();
-     $importer->create($run_args, $file);
-     $importer->prepareFiles();
-     $importer->run();
-   }
-
-
-Now, when we write our test, we can use this helper function to run the importer and check the database that our property was added.
-
-Alternatively, we can run sub-methods explicitly.  For example, let's ensure that our validator is working properly by passing it an **invalid** ``form_state``.
-
-.. code-block:: php
-
-  <code>
-
 Test Data
-^^^^^^^^^^
-
-You'll note that our test has a few requirements to run.  It needs the features (test_gene_1 and test_gene_2) and the analysis.  You could load this data separately, but then the test will fail for new developers until they also create the features and analysis.
+^^^^^^^^^
+You will note that our test has a few requirements.  It needs the features (test_gene_1 and test_gene_2) and the analysis.  You could load this data separately, but then the test will fail for new developers until they also create the features and analysis.
 
 Instead, you can use **Chado Factories** to quickly and easily provide unique features, analyses, or whatever else you may need for your test to run.  This data is created for each test, and, if wrapped in a DBTransaction, is removed when the test finishes.
 
@@ -370,7 +525,7 @@ Using factories, our test might look something like this now.
 
 
 Writing the Test
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 Below is an example test.  Note that it runs the importer, then uses the values in the ``run_loader`` method to retrieve the property that loader inserted.
 
