@@ -94,7 +94,7 @@ Our ``ExampleImporter`` class now appears as follows:
 
 .. warning::
 
-  The variables that are ``private static`` **should not** be copied and should not be changed Only copy and change the ``public static`` member variables.
+  The variables that are ``private static`` **should not** be copied and should not be changed. Only copy and change the ``public static`` member variables.
 
 
 Now that we've given our importer a name and description, it will show up at ``/admin/tripal/loaders``:
@@ -209,6 +209,20 @@ The implementation above looks for the ``pick_cvterm`` element of the ``$form_st
 
 .. note::
 
+  If our importer followed best practices, it would not need a validator at all.  The cvterm select box in the form could be defined as below.  Note the ``'#required' => True`` line: this would handle the validation for us.  For this tutorial, however, we implement the validation ourselves to demonstrate the function.
+
+  .. code-block:: php
+
+    // Provide the Drupal Form API array for a select box.
+    $form['pick_cvterm'] =  [
+      '#title' => 'CVterm',
+      '#description' => 'Please pick a CVterm.  The loaded TST file will associate the values with this term as a feature property.',
+      '#type' => 'select',
+      '#default_value' => '0',
+      '#options' => $options,
+      '#empty_option' => '--please select an option--'
+      '#required' => True
+    ];
 
 
 When an importer form is submitted and passes all validation checks, a job is automatically added to the **Tripal Job** system. The ``TripalImporter`` parent class does this for us! The **Tripal Job** system is meant to allow long-running jobs to execute behind-the-scenes on a regular time schedule.  As jobs are added they are executed in order.  Therefore, if a user submits a job using the importer's form then the **Tripal Job** system will automatically run the job the next time it is scheduled to run or it can be launched manually by the site administrator.
