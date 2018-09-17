@@ -11,8 +11,6 @@
       var use_ajax    = parseInt(settings.tripal_ds.tripal_field_settings_ajax) === 1;
       var hide_fields = settings.tripal_ds.tripal_field_settings_hide !== false;
 
-      console.log(use_ajax, hide_fields, settings.tripal_ds)
-
       if (!use_ajax) {
         return;
       }
@@ -70,7 +68,7 @@
   };
 
   /**
-   * Load the fields content from the server.
+   * Load the field's content from the server.
    */
   AjaxField.prototype.load = function () {
     $.ajax({
@@ -109,14 +107,14 @@
       if (pane_id) {
         var pane = $('#' + pane_id);
 
-        // If the pane has only the title and close button, we can
-        // remove it
+        // If the pane has only the title and close button, we can remove it
         var has_children = $('.tripal_pane-fieldset-' + pane_id)
           .first()
           .children()
           .not('.tripal_pane-fieldset-buttons')
           .not('.field-group-format-title')
-          .not('#' + id).length > 0;
+          .not('#' + id)
+          .length > 0;
 
         if (!has_children) {
           pane.remove();
