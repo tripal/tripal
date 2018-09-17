@@ -338,7 +338,7 @@ class ChadoSchema {
    *   An object containing the chado_table and chado_field properties or NULL if
    *   if no mapping was found for the term.
    */
-  function getCvtermMapping($params) {
+  public function getCvtermMapping($params) {
     return chado_get_cvterm_mapping($params);
   }
 
@@ -518,7 +518,7 @@ class ChadoSchema {
    * @return
    *   TRUE if the primary key meets all the requirements and false otherwise.
    */
-  function checkPrimaryKey($table, $column = NULL) {
+  public function checkPrimaryKey($table, $column = NULL) {
 
     // If they didn't supply the column, then we can look it up.
     if ($column === NULL) {
