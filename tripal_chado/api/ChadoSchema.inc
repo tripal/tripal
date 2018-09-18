@@ -338,7 +338,7 @@ class ChadoSchema {
    *   An object containing the chado_table and chado_field properties or NULL if
    *   if no mapping was found for the term.
    */
-  function getCvtermMapping($params) {
+  public function getCvtermMapping($params) {
     return chado_get_cvterm_mapping($params);
   }
 
@@ -517,12 +517,24 @@ class ChadoSchema {
    * @return
    *   TRUE if the primary key meets all the requirements and false otherwise.
    */
-  function checkPrimaryKey($table, $column = NULL) {
+  public function checkPrimaryKey($table, $column = NULL) {
 
     // If they didn't supply the column, then we can look it up.
     if ($column === NULL) {
       $table_schema = $this->getTableSchema($table);
       $column = $table_schema['primary key'][0];
+    }
+
+    // If there is no primary key then we can't check it.
+    // It neither passes nore fails validation.
+    if (empty($column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'Cannot check the validity of the primary key for "!table" since there is no record of one.',
+        array('!table' => $table)
+      );
+      return NULL;
     }
 
     // Check the column exists.

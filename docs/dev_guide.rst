@@ -9,6 +9,7 @@ Developer's Guide
    dev_guide/introduction
    dev_guide/data_structures
    dev_guide/best_practices
+   dev_guide/chado
    dev_guide/custom_modules
    dev_guide/custom_field
    dev_guide/custom_data_loader

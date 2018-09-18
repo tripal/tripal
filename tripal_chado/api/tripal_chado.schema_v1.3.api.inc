@@ -4118,7 +4118,7 @@ function tripal_chado_chado_schema_v1_3_cvtermprop() {
       ),
     ),
     'unique keys' => array(
-      'cvterm_id_type_id_value_rank' => array(
+      'cvtermprop_cvterm_id_type_id_value_rank_key' => array(
         0 => 'cvterm_id',
         1 => 'type_id',
         2 => 'value',
@@ -7019,13 +7019,14 @@ function tripal_chado_chado_schema_v1_3_featuremap_dbxref() {
         'default' => 'true',
       ),
     ),
-    // TODO: this unique constraint is missing from the actual Chado schema.
-    // It should be included.
     'unique keys' => array(
+      /* @todo: this unique constraint is missing from the actual Chado schema.
+          It should be included.
       'feature_dbxref_c1' => array(
         0 => 'featuremap_id',
         1 => 'dbxref_id',
       ),
+      */
     ),
     'indexes' => array(
       'featuremap_dbxref_idx1' => array(
@@ -7252,13 +7253,14 @@ function tripal_chado_chado_schema_v1_3_featuremap_pub() {
         'not null' => TRUE,
       ),
     ),
-    // TODO: this unique constraint is missing from the actual Chado schema.
-    // It should be included.
     'unique keys' => array(
+      /* @todo: this unique constraint is missing from the actual Chado schema.
+          It should be included.
       'feature_pub_c1' => array(
         0 => 'featuremap_id',
         1 => 'pub_id',
       ),
+      */
     ),
     'indexes' => array(
       'featuremap_pub_idx1' => array(
@@ -9936,7 +9938,7 @@ function tripal_chado_chado_schema_v1_3_materialized_view() {
       ),
     ),
     'unique keys' => array(
-      'name' => array(
+      'materialized_view_name_key' => array(
         0 => 'name',
       ),
     ),
@@ -11123,7 +11125,7 @@ function tripal_chado_chado_schema_v1_3_nd_protocol() {
       ),
     ),
     'unique keys' => array(
-      'name' => array(
+      'nd_protocol_name_key' => array(
         0 => 'name',
       ),
     ),
@@ -13094,11 +13096,11 @@ function tripal_chado_chado_schema_v1_3_phylonode() {
       ),
     ),
     'unique keys' => array(
-      'phylotree_id_left_idx' => array(
+      'phylonode_phylotree_id_left_idx_key' => array(
         0 => 'phylotree_id',
         1 => 'left_idx',
       ),
-      'phylotree_id_right_idx' => array(
+      'phylonode_phylotree_id_right_idx_key' => array(
         0 => 'phylotree_id',
         1 => 'right_idx',
       ),
@@ -13189,7 +13191,7 @@ function tripal_chado_chado_schema_v1_3_phylonode_dbxref() {
       ),
     ),
     'unique keys' => array(
-      'phylonode_id_dbxref_id' => array(
+      'phylonode_dbxref_phylonode_id_dbxref_id_key' => array(
         0 => 'phylonode_id',
         1 => 'dbxref_id',
       ),
@@ -13262,7 +13264,7 @@ function tripal_chado_chado_schema_v1_3_phylonode_organism() {
       ),
     ),
     'unique keys' => array(
-      'phylonode_id' => array(
+      'phylonode_organism_phylonode_id_key' => array(
         0 => 'phylonode_id',
       ),
     ),
@@ -13346,7 +13348,7 @@ function tripal_chado_chado_schema_v1_3_phylonodeprop() {
       ),
     ),
     'unique keys' => array(
-      'phylonode_id_type_id_value_rank' => array(
+      'phylonodeprop_phylonode_id_type_id_value_rank_key' => array(
         0 => 'phylonode_id',
         1 => 'type_id',
         2 => 'value',
@@ -13421,7 +13423,7 @@ function tripal_chado_chado_schema_v1_3_phylonode_pub() {
       ),
     ),
     'unique keys' => array(
-      'phylonode_id_pub_id' => array(
+      'phylonode_pub_phylonode_id_pub_id_key' => array(
         0 => 'phylonode_id',
         1 => 'pub_id',
       ),
@@ -13515,7 +13517,7 @@ function tripal_chado_chado_schema_v1_3_phylonode_relationship() {
       0 => 'phylonode_relationship_id',
     ),
     'unique keys' => array(
-      'subject_id_object_id_type_id' => array(
+      'phylonode_relationship_subject_id_object_id_type_id_key' => array(
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
@@ -13768,7 +13770,7 @@ function tripal_chado_chado_schema_v1_3_phylotree_pub() {
       ),
     ),
     'unique keys' => array(
-      'phylotree_id_pub_id' => array(
+      'phylotree_pub_phylotree_id_pub_id_key' => array(
         0 => 'phylotree_id',
         1 => 'pub_id',
       ),
@@ -17676,7 +17678,7 @@ function tripal_chado_chado_schema_v1_3_studyprop() {
       0 => 'studyprop_id',
     ),
     'unique keys' => array(
-      'study_id_type_id_rank' => array(
+      'studyprop_study_id_type_id_rank_key' => array(
         0 => 'study_id',
         1 => 'type_id',
         2 => 'rank',
@@ -17756,7 +17758,7 @@ function tripal_chado_chado_schema_v1_3_studyprop_feature() {
       0 => 'studyprop_feature_id',
     ),
     'unique keys' => array(
-      'studyprop_id_feature_id' => array(
+      'studyprop_feature_studyprop_id_feature_id_key' => array(
         0 => 'studyprop_id',
         1 => 'feature_id',
       ),
