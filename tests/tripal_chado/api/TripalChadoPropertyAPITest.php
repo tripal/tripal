@@ -47,7 +47,6 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
   /**
    * @group chado
    * @group api
-   * @group wip
    *
    */
   public function test_chado_get_property() {
@@ -152,7 +151,6 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
 
 
   /**
-   * @group wip
    * @group chado
    * @group api
    */
