@@ -1047,7 +1047,7 @@ class OBOImporter extends TripalImporter {
       if (is_array($results['in_subset'])) {
         $stanza['subset'] =  $results['in_subset'];
       }
-      else {
+      elseif($results['in_subset']) {
         $stanza['subset'][0] =  $results['in_subset'];
       }
     }
