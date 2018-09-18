@@ -71,7 +71,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
 
     $record = ['prop_id' => $prop['featureprop_id'], 'table' => 'feature'];
     $retrieved = chado_get_property($record, $property);
-    $this->assertNotFalse($retrieved);
+
+    $this->assertNotNull($retrieved);
     $this->assertEquals($value, $retrieved->value);
   }
 

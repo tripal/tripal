@@ -24,7 +24,7 @@
  *     -id: The primary key value of the base table. The property will be
  *         associated with the record that matches this id.
  *     -prop_id: The primary key in the [table]prop table.  If this value
- *         is supplied then the 'table' and 'id' keys are not needed.
+ *         is supplied then the 'id' key is not needed.
  * @param $property
  *   An associative array used to specify the property to be selected.  It can
  *   contain the following keys. The keys must be specified to uniquely identify
@@ -98,15 +98,20 @@ function chado_get_property($record, $property) {
 
   // Construct the array of values to be selected.
   $values = array(
-    $fkcol => $base_id,
     'type_id' => $type,
   );
+
+  //Can supply either base_id or prop_id.
+  if ($base_id){
+    $values[$fkcol] = $base_id;
+  }
 
   // If we have the unique property_id make sure to add that to the values.
   if ($prop_id) {
     $property_pkey = $table_desc['primary key'][0];
     $values[$property_pkey] = $prop_id;
   }
+
   $results = chado_generate_var($base_table . 'prop', $values);
   if ($results) {
     $results = chado_expand_var($results, 'field', $base_table . 'prop.value');
