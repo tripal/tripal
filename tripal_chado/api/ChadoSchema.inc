@@ -476,7 +476,6 @@ class ChadoSchema {
       return TRUE;
     }
     else {
-      print "$table.$column... Expected: $expected_type, Actual: $type.\n";
       return FALSE;
     }
   }

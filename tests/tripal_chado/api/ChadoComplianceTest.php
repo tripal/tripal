@@ -52,6 +52,7 @@ class ChadoComplianceTest extends TripalTestCase {
     // Create the ChadoSchema class to aid in testing.
     $chado_schema = new \ChadoSchema();
     $version = $chado_schema->getVersion();
+    $schema_name = $chado_schema->getSchemaName();
 
     // Check #1: The table exists in the correct schema.
     $this->assertTrue(
@@ -88,12 +89,14 @@ class ChadoComplianceTest extends TripalTestCase {
 
     // For the primary key:
     // Check #4: The constraint exists.
-    $pkey_column = $table_schema['primary key'][0];
-    $this->assertTrue(
-      $chado_schema->checkPrimaryKey($table_name, $pkey_column),
-      t('The column "!table.!column" must have an associated sequence attached for chado v!version.',
-        array('!column' => $pkey_column, '!table' => $table_name, '!version' => $version))
-    );
+    if (isset($table_schema['primary key'][0]) AND !empty($table_schema['primary key'][0])) {
+      $pkey_column = $table_schema['primary key'][0];
+      $this->assertTrue(
+        $chado_schema->checkPrimaryKey($table_name, $pkey_column),
+        t('The column "!table.!column" must be a primary key with an associated sequence and constraint for chado v!version.',
+          array('!column' => $pkey_column, '!table' => $table_name, '!version' => $version))
+      );
+    }
 
     // For each unique key:
     foreach ($table_schema['unique keys'] as $constraint_name => $columns) {
@@ -116,11 +119,14 @@ class ChadoComplianceTest extends TripalTestCase {
         // @debug print "Check '$table_name.$base_column =>  $fk_table.$fk_column ' foreign key.";
 
         // Check #4: The constraint exists.
+        $constraint_name = $table_name . '_' . $base_column . '_fkey';
         $this->assertTrue(
           $chado_schema->checkFKConstraintExists($table_name, $base_column),
-          t('The foreign key constraint "!name" for "!table.!column" must exist for chado v!version.',
-            array('!name' => $constraint_name, '!table' => $table_name,
-              '!column' => $column_name, '!version' => $version))
+          t('The foreign key constraint "!name" for "!table.!column" => "!fktable.!fkcolumn" must exist for chado v!version.',
+            array('!name' => $constraint_name,
+              '!table' => $table_name, '!column' => $base_column,
+              '!fktable' => $fk_table, '!fkcolumn' => $fk_column,
+              '!version' => $version))
         );
 
         // Check #5: The constraint consists of the columns we expect.
