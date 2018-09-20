@@ -452,14 +452,15 @@ function tripal_chado_add_db2cv_mview_mview() {
   );
 
   $sql = "
-   SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
-     COUNT(CVT.cvterm_id) as num_terms
-   FROM cv CV
-     INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
-     INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
-     INNER JOIN db DB on DB.db_id = DBX.db_id
-   GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
-   ORDER BY DB.name
+    SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
+      COUNT(CVT.cvterm_id) as num_terms
+    FROM cv CV
+      INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
+      INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+      INNER JOIN db DB on DB.db_id = DBX.db_id
+    WHERE CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+    GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
+    ORDER BY DB.name
   ";
 
   // Create the MView
@@ -506,13 +507,13 @@ function tripal_chado_add_cv_root_mview_mview() {
   );
 
   $sql = "
-    SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
-    FROM cvterm_relationship CVTR
-      INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
-      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
-    WHERE CVTR.object_id not in
-      (SELECT subject_id FROM cvterm_relationship)
-    AND CVT.is_relationshiptype = 0
+    SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name
+    FROM cvterm CVT
+      LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
+      INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+    INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+    WHERE CVTR.subject_id is NULL and 
+      CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
   ";
 
   // Create the MView

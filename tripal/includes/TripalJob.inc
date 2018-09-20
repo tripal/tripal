@@ -33,13 +33,27 @@ class TripalJob {
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
    */
-  private $interval;
-
+  private $interval;  
+  
   /**
-   * Each time the job progress is updated this variable gets set.  It is
-   * used to calculate if the $interval has passed for the next update.
+   * The time stamp when the job begins.
+   * 
+   * @var integer
    */
-  private $prev_update;
+  private $start_time;
+  
+  /**
+   * The time from when the setTotalItems is called to the present time.
+   * 
+   * @var
+   */
+  private $progress_start_time;
+  
+  /**
+   * Stores the last percentage that progress was reported.
+   * @var integer
+   */
+  private $reported = 0;
 
   /**
    * Instantiates a new TripalJob object.
@@ -277,6 +291,9 @@ class TripalJob {
    * Executes the job.
    */
   public function run() {
+    
+    $this->start_time = time();
+    $this->progress_start_time = time();
 
     if (!$this->job) {
       throw new Exception('Cannot launch job as no job is associated with this object.');
@@ -296,7 +313,7 @@ class TripalJob {
       // Set the start time for this job.
       $record = new stdClass();
       $record->job_id = $this->job->job_id;
-      $record->start_time = time();
+      $record->start_time = $this->start_time;
       $record->status = 'Running';
       $record->pid = getmypid();
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -447,6 +464,8 @@ class TripalJob {
    *   The total number of items to process.
    */
   public function setTotalItems($total_items) {
+    $this->progress_start_time = time();
+    
     $this->total_items = $total_items;
   }
 
@@ -472,6 +491,7 @@ class TripalJob {
    *   The total number of items that have been processed.
    */
   public function setItemsHandled($total_handled) {
+    
     // First set the number of items handled.
     $this->num_handled = $total_handled;
 
@@ -483,15 +503,19 @@ class TripalJob {
 
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
-    $percent = sprintf("%.2f", ($this->num_handled / $this->total_items) * 100);
-    $diff = $percent - $this->prev_update;
+    $percent = ($this->num_handled / $this->total_items) * 100;
+    $ipercent = (int) $percent;
 
-    if ($diff >= $this->interval) {
-
-      $memory = number_format(memory_get_usage());
-      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes.\r";
-      $this->prev_update = $diff;
+    // If we've reached our interval then print update info.
+    if ($ipercent > 0 and $ipercent != $this->reported and ($ipercent % $this->interval) == 0) {
+      $duration = (time() - $this->progress_start_time) / 60;
+      $duration = sprintf("%.2f", $duration);
+      $memory = memory_get_usage();
+      $fmemory = number_format($memory);
+      $spercent = sprintf("%d", $percent);
+      print "Percent complete: " . $spercent . "%. Memory: " . $fmemory . " bytes. Duration: " . $duration . " mins\r";
       $this->setProgress($percent);
+      $this->reported = $ipercent;
     }
   }
 

@@ -204,6 +204,11 @@ class TripalImporter {
   protected $is_prepared;
 
 
+  /**
+   * Stores the last percentage that progress was reported.
+   * @var integer
+   */
+  protected $reported = 0;
 
   // --------------------------------------------------------------------------
   //                          CONSTRUCTORS
@@ -632,37 +637,37 @@ class TripalImporter {
 
     if ($total_handled == 0) {
       $memory = number_format(memory_get_usage());
-      print "Percent complete: 0%. Memory: " . $memory . " bytes.\r";
+      print t("Percent complete: 0%. Memory: !memory  bytes.", ['!memory' => $memory]) . "\r";
       return;
     }
 
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
-    $percent = sprintf("%.2f", ($this->num_handled / $this->total_items) * 100);
-    $diff = $percent - $this->prev_update;
-
-    if ($diff >= $this->interval) {
-
+    $percent = ($this->num_handled / $this->total_items) * 100;
+    $ipercent  = (int) $percent;
+    
+    // If we've reached our interval then print update info.
+    if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
       $memory = number_format(memory_get_usage());
-      print "Percent complete: " . $percent . "%. Memory: " . $memory . " bytes.\r";
+      $spercent = sprintf("%.2f", $percent);
+      print t("Percent complete: !percent %. Memory: !memory bytes.", 
+        ['!percent' => $spercent, '!memory' => $memory]) . "\r";
 
       // If we have a job the update the job progress too.
       if ($this->job) {
         $this->job->setProgress($percent);
       }
-
-      $this->prev_update = $diff;
+      $this->reported = $ipercent;
     }
   }
 
   /**
    * Updates the percent interval when the job progress is updated.
    *
-   * Updating the job
-   * progress incurrs a database write which takes time and if it occurs to
-   * frequently can slow down the loader.  This should be a value between
-   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
-   * progress every time the num_handled increases by 1%).
+   * Updating the job progress incurrs a database write which takes time 
+   * and if it occurs to frequently can slow down the loader.  This should 
+   * be a value between 0 and 100 to indicate a percent interval (e.g. 1 
+   * means update the progress every time the num_handled increases by 1%).
    *
    * @param $interval
    *   A number between 0 and 100.

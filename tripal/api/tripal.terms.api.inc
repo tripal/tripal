@@ -155,7 +155,6 @@ function hook_vocab_get_term($vocabulary, $accession) {
 function hook_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
   // See the tripal_chado_vocab_get_terms() function for an example.
 }
-
 /**
  * Hook used by the default term storage backend to provide children for a term.
  *
@@ -423,7 +422,6 @@ function tripal_get_vocabulary_root_terms($vocabulary) {
     }
   }
 }
-
 /**
  * Retrieves the immediate children of the given term.
  *

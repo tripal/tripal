@@ -209,9 +209,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
 /**
  * Duplicate of fill_cvtermpath() stored procedure in Chado.
  *
- * Identifies all of the root terms of the controlled vocabulary. These
- * root terms are then processed by calling the
- * chado_update_cvtermpath_root_loop() function on each one.
+ * Identifies all of the root terms of the controlled vocabulary. 
  *
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).

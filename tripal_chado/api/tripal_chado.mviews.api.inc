@@ -386,7 +386,7 @@ function chado_delete_mview($mview_id) {
 }
 
 /**
- * Update a Materialized View.
+ * Populate a Materialized View.
  *
  * @param $mview_id
  *   The unique identifier for the materialized view to be updated.
