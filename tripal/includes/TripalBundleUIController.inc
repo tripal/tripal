@@ -219,35 +219,19 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   else {
     $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, '');
   }
-  $hide_empty_field_var = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-  if ($hide_empty_field_var != 0) {
-    $hide_empty_field_var = TRUE;
-  }
-  $ajax_field_var = tripal_get_bundle_variable('ajax_field', $bundle->id);
-  if ($ajax_field_var != 0) {
-    $ajax_field_var = TRUE;
-  }
+
+  $empty_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, '');
   $form['hide_empty_field'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Hide empty fields'),
-    '#description' => t('Uncheck this box if you would like to show all empty fields.'),
-    '#default_value' => $hide_empty_field_var,
+    '#type' => 'select',
+    '#title' => t('Field Display'),
+    '#options' => array(
+      'hide' => t('Hide empty fields'),
+      'show' => t('Show empty fields'),
+    ),
+    '#description' => t('Choose either to show or hide all empty fields.  If "Show empty fields" is selected then fields will be loaded via AJAX to help speed page loads.'),
+    '#default_value' => !empty($empty_fields) ? array($empty_fields,) : array('hide',),
   );
 
-  $form['ajax_field'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Load field using AJAX'),
-    '#description' => t('Uncheck this box if you do not want field data to load by ajax, this may signifiantly increase page load times.'),
-    '#default_value' => $ajax_field_var,
-  );
-  $form['ajax_field disclaimer'] = array(
-    '#type' => 'item',
-    '#markup' => t(
-      '<p>Please note, if both "Hide empty fields" and "Load field using AJAX" 
-      are checked empty fields will be hidden using javascript which may result
-       in some jumpiness of content as the page finishes loading.</p>'
-    ),
-  );
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,
@@ -409,10 +393,7 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
   // VALIDATE: That there is a value passed for the hide_empty_field option. If
   // no value passed default to hide field.
   if(empty($form_state['values']['hide_empty_field'])){
-    $form_state['values']['hide_empty_field'] = TRUE;
-  }
-  if (empty($form_state['values']['ajax_field'])) {
-    $form_state['values']['ajax_field'] = TRUE;
+    $form_state['values']['hide_empty_field'] = 'hide';
   }
   // VALIDATE: The only tokens used should be those we mentioned under "Available Tokens".
   // PART 1: Set Titles.
@@ -483,7 +464,6 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
 
     // Save the hide_empty_field setting.
     tripal_set_bundle_variable('hide_empty_field', $bundle->id, $form_state['values']['hide_empty_field']);
-    tripal_set_bundle_variable('ajax_field', $bundle->id, $form_state['values']['ajax_field']);
 
     // Save the page title format.
     tripal_save_title_format(
