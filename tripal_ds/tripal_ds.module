@@ -467,9 +467,10 @@ function tripal_ds_field_display_alter(&$display, $context){
     $field_name = $context['field']['field_name'];
     $bundle = $context['entity']->bundle;
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
+    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
+    $ajax_variable = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
 
-    if ($field_name && ($hide_variable == 'hide')) {
+    if ($field_name && ($hide_variable == TRUE) && ($ajax_variable == FALSE)) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
@@ -486,6 +487,7 @@ function tripal_ds_field_display_alter(&$display, $context){
         }
       }
     }
+    drupal_add_js(array('tripal_ds' => array('tripal_field_settings_hide' => $hide_variable, 'tripal_field_settings_ajax' => $ajax_variable)), 'setting');
   }
 }
 

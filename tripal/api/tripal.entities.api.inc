@@ -967,7 +967,6 @@ function tripal_update_bundle_field($field_name, $field_info, $entity_type_name,
  * @ingroup tripal_entities_api
  */
 function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE) {
-
   $variable = tripal_get_variable($variable_name);
 
   // Warn if we can't find the tripal_variable.
@@ -1015,6 +1014,16 @@ function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
       $variable = tripal_get_variable($variable_name);
       if (!$variable) {
         return FALSE;
+      }
+    }
+    else if ($variable_name === 'ajax_field') {
+      tripal_insert_variable(
+        'ajax_field',
+        'Structure->Tripal Content Type->edit checkbox to allow for ajax fields for that bundle.'
+      );
+      $variable = tripal_get_variable($variable_name);
+      if (!$variable) {
+        return false;
       }
     }
     else {
