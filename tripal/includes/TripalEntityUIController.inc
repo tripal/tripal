@@ -91,15 +91,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
     );
-    $items['bio_data/' . $wildcard . '/reload'] = array(
-      'title'  => 'Reload',
-      'page callback' => 'tripal_entity_reload',
-      'page arguments' => array(1),
-      'access callback' => 'tripal_entity_access',
-      'access arguments' => array('edit', 1),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-    );
     // Menu item for deleting tripal data entities.
     $items['bio_data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
@@ -463,28 +454,6 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    }
  }
 
-/**
- * Clears the cache of a given entity to force a reload.
- * 
- * @param $entity_id
- *   The entity_id of the entity to reload.
- */
-function tripal_entity_reload($entity) {
-  $entity_id = $entity->id;
-  $cid = 'field:TripalEntity:' . $entity_id . ':';
-  cache_clear_all($cid, 'cache_field', TRUE);
-  
-  $sql = "SELECT count(*) FROM cache_field WHERE cid like :cid";
-  $count = db_query($sql, [':cid' => $cid . '%'])->fetchField();
-  if (!isset($count) or $count > 0) {
-    drupal_set_message('Failed to clear the cache for this entity.');
-  }
-  else {
-    drupal_set_message('Cache cleared, entity reloaded');
-  }
-  drupal_goto('bio_data/' . $entity_id);
-}
- 
  /**
   *
   */
