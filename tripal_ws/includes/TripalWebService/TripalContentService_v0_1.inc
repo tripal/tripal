@@ -248,8 +248,13 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
-
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
+    // javascript so change the $hide_fields variable to false to avoid any actions.
+    if ($ajax_field == TRUE) {
+      $hide_fields = FALSE;
+    }
     // Get information about the fields attached to this bundle and sort them
     // in the order they were set for the display.
     $instances = field_info_instances('TripalEntity', $bundle->name);
@@ -320,7 +325,7 @@ class TripalContentService_v0_1 extends TripalWebService {
           $this->addResourceProperty($resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']), array('lowercase', 'spacing'));
         }
         else {
-          if ($hide_fields == 'show') {
+          if ($hide_fields == FALSE) {
             $this->addResourceProperty($resource, $term, NULL, array('lowercase', 'spacing'));
           }
         }
@@ -340,7 +345,13 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
+    // javascript so change the $hide_fields variable to false to avoid any actions.
+    if ($ajax_field == TRUE) {
+      $hide_fields = FALSE;
+    }
 
     // Get the field  settings.
     $field_name = $field['field_name'];
@@ -371,7 +382,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       }
     }
 
-    if ($hide_fields == 'hide' and empty($values[0])) {
+    if ($hide_fields == TRUE and empty($values[0])) {
       return;
     }
 
@@ -436,8 +447,13 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
-    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
-
+    $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
+    // javascript so change the $hide_fields variable to false to avoid any actions.
+    if ($ajax_field == TRUE) {
+      $hide_fields = FALSE;
+    }
     $new_value = '';
     // If the value is an array rather than a scalar then map the sub elements
     // to controlled vocabulary terms.
@@ -446,7 +462,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       foreach ($value as $k => $v) {
 
         // exclude fields that have no values so we can hide them
-        if (!isset($v) and $hide_fields == 'hide') {
+        if (!isset($v) and $hide_fields == TRUE) {
           continue;
         }
 
