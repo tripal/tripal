@@ -264,7 +264,7 @@ function tripal_get_feature_sequences($feature, $options) {
         INNER JOIN {feature} OF   on FL.srcfeature_id = OF.feature_id
         INNER JOIN {cvterm}  OCVT on OF.type_id       = OCVT.cvterm_id
         INNER JOIN {organism} OO  on OF.organism_id   = OO.organism_id
-      WHERE SF.feature_id = :feature_id and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
+      WHERE SF.feature_id = :feature_id and NOT (OF.residues = \'\' or OF.residues IS NULL) ORDER BY fmin) as tbl1
   ';
   // This query is meant to get all of the sub features of any given
   // feature (arg #1) and order them as they appear on the reference
@@ -727,4 +727,3 @@ function tripal_get_location_string($featureloc) {
 
   return $featureloc->srcfeature_id->name . ":" . ($featureloc->fmin + 1) . ".." . $featureloc->fmax .  $strand;
 }
-
