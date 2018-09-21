@@ -1,3 +1,10 @@
+---
+name: Documentation
+about: Add or update the documentation (in-line or ReadTheDocs).
+---
+
+# Documentation
+
 <!--- Thank you for contributing! -->
 <!--- Provide a general summary of your changes in the Title above -->
 <!--- See our Contribution Guidelines here:

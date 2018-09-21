@@ -1,11 +1,16 @@
+---
+name: Bug Fix
+about: Resolve a bug.
+---
+
+# Bug Fix
+
 <!--- Thank you for  contributing! -->
 <!--- See our Contribution Guidelines here:
          https://github.com/tripal/tripal/blob/7.x-3.x/CONTRIBUTING.md -->
           
 <!--- If it fixes an open issue, please add the issue link below. -->
 Issue #
-
-## BUG FIX
 
 ## Description
 <!--- Describe your changes in detail -->

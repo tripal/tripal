@@ -1,3 +1,10 @@
+---
+name: New Feature
+about: Adds new functionality to Tripal.  Should be discussed in an issue prior to submission.
+---
+
+# New Feature
+
 <!--- Thank you for contributing! -->
 <!--- Provide a general summary of your changes in the Title above -->
 <!--- See our Contribution Guidelines here:
@@ -6,8 +13,6 @@
 
 <!--- New features MUST have an issue so they can be discussed by the community prior to their implementation! -->
 
-
-## NEW FEATURE
 
 Issue #
 

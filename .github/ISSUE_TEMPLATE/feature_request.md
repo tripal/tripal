@@ -12,11 +12,12 @@ INSTRUCTIONS: The following template is meant to structure your feature request.
   if it's decided the feature is not a good fit for Tripal Core.
 --->
 
-<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
+<!--- Go over all the following points, and select the option in the brackets that applies to you. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-- [ ] does this feature attempt to solve an existing problem with Tripal?
-- [ ] are you open to developing or collaborating on an extension module if this is not a good fit for Tripal Core (no pressure here -just good to know upfront :-) )
-- [ ] do you **Need** this feature ASAP?
+* This feature [does / does not attempt to solve an existing problem with Tripal
+* I [am/am not] open to developing or collaborating on an extension module if this is not a good fit for Tripal Core
+<!--- (no pressure here -just good to know upfront :-) ) -->
+* This feature is URGENT/Not Urgent
 
 ### Description
 <!--- A clear and concise description of what you want to happen. -->
