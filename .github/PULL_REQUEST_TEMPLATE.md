@@ -1,18 +1,15 @@
----
-name: New Feature
-about: Adds new functionality to Tripal.  Should be discussed in an issue prior to submission.
----
-
-# New Feature
-
 <!--- Thank you for contributing! -->
 <!--- Provide a general summary of your changes in the Title above -->
 <!--- See our Contribution Guidelines here:
           https://github.com/tripal/tripal/blob/7.x-3.x/CONTRIBUTING.md -->
-          
 
-<!--- New features MUST have an issue so they can be discussed by the community prior to their implementation! -->
 
+<!---  Please set the header below based on the PR type:
+# New Feature
+# Bux Fix
+# Documentation  --->
+
+#
 
 Issue #
 
@@ -32,4 +29,3 @@ Issue #
 
 <!--- New features should include in-line code documentation. -->
 <!--- Would a user or developer guide be helpful for this feature? -->
-
