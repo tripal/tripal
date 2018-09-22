@@ -14,10 +14,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
-    // TODO: make this widget deal better with the various relationship
-    // tables. See the load function as it does a better job of this.
-    return;
-
     // Get the field settings.
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
@@ -119,7 +115,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
     }
-   $widget['#table_name'] = $field_table;
+
+    $widget['#table_name'] = $field_table;
 
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
