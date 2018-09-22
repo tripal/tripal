@@ -3,12 +3,7 @@ Tripal Prerequisites
 
 .. note::
 
-  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.  **YOU MUST SET THIS VARIABLE FOR THE BELOW GUIDE TO SUCCEED**.
-
-  .. code-block:: bash
-
-    DRUPAL_HOME=/var/www/html
-
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../../drupal_home`
 
 
 Tripal v3.x requires several Drupal modules. These include  `Entity <https://www.drupal.org/project/entity>`_,  `Views <https://www.drupal.org/project/views>`_, `CTools <https://www.drupal.org/project/ctools>`_, `Display Suite <https://www.drupal.org/project/ds>`_, `Field Group <https://www.drupal.org/project/field_group>`_, `Field Group Table <https://www.drupal.org/project/field_group_table>`_, `Field Formatter Class <https://www.drupal.org/project/field_formatter_class>`_ and `Field Formatter Settings <https://www.drupal.org/project/field_formatter_settings>`_ modules.   Modules can be installed using the graphical Drupal website by clicking on the Modules link in the top adminstrative menu bar.  Instructions for instaling Modules via the web-interface can be found here:  https://www.drupal.org/documentation/install/modules-themes/modules-7. However, Drush can be quicker for module installation. The following instructions will show how to install a module using the Drush command-line tool.

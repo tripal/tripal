@@ -1,6 +1,11 @@
 Installation Method #1: Rapid Installation
 ==========================================
 
+.. note::
+
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
+
+
 Before installing via the rapid installation process please ensure drush is installed, and the server is setup.   Rapid Installation works with Tripal v3.0-rc2 (release candidate 2) and later.  If you are using a previous version of Tripal, please proceed to the step-by-step instructions.
 
 Database Setup
@@ -32,16 +37,6 @@ We no longer need to be the postgres user so exit
 
 Tripal Installation
 -------------------
-
-
-.. note::
-
-  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.  **YOU MUST SET THIS VARIABLE FOR THE BELOW GUIDE TO SUCCEED**.
-
-  .. code-block:: bash
-
-    DRUPAL_HOME=/var/www/html
-
 
 Navigate to your Drupal install directory.
 

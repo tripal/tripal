@@ -35,11 +35,7 @@ Software Installation
 
 .. note::
 
-  The user's guide makes use the environmental variable ``$DRUPAL_HOME`` to track where Drupal will be installed.  The default location for Drupal is ``/var/www/html``, but set this variable to wherever you would like your Drupal site installed.  For example, older Ubuntu setups use ``/var/www`` instead.  To use ``/var/www/html``, execute the below command, or, replace the path with your desired location.  **YOU MUST SET THIS VARIABLE FOR THE BELOW GUIDE TO SUCCEED**.
-
-  .. code-block:: bash
-
-    DRUPAL_HOME=/var/www/html
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../../drupal_home`
 
 
 Before we can install Drupal we must ensure that that we are allowed to add files into the root directory.  Select a user account that will be the owner of all web files and change the owner of the ``$DRUPAL_HOME`` directory to that user:

@@ -1,5 +1,9 @@
 Importing Publications
 ======================
+.. note::
+
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
+  
 Tripal provides an interface for automatically and manually adding publications.
 
 Manually Adding a Publication
@@ -81,7 +85,7 @@ Next, there are two ways to import these publications. The first it to manually 
 
 ::
 
-  cd /var/www/html
+  cd $DRUPAL_HOME
   drush trp-import-pubs --username=administrator
 
 You should see output to the terminal that begins like this:
@@ -105,7 +109,7 @@ Some things to know about the publication importer:
 
   ::
 
-    cd /var/www/html
+    cd $DRUPAL_HOME
     drush trp-run-jobs --user=administrator
 
 The second way to import publications is to add an entry to the UNIX cron. We did this previously for the Tripal Jobs management system when we first installed Tripal. We will add another entry for importing publications. But first, now that we have imported all of the relevant pubs, we need to return to the importers list at **Tripal → Data Loaders → Chado Publication Importers** and disable the first importer we created. We do not want to run that importer again, as we've already imported all historical publications on record at PubMed. Click the edit button next to the importer named Pubs for Citrus sinensis, click the disable checkbox and then save the template. The template should now be disabled.
@@ -120,11 +124,12 @@ Now add the following line to the bottom of the crontab:
 
 ::
 
-  30 8 1,15 * *  su - www-data -c '/usr/local/drush/drush -r /var/www/html -l http://[site url] trp-import-pubs --report=[your email] > /dev/null'
+  30 8 1,15 * *  su - www-data -c '/usr/local/drush/drush -r [DRUPAL_HOME] -l http://[site url] trp-import-pubs --report=[your email] > /dev/null'
 
 Where
 
 - [site url] is the full URL of your site
 - [your email] is the email address of the user that should receive an email containing a list of publications that were imported. You can separate multiple email addresses with a comma.
+- [DRUPAL_HOME] is the directory where Drupal is installed
 
 The cron entry above will launch the importer at 8:30am on the first and fifteenth days of the month. We will run this importer twice a month in the event it fails to run (e.g. server is down) at least one time during the month.

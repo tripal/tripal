@@ -141,7 +141,7 @@ The process allows you to create Tripal 3 content types exposing the same data a
 
   .. code-block:: bash
 
-    cd /var/www/html
+    cd $DRUPAL_HOME
     drush trp-run-jobs --user=administrator
 
 6. Now repeat 1-5 for each content type. Since this step simply creates new Tripal v3 content without touching the existing Tripal v2 content, there really is no reason not to migrate all your content types. Especially since the Tripal v3 content remains private and thus hidden from your users.

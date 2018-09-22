@@ -1,6 +1,9 @@
-
 Bulk Loader
 ===========
+
+.. note::
+
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`drupal_home`
 
 The bulk loader is a tool that Tripal provides for loading of data contained in tab delimited files. Tripal supports loading of files in standard formats (e.g. ``FASTA``, ``GFF``, ``OBO``), but Chado can support a variety of different biological data types and there are often no community standard file formats for loading these data. For example, there is no file format for importing genotype and phenotype data. Those data can be stored in the feature, stock and natural diversity tables of Chado. The Bulk Loader was introduced in Tripal v1.1 and provides a web interface for building custom data loader. In short, the site developer creates the bulk loader "template". This template can then be used and re-used for any tab delimited file that follows the format described by the template. Additionally, bulk loading templates can be exported allowing Tripal sites to share loaders with one another.  Loading templates that have been shared are available on the Tripal website here: http://tripal.info/extensions/bulk-loader-templates.
 
@@ -20,7 +23,7 @@ To demonstrate use of the Bulk Loader, a brief example that imports a list of or
 
 .. code-block bash
 
-  cd /var/www/html/sites/default/files
+  cd $DRUPAL_HOME/sites/default/files
   wget http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt
 
 
@@ -244,9 +247,13 @@ Provide the following values:
 
 * Job Name: Import of Fragaria species
 * Template: NCBI Taxonomy Importer (taxid, genus species).
-* Data File: /var/www/html/sites/default/files/Fragaria_0.txt
+* Data File: [DRUPAL_HOME]/sites/default/files/Fragaria_0.txt
 * Keep track of inserted IDs: No
 * File has a header: No
+
+.. note::
+
+  Be sure to change the [DRUPAL_HOME] token to where Drupal is installed.
 
 Click **Save**. The page then appears as follows:
 
@@ -261,7 +268,7 @@ Now that we have created a job, we can submit it for execution by clicking the *
 .. code-block:: shell
 
   cd /var/www
-  drush trp-run-jobs --username=admin --root=/var/www/html
+  drush trp-run-jobs --username=admin --root=$DRUPAL_HOME
 
 After execution of the job you should see similar output to the terminal window:
 

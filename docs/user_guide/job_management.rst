@@ -1,6 +1,11 @@
 Job Management (Tripal Daemon)
 ==============================
 
+.. note::
+
+  Remember you must set the $DRUPAL_HOME environment variable to cut-and-paste the commands below. See see :doc:`drupal_home`
+
+
 The Tripal Daemon module is meant to provide a simple means of creating a robust command-line-driven, fully bootstrapped PHP Daemon. It uses the PHP-Daemon (https://github.com/shaneharter/PHP-Daemon) Library to create the Daemon (via the Libraries API) in order to not re-invent the wheel. It allows you to execute Jobs submitted to Tripal without using cron.  It provides a faster user experience for running jobs.  Prior to Tripal v3, the Tripal Daemon module was an extension module. It was integrated into the core Tripal pacakge.
 
 Features
@@ -27,7 +32,7 @@ Next, we need the `PHP-Daemon Library version 2.0 <https://github.com/shaneharte
 
 .. code-block:: shell
 
-  cd /var/www/html/sites/all/libraries
+  cd $DRUPAL_HOME/sites/all/libraries
   wget https://github.com/shaneharter/PHP-Daemon/archive/v2.0.tar.gz
   tar -zxvf v2.0.tar.gz
   mv v2.0.tar.gz PHP-Daemon

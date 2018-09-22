@@ -1,6 +1,10 @@
 Automating Job Execution
 ========================================
 
+.. note::
+
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
+
 The Drupal cron is used to automatically execute necessary Drupal housekeeping tasks on a regular interval.  You should *always* setup the Drupal cron to ensure your site checks for updates and security issues.  To do this, we want to integrate Drupal cron with the UNIX cron facility.  The UNIX cron will automatically execute commands on set regular intervals.  First, we must get the appropriate URL for the cron by navigating to **Configuration → Cron**. On this page you will see a link that we will use for cron:
 
 .. image:: automating_job_execution.cron.png
@@ -36,9 +40,9 @@ Any job that is added to the Job's system can be run manually on the command lin
 
 .. code-block:: bash
 
-  drush trp-run-jobs --username=administrator --root=/var/www/html
+  drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
 
-Remember to change the username from **administrator** to the name of the administrator on your site and change **/var/www/html** to the location where your site installed on the server.
+Remember to change the username from **administrator** to the name of the administrator on your site.
 
 Option #2: Additional Cron Entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -53,7 +57,7 @@ Add this line to the crontab:
 
 .. code-block:: bash
 
-  0,5,10,15,20,25,30,35,40,45,50,55 * * * * drush trp-run-jobs --username=administrator --root=/var/www/html
+  0,5,10,15,20,25,30,35,40,45,50,55 * * * * drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
 
 Here, job execution will occur every 5 minutes.
 
