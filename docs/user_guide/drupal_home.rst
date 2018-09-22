@@ -7,3 +7,7 @@ An important convention in this document is the use of the ``$DRUPAL_HOME`` envi
     DRUPAL_HOME=/var/www/html
     
 Be sure to change the path ``/var/www/html`` to the location where you have installed Drupal.  If you have never installed Drupal and you intend on following this guide step-by-step then use the command-line above to get started.
+
+.. note::
+
+  You will have to set the ``$DRUPAL_HOME`` environment variable anytime you open a new terminal window.
