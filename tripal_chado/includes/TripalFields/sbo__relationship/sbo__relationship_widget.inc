@@ -21,6 +21,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
+    // @debug dpm($this, 'this');
+
     // Get the FK column that links to the base table.
     $base_table = $this->instance['settings']['base_table'];
     $schema = chado_get_schema($field_table);
@@ -79,23 +81,34 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
-      // Check for element values that correspond to fields in the Chado table.
-      $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
-      $subject_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $subject_id_key, $subject_id);
-      $object_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $object_id_key, $object_id);
+
+      // Sometimes empty/initialized items are getting through.
+      // To determine if it this one of them, the type_id must always be there.
       $type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $type_id);
-      // Not all Chado tables have a value and rank.  So we'll only get
-      // those if applicable.
-      if (array_key_exists('value', $schema['fields'])) {
-        $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__value', $value);
+      if (!empty($type_id)) {
+
+        // Check for element values that correspond to fields in the Chado table.
+        $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
+        $subject_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $subject_id_key, $subject_id);
+        $object_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $object_id_key, $object_id);
+        $type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $type_id);
+
+        // Not all Chado tables have a value and rank.  So we'll only get
+        // those if applicable.
+        if (array_key_exists('value', $schema['fields'])) {
+          $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__value', $value);
+        }
+        if (array_key_exists('rank', $schema['fields'])) {
+          $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
+        }
+
+        // Get element values added to help support insert/updates.
+        $object_uniquename = tripal_get_field_item_keyval($items, $delta, 'object_name', $object_uniquename);
+        $subject_uniquename = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_uniquename);
+        $type = tripal_get_field_item_keyval($items, $delta, 'type_name', $type);
+
+        //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item!');
       }
-      if (array_key_exists('rank', $schema['fields'])) {
-        $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
-      }
-      // Get element values added to help support insert/updates.
-      $object_uniquename = tripal_get_field_item_keyval($items, $delta, 'object_name', $object_uniquename);
-      $subject_uniquename = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_uniquename);
-      $type = tripal_get_field_item_keyval($items, $delta, 'type_name', $type);
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
@@ -114,6 +127,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $object_uniquename = $form_state['values'][$field_name]['und'][$delta]['object_name'];
       $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
+
+      //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item (AJAX)!');
     }
 
     $widget['#table_name'] = $field_table;
@@ -306,15 +321,16 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           'method' => 'replace'
         ),
       );
+      $widget['type_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Relationship Type'),
+        '#size' => 15,
+        '#default_value' => $default_term,
+        '#disabled' => TRUE,
+        '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
+      );
       if ($cv_id) {
-        $options = array();
-        $widget['type_name'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Relationship Type'),
-          '#size' => 15,
-          '#default_value' => $default_term,
-          '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
-        );
+        $widget['type_name']['#disabled'] = FALSE;
       }
     }
 
