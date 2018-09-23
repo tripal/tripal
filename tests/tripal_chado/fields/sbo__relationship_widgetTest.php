@@ -30,6 +30,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
 
       // load an entity to pretend the widget is modifying.
       $vars['entity'] = entity_load('TripalEntity', [$entity_id]);
+      $vars['entity'] = $vars['entity'][$entity_id];
     }
 
     return $vars;
@@ -42,7 +43,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
    * the diversity in the chado schema v1.3:
    *  organism_relationship: subject_id, type_id, object_id,
    *  stock_relationship: subject_id, type_id, object_id, value, rank,
-   *  project_relationship: project_subject_id, type_id, project_object_id, rank
+   *  project_relationship: subject_project_id, type_id, object_project_id, rank
    *
    * @returns
    *   Returns an array where each item to be tested has the paramaters 
@@ -60,8 +61,12 @@ class sbo__relationship_widgetTest extends TripalTestCase {
        // find a bundle which stores it's data in the given base table.
        // This will work on Travis since Tripal creates matching bundles by default.
        // @todo ideally we would create a fake bundle here.
-       $bundle_id = db_query('SELECT bundle_id FROM chado_bundle WHERE data_table=:table LIMIT 1',
-         array(':table' => $base_table))->fetchField();
+       $bundle_id = db_query("
+         SELECT bundle_id 
+         FROM chado_bundle b 
+         LEFT JOIN tripal_entity e ON e.bundle='bio_data_'||b.bundle_id 
+         WHERE data_table=:table AND id IS NOT NULL LIMIT 1",
+           array(':table' => $base_table))->fetchField();
        $bundle_name = 'bio_data_'.$bundle_id;
 
        // Find an entity from the above bundle.
@@ -69,7 +74,21 @@ class sbo__relationship_widgetTest extends TripalTestCase {
        $entity_id = db_query('SELECT id FROM tripal_entity WHERE bundle=:bundle LIMIT 1',
          array(':bundle' => $bundle_name))->fetchField();
 
-       $data[] = [$bundle_name, $field_name, $widget_name, $entity_id];
+       // set variables to guide testing.
+       $expect = [
+         'has_rank' => TRUE,
+         'has_value' => FALSE,
+         'subject_key' => 'subject_id',
+         'object_key' => 'object_id',
+       ];
+       if ($base_table == 'organism') { $expect['has_rank'] = FALSE; }
+       if ($base_table == 'stock') { $expect['has_value'] = TRUE; }
+       if ($base_table == 'project') { 
+         $expect['subject_key'] = 'subject_project_id'; 
+         $expect['object_key'] = 'object_project_id';
+       }
+
+       $data[] = [$bundle_name, $field_name, $widget_name, $entity_id, $expect];
      }
      return $data;
   }
@@ -81,7 +100,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
    *
    * @group lacey
    */
-  public function testWidgetClassInitialization($bundle_name, $field_name, $widget_name, $entity_id) {
+  public function testWidgetClassInitialization($bundle_name, $field_name, $widget_name, $entity_id, $expect) {
 
     // Initialize our variables.
     $vars = $this->initializeWidgetClass($bundle_name, $field_name, $widget_name, $entity_id);
@@ -102,9 +121,10 @@ class sbo__relationship_widgetTest extends TripalTestCase {
    *
    * @group lacey
    */
-  public function testWidgetForm($bundle_name, $field_name, $widget_name, $entity_id) {
+  public function testWidgetForm($bundle_name, $field_name, $widget_name, $entity_id, $expect) {
 
     $vars = $this->initializeWidgetClass($bundle_name, $field_name, $widget_name, $entity_id);
+    $base_table = $vars['entity']->chado_table;
 
     // Stub out a fake $widget object.
     $widget = [
@@ -185,9 +205,23 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     $vars['widget_class']->form($widget, $form, $form_state, $langcode, $items, $delta, $element);
 
     // Check the resulting for array
-    $this->assertArrayHasKey('subject_name', $widget, 'The form does not have a subject element.'); 
-    $this->assertArrayHasKey('type_name', $widget, 'The form does not have a type element.');
-    $this->assertArrayHasKey('object_name', $widget, 'The form does not have a object element.');
+    $this->assertArrayHasKey('subject_name', $widget, "The form for $bundle_name($base_table) does not have a subject element."); 
+    $this->assertArrayHasKey('type_name', $widget, "The form for $bundle_name($base_table) does not have a type element.");
+    $this->assertArrayHasKey('object_name', $widget, "The form for $bundle_name($base_table) does not have a object element.");
 
+    // Check the subject/object keys were correctly determined.
+    $this->assertEquals($expect['subject_key'], $widget['#subject_id_key'], "The form didn't determine the subject key correctly.");
+    $this->assertEquals($expect['object_key'], $widget['#object_id_key'], "The form didn't determine the object key correctly.");
+
+    // If this table has a rank we want to ensure there is a form element to set it.
+    if ($expect['has_rank']) {
+      $this->assertArrayHasKey('rank', $widget, "The form for $bundle_name($base_table) does not have a rank element and it should.");
+    }
+
+    // If this table has a value we want to ensure there is a form element to set it.
+    // @todo this test may be problematic b/c all fields have values independent of the db.
+    if ($expect['has_value']) { 
+      $this->assertArrayHasKey('value', $widget, "The form for $bundle_name($base_table) does not have a value element and it should.");
+    } 
   }
 }

@@ -77,6 +77,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $object_id_key = $lcolum;
       }
     }
+    $widget['#subject_id_key'] = $subject_id_key;
+    $widget['#object_id_key'] = $object_id_key;
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
