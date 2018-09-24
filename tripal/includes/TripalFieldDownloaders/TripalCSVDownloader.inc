@@ -80,6 +80,10 @@ class TripalCSVDownloader extends TripalFieldDownloader {
           // TODO: What to do with fields that are arrays?
         }
       }
+      // Report the misconfigured field
+      elseif(!$field_name) {
+        tripal_report_error('tripal', TRIPAL_ERROR, 'Unable to find field name for field id: '.$field_id);
+      }
       // If we have multiple items then deal with that.
       else {
         $col[] = '';
