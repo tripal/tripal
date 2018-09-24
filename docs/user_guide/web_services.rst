@@ -1,6 +1,10 @@
 Web Services
 ============
 
+.. note::
+
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`./install_tripal/drupal_home`
+
 Overview
 --------
 
@@ -31,7 +35,7 @@ To enable web services, simply install the ``tripal_ws`` module, either using th
 
 .. code-block:: shell
 
-  cd /var/www/html
+  cd $DRUPAL_HOME
   drush pm-enable tripal_ws
 
 Exploring Web Services
