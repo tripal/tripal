@@ -333,15 +333,15 @@ function tripal_menu() {
       if (!$callback) {
         $callback = 'drupal_get_form';
         $page_args = ['tripal_get_importer_form', $class_name];
-      }      
+      }
       if (!$callback_path) {
         $callback_path = 'includes/tripal.importer.inc';
       }
       $file_path = drupal_get_path('module', 'tripal');
       if ($callback_path and $callback_module) {
         $file_path = drupal_get_path('module', $callback_module);
-      }      
-      
+      }
+
       $items[$menu_path] = array(
         'title' => $class_name::$name,
         'description' =>  $class_name::$description,
@@ -403,8 +403,8 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   );
-  
-  
+
+
   //
   // USER FILE MANAGEMENT
   //
@@ -419,7 +419,7 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
     'weight' => 30,
   ];
-  
+
   $items['admin/tripal/files/quota'] = [
     'title' => 'User Quotas',
     'description' => 'Set default quota, expiration date, and custom quotas',
@@ -431,7 +431,7 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
     'weight' => 10,
   ];
-  
+
   // Admin remove user quota
   $items['admin/tripal/files/quota/remove/%'] = [
     'title' => 'Remove custom user quota',
@@ -443,7 +443,7 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin_files.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
-  
+
   // Add user quota
   $items['admin/tripal/files/quota/add'] = [
     'title' => 'Add Custom Quota',
@@ -457,7 +457,7 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin_files.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
-  
+
   // Autocomplete path for the users on the site
   $items['admin/tripal/files/quota/user/autocomplete'] = [
     'title' => 'Autocomplete for existing users',
@@ -468,7 +468,7 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin_files.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
-  
+
   // Edit user quota
   $items['admin/tripal/files/quota/edit/%'] = [
     'title' => 'Edit Custom Quota',
@@ -480,7 +480,7 @@ function tripal_menu() {
     'file' => 'includes/tripal.admin_files.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
-  
+
   $items['admin/tripal/files/usage'] = [
     'title' => 'File Usage',
     'description' => 'Set default quota, expiration date, and custom quotas',
@@ -493,11 +493,11 @@ function tripal_menu() {
     'weight' => 15
   ];
 
-  
+
   //
   // USER FILES
   //
-  
+
   // User view quota (Tab)
   $items['user/%/files'] = [
     'title' => 'Files',
@@ -511,7 +511,7 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
     'weight' => 10,
   ];
-  
+
   $items['user/%/files/%'] = [
     'title' => 'File Details',
     'description' => "View details about the file",
@@ -523,7 +523,7 @@ function tripal_menu() {
     'file' => 'includes/tripal.user.inc',
     'file path' => drupal_get_path('module', 'tripal'),
   ];
-  
+
   // User file renew.
   $items['user/%/files/%/renew'] = [
     'title' => 'Renew File',
@@ -567,7 +567,7 @@ function tripal_menu() {
  * Checks if the current user has permissions to perform an action on a file.
  *
  * @param $op
- *   The operation to perform.  These include 'view', 'download', 'renew' and 
+ *   The operation to perform.  These include 'view', 'download', 'renew' and
  *   'delete'
  * @param $uid
  *   The user ID of the user's account that owns the file.
@@ -576,23 +576,23 @@ function tripal_menu() {
  */
 function tripal_access_user_files($op, $uid, $fid = NULL) {
   global $user;
-  
+
   // The site admin can do anything.
   if (in_array('administrator', $user->roles)) {
     return TRUE;
   }
-  
+
   // Only the user that owns the files can see them.
   if ($uid != $user->uid) {
     return FALSE;
   }
-  
+
   // If no file ID is provided and the user wants to view then
   // this is the case where the user wants to see all the files.
   if (!$fid and $op == 'view') {
     return TRUE;
   }
-    
+
   $file = file_load($fid);
   switch ($op) {
     case 'view':
@@ -608,7 +608,7 @@ function tripal_access_user_files($op, $uid, $fid = NULL) {
 }
 /**
  * An access function for data collections.
- * 
+ *
  * @return boolean
  */
 function tripal_accesss_user_collections($uid) {
@@ -633,7 +633,7 @@ function tripal_users_autocomplete($string) {
     ->fields('u', ['name'])
     ->condition('name', '%' . db_like($string) . '%', 'LIKE')
     ->execute();
-  
+
   foreach ($result as $row) {
     $matches[$row->name] = check_plain($row->name);
   }
@@ -722,7 +722,7 @@ function tripal_permission() {
       'restrict access' => TRUE,
     );
   }
-  
+
   // Add permissions for each Importer
   $importers = tripal_get_importers();
   foreach ($importers as $class_name) {
@@ -1333,7 +1333,7 @@ function tripal_cron() {
   // Check for expired collections.
   tripal_add_job('Cron: Checking expired collections', 'tripal',
     'tripal_expire_collections', $args, 1, 1, $includes, TRUE);
-  
+
   tripal_add_job('Cron: Checking expired files', 'tripal',
     'tripal_expire_files', $args, 1, 1, $includes, TRUE);
 
@@ -1483,7 +1483,7 @@ function tripal_html5_file_validate($element, &$form_state) {
   $name = $element['#name'];
   $name = preg_replace('/[^\w]/', '_', $name);
   $fid = NULL;
-  if (is_array($element['#value']) and $array_key_exists($name, $element['#value'])) {
+  if (is_array($element['#value']) and array_key_exists($name, $element['#value'])) {
     $fid = $element['#value'][$name];
   }
 
@@ -1526,7 +1526,7 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
   // is set to TRUE for this bundle and ajax load is turned off.
   $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
   $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-  if($hide_variable === TRUE && $ajax_field === FALSE){
+  if($hide_variable == TRUE && $ajax_field == FALSE){
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
