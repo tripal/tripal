@@ -60,7 +60,7 @@ function hook_tripal_ws_value(&$items, $field, $instance) {
  *
  * @return
  *   A list of TripalWebService names.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_web_services() {
@@ -91,19 +91,15 @@ function tripal_get_web_services() {
  *
  * @return
  *   TRUE if the field type class file was found, FALSE otherwise.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_load_include_web_service_class($class) {
-
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
-    $file_path = realpath(".") . '/' . drupal_get_path('module', $module) . '/includes/TripalWebService/' . $class . '.inc';
-    if (file_exists($file_path)) {
-      module_load_include('inc', $module, 'includes/TripalWebService/' . $class);
-      if (class_exists($class)) {
-        return TRUE;
-      }
+    module_load_include('inc', $module, 'includes/TripalWebService/' . $class);
+    if (class_exists($class)) {
+      return TRUE;
     }
   }
   return FALSE;
@@ -124,7 +120,7 @@ function tripal_load_include_web_service_class($class) {
  *
  * @return
  *   TRUE if the site is successfully added, FALSE otherwise.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_add_site($name, $url, $version, $description) {
@@ -180,7 +176,7 @@ function tripal_add_site($name, $url, $version, $description) {
  *
  * @return
  *   TRUE if the record was successfully deleted, FALSE otherwise.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_remove_site($record_id) {
@@ -196,7 +192,7 @@ function tripal_remove_site($record_id) {
 
 /**
  * Constructs a URL for a remote Tripal web service.
- * 
+ *
  * @param $remote_site
  *   A remote Tripal site object.
  * @param $path
@@ -205,8 +201,8 @@ function tripal_remove_site($record_id) {
  *   leave this paramter empty.
  * @param $query
  *   An query string to appear after the ? in a URL.
- *   
- * @return  
+ *
+ * @return
  *   The full URL within the content service.
  */
 function tripal_build_remote_content_url($remote_site, $path = '', $query = '') {
@@ -215,12 +211,12 @@ function tripal_build_remote_content_url($remote_site, $path = '', $query = '') 
   $ws_url = $remote_site->url;
   $ws_url = trim($ws_url, '/');
   $ws_url .= '/web-services/content/' . $ws_version . '/' . $path;
-  
+
   // Build the Query and make and substitions needed.
   if ($query) {
     $ws_url = $ws_url . '?' . $query;
   }
-  
+
   return $ws_url;
 }
 
@@ -238,7 +234,7 @@ function tripal_build_remote_content_url($remote_site, $path = '', $query = '') 
  *
  * @return
  *   The JSON response formatted in a PHP array or FALSE if a problem occured.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_content($site_id, $path = '', $query = '') {
@@ -262,7 +258,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
     _tripal_report_ws_error($data);
     return $data;
   }
-  
+
   // Make the remote query.
   $ws_url = tripal_build_remote_content_url($remote_site, $path, $query);
   $data = drupal_http_request($ws_url);
@@ -287,7 +283,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
 
   // We got a response, so convert it to a PHP array.
   $data = drupal_json_decode($data->data);
-  
+
   // Check if there was a Tripal Web Services error.
   if (array_key_exists('error', $data)) {
     _tripal_report_ws_error($data);
@@ -298,12 +294,12 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
 
 /**
  * A helper function for reporting an error when retrieving remote content.
- * 
+ *
  * @param $data
  *   A data array containing at a minimum the 'error' key containing the
  *   error message.
  */
-function _tripal_report_ws_error($data) {  
+function _tripal_report_ws_error($data) {
   $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
   tripal_report_error('tripal_ws', TRIPAL_ERROR,
     'Tripal remote web services reports the following error: !error.',
@@ -323,7 +319,7 @@ function _tripal_report_ws_error($data) {
  * @return
  *   The JSON-LD context mapping array, or FALSE if the context could not
  *   be retrieved.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_context($context_url, $cache_id) {
@@ -374,7 +370,7 @@ function tripal_get_remote_context($context_url, $cache_id) {
  *   the Class (i.e. content type).
  * @return
  *   The JSON-LD context mapping array.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_content_context($site_id, $context_url, $bundle_accession, $field_accession = '') {
@@ -392,7 +388,7 @@ function tripal_get_remote_content_context($site_id, $context_url, $bundle_acces
  *
  * @param $site_id
  *   The numeric site ID for the remote Tripal site.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_clear_remote_cache($site_id) {
@@ -410,7 +406,7 @@ function tripal_clear_remote_cache($site_id) {
  * @return
  *   The vocabulary of a remote Tripal web service, or FALSE if an error
  *   occured.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_API_doc($site_id) {
@@ -498,7 +494,7 @@ function tripal_get_remote_API_doc($site_id) {
  * @return
  *    An array of fake entity objects where the key is the entity_id and
  *    the value is the object.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_accession, $field_ids) {
@@ -531,7 +527,7 @@ function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_acces
     '&fields=' . urlencode(implode(",", $field_ids));
 
   $results = tripal_get_remote_content($site_id, $bundle_accession, $query);
-  
+
   // If we encountered an error just return;
   if (array_key_exists('error', $results)) {
     return FALSE;
@@ -591,7 +587,7 @@ function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_acces
  *   be added to the entity returned.
  * @return
  *    A fake entity object.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accession, $field_ids) {
@@ -601,7 +597,7 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
 
   // Get the remote entity and create the fake entity.
   $remote_entity = tripal_get_remote_content($site_id, $bundle_accession . '/' . $remote_entity_id);
-  
+
   // If we encountered an error just return;
   if (array_key_exists('error', $results)) {
     return FALSE;
@@ -700,7 +696,7 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
  *   The field array as returned by web services.
  * @param $context
  *   The web service JSON-LD context for the bundle to which the field belongs.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
@@ -764,7 +760,7 @@ function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
  * @return
  *   An array similar to that returned by the field_info_field function
  *   of Drupal for local fields.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_field_info($site_id, $bundle_accession, $field_accession){
@@ -806,7 +802,7 @@ function tripal_get_remote_field_info($site_id, $bundle_accession, $field_access
  * @return
  *   An array similar to that returned by the field_info_instance function
  *   of Drupal for local fields.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $field_accession){
@@ -851,7 +847,7 @@ function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $fie
  * @return
  *   A PHP array corresponding to the Hydra Class stanza (i.e. a content type).
  *   Returns NULL if the class ID cannot be found.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_content_doc($site_id, $bundle_accession){
@@ -888,7 +884,7 @@ function tripal_get_remote_content_doc($site_id, $bundle_accession){
  *   A PHP array corresponding to the Hydra property stanza (field) that
  *   belongs to the given Class (i.e. a content type).  Retruns NULL if the
  *   property cannot be found.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accession){
@@ -926,7 +922,7 @@ function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accessi
  * @return
  *   An array of field downloader class names that are compoatible with the
  *   field and which exist on this site.
- * 
+ *
  * @ingroup tripal_ws_api
  */
 function tripal_get_remote_field_formatters($site_id, $bundle_accession, $field_accession) {
