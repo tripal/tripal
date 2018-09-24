@@ -35,7 +35,7 @@ Software Installation
 
 .. note::
 
-  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../../drupal_home`
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
 
 
 Before we can install Drupal we must ensure that that we are allowed to add files into the root directory.  Select a user account that will be the owner of all web files and change the owner of the ``$DRUPAL_HOME`` directory to that user:

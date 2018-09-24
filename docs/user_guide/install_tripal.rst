@@ -8,6 +8,7 @@ Install Tripal
    :glob:
 
    ./install_tripal/pre_planning
+   ./install_tripal/drupal_home
    ./install_tripal/server_setup
    ./install_tripal/drush_installation
    ./install_tripal/rapid_install

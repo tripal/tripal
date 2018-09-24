@@ -3,7 +3,7 @@ Automating Job Execution
 
 .. note::
 
-  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`./drupal_home`
 
 The Drupal cron is used to automatically execute necessary Drupal housekeeping tasks on a regular interval.  You should *always* setup the Drupal cron to ensure your site checks for updates and security issues.  To do this, we want to integrate Drupal cron with the UNIX cron facility.  The UNIX cron will automatically execute commands on set regular intervals.  First, we must get the appropriate URL for the cron by navigating to **Configuration → Cron**. On this page you will see a link that we will use for cron:
 

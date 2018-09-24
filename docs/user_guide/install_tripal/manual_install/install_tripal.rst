@@ -3,7 +3,7 @@ Tripal Installation
 
 .. note::
 
-  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../../drupal_home`
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
 
 
 Before installation of Tripal, you must first have a working Drupal installation.  Please see the previous section of this tutorial for step-by-step examples for server setup and Drupal installation instructions.  After installation of Tripal, you may install any Tripal extension modules you may want.

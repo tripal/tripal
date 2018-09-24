@@ -8,7 +8,6 @@ User's Guide
    :glob:
 
    user_guide/what_is_tripal
-   user_guide/drupal_home
    user_guide/install_tripal
    user_guide/drupal_overview
    user_guide/example_genomics

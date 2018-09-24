@@ -3,7 +3,7 @@ Installation Method #1: Rapid Installation
 
 .. note::
 
-  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../drupal_home`
+  Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`./drupal_home`
 
 
 Before installing via the rapid installation process please ensure drush is installed, and the server is setup.   Rapid Installation works with Tripal v3.0-rc2 (release candidate 2) and later.  If you are using a previous version of Tripal, please proceed to the step-by-step instructions.
