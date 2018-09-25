@@ -102,7 +102,9 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
   $result = chado_query($sql, array(':name' => $vocabulary));
   $result = $result->fetchAssoc();
   if (!$result) {
-    drupal_set_message("Could not find details about the vocabulary: $vocabulary");
+    drupal_set_message("Could not find details about the vocabulary: $vocabulary. Note: ".
+      "if this vocabulary does exist, try re-populating the db2cv_mview materialized " .
+      "view at Admin > Tripal > Data Storage > Chado > Materialized views.");
     return FALSE;
   }
 
@@ -199,6 +201,7 @@ function tripal_chado_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
   }
   return $terms;
 }
+
 /**
  * Implements hook_vocab_get_term_children().
  *
@@ -233,12 +236,15 @@ function tripal_chado_vocab_get_term_children($vocabulary, $accession) {
 
   // Get the children.
   $sql = "
-    SELECT DISTINCT subject_id
+    SELECT DISTINCT CVTR.subject_id, CVT.name
     FROM {cvterm_relationship} CVTR
+      INNER JOIN {cvterm} CVT on CVTR.subject_id = CVT.cvterm_id
     WHERE object_id = :object_id
+    ORDER BY CVT.name
   ";
   $results = chado_query($sql, array(':object_id' => $cvterm->cvterm_id));
-  while($cvterm_id = $results->fetchField()) {
+  while($cvterm = $results->fetchObject()) {
+    $cvterm_id = $cvterm->subject_id;
     $match = array('cvterm_id' => $cvterm_id);
     $cvterm = chado_generate_var('cvterm', $match);
     $terms[] = _tripal_chado_format_term_description($cvterm);
@@ -272,7 +278,12 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
   if (!$cvterm) {
     return FALSE;
   }
-  $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
+  $options = ['return_array' => TRUE];
+  $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition', $options);
+  $cvterm = chado_expand_var($cvterm, 'table', 'cvterm_dbxref', $options);
+  $cvterm = chado_expand_var($cvterm, 'table', 'cvtermsynonym', $options);
+  $cvterm = chado_expand_var($cvterm, 'table', 'cvterm_relationship', $options);
+  $cvterm = chado_expand_var($cvterm, 'table', 'cvtermprop', $options);
 
   return _tripal_chado_format_term_description($cvterm);
 }
@@ -292,16 +303,57 @@ function _tripal_chado_format_term_description($cvterm) {
   if ($sw_url) {
     $sw_url = preg_replace('/{db}/', $cvterm->dbxref_id->db_id->name, $sw_url);
     $sw_url = preg_replace('/{accession}/', '', $sw_url);
-    $sw_url = url($sw_url, array('absolute' => TRUE));
+    $sw_url = url($sw_url, ['absolute' => TRUE]);
   }
   $vocabulary = tripal_chado_vocab_get_vocabulary($cvterm->dbxref_id->db_id->name);
-  $term = array(
+  $term = [
     'vocabulary' => $vocabulary,
+    'namespace'  => $cvterm->cv_id->name,
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,
     'url'        => chado_get_dbxref_url($cvterm->dbxref_id),
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
-  );
+  ];
+  
+  // Is this term in any relationships as the subject?
+  if (property_exists($cvterm, 'cvterm_relationship')) {
+    $relationships = $cvterm->cvterm_relationship->subject_id;
+    if ($relationships) {
+      foreach ($relationships as $relationship) {
+        $term['relationship'][] = $relationship->type_id->name . ' ' . $relationship->object_id->dbxref_id->db_id->name . ':' . $relationship->object_id->dbxref_id->accession;
+      }
+    }
+  }
+  
+  // Does this term have synonyms?
+  if (property_exists($cvterm, 'cvtermsynonym')) {
+    $synonyms = $cvterm->cvtermsynonym->cvterm_id;
+    if ($synonyms) {
+      foreach ($synonyms as $synonym) {
+        $term['synonym'][] = $synonym->synonym;
+      }
+    }
+  }
+  
+  // Does this term have any cross refs?
+  if (property_exists($cvterm, 'cvterm_dbxref')) {
+    $xrefs = $cvterm->cvterm_dbxref;
+    if ($xrefs) {
+      foreach ($xrefs as $xref) {
+        $term['cross reference'][] = $xref->dbxref_id->db_id->name . ':' . $xref->dbxref_id->accession;
+      }
+    }
+  }
+  
+  // Does this term have any properties?
+  if (property_exists($cvterm, 'cvtermprop')) {
+    $props = $cvterm->cvtermprop->cvterm_id;
+    if ($props) {
+      foreach ($props as $prop) {
+        $term[$prop->type_id->name][] = property_exists($prop, 'value') ? $prop->value : '';
+      }
+    }
+  }
   return $term;
 }
 

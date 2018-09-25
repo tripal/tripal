@@ -91,7 +91,9 @@ class TripalEntityController extends EntityAPIController {
       }
     }
     catch (Exception $e) {
-      $transaction->rollback();
+      if ($transaction) {
+        $transaction->rollback();
+      }
       watchdog_exception('tripal', $e);
       throw $e;
       return FALSE;
@@ -394,7 +396,7 @@ class TripalEntityController extends EntityAPIController {
       // If our entity has no id, then we need to give it a
       // time of creation.
       if (empty($entity->id)) {
-        $entity->created = $created_date;
+        $entity->created = $create_date;
         $invocation = 'entity_insert';
       }
       else {
@@ -468,7 +470,7 @@ class TripalEntityController extends EntityAPIController {
     catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
-      drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
+      drupal_set_message("Could not save the TripalEntity: " . $e->getMessage(), "error");
       return FALSE;
     }
   }
@@ -631,9 +633,9 @@ class TripalEntityController extends EntityAPIController {
         $function = 'field_attach_load';
       }
       foreach ($queried_entities as $id => $entity) {
-        $info = entity_get_info($entity->type);
+        $info = entity_get_info($queried_entities[$id]->type);
         $field_cache = array_key_exists('field cache', $info) ? $info['field cache'] : FALSE;
-        $bundle_name = $entity->bundle;
+        $bundle_name = $queried_entities[$id]->bundle;
 
         // Iterate through the field instances and find those that are set to
         // 'auto_attach' and which are attached to this bundle. Add all
@@ -645,8 +647,8 @@ class TripalEntityController extends EntityAPIController {
           $field_id = $field['id'];
 
           // Add this field to the entity with default value.
-          if (!isset($queried_entities[$id]->$field_name)) {
-            $queried_entities[$id]->$field_name = array();
+          if (!isset($queried_entities[$id]->{$field_name})) {
+            $queried_entities[$id]->{$field_name} = array();
           }
 
           // Options used for the field_attach_load function.
@@ -661,7 +663,7 @@ class TripalEntityController extends EntityAPIController {
           if ($field_cache) {
             $cache_data = cache_get($cfid, 'cache_field');
             if (!empty($cache_data)) {
-              $queried_entities[$id]->$field_name = $cache_data->data;
+              $queried_entities[$id]->{$field_name} = $cache_data->data;
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
               continue;
             }
@@ -671,11 +673,11 @@ class TripalEntityController extends EntityAPIController {
           // to only load the  fields specified.
           if (count($field_ids) > 0) {
             if (in_array($field_id, $field_ids)) {
-              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+              $function($this->entityType, array($id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
-                cache_set($cfid, $entity->$field_name, 'cache_field');
+                cache_set($cfid, $queried_entities[$id]->{$field_name}, 'cache_field');
               }
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;
             }
@@ -696,16 +698,16 @@ class TripalEntityController extends EntityAPIController {
                // Add an empty value. This will allow the tripal_entity_view()
                // hook to add the necessary prefixes to the field for ajax
                // loading.
-               $queried_entities[$id]->$field_name['und'][0]['value'] = '';
+               $queried_entities[$id]->{$field_name}['und'][0]['value'] = '';
                $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
             }
             else {
-              $function($this->entityType, array($entity->id => $queried_entities[$id]),
+              $function($this->entityType, array($id => $queried_entities[$id]),
                   FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
-                if (property_exists($entity, $field_name)) {
-                  cache_set($cfid, $entity->$field_name, 'cache_field');
+                if (property_exists($queried_entities[$id], $field_name)) {
+                  cache_set($cfid, $queried_entities[$id]->{$field_name}, 'cache_field');
                 }
               }
               $queried_entities[$id]->{$field_name}['#processed'] = TRUE;

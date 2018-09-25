@@ -209,9 +209,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
 /**
  * Duplicate of fill_cvtermpath() stored procedure in Chado.
  *
- * Identifies all of the root terms of the controlled vocabulary. These
- * root terms are then processed by calling the
- * chado_update_cvtermpath_root_loop() function on each one.
+ * Identifies all of the root terms of the controlled vocabulary. 
  *
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
@@ -1365,7 +1363,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_updat
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_execute_active_pub_importers($report_email = false, $do_update = false) {
-  return chado_execute_active_pub_importers($report_email, $do_update);
+  return chado_execute_active_pub_importers($report_email, TRUE, $do_update);
 }
 
 /**

@@ -23,6 +23,9 @@ function tripal_chado_entity_create(&$entity, $type, $bundle = NULL) {
       $entity->chado_table =  NULL;
       $entity->chado_column = NULL;
       $entity->chado_linker = NULL;
+      $entity->chado_type_id = NULL;
+      $entity->chado_type_value = NULL;
+      $entity->chado_base_type_id = NULL;
 
       // Add in the Chado table information for this entity type.
       if (!$bundle) {
@@ -32,6 +35,9 @@ function tripal_chado_entity_create(&$entity, $type, $bundle = NULL) {
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
         $entity->chado_linker = $bundle->type_linker_table;
+        $entity->chado_type_id = $bundle->type_id;
+        $entity->chado_type_value = $bundle->type_value;
+        $entity->chado_base_type_id = $bundle->base_type_id;
       }
     }
     if (!property_exists($entity, 'chado_record')) {
@@ -74,6 +80,7 @@ function tripal_chado_entity_load($entities, $type) {
           $bundle->type_column = $chado_bundle->type_column;
           $bundle->type_id = $chado_bundle->type_id;
           $bundle->type_value = $chado_bundle->type_value;
+          $bundle->base_type_id = $chado_bundle->base_type_id;
         }
       }
     }
@@ -94,8 +101,6 @@ function tripal_chado_entity_load($entities, $type) {
         if (!$bundle) {
           continue;
         }
-        // TODO: this may need fixing. The chado_column may not always
-        // be the type_id of the base table. Is it expected to be so here?
         $entity->chado_table = $bundle->data_table;
         $entity->chado_column = $bundle->type_column;
 
@@ -137,9 +142,13 @@ function tripal_chado_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_chado_entity_delete($entity, $type) {
-  if ($type == 'TripalEntity') {
-
+  if ($type !== 'TripalEntity') {
+    return;
   }
+
+  // Delete the removed entity from the corresponding chado_bio_data_x table
+  $bundle = $entity->bundle;
+  db_delete("chado_{$bundle}")->condition('entity_id', $entity->id)->execute();
 }
 
 /**

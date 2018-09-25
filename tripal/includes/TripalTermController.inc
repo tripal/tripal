@@ -105,7 +105,7 @@ class TripalTermController extends EntityAPIController {
     catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_entity', $e);
-      drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");
+      drupal_set_message("Could not save the TripalTerm:" . $e->getMessage(), "error");
       return FALSE;
     }
   }

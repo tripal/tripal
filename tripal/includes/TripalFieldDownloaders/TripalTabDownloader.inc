@@ -54,7 +54,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
        $field_name = $field['field_name'];
 
        // If we only have one item for this value then add it.
-       if (count($entity->{$field_name}['und']) == 1) {
+       if (is_array($entity->{$field_name}['und']) and count($entity->{$field_name}['und']) == 1) {
          $value = $entity->{$field_name}['und'][0]['value'];
 
          // If the single element is not an array then this is good.

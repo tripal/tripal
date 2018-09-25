@@ -1,15 +1,6 @@
 <?php
 
 function tripal_chado_install() {
-//   // The foreign key specification doesn't really add one to the
-//   // Drupal schema, it is just used internally, but we want one.
-//   db_query('
-//       ALTER TABLE {tripal_custom_tables}
-//       ADD CONSTRAINT tripal_custom_tables_fk1
-//       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-//       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-//   ');
-
   if (chado_is_installed()) {
     // For an upgraded site we need to move some vocabulary terms over
     // to the new 'local' vocabulary:
@@ -39,6 +30,8 @@ function tripal_chado_install() {
     ";
     chado_query($sql);
   }
+  
+  tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
 }
 
 /**
@@ -620,16 +613,19 @@ function tripal_chado_chado_bundle_schema() {
       ),
       'type_id' => array(
         'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
+        'size' => 'big',
+        'type' => 'int',
       ),
       'type_value' => array(
         'description' => 'If a property table is used for a linker, then the value that should be matched to identify this content type is stored here.',
         'type' => 'text',
         'not null' => FALSE,
         'default' => '',
+      ),
+      'base_type_id' => array(
+        'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
+        'size' => 'big',        
+        'type' => 'int',
       )
     ),
     'indexes' => array(
@@ -1380,8 +1376,8 @@ function tripal_chado_update_7320() {
       $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
     }
     if (!$term or !$bundle) {
-      if (!tripal_create_bundle($args, $error)) {
-        throw new Exception($error['!message']);
+      if (!tripal_create_bundle($args)) {
+        throw new Exception('Error Encountered creating "Phylogenetic tree" Tripal Content Type.');
       }
     }
   }
@@ -1568,4 +1564,264 @@ function tripal_chado_update_7327() {
   }
 }
 
+/**
+ * Don't count relationship cvterms as ontology roots.
+ */
+function tripal_chado_update_7328() {
+  try {
+    $mv_name = 'cv_root_mview';
+    // Remove the old mview.
+    $mview_id = chado_get_mview_id($mv_name);
+    chado_delete_mview($mview_id);
+    module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+    // Re-add the mview.
+    tripal_chado_add_cv_root_mview_mview();
+    $mview_id = chado_get_mview_id($mv_name);
+    chado_populate_mview($mview_id);
+  } 
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
 
+/**
+ * Fixing the chado_bundle.type_id type.
+ */
+function tripal_chado_update_7329() {
+  try {
+    db_change_field('chado_bundle', 'type_id', 'type_id', [
+      'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
+      'size' => 'big',
+      'type' => 'int',
+    ]);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Associates categories with content types.
+ */
+function tripal_chado_update_7330() {
+  try {
+    tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
+    
+    $bundles = [
+      'General' => [
+        // Organism
+        'OBI:0100026',
+        // Analyis
+        'operation:2945',
+        // Project
+        'NCIT:C47885',
+        // Study
+        'SIO:001066',
+        // Contact
+        'local:contact',
+        // Publication
+        'TPUB:0000002',
+        // Protocol
+        'sep:00101',        
+      ],
+      'Genomic' => [
+        // Gene
+        'SO:0000704',
+        // mRNA
+        'SO:0000234',
+        // Phylogenetci Tree
+        'data:0872',
+        // Physical Map
+        'data:1280',
+        // DNA Library
+        'NCIT:C16223',
+        // Genome Assembly
+        'operation:0525',
+        // Genome Annotation
+        'operation:0362',
+        // Genome Project
+        'local:Genome Project',                
+      ],
+      'Genetic' => [
+        // Genetic Map
+        'data:1278',
+        // QTL
+        'SO:0000771',
+        // Sequence Variant
+        'SO:0001060',
+        // Genetic Marker
+        'SO:0001645',
+        // Heritable Phenotypic Marker
+        'SO:0001500',        
+      ],
+      'Germplasm/Breeding' => [
+        // Germplasm Accession
+        'CO_010:0000044',
+        // Breeding Cross
+        'CO_010:0000255',
+        // Cutlivar
+        'CO_010:0000029',
+        // Recombinant Inbred Line
+        'CO_010:0000162',        
+      ],
+      'Expression' => [
+        // Biological Sample
+        'sep:00195',
+        // Assay
+        'OBI:0000070',
+        // Array Design 
+        'EFO:0000269',
+      ]
+    ];
+    foreach ($bundles as $category => $accessions) {
+      foreach ($accessions as $accession) {
+        $bundle = tripal_load_bundle_entity(['accession' => $accession]);
+        if ($bundle) {
+          tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
+        }
+      }      
+    }    
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adds a base_type_id to the chado_bundle table.
+ */
+function tripal_chado_update_7331() {
+  try {
+    if (!db_field_exists('chado_bundle', 'base_type_id')) {
+      db_add_field('chado_bundle', 'base_type_id', [
+        'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
+        'size' => 'big',
+        'type' => 'int',
+      ]);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adds additional vocabs for the OBO Importer.
+ */
+function tripal_chado_update_7332() {
+  try {
+    // We have to add the db and cv in case the user hasn't yet prepared Chado.
+    // If they have prepared Chado then no harm done.
+    chado_insert_db([
+      'name' => 'NCIT',
+      'description' => 'NCI Thesaurus OBO Edition.',
+      'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
+      'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
+    ]);
+    chado_insert_cv(
+      'ncit',
+      'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+    );
+    
+    $term = chado_insert_cvterm([
+      'id' => 'NCIT:C25693',
+      'name' => 'Subgroup',
+      'cv_name' => 'ncit',
+      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+    ]);
+    
+    
+    // Add the rdfs:comment vocabulary.
+    chado_insert_db(array(
+      'name' => 'rdfs',
+      'description' => 'Resource Description Framework Schema',
+      'url' => 'https://www.w3.org/TR/rdf-schema/',
+      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
+    ));
+    chado_insert_cv(
+      'rdfs',
+      'Resource Description Framework Schema'
+      );
+    $name = chado_insert_cvterm(array(
+      'id' => 'rdfs:comment',
+      'name' => 'comment',
+      'cv_name' => 'rdfs',
+      'definition' => 'A human-readable description of a resource\'s name.',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Renames the TContact vocabulary database entry to TCONTACT as it should be.
+ */
+function tripal_chado_update_7333() {
+  try {
+    chado_update_record('db', ['name' => 'TContact'], ['name' => 'TCONTACT']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * SQL Fix for the db2cv_mview materialized view.
+ */
+function tripal_chado_update_7334() {
+  
+  try {
+    $query = '
+       SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
+         COUNT(CVT.cvterm_id) as num_terms
+       FROM cv CV
+         INNER JOIN cvterm CVT on CVT.cv_id = CV.cv_id
+         INNER JOIN dbxref DBX on DBX.dbxref_id = CVT.dbxref_id
+         INNER JOIN db DB on DB.db_id = DBX.db_id
+       WHERE CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+       GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
+       ORDER BY DB.name
+    ';
+    $mview_id = tripal_get_mview_id('db2cv_mview');
+    if($mview_id) {
+      $sql = "UPDATE {tripal_mviews} set query = :query WHERE mview_id = :mview_id";
+      db_query($sql, [':query' => $query, ':mview_id' => $mview_id]);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+/**
+ * SQL Fix for the cv_root_mview materialized view.
+ */
+function tripal_chado_update_7335() {
+  try {
+    $query = '
+      SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name
+      FROM cvterm CVT
+        LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
+        INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+      WHERE CVTR.subject_id is NULL and
+        CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+      ';
+    $mview_id = tripal_get_mview_id('cv_root_mview');
+    if($mview_id) {
+      $sql = "UPDATE {tripal_mviews} set query = :query WHERE mview_id = :mview_id";
+      db_query($sql, [':query' => $query, ':mview_id' => $mview_id]);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}

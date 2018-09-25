@@ -24,7 +24,7 @@
  *     -id: The primary key value of the base table. The property will be
  *         associated with the record that matches this id.
  *     -prop_id: The primary key in the [table]prop table.  If this value
- *         is supplied then the 'table' and 'id' keys are not needed.
+ *         is supplied then the 'id' key is not needed.
  * @param $property
  *   An associative array used to specify the property to be selected.  It can
  *   contain the following keys. The keys must be specified to uniquely identify
@@ -98,15 +98,20 @@ function chado_get_property($record, $property) {
 
   // Construct the array of values to be selected.
   $values = array(
-    $fkcol => $base_id,
     'type_id' => $type,
   );
+
+  //Can supply either base_id or prop_id.
+  if ($base_id){
+    $values[$fkcol] = $base_id;
+  }
 
   // If we have the unique property_id make sure to add that to the values.
   if ($prop_id) {
     $property_pkey = $table_desc['primary key'][0];
     $values[$property_pkey] = $prop_id;
   }
+
   $results = chado_generate_var($base_table . 'prop', $values);
   if ($results) {
     $results = chado_expand_var($results, 'field', $base_table . 'prop.value');
@@ -333,9 +338,11 @@ function chado_update_property($record, $property, $options = array()) {
 
   $insert_if_missing = array_key_exists('insert_if_missing', $options) ? $options['insert_if_missing'] : FALSE;
 
+
   // First see if the property is missing (we can't update a missing property.
   $prop = chado_get_property($record, $property);
-  if (count($prop) == 0) {
+
+  if (empty($prop)) {
     if ($insert_if_missing) {
       return chado_insert_property($record, $property);
     }
@@ -343,6 +350,7 @@ function chado_update_property($record, $property, $options = array()) {
       return FALSE;
     }
   }
+
 
   // Build the values array for checking if the CVterm exists.
   $type = array();
@@ -360,6 +368,7 @@ function chado_update_property($record, $property, $options = array()) {
   if ($type_id) {
     $type['cvterm_id'] = $type_id;
   }
+
 
   // Make sure the CV term exists.
   $options = array();
@@ -437,7 +446,7 @@ function chado_update_property($record, $property, $options = array()) {
  *     -id: The primary key value of the base table. The property will be
  *         deleted from the record that matches this id.
  *     -prop_id: The primary key in the [table]prop table to be deleted.  If
- *         this value is supplied then the 'table' and 'id' keys are not needed.
+ *         this value is supplied then the  'id' key is not needed.
  * @param $property
  *   An associative array used to specify the property to be updated.  It can
  *   contain the following keys. The keys must be specified to uniquely identify
@@ -518,7 +527,7 @@ function chado_delete_property($record, $property) {
   // Construct the array that will match the exact record to update.
   else {
     $match = array(
-      $fkcol => $record_id,
+      $fkcol => $base_id,
       'type_id' => $type,
     );
   }

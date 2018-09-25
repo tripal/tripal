@@ -167,14 +167,14 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
 function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $entity_type){
   //Check the record does not already exist
   $tripal_ds_rows = db_select('tripal_ds', 'ds')
-    ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label'))
+    ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label', 'bundle'))
     ->condition('bundle', $bundle_name, '=')
     ->condition('tripal_ds_field_label', $field_label, '=')
     ->condition('tripal_ds_field_name', $field_name, '=')
     ->execute()->fetchAll();
   if(!empty($tripal_ds_rows)){
     foreach ($tripal_ds_rows as $tripal_ds_row){
-      if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_rows->bundle)) {
+      if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_row->bundle)) {
         // Do not write the field to the table
         drupal_set_message("Could not update the bundle menu because that field already exists.", 'error');
       }

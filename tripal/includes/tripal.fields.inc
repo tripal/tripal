@@ -83,45 +83,6 @@ function tripal_field_widget_info_alter(&$info) {
 }
 
 /**
- * Implements hook_field_views_data();
- */
-function tripal_field_views_data($field) {
-  $data = array();
-
-  // Skip fields that aren't attached to TripalEntity entities.
-  if (!array_key_exists('TripalEntity', $field['bundles'])) {
-    return $data;
-  }
-
-  if (!array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
-    return $data;
-  }
-
-  $field_type = $field['type'];
-  $field_types = tripal_get_field_types();
-
-  // Iterate through the bundles to which this field is attached and
-  // if it is a TripalField field then we'll call the viewsDataAlater function.
-  $bundles = $field['bundles']['TripalEntity'];
-  foreach ($bundles as $bundle_name) {
-    $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
-    if (in_array($field_type, $field_types)) {
-      $tfield = new $field_type($field, $instance);
-
-      // Fields should be associated with the bundle's term identifier
-      // (i.e. [vocab]__[accession].
-      $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-      $view_base_id = $term->vocab->vocabulary . '__' . $term->accession;
-
-      $data += $tfield->viewsData($view_base_id);
-    }
-  }
-
-  return $data;
-}
-
-/**
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {

@@ -279,12 +279,21 @@ function tripal_jobs_view($job_id) {
   }
 
   // build the links
-  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
-  $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
+  $items = [];
+  $items[] = l('Return to jobs list', "admin/tripal/tripal_jobs/");
+  $items[] = l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id);
   if ($job->start_time == 0 and $job->end_time == 0) {
-    $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
-    $links .= l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
+    $items[] = l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id);
+    $items[] = l('Execute this job', "admin/tripal/tripal_jobs/execute/".$job->job_id);
   }
+  $links = theme_item_list([    
+    'items' => $items,
+    'title' => '',
+    'type' => 'ul',
+    'attributes' => [
+      'class' => ['action-links'],
+    ],
+  ]);
 
   // make our start and end times more legible
   $job->submit_date = tripal_get_job_submit_date($job);
@@ -320,7 +329,7 @@ function tripal_jobs_view($job_id) {
 
   $content['links'] = array(
     '#type' => 'markup',
-    '#markup' => '<p>' . substr($links, 0, -2) . '</p>',
+    '#markup' => $links,
   );
   $content['job_title'] = array(
     '#type' => 'item',
@@ -338,7 +347,7 @@ function tripal_jobs_view($job_id) {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
+      'class' => array('collapsible'),
     ),
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
@@ -354,7 +363,7 @@ function tripal_jobs_view($job_id) {
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#attributes' => array(
-      'class' => array('collapsible', 'collapsed'),
+      'class' => array('collapsible'),
     ),
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
@@ -362,7 +371,7 @@ function tripal_jobs_view($job_id) {
   );
   $content['log_fset']['job_logs'] = array(
     '#type' => 'markup',
-    '#markup' => '<pre>' . $job->error_msg . '</pre>',
+    '#markup' => '<pre class="tripal-job-logs">' . $job->error_msg . '</pre>',
   );
   return $content;
 }

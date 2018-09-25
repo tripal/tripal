@@ -59,6 +59,8 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   drupal_set_breadcrumb($breadcrumb);
 
   $vocab = tripal_get_vocabulary_details($vocabulary);
+  $vocab_table = tripal_vocabulary_get_vocab_details($vocab);
+  
   if ($vocab['description']) {
     drupal_set_title($vocabulary . ': ' . $vocab['description']);
   }
@@ -71,7 +73,73 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     drupal_set_message('The vocabulary cannot be found on this site', 'error');
     return '';
   }
+  
+  $has_root = TRUE;
+  $root_terms = tripal_get_vocabulary_root_terms($vocabulary);
+  // If this vocabulary doesn't have root terms then it's either not an
+  // ontology or not all of the terms are loaded. In this case, let's get
+  // a paged list of all terms
+  if (count($root_terms) == 0) {
+    $root_terms = tripal_get_vocabulary_terms($vocabulary, 25);
+    $has_root = FALSE;
+  }
+  $items = tripal_vocabulary_lookup_term_children_format($root_terms);
 
+  if (count($root_terms) == 0) {
+    $items = '<p>This vocabulary has no terms loaded</p>';
+  }
+  else {
+    $items = '<p>Click the + icon (if present) to expand the tree. If ' .
+      'the full ontology or the term heirarchy is not loaded into this site, ' .
+      'then the tree will consist of all terms at the same level. ' .
+      'For some vocabularies, only a subset of terms are loaded</p>' . $items;
+  }
+
+  drupal_add_js(array(
+    'tripal' => array(
+      'cv_lookup' => array(
+        'vocabulary' => $vocabulary,
+      ),
+    ),
+  ), 'setting');
+
+  $content = array(
+    'vocab_table' => array(
+      '#type' => 'item',
+      '#title' => 'Details',
+      '#markup' => '<p>A vocabulary is always identified by its short name ' . 
+        'and sometimes it may offer multiple sub-vocabularies with different ' . 
+        'names. Both are listed below.</p>' . $vocab_table,
+    ),
+    'vocab_browser' => array(
+      '#type' => 'item',
+      '#title' => 'Term Browser',
+      '#markup' => $items,
+    ),
+  );
+  if (!$has_root) {
+    $content['pager']= array(
+      '#type' => 'markup',
+      '#markup' => theme('pager'),
+    );
+  }
+
+  // Add support for our custom tree viewer
+  drupal_add_css(drupal_get_path('module', 'tripal') . '/theme/css/tripal.cv_lookup.css');
+  drupal_add_js(drupal_get_path('module', 'tripal') . '/theme/js/tripal.cv_lookup.js', 'file');
+
+  return $content;
+}
+
+/**
+ * Generates a table view of the vocabulary.
+ * 
+ * @param $vocab
+ *   The vocabulary array.
+ * @return 
+ *    An HTML rendered table describing the vocabulary.
+ */
+function tripal_vocabulary_get_vocab_details($vocab) {
   $headers = array();
   $rows = array();
   $vocab_name = $vocab['name'];
@@ -112,7 +180,7 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     ),
     number_format($vocab['num_terms']),
   );
-
+  
   $table = array(
     'header' => $headers,
     'rows' => $rows,
@@ -122,60 +190,8 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     'colgroups' => array(),
     'empty' => '',
   );
-
-  $has_root = TRUE;
-  $root_terms = tripal_get_vocabulary_root_terms($vocabulary);
-  // If this vocabulary doesn't have root terms then it's either not an
-  // ontology or not all of the terms are loaded. In this case, let's get
-  // a paged list of all terms
-  if (count($root_terms) == 0) {
-    $root_terms = tripal_get_vocabulary_terms($vocabulary, 25);
-    $has_root = FALSE;
-  }
-  $items = tripal_vocabulary_lookup_term_children_format($root_terms);
-
-  if (count($root_terms) == 0) {
-    $items = '<p>This vocabulary has no terms loaded</p>';
-  }
-  else {
-    $items = '<p>Click the + icon (if present) to expand the tree. If ' .
-      'the full ontology or the term heirarchy is not loaded into this site, ' .
-      'then the tree will consist of all terms at the same level. ' .
-      'For some vocabularies, only a subset of terms are loaded</p>' . $items;
-  }
-
-  drupal_add_js(array(
-    'tripal' => array(
-      'cv_lookup' => array(
-        'vocabulary' => $vocabulary,
-      ),
-    ),
-  ), 'setting');
-
-  $content = array(
-    'vocab_table' => array(
-      '#type' => 'item',
-      '#title' => 'Details',
-      '#markup' => '<p>A vocabulary is always identified by its short name and sometimes it may offer multiple sub-vocabularies with different names. Both are listed below.</p>' . theme_table($table),
-    ),
-    'vocab_browser' => array(
-      '#type' => 'item',
-      '#title' => 'Term Browser',
-      '#markup' => $items,
-    ),
-  );
-  if (!$has_root) {
-    $content['pager']= array(
-      '#type' => 'markup',
-      '#markup' => theme('pager'),
-    );
-  }
-
-  // Add support for our custom tree viewer
-  drupal_add_css(drupal_get_path('module', 'tripal') . '/theme/css/tripal.cv_lookup.css');
-  drupal_add_js(drupal_get_path('module', 'tripal') . '/theme/js/tripal.cv_lookup.js', 'file');
-
-  return $content;
+  
+  return theme_table($table);
 }
 
 /**
@@ -202,9 +218,6 @@ function tripal_vocabulary_lookup_term_children_format($children) {
     $items .= l($child['name'], 'cv/lookup/' . $child['vocabulary']['short_name'] . '/' . $child['accession'], array('attributes' => array('target' => '_blank')));
     if ($child['accession'] != $child['name']) {
       $items .= ' [' . $child['vocabulary']['short_name'] . ':' . $child['accession'] . '] ';
-    }
-    if ($num_grand > 0) {
-      $items .= ' (' . $num_grand . ')';
     }
     $items .= '</li>';
   }
@@ -257,9 +270,10 @@ function tripal_vocabulary_lookup_term_page($vocabulary, $accession) {
   $breadcrumb[] = l($vocabulary, 'cv/lookup/' . $vocabulary);
   drupal_set_breadcrumb($breadcrumb);
 
+  $vocab = tripal_get_vocabulary_details($vocabulary);
+  $vocab_table = tripal_vocabulary_get_vocab_details($vocab);
+  
   $term = tripal_get_term_details($vocabulary, $accession);
-  drupal_set_title($term['name']);
-
 
   // If we can't find the term then just return a message.
   if (!$term) {
@@ -272,8 +286,12 @@ function tripal_vocabulary_lookup_term_page($vocabulary, $accession) {
   $rows = array();
   $term_name = $term['name'];
   $accession = $term['vocabulary']['short_name'] . ':' . $term['accession'];
-  if ($term['url']) {
-    $term_name = l($term['name'], $term['url'], array('attributes' => array('target' => '_blank')));
+  drupal_set_title($accession);
+  
+  // Create a URL to point this term to it's source page, but only if the
+  // source is not this site.
+  if ($term['url'] and !preg_match('/cv\/lookup/', $term['url'])) {
+    $accession = l($accession, $term['url'], array('attributes' => array('target' => '_blank')));
   }
   $rows[] = array(
     array(
@@ -299,63 +317,78 @@ function tripal_vocabulary_lookup_term_page($vocabulary, $accession) {
     ),
     $term['definition'],
   );
-
-
-  $table = array(
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => array(),
-    'sticky' => FALSE,
-    'caption' => 'Term Details',
-    'colgroups' => array(),
-    'empty' => '',
-  );
-  $content = theme_table($table);
-
-
-  $rows = array();
-  $vocab_name = $term['vocabulary']['name'];
-  if ($term['vocabulary']['url']) {
-    $vocab_name = l($term['vocabulary']['name'], $term['vocabulary']['url'], array('attributes' => array('target' => '_blank')));
+  
+  // Now iterate through any other columns in the term array and add those
+  // details.
+  foreach ($term as $key => $value) {
+    if (in_array($key, ['name', 'definition', 'vocabulary', 'accession', 'url'])) {
+      continue;
+    }
+    // Convert thisto an array so we can alter it.
+    if (!is_array($value)) {
+      $new_values[] = $value;
+      $value = $new_values;
+    }
+    // If this is a relationship key then let's try to rewrite the GO 
+    // term in the relationship as a link.
+    if ($key == 'relationship') {
+      foreach ($value as $index => $v) {
+        $matches = [];
+        if (preg_match('/^(.+)\s(.+?):(.+?)$/', $v, $matches)) {
+          $rel = $matches[1];
+          $voc = $matches[2];
+          $acc = $matches[3];
+          $v = $rel . ' ' . l($voc . ':' . $acc, 'cv/lookup/' . $voc . '/' . $acc, ['attributes' => ['target' => '_blank']]);
+          $t = tripal_get_term_details($voc, $acc);
+          if ($t) {
+            $v .= ' (' . $t['name'] . ')';
+          }
+          $value[$index] = $v;
+        }
+      }
+    }
+    if (count($value) > 1) {
+      $value_str = theme_item_list([
+        'items' => $value,
+        'type' => 'ul',
+        'attributes' => [],
+        'title' => '',
+      ]);
+    }
+    else {
+      $value_str = $value[0];
+    }
+    $rows[] = array(
+      array(
+        'data' => ucfirst($key),
+        'header' => TRUE,
+        'width' => '20%',
+      ),
+      $value_str,
+    );
   }
-  $short_name = $term['vocabulary']['short_name'];
-  $vocab_desc = $term['vocabulary']['description'];
-  $rows[] = array(
-    array(
-      'data' => 'Name',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Short Name',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $short_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Description',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_desc,
-  );
 
   $table = array(
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(),
     'sticky' => FALSE,
-    'caption' => 'Term Vocabulary details',
+    'caption' => '',
     'colgroups' => array(),
     'empty' => '',
   );
-  $content .=  theme_table($table);
-
+  $content['cvterm'] = [
+    '#type' => 'item',
+    '#title' => 'Term Details',
+    '#markup' => theme_table($table),
+  ];
+  
+  $content['vocabulary'] = [
+    '#type' => 'item',
+    '#title' => 'Vocabulary Details',
+    '#markup' => $vocab_table,
+  ];
+  
   drupal_add_js(array(
     'tripal' => array(
       'cv_lookup' => array(
