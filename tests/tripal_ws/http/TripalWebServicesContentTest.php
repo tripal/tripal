@@ -5,14 +5,13 @@ namespace Tests\tripal_ws\http;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-class TripalContentTest extends TripalTestCase{
+class TripalWebServicesContentTest extends TripalTestCase{
 
   // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
 
   /** @test */
   public function testGettingMainContentList() {
-    //call /web-services/content/v0.1
     $response = $this->get('web-services/content/v0.1');
 
     // Make sure it returned valid json

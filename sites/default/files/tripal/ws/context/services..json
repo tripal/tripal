@@ -1,0 +1,1 @@
+{"@context":{"rdfs":"http:\/\/www.w3.org\/2000\/01\/rdf-schema#","hydra":"http:\/\/www.w3.org\/ns\/hydra\/core#","dc":"http:\/\/purl.org\/dc\/terms\/","schema":"https:\/\/schema.org\/","local":"http:\/\/127.0.0.1\/cv\/lookup\/local\/","error":"rdfs:error"}}
