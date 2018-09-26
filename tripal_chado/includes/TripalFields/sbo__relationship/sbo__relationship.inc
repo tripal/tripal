@@ -239,6 +239,10 @@ class sbo__relationship extends ChadoField {
     // The linked to table of a relationship linker table may not always
     // have a type_id or name field.  So we have to be a bit more
     // specific about how we set some variables.
+
+    // @uniquename this should be done in the constructor so we can re-use it throughout.
+    // Furthermore, we need to add subject/object_name to project and use the schema for
+    // the default to ensure we are using a column that exists and makes sense.
     switch ($relationship->tablename) {
       case 'acquisition_relationship':
         $subject_type = 'acquisition';
@@ -311,11 +315,11 @@ class sbo__relationship extends ChadoField {
     }
 
     // If the subject or object have an organism then add that in for reference.
-    if (property_exists($relationship->$subject_id_key, 'organism_id')) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['OBI:0100026'] = $relationship->$subject_id_key->organism_id->genus . ' ' . $relationship->$subject_id_key->organism_id->species;
+    if (property_exists($relationship->{$subject_id_key}, 'organism_id') AND is_object($relationship->{$subject_id_key}->organism_id)) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['OBI:0100026'] = $relationship->{$subject_id_key}->organism_id->genus . ' ' . $relationship->{$subject_id_key}->organism_id->species;
     }
-    if (property_exists($relationship->$object_id_key, 'organism_id')) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['OBI:0100026'] = $relationship->$object_id_key->organism_id->genus . ' ' . $relationship->$object_id_key->organism_id->species;
+    if (property_exists($relationship->{$object_id_key}, 'organism_id') AND is_object($relationship->{$object_id_key}->organism_id)) {
+      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['OBI:0100026'] = $relationship->{$object_id_key}->organism_id->genus . ' ' . $relationship->{$object_id_key}->organism_id->species;
     }
 
     // Add in the TripalEntity ids if these base records in the relationship
@@ -388,7 +392,7 @@ class sbo__relationship extends ChadoField {
     if (!$record) {
       return;
     }
-    
+
     // Not all tables have the columns named 'subject_id' and 'object_id'.
     // some have variations on that name and we need to determine what they are.
     $fkeys = $schema['foreign keys'];
@@ -518,6 +522,7 @@ class sbo__relationship extends ChadoField {
     }
 
     // Filter by unique name of the subject or object.
+    /* @uniquename there is not always a uniquename! */
     if ($condition['column'] == $rel_subject_identifier) {
       $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
       $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
@@ -909,6 +914,7 @@ class sbo__relationship extends ChadoField {
           }
         }
         else {
+          /* @uniquename there is not always a uniquename */
           $values = array('uniquename' => $subject_name);
           $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($subject) == 0) {
@@ -943,6 +949,7 @@ class sbo__relationship extends ChadoField {
           }
         }
         else {
+          /* @uniquename there is not always a uniquename */
           $values = array('uniquename' => $object_name);
           $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
           if (count($object) == 0) {

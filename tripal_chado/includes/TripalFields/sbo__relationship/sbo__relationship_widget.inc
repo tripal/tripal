@@ -133,6 +133,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item (AJAX)!');
     }
 
+    // Check if we have autocomplete available for this base table
+    $autocomplete_path = "admin/tripal/storage/chado/auto_name/$base_table";
+    $has_autocomplete = db_query('SELECT 1 FROM menu_router WHERE path=:path',
+      array(':path' => $autocomplete_path.'/%'))->fetchField();
+
     $widget['#table_name'] = $field_table;
 
     $widget['#fkeys'] = $schema['foreign keys'];
@@ -181,8 +186,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($subject_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$subject_id_key]) ? $schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
+    // Add autocomplete if we have one for this base table.
+    if ($has_autocomplete) {
+      $widget['subject_name']['#autocomplete_path'] = $autocomplete_path;
+    }
 
     // Getting default values for the relationship type element.
     $default_voc = '';
@@ -343,8 +351,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($object_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$object_id_key]) ? $schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
+    // Add autocomplete if we have one for this base table.
+    if ($has_autocomplete) {
+      $widget['object_name']['#autocomplete_path'] = $autocomplete_path;
+    }
   }
 
   /**
@@ -360,22 +371,17 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $base_table = $this->instance['settings']['base_table'];
     $chado_record_id = array_key_exists('#entity', $element)? $element['#entity']->chado_record_id : NULL;
 
+    // @debug ddl(array_keys($form[$field_name][$langcode][$delta]), "widget form keys: $delta");
+
     $schema = chado_get_schema($field_table);
     $fkeys = $schema['foreign keys'];
 
     // 'nd_reagent_relationship' and 'project_relationship' have different column names from
-    // subject_id/object_id. Do a pattern matching to get the column names.
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    foreach ($schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
-      if (preg_match('/^subject_.*id/', $lcolum)) {
-        $subject_id_key = $lcolum;
-      }
-      else if (preg_match('/^object_.*id/', $lcolum)) {
-        $object_id_key = $lcolum;
-      }
-    }
+    // subject_id/object_id. Retrieve the column names determined in the form.
+    $subject_id_key = $form[$field_name][$langcode][$delta]['#subject_id_key'];
+    $object_id_key = $form[$field_name][$langcode][$delta]['#object_id_key'];
 
+    // Retrieve the values from the form for the current $delta.
     $voc_id = array_key_exists('vocabulary', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : '';
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
     $subject_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] : '';
@@ -407,9 +413,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $subject_id = '';
     $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
     $matches = array();
+    // First check if it's in the textfield due to use of the autocomplete.
     if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
       $subject_id =  $matches[1];
     }
+    // Otherwise, try the uniquename.
+    // The base table does not always have a uniquename (e.g. organism for organism_relationship).
+    // @uniquename this will cause an error on organism/project-based content types.
     else {
       $values = array('uniquename' => $subject_name);
       $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
@@ -422,9 +432,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $object_id = '';
     $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
     $matches = array();
+    // First check if it's in the textfield due to use of the autocomplete.
     if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
       $object_id = $matches[1];
     }
+    // Otherwise, try the uniquename.
+    // The base table does not always have a uniquename (e.g. organism for organism_relationship).
+    // @uniquename this will cause an error on organism/project-based content types.
     else {
       $values = array('uniquename' => $object_name);
       $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
@@ -433,8 +447,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       }
     }
 
+    // If we have all three values required for a relationship...
+    // Then set them as the chado field storage expects them to be set.
     if ($subject_id && $object_id && $type_id) {
       // Set the IDs according to the values that were determined above.
+      $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
@@ -442,6 +459,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
       }
     }
+    // Otherwise, leave them blank?
     else {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
@@ -451,6 +469,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
       }
     }
+
+    // @debug ddl($form_state['values'][$field_name][$langcode][$delta], "form state values: $delta");
   }
 
   /**
