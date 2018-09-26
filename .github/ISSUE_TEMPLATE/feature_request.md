@@ -14,10 +14,10 @@ INSTRUCTIONS: The following template is meant to structure your feature request.
 
 <!--- Go over all the following points, and select the option in the brackets that applies to you. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-* This feature [does / does not attempt to solve an existing problem with Tripal
+* This feature [does / does not] attempt to solve an existing problem with Tripal
 * I [am/am not] open to developing or collaborating on an extension module if this is not a good fit for Tripal Core
 <!--- (no pressure here -just good to know upfront :-) ) -->
-* This feature is URGENT/Not Urgent
+* This feature is [URGENT/Not Urgent]
 
 ### Description
 <!--- A clear and concise description of what you want to happen. -->
