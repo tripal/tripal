@@ -220,32 +220,31 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, '');
   }
 
-  // Add ajax support only if tripal_ds is enabled
-  if(module_exists('tripal_ds')){
-    $hide_empty_field_var = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    if ($hide_empty_field_var != 0) {
-      $hide_empty_field_var = TRUE;
-    }
-
-    $ajax_field_var = tripal_get_bundle_variable('ajax_field', $bundle->id);
-    if ($ajax_field_var != 0) {
-      $ajax_field_var = TRUE;
-    }
-
-    $form['hide_empty_field'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Hide empty fields'),
-      '#description' => t('Uncheck this box if you would like to show all empty fields.'),
-      '#default_value' => $hide_empty_field_var,
-    );
-
-    $form['ajax_field'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Load field using AJAX'),
-      '#description' => t('Uncheck this box if you do not want field data to load by ajax, this may signifiantly increase page load times.'),
-      '#default_value' => $ajax_field_var,
-    );
+  $hide_empty_field_var = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
+  if ($hide_empty_field_var != 0) {
+    $hide_empty_field_var = TRUE;
   }
+
+  $ajax_field_var = tripal_get_bundle_variable('ajax_field', $bundle->id);
+  if ($ajax_field_var != 0) {
+    $ajax_field_var = TRUE;
+  }
+
+  $form['hide_empty_field'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide empty fields'),
+    '#description' => t('Uncheck this box if you would like to show all empty fields.'),
+    '#default_value' => $hide_empty_field_var,
+    '#weight' => 10,
+  );
+
+  $form['ajax_field'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Load field using AJAX'),
+    '#description' => t('Uncheck this box if you do not want field data to load by ajax, this may signifiantly increase page load times.'),
+    '#default_value' => $ajax_field_var,
+    '#weight' => 10,
+  );
 
   $form['ajax_field disclaimer'] = array(
     '#type' => 'item',
@@ -254,7 +253,23 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       are checked empty fields will be hidden using javascript which may result
        in some jumpiness of content as the page finishes loading.</p>'
     ),
+    '#weight' => 10,
   );
+
+  // Add ajax support only if tripal_ds is enabled
+  if(!module_exists('tripal_ds')){
+
+    $form['tripalds disclaimer'] = array(
+      '#type' => 'markup',
+      '#markup' => '<div class="messages warning">
+        Hiding fields and loading fields using AJAX requires the Tripal DS module.
+        Please enabled it if you would like this functionality</div>',
+      '#weight' => 9,
+    );
+    $form['hide_empty_field']['#disabled'] = TRUE;
+    $form['ajax_field']['#disabled'] = TRUE;
+  }
+
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,
