@@ -551,12 +551,12 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
  */
 function tripal_ajax_attach_field($id) {
 
-  $matches = array();
+  $matches = [];
   if (preg_match('/^tripal-entity-(\d+)--(.+)$/', $id, $matches)) {
     $entity_id = $matches[1];
     $field_name = $matches[2];
     $field = field_info_field($field_name);
-    $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, array($field['id']));
+    $result = tripal_load_entity('TripalEntity', [$entity_id], FALSE, [$field['id']]);
     reset($result);
     $entity = $result[$entity_id];
 
@@ -566,13 +566,20 @@ function tripal_ajax_attach_field($id) {
     // instance default display settings. Not sure why it does this. It needs
     // more investigation.
     $instance = field_info_instance('TripalEntity', $field_name, $entity->bundle);
+    $items = field_get_items('TripalEntity', $entity, $field_name);
+    if(count($items) > 0 && tripal_field_is_empty($items[0], $field)) {
+      return drupal_json_output([
+        'id' => $id,
+        'content' => '',
+      ]);
+    }
     $element = field_view_field('TripalEntity', $entity, $field_name, $instance['display']['default']);
     $element['#label_display'] = 'hidden';
 
     $content = drupal_render($element);
-    return drupal_json_output(array(
+    return drupal_json_output([
       'id' => $id,
-      'content' => $content
-    ));
+      'content' => $content,
+    ]);
   }
 }
