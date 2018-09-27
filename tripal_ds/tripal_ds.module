@@ -469,9 +469,9 @@ function tripal_ds_field_display_alter(&$display, $context){
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
     $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
     $ajax_variable = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    $processed = isset($context['entity']->{$field_name}) ? $context['entity']->{$field_name}['#processed'] : false;
 
-
-    if ($field_name && ($hide_variable == TRUE) && ($ajax_variable == FALSE)) {
+    if ($field_name && $hide_variable == TRUE && $processed) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
@@ -487,7 +487,6 @@ function tripal_ds_field_display_alter(&$display, $context){
               // CSS to hide them so that when users theme the table of
               // contents using CSS they aren't theming empty rows.
               drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
-
             }
           }
         }
