@@ -30,7 +30,6 @@
       // Remove auto attached fields that are empty
       if (hide_fields) {
         $('.tripal_pane .field-items').each(function () {
-          console.log($(this).text().trim().length);
           if ($(this).text().trim().length === 0) {
             $(this).parents('tr').first().remove();
             $(this).parents('.field').first().remove();
@@ -99,7 +98,6 @@
     var content = data['content'];
     var id      = data['id'];
     var field   = $('#' + id);
-    console.log(field);
     var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
     var pane_id = this.extractPaneID(classes);
     $('#' + id + ' .field-items').replaceWith(content);
