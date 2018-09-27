@@ -2820,6 +2820,7 @@ function tripal_chado_chado_schema_v1_2_control() {
     'primary key' => array(
       0 => 'control_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'control_idx1' => array(
         0 => 'type_id',
@@ -3858,6 +3859,7 @@ function tripal_chado_chado_schema_v1_2_eimage() {
     'primary key' => array(
       0 => 'eimage_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
     ),
     'table' => 'eimage',
@@ -6559,6 +6561,7 @@ function tripal_chado_chado_schema_v1_2_featuremap_pub() {
     'primary key' => array(
       0 => 'featuremap_pub_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'featuremap_pub_idx1' => array(
         0 => 'featuremap_id',
@@ -6633,6 +6636,7 @@ function tripal_chado_chado_schema_v1_2_featurepos() {
     'primary key' => array(
       0 => 'featurepos_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'featurepos_idx1' => array(
         0 => 'featuremap_id',
@@ -6878,6 +6882,7 @@ function tripal_chado_chado_schema_v1_2_featurerange() {
     'primary key' => array(
       0 => 'featurerange_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'featurerange_idx1' => array(
         0 => 'featuremap_id',
@@ -7789,6 +7794,7 @@ function tripal_chado_chado_schema_v1_2_magedocumentation() {
     'primary key' => array(
       0 => 'magedocumentation_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'magedocumentation_idx1' => array(
         0 => 'mageml_id',
@@ -7855,6 +7861,7 @@ function tripal_chado_chado_schema_v1_2_mageml() {
     'primary key' => array(
       0 => 'mageml_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
     ),
     'table' => 'mageml',
@@ -7900,6 +7907,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment() {
     'primary key' => array(
       0 => 'nd_experiment_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -7965,6 +7973,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_contact() {
     'primary key' => array(
       0 => 'nd_experiment_contact_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'contact' => array(
         'table' => 'contact',
@@ -8020,6 +8029,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_dbxref() {
     'primary key' => array(
       0 => 'nd_experiment_dbxref_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'dbxref' => array(
         'table' => 'dbxref',
@@ -8197,6 +8207,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_project() {
     'primary key' => array(
       0 => 'nd_experiment_project_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'project' => array(
         'table' => 'project',
@@ -8252,6 +8263,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_protocol() {
     'primary key' => array(
       0 => 'nd_experiment_protocol_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'nd_experiment' => array(
         'table' => 'nd_experiment',
@@ -8381,6 +8393,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_stock() {
     'primary key' => array(
       0 => 'nd_experiment_stock_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -8445,6 +8458,7 @@ function tripal_chado_chado_schema_v1_2_nd_experiment_stock_dbxref() {
     'primary key' => array(
       0 => 'nd_experiment_stock_dbxref_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'dbxref' => array(
         'table' => 'dbxref',
@@ -8663,8 +8677,8 @@ function tripal_chado_chado_schema_v1_2_nd_geolocation() {
     'primary key' => array(
       0 => 'nd_geolocation_id',
     ),
-    'foreign keys' => array(
-    ),
+    'unique keys' => array(),
+    'foreign keys' => array(),
     'table' => 'nd_geolocation',
     'referring_tables' => array(
       0 => 'nd_experiment',
@@ -8846,6 +8860,7 @@ function tripal_chado_chado_schema_v1_2_nd_protocol_reagent() {
     'primary key' => array(
       0 => 'nd_protocol_reagent_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -8986,6 +9001,7 @@ function tripal_chado_chado_schema_v1_2_nd_reagent() {
     'primary key' => array(
       0 => 'nd_reagent_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -9044,6 +9060,7 @@ function tripal_chado_chado_schema_v1_2_nd_reagent_relationship() {
     'primary key' => array(
       0 => 'nd_reagent_relationship_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -10513,6 +10530,7 @@ function tripal_chado_chado_schema_v1_2_phylotree() {
     'primary key' => array(
       0 => 'phylotree_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'phylotree_idx1' => array(
         0 => 'phylotree_id',
@@ -11123,6 +11141,7 @@ function tripal_chado_chado_schema_v1_2_protocolparam() {
     'primary key' => array(
       0 => 'protocolparam_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'protocolparam_idx1' => array(
         0 => 'protocol_id',
@@ -12645,6 +12664,7 @@ function tripal_chado_chado_schema_v1_2_stock_relationship_cvterm() {
     'primary key' => array(
       0 => 'stock_relationship_cvterm_id',
     ),
+    'unique keys' => array(),
     'foreign keys' => array(
       'cvterm' => array(
         'table' => 'cvterm',
@@ -13331,6 +13351,7 @@ function tripal_chado_chado_schema_v1_2_studydesign() {
     'primary key' => array(
       0 => 'studydesign_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'studydesign_idx1' => array(
         0 => 'study_id',
@@ -13479,6 +13500,7 @@ function tripal_chado_chado_schema_v1_2_studyfactor() {
     'primary key' => array(
       0 => 'studyfactor_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'studyfactor_idx1' => array(
         0 => 'studydesign_id',
@@ -13560,6 +13582,7 @@ function tripal_chado_chado_schema_v1_2_studyfactorvalue() {
     'primary key' => array(
       0 => 'studyfactorvalue_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'studyfactorvalue_idx1' => array(
         0 => 'studyfactor_id',
@@ -13954,6 +13977,7 @@ function tripal_chado_chado_schema_v1_2_treatment() {
     'primary key' => array(
       0 => 'treatment_id',
     ),
+    'unique keys' => array(),
     'indexes' => array(
       'treatment_idx1' => array(
         0 => 'biomaterial_id',
