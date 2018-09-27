@@ -422,8 +422,8 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
   try {
 
     // Get the is_a term. The OBO importer adds this for every vocabulary.
-    $sql = "SELECT * FROM {cvterm} WHERE name = :is_a and cv_id = :cv_id";
-    $args = [':is_a' => 'is_a', ':cv_id' => $cv_id];
+    $sql = "SELECT * FROM {cvterm} WHERE (name = :is_a or name = :is_a_alt) and cv_id = :cv_id";
+    $args = [':is_a' => 'is_a', ':is_a_alt' => 'is a', ':cv_id' => $cv_id];
     $cache['is_a'] = chado_query($sql, $args)->fetchObject();
 
     // First cache all the relationships for this vocaublary so that we
