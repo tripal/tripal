@@ -1526,13 +1526,26 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
   // is set to TRUE for this bundle and ajax load is turned off.
   $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
   $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-  if($hide_variable == TRUE && $ajax_field == FALSE){
+  if($hide_variable == TRUE) {
+
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
+
       if(tripal_field_is_empty($item[0], $field)) {
-        // Stop the right rail element from rendering.
-        drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
+        if($ajax_field == FALSE){
+          // Stop the right rail element from rendering.
+          drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
+        }
+        // Otherwise add a JS setting for AjaxField to use to hide this field.
+        else {
+          $field_id = 'tripal-entity-'.$context['entity']->id.'--'.$field_name;
+          $settings['tripal_ds']['tripal_field_settings_empty_fields'][] = array(
+            'field_id' => $field_id,
+            'field_name' => $field_name,
+          );
+          drupal_add_js( $settings, array('type' =>'setting'));
+        }
       }
     }
   }
