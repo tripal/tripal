@@ -1526,7 +1526,7 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
   // is set to TRUE for this bundle and ajax load is turned off.
   $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
   $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-  if($hide_variable == TRUE){
+  if($hide_variable == TRUE && $ajax_field == FALSE){
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
@@ -1560,7 +1560,7 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
       // then remove fields from the field group.
       $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
       $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-      if($hide_variable == TRUE){
+      if($hide_variable == TRUE && $ajax_field == FALSE){
         $items = $element[$child]['#items'];
         // Case #1: there are no items.
         if (count($items) == 0) {

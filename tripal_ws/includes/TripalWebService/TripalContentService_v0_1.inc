@@ -249,8 +249,8 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle->id);
-    // If ajax is turned off the hide fields functionality will be handled by
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
     // javascript so change the $hide_fields variable to false to avoid any actions.
     if ($ajax_field == TRUE) {
       $hide_fields = FALSE;
@@ -346,8 +346,8 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle->id);
-    // If ajax is turned off the hide fields functionality will be handled by
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
     // javascript so change the $hide_fields variable to false to avoid any actions.
     if ($ajax_field == TRUE) {
       $hide_fields = FALSE;
@@ -448,8 +448,8 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle->id);
-    // If ajax is turned off the hide fields functionality will be handled by
+    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
+    // If ajax is turned off the hide fields functionality will be handled by 
     // javascript so change the $hide_fields variable to false to avoid any actions.
     if ($ajax_field == TRUE) {
       $hide_fields = FALSE;

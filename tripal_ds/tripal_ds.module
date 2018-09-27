@@ -471,7 +471,7 @@ function tripal_ds_field_display_alter(&$display, $context){
     $ajax_variable = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
 
 
-    if ($field_name && ($hide_variable == TRUE)) {
+    if ($field_name && ($hide_variable == TRUE) && ($ajax_variable == FALSE)) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
