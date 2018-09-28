@@ -1107,7 +1107,7 @@ class OBOImporter extends TripalImporter {
     $id = $stanza['id'][0];
 
     // First check if we've already used this term.
-    if (in_array($id, $this->used_terms)) {
+    if (array_key_exists($id, $this->used_terms)) {
       return $this->used_terms[$id];
     }
 
@@ -1333,7 +1333,7 @@ class OBOImporter extends TripalImporter {
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and
       // is obsolete and this one is not. Fix it by adding an (obsolete) suffix
       // to the name to avoid the conflict.
-      else if (in_array('is_obsolete', $check_stanza) and ($check_stanza['is_obsolete'][0] == 'true') and in_array('is_obsolete', $stanza) and ($stanza['is_obsolete'][0] != 'true')) {
+      else if (array_key_exists('is_obsolete', $check_stanza) and ($check_stanza['is_obsolete'][0] == 'true') and (!array_key_exists('is_obsolete', $stanza) or ($stanza['is_obsolete'][0] != 'true'))) {
         $new_name = $check_cvterm->getValue('name') . ' (obsolete)';
         $check_cvterm->setValue('name', $new_name);
         $check_cvterm->update();

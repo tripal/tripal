@@ -534,7 +534,7 @@ function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
   }
 
   // If there are no children do nothing.
-  if (!in_array($root_id, $cache['rels'])) {
+  if (!array_key_exists($root_id, $cache['rels'])) {
     return;
   }
 
@@ -611,7 +611,7 @@ function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
   //print implode('-', $path) . "\n";
 
   // If this term does not have children then return.
-  if (!in_array($cvterm_id, $cache['rels'])) {
+  if (!array_key_exists($cvterm_id, $cache['rels'])) {
     return;
   }
 
