@@ -420,6 +420,7 @@ function tripal_chado_delete_orphaned_entities($bundle_id) {
     // associated chado record which make it really hard to follow progress.
     // Therefore, let's suppress any output from the delete function. Errors
     // are still detected when the delete function returns false.
+    $errors = [];
     ob_start(function ($buffer) {
       unset($buffer);
     });
@@ -429,14 +430,19 @@ function tripal_chado_delete_orphaned_entities($bundle_id) {
       /** @var \TripalEntityController $controller */
       $controller = entity_get_controller('TripalEntity');
       if ($controller->delete($ids) === FALSE) {
-        print "\nFailed to delete chunk {$i}/{$count}!\n";
+        $errors[] = "\nFailed to delete chunk {$i}/{$count}!\n";
       }
       $controller->resetCache($ids);
     } catch (Exception $exception) {
-      print "\nERROR: " . $exception->getMessage()."\n";
+      $errors[] = "\nERROR: " . $exception->getMessage()."\n";
     }
     putenv('TRIPAL_SUPPRESS_ERRORS=false');
     ob_end_clean();
+    
+    // Print collected errors if any.
+    foreach($errors as $error) {
+      print $error;
+    }
 
     // Report progress
     $progress = number_format(($i + $chunk) / $count * 100, 2);
