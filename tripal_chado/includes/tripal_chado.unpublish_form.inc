@@ -106,7 +106,7 @@ function tripal_chado_unpublish_form_submit($form, &$form_state) {
 }
 
 /**
- * Get bundles that have orphaned entities.
+ * Get a list of bundles keyed by bundle id.
  *
  * @return array
  */
