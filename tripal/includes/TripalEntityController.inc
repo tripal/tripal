@@ -101,7 +101,7 @@ class TripalEntityController extends EntityAPIController {
 
     return TRUE;
   }
-
+  
   /**
    * Sets the title for an entity.
    *

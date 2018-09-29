@@ -213,9 +213,8 @@ function tripal_chado_menu() {
   );
 
   $items['admin/content/bio_data/unpublish'] = [
-    'title' => 'Delete Orphaned Entities',
-    'description' => t('Unpublish entities that have no associated records in 
-                        their corresponding chado tables'),
+    'title' => 'Unpublish Orphaned Content',
+    'description' => t('Unpublish content that has no associated records in the data store.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => ['tripal_chado_unpublish_form'],
     'access arguments' => ['administer tripal'],

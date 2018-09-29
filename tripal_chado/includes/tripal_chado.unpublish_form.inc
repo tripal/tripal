@@ -9,26 +9,31 @@
 function tripal_chado_unpublish_form($form, &$form_state) {
   $bundles = tripal_chado_get_orphaned_bundles();
 
+  drupal_set_title('Unpublish Orphaned Content');
+  
   $form['description'] = [
-    '#markup' => t('<p>Unpublish entities that have no associated records in 
-                        their corresponding chado tables</p>')
+    '#type' => 'markup',
+    '#markup' => t('Sometimes published content can become orphaned. This can
+      occur if someone deletes records directly from the underlying data store
+      yet Tripal is not aware of it.  Here, you can unpublish orphaned content
+      '),
   ];
 
   if (empty($bundles)) {
     $form['message'] = [
       '#type' => 'markup',
-      '#markup' => t("<p>No orphaned entities detected.</p>"),
+      '#markup' => t("No orphaned content detected."),
     ];
 
     return $form;
   }
 
   $form['bundles'] = [
-    '#title' => t('Select a bundle'),
+    '#title' => t('Content type'),
     '#type' => 'select',
     '#options' => $bundles,
-    '#empty_option' => t('-- Select a Bundle --'),
-    '#description' => t('Select a bundle to check if it has orphaned entities.'),
+    '#empty_option' => t('-- Select a Content Type --'),
+    '#description' => t('Select a Tripal content type to find orphaned content.'),
     '#ajax' => [
       'callback' => 'tripal_chado_unpublish_form_callback',
       'wrapper' => 'bundle_info_fieldset_wrapper',
@@ -60,13 +65,13 @@ function tripal_chado_unpublish_form($form, &$form_state) {
     if ($count > 0) {
       $form['bundle_info_fieldset']['example_table'] = [
         '#type' => 'markup',
-        '#prefix' => t('<p>The following is an example of the records that will get removed. This table contains a maximum of 10 records.</p>'),
+        '#prefix' => t('The following is a subset of the records that will be unpublished. Only a maximum of 10 records are shown.'),
         '#markup' => tripal_chado_missing_records_table($selected_bundle_id),
       ];
 
       $form['bundle_info_fieldset']['submit'] = [
         '#type' => 'submit',
-        '#value' => 'Permanently Delete Orphaned Entities',
+        '#value' => 'Unpublish Orphaned Entities',
       ];
     }
   }
@@ -101,8 +106,8 @@ function tripal_chado_unpublish_form_submit($form, &$form_state) {
     'tripal_chado_delete_orphaned_entities', [$bundle_id], $user->uid, 10);
 
   drupal_set_message('Job submitted successfully!');
-  drupal_set_message('WARNING: It is expected to see a few tripal_chado errors
-   while the job is executing. The errors can be safely ignored.', 'warning');
+//   drupal_set_message('WARNING: It is expected to see a few tripal_chado errors
+//    while the job is executing. The errors can be safely ignored.', 'warning');
 }
 
 /**
@@ -113,7 +118,8 @@ function tripal_chado_unpublish_form_submit($form, &$form_state) {
 function tripal_chado_get_orphaned_bundles() {
   $bundles = db_query('SELECT bundle_id, data_table, label 
              FROM {chado_bundle} CB
-             INNER JOIN {tripal_bundle} TB ON TB.id = CB.bundle_id')->fetchAll();
+             INNER JOIN {tripal_bundle} TB ON TB.id = CB.bundle_id
+             ORDER BY label')->fetchAll();
 
   $mapped = [];
 
