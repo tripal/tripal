@@ -320,7 +320,7 @@ class remote__data extends WebServicesField {
       ->execute()->fetchAll();
 
     foreach ($sites as $site) {
-      $rows[$site->id] =$site->name;
+      $rows[$site->id] = $site->name;
     }
 
     $element['data_info']['remote_site'] = array(
@@ -333,8 +333,15 @@ class remote__data extends WebServicesField {
     $element['data_info']['query'] = array(
       '#type' => 'textarea',
       '#title' => 'Query to Execute',
-      '#description' => 'Enter the query that will retreive the remote records. ' .
-        'If the full URL to the content web service is ' .
+      '#description' => 'Enter the query that will retreive the remote records. ',
+      '#default_value' => $this->instance['settings']['data_info']['query'],
+      '#rows' => 3,
+      '#required' => TRUE
+    );
+    $element['data_info']['query_instructions'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Query to Execute Instructions',
+      '#description' => 'If the full URL to the content web service is ' .
         'https://[tripal_site]/web-services/content/v0.1/. Then this field should ' .
         'contain the text immediately after the content/v0.1 portion of the URL. ' .
         'For information about building web services queries see the ' .
@@ -347,29 +354,19 @@ class remote__data extends WebServicesField {
         'use tokens to do this (see the "Available Tokesn" fieldset below). ' .
         'For this example, the query text should be ' .
         'Organism?genus=[taxrank__genus]&species=[taxrank__species].',
-      '#default_value' => $this->instance['settings']['data_info']['query'],
-      '#rows' => 5,
-      '#required' => TRUE
-    );
-    $element['data_info']['rd_field_name'] = array(
-      '#type' => 'textfield',
-      '#title' => 'Field to Display',
-      '#description' => 'The results returned by the query should match
-        entities (or records) from the selected remote site.  That entity
-        will have multiple fields. Only one remote field can be shown by
-        this field. Please enter the name of the field you would like
-        to display.  Some fields have "subfields".  You can display a subfield
-        rather than the entire field by entering a comma-separated sequence
-        of subfields.  For example, for relationships, you may only want to
-        show the "clause", therefore, the entry here would be: realtionship,clause.',
-      '#default_value' => $this->instance['settings']['data_info']['rd_field_name'],
-      '#required' => TRUE
-    );
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE
+    ];
+    $element['data_info']['query_instructions']['instructions'] = [
+      '#type' => 'markup',
+      '#markup' => '',      
+    ];
+    
     $element['data_info']['token_display']['tokens'] = array(
       '#type' => 'hidden',
       '#value' => serialize($tokens)
     );
-
+    
     $element['data_info']['token_display'] = array(
       '#type' => 'fieldset',
       '#title' => 'Available Tokens',
@@ -377,11 +374,57 @@ class remote__data extends WebServicesField {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE
     );
-
+    
     $element['data_info']['token_display']['content'] = array(
       '#type' => 'item',
       '#markup' => theme_token_list($tokens),
     );
+    
+    $element['data_info']['rd_field_name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Field to Display',
+      '#description' => 'Enter the key from the results returned by the "Query to Execute" that should be displayed. See the example below for more details.',
+      '#default_value' => $this->instance['settings']['data_info']['rd_field_name'],
+      '#required' => TRUE
+    );
+    
+    $element['data_info']['rd_field_name_instructions'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Field to Display Instructions',
+      '#description' => '',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE
+    ];
+    $element['data_info']['rd_field_name_instructions']['insructions'] = [
+      '#type' => 'markup',
+      '#markup' => 'The query from a Tripal web service response is always
+       in JSON array arranged in key/value pairs.  The key is the name of a
+       controlled vocabulary term.  
+       <br><br>Suppose you want to query details about an organism.
+       Consider the following JSON result 
+       <pre style="height: 200px; overflow: auto;">   
+        "@type": "organism",
+        "label": "Anopheles gambiae",
+        "ItemPage": "http://demo.tripal.info/3.x/bio_data/642",
+        "type": "Organism",
+        "abbreviation": "A.gambiae",
+        "genus": "Anopheles",
+        "species": "gambiae",
+        "common_name": "mosquito",
+        "database_cross_reference": "http://demo.tripal.info/3.x/web-services/content/v0.1/Organism/642/database+cross+reference",
+        "equivalent_name": "Anopheles gambiae sensu stricto",
+        "division": "Invertebrates",
+        "mitochondrial_genetic_code_name": "Invertebrate Mitochondrial",
+        "synonym": "Anopheles gambiae S",
+        "genetic_code": "1",
+        "lineage": "cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa; Bilateria; Protostomia; Ecdysozoa; Panarthropoda; Arthropoda; Mandibulata; Pancrustacea; Hexapoda; Insecta; Dicondylia; Pterygota; Neoptera; Holometabola; Diptera; Nematocera; Culicomorpha; Culicoidea; Culicidae; Anophelinae; Anopheles; Cellia; Pyretophorus; gambiae species complex",
+        "genetic_code_name": "Standard",
+        "genbank_common_name": "African malaria mosquito"
+       </pre> 
+       To display the "lineage" from the JSON above you would enter the word 
+       "lineage" in the Field to Display textbox.   
+      ',
+    ];
 
     $element['data_info']['description'] = array(
       '#type' => 'textarea',

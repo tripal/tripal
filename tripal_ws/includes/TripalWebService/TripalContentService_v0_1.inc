@@ -420,7 +420,7 @@ class TripalContentService_v0_1 extends TripalWebService {
         $i++;
       }
       if ($expfield) {
-        $resource = $response;
+        $this->resource = $response;
       }
       else {
         //$this->resource->addProperty($key, $response);
