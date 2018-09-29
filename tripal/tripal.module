@@ -1530,7 +1530,7 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
     $item = field_get_items('TripalEntity', $context['entity'], $field_name);
     if($item) {
       $field = field_info_field($field_name);
-      if(tripal_field_is_empty($item[0], $field)) {
+      if(tripal_field_is_empty($field, $items)) {
         // Stop the right rail element from rendering.
         drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
       }

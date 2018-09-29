@@ -567,7 +567,7 @@ function tripal_ajax_attach_field($id) {
     // more investigation.
     $instance = field_info_instance('TripalEntity', $field_name, $entity->bundle);
     $items = field_get_items('TripalEntity', $entity, $field_name);
-    if(count($items) > 0 && tripal_field_is_empty($items[0], $field)) {
+    if(count($items) > 0 && tripal_field_is_empty($field, $items)) {
       return drupal_json_output([
         'id' => $id,
         'content' => '',

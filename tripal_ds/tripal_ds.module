@@ -475,7 +475,7 @@ function tripal_ds_field_display_alter(&$display, $context){
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
-        if (tripal_field_is_empty($item[0], $field)) {
+        if (tripal_field_is_empty($field, $item)) {
           $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
           if (!empty($parent_field_info)) {
             foreach ($parent_field_info as $parent_key => $parent_field) {
@@ -536,7 +536,7 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
           // Now check if each child is empty.
           $item = field_get_items('TripalEntity', $context['entity'], $child);
           $field = field_info_field($child);
-          if(tripal_field_is_empty($item[0], $field)){
+          if(tripal_field_is_empty($field, $item)){
             //If any of the fields are not empty do not add the parent, add the specific field.
             // break 2;
             if (!empty($field)) {

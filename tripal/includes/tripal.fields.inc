@@ -914,32 +914,6 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
 }
 
 /**
- * Implements hook_field_is_empty().
- */
-function tripal_field_is_empty($item, $field) {
-
-  // If the $item argument is empty then return TRUE.
-  if (!$item) {
-    return TRUE;
-  }
-
-  // If the field is a tripal field storage API field and there 
-  // is no value field then the field is empty.
-  if (array_key_exists('tripal_storage_api', $field['storage']['settings']) and !array_key_exists('value', $item)) {
-    return TRUE;
-  }
-
-  // If there is a value field but there's nothing in it, the the field is
-  // empty.
-  if (array_key_exists('value', $item) and empty($item['value'])) {
-    return TRUE;
-  }
-
-  // Otherwise, the field is not empty.
-  return FALSE;
-}
-
-/**
  * Theme function for all TripalFieldWidget objects.
  *
  * @param $variables

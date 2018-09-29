@@ -108,6 +108,55 @@ function hook_bundle_instances_info($entity_type, $bundle) {
 }
 
 /**
+ * Indicate if a field has an empty value.
+ *
+ * By default, all field values are attached to an entity in the form
+ * $entity->{field_name}[{language}][{delta}].   Tyipcally a field witll then
+ * have a 'value' element:  $entity->{field_name}[{language}][{delta}]['value']
+ * and if that value is empty then the field is considered empty by Tripal.
+ * By default the tripal_field-is_empty() function is used to check all
+ * fields to see if they are empty. However, this fhook can be implemented by
+ * any module to override that behavior.
+ *
+ * @param $field
+ *   A field array.
+ * @param $items
+ *   The array of items attached to entity.
+ * @param $delta
+ *   The specific value to check.  For fields with cardinality greater than
+ *   1 then each value can be checked. Defaults to 0 indicating it will check
+ *   the first value.
+ *
+ * @return
+ *   TRUE if the field value is empty for the given delta, and FALSE if not
+ *   empty.
+ *   
+ * @ingroup tripal_fields_api
+ */
+function tripal_field_is_empty($field, $items, $delta = 0) {
+  
+  // If the $items argument is empty then return TRUE.
+  if (!$items) {
+    return TRUE;
+  }
+  
+  // If the field is a tripal field storage API field and there
+  // is no value field then the field is empty.
+  if (array_key_exists('tripal_storage_api', $field['storage']['settings']) and !array_key_exists('value', $items[$delta])) {
+    return TRUE;
+  }
+  
+  // If there is a value field but there's nothing in it, the the field is
+  // empty.
+  if (array_key_exists('value', $items[$delta]) and empty($items[$delta]['value'])) {
+    return TRUE;
+  }
+  
+  // Otherwise, the field is not empty.
+  return FALSE;
+}
+
+/**
  * Retrieves a list of TripalField types.
  *
  * The TripalField classes can be added by a site developer and should be
