@@ -481,7 +481,7 @@ function tripal_ds_field_display_alter(&$display, $context){
             foreach ($parent_field_info as $parent_key => $parent_field) {
               if (strpos($parent_field, 'single_field') !== false) {
                 $field_name = str_replace("_single_field", "", $parent_field);
-                drupal_add_js('jQuery(document).ready(function () { jQuery("#tripal-entity-' . $bundle_info->term_id . '--' . $field_name . '").addClass("ds-hide") });', 'inline');
+                drupal_add_js('jQuery(document).ready(function () { jQuery("#tripal-entity-' . $context['entity']->id . '--' . $field_name . '").addClass("ds-hide"); });', 'inline');
               }
               // We want to use JavaScript to remove the fields rather than
               // CSS to hide them so that when users theme the table of
