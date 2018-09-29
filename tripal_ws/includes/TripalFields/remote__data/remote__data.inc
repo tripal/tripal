@@ -341,19 +341,23 @@ class remote__data extends WebServicesField {
     $element['data_info']['query_instructions'] = [
       '#type' => 'fieldset',
       '#title' => 'Query to Execute Instructions',
-      '#description' => 'If the full URL to the content web service is ' .
-        'https://[tripal_site]/web-services/content/v0.1/. Then this field should ' .
-        'contain the text immediately after the content/v0.1 portion of the URL. ' .
-        'For information about building web services queries see the ' .
-        'online documentation at ' . l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services') . '. ' .
-        'For example, suppose this field is attached to an ' .
-        'Organism content type on the local site, and you want to retrieve a ' .
-        'field for the same organism on a remote Tripal site then you will ' .
-        'want to query on the genus and species. Also, you want the genus and ' .
-        'species to match the organism that this field is attached to. You can ' .
-        'use tokens to do this (see the "Available Tokesn" fieldset below). ' .
-        'For this example, the query text should be ' .
-        'Organism?genus=[taxrank__genus]&species=[taxrank__species].',
+      '#description' => 'If the full URL to the remote tripal content web '.
+        'service is "https://[tripal_site]/web-services/content/v0.1/". Then '.
+        'this field should contain the text immediately after the '.
+        '"content/v0.1" portion of the URL. For information about building '.
+        'web services queries see the online documentation at '.
+        l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services').
+        '. For example, suppose this field is attached to an Organism content '.
+        'type on the local site, and you want to retrieve a field for the '.
+        'same organism on a remote Tripal site. To retrieve the matching '.
+        'record, you will want to query on the genus and species, since it '.
+        'is unique and, you want them to match the organism for each specific '.
+        'local organism page. You can use tokens to do this (see the '.
+        '"Available Tokens" fieldset below). For this example, the full '.
+        'remote web service endpoint would be '.
+        '"https://[tripal_site]/web-services/content/v0.1/Organism" '.
+        'and the query text should be '.
+        '"Organism?genus=[taxrank__genus]&species=[taxrank__species]".',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE
     ];
@@ -421,8 +425,8 @@ class remote__data extends WebServicesField {
         "genetic_code_name": "Standard",
         "genbank_common_name": "African malaria mosquito"
        </pre> 
-       To display the "lineage" from the JSON above you would enter the word 
-       "lineage" in the Field to Display textbox.   
+       To display the "common_name" from the JSON above you would enter the word
+       "common_name" in the Field to Display textbox.
       ',
     ];
 
