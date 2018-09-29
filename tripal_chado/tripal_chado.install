@@ -30,7 +30,7 @@ function tripal_chado_install() {
     ";
     chado_query($sql);
   }
-  
+
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
 }
 
@@ -624,7 +624,7 @@ function tripal_chado_chado_bundle_schema() {
       ),
       'base_type_id' => array(
         'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
-        'size' => 'big',        
+        'size' => 'big',
         'type' => 'int',
       )
     ),
@@ -1394,11 +1394,11 @@ function tripal_chado_update_7321() {
   try {
     chado_insert_db(array(
       'name' => 'TPUB',
-      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'description' => 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => '/cv/lookup/TPUB',
       'urlprefix' => '/cv/lookup/TPUB/{accession}',
     ));
-    chado_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+    chado_insert_cv('tripal_pub', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
     chado_insert_db(array(
       'name' => 'rdf',
@@ -1439,7 +1439,7 @@ function tripal_chado_update_7322() {
   try {
     chado_insert_db(array(
       'name' => 'TPUB',
-      'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+      'description' => 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
       'url' => 'cv/lookup/TPUB',
       'urlprefix' => 'cv/lookup/TPUB/{accession}',
     ));
@@ -1578,7 +1578,7 @@ function tripal_chado_update_7328() {
     tripal_chado_add_cv_root_mview_mview();
     $mview_id = chado_get_mview_id($mv_name);
     chado_populate_mview($mview_id);
-  } 
+  }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
@@ -1608,7 +1608,7 @@ function tripal_chado_update_7329() {
 function tripal_chado_update_7330() {
   try {
     tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
-    
+
     $bundles = [
       'General' => [
         // Organism
@@ -1624,7 +1624,7 @@ function tripal_chado_update_7330() {
         // Publication
         'TPUB:0000002',
         // Protocol
-        'sep:00101',        
+        'sep:00101',
       ],
       'Genomic' => [
         // Gene
@@ -1642,7 +1642,7 @@ function tripal_chado_update_7330() {
         // Genome Annotation
         'operation:0362',
         // Genome Project
-        'local:Genome Project',                
+        'local:Genome Project',
       ],
       'Genetic' => [
         // Genetic Map
@@ -1654,7 +1654,7 @@ function tripal_chado_update_7330() {
         // Genetic Marker
         'SO:0001645',
         // Heritable Phenotypic Marker
-        'SO:0001500',        
+        'SO:0001500',
       ],
       'Germplasm/Breeding' => [
         // Germplasm Accession
@@ -1664,14 +1664,14 @@ function tripal_chado_update_7330() {
         // Cutlivar
         'CO_010:0000029',
         // Recombinant Inbred Line
-        'CO_010:0000162',        
+        'CO_010:0000162',
       ],
       'Expression' => [
         // Biological Sample
         'sep:00195',
         // Assay
         'OBI:0000070',
-        // Array Design 
+        // Array Design
         'EFO:0000269',
       ]
     ];
@@ -1681,8 +1681,8 @@ function tripal_chado_update_7330() {
         if ($bundle) {
           tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
         }
-      }      
-    }    
+      }
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -1726,15 +1726,15 @@ function tripal_chado_update_7332() {
       'ncit',
       'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
     );
-    
+
     $term = chado_insert_cvterm([
       'id' => 'NCIT:C25693',
       'name' => 'Subgroup',
       'cv_name' => 'ncit',
       'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
     ]);
-    
-    
+
+
     // Add the rdfs:comment vocabulary.
     chado_insert_db(array(
       'name' => 'rdfs',
@@ -1776,7 +1776,7 @@ function tripal_chado_update_7333() {
  * SQL Fix for the db2cv_mview materialized view.
  */
 function tripal_chado_update_7334() {
-  
+
   try {
     $query = '
        SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
