@@ -1527,8 +1527,8 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
   $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
   $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
   if($hide_variable == TRUE && $ajax_field == FALSE){
-    $item = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if($item) {
+    $items = field_get_items('TripalEntity', $context['entity'], $field_name);
+    if($items) {
       $field = field_info_field($field_name);
       if(tripal_field_is_empty($field, $items)) {
         // Stop the right rail element from rendering.

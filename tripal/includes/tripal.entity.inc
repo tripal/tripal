@@ -560,6 +560,10 @@ function tripal_ajax_attach_field($id) {
     reset($result);
     $entity = $result[$entity_id];
 
+    // Settings for whether to hide fields for this content type.
+    $bundle_info = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
+
     // Get the element render array for this field and turn off the label
     // display. It's already on the page.  We need to get the display from the
     // instance and pass it into the field_view_field. Otherwise it uses the
