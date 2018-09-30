@@ -65,11 +65,33 @@ class sbo__relationship extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
   protected $instance;
 
+  // An array of columns to use as the "name" of the subject and object.
+  // For example, for the feature table, this will be the uniquename,
+  // whereas, for the organism table this will be the genus & species.
+  protected $base_name_columns;
+
+  // One of 'type_id', or 'table_name'. Not all base tables have a type_id so
+  // this setting allows us to better handle these cases.
+  protected $base_type_column;
+
+  // This field depends heavily on the schema of the relationship and base 
+  // table. The following variables cache the schema to greatly speed up 
+  // this field.
+  // Note: both are ChadoSchema objects.
+  protected $schema;
+  protected $base_schema;
+
+  // The column which indicated the subject/object_id in the current 
+  // relationship table. This allows us to support exceptions in the common
+  // chado naming conventions.
+  protected $subject_id_column;
+  protected $object_id_column;
 
   /**
    * @see TripalField::elements()
@@ -183,6 +205,167 @@ class sbo__relationship extends ChadoField {
     );
   }
 
+  /**
+   * Extends TripalField::__construct().
+   */
+  public function __construct($field, $instance) {
+    parent::__construct($field, $instance);
+
+    $reltable = $instance['settings']['chado_table'];
+    $base_table = $instance['settings']['base_table'];
+
+    // First, initialize the schema's.
+    $this->schema = new ChadoSchema();
+    $this->schema = $this->schema->getTableSchema($reltable);
+    $this->base_schema = new ChadoSchema();
+    $this->base_schema = $this->base_schema->getTableSchema($base_table);
+  
+    // Determine the subject_id/object_id column names.
+    foreach ($this->schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
+      if (preg_match('/^subject_.*id/', $lcolum)) {
+        $this->subject_id_column = $lcolum;
+      }
+      else if (preg_match('/^object_.*id/', $lcolum)) {
+        $this->object_id_column = $lcolum;
+      }
+    }
+ 
+    // Determine the name and type columns.
+    $this->base_name_columns = [];
+    $this->base_type_column = 'table_name';
+    switch ($instance['settings']['chado_table']) {
+
+      case 'acquisition_relationship':
+      case 'analysis_relationship':
+      case 'biomaterial_relationship':
+      case 'cell_line_relationship':
+      case 'quantification_relationship':
+        $this->base_type_column = 'table_name';
+        break;
+      case 'element_relationship':
+        // RELATIONSHIP->subject_id_key->feature_id->name;
+        $this->base_name_columns = ['name'];
+        $this->base_type_column = 'table_name';
+        break;
+      case 'organism_relationship':
+        $this->base_name_columns = ['genus','species'];
+        $this->base_type_column = 'table_name';
+        break;
+      case 'project_relationship':
+        $this->base_name_columns = ['name'];
+        $this->base_type_column = 'table_name';
+        break;
+      case 'phylonode_relationship':
+        $this->base_name_columns = ['label'];
+        $this->base_type_column = 'table_name';
+        break;
+      case 'pub_relationship':
+        $this->base_name_columns = ['uniquename'];
+        $this->base_type_column = 'table_name';
+        break;
+      default:
+        // @todo update this to use the schema.
+        $this->base_name_columns = ['uniquename'];
+        $this->base_type_column = 'type_id';
+    }
+  }
+
+  /**
+   * Retrive the subject from the current relationship.
+   */
+  private function getRelationshipSubject($relationship) {
+    $name = [];
+
+    foreach ($this->base_name_columns as $column) {
+      $name[] = $relationship->{$this->subject_id_column}->{$column};
+    }
+
+    $type = $this->instance['settings']['base_table'];
+    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
+      $type_object = $relationship->{$this->subject_id_column}->{$this->base_type_column};
+      if (isset($type_object->name)) {
+        $type = $type_object->name;
+      }
+      elseif (isset($type_object->uniquename)) {
+        $type = $type_object->uniquename;
+      }
+    }
+
+    $record = [
+      'rdfs:type' => $type,
+      'schema:name' => implode(' ', $name),
+      // @todo support the entity and determine whether this is current one or not.
+      //'entity' => 'TripalEntity:' . $entity->id,
+    ];
+
+    // If the object has a unqiuename then add that in for refernce.
+    if (property_exists($relationship->{$this->subject_id_column}, 'uniquename')) {
+      $record['data:0842'] = $relationship->{$this->subject_id_column}->uniquename;
+    }
+
+    // If the object has an organism then add that in for reference.
+    if (property_exists($relationship->{$this->subject_id_column}, 'organism_id')
+      AND is_object($relationship->{$this->subject_id_column}->organism_id)) {
+        $record['OBI:0100026'] = $relationship->{$this->subject_id_column}->organism_id->genus . ' ' . $relationship->{$this->subject_id_column}->organism_id->species;
+    }
+
+    // Add in the TripalEntity ids if the object is published.
+    if (property_exists($relationship->{$this->subject_id_column}, 'entity_id')) {
+      $entity_id = $relationship->{$this->subject_id_column}->entity_id;
+      $record['entity'] = 'TripalEntity:' . $entity_id;
+    }
+
+    return $record;
+  }
+
+  /**
+   * Retrive the object from the current relationship.
+   */
+  private function getRelationshipObject($relationship) {
+    $name = [];
+
+    foreach ($this->base_name_columns as $column) {
+      $name[] = $relationship->{$this->object_id_column}->{$column};
+    }
+
+    $type = $this->instance['settings']['base_table'];
+    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
+      $type_object = $relationship->{$this->object_id_column}->{$this->base_type_column};
+      if (isset($type_object->name)) {
+        $type = $type_object->name;
+      }
+      elseif (isset($type_object->uniquename)) {
+        $type = $type_object->uniquename;
+      }
+    }
+
+    $record = [
+      'rdfs:type' => $type,
+      'schema:name' => implode(' ', $name),
+      // @todo support the entity and determine whether this is current one or not.
+      //'entity' => 'TripalEntity:' . $entity->id,
+    ];
+
+    // If the object has a unqiuename then add that in for refernce.
+    if (property_exists($relationship->{$this->object_id_column}, 'uniquename')) {
+      $record['data:0842'] = $relationship->{$this->object_id_column}->uniquename;
+    }
+
+    // If the object has an organism then add that in for reference.
+    if (property_exists($relationship->{$this->object_id_column}, 'organism_id') 
+      AND is_object($relationship->{$this->object_id_column}->organism_id)) {
+        $record['OBI:0100026'] = $relationship->{$this->object_id_column}->organism_id->genus . ' ' . $relationship->{$this->object_id_column}->organism_id->species;
+    }
+
+    // Add in the TripalEntity ids if the object is published.
+    if (property_exists($relationship->{$this->object_id_column}, 'entity_id')) {
+      $entity_id = $relationship->{$this->object_id_column}->entity_id;
+      $record['entity'] = 'TripalEntity:' . $entity_id;
+    } 
+
+    return $record;
+  }
+
   private function loadRelationship($relationship, &$entity, $delta) {
 
     $field_name = $this->field['field_name'];
@@ -193,149 +376,27 @@ class sbo__relationship extends ChadoField {
     $rel_type = $relationship->type_id->name;
     $verb = $this->get_rel_verb($rel_type);
 
-    // Get the foreign keys for the subject and object tables
-    $subject_fkey_table = '';
-    $object_fkey_table = '';
-
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-
-    // Not all tables have the columns named 'subject_id' and 'object_id'.
-    // some have variations on that name and we need to determine what they are.
-    $fkeys = $schema['foreign keys'];
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    foreach ($fkeys as $fktable => $details) {
-      foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
-        if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
-          $subject_fkey_table = $fktable;
-          $subject_id_key = $fkey_lcolumn;
-        }
-        if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
-          $object_fkey_table = $fktable;
-          $object_id_key = $fkey_lcolumn;
-        }
-      }
-    }
-
-    // Get the schemas for the subject and object table.  These should
-    // be the same as the base table but just to be safe we'll get them
-    // separately.
-    $subject_schema = chado_get_schema($subject_fkey_table);
-    $subject_pkey = $subject_schema['primary key'][0];
-    $object_schema = chado_get_schema($object_fkey_table);
-    $object_pkey = $object_schema['primary key'][0];
-
-    // Not all realtionshp tables have a name field (e.g. organism_relationship)
-    // threfore in some cases we need to dig a bit deeper to get the entity
-    // name and the entity type name.
-    $subject_name = '';
-    $subject_type = '';
-    $object_name = '';
-    $object_type = '';
-
-    // The linked to table of a relationship linker table may not always
-    // have a type_id or name field.  So we have to be a bit more
-    // specific about how we set some variables.
-
-    // @uniquename this should be done in the constructor so we can re-use it throughout.
-    // Furthermore, we need to add subject/object_name to project and use the schema for
-    // the default to ensure we are using a column that exists and makes sense.
-    switch ($relationship->tablename) {
-      case 'acquisition_relationship':
-        $subject_type = 'acquisition';
-        $object_type = 'acquisition';
-        break;
-      case 'analysis_relationship':
-        $subject_type = 'analysis';
-        $object_type = 'analysis';
-        break;
-      case 'biomaterial_relationship':
-        $subject_type = 'biomaterial';
-        $object_type = 'biomaterial';
-        break;
-      case 'cell_line_relationship':
-        $subject_type = 'cell_line';
-        $object_type = 'cell_line';
-        break;
-      case 'element_relationship':
-        $subject_name = $relationship->$subject_id_key->feature_id->name;
-        $object_name = $relationship->$object_id_key->feature_id->name;
-        break;
-      case 'organism_relationship':
-        $subject_name = $relationship->$subject_id_key->genus . ' ' . $relationship->$subject_id_key->species;
-        $object_name = $relationship->$object_id_key->genus . ' ' . $relationship->$object_id_key->species;
-        $subject_type = 'organism';
-        $object_type = 'organism';
-        break;
-      case 'project_relationship':
-        $subject_type = 'project';
-        $object_type = 'project';
-        break;
-      case 'phylonode_relationship':
-        $subject_name = $relationship->$subject_id_key->label;
-        $object_name = $relationship->$object_id_key->label;
-        break;
-      case 'pub_relationship':
-        $subject_name = $relationship->$subject_id_key->uniquename;
-        $object_name = $relationship->$object_id_key->uniquename;
-        break;
-      case 'quantification_relationship':
-        $subject_type = 'quantification';
-        $object_type = 'quantification';
-        break;
-      default:
-        $subject_name = isset($relationship->$subject_id_key->name) ? $relationship->$subject_id_key->name : '';
-        $subject_type = isset($relationship->$subject_id_key->type_id) ? $relationship->$subject_id_key->type_id->name : '';
-        $object_name = isset($relationship->$object_id_key->name) ? $relationship->$object_id_key->name : '';
-        $object_type = isset($relationship->$object_id_key->type_id) ? $relationship->$object_id_key->type_id->name : '';
-    }
+    $pkey = $this->schema['primary key'][0];
+    $subject_id_key = $this->subject_id_column;
+    $object_id_key = $this->object_id_column;
+    // @todo grad these separately like it was before.
+    $subject_pkey = $object_pkey = $this->base_schema['primary key'][0];
 
     $entity->{$field_name}['und'][$delta]['value'] = array(
-      'local:relationship_subject' => array(
-        'rdfs:type' => $subject_type,
-        'schema:name' => $subject_name,
-      ),
+      'local:relationship_subject' => $this->getRelationshipSubject($relationship),
       'local:relationship_type' => $relationship->type_id->name,
-      'local:relationship_object' => array(
-        'rdfs:type' => $object_type,
-        'schema:name' => $object_name,
-        'entity' => 'TripalEntity:' . $entity->id,
-      )
+      'local:relationship_object' => $this->getRelationshipObject($relationship),
     );
-
-    // If the subject or object have a unqiuename then add that in for refernce.
-    if (property_exists($relationship->$subject_id_key, 'uniquename')) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['data:0842'] = $relationship->$subject_id_key->uniquename;
-    }
-    if (property_exists($relationship->$object_id_key, 'uniquename')) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['data:0842'] = $relationship->$object_id_key->uniquename;
-    }
-
-    // If the subject or object have an organism then add that in for reference.
-    if (property_exists($relationship->{$subject_id_key}, 'organism_id') AND is_object($relationship->{$subject_id_key}->organism_id)) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['OBI:0100026'] = $relationship->{$subject_id_key}->organism_id->genus . ' ' . $relationship->{$subject_id_key}->organism_id->species;
-    }
-    if (property_exists($relationship->{$object_id_key}, 'organism_id') AND is_object($relationship->{$object_id_key}->organism_id)) {
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['OBI:0100026'] = $relationship->{$object_id_key}->organism_id->genus . ' ' . $relationship->{$object_id_key}->organism_id->species;
-    }
-
-    // Add in the TripalEntity ids if these base records in the relationship
-    // are published.
-    if (property_exists($relationship->$subject_id_key, 'entity_id')) {
-      $entity_id = $relationship->$subject_id_key->entity_id;
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['entity'] = 'TripalEntity:' . $entity_id;
-    }
-    if (property_exists($relationship->$object_id_key, 'entity_id')) {
-      $entity_id = $relationship->$object_id_key->entity_id;
-      $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['entity'] = 'TripalEntity:' . $entity_id;
-    }
 
     // Add the clause to the values array.  The clause is a written version
     // of the relationships.
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+    $subject_type = $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['rdfs:type'];
+    $subject_name = $entity->{$field_name}['und'][$delta]['value']['local:relationship_subject']['schema:name'];
+    $object_type = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['rdfs:type'];
+    $object_name = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['schema:name'];
+
+
     // Remember the current entity could be either the subject or object!
     // Example: The genetic_marker, MARKER1 , derives from the sequence_variant, VARIANT1.
     // The above relationship will be shown both on marker and variant pages
@@ -359,14 +420,15 @@ class sbo__relationship extends ChadoField {
     $entity->{$field_name}['und'][$delta]['type_name'] = $relationship->type_id->name;
     $entity->{$field_name}['und'][$delta]['subject_name'] = $subject_name . ' [id: ' . $relationship->$subject_id_key->$subject_pkey . ']';
     $entity->{$field_name}['und'][$delta]['object_name'] = $object_name  . ' [id: ' . $relationship->$object_id_key->$object_pkey . ']';
-    if (array_key_exists('value', $schema['fields'])) {
+    if (array_key_exists('value', $this->schema['fields'])) {
       $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__value'] = $relationship->value;
     }
-    if (array_key_exists('rank', $schema['fields'])) {
+    if (array_key_exists('rank', $this->schema['fields'])) {
       $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__rank'] = $relationship->rank;
     }
   }
- /**
+
+  /**
    *
    * @see TripalField::load()
    */
@@ -381,32 +443,18 @@ class sbo__relationship extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
+    $rel_table = $field_table;
 
     // Get the PKey for this table
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+    $pkey = $this->schema['primary key'][0];
+    // Not all tables have the columns named 'subject_id' and 'object_id'.
+    // some have variations on that name and we need to determine what they are.
+    $subject_id_key = $this->subject_id_column;
+    $object_id_key = $this->object_id_column;
 
     // If we don't have a chado record return before creating a stub for this field!
     if (!$record) {
       return;
-    }
-
-    // Not all tables have the columns named 'subject_id' and 'object_id'.
-    // some have variations on that name and we need to determine what they are.
-    $fkeys = $schema['foreign keys'];
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    foreach ($fkeys as $fktable => $details) {
-      foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
-        if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
-          $subject_id_key = $fkey_lcolumn;
-        }
-        if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
-          $object_id_key = $fkey_lcolumn;
-        }
-      }
     }
 
     // Set some defaults for the empty record.
@@ -426,16 +474,11 @@ class sbo__relationship extends ChadoField {
 
     // If the table has rank and value fields then add those to the default
     // value array.
-    if (array_key_exists('value', $schema['fields'])) {
+    if (array_key_exists('value', $this->schema['fields'])) {
       $entity->{$field_name}['und'][0]['chado-' . $field_table . '__value'] = '';
     }
-    if (array_key_exists('rank', $schema['fields'])) {
+    if (array_key_exists('rank', $this->schema['fields'])) {
       $entity->{$field_name}['und'][0]['chado-' . $field_table . '__rank'] = '';
-    }
-
-    // If we have no record then just return.
-    if (!$record) {
-      return;
     }
 
     // Expand the object to include the relationships.
@@ -455,9 +498,7 @@ class sbo__relationship extends ChadoField {
         ),
       ),
     );
-    $rel_table = $base_table . '_relationship';
-    $schema = chado_get_schema($rel_table);
-    if (array_key_exists('rank', $schema['fields'])) {
+    if (array_key_exists('rank', $this->schema['fields'])) {
       $options['order_by'] = array('rank' => 'ASC');
     }
     $record = chado_expand_var($record, 'table', $rel_table, $options);
