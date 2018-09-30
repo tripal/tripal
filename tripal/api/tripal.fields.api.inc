@@ -142,13 +142,17 @@ function tripal_field_is_empty($field, $items, $delta = 0) {
   
   // If the field is a tripal field storage API field and there
   // is no value field then the field is empty.
-  if (array_key_exists('tripal_storage_api', $field['storage']['settings']) and !array_key_exists('value', $items[$delta])) {
+  if (array_key_exists('storage', $field) and 
+      array_key_exists('tripal_storage_api', $field['storage']['settings']) and 
+      !array_key_exists('value', $items[$delta])) {
     return TRUE;
   }
   
   // If there is a value field but there's nothing in it, the the field is
   // empty.
-  if (array_key_exists('value', $items[$delta]) and empty($items[$delta]['value'])) {
+  if (array_key_exists($delta, $items) and 
+      array_key_exists('value', $items[$delta]) and 
+      empty($items[$delta]['value'])) {
     return TRUE;
   }
   

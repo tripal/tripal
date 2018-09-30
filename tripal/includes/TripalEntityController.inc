@@ -688,13 +688,13 @@ class TripalEntityController extends EntityAPIController {
           // attach then we will ignore it. It can only be set by providing
           // the id in the $field_id array handled previously.
           else {
-            // We only load via AJAX if instructed to do so and only for fields
-            // that are not auto attached.
-            $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle->id);
+            
+            // Do not load fields that are not auto attached.  Instead set
+            // their value to an empty string and set the #processed key to
+            // FALSE.
             if (array_key_exists('settings', $instance) and
                 array_key_exists('auto_attach', $instance['settings']) and
-                $instance['settings']['auto_attach'] == FALSE and
-                $ajax_field == TRUE) {
+                $instance['settings']['auto_attach'] == FALSE) {
 
                // Add an empty value. This will allow the tripal_entity_view()
                // hook to add the necessary prefixes to the field for ajax

@@ -468,7 +468,6 @@ function tripal_ds_field_display_alter(&$display, $context){
     $bundle = $context['entity']->bundle;
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
     $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-    $ajax_variable = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
     $processed = isset($context['entity']->{$field_name}) ? $context['entity']->{$field_name}['#processed'] : false;
 
     if ($field_name && $hide_variable == TRUE && $processed) {

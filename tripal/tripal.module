@@ -1518,7 +1518,7 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
  * @param $context
  */
 function tripal_field_display_TripalEntity_alter(&$display, $context){
-  $field = $context['field'];
+/*   $field = $context['field'];
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
@@ -1532,7 +1532,7 @@ function tripal_field_display_TripalEntity_alter(&$display, $context){
       // Stop the right rail element from rendering.
       drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
     }
-  }
+  }  */
 }
 
 /**
@@ -1556,8 +1556,7 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
       // If the hide empty variable is turned on and ajax load is turned off
       // then remove fields from the field group.
       $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-      $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-      if($hide_variable == TRUE && $ajax_field == FALSE){
+      if($hide_variable == TRUE){
         $items = $element[$child]['#items'];
         // Case #1: there are no items.
         if (count($items) == 0) {

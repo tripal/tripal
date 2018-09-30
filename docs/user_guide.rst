@@ -12,9 +12,7 @@ User's Guide
    user_guide/drupal_overview
    user_guide/example_genomics
    user_guide/learn_chado
-   user_guide/creating_content
-   user_guide/setting_page_urls
-   user_guide/configuring_page_display
+   user_guide/content_types
    user_guide/mviews
    user_guide/searching
    user_guide/job_management

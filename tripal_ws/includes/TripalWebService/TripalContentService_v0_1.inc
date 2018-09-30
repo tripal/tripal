@@ -249,12 +249,7 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-    // If ajax is turned off the hide fields functionality will be handled by 
-    // javascript so change the $hide_fields variable to false to avoid any actions.
-    if ($ajax_field == TRUE) {
-      $hide_fields = FALSE;
-    }
+
     // Get information about the fields attached to this bundle and sort them
     // in the order they were set for the display.
     $instances = field_info_instances('TripalEntity', $bundle->name);
@@ -346,12 +341,6 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-    // If ajax is turned off the hide fields functionality will be handled by 
-    // javascript so change the $hide_fields variable to false to avoid any actions.
-    if ($ajax_field == TRUE) {
-      $hide_fields = FALSE;
-    }
 
     // Get the field  settings.
     $field_name = $field['field_name'];
@@ -448,12 +437,7 @@ class TripalContentService_v0_1 extends TripalWebService {
     // If the entity is set to hide fields that have no values then we
     // want to honor that in the web services too.
     $hide_fields = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-    $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-    // If ajax is turned off the hide fields functionality will be handled by 
-    // javascript so change the $hide_fields variable to false to avoid any actions.
-    if ($ajax_field == TRUE) {
-      $hide_fields = FALSE;
-    }
+
     $new_value = '';
     // If the value is an array rather than a scalar then map the sub elements
     // to controlled vocabulary terms.
