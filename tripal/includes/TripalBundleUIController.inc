@@ -256,20 +256,6 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#weight' => 10,
   );
 
-  // Add ajax support only if tripal_ds is enabled
-  if(!module_exists('tripal_ds')){
-
-    $form['tripalds disclaimer'] = array(
-      '#type' => 'markup',
-      '#markup' => '<div class="messages warning">
-        Hiding fields and loading fields using AJAX requires the Tripal DS module.
-        Please enabled it if you would like this functionality</div>',
-      '#weight' => 8,
-    );
-    $form['hide_empty_field']['#disabled'] = TRUE;
-    $form['ajax_field']['#disabled'] = TRUE;
-  }
-
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,

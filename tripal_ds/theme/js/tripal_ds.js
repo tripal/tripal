@@ -34,6 +34,7 @@
           }
         });
       });
+      
       // Move the tripal pane to the first position when its TOC item is clicked.
       $('.tripal_pane-toc-list-item-link').each(function (i) {
         var id = '.tripal_pane-fieldset-' + $(this).attr('id');

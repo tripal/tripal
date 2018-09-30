@@ -65,10 +65,11 @@
   }
   
   /**
-   * Removes the pan from the HTML of the page.
+   * Removes the pane from the HTML of the page.
    */
   TripalPane.prototype.remove = function() {
-	var pane = $('#' + this.id);
+	// Remove the Pane's fieldset
+	var pane = $('.tripal_pane-fieldset-' + this.id);
     pane.remove();
     
     // Remove the pane's title from the TOC.
@@ -175,8 +176,18 @@
    * @return {String|null}
    */
   TripalAjaxField.prototype.getPane = function () {
+	  
+	// Get the pane for this field.
 	var field = $('#' + this.id);
-	var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
+	var pane = field.parents('.tripal_pane')
+	
+	// If the field is not in a pane then just return.
+	if (pane.length == 0) {
+	  return null;
+	}
+	
+	// Get further details about the pane.
+	var classes = pane.first().attr('class').split(' ');
     var sub_length = 'tripal_pane-fieldset-'.length;
     var pane_id = null;
 

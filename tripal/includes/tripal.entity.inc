@@ -551,7 +551,6 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       if ($hide_empty and !$load_via_ajax) {
         $field = field_info_field($instance['field_name']);
         $items = field_get_items('TripalEntity', $entity, $child_name);
-        
         if (tripal_field_is_empty($field, $items)) {
           unset($entity->content[$child_name]);
         }
