@@ -262,7 +262,7 @@ function tripal_chado_populate_vocab_SCHEMA() {
     'cv_name' => 'schema',
     'definition' => 'A page devoted to a single item, such as a particular product or hotel.',
   ));
-  
+
 }
 
 /**
@@ -283,7 +283,7 @@ function tripal_chado_populate_vocab_SEP() {
     'definition' => 'A biological sample analysed by a particular technology.',
   ));
   chado_associate_semweb_term(NULL, 'biomaterial_id', $term);
-  
+
   $term = tripal_insert_cvterm([
     'id' => 'sep:00101',
     'name' => 'protocol',
@@ -370,20 +370,20 @@ function tripal_chado_populate_vocab_SIO() {
     'cv_name' => 'SIO',
     'definition' => 'an email address is an identifier to send mail to particular electronic mailbox.',
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:001007',
     'name' => 'assay',
     'cv_name' => 'SIO',
     'definition' => 'An assay is an investigative (analytic) procedure in ' .
-      'laboratory medicine, pharmacology, environmental biology, and ' . 
-      'molecular biology for qualitatively assessing or quantitatively ' . 
-      'measuring the presence or amount or the functional activity of a ' . 
+      'laboratory medicine, pharmacology, environmental biology, and ' .
+      'molecular biology for qualitatively assessing or quantitatively ' .
+      'measuring the presence or amount or the functional activity of a ' .
       'target entity (the analyte) which can be a drug or biochemical ' .
       'substance or a cell in an organism or organic sample.',
   ));
   chado_associate_semweb_term(NULL, 'assay_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:010054',
     'name' => 'cell line',
@@ -391,7 +391,7 @@ function tripal_chado_populate_vocab_SIO() {
     'definition' => 'A cell line is a collection of genetically identifical cells.',
   ));
   chado_associate_semweb_term(NULL, 'cell_line_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'SIO:001066',
     'name' => 'study',
@@ -399,7 +399,7 @@ function tripal_chado_populate_vocab_SIO() {
     'definition' => 'A study is a process that realizes the steps of a study design.',
   ));
   chado_associate_semweb_term(NULL, 'study_id', $term);
-  
+
 }
 
 /**
@@ -413,7 +413,7 @@ function tripal_chado_populate_vocab_SO() {
     'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
   ));
   chado_insert_cv('sequence', 'The sequence ontology.');
-  
+
   $term = chado_get_cvterm(['cv_id' => ['name' => 'sequence'], 'name' => 'sequence_feature']);
   chado_associate_semweb_term(NULL, 'feature_id', $term);
 }
@@ -518,14 +518,14 @@ function tripal_chado_populate_vocab_EDAM() {
   chado_insert_cv(
     'EDAM',
     'EDAM is an ontology of well established, familiar concepts that are ' .
-    'prevalent within bioinformatics, including types of data and data ' . 
-    'identifiers, data formats, operations and topics. EDAM is a simple ' . 
+    'prevalent within bioinformatics, including types of data and data ' .
+    'identifiers, data formats, operations and topics. EDAM is a simple ' .
     'ontology - essentially a set of terms with synonyms and definitions - ' .
-    'organised into an intuitive hierarchy for convenient use by curators, ' . 
-    'software developers and end-users. EDAM is suitable for large-scale ' . 
-    'semantic annotations and categorization of diverse bioinformatics ' . 
-    'resources. EDAM is also suitable for diverse application including ' . 
-    'for example within workbenches and workflow-management systems, ' . 
+    'organised into an intuitive hierarchy for convenient use by curators, ' .
+    'software developers and end-users. EDAM is suitable for large-scale ' .
+    'semantic annotations and categorization of diverse bioinformatics ' .
+    'resources. EDAM is also suitable for diverse application including ' .
+    'for example within workbenches and workflow-management systems, ' .
     'software distributions, and resource registries.'
   );
 
@@ -705,14 +705,14 @@ function tripal_chado_populate_vocab_EDAM() {
     'cv_name' => 'EDAM',
     'definition' => 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.',
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'operation:0525',
     'name' => 'genome assembly',
     'cv_name' => 'EDAM',
     'definition' => '',
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'operation:0362',
     'name' => 'Genome annotation ',
@@ -735,7 +735,7 @@ function tripal_chado_populate_vocab_EFO() {
     'efo',
     'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org'
   );
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'EFO:0000548',
     'name' => 'instrument',
@@ -743,7 +743,7 @@ function tripal_chado_populate_vocab_EFO() {
     'definition' => 'An instrument is a device which provides a mechanical or electronic function.',
   ));
   chado_associate_semweb_term('protocol', 'hardwaredescription', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'EFO:0000269',
     'name' => 'array design',
@@ -751,7 +751,7 @@ function tripal_chado_populate_vocab_EFO() {
     'definition' => 'An instrument design which describes the design of the array.',
   ));
   chado_associate_semweb_term(NULL, 'arraydesign_id', $term);
-   
+
   $term = chado_insert_cvterm(array(
     'id' => 'EFO:0005522',
     'name' => 'substrate type',
@@ -773,7 +773,7 @@ function tripal_chado_populate_vocab_EFO() {
     'definition' => '',
   ));
   chado_associate_semweb_term('arraydesign', 'manufacturer_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'EFO:0000269',
     'name' => 'assay design',
@@ -858,13 +858,13 @@ function tripal_chado_populate_vocab_OBI() {
   ));
   chado_associate_semweb_term(NULL, 'organism_id', $term);
   chado_associate_semweb_term('biomaterial', 'taxon_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'OBI:0000070',
     'name' => 'assay',
     'cv_name' => 'obi',
     'definition' => 'A planned process with the objective to produce information about the material entity that is the evaluant, by physically examining it or its proxies.',
-  ));  
+  ));
 }
 
 /**
@@ -1184,7 +1184,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   chado_associate_semweb_term(NULL, 'is_current', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'local:is_internal',
     'name' => 'is_internal',
@@ -1192,7 +1192,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   chado_associate_semweb_term(NULL, 'is_internal', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'local:miniref',
     'name' => 'Mini-ref',
@@ -1201,7 +1201,7 @@ function tripal_chado_populate_vocab_LOCAL() {
   ));
   chado_associate_semweb_term('pub', 'miniref', $term);
 
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'local:array_batch_identifier',
     'name' => 'Array Batch Identifier',
@@ -1209,7 +1209,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   chado_associate_semweb_term('assay', 'arraybatchidentifier', $term);
-  
+
   //-----------------------------
   // Relationship Terms
   //-----------------------------
@@ -1332,7 +1332,7 @@ function tripal_chado_populate_vocab_LOCAL() {
 
   //--------------
   // Project Terms
-  //-------------- 
+  //--------------
   // Insert cvterm 'Project Description' into cvterm table of chado
   // database. This CV term is used to keep track of the project
   // description in the projectprop table.
@@ -1342,7 +1342,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'project_property',
     'db_name' => 'local'
   ));
-  
+
   chado_insert_cvterm(array(
     'name' => 'Project Type',
     'definition'  => 'A type of project',
@@ -1387,7 +1387,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'db_name' => 'local'
   ));
   chado_associate_semweb_term(NULL, 'library_id', $term);
-  
+
   // Insert cvterm 'library_description' into cvterm table of chado
   // database. This CV term is used to keep track of the library
   // description in the libraryprop table.
@@ -1640,7 +1640,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
     'Dictionaries Ltd).',
     'cv_name' => 'local',
-  )); 
+  ));
 
   $term = chado_insert_cvterm(array(
     'id' => 'local:source_data',
@@ -1680,7 +1680,7 @@ function tripal_chado_populate_vocab_LOCAL() {
     'biomaterials via the biomaterialrelationship table.',
     'cv_name' => 'local',
   ));
-  
+
   //
   // Terms for arraydesign table
   //
@@ -1747,8 +1747,8 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'local',
   ));
   chado_associate_semweb_term('arraydesign', 'num_sub_rows', $term);
-  
-  
+
+
   //
   // Terms for Study
   //
@@ -1758,14 +1758,14 @@ function tripal_chado_populate_vocab_LOCAL() {
     'cv_name' => 'study_property',
     'db_name' => 'local'
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'local:Genome Project',
     'name' => 'Genome Project',
     'definition' => 'A project for whole genome analysis that can include assembly and annotation.',
     'cv_name' => 'local',
   ));
-  
+
 }
 /**
  * Adds the Systems Biology Ontology database and terms.
@@ -1805,7 +1805,7 @@ function tripal_chado_populate_vocab_SBO() {
 }
 
 /**
- * Adds the "Bioinformatics operations, data types, formats, identifiers and 
+ * Adds the "Bioinformatics operations, data types, formats, identifiers and
  * topics" database and terms.
  */
 function tripal_chado_populate_vocab_SWO() {
@@ -1852,11 +1852,11 @@ function tripal_chado_populate_vocab_TPUB() {
 
   chado_insert_db(array(
     'name' => 'TPUB',
-    'description' => 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
+    'description' => 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
     'url' => 'cv/lookup/TPUB',
     'urlprefix' => 'cv/lookup/TPUB/{accession}',
   ));
-  chado_insert_cv('tripal_pub', 'Tripal Publiation Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
+  chado_insert_cv('tripal_pub', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 
   // make sure we have our supported databases
   chado_insert_db(
@@ -1962,7 +1962,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'ncit',
     'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
   );
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C25164',
     'name' => 'Date',
@@ -1972,7 +1972,7 @@ function tripal_chado_populate_vocab_NCIT() {
   chado_associate_semweb_term('assay', 'assaydate', $term);
   chado_associate_semweb_term('acquisition', 'acquisitiondate', $term);
   chado_associate_semweb_term('quantification', 'quantificationdate', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C48036',
     'name' => 'Operator',
@@ -1980,7 +1980,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A person that operates some apparatus or machine',
   ));
   chado_associate_semweb_term(NULL, 'operator_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C45378',
     'name' => 'Technology Platform',
@@ -1988,7 +1988,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.',
   ));
   chado_associate_semweb_term('arraydesign', 'platformtype_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C25712',
     'name' => 'Value',
@@ -1996,7 +1996,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A numerical quantity measured or assigned or computed.',
   ));
   chado_associate_semweb_term(NULL, 'value', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C44170',
     'name' => 'Channel',
@@ -2004,7 +2004,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'An independent acquisition scheme, i.e., a route or conduit through which flows data consisting of one particular measurement using one particular parameter.',
   ));
   chado_associate_semweb_term(NULL, 'channel_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C48697',
     'name' => 'Controlled Vocabulary',
@@ -2012,7 +2012,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A set of terms that are selected and defined based on the requirements set out by the user group, usually a set of vocabulary is chosen to promote consistency across data collection projects. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'cv_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C45559',
     'name' => 'Term',
@@ -2020,7 +2020,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A word or expression used for some particular thing. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'cvterm_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C80488',
     'name' => 'Expression',
@@ -2028,7 +2028,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A combination of symbols that represents a value. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'expression_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C16977',
     'name' => 'Phenotype',
@@ -2036,7 +2036,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'The assemblage of traits or outward appearance of an individual. It is the product of interactions between genes and between genes and the environment. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'phenotype_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C16631',
     'name' => 'Genotype',
@@ -2044,7 +2044,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'The genetic constitution of an organism or cell, as distinct from its expressed features or phenotype. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'genotype_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C25341',
     'name' => 'Location',
@@ -2052,7 +2052,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A position, site, or point in space where something can be found. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'nd_geolocation_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C802',
     'name' => 'Reagent',
@@ -2060,7 +2060,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'Any natural or synthetic substance used in a chemical or biological reaction in order to produce, identify, or measure another substance. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'nd_reagent_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C16551',
     'name' => 'Environment',
@@ -2068,7 +2068,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'The totality of surrounding conditions. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'environment_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C42765',
     'name' => 'Tree Node',
@@ -2076,7 +2076,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A term that refers to any individual item or entity in a hierarchy or pedigree. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'phylonode_id', $term);
-     
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C15320',
     'name' => 'Study Design',
@@ -2084,10 +2084,10 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'A plan detailing how a study will be performed in order to represent the phenomenon under examination, to answer the research questions that have been asked, and defining the methods of data analysis. Study design is driven by research hypothesis being posed, study subject/population/sample available, logistics/resources: technology, support, networking, collaborative support, etc. [ NCI ]',
   ));
   chado_associate_semweb_term(NULL, 'studydesign_id', $term);
-  
+
   // The Company term is missing for the Tripal Contact ontology, but is
   // useful for the arraydesign.manufacturer which is an FK to Contact.
-  // It seems better to use a term from a curated ontology than to add to 
+  // It seems better to use a term from a curated ontology than to add to
   // Tripal Contact.
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C54131',
@@ -2095,7 +2095,7 @@ function tripal_chado_populate_vocab_NCIT() {
     'cv_name' => 'ncit',
     'definition' => 'Any formal business entity for profit, which may be a corporation, a partnership, association or individual proprietorship.',
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C47885',
     'name' => 'Project',
@@ -2103,28 +2103,28 @@ function tripal_chado_populate_vocab_NCIT() {
     'definition' => 'Any specifically defined piece of work that is undertaken or attempted to meet a single requirement.',
   ));
   chado_associate_semweb_term(NULL, 'project_id', $term);
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C16223',
     'name' => 'DNA Library',
     'cv_name' => 'ncit',
     'definition' => 'A collection of DNA molecules that have been cloned in vectors.',
   ));
-    
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C85496',
     'name' => 'Trait',
     'cv_name' => 'ncit',
     'definition' => 'Any genetically determined characteristic.',
   ));
-  
+
   $term = chado_insert_cvterm(array(
     'id' => 'NCIT:C25693',
     'name' => 'Subgroup',
     'cv_name' => 'ncit',
     'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
   ));
-  
+
 }
 
 /**
