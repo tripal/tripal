@@ -509,9 +509,23 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
 function tripal_entity_view($entity, $type, $view_mode, $langcode) {
 
   if ($type == 'TripalEntity') {
+    
+    $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
+    $hide_empty = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
+    $use_ajax = tripal_get_bundle_variable('ajax_field', $bundle->id);
 
+    // Iterate through the fields attached to this entity and add IDs to them
+    // as well as some classe for ajax loading.
     foreach (element_children($entity->content) as $child_name) {
 
+      // Surround the field with a <div> box for AJAX loading if this
+      // field is unattached.  this will allow JS code to automatically load
+      // the field.
+      $instance = field_info_instance('TripalEntity', $child_name, $entity->bundle);
+      if (!$instance) {
+        continue;
+      }
+      
       // Initailize the prefix and suffix for this field.
       if (!array_key_exists('#prefix', $entity->content[$child_name])) {
         $entity->content[$child_name]['#prefix'] = '';
@@ -519,27 +533,40 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       if (!array_key_exists('#suffix', $entity->content[$child_name])) {
         $entity->content[$child_name]['#suffix'] = '';
       }
-
-      // Surround the field with a <div> box for AJAX loading if this
-      // field is unattached.  this will allow JS code to automatically load
-      // the field.
-      $instance = field_info_instance('TripalEntity', $child_name, $entity->bundle);
-      if ($instance and array_key_exists('settings', $instance)) {
-        $class = '';
-        if (array_key_exists('auto_attach', $instance['settings']) and
-            $instance['settings']['auto_attach'] == FALSE and
-            $entity->{$child_name}['#processed'] == FALSE) {
-          // If the field is empty then try to use ajax to load it.
-          $items = field_get_items('TripalEntity', $entity, $child_name);
-          if (count($items) == 0 or empty($items[0]['value'])) {
-            $class = 'class="tripal-entity-unattached"';
-          }
+      $class = '';
+      
+      // Check if this is an AJAX loadable field, and if so set the class.
+      $auto_attach = array_key_exists('auto_attach', $instance['settings']) ? $instance['settings']['auto_attach'] : TRUE;
+      $load_via_ajax = FALSE;
+      if ($use_ajax and $auto_attach == FALSE and $entity->{$child_name}['#processed'] == FALSE) {
+        $class = 'class="tripal-entity-unattached"';
+        $load_via_ajax = TRUE;
+      }
+      
+      // Set the prefix and suffix.
+      $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" ' . $class . '>';
+      $entity->content[$child_name]['#suffix'] .= '</div>';
+      
+      // Remove any auto attached fields if they are empty.
+      if ($hide_empty and !$load_via_ajax) {
+        $field = field_info_field($instance['field_name']);
+        $items = field_get_items('TripalEntity', $entity, $child_name);
+        
+        if (tripal_field_is_empty($field, $items)) {
+          unset($entity->content[$child_name]);
         }
-        $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" ' . $class . '>';
-        $entity->content[$child_name]['#suffix'] .= '</div>';
       }
     }
   }
+  
+  // Add some settings for AJAX to deal with fields.
+  $settings = [
+    'tripal_display' => [
+      'hide_empty' => $hide_empty,
+      'use_ajax' => $use_ajax
+    ]
+  ];
+  drupal_add_js($settings, 'setting');
 }
 
 /**
@@ -560,10 +587,6 @@ function tripal_ajax_attach_field($id) {
     reset($result);
     $entity = $result[$entity_id];
 
-    // Settings for whether to hide fields for this content type.
-    $bundle_info = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-
     // Get the element render array for this field and turn off the label
     // display. It's already on the page.  We need to get the display from the
     // instance and pass it into the field_view_field. Otherwise it uses the
@@ -571,12 +594,6 @@ function tripal_ajax_attach_field($id) {
     // more investigation.
     $instance = field_info_instance('TripalEntity', $field_name, $entity->bundle);
     $items = field_get_items('TripalEntity', $entity, $field_name);
-    if(count($items) > 0 && tripal_field_is_empty($field, $items)) {
-      return drupal_json_output([
-        'id' => $id,
-        'content' => '',
-      ]);
-    }
     $element = field_view_field('TripalEntity', $entity, $field_name, $instance['display']['default']);
     $element['#label_display'] = 'hidden';
 
@@ -584,6 +601,7 @@ function tripal_ajax_attach_field($id) {
     return drupal_json_output([
       'id' => $id,
       'content' => $content,
+      'is_empty' => tripal_field_is_empty($field, $items),
     ]);
   }
 }

@@ -3,89 +3,122 @@
   // Store our function as a property of Drupal.behaviors.
   Drupal.behaviors.tripal = {
     attach: function (context, settings) {
+    	
       // If we don't have any settings, this is not a entity page so exit
-      if (!settings.tripal_ds) {
+      if (!settings.tripal_display) {
         return;
       }
 
-      var use_ajax    = parseInt(settings.tripal_ds.tripal_field_settings_ajax) === 1;
-      var hide_fields = settings.tripal_ds.tripal_field_settings_hide !== false;
-
+      // If the site does not support AJAX loading of fields then we're done.
+      // Tripal will have already removed empty fields that wouldn't have 
+      // needed AJAX loading.
+      var use_ajax = settings.tripal_display.use_ajax;
       if (!use_ajax) {
         return;
       }
 
+      // Attach all fields that require AJAX loading. 
       $('.tripal-entity-unattached .field-items').replaceWith('<div class="field-items">Loading... <img src="' + tripal_path + '/theme/images/ajax-loader.gif"></div>');
       $('.tripal-entity-unattached').each(function () {
         var id = $(this).attr('id');
-        if (id) {
-          var field = new AjaxField(id, hide_fields);
-          if (hide_fields) {
-            field.hidePaneTitle();
-          }
-          field.load();
-        }
+        var hide_empty_field = settings.tripal_display.hide_empty;
+        var field = new TripalAjaxField(id, hide_empty_field);
+        field.attach();
       });
-
-      // Remove auto attached fields that are empty
-      if (hide_fields) {
-        $('.tripal_pane .field-items').each(function () {
-          if ($(this).text().trim().length === 0) {
-            $(this).parents('tr').first().remove();
-            $(this).parents('.field').first().remove();
-          }
-        });
-      }
     }
+  /*    else {
+  if (pane_id) {
+    $('#' + pane_id).show(0);
+  }
+*/
   };
 
+  /* ------------------------------------------------------------------------
+   *                        TripalPane Class
+   * ------------------------------------------------------------------------
+   */
+  
   /**
-   * AjaxField Constructor.
+   * TripalPane constructor
+   */
+  function TripalPane(id, hidden) {
+    this.id = id;
+    this.hidden = hidden;
+  }
+  
+  /**
+   * Indicates if the pane has any fields as chidren.
+   */
+  TripalPane.prototype.hasChildren = function() {
+	var num_children = $('.tripal_pane-fieldset-' + this.id)
+	  .first()
+	  .children()
+	  .not('.tripal_pane-fieldset-buttons')
+	  .not('.field-group-format-title')
+	  .not('#' + this.id)
+	  .length > 0;
+	  
+	if (num_children > 0) {
+      return true;
+	}
+	return false;
+  }
+  
+  /**
+   * Removes the pan from the HTML of the page.
+   */
+  TripalPane.prototype.remove = function() {
+	var pane = $('#' + this.id);
+    pane.remove();
+    
+    // Remove the pane's title from the TOC.
+    $('#' + this.id).hide(0);
+  }
+  
+  /**
+   * Removes a child from the pane.
+   */
+  TripalPane.prototype.removeChild = function(child_id) {
+    var child = $('#' + child_id);
+    
+    // If this child is within a table then remove the row.
+    var row = child.parents('tr');
+    if (row) {
+      row.remove();
+    }
+    
+    child.remove();
+  }
+  
+  /* ------------------------------------------------------------------------
+   *                        TripalAjaxField Class
+   * ------------------------------------------------------------------------
+   */
+  
+  /**
+   * TripalAjaxField Constructor.
    *
    * @param {Number} id
    * @param {Boolean} hide_fields
    * @constructor
    */
-  function AjaxField(id, hide_fields) {
-    this.id          = id;
-    this.hide_fields = hide_fields;
+  function TripalAjaxField(id, hide_empty_field) {
+    this.id = id;
+    this.hide_empty_field = hide_empty_field;
+    
+    // Get the pane that this field beongs to (if one exists).
+    this.pane = this.getPane(); 
   }
-
-  /**
-   * Hide pane title if the content of the pane has only ajax fields.
-   */
-  AjaxField.prototype.hidePaneTitle = function () {
-    var id      = this.id;
-    var field   = $('#' + id);
-    var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
-    var pane_id = this.extractPaneID(classes);
-
-    if (pane_id) {
-      // Check if the fieldset has children that are not AJAX fields
-      var has_children = $('.tripal_pane-fieldset-' + pane_id)
-        .first()
-        .children()
-        .not('.tripal_pane-fieldset-buttons')
-        .not('.field-group-format-title')
-        .not('.tripal-entity-unattached')
-        .not('#' + id).length > 0;
-
-      // If there are no children, hide the pane title
-      if (!has_children) {
-        $('#' + pane_id).hide(0);
-      }
-    }
-  };
 
   /**
    * Load the field's content from the server.
    */
-  AjaxField.prototype.load = function () {
+  TripalAjaxField.prototype.attach = function () {
     $.ajax({
       url     : baseurl + '/bio_data/ajax/field_attach/' + this.id,
       dataType: 'json',
       type    : 'GET',
-      success : this.handleSuccess.bind(this)
+      success : this.setFieldContent.bind(this)
     });
   };
 
@@ -94,48 +127,45 @@
    *
    * @param data
    */
-  AjaxField.prototype.handleSuccess = function (data) {
+  TripalAjaxField.prototype.setFieldContent = function (data) {
+	// Get the data items: the content, if this field is empty and the id 
+	// of this field.
     var content = data['content'];
-    var id      = data['id'];
-    var field   = $('#' + id);
-    var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
-    var pane_id = this.extractPaneID(classes);
+    var empty = data['is_empty'];
+    var id = data['id'];
+    
+    // Get the field object.
+    var field = $('#' + id);
+    
+    // First step, set the content for this field.  This will be the
+    // field formatter content.
     $('#' + id + ' .field-items').replaceWith(content);
 
-    // Hiding of content is not set
-    if (!this.hide_fields) {
+    // If the field is not empty then we're done.  Always show non-empty fields.
+    if (!empty) {
       return;
     }
-
-    // If the field has no content, check to verify the pane is empty
-    // then remove it.
-    if (content.trim().length === 0) {
-
-      // Remove the field since it's empty
-      field.remove();
-
-      if (pane_id) {
-        var pane = $('#' + pane_id);
-
-        // If the pane has only the title and close button, we can remove it
-        var has_children = $('.tripal_pane-fieldset-' + pane_id)
-          .first()
-          .children()
-          .not('.tripal_pane-fieldset-buttons')
-          .not('.field-group-format-title')
-          .not('#' + id)
-          .length > 0;
-
-        if (!has_children) {
-          pane.remove();
-        }
-      }
+    
+    // If empty fields should not be hidden then return.
+    if (!this.hide_empty_field) {
+      return;
     }
-    else {
-      if (pane_id) {
-        $('#' + pane_id).show(0);
+	
+	// Second, if this field is part of a pane then we need to remove it
+	// from the pane. Otherwise, just remove it.
+	if (this.pane) {
+
+      // Remove this field from the pane.
+      this.pane.removeChild(id);
+  
+      // If the pane has no more children then remove it.
+      if (!this.pane.hasChildren()) {
+        this.pane.remove();
       }
-    }
+	}
+	else {
+	  field.remove();
+	}
   };
 
   /**
@@ -144,17 +174,23 @@
    * @param classes
    * @return {String|null}
    */
-  AjaxField.prototype.extractPaneID = function (classes) {
+  TripalAjaxField.prototype.getPane = function () {
+	var field = $('#' + this.id);
+	var classes = field.parents('.tripal_pane').first().attr('class').split(' ');
     var sub_length = 'tripal_pane-fieldset-'.length;
-    var pane_id    = null;
+    var pane_id = null;
 
     classes.map(function (cls) {
       if (cls.indexOf('tripal_pane-fieldset-') > -1) {
         pane_id = cls.substring(sub_length, cls.length);
       }
     });
-
-    return pane_id;
+    
+    if (pane_id) {
+      var pane = new TripalPane(pane_id, false);
+      return pane;
+    }
+    return null;
   };
 
 })(jQuery);

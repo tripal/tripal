@@ -492,7 +492,6 @@ function tripal_ds_field_display_alter(&$display, $context){
         }
       }
     }
-    drupal_add_js(array('tripal_ds' => array('tripal_field_settings_hide' => $hide_variable, 'tripal_field_settings_ajax' => $ajax_variable)), 'setting');
   }
 }
 

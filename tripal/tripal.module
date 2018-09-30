@@ -1518,22 +1518,19 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
  * @param $context
  */
 function tripal_field_display_TripalEntity_alter(&$display, $context){
+  $field = $context['field'];
   $field_name = $context['field']['field_name'];
   $bundle = $context['entity']->bundle;
   $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
 
   // Hide fields that are empty, but only if the hide_empty_field variable
   // is set to TRUE for this bundle and ajax load is turned off.
-  $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-  $ajax_field = tripal_get_bundle_variable('ajax_field', $bundle_info->id);
-  if($hide_variable == TRUE && $ajax_field == FALSE){
+  $hide_empty = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
+  if ($hide_empty == TRUE) {
     $items = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if($items) {
-      $field = field_info_field($field_name);
-      if(tripal_field_is_empty($field, $items)) {
-        // Stop the right rail element from rendering.
-        drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
-      }
+    if (tripal_field_is_empty($field, $items)) {
+      // Stop the right rail element from rendering.
+      drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
     }
   }
 }
