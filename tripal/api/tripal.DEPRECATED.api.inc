@@ -32,10 +32,10 @@
  */
 function tripal_get_job_end($job) {
   tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
-    "DEPRECATED: %function has been removed from the API the end date " .
+    "DEPRECATED: %old_function has been removed from the API the end date " .
     "is now accessible via the %property property. Please update your code.",
     array(
-      '%old_function' => 'tripal_jobs_get_end_time',
+      '%old_function' => 'tripal_get_job_end',
       '%property' => '\$job->end_time_string',
     )
   );
@@ -66,7 +66,7 @@ function tripal_get_job_end($job) {
 function tripal_get_job_start($job) {
 
   tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
-    "DEPRECATED: %function has been removed from the API the end date " .
+    "DEPRECATED: %old_function has been removed from the API the end date " .
     "is now accessible via the %property property. Please update your code.",
     array(
       '%old_function' => 'tripal_get_job_start',
@@ -104,7 +104,7 @@ function tripal_get_job_start($job) {
 function tripal_get_job_submit_date($job) {
 
   tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
-      "DEPRECATED: %function has been removed from the API the end date " .
+      "DEPRECATED: %old_function has been removed from the API the end date " .
       "is now accessible via the %property property. Please update your code.",
       array(
         '%old_function' => 'tripal_get_job_submit_date',

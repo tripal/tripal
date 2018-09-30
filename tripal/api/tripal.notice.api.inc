@@ -63,8 +63,6 @@ define('TRIPAL_DEBUG',7);
  *   An array of options. Some available options include:
  *     - print: prints the error message to the terminal screen. Useful when
  *       display is the command-line
- *     - drupal_set_message: set to TRUE to call drupal_set_message with the 
- *       same error.
  *     - drupal_set_message:  set to TRUE then send the message to the
  *       drupal_set_message function.
  *     - watchdog:  set to FALSE to disable logging to Drupal's watchdog.

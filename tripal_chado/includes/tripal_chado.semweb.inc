@@ -157,6 +157,12 @@ function tripal_chado_populate_vocab_RDFS() {
     'cv_name' => 'rdfs',
     'definition' => 'A human-readable version of a resource\'s name.',
   ));
+  $name = chado_insert_cvterm(array(
+    'id' => 'rdfs:comment',
+    'name' => 'comment',
+    'cv_name' => 'rdfs',
+    'definition' => 'A human-readable description of a resource\'s name.',
+  ));
 }
 /**
  * Adds the Schema.org database and terms.
@@ -1831,10 +1837,10 @@ function tripal_chado_populate_vocab_SWO() {
  */
 function tripal_chado_populate_vocab_TCONTACT() {
   chado_insert_db(array(
-    'name' => 'TContact',
+    'name' => 'TCONTACT',
     'description' => 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.',
-    'url' => 'cv/lookup/TContact',
-    'urlprefix' => 'cv/lookup/TContact/{accession}',
+    'url' => 'cv/lookup/TCONTACT',
+    'urlprefix' => 'cv/lookup/TCONTACT/{accession}',
   ));
   chado_insert_cv('tripal_contact', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.');
 }
@@ -1947,7 +1953,7 @@ function tripal_chado_populate_vocab_TAXRANK() {
  */
 function tripal_chado_populate_vocab_NCIT() {
   chado_insert_db(array(
-    'name' => 'NCI Thesaurus OBO Edition',
+    'name' => 'NCIT',
     'description' => 'NCI Thesaurus OBO Edition.',
     'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
     'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
@@ -2111,6 +2117,14 @@ function tripal_chado_populate_vocab_NCIT() {
     'cv_name' => 'ncit',
     'definition' => 'Any genetically determined characteristic.',
   ));
+  
+  $term = chado_insert_cvterm(array(
+    'id' => 'NCIT:C25693',
+    'name' => 'Subgroup',
+    'cv_name' => 'ncit',
+    'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+  ));
+  
 }
 
 /**
