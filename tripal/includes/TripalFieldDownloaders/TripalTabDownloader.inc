@@ -54,7 +54,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
        $field_name = $field['field_name'];
 
        // If we only have one item for this value then add it.
-       if (is_array($entity->{$field_name}['und']) and count($entity->{$field_name}['und']) == 1) {
+       if ($field_name and is_array($entity->{$field_name}['und']) and count($entity->{$field_name}['und']) == 1) {
          $value = $entity->{$field_name}['und'][0]['value'];
 
          // If the single element is not an array then this is good.
@@ -75,6 +75,10 @@ class TripalTabDownloader extends TripalFieldDownloader {
            }
            // TODO: What to do with fields that are arrays?
          }
+       }
+       // Report the misconfigured field
+       elseif(!$field_name) {
+         tripal_report_error('tripal', TRIPAL_ERROR, 'Unable to find field name for field id: '.$field_id);
        }
        // If we have multiple items then deal with that.
        else {
