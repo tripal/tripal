@@ -7,6 +7,46 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = array('sbo__relationship');
 
+  // --------------------------------------------------------------------------
+  //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
+  // --------------------------------------------------------------------------
+
+  // This field depends heavily on the schema of the relationship and base
+  // table. The following variables cache the schema to greatly speed up
+  // this field.
+  // Note: both are ChadoSchema objects.
+  protected $schema;
+  protected $base_schema;
+
+  // The column which indicated the subject/object_id in the current
+  // relationship table. This allows us to support exceptions in the common
+  // chado naming conventions.
+  protected $subject_id_column;
+  protected $object_id_column;
+
+  // The field instance for this widget. This allows us to use some of the
+  // field methods and info in the widget.
+  protected $field_instance;
+
+  /**
+   * Extends TripalField::__construct().
+   */
+  public function __construct($field, $instance) {
+    parent::__construct($field, $instance);
+
+    module_load_include('inc', 'tripal_chado', 'includes/TripalFields/sbo__relationship/sbo__relationship');
+    $this->field_instance = new sbo__relationship($field, $instance);
+
+    // Retrieve the schema's.
+    $this->schema = $this->field_instance->getRelTableSchema();
+    $this->base_schema = $this->field_instance->getBaseTableSchema();
+
+    // Retrieve the subject/object column names.
+    $this->subject_id_column = $this->field_instance->getSubjectIdColumn();
+    $this->object_id_column = $this->field_instance->getObjectIdColumn();
+
+  }
+
   /**
    *
    * @see TripalFieldWidget::form()
@@ -23,12 +63,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // @debug dpm($this, 'this');
 
-    // Get the FK column that links to the base table.
-    $base_table = $this->instance['settings']['base_table'];
-    $schema = chado_get_schema($field_table);
-    $pkey = $schema['primary key'][0];
-    $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-    $fkey = $fkeys[0];
+    // Get the primary key of the base table
+    $pkey = $this->base_schema['primary key'][0];
 
     // Get the instance settings. There are three options for how this widget
     // will be displayed. Those are controlled in the instance settings
@@ -66,17 +102,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $type = '';
 
     // 'nd_reagent_relationship' and 'project_relationship' have different column names from
-    // subject_id/object_id. Do a pattern matching to get the column names.
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    foreach ($schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
-      if (preg_match('/^subject_.*id/', $lcolum)) {
-        $subject_id_key = $lcolum;
-      }
-      else if (preg_match('/^object_.*id/', $lcolum)) {
-        $object_id_key = $lcolum;
-      }
-    }
+    // subject_id/object_id. Retrieve those determined in the constructor.
+    $subject_id_key = $this->subject_id_column;
+    $object_id_key = $this->object_id_column;
+    // And save them in the widget for use in testing/debugging.
     $widget['#subject_id_key'] = $subject_id_key;
     $widget['#object_id_key'] = $object_id_key;
 
@@ -97,10 +126,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
         // Not all Chado tables have a value and rank.  So we'll only get
         // those if applicable.
-        if (array_key_exists('value', $schema['fields'])) {
+        if (array_key_exists('value', $this->schema['fields'])) {
           $value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__value', $value);
         }
-        if (array_key_exists('rank', $schema['fields'])) {
+        if (array_key_exists('rank', $this->schema['fields'])) {
           $rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $rank);
         }
 
@@ -120,10 +149,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
       $type_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'];
-      if (array_key_exists('value', $schema['fields'])) {
+      if (array_key_exists('value', $this->schema['fields'])) {
         $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
       }
-      if (array_key_exists('rank', $schema['fields'])) {
+      if (array_key_exists('rank', $this->schema['fields'])) {
         $rank = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'];
       }
       $object_uniquename = $form_state['values'][$field_name]['und'][$delta]['object_name'];
@@ -140,7 +169,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     $widget['#table_name'] = $field_table;
 
-    $widget['#fkeys'] = $schema['foreign keys'];
+    $widget['#fkeys'] = $this->schema['foreign keys'];
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
     //$widget['#element_validate'] = array('sbo__relationship_validate');
@@ -167,13 +196,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $object_id,
     );
-    if (array_key_exists('value', $schema['fields'])) {
+    if (array_key_exists('value', $this->schema['fields'])) {
       $widget['chado-' . $field_table . '__value'] = array(
         '#type' => 'value',
         '#default_value' => $value,
       );
     }
-    if (array_key_exists('rank', $schema['fields'])) {
+    if (array_key_exists('rank', $this->schema['fields'])) {
       $widget['chado-' . $field_table . '__rank'] = array(
         '#type' => 'value',
         '#default_value' => $rank,
@@ -184,7 +213,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#title' => t('Subject'),
       '#default_value' => $subject_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists($subject_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$subject_id_key]) ? $schema['fields'][$subject_id_key]['length'] : 255,
+      '#maxlength' => array_key_exists($subject_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$subject_id_key]) ? $this->schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
     );
     // Add autocomplete if we have one for this base table.
@@ -349,7 +378,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       '#title' => t('Object'),
       '#default_value' => $object_uniquename,
       '#required' => $element['#required'],
-      '#maxlength' => array_key_exists($object_id_key, $schema['fields']) && array_key_exists('length', $schema['fields'][$object_id_key]) ? $schema['fields'][$object_id_key]['length'] : 255,
+      '#maxlength' => array_key_exists($object_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$object_id_key]) ? $this->schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
     );
     // Add autocomplete if we have one for this base table.
@@ -373,8 +402,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // @debug ddl(array_keys($form[$field_name][$langcode][$delta]), "widget form keys: $delta");
 
-    $schema = chado_get_schema($field_table);
-    $fkeys = $schema['foreign keys'];
+    $fkeys = $this->schema['foreign keys'];
 
     // 'nd_reagent_relationship' and 'project_relationship' have different column names from
     // subject_id/object_id. Retrieve the column names determined in the form.
@@ -455,7 +483,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
-      if (array_key_exists('rank', $schema['fields'])) {
+      if (array_key_exists('rank', $this->schema['fields'])) {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
       }
     }
@@ -465,7 +493,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
       $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
-      if (array_key_exists('rank', $schema['fields'])) {
+      if (array_key_exists('rank', $this->schema['fields'])) {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
       }
     }

@@ -80,14 +80,14 @@ class sbo__relationship extends ChadoField {
   // this setting allows us to better handle these cases.
   protected $base_type_column;
 
-  // This field depends heavily on the schema of the relationship and base 
-  // table. The following variables cache the schema to greatly speed up 
+  // This field depends heavily on the schema of the relationship and base
+  // table. The following variables cache the schema to greatly speed up
   // this field.
   // Note: both are ChadoSchema objects.
   protected $schema;
   protected $base_schema;
 
-  // The column which indicated the subject/object_id in the current 
+  // The column which indicated the subject/object_id in the current
   // relationship table. This allows us to support exceptions in the common
   // chado naming conventions.
   protected $subject_id_column;
@@ -219,7 +219,7 @@ class sbo__relationship extends ChadoField {
     $this->schema = $this->schema->getTableSchema($reltable);
     $this->base_schema = new ChadoSchema();
     $this->base_schema = $this->base_schema->getTableSchema($base_table);
-  
+
     // Determine the subject_id/object_id column names.
     foreach ($this->schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
       if (preg_match('/^subject_.*id/', $lcolum)) {
@@ -229,7 +229,7 @@ class sbo__relationship extends ChadoField {
         $this->object_id_column = $lcolum;
       }
     }
- 
+
     // Determine the name and type columns.
     $this->base_name_columns = [];
     $this->base_type_column = 'table_name';
@@ -352,7 +352,7 @@ class sbo__relationship extends ChadoField {
     }
 
     // If the object has an organism then add that in for reference.
-    if (property_exists($relationship->{$this->object_id_column}, 'organism_id') 
+    if (property_exists($relationship->{$this->object_id_column}, 'organism_id')
       AND is_object($relationship->{$this->object_id_column}->organism_id)) {
         $record['OBI:0100026'] = $relationship->{$this->object_id_column}->organism_id->genus . ' ' . $relationship->{$this->object_id_column}->organism_id->species;
     }
@@ -361,7 +361,7 @@ class sbo__relationship extends ChadoField {
     if (property_exists($relationship->{$this->object_id_column}, 'entity_id')) {
       $entity_id = $relationship->{$this->object_id_column}->entity_id;
       $record['entity'] = 'TripalEntity:' . $entity_id;
-    } 
+    }
 
     return $record;
   }
@@ -1036,5 +1036,25 @@ class sbo__relationship extends ChadoField {
    */
   public function queryOrder($query, $order) {
 
+  }
+
+  /**
+   * Retrieve the schema's
+   */
+  public function getRelTableSchema() {
+    return $this->schema;
+  }
+  public function getBaseTableSchema() {
+    return $this->base_schema;
+  }
+
+  /**
+   * Retrieve the subject/object key columns.
+   */
+  public function getSubjectIdColumn() {
+    return $this->subject_id_column;
+  }
+  public function getObjectIdColumn() {
+    return $this->object_id_column;
   }
 }
