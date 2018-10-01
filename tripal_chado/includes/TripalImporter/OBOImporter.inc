@@ -575,8 +575,11 @@ class OBOImporter extends TripalImporter {
    *
    */
   public function postRun() {
+    
+    // Clear the cached terms
+    cache_clear_all('tripal_chado:term:*', 'cache', TRUE);
 
-    // Update the cv_root_mview materiailzed view.
+    // Update the cv_root_mview materialized view.
     $this->logMessage("Updating the cv_root_mview materialized view...");
     $mview_id = tripal_get_mview_id('cv_root_mview');
     tripal_populate_mview($mview_id);
@@ -585,7 +588,7 @@ class OBOImporter extends TripalImporter {
     $mview_id = tripal_get_mview_id('db2cv_mview');
     tripal_populate_mview($mview_id);
 
-    // Upate the cvtermpath table for each newly added CV.
+    // Update the cvtermpath table for each newly added CV.
     $this->logMessage("Updating cvtermpath table.  This may take a while...");
     foreach ($this->obo_namespaces as $namespace => $cv_id) {
       $this->logMessage("- Loading paths for vocabulary: @vocab", array('@vocab' => $namespace));
