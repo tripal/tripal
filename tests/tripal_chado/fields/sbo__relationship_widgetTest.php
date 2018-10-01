@@ -67,6 +67,11 @@ class sbo__relationship_widgetTest extends TripalTestCase {
          LEFT JOIN tripal_entity e ON e.bundle='bio_data_'||b.bundle_id 
          WHERE data_table=:table AND id IS NOT NULL LIMIT 1",
            array(':table' => $base_table))->fetchField();
+
+       if (!$bundle_id) {
+         continue;
+       }
+
        $bundle_name = 'bio_data_'.$bundle_id;
 
        // Find an entity from the above bundle.
