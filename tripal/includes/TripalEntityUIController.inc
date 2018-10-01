@@ -91,6 +91,14 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
     );
+    $items['bio_data/' . $wildcard . '/reload'] = array(
+      'title'  => 'Reload',
+      'page callback' => 'tripal_entity_reload',
+      'page arguments' => array(1),
+      'access arguments' => array('administer tripal'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
+    );
     // Menu item for deleting tripal data entities.
     $items['bio_data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
@@ -454,6 +462,28 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    }
  }
 
+/**
+ * Clears the cache of a given entity to force a reload.
+ *
+ * @param $entity_id
+ *   The entity_id of the entity to reload.
+ */
+function tripal_entity_reload($entity) {
+  $entity_id = $entity->id;
+  $cid = 'field:TripalEntity:' . $entity_id . ':';
+  cache_clear_all($cid, 'cache_field', TRUE);
+
+  $sql = "SELECT count(*) FROM cache_field WHERE cid like :cid";
+  $count = db_query($sql, [':cid' => $cid . '%'])->fetchField();
+  if (!isset($count) or $count > 0) {
+    drupal_set_message('Failed to clear the cache for this entity.');
+  }
+  else {
+    drupal_set_message('Cache cleared, entity reloaded');
+  }
+  drupal_goto('bio_data/' . $entity_id);
+}
+
  /**
   *
   */
@@ -701,19 +731,19 @@ function tripal_entity_form_submit($form, &$form_state) {
  * TripalEntityUIController class.
  */
 function tripal_add_page() {
-  
+
   // The content array to be returned.
   $content = [];
-   
+
   $content['instructions'] = [
     '#type' => 'markup',
-    '#markup' => 'This page provides links for creating pages for Tripal ' . 
-      'supported content types. These content types are organized by categories. ' . 
-      'Please note, however, that the categorization is the most common use ' . 
+    '#markup' => 'This page provides links for creating pages for Tripal ' .
+      'supported content types. These content types are organized by categories. ' .
+      'Please note, however, that the categorization is the most common use ' .
       'for a given type. Some types may be useful in other "categories" as well.',
     '#weight' => -15,
   ];
-  
+
 
   // Get the list of categories.
   $select = "
@@ -723,8 +753,8 @@ function tripal_add_page() {
     WHERE TV.name = 'bundle_category'
   ";
   $categories = db_query($select);
-  
-  
+
+
   // Build the fieldsets for the categories.
   $fieldsets = [];
   $category_weight = 1;
@@ -744,7 +774,7 @@ function tripal_add_page() {
       '#weight' => $category == 'General' ? -10 : $category_weight++,
     ];
   }
-  
+
   // Create the "other" fieldset, and set it's weight to 100 so it goes to
   // the bottom.
   $fieldsets['Other_fieldset'] = [
@@ -759,14 +789,14 @@ function tripal_add_page() {
     '#attached' => array(
       'js' => array('misc/collapse.js', 'misc/form.js')
     ),
-  ]; 
-  
-  
+  ];
+
+
   // Get the list of bundles and iterate through them.
   $select = "SELECT id, name, label FROM tripal_bundle ORDER BY label";
   $bundles = db_query($select);
   while ($bundle = $bundles->fetchObject()) {
-    
+
     // Lookup the bundle category.
     $sql = "
       SELECT TBV.value as category
@@ -775,12 +805,12 @@ function tripal_add_page() {
         INNER JOIN tripal_variables TV on TV.variable_id = TBV.variable_id
       WHERE TV.name = 'bundle_category' and TB.id = :id;
     ";
-  
+
     $category = db_query($sql, [':id' => $bundle->id])->fetchField();
     if (!$category) {
       $category = 'Other';
     }
-    
+
     $machine_name = preg_replace('/[^\w]/', '_', $category);
     $bundle = tripal_load_bundle_entity(['id' => $bundle->id]);
     if (!$bundle) {
@@ -797,7 +827,7 @@ function tripal_add_page() {
       ];
     }
   }
-  
+
   // Now iterate through the fieldsets and set their weight
   return $content;
 }

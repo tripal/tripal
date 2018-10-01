@@ -75,3 +75,7 @@ span.download-icon {
   margin-top: 4px;
   color: #777777;
 }
+
+.ds-hide {
+  display: none;
+}

@@ -636,6 +636,7 @@ class TripalEntityController extends EntityAPIController {
         $info = entity_get_info($queried_entities[$id]->type);
         $field_cache = array_key_exists('field cache', $info) ? $info['field cache'] : FALSE;
         $bundle_name = $queried_entities[$id]->bundle;
+        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
         // Iterate through the field instances and find those that are set to
         // 'auto_attach' and which are attached to this bundle. Add all
@@ -687,13 +688,13 @@ class TripalEntityController extends EntityAPIController {
           // attach then we will ignore it. It can only be set by providing
           // the id in the $field_id array handled previously.
           else {
-            // We only load via AJAX if empty fields are not hidden.
-            $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-            $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle->id, 'hide');
+            
+            // Do not load fields that are not auto attached.  Instead set
+            // their value to an empty string and set the #processed key to
+            // FALSE.
             if (array_key_exists('settings', $instance) and
                 array_key_exists('auto_attach', $instance['settings']) and
-                $instance['settings']['auto_attach'] == FALSE and
-                $hide_variable == 'show') {
+                $instance['settings']['auto_attach'] == FALSE) {
 
                // Add an empty value. This will allow the tripal_entity_view()
                // hook to add the necessary prefixes to the field for ajax

@@ -1,14 +1,10 @@
-
-Configuring Page Display
-=========================
-
-
-This is one of the many new exciting features of Tripal v3.x. In this version of Tripal we have taken integration with Drupal Fields to a whole new level representing each piece of content (in Chado or otherwise) as a Drupal Field. What this means for site builders is unprecendented control over content display and arrangement through the administrative user interface --No more editing PHP template files to change the order, grouping or wording of content!
+Configuring Page Layout
+=======================
+This is one of the many new exciting features of Tripal v3. Integration with Drupal Fields has gone to a whole new level. Site builders have unprecendented control over the display of each piece of data through the administrative user interface. Previously, site builders were required to edit PHP template files to change the order, grouping or wording of content.
 
 You can configure the display of a given Tripal Content Type by navigating to **Structure → Tripal Content Types** and then selecting the **Manage Display** link beside the content type you would like to configure.
 
 .. image:: ./configuring_page_display.1.png
-
 
 
 The Manage Display User Interface lists each Drupal Field in the order they will be displayed on the page. Fields are grouped into Tripal Panes by the Tripal DS module and the page is automatically divided into a right and left column. By default the left column contains the table of contents which lists the Tripal Panes available to the user in the order they are listed in this UI. The following screenshots are using the Analysis Content Type for demonstatration.
@@ -39,7 +35,7 @@ There may also be data you want to collect from your user but don't want to disp
 Changing Tripal Pane Names
 --------------------------
 
-The name of a Tripal Pane is displayed both in the header of the Pane itself and in the Table of Contents. To change this name, click the gear button to the far right of the Tripal Pane you would like to change. This will bring up a blue pane of settings. Changing the Field Group Label will change the display name of the pane. For example, the following screenshot shows how you would change the "Cross References" Tripal Pane to be labeled "External Resources" instead if that it what you prefer. Then just click the Update button to see your changes take effect.
+If you enabled the `tripal_ds` module during installation then you will have what is called **Panes** into which fields can be grouped. With the `tripal_ds` module all field come pre-organizd into panes.  The name of a pane is displayed both in the header of the pane itself and in the Table of Contents. To change this name, click the gear button to the far right of the Tripal Pane you would like to change. This will bring up a blue pane of settings. Changing the Field Group Label will change the display name of the pane. For example, the following screenshot shows how you would change the "Cross References" Tripal Pane to be labeled "External Resources" instead if that it what you prefer. Then just click the Update button to see your changes take effect.
 
 .. image:: ./configuring_page_display.4.png
 
@@ -49,9 +45,3 @@ Display/Hide Tripal Panes on Page Load
 
 You can also easily control which Tripal Panes you would like displayed to the user on initial page load. By default the Summary Pane is the only one configured to show by default. However, if you would prefer for all panes or even a specific subset of panes to show by default, you can simply click the gear button to the far right of each Tripal Pane you want displayed by default and uncheck the "Hide panel on page load" checkbox. This gives you complete control over which panes you want your user to see first. If more then one pane is displayed by default then they will be shown in the order they are listed on the Manage Display UI.
 
-Display/Hide Empty Fields
--------------------------
-
-By default Tripal v3 hides all empty fields from the user. However like most behaviour in Tripal, this can be configured. If you would prefer to show all fields to the user regardless of whether there is content for that particular page, then navigate to ``Structure → Tripal Content Types`` and then click on the edit link beside the Tripal Content Type you would like to show empty fields for. Near the bottom of this form is a **Field Display** drop-down. Just change this drop-down to "show empty fields" and then click **Save Content Type**. As an example, we have changed this setting for the organism content type and, as you can see below, now you can see all fields (including empty fields like cross references and relationships) available to the organism content type.
-
-.. image:: ./configuring_page_display.5.png
