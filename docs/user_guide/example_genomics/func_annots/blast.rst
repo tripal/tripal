@@ -3,7 +3,7 @@ Adding BLAST Results
 .. note::
 
   Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`../../install_tripal/drupal_home`
-  
+
 
 Adding BLAST Databases
 ----------------------
@@ -14,7 +14,7 @@ Use these values for adding the NCBI nr database:
 
 .. csv-table::
   :header: "Field Name", "Value"
-  
+
   "Name", "NCBI nr"
   "Description", "NCBI's non-redundant protein database"
   "URL", "http://www.ncbi.nlm.nih.gov/"
@@ -24,7 +24,7 @@ Use these values for adding the SwssProt database:
 
 .. csv-table::
   :header: "Field Name", "Value"
-  
+
   "Name", "ExPASy Swiss-Prot"
   "Description", "A curated protein sequence database which strives to provide a high level of annotation, a minimal level of redundancy and high level of integration with other databases"
   "URL", "http://expasy.org/sprot/"
@@ -46,7 +46,7 @@ Here the hit name is ```KSG1_ARATH```, the accession is ```P43288```, the hit de
 
 .. csv-table::
   :header: "Element", "Regular Expression"
-  
+
   "Hit Name", ``^sp\|.*?\|(.*?)\s.*?$``
   "Hit Description", ``^sp\|.*?\|.*?\s(.*)$``
   "Hit Accession", ``^sp\|(.*?)\|.*?\s.*?$``
@@ -60,7 +60,7 @@ In the form fields, add the following values:
 
 .. csv-table::
   :header: "Field", "Value"
-  
+
   "Title for the BLAST analysis", "(leave blank)"
   "Regular expression for Hit Name", ``^sp\|.*?\|(.*?)\s.*?$``
   "Regular expression for Hit Description", ``^sp\|.*?\|.*?\s(.*)$``
@@ -89,7 +89,7 @@ Here we can save details about the analysis used to create the BLAST results.  E
 
 .. csv-table::
   :header: "Field", "Value"
-  
+
     "Name", "blastx Citrus sinensis v1.0 genes vs ExPASy SwissProt"
     "Description", "Citrus sinensis mRNA sequences were BLAST'ed against the ExPASy SwissProt protein database using a local installation of BLAST on in-house linux server. Expectation value was set at 1e-6"
     "BLAST Program", "blastx"
@@ -105,7 +105,7 @@ Create a second Analysis page for the results of the NCBI nr BLAST analysis. Use
 
 .. csv-table::
   :header: "Field", "Value"
-  
+
     "Name", "blastx Citrus sinensis v1.0 genes vs NCBI nr"
     "Description", "Citrus sinensis mRNA sequences were BLAST'ed against the NCBI non-redundant protein database using a local installation of BLAST on in-house linux server. Expectation value was set at 1e-6"
     "BLAST Program", "blastx"
@@ -120,11 +120,11 @@ First, we will load BLAST results for our citrus gene vs ExPASy SwissProt.  Now 
 
 .. image:: blast4.png
 
-The top section of this page provides multiple methods for providing results file: via an upload interface, specifing a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we download the file earlier, and stored them here: ```$DRUPAL_HOME/sites/default/files```.  So, in this case we can use the path on the local server.  Provide the following value for this form:
+The top section of this page provides multiple methods for providing results file: via an upload interface, specifying a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we download the file earlier, and stored them here: ```$DRUPAL_HOME/sites/default/files```.  So, in this case we can use the path on the local server.  Provide the following value for this form:
 
 .. csv-table::
   :header: "Field", "Value"
-  
+
   "Server path", "sites/default/files/Blastx_citrus_sinensis-orange1.1g015632m.g.fasta.0_vs_uniprot_sprot.fasta.out"
   "Analysis", "blastx Citrus sinensis v1.0 genes vs ExPASy SwissProt (blastall 2.2.25, Citrus sinensis mRNA vs ExPASy SwissProt)"
   "Database", "ExPASy SwissProt"
@@ -134,11 +134,11 @@ The top section of this page provides multiple methods for providing results fil
 .. note::
 
   For the **Server path** we need not give the full path.  Because we downloaded the files into the Drupal directory we can leave off any preceeding path and Tripal will resolve the path.  Otherwise we could provide the full path.
-  
+
 .. note::
 
   Specifying **ExPASy SwissProt** as the database will allow the importer to use the database configuration settings we entered earlier.
-  
+
 Clicking the **Import BLAST file** will add a job which we can manually execute with the following command:
 
 ::
@@ -149,7 +149,7 @@ The results should now be loaded. Now we want to add the results for NCBI nr. Re
 
 .. csv-table::
   :header: "Field", "Value"
-  
+
   "Server path", "sites/default/files/Blastx_citrus_sinensis-orange1.1g015632m.g.fasta.0_vs_nr.out"
   "Analysis", "blastx Citrus sinensis v1.0 genes vs ExPASy SwissProt (blastall 2.2.25, Citrus sinensis mRNA vs NCBI nr)"
   "Database", "ExPASy SwissProt"
@@ -166,7 +166,7 @@ To view results we must find the mRNA that has BLAST hits.  For this example, cl
 
 .. image:: blast5.png
 
-Notice, that when viewing the results, the SwissProt maches are links.  When clicked they redirect the user to the SwissProt website where users can find more information about that protein.
+Notice, that when viewing the results, the SwissProt matches are links.  When clicked they redirect the user to the SwissProt website where users can find more information about that protein.
 
 .. image:: blast6.png
 
