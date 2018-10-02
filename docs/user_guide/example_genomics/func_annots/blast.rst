@@ -133,7 +133,7 @@ The top section of this page provides multiple methods for providing results fil
 
 .. note::
 
-  For the **Server path** we need not give the full path.  Because we downloaded the files into the Drupal directory we can leave off any preceeding path and Tripal will resolve the path.  Otherwise we could provide the full path.
+  For the **Server path** we need not give the full path.  Because we downloaded the files into the Drupal directory we can leave off any preceding path and Tripal will resolve the path.  Otherwise we could provide the full path.
 
 .. note::
 
