@@ -42,7 +42,7 @@ Within the section titled BLAST Parsing, you can specify a different, more meani
     sp|P43288|KSG1_ARATH Shaggy-related protein kinase alpha OS=Arabidopsis thaliana GN=ASK1 PE=2 SV=3
 
 
-Here the hit name is ```KSG1_ARATH```, the accession is ```P43288```, the hit description is ```Shaggy-related protein kinase alpha OS=Arabidopsis thaliana``` and the organism is ```Arabidopsis thaliana```. We need regular expressions to tell Tripal how to extract these unique parts from the match text. Because Tripal is a PHP application, the syntax for regular expressions follows the PHP method. Documentation for regular expressions used in PHP can be found here. The following regular expressions can be used to extract the hit name, the accession, hit description and organism for the example SwissProt line above:
+Here the hit name is ``KSG1_ARATH``, the accession is ``P43288``, the hit description is ``Shaggy-related protein kinase alpha OS=Arabidopsis thaliana`` and the organism is ``Arabidopsis thaliana``. We need regular expressions to tell Tripal how to extract these unique parts from the match text. Because Tripal is a PHP application, the syntax for regular expressions follows the PHP method. Documentation for regular expressions used in PHP can be found here. The following regular expressions can be used to extract the hit name, the accession, hit description and organism for the example SwissProt line above:
 
 .. csv-table::
   :header: "Element", "Regular Expression"
@@ -120,7 +120,7 @@ First, we will load BLAST results for our citrus gene vs ExPASy SwissProt.  Now 
 
 .. image:: blast4.png
 
-The top section of this page provides multiple methods for providing results file: via an upload interface, specifying a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we download the file earlier, and stored them here: ```$DRUPAL_HOME/sites/default/files```.  So, in this case we can use the path on the local server.  Provide the following value for this form:
+The top section of this page provides multiple methods for providing results file: via an upload interface, specifying a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we download the file earlier, and stored them here: ``$DRUPAL_HOME/sites/default/files``.  So, in this case we can use the path on the local server.  Provide the following value for this form:
 
 .. csv-table::
   :header: "Field", "Value"

@@ -30,8 +30,8 @@ Fill out the fields as described in the table below.
 
   "Name", "InterPro Annotations of C. sinensis v1.0"
   "InterPro Program", "InterProScan"
-  "InterPro Version", 4.8
-  "Date Performed", "Current date"
+  "InterPro Version", "4.8"
+  "Date Performed", "Current Date"
   "Data Source Name", "C. sinensis v1.0 mRNA"
   "Data Source Version", "v1.0"
   "Data Source URI", "n/a"
@@ -47,13 +47,13 @@ Next, we will load InterProScan results for our citrus gene.  To do this, naviga
 
 .. image:: interpro1.png
 
-The top section of this page provides multiple methods for providing results file: via an upload interface, specifying a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we downloaded the files earlier, and stored them here: ```$DRUPAL_HOME/sites/default/files```.  So, in this case we can use the path on the local server.  Provide the following value for this form:
+The top section of this page provides multiple methods for providing results file: via an upload interface, specifying a remote URL or a file path that is local to the server.  Most likely, you will always upload or provide a remote URL.  However, we downloaded the files earlier, and stored them here: ``$DRUPAL_HOME/sites/default/files``.  So, in this case we can use the path on the local server.  Provide the following value for this form:
 
 .. csv-table::
   :header: "Field", "Value"
 
   "Server path", "sites/default/files/Citrus_sinensis-orange1.1g015632m.g.iprscan.xml"
-  "Analysis", " InterPro Annotations of C. sinensis v1.0"
+  "Analysis", "InterPro Annotations of C. sinensis v1.0"
   'Load GO terms to the database', 'checked'
   "Query Name RE", ""
   "Use Unique Name", "unchecked"
