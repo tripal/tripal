@@ -116,10 +116,18 @@ class TripalFieldWidget {
    * Performs validation of the widget form.
    *
    * Use this validate to ensure that form values are entered correctly.
+   *
    * The 'value' key of this field must be set in the $form_state['values']
    * array anytime data is entered by the user.  It may be the case that there
    * are other fields for helping select a value. In the end those helper
    * fields must be used to set the 'value' field.
+   *
+   * TROUBLESHOOTING:
+   *  If your widget doesn't appear to be saving data, check the following:
+   *   - Is $form_state['values'] set to a TRUE value (e.g. a string)?
+   *   - Do you have the keys needed by the storage backend? For example,
+   *     ChadoFields need `chado-[tablename]__[columnname]` keys for all
+   *     chado columns. Look at the storage backend for more documentation.
    */
   public function validate($element, $form, &$form_state, $langcode, $delta) {
 
