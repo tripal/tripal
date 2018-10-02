@@ -73,7 +73,7 @@
     pane.remove();
     
     // Remove the pane's title from the TOC.
-    $('#' + this.id).hide(0);
+    $('#' + this.id).parents('.views-row').remove();
   }
   
   /**
