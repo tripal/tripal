@@ -48,7 +48,7 @@ Click the checbox beside the 'Import taxonomy for existing species' and click Su
 
 ::
 
-  drush trp-run-jobs --username=administrator --root=/var/www/html
+  drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
 
 You will see the following output:
 

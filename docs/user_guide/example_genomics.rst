@@ -14,3 +14,4 @@ The following tutorial will walk you through creating content and loading genomi
    ./example_genomics/controlled_vocabs
    ./example_genomics/genomes_genes
    ./example_genomics/pub_import
+   ./example_genomics/func_annots
