@@ -232,7 +232,7 @@ function chado_publish_records($values, $job = NULL) {
     if ($report_progress) { $job->setProgress(intval($complete * 3)); }
     if ($total_published === 0) {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
-        $i, $count, 0, number_format(memory_get_usage()), 0);
+        0, $count, 0, number_format(memory_get_usage()), 0);
     }
     else {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
