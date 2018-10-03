@@ -294,7 +294,8 @@ function chado_publish_records($values, $job = NULL) {
       return FALSE;
     }
 
-    // If we get through the loop and haven't completed 100 records, then we're done!
+    // If we get through the loop and haven't completed 100 records, then 
+    // we're done!
     if ($i < $chunk_size) {
       $more_records_to_publish = FALSE;
     }
@@ -304,8 +305,8 @@ function chado_publish_records($values, $job = NULL) {
   }
 
   tripal_report_error($message_type, TRIPAL_INFO,
-    "Succesfully published %count %type record(s).",
-    ['%count' => $total_published, '%type' => $bundle->label], $message_opts);
+    "Successfully published !count !type record(s).",
+    ['!count' => $i, '!type' => $bundle->label], $message_opts);
 
   return TRUE;
 }
