@@ -214,30 +214,19 @@ function chado_publish_records($values, $job = NULL) {
   tripal_report_error($message_type, TRIPAL_INFO,
     "There are !count records to publish.",
     ['!count' => $count], $message_opts);
+  
+  if ($report_progress) {
+    $job->setTotalItems($count); 
+    $job->setItemsHandled(0);
+    $job->setInterval(1);
+  }
 
-  // Perform the query.
-  $sql = $select . $from . $where . ' LIMIT '.$chunk_size;
+  // Perform the query in chunks.
+  $sql = $select . $from . $where . ' LIMIT '. $chunk_size;
   $more_records_to_publish = TRUE;
-  $total_published = 0;
   while ($more_records_to_publish) {
 
     $records = chado_query($sql, $args);
-
-    // Update the job status every chunk start.
-    // Because this is outside of hte transaction, we can update the admin through the jobs UI.
-    $complete = 0;
-    if ($count > 0) {
-      $complete = ($total_published / $count) * 33.33333333;
-    }
-    if ($report_progress) { $job->setProgress(intval($complete * 3)); }
-    if ($total_published === 0) {
-      printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
-        0, $count, 0, number_format(memory_get_usage()), 0);
-    }
-    else {
-      printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
-        $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
-    }
 
     // There is no need to cache transactions since Drupal handles nested
     // transactions "by performing no transactional operations (as far as the
@@ -292,7 +281,9 @@ function chado_publish_records($values, $job = NULL) {
         }
 
         $i++;
-        $total_published++;
+        if ($report_progress) {
+          $job->setItemsHandled($i);
+        }
       }
     }
     catch (Exception $e) {
