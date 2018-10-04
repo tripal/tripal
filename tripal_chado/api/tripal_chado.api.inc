@@ -27,7 +27,7 @@
  *   A key/value associative array that supports the following keys:
  *   - bundle_name:  The name of the the TripalBundle (e.g. bio_data-12345).
  * @param $job
- *   The jobs management object for the job if this function is run as a job. 
+ *   The jobs management object for the job if this function is run as a job.
  *   This argument is added by Tripal during a job run and is not needed if
  *   this function is run directly.
  *
@@ -38,7 +38,7 @@
  * @ingroup tripal_chado_api
  */
 function chado_publish_records($values, $job = NULL) {
- 
+
   // Used for adding runtime to the progress report.
   $started_at = microtime(true);
 
@@ -48,7 +48,11 @@ function chado_publish_records($values, $job = NULL) {
     $job = new TripalJob();
     $job->load($job_id);
   }
-  
+  $report_progress = TRUE;
+  if (!is_object($job)) {
+    $report_progress = FALSE;
+  }
+
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
   // the terminal
@@ -206,7 +210,7 @@ function chado_publish_records($values, $job = NULL) {
   $sql = "SELECT count(*) as num_records " . $from . $where;
   $result = chado_query($sql, $args);
   $count = $result->fetchField();
-  
+
   tripal_report_error($message_type, TRIPAL_INFO,
     "There are !count records to publish.",
     ['!count' => $count], $message_opts);
@@ -228,18 +232,18 @@ function chado_publish_records($values, $job = NULL) {
     if ($report_progress) { $job->setProgress(intval($complete * 3)); }
     if ($total_published === 0) {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes.\r",
-        $i, $count, 0, number_format(memory_get_usage()), 0);
+        0, $count, 0, number_format(memory_get_usage()), 0);
     }
     else {
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes; Current run time: %s minutes.\r",
         $total_published, $count, $complete * 3, number_format(memory_get_usage()), number_format((microtime(true) - $started_at)/60, 2));
     }
 
-    // There is no need to cache transactions since Drupal handles nested 
-    // transactions "by performing no transactional operations (as far as the 
-    // database sees) within the inner nesting layers". Effectively, Drupal 
-    // ensures nested trasactions work the same as passing a transaction 
-    // through to the deepest level and not starting a new transaction if we 
+    // There is no need to cache transactions since Drupal handles nested
+    // transactions "by performing no transactional operations (as far as the
+    // database sees) within the inner nesting layers". Effectively, Drupal
+    // ensures nested trasactions work the same as passing a transaction
+    // through to the deepest level and not starting a new transaction if we
     // are already in one.
     $transaction = db_transaction();
     try {
@@ -311,7 +315,7 @@ function chado_publish_records($values, $job = NULL) {
   tripal_report_error($message_type, TRIPAL_INFO,
     "Succesfully published %count %type record(s).",
     ['%count' => $total_published, '%type' => $bundle->label], $message_opts);
-  
+
   return TRUE;
 }
 
