@@ -41,3 +41,10 @@ Optionally, you can install the ckeditor module.  This module provides a nice WY
 
   drush pm-download ckeditor
   drush pm-enable ckeditor
+  
+Finally, we need an more recent version of JQuery that what comes with Drupal.  We can get this by installing the JQuery update module.
+
+.. code-block:: bash
+
+  drush pm-download jquery_update
+  drush pm-enable jquery_update
