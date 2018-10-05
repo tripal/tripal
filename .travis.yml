@@ -12,7 +12,7 @@ php:
   - 7.1
 
 env:
-  - BASE_URL="http://localhost:8080"
+  - BASE_URL="http://127.0.0.1:8080"
 
 install:
   - composer global require drush/drush:8
@@ -31,6 +31,8 @@ before_script:
   - drush dl drupal-7 -y
   - mv drupal-7* drupal
   - cd drupal
+  # Run the php server
+  - php -S 127.0.0.1:8080 &
   - drush si -y --db-url='pgsql://postgres:dbpass@localhost:5432/test_db'
                 --account-name='admin'
                 --account-pass='admin_pass'
@@ -44,9 +46,6 @@ before_script:
   # Enable dependencies
   - drush en -y field_group, field_group_table, field_formatter_class, field_formatter_settings, ctools, date, devel,
               ds, link, entity, libraries, redirect, token uuid, jquery_update, views, webform
-
-  # Run the drush server
-  - drush runserver localhost:8080 &
 
 script:
   # Link our repo to the modules directory
@@ -73,6 +72,7 @@ script:
 
   # Run PHPUnit tests
   - composer update
+  - cp tests/.travis.env tests/.env
   - ./vendor/bin/phpunit
 
   # Test Tripal v2 to v3 upgrade steps
