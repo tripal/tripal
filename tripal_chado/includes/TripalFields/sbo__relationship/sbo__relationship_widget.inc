@@ -104,7 +104,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
@@ -119,7 +119,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
     }
-   $widget['#table_name'] = $field_table;
+    $widget['#table_name'] = $field_table;
 
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
@@ -365,10 +365,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
     $subject_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] : '';
     $object_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]: '';
-    $type_id = $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'];
+    $type_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] : '';
 
-    $subject_name = $form_state['values'][$field_name][$langcode][$delta]['subject_name'];
-    $object_name = $form_state['values'][$field_name][$langcode][$delta]['object_name'];
+    $subject_name = isset($form_state['values'][$field_name][$langcode][$delta]['subject_name']) ? $form_state['values'][$field_name][$langcode][$delta]['subject_name']: '';
+    $object_name = isset($form_state['values'][$field_name][$langcode][$delta]['object_name']) ? $form_state['values'][$field_name][$langcode][$delta]['object_name'] : '';
 
     // If the row is empty then skip this one, there's nothing to validate.
     if (!($type_id or !$type_name) and !$subject_name and !$object_name) {
@@ -385,7 +385,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Do not proceed if subject ID or object ID does not exist
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
-        !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
+      !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
       return;
     }
     // Get the subject ID.
@@ -445,19 +445,19 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['subject_name']) . "
+      drupal_render($element['subject_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['vocabulary']) . "
+      drupal_render($element['vocabulary']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['type_name']) . "
+      drupal_render($element['type_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['type_id']) . "
+      drupal_render($element['type_id']) . "
         </div>
         <div>" .
-          drupal_render($element['object_name']) . "
+      drupal_render($element['object_name']) . "
         </div>
       </div>
     ";
