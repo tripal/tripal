@@ -449,14 +449,6 @@ function tripal_chado_menu() {
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
-  $items['admin/tripal/loaders/pub/changedb'] = array(
-    'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
-    'page arguments' => array(),
-    'access arguments' => array('use chado_pub_bulk importer'),
-    'type ' => MENU_CALLBACK,
-    'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-  );
 
   $items['admin/tripal/loaders/pub/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
@@ -1184,9 +1176,9 @@ function tripal_feature_match_features_page($id) {
     $table_attrs = array('class' => 'tripal-data-table');
     $output = "<p>The following features match the name '$id'.</p>";
     $output .= theme_table(array(
-      'header' => $header, 
-      'rows' => $rows, 
-      'attributes' => $table_attrs, 
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => $table_attrs,
       'caption' => $caption
     ));
     return $output;
@@ -1203,7 +1195,7 @@ function tripal_chado_mail($key, &$message, $params) {
   $language = $message['language'];
   switch($key) {
     case 'import_report':
-      
+
       $content = [];
       $content[] = [
         '#type' => 'markup',
@@ -1219,10 +1211,10 @@ function tripal_chado_mail($key, &$message, $params) {
           }
           $content[] = [
             '#type' => 'item',
-            '#title' => $title, 
+            '#title' => $title,
             '#markup' => theme_item_list([
               'title' => '',
-              'type' => 'ol', 
+              'type' => 'ol',
               'items' => $pubs,
               'attributes' => [],
             ]),
@@ -1230,10 +1222,10 @@ function tripal_chado_mail($key, &$message, $params) {
         }
       }
       $content = '<html>' . drupal_render($content) . '</html';
-      
+
       $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
-      
-      
+
+
       if (module_exists('htmlmail') or module_exists('mimemail')) {
         $headers = array(
           'MIME-Version' => '1.0',
@@ -1249,7 +1241,7 @@ function tripal_chado_mail($key, &$message, $params) {
       else {
         $message['body'][] =  drupal_html_to_text($content);
       }
-            
+
       break;
   }
 }
