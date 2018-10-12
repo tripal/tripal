@@ -388,7 +388,7 @@ class sbo__relationship extends ChadoField {
     if (!$record) {
       return;
     }
-    
+
     // Not all tables have the columns named 'subject_id' and 'object_id'.
     // some have variations on that name and we need to determine what they are.
     $fkeys = $schema['foreign keys'];
@@ -856,8 +856,8 @@ class sbo__relationship extends ChadoField {
       $type_id = $item['chado-' . $field_table . '__type_id'];
       $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
-      $subject_name = $item['subject_name'];
-      $object_name = $item['object_name'];
+      $subject_name = isset($item['subject_name']) ? $items['subject_name'] : null;
+      $object_name = isset($item['object_name']) ? $item['object_name'] : null;
 
 
       // If the row is empty then just continue, there's nothing to validate.
