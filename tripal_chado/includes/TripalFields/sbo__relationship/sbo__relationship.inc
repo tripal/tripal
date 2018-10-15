@@ -856,8 +856,8 @@ class sbo__relationship extends ChadoField {
       $type_id = $item['chado-' . $field_table . '__type_id'];
       $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
       $type_name = isset($item['type_name']) ? $item['type_name'] : '';
-      $subject_name = isset($item['subject_name']) ? $items['subject_name'] : null;
-      $object_name = isset($item['object_name']) ? $item['object_name'] : null;
+      $subject_name = isset($item['subject_name']) ? $items['subject_name'] : '';
+      $object_name = isset($item['object_name']) ? $item['object_name'] : '';
 
 
       // If the row is empty then just continue, there's nothing to validate.
