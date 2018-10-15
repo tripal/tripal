@@ -257,7 +257,14 @@ function tripal_chado_vocab_get_term_children($vocabulary, $accession) {
  * This hook is created by the Tripal module and is not a Drupal hook.
  */
 function tripal_chado_vocab_get_term($vocabulary, $accession) {
-
+  // Cache ID for this term:
+  $cid = 'tripal_chado:term:' . $vocabulary . ':' . $accession;
+  
+  // Check the cache first. Get the term from cache if it's available
+  $cache = cache_get($cid, 'cache');
+  if (isset($cache->data)) {
+    return $cache->data;
+  }
   // It's possible that Chado is not available (i.e. it gets renamed
   // for copying) but Tripal has already been prepared and the
   // entities exist.  If this is the case we don't want to run the
@@ -285,7 +292,10 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
   $cvterm = chado_expand_var($cvterm, 'table', 'cvterm_relationship', $options);
   $cvterm = chado_expand_var($cvterm, 'table', 'cvtermprop', $options);
 
-  return _tripal_chado_format_term_description($cvterm);
+  // Cache the term to reduce the amount of queries sent to the database
+  $term =  _tripal_chado_format_term_description($cvterm);
+  cache_set($cid, $term, 'cache', CACHE_TEMPORARY);
+  return $term;
 }
 
 /**

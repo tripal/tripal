@@ -467,20 +467,25 @@ function tripal_ds_field_display_alter(&$display, $context){
     $field_name = $context['field']['field_name'];
     $bundle = $context['entity']->bundle;
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
+    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
+    $processed = isset($context['entity']->{$field_name}) ? $context['entity']->{$field_name}['#processed'] : false;
 
-    if ($field_name && ($hide_variable == 'hide')) {
+    if ($field_name && $hide_variable == TRUE && $processed) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
-        if (tripal_field_is_empty($item[0], $field)) {
+        if (tripal_field_is_empty($field, $item)) {
           $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
           if (!empty($parent_field_info)) {
-            foreach ($parent_field_info as $parent_key => $parent_field){
-               // We want to use JavaScript to remove the fields rather than
-               // CSS to hide them so that when users theme the table of
-               // contents using CSS they aren't theming empty rows.
-               drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
+            foreach ($parent_field_info as $parent_key => $parent_field) {
+              if (strpos($parent_field, 'single_field') !== false) {
+                $field_name = str_replace("_single_field", "", $parent_field);
+                drupal_add_js('jQuery(document).ready(function () { jQuery("#tripal-entity-' . $context['entity']->id . '--' . $field_name . '").addClass("ds-hide"); });', 'inline');
+              }
+              // We want to use JavaScript to remove the fields rather than
+              // CSS to hide them so that when users theme the table of
+              // contents using CSS they aren't theming empty rows.
+              drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
             }
           }
         }
@@ -505,6 +510,7 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
   $field_groups_to_hide = array();
   $increment = 0;
 
+
   // Get the field groups associated with this bundle.
   $fg_for_bundle = db_select('field_group', 'fg')
     ->fields('fg')
@@ -520,24 +526,30 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
       // Do nothing
     }
     elseif (!empty($field_group_data['children'][0])) {
+      $children_added = 0;
       $children = $field_group_data['children'];
       //If there is more than one child all need to be checked.
       if (count($children) > 1) {
-        foreach ($children as $kids => $child) {
-          // Now check if each child if empty.
+        foreach ($children as $order => $child) {
+          // Now check if each child is empty.
           $item = field_get_items('TripalEntity', $context['entity'], $child);
           $field = field_info_field($child);
-          if(!tripal_field_is_empty($item[0], $field)){
-            //If any of the fields are not empty do not add the parent.
-            break 2;
-          }
-          else {
+          if(tripal_field_is_empty($field, $item)){
+            //If any of the fields are not empty do not add the parent, add the specific field.
+            // break 2;
+            if (!empty($field)) {
+              $field_groups_to_hide[$increment] = $field['field_name'] . '_single_field';
+              $increment++;
+              $children_added++;
+            }
+          } else {
             continue;
           }
         }
-        $field_groups_to_hide[$increment] = $field_group->group_name;
-      }
-      elseif($children[0] == $field_name) {
+        if ($children_added === count($children)) {
+          $field_groups_to_hide[$increment] = $field_group->group_name;
+        }
+      } elseif ($children[0] == $field_name) {
         $field_groups_to_hide[$increment] = $field_group->group_name;
       }
     }
@@ -557,7 +569,8 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
  * @param $bundle
  * @param array $fields
  */
-function tripal_ds_toc_order($bundle, $fields = array()){
+function tripal_ds_toc_order($bundle, $fields = array())
+{
   // Find all menu items associated with the bundle id.
   $menu_items = db_select('tripal_ds', 'ds')
     ->fields('ds')
@@ -571,7 +584,7 @@ function tripal_ds_toc_order($bundle, $fields = array()){
     if (array_key_exists($toc_field_name, $fields)) {
       $weight = $fields[$toc_field_name]['weight'];
       //If a weight is returned update the tripal_ds table.
-      if(!empty($weight)){
+      if (!empty($weight)) {
         db_update('tripal_ds')
           ->fields(array(
             'weight' => $weight,
@@ -589,6 +602,7 @@ function tripal_ds_toc_order($bundle, $fields = array()){
  *
  *
  */
-function tripal_ds_import_api() {
+function tripal_ds_import_api()
+{
   module_load_include('inc', 'tripal_ds', 'api/tripal_ds.pane.api');
 }
