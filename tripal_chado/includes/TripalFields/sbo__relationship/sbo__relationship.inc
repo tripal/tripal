@@ -72,7 +72,7 @@ class sbo__relationship extends ChadoField {
   protected $instance;
 
   // An array of columns to use as the "name" of the subject and object.
-  // For example, for the feature table, this will be the uniquename,
+  // For example, for the feature table, this will be the name,
   // whereas, for the organism table this will be the genus & species.
   protected $base_name_columns;
 
@@ -260,12 +260,16 @@ class sbo__relationship extends ChadoField {
         $this->base_type_column = 'table_name';
         break;
       case 'pub_relationship':
-        $this->base_name_columns = ['uniquename'];
+        $this->base_name_columns = ['name'];
         $this->base_type_column = 'table_name';
+        break;
+      case 'contact':
+        $this->base_name_columns = ['name'];
+        $this->base_type_column = 'type_id';
         break;
       default:
         // @todo update this to use the schema.
-        $this->base_name_columns = ['uniquename'];
+        $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
     }
   }
@@ -280,6 +284,7 @@ class sbo__relationship extends ChadoField {
       $name[] = $relationship->{$this->subject_id_column}->{$column};
     }
 
+    // Retrieve the type.
     $type = $this->instance['settings']['base_table'];
     if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->subject_id_column}->{$this->base_type_column};
@@ -298,7 +303,7 @@ class sbo__relationship extends ChadoField {
       //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
-    // If the object has a unqiuename then add that in for refernce.
+    // If the object has a uniquename then add that in for refernce.
     if (property_exists($relationship->{$this->subject_id_column}, 'uniquename')) {
       $record['data:0842'] = $relationship->{$this->subject_id_column}->uniquename;
     }
@@ -324,10 +329,12 @@ class sbo__relationship extends ChadoField {
   private function getRelationshipObject($relationship) {
     $name = [];
 
+    // Retrieve the name (may be multiple parts).
     foreach ($this->base_name_columns as $column) {
       $name[] = $relationship->{$this->object_id_column}->{$column};
     }
 
+    // Retrieve the Type.
     $type = $this->instance['settings']['base_table'];
     if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->object_id_column}->{$this->base_type_column};
@@ -563,16 +570,18 @@ class sbo__relationship extends ChadoField {
     }
 
     // Filter by unique name of the subject or object.
-    /* @uniquename there is not always a uniquename! */
-    if ($condition['column'] == $rel_subject_identifier) {
-      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
-      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
-      $query->condition("base2.uniquename", $condition['value'], $operator);
-    }
-    if ($condition['column'] == $rel_object_identifier) {
-      $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id");
-      $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.object_id");
-      $query->condition("base2.uniquename", $condition['value'], $operator);
+    // If this table has a uniquename!
+    if (isset($this->schema['fields']['uniquename'])) {
+      if ($condition['column'] == $rel_subject_identifier) {
+        $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.object_id");
+        $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.subject_id");
+        $query->condition("base2.uniquename", $condition['value'], $operator);
+      }
+      if ($condition['column'] == $rel_object_identifier) {
+        $this->queryJoinOnce($query, $chado_table, $alias, "base.$bpkey = $alias.subject_id");
+        $this->queryJoinOnce($query, $base_table, 'base2', "base2.$bpkey = $alias.object_id");
+        $query->condition("base2.uniquename", $condition['value'], $operator);
+      }
     }
 
     // Filter by the type of the subject or object

@@ -25,7 +25,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   protected $object_id_column;
 
   // An array of columns to use as the "name" of the subject and object.
-  // For example, for the feature table, this will be the uniquename,
+  // For example, for the feature table, this will be the name,
   // whereas, for the organism table this will be the genus & species.
   protected $base_name_columns;
 
@@ -95,8 +95,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $type_id = '';
     $value = '';
     $rank = '';
-    $subject_uniquename = '';
-    $object_uniquename = '';
+    $subject_label = '';
+    $object_label = '';
     $type = '';
 
     // If the field already has a value then it will come through the $items
@@ -124,8 +124,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
 
         // Get element values added to help support insert/updates.
-        $object_uniquename = tripal_get_field_item_keyval($items, $delta, 'object_name', $object_uniquename);
-        $subject_uniquename = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_uniquename);
+        $object_label = tripal_get_field_item_keyval($items, $delta, 'object_name', $object_label);
+        $subject_label = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_label);
         $type = tripal_get_field_item_keyval($items, $delta, 'type_name', $type);
 
         //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item!');
@@ -145,8 +145,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       if (array_key_exists('rank', $this->schema['fields'])) {
         $rank = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'];
       }
-      $object_uniquename = $form_state['values'][$field_name]['und'][$delta]['object_name'];
-      $subject_uniquename = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
+      $object_label = $form_state['values'][$field_name]['und'][$delta]['object_name'];
+      $subject_label = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
 
       //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item (AJAX)!');
@@ -222,7 +222,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $widget['subject_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Subject'),
-      '#default_value' => $subject_uniquename,
+      '#default_value' => $subject_label,
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($subject_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$subject_id_key]) ? $this->schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
@@ -300,7 +300,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $widget['object_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Object'),
-      '#default_value' => $object_uniquename,
+      '#default_value' => $object_label,
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($object_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$object_id_key]) ? $this->schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
