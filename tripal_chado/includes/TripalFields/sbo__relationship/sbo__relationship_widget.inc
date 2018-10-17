@@ -452,7 +452,26 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
         }
       }
-      // Otherwise, leave them blank?
+      // Otherwise, maybe we are creating the entity...
+      // The storage API sohuld handle this case and automagically add the key in once
+      // the chado record is created... so all we need to do is set the other columns.
+      elseif ($subject_name && $object_id && $type_id) {
+        $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
+        if (array_key_exists('rank', $this->schema['fields'])) {
+          $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+        }
+      }
+      elseif ($subject_id && $object_name && $type_id) {
+        $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
+        if (array_key_exists('rank', $this->schema['fields'])) {
+          $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
+        }
+      }
+      // Otherwise, we don't have a vallue to insert so leave them blank.
       else {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
@@ -463,8 +482,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
     }
-    // @debug
-    dpm($form_state['values'][$field_name][$langcode][$delta], "form state values: $delta");
+    // @debug dpm($form_state['values'][$field_name][$langcode][$delta], "form state values: $delta");
   }
 
   /**
