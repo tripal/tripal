@@ -379,7 +379,7 @@ class sbo__relationship extends ChadoField {
     $pkey = $this->schema['primary key'][0];
     $subject_id_key = $this->subject_id_column;
     $object_id_key = $this->object_id_column;
-    // @todo grad these separately like it was before.
+    // @todo grab these separately like it was before.
     $subject_pkey = $object_pkey = $this->base_schema['primary key'][0];
 
     $entity->{$field_name}['und'][$delta]['value'] = array(
@@ -880,153 +880,211 @@ class sbo__relationship extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $schema = chado_get_schema($field_table);
-    $fkeys = $schema['foreign keys'];
+    // Grab the chado record_id for this entity.
+    $chado_record_id = NULL;
+    if ($entity AND isset($entity->chado_record_id)) {
+     $chado_record_id = $entity->chado_record_id;
+    }
+
+    // Validate each releationship.
+    foreach ($items as $delta => $item) {
+      $item_errors = $this->validateItem($item, $chado_record_id);
+      if (!empty($item_errors)) {
+        $errors[$field_name][$delta][$langcode] = $item_errors;
+      }
+    }
+  }
+
+  /**
+   * Validate a Single relationship.
+   *
+   * @param $item
+   *   A single item from the $items array passed to TripalField::validate().
+   * @return
+   *   An array of errors where each has a:
+   *     - error: this is an error code which is the name of the field.
+   *     - message: A message to show the user describing the problem.
+   */
+  public function validateItem($item, $chado_record_id = NULL) {
+    $errors = array();
+
+    $field_name = $this->field['field_name'];
+    $field_type = $this->field['type'];
+    $field_table = $this->instance['settings']['chado_table'];
+    $field_column = $this->instance['settings']['chado_column'];
+    $base_table = $this->instance['settings']['base_table'];
 
     // 'nd_reagent_relationship' and 'project_relationship' have different column names from
     // subject_id/object_id. Do a pattern matching to get the column names.
-    $subject_id_key = 'subject_id';
-    $object_id_key = 'object_id';
-    foreach ($schema['foreign keys'][$base_table]['columns'] AS $lcolum => $rcolum) {
-      if (preg_match('/^subject_.*id/', $lcolum)) {
-        $subject_id_key = $lcolum;
-      }
-      else if (preg_match('/^object_.*id/', $lcolum)) {
-        $object_id_key = $lcolum;
+    $subject_id_key = $this->subject_id_column;
+    $object_id_key = $this->object_id_column;
+
+    $subject_id = $item['chado-' . $field_table . '__' . $subject_id_key];
+    $object_id = $item['chado-' . $field_table . '__' . $object_id_key];
+    $type_id = $item['chado-' . $field_table . '__type_id'];
+    $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
+    $type_name = isset($item['type_name']) ? $item['type_name'] : '';
+    $voc_id = isset($item['vocabulary']) ? $item['vocabulary'] : '';
+    $subject_name = $item['subject_name'];
+    $object_name = $item['object_name'];
+
+    // If the row is empty then just continue, there's nothing to validate.
+    if (!$type_id and !$type_name and !$subject_name and !$object_name) {
+      return;
+    }
+
+    // Check: Make sure we have values for all of the fields.
+    if (!$type_name && !$type_id) {
+      $errors[] = array(
+        'error' => 'sbo__relationship',
+        'message' => t("Please provide the type of relationship."),
+        'element' => 'type',
+      );
+    }
+    if (!$subject_name) {
+      $errors[] = array(
+        'error' => 'sbo__relationship',
+        'message' => t("Please provide the subject of the relationship."),
+        'element' => 'subject',
+      );
+    }
+    if (!$object_name) {
+      $errors[] = array(
+        'error' => 'sbo__relationship',
+        'message' => t("Please provide the object of the relationship."),
+        'element' => 'object',
+      );
+    }
+
+    // Check: Cvterm exists.
+    if (!$type_id AND !$type_name) {
+      $errors[] = array(
+        'error' => 'sbo__relationship',
+        'message' => t("We were unable to find the type you specified. Please check spelling and that the term already exists."),
+        'element' => 'type',
+      );
+    }
+    elseif ($type_name AND $voc_id) {
+      $val = array(
+        'cv_id' => $voc_id,
+        'name' => $type_name
+      );
+      $cvterm = chado_generate_var('cvterm', $val);
+
+      if (!isset($cvterm->cvterm_id)) {
+
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' => t("We were unable to find the type you specified. Please check spelling and that the term already exists."),
+          'element' => 'type',
+        );
+
       }
     }
 
-    foreach ($items as $delta => $item) {
-      $subject_id = $item['chado-' . $field_table . '__' . $subject_id_key];
-      $object_id = $item['chado-' . $field_table . '__' . $object_id_key];
-      $type_id = $item['chado-' . $field_table . '__type_id'];
-      $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
-      $type_name = isset($item['type_name']) ? $item['type_name'] : '';
-      $subject_name = $item['subject_name'];
-      $object_name = $item['object_name'];
 
-
-      // If the row is empty then just continue, there's nothing to validate.
-      if (!$type_id and !$type_name and !$subject_name and !$object_name) {
-        continue;
-      }
-
-      // Make sure we have values for all of the fields.
-      $form_error = FALSE;
-      if (!$type_name && !$type_id) {
-        $errors[$field_name][$delta]['und'][] = array(
+    // Before submitting this form we need to make sure that our subject_id and
+    // object_ids are real records.  There are two ways to get the record, either
+    // just with the text value or with an [id: \d+] string embedded.  If the
+    // later we will pull it out.
+    $subject_id = '';
+    $fkey_rcolumn = $this->schema['foreign keys'][$base_table]['columns'][$subject_id_key];
+    $matches = array();
+    if(preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+      $subject_id =  $matches[1];
+      $values = array($fkey_rcolumn => $subject_id);
+      $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+      if (count($subject) == 0) {
+        $errors[] = array(
           'error' => 'sbo__relationship',
-          'message' => t("Please provide the type of relationship."),
+          'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
+          'element' => 'subject',
         );
-      }
-      if ($entity and !$subject_name) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'error' => 'sbo__relationship',
-          'message' => t("Please provide the subject of the relationship."),
-        );
-      }
-      if ($entity and !$object_name) {
-        $errors[$field_name][$delta]['und'][] = array(
-          'error' => 'sbo__relationship',
-          'message' => t("Please provide the object of the relationship."),
-        );
-      }
-      if ($form_error) {
-        continue;
-      }
-
-      // Before submitting this form we need to make sure that our subject_id and
-      // object_ids are real records.  There are two ways to get the record, either
-      // just with the text value or with an [id: \d+] string embedded.  If the
-      // later we will pull it out.
-      $subject_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
-      $matches = array();
-      if ($entity) {
-        if(preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-          $subject_id =  $matches[1];
-          $values = array($fkey_rcolumn => $subject_id);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
-            );
-          }
-        }
-        else {
-          /* @uniquename there is not always a uniquename */
-          $values = array('uniquename' => $subject_name);
-          $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject record cannot be found. Please check spelling."),
-            );
-          }
-          elseif (count($subject) > 1) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The subject is not unique and therefore the relationship cannot be made."),
-            );
-          }
-        }
-      }
-
-      // Now check for a matching object.
-      $object_id = '';
-      $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
-      $matches = array();
-      if ($entity) {
-        if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-          $object_id = $matches[1];
-          $values = array($fkey_rcolumn => $object_id);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($subject) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
-            );
-          }
-        }
-        else {
-          /* @uniquename there is not always a uniquename */
-          $values = array('uniquename' => $object_name);
-          $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-          if (count($object) == 0) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' => t("The object record cannot be found. Please check spelling."),
-            );;
-          }
-          elseif (count($object) > 1) {
-            $errors[$field_name][$delta]['und'][] = array(
-              'error' => 'sbo__relationship',
-              'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
-            );
-          }
-        }
-      }
-
-      // Make sure that either our object or our subject refers to the base record.
-      if ($entity) {
-        $chado_record_id = $entity->chado_record_id;
-        if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-          $errors[$field_name][$delta]['und'][] = array(
-            'error' => 'sbo__relationship',
-            'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
-          );
-        }
-
-        // Make sure that the object and subject are not both the same thing.
-        if ($object_id == $subject_id) {
-          $errors[$field_name][$delta]['und'][] = array(
-            'error' => 'sbo__relationship',
-            'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
-          );
-        }
       }
     }
+    else {
+      // Otherwise we need to look it up using the name field determined in the
+      // constructor for the current field. There may be more then one name field
+      // (e.g. organism: genus + species) so we want to check both.
+      $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
+      $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
+      if (count($subject) == 0 AND $chado_record_id) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' => t("The subject record cannot be found. Please check spelling."),
+          'element' => 'subject',
+        );
+      }
+      elseif (count($subject) > 1) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' => t("The subject is not unique and therefore the relationship cannot be made."),
+          'element' => 'subject',
+        );
+      }
+    }
+
+    // Now check for a matching object.
+    $object_id = '';
+    $fkey_rcolumn = $this->schema['foreign keys'][$base_table]['columns'][$object_id_key];
+    $matches = array();
+    if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+      $object_id = $matches[1];
+      $values = array($fkey_rcolumn => $object_id);
+      $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+      if (count($subject) == 0 AND $chado_record_id) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
+          'element' => 'object',
+        );
+      }
+    }
+    else {
+      // Otherwise we need to look it up using the name field determined in the
+      // constructor for the current field. There may be more then one name field
+      // (e.g. organism: genus + species) so we want to check both.
+      $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
+      $object = chado_query($sql, [':keyword' => $object_name]);
+      if (count($object) == 0) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' => t("The object record cannot be found. Please check spelling."),
+          'element' => 'object',
+        );
+      }
+      elseif (count($object) > 1) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
+          'element' => 'object',
+        );
+      }
+    }
+
+    // Make sure that either our object or our subject refers to the base record.
+    if ($object_id AND $subject_id) {
+      if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
+          'element' => 'row',
+        );
+      }
+    }
+
+    // Make sure that the object and subject are not both the same thing.
+    if ($object_id AND $subject_id) {
+      if ($object_id == $subject_id) {
+        $errors[] = array(
+          'error' => 'sbo__relationship',
+          'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
+            'element' => 'row',
+        );
+      }
+    }
+
+    return $errors;
   }
 
 
@@ -1056,5 +1114,19 @@ class sbo__relationship extends ChadoField {
   }
   public function getObjectIdColumn() {
     return $this->object_id_column;
+  }
+
+  /**
+   * Retrieve the base name columns.
+   */
+  public function getBaseNameColumns() {
+    return $this->base_name_columns;
+  }
+
+  /**
+   * Retrieve the base type column.
+   */
+  public function getBaseTypeColumn() {
+    return $this->base_type_column;
   }
 }
