@@ -141,4 +141,69 @@ class TripalFieldTestHelper {
     return $this->instance_info;
   }
 
+  /**
+   *
+   */
+  public function mockElement($delta = 0, $langcode = LANGUAGE_NONE, $required = FALSE) {
+    return [
+      '#entity_type' => 'TripalEntity',
+      '#entity' => $this->entity,
+      '#bundle' => $this->bundle,
+      '#field_name' => $this->field_name,
+      '#language' => $langcode,
+      '#field_parents' => [],
+      '#columns' => [],
+      '#title' => '',
+      '#description' => '',
+      '#required' => $required,
+      '#delta' => $delta,
+      '#weight' => $delta, //same as delta.
+      'value' => [
+        '#type' => 'value',
+        '#value' => '',
+      ],
+      '#field' => $this->field_info,
+      '#instance' => $this->instance_info,
+      '#theme' => 'tripal_field_default',
+      'element_validate' => ['tripal_field_widget_form_validate']
+    ];
+  }
+
+  /**
+   *
+   */
+  public function mockForm() {
+    return [
+      '#parents' => [],
+      '#entity' => $this->entity,
+    ];
+  }
+
+  /**
+   *
+   */
+  public function mockFormState($delta = 0, $langcode = LANGUAGE_NONE, $values = NULL) {
+    $form_state = [
+      'build_info' => [
+        'args' => [
+          0 => NULL,
+          1 => $entity,
+        ],
+        'form_id' => 'tripal_entity_form',
+      ],
+      'rebuild' => FALSE,
+      'rebuild_info' => [],
+      'redirect' => NULL,
+      'temporary' => [],
+      'submitted' => FALSE,
+    ];
+
+    if ($values !== NULL) {
+      $form_state['submitted'] = TRUE;
+      $form_state['values'][$this->field_name][$langcode][$delta] = $values;
+    }
+
+    return $form_state;
+  }
+
 }
