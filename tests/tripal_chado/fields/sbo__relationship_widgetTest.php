@@ -4,6 +4,8 @@ namespace Tests\tripal_chado\fields;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
+module_load_include('php', 'tripal_chado', '../tests/TripalFieldTestHelper');
+
 class sbo__relationship_widgetTest extends TripalTestCase {
   // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
@@ -92,8 +94,9 @@ class sbo__relationship_widgetTest extends TripalTestCase {
       'field_name' => $field_name,
       'widget_name' => $widget_name,
     );
-    module_load_include('php', 'tripal_chado', '../tests/TripalFieldTestHelper');
-    $helper = new \TripalFieldTestHelper($bundle_name, $machine_names, $entity);
+    $field_info = field_info_field($field_name);
+    $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
+    $helper = new \TripalFieldTestHelper($bundle_name, $machine_names, $entity, $field_info, $instance_info);
     $widget_class = $helper->getInitializedClass();
 
     // Check we have the variables we initialized.
@@ -133,8 +136,9 @@ class sbo__relationship_widgetTest extends TripalTestCase {
       'field_name' => $field_name,
       'widget_name' => $widget_name,
     );
-    module_load_include('php', 'tripal_chado', '../tests/TripalFieldTestHelper');
-    $helper = new \TripalFieldTestHelper($bundle_name, $machine_names, $entity);
+    $field_info = field_info_field($field_name);
+    $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
+    $helper = new \TripalFieldTestHelper($bundle_name, $machine_names, $entity, $field_info, $instance_info);
     $widget_class = $helper->getInitializedClass();
 
     $base_table = $entity->chado_table;
@@ -224,7 +228,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     $this->assertArrayHasKey('object_name', $widget,
       "The form for $bundle_name($base_table) does not have a object element.");
 
-    //@ debug print_r($widget);
+    // @debug print_r($widget);
 
     // Check the subject/object keys were correctly determined.
     $this->assertEquals($expect['subject_key'], $widget['#subject_id_key'],

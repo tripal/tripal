@@ -40,29 +40,14 @@ class TripalFieldTestHelper {
    *    - field_name: the name of the field (REQUIRED)
    *    - widget_name: the name of the widget (Only required for widget testing)
    *    - formatter_name: the name of the formatter (Only required for formatter testing)
-   * @param $field_info (OPTIONAL)
-   *   The Drupal information for the field you want to test. @see getFieldInfo
-   * @param $instance_info (OPTIONAL)
-   *   The Drupal information for the field instance you want to test. @see getInstanceInfo
+   * @param $field_info
+   *   The Drupal information for the field you want to test.
+   * @param $instance_info
+   *   The Drupal information for the field instance you want to test.
    */
-  public function __construct($bundle_name, $machine_names, $entity, $field_info = NULL, $instance_info = NULL) {
+  public function __construct($bundle_name, $machine_names, $entity, $field_info, $instance_info) {
 
     // @debug print "BUNDLE: " .$bundle_name."\n";
-
-    // Save the field information.
-    if (!$field_info) {
-      $field_info = $this->getFieldInfo($machine_names['field_name']);
-    }
-    $this->field_info = $field_info;
-
-    // Save the field instance information.
-    if (!$instance_info) {
-      $instance_info = $this->getFieldInfo($bundle_name, $machine_names['field_name']);
-    }
-    $this->instance_info = $instance_info;
-
-    // Load the bundle.
-    $this->bundle = tripal_load_bundle_entity(array('name'=> $bundle_name));
 
     // What type of class are we initializing?
     $this->type = 'field';
@@ -76,16 +61,32 @@ class TripalFieldTestHelper {
       $this->class_name = $machine_names['formatter_name'];
     }
 
-    // The entity from the specified bundle that the field should be attached to.
-    $this->entity = $entity;
-
-    // @debug print_r($instance_info);
-
-    // Initialize the class.
     $class_name = '\\' . $this->class_name;
     $class_path = DRUPAL_ROOT . '/' . drupal_get_path('module', 'tripal_chado')
       . '/includes/TripalFields/'.$machine_names['field_name'].'/'.$this->class_name.'.inc';
     if ((include_once($class_path)) == TRUE) {
+
+      // Save the field information.
+      if (!$field_info) {
+        $field_info = $this->getFieldInfo($machine_names['field_name']);
+      }
+      $this->field_info = $field_info;
+
+      // Save the field instance information.
+      if (!$instance_info) {
+        $instance_info = $this->getFieldInfo($bundle_name, $machine_names['field_name']);
+      }
+      $this->instance_info = $instance_info;
+
+      // Load the bundle.
+      $this->bundle = tripal_load_bundle_entity(array('name'=> $bundle_name));
+
+      // The entity from the specified bundle that the field should be attached to.
+      $this->entity = $entity;
+
+      // @debug print_r($instance_info);
+
+      // Initialize the class.
       $this->initialized_class = new $class_name($this->field_info, $this->instance_info);
     }
 
