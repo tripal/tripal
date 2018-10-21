@@ -571,6 +571,22 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/stock/%'] = array(
+    'page callback' => 'chado_autocomplete_stock',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.stock.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/auto_name/project/%'] = array(
+    'page callback' => 'chado_autocomplete_project',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.project.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
 
   //////////////////////////////////////////////////////////////////////////////
   //                          Controlled Vocabularies
