@@ -511,6 +511,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
    */
   public function get_rtype_select_options() {
 
+    // This is slated for Release 2 of this widget.
+    // It still needs extensive functional and automated testing.
+    // Thus for now we are falling back on the Default option:
+    // Form will provide a type autocomplete + vocab select.
+    // @todo test this.
+    return FALSE;
+
     // Get the instance settings. There are three options for how this widget
     // will be displayed. Those are controlled in the instance settings
     // of the field.
