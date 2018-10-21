@@ -207,23 +207,6 @@ class sbo__relationship_widgetTest extends TripalTestCase {
       }
       $bundle_name = 'bio_data_'.$bundle_id;
 
-      // Find an entity from the above bundle.
-      // @todo find a way to create a fake entity for use here.
-      $entity_id = db_query('SELECT id FROM tripal_entity WHERE bundle=:bundle LIMIT 1',
-        array(':bundle' => $bundle_name))->fetchField();
-      $entity = entity_load('TripalEntity', [ $entity_id ]);
-      $entity = $entity[ $entity_id ];
-
-      $values = [
-        'subject_name' => 'Fake Non-existant Name '.uniqid(),
-        'type_name' => 'organism',
-        'vocabulary' => 47,
-        'object_name' => $entity->chado_record->name,
-      ];
-      if ($base_table == 'organism') {
-        $values['object_name'] = $entity->chado_record->species;
-      }
-
       // set variables to guide testing.
       $expect = [
         'has_rank' => TRUE,
@@ -232,7 +215,6 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'object_key' => 'object_id',
         'base_table' => $base_table,
         'relationship_table' => $base_table.'_relationship',
-        'num_errors' => 0,
       ];
       if ($base_table == 'organism') { $expect['has_rank'] = FALSE; }
       if ($base_table == 'stock') { $expect['has_value'] = TRUE; }
@@ -241,17 +223,79 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         $expect['object_key'] = 'object_project_id';
       }
 
-      $data[] = [
-        [
-          'field_name' => $field_name,
-          'widget_name' => $widget_name,
-          'bundle_id' => $bundle_id,
-          'bundle_name' => $bundle_name,
-        ],
-        $entity,
-        $values,
-        $expect,
-      ];
+      // Create 5 fake records and publish them.
+      $records = factory('chado.'.$base_table, 5)->create();
+      $this->publish($base_table);
+
+      $cvterm = factory('chado.cvterm')->create();
+
+      // Find an entity from the above bundle.
+      $ids = db_query('SELECT id FROM {tripal_entity} WHERE bundle=:bundle LIMIT 2',
+        array(':bundle' => $bundle_name))->fetchCol();
+        $entities = entity_load('TripalEntity', $ids);
+        $entity = array_pop($entities);
+        $entity2 = array_pop($entities);
+
+      // Now Build our test cases for this base table.
+      foreach (['user_create', 'existing', 'no_subject', 'no_object', 'no_type'] as $case) { 
+        $expect['test_case'] = $case;
+
+        // First assume "existing" (later we will modify based on case).
+        $values = [
+          'subject_name' => $entity2->chado_record->name,
+          'type_name' => $cvterm->name,
+          'vocabulary' => $cvterm->cv_id,
+          'object_name' => $entity->chado_record->name,
+          // Both the form and load set the chado values
+          // so we will set them here as well.
+          'chado-'.$base_table.'_relationship__'.$expect['subject_key'] => $entity2->chado_record->{$base_table.'_id'},
+          'chado-'.$base_table.'_relationship__type_id' => $cvterm->cvterm_id,
+          'chado-'.$base_table.'_relationship__'.$expect['object_key'] => $entity->chado_record->{$base_table.'_id'},
+        ];
+        if ($base_table == 'organism') {
+          $values['subject_name'] = $entity2->chado_record->species;
+          $values['object_name'] = $entity->chado_record->species;
+        }
+
+        $expect['num_errors'] = 0;
+
+        // Now modify based on the case.
+        switch ($case) {
+          case 'user_create':
+            $values[ 'chado-'.$base_table.'_relationship__'.$expect['subject_key'] ] = NULL;
+            $values[ 'chado-'.$base_table.'_relationship__type_id' ] = NULL;
+            $values[ 'chado-'.$base_table.'_relationship__'.$expect['object_key'] ] = NULL;
+            break;
+          case 'no_subject':
+            $values['subject_name'] = '';
+            $values[ 'chado-'.$base_table.'_relationship__'.$expect['subject_key'] ] = NULL;
+            $expect['num_errors'] = 1;
+            break;
+          case 'no_object':
+            $values['object_name'] = '';
+            $values[ 'chado-'.$base_table.'_relationship__'.$expect['object_key'] ] = NULL;
+            $expect['num_errors'] = 1;
+            break;
+          case 'no_type':
+            $values['type_name'] = '';
+            $values['vocabulary'] = 0;
+            $values[ 'chado-'.$base_table.'_relationship__type_id' ] = NULL;
+            $expect['num_errors'] = 1;
+            break;
+        }
+
+        $data[] = [
+          [
+            'field_name' => $field_name,
+            'widget_name' => $widget_name,
+            'bundle_id' => $bundle_id,
+            'bundle_name' => $bundle_name,
+          ],
+          $entity,
+          $values,
+          $expect,
+        ];
+      }
     }
 
     return $data;
@@ -287,7 +331,8 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     $form = $helper->mockForm($delta, $langcode);
     $form_state = $helper->mockFormState($delta, $langcode, $initial_values);
     $element = $helper->mockElement($delta, $langcode);
-    $widget_class->validate($element, $form, $form_state, $langcode, $delta);
+
+    $return = $widget_class->validate($element, $form, $form_state, $langcode, $delta);
 
     // @debug print_r($form_state['values'][$field_name][$langcode][$delta]);
 
@@ -311,8 +356,20 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     // Check for errors.
     $errors = form_get_errors();
 
-    $this->assertEmpty($errors,
-      "There should be no form errors! But these were registered: ".print_r($errors, TRUE));
+    if ($expect['num_errors'] === 0) {
+      $this->assertEmpty($errors,
+        "There should be no form errors for the following initial values: ".print_r($initial_values,TRUE)." But these were registered: ".print_r($errors, TRUE));
+
+      print_r($return);
+    }
+    elseif (sizeof($errors) > 1) {
+      $this->assertEquals(sizeof($errors), $expect['num_errors'],
+        "The number of errors didn't match what we expectedfor the following initial values: ".print_r($initial_values,TRUE)." Here are the errors: ".print_r($errors, TRUE));
+    }
+    else {
+      $this->assertEquals(sizeof($errors), $expect['num_errors'],
+        "There were no errors even when we expected some for the following initial values: ".print_r($initial_values,TRUE));
+    }
 
     // Clean up after ourselves by removing any errors we logged.
     form_clear_error();
@@ -326,7 +383,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
    *
    * @group widget
    * @group sbo__relationship
-   */
+   *
   public function testGetRTypeSelectOptions($bundle_name, $field_name, $widget_name, $entity_id, $expect) {
 
     // The different options are set in the instance.
@@ -335,5 +392,5 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     //$fake_instance['settings']['relationships']['option1_vocabs'] = 5;
 
     $this->assertTrue(true);
-  }
+  }*/
 }

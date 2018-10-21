@@ -199,7 +199,6 @@ class TripalFieldTestHelper {
     ];
 
     if ($values !== NULL) {
-      $form_state['submitted'] = TRUE;
       $form_state['values'][$this->field_name][$langcode][$delta] = $values;
     }
 

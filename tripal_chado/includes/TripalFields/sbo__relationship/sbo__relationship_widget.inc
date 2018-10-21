@@ -324,7 +324,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $base_table = $this->instance['settings']['base_table'];
     $chado_record_id = array_key_exists('#entity', $element)? $element['#entity']->chado_record_id : NULL;
 
-    // @debug ddl(array_keys($form[$field_name][$langcode][$delta]), "widget form keys: $delta");
+    // @debug print_r($form_state[$field_name][$langcode][$delta]);
 
     $fkeys = $this->schema['foreign keys'];
 
@@ -346,13 +346,15 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     // Validation:
     //------------
     // If the row is empty then skip this one, there's nothing to validate.
-    if (!($type_id OR $type_name) and !$subject_name and !$object_name) {
+    if (!($type_id OR $type_name) && !$subject_name && !$object_name) {
+      print "We are never testing the empty row... so we shouldn't be here.\n";
       return;
     }
 
     // Do not proceed if subject ID or object ID does not exist
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
         !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
+      print "Keys should always exist for not here either.\n";
       return;
     }
 
@@ -483,6 +485,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       }
     }
     // @debug dpm($form_state['values'][$field_name][$langcode][$delta], "form state values: $delta");
+
+    return $errors;
   }
 
   /**
