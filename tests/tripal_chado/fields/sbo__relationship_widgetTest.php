@@ -278,7 +278,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
             break;
           case 'no_type':
             $values['type_name'] = '';
-            $values['vocabulary'] = 0;
+            $values['vocabulary'] = NULL;
             $values[ 'chado-'.$base_table.'_relationship__type_id' ] = NULL;
             $expect['num_errors'] = 1;
             break;
@@ -325,6 +325,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     $widget_class = $helper->getInitializedClass();
 
     // Mock objects.
+    $field_name = $info['field_name'];
     $delta = 1;
     $langcode = LANGUAGE_NONE;
     $widget = $helper->mockElement($delta, $langcode);
@@ -332,7 +333,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     $form_state = $helper->mockFormState($delta, $langcode, $initial_values);
     $element = $helper->mockElement($delta, $langcode);
 
-    $return = $widget_class->validate($element, $form, $form_state, $langcode, $delta);
+    $widget_class->validate($element, $form, $form_state, $langcode, $delta);
 
     // @debug print_r($form_state['values'][$field_name][$langcode][$delta]);
 
@@ -355,42 +356,18 @@ class sbo__relationship_widgetTest extends TripalTestCase {
 
     // Check for errors.
     $errors = form_get_errors();
+    // @debug print "Errors: " . print_r($errors, TRUE)."\n";
 
     if ($expect['num_errors'] === 0) {
       $this->assertEmpty($errors,
         "There should be no form errors for the following initial values: ".print_r($initial_values,TRUE)." But these were registered: ".print_r($errors, TRUE));
-
-      print_r($return);
-    }
-    elseif (sizeof($errors) > 1) {
-      $this->assertEquals(sizeof($errors), $expect['num_errors'],
-        "The number of errors didn't match what we expectedfor the following initial values: ".print_r($initial_values,TRUE)." Here are the errors: ".print_r($errors, TRUE));
     }
     else {
-      $this->assertEquals(sizeof($errors), $expect['num_errors'],
-        "There were no errors even when we expected some for the following initial values: ".print_r($initial_values,TRUE));
+      $this->assertEquals($expect['num_errors'], sizeof($errors),
+        "The number of errors didn't match what we expected for the following initial values: ".print_r($initial_values,TRUE)." Here are the errors: ".print_r($errors, TRUE));
     }
 
     // Clean up after ourselves by removing any errors we logged.
     form_clear_error();
   }
-
-  /**
-   * Test the Relationship Type Options.
-   * Specfically, sbo__relationship_widget->get_rtype_select_options().
-   *
-   * @dataProvider provideEntities()
-   *
-   * @group widget
-   * @group sbo__relationship
-   *
-  public function testGetRTypeSelectOptions($bundle_name, $field_name, $widget_name, $entity_id, $expect) {
-
-    // The different options are set in the instance.
-    // Therefore we want to make a fake instance to control this setting.
-    $fake_instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
-    //$fake_instance['settings']['relationships']['option1_vocabs'] = 5;
-
-    $this->assertTrue(true);
-  }*/
 }

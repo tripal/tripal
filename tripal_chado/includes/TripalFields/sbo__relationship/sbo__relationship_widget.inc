@@ -324,8 +324,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $base_table = $this->instance['settings']['base_table'];
     $chado_record_id = array_key_exists('#entity', $element)? $element['#entity']->chado_record_id : NULL;
 
-    // @debug print_r($form_state[$field_name][$langcode][$delta]);
-
     $fkeys = $this->schema['foreign keys'];
 
     // 'nd_reagent_relationship' and 'project_relationship' have different column names from
@@ -346,15 +344,14 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     // Validation:
     //------------
     // If the row is empty then skip this one, there's nothing to validate.
-    if (!($type_id OR $type_name) && !$subject_name && !$object_name) {
-      print "We are never testing the empty row... so we shouldn't be here.\n";
+    if (!($type_id || $type_name) && !$subject_name && !$object_name) {
+      print "HERE; Type Name: $type_name, Type ID: $type_id, Subject Name: $subject_name, Object Name: $object_name\n";
       return;
     }
 
     // Do not proceed if subject ID or object ID does not exist
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
         !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
-      print "Keys should always exist for not here either.\n";
       return;
     }
 
@@ -371,13 +368,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
             form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][subject_name', $error['message']);
             break;
           case 'type':
-            if (isset($element['vocabulary'])) {
-              form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][type_name', $error['message']);
-              form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][vocabulary', '');
-            }
-            elseif (isset($element['type_id'])) {
-              form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][type_id', $error['message']);
-            }
+            form_set_error('sbo__relationship]['.$langcode.']['.$delta, $error['message']);
             break;
           case 'object':
             form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][object_name', $error['message']);

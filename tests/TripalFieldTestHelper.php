@@ -28,6 +28,9 @@ class TripalFieldTestHelper {
   // One of 'field', 'widget', or 'formatter'.
   public $type;
 
+  // The name of the field for the class being tested.
+  public $field_name;
+
   /**
    * Create an instance of TripalFieldTestHelper.
    *
@@ -60,6 +63,7 @@ class TripalFieldTestHelper {
       $this->type = 'formatter';
       $this->class_name = $machine_names['formatter_name'];
     }
+    $this->field_name = $machine_names['field_name'];
 
     $class_name = '\\' . $this->class_name;
     $class_path = DRUPAL_ROOT . '/' . drupal_get_path('module', 'tripal_chado')
