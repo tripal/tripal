@@ -464,6 +464,22 @@ class sbo__relationship extends ChadoField {
       return;
     }
 
+    // Not all tables have the columns named 'subject_id' and 'object_id'.
+    // some have variations on that name and we need to determine what they are.
+    $fkeys = $schema['foreign keys'];
+    $subject_id_key = 'subject_id';
+    $object_id_key = 'object_id';
+    foreach ($fkeys as $fktable => $details) {
+      foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
+        if (preg_match('/^subject_.*id/', $fkey_lcolumn)) {
+          $subject_id_key = $fkey_lcolumn;
+        }
+        if (preg_match('/^object_.*id/', $fkey_lcolumn)) {
+          $object_id_key = $fkey_lcolumn;
+        }
+      }
+    }
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
@@ -933,9 +949,8 @@ class sbo__relationship extends ChadoField {
     $type_id = $item['chado-' . $field_table . '__type_id'];
     $type_id = isset($item['type_id']) ? $item['chado-' . $field_table . '__type_id'] : $type_id;
     $type_name = isset($item['type_name']) ? $item['type_name'] : '';
-    $voc_id = isset($item['vocabulary']) ? $item['vocabulary'] : '';
-    $subject_name = $item['subject_name'];
-    $object_name = $item['object_name'];
+    $subject_name = isset($item['subject_name']) ? $items['subject_name'] : '';
+    $object_name = isset($item['object_name']) ? $item['object_name'] : '';
 
     // If the row is empty then just continue, there's nothing to validate.
     if (!$type_id and !$type_name and !$subject_name and !$object_name) {
