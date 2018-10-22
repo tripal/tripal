@@ -347,7 +347,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     //------------
     // If the row is empty then skip this one, there's nothing to validate.
     if (!($type_id || $type_name) && !$subject_name && !$object_name) {
-      print "HERE; Type Name: $type_name, Type ID: $type_id, Subject Name: $subject_name, Object Name: $object_name\n";
       return;
     }
 
