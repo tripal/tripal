@@ -54,10 +54,13 @@ The top section of this page provides multiple methods for providing results fil
 
   "Server path", "sites/default/files/Citrus_sinensis-orange1.1g015632m.g.iprscan.xml"
   "Analysis", "InterPro Annotations of C. sinensis v1.0"
-  'Load GO terms to the database', 'checked'
+  'Load GO terms to the database', 'unchecked'
   "Query Name RE", ""
   "Use Unique Name", "unchecked"
   "Query Type", "mRNA"
+
+In order for GO terms to be imported, the Gene Ontology must be loaded on your site: for this tutorial, we leave the box unchecked.
+
 
 .. note::
 
@@ -70,3 +73,8 @@ Clicking the **Import InterProScan file** will add a job which we can manually e
 ::
 
     drush trp-run-jobs --username=administrator --root=$DRUPAL_HOME
+
+
+After the job is run, our InterPro field will be populated on the mRNA page with an annotation diagram:
+
+.. image:: interpro2.png
