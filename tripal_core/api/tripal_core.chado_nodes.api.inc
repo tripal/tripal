@@ -970,7 +970,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   }
 
   catch (Exception $e) {
-    $transaction->rollback();
+    // $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('trp-fsync', $e);
     print "FAILED: Rolling back database changes...\n";
