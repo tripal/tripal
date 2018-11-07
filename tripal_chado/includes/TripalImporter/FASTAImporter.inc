@@ -278,9 +278,7 @@ class FASTAImporter extends TripalImporter {
     }
 
     // make sure if a relationship is specified that all fields are provided.
-    if (($rel_type or $parent_type) and !$re_subject) {
-      form_set_error('re_subject', t("Please provide a regular expression for the parent"));
-    }
+
     if (($rel_type or $re_subject) and !$parent_type) {
       form_set_error('parent_type', t("Please provide a SO term for the parent"));
     }
@@ -536,7 +534,7 @@ class FASTAImporter extends TripalImporter {
         }
 
         // Get the relationship subject
-         $subject = "";
+         $subject = $name;
         if (!empty($re_subject)) {
           preg_match("/$re_subject/", $line, $matches);
           $subject = trim($matches[1]);
