@@ -1023,6 +1023,11 @@ class OBOImporter extends TripalImporter {
         ['!id' => $id]));
     }
     $results = drupal_json_decode($response->data);
+    if (!$results){
+      $this->logMessage('Error: no data with !url.  The response was: !response', ['!url' => $full_url, '!response' => $response]);
+
+      return FALSE;
+    }
 
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
@@ -1745,6 +1750,10 @@ class OBOImporter extends TripalImporter {
         // If we can't find the term in the database then do an EBI lookup.
         else {
           $stanza = $this->findEBITerm($id);
+
+          if (!$stanza){
+            return FALSE;
+          }
 
           // Make sure the DBs and CVs exist and are added to our cache.
           $this->addDB($stanza['db_name'][0]);
