@@ -320,7 +320,6 @@ class FASTAImporter extends TripalImporter {
    * @see TripalImporter::run()
    */
   public function run() {
-
     $arguments = $this->arguments['run_args'];
     $file_path = $this->arguments['files'][0]['file_path'];
 
@@ -534,7 +533,7 @@ class FASTAImporter extends TripalImporter {
         }
 
         // Get the relationship subject
-         $subject = $name;
+         $subject = $name ? $name : $uname;
         if (!empty($re_subject)) {
           preg_match("/$re_subject/", $line, $matches);
           $subject = trim($matches[1]);
