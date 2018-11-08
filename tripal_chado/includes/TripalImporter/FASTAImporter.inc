@@ -220,7 +220,9 @@ class FASTAImporter extends TripalImporter {
       '#required' => FALSE,
       '#description' => t('Enter the regular expression that will extract the unique
                          name needed to identify the existing sequence for which the
-                         relationship type selected above will apply.'),
+                         relationship type selected above will apply.  If no regular
+                         expression is provided, the parent unique name must be the 
+                         same as the loaded feature name.'),
       '#weight' => 6
     );
     $form['additional']['relationship']['parent_type'] = array(
