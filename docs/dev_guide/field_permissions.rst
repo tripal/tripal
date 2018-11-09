@@ -12,7 +12,7 @@ Not all Tripal Fields are created equal.  You may have some fields that you dont
 Simply disabling the display of the formatter won't prevent the widget from showing up on the submission page, and besides, you might want site admins to still have access to those fields!  Deleting the field will cause them to re-appear when you press the "Check for New Fields" button!  Field Permissions allows you to configure field-specific permissions so that users contributing content via Chado only see the fields they need to see.
 
 Installing the Drupal Field Permissions module
---------------------------------------------
+-----------------------------------------------
 
 The module can be enabled directly from Drush with the below command.
 
@@ -32,12 +32,12 @@ Setting Field-specific Permissions
 
 Let's assume I want to hide the Cross-Reference field from my users submitting Genome Assembly data, but still want it available for my administrators.
 
-.. image:: /_static/img/field_permissions.1.cross_ref_GA.png
+.. image:: ./field_permissions.1.cross_ref_GA.png
 
 First, navigate to the bundle field configuration page via **Admin --> Structure --> Tripal Content --> Genome Assembly**.  For each field we want to hide, we must configure the field instance settings individually.  Click **Edit** for the Cross Reference field, and scroll down to **CROSS REFERENCE FIELD SETTINGS**.
 Select **Custom Permissions** and ensure that the user role you set up for HQ submitters can view, but cannot edit, this field.
 
-.. image:: /_static/img/field_permissions.2.crossref_permissions.png
+.. image:: ./field_permissions.2.crossref_permissions.png
 
 Once permissions are configured to your liking, click **Save Settings**.
 
