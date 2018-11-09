@@ -75,11 +75,11 @@ class FASTAImporterTest extends TripalTestCase {
     $this->assertNotEquals(2, count($result), 'The child features were not loaded when a regexp was not provided.');
 
 
-    $result = db_select('chado.feature_relationship', 'fr')
+    $query = db_select('chado.feature_relationship', 'fr')
       ->fields('fr')
-      ->condition('fr.object_id', $mrna_1->feature_id)
-      ->join('chado.feature', 'f', 'f.feature_id = fr.subject_id')
-      ->execute()
+      ->condition('fr.object_id', $mrna_1->feature_id);
+      $query->join('chado.feature', 'f', 'f.feature_id = fr.subject_id');
+      $result = $query->execute()
       ->fetchObject();
 
     $this->assertNotFalse($result, 'relationship was not added to parente feature when regexp not provided (same parent/child name).');
