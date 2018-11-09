@@ -7,7 +7,7 @@ Field Specific Permissions
 Why Field Permissions?
 ----------------------
 
-Not all Tripal Fields are created equal.  You may have some fields that you dont want all users to be able to view, or even to be able to edit.    This might be the case for a variety of reasons.  Some Chado base tables may have **type** fields that you don't utilize: for example, the contact table.  Some of your bundles may be configured with a lot of property fields, with only a subset of them being relevant to an end user submitting data via HQ.  Some fields are just not intuitive without some Chado experience: for example, the Cross-Reference field.
+Not all Tripal Fields are created equal.  You may have some fields that you dont want all users to be able to view, or even to be able to edit. This might be the case for a variety of reasons.  Some Chado base tables may have **type** fields that you don't utilize: for example, the contact table.  Some of your bundles may be configured with a lot of property fields, with only a subset of them being relevant to an end user submitting data via HQ.  Some fields are just not intuitive without some Chado experience: for example, the Cross-Reference field.  Perhaps you have some Chado property fields that are for internal use only.
 
 Simply disabling the display of the formatter won't prevent the widget from showing up on the submission page, and besides, you might want site admins to still have access to those fields!  Deleting the field will cause them to re-appear when you press the "Check for New Fields" button!  Field Permissions allows you to configure field-specific permissions so that users contributing content via Chado only see the fields they need to see.
 
