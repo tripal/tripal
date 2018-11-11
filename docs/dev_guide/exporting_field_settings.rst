@@ -26,7 +26,7 @@ Because features get exported as their own module, this means you can treat them
 How many Features?
 ~~~~~~~~~~~~~~~~~~~
 
-The features documentation links to a [great article about `how to manage multiple features <http://kerasai.com/blog/2014/04/08/organizing-features-configuration-managment>`_.  The suggestion that each bundle be its own feature is particularly helpful for Tripal, since we have so many bundles and its a reasonable, discrete way to manage and deploy configuration.  This means that mRNA and gene should be separate feature modules even though they are both ``chado.feature`` content types.
+The features documentation links to a great article about `how to manage multiple features <http://kerasai.com/blog/2014/04/08/organizing-features-configuration-managment>`_.  The suggestion that each bundle be its own module is particularly helpful for Tripal, since we have so many bundles and its a reasonable, discrete way to manage and deploy configuration.  This means that mRNA and gene should be separate feature modules even though they are both ``chado.feature`` content types.
 
 A Hazard: Mapping bundle IDs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
