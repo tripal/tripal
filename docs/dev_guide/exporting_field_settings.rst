@@ -79,7 +79,11 @@ Once we are happy with our bundle field configuration, we can export the display
 First, we enable the Features module using drush: ``drush pm-enable features -y``.  This adds a Features area under **Admin -> Structure**.  Navigate there and choose **Create Feature**.
 
 The field information we're looking for is in **Field Bases**, **Field Group**, and **Field Instances**.  We can search for FASTA to find the field base and instance, and "files" (the name of our group) to find the field group.
+.. note::
 
+  Both **Field Bases** and **Field Instances** will contain the machine name of the field you want to export. **Field Bases** contains the site-wide information for a field and **Field Instances** contains the bundle-specific (i.e. Tripal Content Type) settings.
+  
+  **Field Group** will contain the machine name of the Tripal Pane and allows you to export the grouping settings you set on the **Manage Display Tab**.
 I've also specified a custom path to keep all my Tripal features together under advanced options.
 
 
