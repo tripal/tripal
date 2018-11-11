@@ -84,7 +84,7 @@ The field information we're looking for is in **Field Bases**, **Field Group**, 
 .. note::
 
   Both **Field Bases** and **Field Instances** will contain the machine name of the field you want to export. **Field Bases** contains the site-wide information for a field and **Field Instances** contains the bundle-specific (i.e. Tripal Content Type) settings.
-  
+
   **Field Group** will contain the machine name of the Tripal Pane and allows you to export the grouping settings you set on the **Manage Display Tab**.
 I've also specified a custom path to keep all my Tripal features together under advanced options.
 
@@ -110,8 +110,7 @@ Go to our target site, all we need to do is download and unpack the ``.tar`` fil
 
 The field should now appear when you go to create a new analysis on your target site.  To check for yourself, create a new Analysis with dummy information: you'll be able to upload a file for the new file field.
 
-
-  Unfortunately, the field still gets imported **disabled** due to Tripal preference, so we have to go to the display settings on our target site and enable the tripal pane/field.
+Unfortunately, the field still gets imported **disabled** due to Tripal preference, so we have to go to the display settings on our target site and enable the tripal pane/field.
 
 
 .. image:: ./exporting_field_settings.6.png
