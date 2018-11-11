@@ -16,7 +16,9 @@ Is there a better way?  By exporting the field configuration as a feature!
 
   Drupal 8 has a `feature designed to handle development deployment <https://www.phase2technology.com/blog/drupal-8-configuration-management>`_: Configuration Management!  Drupal Features remains relevant for sharing field configurations across sites, so this guide may remain useful when Tripal moves to Drupal 8.
 
-Note that I'm going to talk about features a lot in this post.  In the context of the Feature module, features are exported configurations within your site.  It's important that we don't confuse this with Chado features, which are genes, mRNAs, polypeptides, etc.
+.. warning::
+
+  Note that I'm going to talk about features a lot in this post.  **In the context of the Feature module, features are exported configurations within your site**.  It's important that we don't confuse this with Chado features, which are genes, mRNAs, polypeptides, etc.
 
 Version control
 ~~~~~~~~~~~~~~~~
