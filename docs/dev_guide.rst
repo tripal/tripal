@@ -12,7 +12,6 @@ Developer's Guide
    dev_guide/chado
    dev_guide/custom_modules
    dev_guide/custom_field
-   dev_guide/field_permissions
    dev_guide/custom_data_loader
    dev_guide/custom_web_services
    dev_guide/tutorials
