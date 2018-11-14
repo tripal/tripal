@@ -3,21 +3,6 @@ Extension Modules
 
 The below modules are Tripal 3 compatible and grouped roughly by category.
 
- Please add your module!
-
-.. Instructions for adding a module:
-.. Try to stick to the existing categories.
-.. Please link to the documentation if available: otherwise, the code is fine.
-.. Please write two sentences MAXIMUM about the function of the module.
-.. The below template can be used to easily add your module (please remove the .. which indicate a comment, and remove the indentation).
-
-.. Module Name
-.. ~~~~~~~~~~~~~~~~~~~~~~~
-..
-.. This module loads in X, Y, and Z.  It provides admin for A and B, and user area C.
-..
-.. https://tripal-hq.readthedocs.io/en/latest/index.html
-
 .. toctree::
    :maxdepth: 2
    :caption: Categories
@@ -25,3 +10,28 @@ The below modules are Tripal 3 compatible and grouped roughly by category.
    extensions/administrative
    extensions/annotation
    extensions/developer
+
+**We would love for you to contribute your own module to this list!** This is done by creating a Pull Request (PR) to `Tripal <https://github.com/tripal/tripal>`__ modify our documentation.
+
+**Instructions:**
+
+1. From the current page, click the category in the list above that best fits your module.
+2. Click the "Edit on Github" link at the top of the page.
+3. Add your module using the following template.
+
+.. code:: RST
+
+  Module Name
+  ------------
+
+  This module loads in X, Y, and Z.  It provides admin for A and B, and user area C.
+
+  `Documentation <https://yourmodule.readthedocs.io/en/latest/index.html>`__
+  `Repository <https://github.com/you/yourmodule>`__
+
+**Guidelines:**
+
+- Make sure to follow alphabetical order when choosing where on the category page to add your module.
+- Please write two sentences MAXIMUM about the function of the module.
+- Include links to both the documentation (even if it's your README) and the repository (e.g. Github, Gitlab)
+- If your module doesn't fit well in any of the existing categories, still pick the best one but then feel free to suggest a new category in the PR description.
