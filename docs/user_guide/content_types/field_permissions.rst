@@ -7,7 +7,13 @@ Field Specific Permissions
 Why Field Permissions?
 ----------------------
 
-Not all Tripal Fields are created equal.  You may have some fields that you dont want all users to be able to view, or even to be able to edit. This might be the case for a variety of reasons.  Some Chado base tables may have **type** fields that you don't utilize: for example, the contact table.  Some of your content types may be configured with a lot of property fields, with only a subset of them being relevant to an end user.  Some fields require prior insertion of data elsewhere: for example, the Cross-Reference field.  Perhaps you have some Chado property fields that are for internal use only.
+Not all Tripal Fields are created equal.  You may have some fields that you don't want all users to be able to view, or even to be able to edit. This might be the case for a variety of reasons.  Some Chado base tables may have **type** fields that you don't utilize: for example, the contact table.  Some of your content types may be configured with a lot of property fields, with only a subset of them being relevant to an end user.  Some fields require prior insertion of data elsewhere: for example, the Cross-Reference field.  Perhaps you have some Chado property fields that are for internal use only.
+
+.. note::
+
+	If you're following this guide because you want users to submit data into Chado, consider using Tripal HeadQuarters (HQ).  Tripal HQ provides a user-contributed content control center and administrative toolbox for your Tripal site. This means that users are able to create whatever Chado content you’d like them, but withhold inserting it into the database until someone has approved it.  Find out more here: https://tripal-hq.readthedocs.io/en/latest/index.html
+  
+
 
 Simply disabling the display of the formatter won't prevent the widget from showing up on the submission page, and besides, you might want site admins to still have access to those fields!  Deleting the field will cause them to re-appear when you press the "Check for New Fields" button!  Field Permissions allows you to configure field-specific permissions so that users contributing content via Chado only see the fields they need to see.
 
