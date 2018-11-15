@@ -32,21 +32,36 @@ class sbo__relationship_widgetTest extends TripalTestCase {
        $field_name = 'sbo__relationship';
        $widget_name = 'sbo__relationship_widget';
 
-       // find a bundle which stores it's data in the given base table.
+       // Find a bundle which stores it's data in the given base table.
        // This will work on Travis since Tripal creates matching bundles by default.
-       // @todo ideally we would create a fake bundle here.
-       $bundle_id = db_query("
-         SELECT bundle_id
+       $bundle_details = db_query("
+         SELECT bundle_id, type_column, type_id
          FROM chado_bundle b
-         LEFT JOIN tripal_entity e ON e.bundle='bio_data_'||b.bundle_id
-         WHERE data_table=:table AND id IS NOT NULL LIMIT 1",
-           array(':table' => $base_table))->fetchField();
+         WHERE data_table=:table AND type_linker_table=''
+         ORDER BY bundle_id ASC LIMIT 1",
+           array(':table' => $base_table))->fetchObject();
 
-       if (!$bundle_id) {
+       print_r($bundle_details);
+       if (isset($bundle_details->bundle_id)) {
+         $bundle_id = $bundle_details->bundle_id;
+       }
+       else {
          continue;
        }
 
        $bundle_name = 'bio_data_'.$bundle_id;
+
+       // Create some entities so that we know there are some available to find.
+       if ($bundle_details->type_column == 'type_id') {
+         $record_1 = factory('chado.'. $base_table)->create(['type_id' => $bundle_details->type_id]);
+         $record_2 = factory('chado.'. $base_table)->create(['type_id' => $bundle_details->type_id]);
+       }
+       else {
+         $record_1 = factory('chado.'. $base_table)->create();
+         $record_2 = factory('chado.'. $base_table)->create();
+       }
+       // Then publish them so we have entities.
+       $this->publish($base_table);
 
        // Find an entity from the above bundle.
        // @todo find a way to create a fake entity for use here.
@@ -237,7 +252,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         $entity2 = array_pop($entities);
 
       // Now Build our test cases for this base table.
-      foreach (['user_create', 'existing', 'no_subject', 'no_object', 'no_type'] as $case) { 
+      foreach (['user_create', 'existing', 'no_subject', 'no_object', 'no_type'] as $case) {
         $expect['test_case'] = $case;
 
         // First assume "existing" (later we will modify based on case).
