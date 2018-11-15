@@ -11,14 +11,6 @@ This module provides a basic interface to allow your users to utilize your serve
 `Documentation <https://github.com/tripal/tripal_blast/blob/7.x-1.x/README.md>`__
 `Repository <https://github.com/tripal/tripal_blast>`__
 
-Tripal ElasticSearch
---------------------
-
-The Tripal Elasticsearch module allows you to easily manage the indexing and display of Elasticsearch on your Tripal website. It also easily enables Cross-Site Querying, allowing you to connect to other Tripal sites and provide additional search results to your users.
-
-`Documentation <https://github.com/tripal/tripal_elasticsearch/blob/master/docs/README.md>`__
-`Repository <https://github.com/tripal/tripal_elasticsearch>`__
-
 Tripal Galaxy
 -------------
 
