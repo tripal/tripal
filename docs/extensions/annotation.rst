@@ -1,6 +1,8 @@
 Analysis/Annotation
 ===================
 
+The following modules provide support for loading annotation or analysis' into Chado and displaying them on Tripal pages.
+
 Tripal Analysis Expression
 --------------------------
 
@@ -32,14 +34,6 @@ This module provides a method for loading XML results from the InterProScan prog
 `Documentation <https://tripal.readthedocs.io/en/latest/user_guide/example_genomics/func_annots/interpro.html>`__
 `Repository <https://github.com/tripal/tripal_analysis_interpro>`__
 
-Tripal JBrowse
---------------
-
-This module provides integration between Tripal sites and pre-existing GMOD JBrowse instances. It allows you to create pages on your Tripal site with an embedded JBrowse instance by filling out a simple form.
-
-`Documentation <https://github.com/tripal/tripal_jbrowse/blob/7.x-2.1.x/README.md>`__
-`Repository <https://github.com/tripal/tripal_jbrowse>`__
-
 Tripal CV-Xray
 --------------
 
@@ -47,11 +41,3 @@ Tripal CV-Xray maps content annotations onto controlled vocabulary trees.  The e
 
 `Documentation <https://github.com/statonlab/tripal_cv_xray/blob/master/README.md>`__
 `Repository <https://github.com/statonlab/tripal_cv_xray>`__
-
-Tripal Galaxy
--------------
-
-This module is for integration of Tripal and the Galaxy Project. It facillitates the creation of forms on your Tripal site that submit jobs to a galaxy instance.
-
-`Documentation <https://github.com/tripal/tripal_galaxy/blob/7.x-1.x/README.md>`__
-`Repository <https://github.com/tripal/tripal_galaxy>`__

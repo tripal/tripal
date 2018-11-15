@@ -1,15 +1,16 @@
 Extension Modules
 ==================
 
-The below modules are Tripal 3 compatible and grouped roughly by category.
+The below modules are Tripal 3 compatible and grouped roughly by category:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Categories
 
    extensions/administrative
    extensions/annotation
    extensions/developer
+   extensions/3rdparty
+   extensions/visualization
 
 **We would love for you to contribute your own module to this list!** This is done by creating a Pull Request (PR) to `Tripal <https://github.com/tripal/tripal>`__ modify our documentation.
 
