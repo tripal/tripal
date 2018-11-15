@@ -14,7 +14,7 @@ This module provides a basic interface to allow your users to utilize your serve
 Tripal Galaxy
 -------------
 
-This module is for integration of Tripal and the Galaxy Project. It facillitates the creation of forms on your Tripal site that submit jobs to a galaxy instance.
+This module is for integration of Tripal and the Galaxy Project. It facilitates the creation of forms on your Tripal site that submit jobs to a galaxy instance.
 
 `Documentation <https://github.com/tripal/tripal_galaxy/blob/7.x-1.x/README.md>`__
 `Repository <https://github.com/tripal/tripal_galaxy>`__
@@ -26,3 +26,11 @@ This module provides integration between Tripal sites and pre-existing GMOD JBro
 
 `Documentation <https://github.com/tripal/tripal_jbrowse/blob/7.x-2.1.x/README.md>`__
 `Repository <https://github.com/tripal/tripal_jbrowse>`__
+
+VCF Filter
+-----------
+
+This modules provides a form interface so users can custom filter existing VCF files and export in a variety of formats. The form simply provides an interface to VCFtools and uses the Tripal Download API to provide the filtered file to the user.
+
+`Documentation <https://github.com/UofS-Pulse-Binfo/vcf_filter/blob/master/README.md>`__
+`Repository <https://github.com/UofS-Pulse-Binfo/vcf_filter>`__

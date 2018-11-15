@@ -3,6 +3,22 @@ Visualization/Display
 
 The following modules provide specialized displays for Tripal content types.
 
+Analyzed Phenotypes
+--------------------
+
+This module provides support and visualization for partially analyzed data stored in a modified GMOD Chado schema. It is meant to support large scale phenotypic data through backwards compatible improvements to the Chado schema including the addition of a project and stock foreign key to the existing phenotype table, optimized queries and well-choosen indexes.
+
+`Documentation <https://analyzedphenotypes.readthedocs.io/en/latest/index.html>`__
+`Repository <https://github.com/UofS-Pulse-Binfo/analyzedphenotypes>`__
+
+CvitEmbed
+----------
+
+This module integrates `CViTjs <https://github.com/LegumeFederation/cvitjs>`__ with Tripal to provide whole-genome visualizations. It creates one page per plot and makes them accessible via the Drupal Navigation menu.
+
+`Documentation <https://github.com/UofS-Pulse-Binfo/cvitembed/blob/master/README.md>`__
+`Repository <https://github.com/UofS-Pulse-Binfo/cvitembed>`__
+
 Mainlab Tripal Data Display
 ----------------------------
 
@@ -10,6 +26,14 @@ Mainlab Tripal Data Display contains a set of Drupal/PHP templates that organize
 
 `Documentation <https://gitlab.com/mainlabwsu/mainlab_tripal/blob/master/README.md>`__
 `Repository <https://gitlab.com/mainlabwsu/mainlab_tripal>`__
+
+ND Genotypes
+-------------
+
+This module provides support and visualization of genotypic data stored in a modified GMOD Chado schema. The 3.x branch of this module represents a shift towards support for large scale genotypic datasets through backwards compatible improvements to the Chado schema including a new gathering table for genotypes (genotype_call) modeled after the chado phenotype table, optimized queries and well-choosen indexes.
+
+`Documentation <https://nd-genotypes.readthedocs.io/en/latest/>`__
+`Repository <https://github.com/UofS-Pulse-Binfo/nd_genotypes>`__
 
 Tripal Fancy Fields
 -------------------
