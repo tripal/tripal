@@ -40,8 +40,6 @@ class sbo__relationship_widgetTest extends TripalTestCase {
          WHERE data_table=:table AND type_linker_table=''
          ORDER BY bundle_id ASC LIMIT 1",
            array(':table' => $base_table))->fetchObject();
-
-       print_r($bundle_details);
        if (isset($bundle_details->bundle_id)) {
          $bundle_id = $bundle_details->bundle_id;
        }
