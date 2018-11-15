@@ -101,9 +101,9 @@ class sbo__relationship_widgetTest extends TripalTestCase {
     // Check we have the variables we initialized.
     $this->assertNotEmpty($helper->bundle,
       "Could not load the bundle.");
-    $this->assertNotEmpty($helper->getFieldInfo(),
+    $this->assertNotEmpty($helper->getFieldInfo($field_name),
       "Could not lookup the field information.");
-    $this->assertNotEmpty($helper->getInstanceInfo(),
+    $this->assertNotEmpty($helper->getInstanceInfo($bundle_name, $field_name),
       "Could not lookup the instance information.");
     $this->assertNotEmpty($widget_class,
       "Couldn't create a widget class instance.");
