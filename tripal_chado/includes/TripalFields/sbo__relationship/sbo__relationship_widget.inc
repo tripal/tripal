@@ -73,6 +73,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
+    $widget['#table_name'] = $field_table;
 
     // @debug dpm($this, 'this');
 
@@ -134,7 +135,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-      array_key_exists($field_name, $form_state['values'])) {
+        array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
@@ -151,8 +152,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
       //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item (AJAX)!');
     }
-
-    $widget['#table_name'] = $field_table;
 
     // Getting default values for the relationship type element.
     $default_voc = '';
@@ -340,19 +339,20 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $object_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]: '';
     $type_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] : '';
 
-    $subject_name = isset($form_state['values'][$field_name][$langcode][$delta]['subject_name']) ? $form_state['values'][$field_name][$langcode][$delta]['subject_name']: '';
+    $subject_name = isset($form_state['values'][$field_name][$langcode][$delta]['subject_name']) ? $form_state['values'][$field_name][$langcode][$delta]['subject_name'] : '';
     $object_name = isset($form_state['values'][$field_name][$langcode][$delta]['object_name']) ? $form_state['values'][$field_name][$langcode][$delta]['object_name'] : '';
 
     // Validation:
     //------------
     // If the row is empty then skip this one, there's nothing to validate.
     if (!($type_id || $type_name) && !$subject_name && !$object_name) {
+      // @debug print "HERE; Type Name: $type_name, Type ID: $type_id, Subject Name: $subject_name, Object Name: $object_name\n";
       return;
     }
 
     // Do not proceed if subject ID or object ID does not exist
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
-      !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
+        !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
       return;
     }
 
@@ -488,19 +488,19 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .
-      drupal_render($element['subject_name']) . "
+          drupal_render($element['subject_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-      drupal_render($element['vocabulary']) . "
+          drupal_render($element['vocabulary']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-      drupal_render($element['type_name']) . "
+          drupal_render($element['type_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-      drupal_render($element['type_id']) . "
+          drupal_render($element['type_id']) . "
         </div>
         <div>" .
-      drupal_render($element['object_name']) . "
+          drupal_render($element['object_name']) . "
         </div>
       </div>
     ";
