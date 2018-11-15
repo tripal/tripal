@@ -124,7 +124,10 @@ class TripalFieldQuery extends EntityFieldQuery {
       if (is_numeric($results)) {
         return $results;
       }
-      return count($results['TripalEntity']);
+      if (array_key_exists('TripalEntity', $results)) {
+        return count($results['TripalEntity']);
+      }
+      return 0;
     }
     return $results;
   }
