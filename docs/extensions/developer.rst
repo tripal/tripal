@@ -4,13 +4,13 @@ Developer Tools
 
 The following modules provide support to both core and extension Tripal developers.
 
-Tripal Docker (Centos)
-----------------------
+TripalDock
+------------
 
-This repository builds docker images for Tripal v2 and Tripal v3 installed upon Drupal 7.56 with PostGreSQL database.
+TripalDock is a command line tool that helps with creating and running Tripal sites using Docker. This tool is designed for developers and is not suitable for production.
 
-`Documentation <https://github.com/tripal/docker-tripal-centos/blob/master/README.md>`__
-`Repository <https://github.com/tripal/docker-tripal-centos>`__
+`Documentation <https://github.com/statonlab/tripaldock/blob/master/README.md>`__
+`Repository <https://github.com/statonlab/tripaldock>`__
 
 Tripal Download API
 --------------------

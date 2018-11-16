@@ -14,7 +14,7 @@ A Drush-based loader for VCF files that follows the genotype storage rules outli
 Mainlab Chado Loader
 ---------------------
 
-MCL (Mainlab Chado Loader) is a module that enables users to upload their biological data to chado database schema. Users are required to transfer their biological data into various types of data template files. MCL, then, uploads these data template files into a chado schema.
+MCL (Mainlab Chado Loader) is a module that enables users to upload their biological data to Chado database schema. Users are required to transfer their biological data into various types of data template files. MCL, then, uploads these data template files into a chado schema.
 
 `Documentation <https://gitlab.com/mainlabwsu/mcl/blob/master/README.md>`__
 `Repository <https://gitlab.com/mainlabwsu/mcl>`__
@@ -30,7 +30,7 @@ This module was designed to aid in collection and further analysis of raw phenot
 Tripal BibTeX
 --------------
 
-A BibTEX importer for Tripal Publications. Currently this module only provides a drush function (tripal-import-bibtex-pubs; trpimport-bibtex) for import of BibTEX files.
+A BibTEX importer for Tripal Publications. Currently this module only provides a Drush function (``tripal-import-bibtex-pubs``; ``trpimport-bibtex``) for import of BibTEX files.
 
 `Documentation <https://github.com/UofS-Pulse-Binfo/tripal_bibtex/blob/7.x-3.x/README.md>`__
 `Repository <https://github.com/UofS-Pulse-Binfo/tripal_bibtex>`__

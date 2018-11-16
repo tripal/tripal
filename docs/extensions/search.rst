@@ -20,7 +20,7 @@ Mainlab Chado Search is a module that enables advanced search function for biolo
 Tripal ElasticSearch
 --------------------
 
-The Tripal Elasticsearch module allows you to easily manage the indexing and display of Elasticsearch on your Tripal website. It also easily enables Cross-Site Querying, allowing you to connect to other Tripal sites and provide additional search results to your users.
+The Tripal ElasticSearch module allows you to easily manage the indexing and display of ElasticSearch on your Tripal website. It also easily enables Cross-Site Querying, allowing you to connect to other Tripal sites and provide additional search results to your users.
 
 `Documentation <https://github.com/tripal/tripal_elasticsearch/blob/master/docs/README.md>`__
 `Repository <https://github.com/tripal/tripal_elasticsearch>`__

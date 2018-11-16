@@ -8,9 +8,9 @@ The below modules are Tripal 3 compatible and grouped roughly by category:
 
    extensions/administrative
    extensions/analysis
-   extensions/datainput
+   extensions/data_input
    extensions/developer
-   extensions/3rdparty
+   extensions/3rd_party
    extensions/search
    extensions/visualization
 
@@ -45,4 +45,4 @@ Guidelines
 - Please write two sentences MAXIMUM about the function of the module.
 - Include links to both the documentation (even if it's your README) and the repository (e.g. Github, Gitlab)
 - If your module doesn't fit well in any of the existing categories, still pick the best one but then feel free to suggest a new category in the PR description.
-- Extension Modules must be publically available for download
+- Extension Modules must be publicly available for download

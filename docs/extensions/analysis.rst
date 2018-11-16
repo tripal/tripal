@@ -6,7 +6,7 @@ The following modules provide support for loading annotation or analysis' into C
 Tripal Analysis Expression
 --------------------------
 
-A module for loading, annotating, and visualizing NCBI Biosamples and expression data.
+A module for loading, annotating, and visualizing NCBI Biomaterials and expression data.
 
 `Documentation <https://github.com/tripal/tripal_analysis_expression/blob/master/README.md>`__
 `Repository <https://github.com/tripal/tripal_analysis_expression>`__

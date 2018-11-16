@@ -12,10 +12,10 @@ Tripal Alchemist allows you to transform entities from one type to another.  Def
 `Repository <https://github.com/statonlab/tripal_alchemist>`__
 
 
-Tripal Property Curations
+Tripal Curator
 -------------------------
 
-Tripal Property Curations is a Toolbox for curating Chado Properties. It is under development and not suitable for use yet.
+Tripal Curator is a Toolbox for curating Chado Properties.  Split properties into multiple child properties, and mass reassign property CVterms.
 
 `Documentation <https://github.com/statonlab/tripal_curator/blob/master/README.md>`__
 `Repository <https://github.com/statonlab/tripal_curator>`__
