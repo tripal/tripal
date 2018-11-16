@@ -18,11 +18,12 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
   $num_entities = $entities->rowCount();
   
   // Parse the $update variable for tokens and load those tokens.
-  preg_match_all("'/\[.*?\]/'", $update, $bundle_tokens);
+  preg_match_all("/\[.*?\]/", $update, $bundle_tokens);
 
   $fields = array();
+  print_r($bundle_tokens);
   foreach ($bundle_tokens as $bundle_token) {
-    $elements = explode(',', $token);
+    $elements = explode(',', $bundle_token[0]);
     $field_name = array_shift($elements);
     $field_array = field_info_field($field_name);
     $fields[] = $field_array['id'];

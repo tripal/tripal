@@ -448,6 +448,15 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
   // PART 2: URL Alias'
   if ($form_state['values']['url']['url_pattern']) {
     $tokens_available = unserialize($form_state['values']['url']['tokens']);
+    
+    // For backwards compatibility we should warn uses if they use the word 
+    // 'feature' as this conflicts with the feature lookup tool. 
+    if (preg_match('/^feature\//', $form_state['values']['url']['url_pattern'])) {
+      $msg = t('The word "feature" should not be used first in the pattern as it conflicts with the feature lookup tool provided by Tripal');
+      form_set_error('url][url_pattern', $msg);
+    }
+    
+    // Now make sure the tokens are valid.
     if (preg_match_all('/(\[\w+\])/', $form_state['values']['url']['url_pattern'], $matches)) {
 
       // The matches of the first and only pattern will be our tokens.
