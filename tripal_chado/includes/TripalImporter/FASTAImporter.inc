@@ -535,7 +535,7 @@ class FASTAImporter extends TripalImporter {
         }
 
         // Get the relationship subject
-         $subject = $name ? $name : $uname;
+         $subject = $uname ? $uname : "";
         if (!empty($re_subject)) {
           preg_match("/$re_subject/", $line, $matches);
           $subject = trim($matches[1]);
