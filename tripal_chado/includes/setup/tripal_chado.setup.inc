@@ -782,6 +782,11 @@ function _tripal_chado_prepare_create_bundle($args, $job) {
     }
   }
   else {
+
+    // Update the bundle category in case it was set incorrectly.
+    $category = array_key_exists('category', $args) ? $args['category'] : 'Other';
+    tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
+
     drush_print("Content type already created (skipping): " . $args['term_name'] . "...");
   }
 }
