@@ -542,7 +542,7 @@ function tripal_create_bundle($args, $job = NULL) {
     }
 
     // Set the bundle category
-    $category = array_key_exists('bundle_category', $args) ? $args['bundle_category'] : 'Other';
+    $category = array_key_exists('category', $args) ? $args['category'] : 'Other';
     tripal_set_bundle_variable('bundle_category', $bundle->id, $category);
 
     // Attache the bundle fields.
