@@ -5,10 +5,7 @@ Changes to this Document
 --------------------------
 
 
-These guidelines are binding to the Tripal Community. If you have comments, suggestions or constructive criticism please bring it up in a [comment on the github issue](https://github.com/tripal/tripal/issues/344). Changes to this document will be made after adequate discussion has occurred and the project management committee has voted in favour of the change.
-
-The above document makes us a sort of hybrid between a [meritocracy and liberal contribution model](https://opensource.guide/leadership-and-governance/#what-are-some-of-the-common-governance-structures-for-open-source-projects).
-
+These guidelines are binding to the Tripal Community. If you have comments or questions, please `comment on the Github issue <https://github.com/tripal/tripal/issues/344>`_.. Changes to this document will be made after adequate discussion has occurred and the project management committee has voted in favor of the change.
 
 Governance Structure
 ---------------------

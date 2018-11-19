@@ -10,4 +10,5 @@ Contributing to Tripal
 
    contributing/pull_requests
    contributing/tests
+   contributing/documentation
    contributing/governance
