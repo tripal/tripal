@@ -1001,11 +1001,14 @@ class OBOImporter extends TripalImporter {
       }
       $ontology_results = drupal_json_decode($response->data);
       if ($ontology_results['error']) {
-        throw new Exception(t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
+
+        $this->logMessage(t('Cannot find the ontology via an EBI OLS lookup: !short_name. \n' .
+          'We tried to access: !url'.
           'EBI Reported: !message. ' .
           'Consider finding the OBO file for this ontology and manually loading it first.',
-          ['!message' => $ontology_results['message'], '!short_name' => $short_name]));
+          ['!message' => $ontology_results['message'], '!short_name' => $short_name, '!url' => $full_url]), TRIPAL_WARNING);
       }
+      //What should happen with this stuff?
       $base_iri = $ontology_results['config']['baseUris'][0];
       $ontologyID = $ontology_results['ontologyId'];
       $this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
@@ -1020,13 +1023,20 @@ class OBOImporter extends TripalImporter {
         ['!id' => $id]));
     }
     $results = drupal_json_decode($response->data);
+    if (!$results){
+      $this->logMessage('Error: no data with !url.  The response was: !response', ['!url' => $full_url, '!response' => $response]);
+
+      return FALSE;
+    }
 
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
-      throw new Exception(t('Cannot find the term via an EBI OLS lookup: !term. ' .
-        'EBI Reported: !message.' .
-        'Consider finding the OBO file for this ontology and manually loading it first.',
-        ['!message' => $results['message'], '!term' => $id]));
+      $this->logMessage('Cannot find the term via an EBI OLS lookup: !term. ' .
+        'We tried to access: !url'.
+        'EBI Reported: !message. Consider finding the OBO file for this ontology and manually loading it first.',
+        ['!message' => $results['message'], '!term' => $id, '!url' => $full_url], TRIPAL_WARNING);
+
+      return FALSE;
     }
 
     // TODO: what do we do if the term is not defined by this ontology?
@@ -1740,6 +1750,10 @@ class OBOImporter extends TripalImporter {
         // If we can't find the term in the database then do an EBI lookup.
         else {
           $stanza = $this->findEBITerm($id);
+
+          if (!$stanza){
+            return FALSE;
+          }
 
           // Make sure the DBs and CVs exist and are added to our cache.
           $this->addDB($stanza['db_name'][0]);
