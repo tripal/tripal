@@ -3,34 +3,46 @@ Guidelines for Contribution to Tripal
 
 
 
-The following guidelines are meant to encourage contribution to Tripal source-code on GitHub by making the process open, transparent and collaborative. If you have any feedback including suggestions for improvement or constructive criticism, please [comment on the github issue](https://github.com/tripal/tripal/issues/344). **These guidelines apply to everyone contributing to Tripal whether it's your first time (Welcome!) or project management committee members.**
+The following guidelines are meant to encourage contribution to Tripal source-code on GitHub by making the process open, transparent and collaborative. If you have any feedback including suggestions for improvement or constructive criticism, please `comment on the Github issue <https://github.com/tripal/tripal/issues/344>`_. **These guidelines apply to everyone contributing to Tripal whether it's your first time (Welcome!) or project management committee members.**
 
-**Note:** _These guidelines are specifically for contributing to_ [_https://github.com/tripal/tripal_](https://github.com/tripal/tripal)_. However, we encourage all Tripal extension modules to consider following these guidelines to foster collaboration among the greater Tripal Community._
+.. note::
 
-Guidelines serve as suggestions ( **should** ) or requirements (**must).** _When the word "should" is used in the text below, the stated policy is expected but there may be minor exceptions.  When the word "must" is used there are no exceptions to the stated policy._
+  These guidelines are specifically for contributing to `Tripal <https://github.com/tripal/tripal>`_. However, we encourage all Tripal extension modules to consider following these guidelines to foster collaboration among the greater Tripal Community.
 
-## Github Communication Tips
+.. note::
+
+	Guidelines serve as suggestions ( **should** ) or requirements (**must**). When the word "should" is used in the text below, the stated policy is expected but there may be minor exceptions.  When the word "must" is used there are no exceptions to the stated policy.
+
+
+Github Communication Tips
+---------------------------
+
 
 - Don't be afraid to mention people (@username) who are knowledgeable on the topic or invested.*- We are academics and overcommitted, it's too easy for issues to go unanswered.
-  - Likewise, don't be shy about bumping an issue if no one responds after a few days.  Balancing responsibilities is hard.
+  - Likewise, don't be shy about bumping an issue if no one responds after a few days.  Balancing responsibilities is hard.*
 - Want to get more involved? Issues marked with "Good beginner issue" are a good place to start if you want to try your hand at submitting a PR.
-- Everyone is encouraged/welcome to comment on the issue queue!** Tell us if you
+- Everyone is encouraged/welcome to comment on the issue queue! Tell us if you
     - are experiencing the same problem
     - have tried a suggested fix
     - know of a potential solution or work-around
     - have an opinion, idea or feedback of any kind!
-- Be kind when interacting with others on github!** (see Code of Conduct below for further guidelines). We want to foster a welcoming, inclusive community!
+- Be kind when interacting with others on Github! (see Code of Conduct below for further guidelines). We want to foster a welcoming, inclusive community!
     - Constructive criticism is welcome and encouraged but should be worded such that it is helpful :-) Direct criticism towards the idea or solution rather than the person and focus on alternatives or improvements.
 
-## Bugs
+Bugs
+-----
 
-- Every bug **should** be reported as a github issue.
+
+- Every bug **should** be reported as a Github issue.
   - Even if a bug is found by a committer who intends to fix it themselves immediately, they **should** create an issue and assign it to themselves to show their intent.
 - Please follow the issue templates as best you can.  This information makes discussion easier and helps us resolve the problem faster.
   - Also provide as much information as possible :-)  Screenshots or links to the issue on a development site can go a long way!
 - Bonus points for unit tests to ensure the bug does not return :-)
 
-## Feature Requests
+Feature Requests
+------------------
+
+
 
 - Every feature request should start as an issue so that discussion is encouraged :-)**
 - Please provide the following information (bold is required; underlined strengthens your argument):
@@ -44,9 +56,13 @@ Guidelines serve as suggestions ( **should** ) or requirements (**must).** _When
     - Votes should be based on whether this feature is generally applicable and doesn't exclude existing users and not be biased by the needs of your own Tripal site.
 - If a feature isn't suitable for inclusion within Tripal core, use the issue discussion as a springboard to create a Tripal extension module!
 
-**Note:** _In the future there will be a set of guidelines for what should be included in core. This will make the process of requesting new features more streamlined, inclusive and transparent._
+.. note::
 
-## Pull Request (PR) Guideline
+  In the future there will be a set of guidelines for what should be included in core. This will make the process of requesting new features more streamlined, inclusive and transparent.
+
+Pull Request (PR) Guideline
+----------------------------
+
 
 The goal of this document is to make it easy for **A)** contributors to make pull requests that will be accepted, and **B)** Tripal committers to determine if a pull request should be accepted.
 
@@ -66,12 +82,13 @@ The goal of this document is to make it easy for **A)** contributors to make pul
     - [issue\_number]-[tripal\_version]-[short\_description]
   - tripal\_version being Tv2, Tv3, etc.
   - "-[short\_description]" being optional but highly encouraged
-- **Must** follow Drupal code standards: [https://www.drupal.org/docs/develop/standards](https://www.drupal.org/docs/develop/standards)
+- **Must** follow `Drupal code standards: <https://www.drupal.org/docs/develop/standardshttps://www.drupal.org/docs/develop/standards>`_
 - PRs for new feature should remain open until adequately discussed (see guidelines below) and approved by a vote (all members of the PMC must vote in favour).
 
-**Note:** _See the Tripal PR Tutorial for more guidance on how to actually create a PR if contribution via github is new to you (_ [_KnowPulse workflow for inspiration_](https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)_)_
+**Note:** _See the Tripal PR Tutorial for more guidance on how to actually create a PR if contribution via Github is new to you: `_KnowPulse workflow for inspiration_<https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)>`_
 
-## General Project Management
+General Project Management
+---------------------------
 
 - **Every task related to Tripal should be in github, either as it's own issue or grouped with like tasks into a single issue.** This effectively puts our todo list on github making it transparent to anyone who wants to help. It has the benefit of showing how active our community is, keeps everyone informed with where Tripal is headed and makes it easy for others to chime in with experience, comments and support.
 - **Guidelines for Tagging Issues:**
@@ -96,34 +113,19 @@ The goal of this document is to make it easy for **A)** contributors to make pul
     - Committers can work on a fork or directly.  If the branch is on tripal/tripal, then other committers should contribute via PR unless otherwise agreed
 - If an issue is identified as being relevant to another repository (ie a tripal module, not core), a new issue **should** be created, cross referenced, and the original issue should be closed encouraging discussion in the module.
 
-## Code of Conduct
+Code of Conduct
+----------------
+
 
 - Be nice!  If that's insufficient, Tripal community defers to https://www.contributor-covenant.org/
 
-## Testing/CI
+Testing/CI
+------------
 
-Exhaustive guides to testing are available at tripal.info (here for now: [https://www.bradfordcondon.com/2018/05/02/tripal\_testing\_guidelines/](https://www.bradfordcondon.com/2018/05/02/tripal_testing_guidelines/)).  Below are guiding principles.
+
+Comprehensive guides to testing are available in the :ref:`tests` section.  Below are guiding principles.
 
 - All tests pass.
 - Tests don't modify db: use transactions and factories.
 - Tests are organized properly: by submodule and function.
 - Tests run quietly.
-
-## Changes to this Document
-
-These guidelines are binding to the Tripal Community. If you have comments, suggestions or constructive criticism please bring it up in a [comment on the github issue](https://github.com/tripal/tripal/issues/344). Changes to this document will be made after adequate discussion has occurred and the project management committee has voted in favour of the change.
-
-# Tripal Governance
-
-The above document makes us a sort of hybrid between a [meritocracy and liberal contribution model](https://opensource.guide/leadership-and-governance/#what-are-some-of-the-common-governance-structures-for-open-source-projects).
-
-
-The Tripal project recognizes these roles:
-
-- Users - They have downloaded Tripal!  Maybe they even have a site!
-- Contributors - contributing!  Code, comments, discussion, questions, bug reports.
-- Committers - write access to the repository
-- PMC - Makes **code relevant** decisions.
-- Oversight committee - Makes **policy leve** decisions.  This may overlap with PMC, but the idea is the oversight committee includes parties who are **not necessarily coders** and therefore not reviewing Pull requests etc.
-
-More guidelines coming soon.

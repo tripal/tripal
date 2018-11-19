@@ -1,7 +1,7 @@
+.. _tests:
+
 Unit Tests for Tripal
 =======================
-
-
 
 This guide is for developers looking to contribute code to the core Tripal project.  It introduces the testing philosophy and guidelines for Tripal core.  Tripal uses Tripal Test Suite, which brings bootstraps your Tripal site for PHPUnit.  It also provides conveniences like name spacing, seeders, transactions, and data factories.
 
