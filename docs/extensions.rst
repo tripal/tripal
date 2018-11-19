@@ -13,6 +13,7 @@ The below modules are Tripal 3 compatible and grouped roughly by category:
    extensions/3rd_party
    extensions/search
    extensions/visualization
+   extensions/in_development
 
 If you don't see the module you are looking for here, try a `Tripal-specific search on GitHub <https://github.com/search?q=topic%3Atripal>`__.
 

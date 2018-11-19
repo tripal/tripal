@@ -19,6 +19,7 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
   #analysis-annotation .section p:last-child a,
   #data-loading-collection .section p:last-child a,
   #developer-tools .section p:last-child a,
+  #in-development .section p:last-child a,
   #third-party-integration .section p:last-child a,
   #searching .section p:last-child a,
   #visualization-display .section p:last-child a {
@@ -45,6 +46,7 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
    #analysis-annotation .section p:last-child a:hover,
    #data-loading-collection .section p:last-child a:hover,
    #developer-tools .section p:last-child a:hover,
+   #in-development .section p:last-child a:hover,
    #third-party-integration .section p:last-child a:hover,
    #searching .section p:last-child a:hover,
    #visualization-display .section p:last-child a:hover  {
