@@ -476,7 +476,6 @@ class sbo__relationship extends ChadoField {
     $settings = $this->field['settings'];
 
     $record = $entity->chado_record;
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
