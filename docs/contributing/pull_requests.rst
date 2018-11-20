@@ -1,8 +1,6 @@
 Guidelines for Contribution to Tripal
 ========================================
 
-
-
 The following guidelines are meant to encourage contribution to Tripal source-code on GitHub by making the process open, transparent and collaborative. If you have any feedback including suggestions for improvement or constructive criticism, please `comment on the Github issue <https://github.com/tripal/tripal/issues/344>`_. **These guidelines apply to everyone contributing to Tripal whether it's your first time (Welcome!) or project management committee members.**
 
 .. note::
@@ -17,9 +15,8 @@ The following guidelines are meant to encourage contribution to Tripal source-co
 Github Communication Tips
 ---------------------------
 
-
-- Don't be afraid to mention people (@username) who are knowledgeable on the topic or invested.*- We are academics and overcommitted, it's too easy for issues to go unanswered.
-  - Likewise, don't be shy about bumping an issue if no one responds after a few days.  Balancing responsibilities is hard.*
+- Don't be afraid to mention people (@username) who are knowledgeable on the topic or invested.  *We are academics and overcommitted, it's too easy for issues to go unanswered: don't give up on us!*
+  - Likewise, don't be shy about bumping an issue if no one responds after a few days. *Balancing responsibilities is hard.*
 - Want to get more involved? Issues marked with "Good beginner issue" are a good place to start if you want to try your hand at submitting a PR.
 - Everyone is encouraged/welcome to comment on the issue queue! Tell us if you
     - are experiencing the same problem
@@ -42,15 +39,13 @@ Bugs
 Feature Requests
 ------------------
 
-
-
-- Every feature request should start as an issue so that discussion is encouraged :-)**
+- Every feature request should start as an issue so that discussion is encouraged :-)
 - Please provide the following information (bold is required; underlined strengthens your argument):
     - **Use Case:** fully describe why you need/want this feature
     - Generally Applicable: Why do you feel this is generally applicable? Suggest other use cases if possible. Mention (@) others that might want/need this feature.
     - Implementation: Describe a possible implementation. Bonus points for configuration, use of ontologies, ease of use, permission control, security considerations
 - All features **should** be optional so that Tripal admin can choose to make it available to their users.
-    - When applicable, new features should be designed such that tripal-site admin can disable them.
+    - When applicable, new features should be designed such that Tripal-site admin can disable them.
     - Bonus points: for making new features configurable and easily themed.
 - Feature requests will be voted on by the project management and advisory/steering committees to determine if it should be included in core, an existing extension module or it's own extension module.
     - Votes should be based on whether this feature is generally applicable and doesn't exclude existing users and not be biased by the needs of your own Tripal site.
@@ -63,7 +58,6 @@ Feature Requests
 Pull Request (PR) Guideline
 ----------------------------
 
-
 The goal of this document is to make it easy for **A)** contributors to make pull requests that will be accepted, and **B)** Tripal committers to determine if a pull request should be accepted.
 
 - PRs that address a specific issue **must** link to the related issue page.
@@ -75,22 +69,24 @@ The goal of this document is to make it easy for **A)** contributors to make pul
 - PRs that include new functionality **must** also provide Unit Tests.
   - Tests **must** test the new functionality added.
   - Bonus points for testing all surrounding functionality.
-    - _Note: testing surrounding functionality is highly encouraged if the submitter is on the PMC ;-)_
   - For example, when adding feature X to custom tables, the PR must include tests for feature X and we would be greatly appreciative if it included tests for custom tables in general :-D.
 - PRs **should** pass all Travis-CI tests before they are merged.
 - Branches **should** follow the following format:
-    - [issue\_number]-[tripal\_version]-[short\_description]
+  - [issue\_number]-[tripal\_version]-[short\_description]
   - tripal\_version being Tv2, Tv3, etc.
   - "-[short\_description]" being optional but highly encouraged
 - **Must** follow `Drupal code standards: <https://www.drupal.org/docs/develop/standardshttps://www.drupal.org/docs/develop/standards>`_
 - PRs for new feature should remain open until adequately discussed (see guidelines below) and approved by a vote (all members of the PMC must vote in favour).
 
-**Note:** _See the Tripal PR Tutorial for more guidance on how to actually create a PR if contribution via Github is new to you: `_KnowPulse workflow for inspiration_<https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)>`_
+
+.. note::
+
+  If you need more instructions creating a pull request, see for example the `KnowPulse workflow <https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)>`_
 
 General Project Management
 ---------------------------
 
-- **Every task related to Tripal should be in github, either as it's own issue or grouped with like tasks into a single issue.** This effectively puts our todo list on github making it transparent to anyone who wants to help. It has the benefit of showing how active our community is, keeps everyone informed with where Tripal is headed and makes it easy for others to chime in with experience, comments and support.
+- **Every task related to Tripal should be in Github, either as it's own issue or grouped with like tasks into a single issue.** This effectively puts our todo list on github making it transparent to anyone who wants to help. It has the benefit of showing how active our community is, keeps everyone informed with where Tripal is headed and makes it easy for others to chime in with experience, comments and support.
 - **Guidelines for Tagging Issues:**
     - The first committer who comments on an issue should tag it with the version of Tripal it applies to.
     - Issues with a suggested fix or work-around should be tagged with "Fix Required" to let others know a PR is needed.
