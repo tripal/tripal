@@ -17,7 +17,7 @@ Installation
 ~~~~~~~~~~~~~~
 
 
-After cloning the `Tripal Github repo<https://github.com/tripal/tripal>`_, you will need to install the developer dependencies required to run tests locally.  To do this, you'll need to `install Composer <https://getcomposer.org/doc/00-intro.md>`_, and then execute ``composer install`` in your project root.
+After cloning the `Tripal Github repo <https://github.com/tripal/tripal>`_, you will need to install the developer dependencies required to run tests locally.  To do this, you'll need to `install Composer <https://getcomposer.org/doc/00-intro.md>`_, and then execute ``composer install`` in your project root.
 
 Remember to run ``composer update`` to update Tripal TestSuite before writing and running new tests. This is especially important when running pull requests that contribute unit tests. If tests are passing on the Travis environment but not on your machine, running composer update might resolve the problem.
 
@@ -40,7 +40,7 @@ Test organization
 Tests should be placed in ``tests/``.  This root directory contains the following files:
 * ``bootstrap.php`` - Test directory configuration.  Don't modify this.
 * ``DatabasSeeders/`` - `Database seeders <https://github.com/statonlab/TripalTestSuite#database-seeders>`_, for filling Chado with permanent test data.
-* ``DataFactory.php`` - `Data factories https://github.com/statonlab/TripalTestSuite#factories>`_, for providing test-by-test Chado data.
+* ``DataFactory.php`` - `Data factories <https://github.com/statonlab/TripalTestSuite#factories>`_, for providing test-by-test Chado data.
 * ``example.env`` - An example environment file.  Configure this to match your development site and save as ``.env``.  Read more here: https://tripaltestsuite.readthedocs.io/en/latest/environment.html
 
 Tests must end with ``Test.php`` to be recognized by PHPUnit.  The tests themselves should be organized by submodule, and category.
@@ -106,7 +106,7 @@ The test class file should extend ``StatonLab\TripalTestSuite\TripalTestCase`` i
 
 You typically will want at least one test per public method in your file or class. In the below test class, I define a single test: ``test_tripal_get_organism()``.  The test should start with `test_`, otherwise it wont run by default in PHPUnit (you can also declare that it is a test in the method documentation using ``@test``.
 
-An ideal test operates *independently* of other tests: by default, unit tests run in random order.  How, then, do we provide our test with relevant data?  We use **Factories**, which you can read about on in the `Tripal Test Suite documentation<https://tripaltestsuite.readthedocs.io/en/latest/factories.html>`_.  In the below example, we create an organism with known information, and assert that we can retrieve it with the Chado API functions.
+An ideal test operates *independently* of other tests: by default, unit tests run in random order.  How, then, do we provide our test with relevant data?  We use **Factories**, which you can read about on in the `Tripal Test Suite documentation <https://tripaltestsuite.readthedocs.io/en/latest/factories.html>`_.  In the below example, we create an organism with known information, and assert that we can retrieve it with the Chado API functions.
 
 
 .. code-block:: php
