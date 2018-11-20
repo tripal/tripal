@@ -144,7 +144,18 @@ class TripalFieldTestHelper {
   }
 
   /**
+   * Create a fake version of the $element parameter used in many field methods
+   * (e.g. TripalFieldWidget::form).
    *
+   * @param $delta
+   *   The delta for the $element you want to fake.
+   * @param $langcode
+   *   The language code for the field/widget. This should usually be LANGUAGE_NONE.
+   * @param $required
+   *   True if the widget is required and false otherwise.
+   *
+   * @return
+   *   A fake $element variable for use in testing.
    */
   public function mockElement($delta = 0, $langcode = LANGUAGE_NONE, $required = FALSE) {
     return [
@@ -172,7 +183,11 @@ class TripalFieldTestHelper {
   }
 
   /**
+   * Create a fake version of the create/edit content form with the
+   * current entity attached.
    *
+   * @return
+   *   A fake $form array for use in testing.
    */
   public function mockForm() {
     return [
@@ -182,7 +197,18 @@ class TripalFieldTestHelper {
   }
 
   /**
+   * Create a fake version of the create/edit content form_state
+   * with the current entity attached.
    *
+   * @param $delta
+   *   The delta for the $element you want to fake.
+   * @param $langcode
+   *   The language code for the field/widget. This should usually be LANGUAGE_NONE.
+   * @param $values
+   *    An array of values where the key is the form element name and the value is
+   *    the fake user submmitted value.
+   * @return
+   *   A fake $form_state array for use in testing.
    */
   public function mockFormState($delta = 0, $langcode = LANGUAGE_NONE, $values = NULL) {
     $form_state = [
