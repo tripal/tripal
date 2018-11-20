@@ -64,6 +64,8 @@ The goal of this document is to make it easy for **A)** contributors to make pul
   - Really in almost every case, there should be an issue for a PR.  This allows feedback and discussion before the coding happens.  Not grounds to reject, but encourage users to create issues at start of their PR.  Better late than never :).
 - Each PR **must** be tested/approved by at least 2 users with at least one user being a "trusted committer."
   - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).
+  - At the project management committee's discretion, a PR may be subject to only one PR.  Generally these are small and obvious commits.
+  - While Tripal's review body is small, only one of the code reviews must be a thorough functional test.
   - Tripal's guiding philosophy is to encourage open contribution.  With this in mind, committers should **work with contributors** to resolve issues in their PRs.  PRs that will not be merged should be closed, **transparently citing** the reason for closure.  In an ideal world, features that would be closed are discouraged at the **issue phase** before the code is written!
   - The pull request branch should be deleted after merging (if not from a forked repository) by the person who performs the merge.
 - PRs that include new functionality **must** also provide Unit Tests.
