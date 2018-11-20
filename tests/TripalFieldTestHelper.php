@@ -37,7 +37,7 @@ class TripalFieldTestHelper {
    * Specifcally, initialize the widget class and save it for further testing.
    *
    * @param $bundle_name
-   *   The name of the bundle the field should be part of. This bundle must already exist.
+   *   The name of the bundle the field should be attached to. This bundle must already exist.
    * @param $machine_names
    *   An array of machine names including:
    *    - field_name: the name of the field (REQUIRED)
@@ -50,7 +50,6 @@ class TripalFieldTestHelper {
    */
   public function __construct($bundle_name, $machine_names, $entity, $field_info, $instance_info) {
 
-    // @debug print "BUNDLE: " .$bundle_name."\n";
 
     // What type of class are we initializing?
     $this->type = 'field';
@@ -88,7 +87,6 @@ class TripalFieldTestHelper {
       // The entity from the specified bundle that the field should be attached to.
       $this->entity = $entity;
 
-      // @debug print_r($instance_info);
 
       // Initialize the class.
       $this->initialized_class = new $class_name($this->field_info, $this->instance_info);
@@ -104,7 +102,7 @@ class TripalFieldTestHelper {
   }
 
   /**
-   * Retrieve the field information for a fiven field.
+   * Retrieve the field information for a given field.
    * @see https://api.drupal.org/api/drupal/modules%21field%21field.info.inc/function/field_info_field/7.x
    *
    * @param $field_name
@@ -124,7 +122,7 @@ class TripalFieldTestHelper {
   }
 
   /**
-   * Retrieve the field instance information for a fiven field.
+   * Retrieve the field instance information for a given field.
    * @see https://api.drupal.org/api/drupal/modules%21field%21field.info.inc/function/field_info_instance/7.x
    *
    * @param $bundle_name
