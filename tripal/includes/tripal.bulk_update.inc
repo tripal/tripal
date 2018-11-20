@@ -21,7 +21,6 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
   preg_match_all("/\[.*?\]/", $update, $bundle_tokens);
 
   $fields = array();
-  print_r($bundle_tokens);
   foreach ($bundle_tokens as $bundle_token) {
     $elements = explode(',', $bundle_token[0]);
     $field_name = array_shift($elements);
