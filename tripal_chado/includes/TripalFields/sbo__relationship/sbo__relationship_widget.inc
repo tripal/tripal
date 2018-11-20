@@ -75,7 +75,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $base_table = $this->instance['settings']['base_table'];
     $widget['#table_name'] = $field_table;
 
-    // @debug dpm($this, 'this');
 
     // Get the primary key of the relationship table
     $pkey = $this->schema['primary key'][0];
@@ -129,7 +128,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $subject_label = tripal_get_field_item_keyval($items, $delta, 'subject_name', $subject_label);
         $type = tripal_get_field_item_keyval($items, $delta, 'type_name', $type);
 
-        //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item!');
       }
     }
 
@@ -150,7 +148,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       $subject_label = $form_state['values'][$field_name]['und'][$delta]['subject_name'];
       $type = $form_state['values'][$field_name]['und'][$delta]['type_name'];
 
-      //@debug dpm(array($subject_id, $type_id, $object_id), 'have an item (AJAX)!');
     }
 
     // Getting default values for the relationship type element.
@@ -346,7 +343,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     //------------
     // If the row is empty then skip this one, there's nothing to validate.
     if (!($type_id || $type_name) && !$subject_name && !$object_name) {
-      // @debug print "HERE; Type Name: $type_name, Type ID: $type_id, Subject Name: $subject_name, Object Name: $object_name\n";
       return;
     }
 
@@ -476,7 +472,6 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
     }
-    // @debug dpm($form_state['values'][$field_name][$langcode][$delta], "form state values: $delta");
 
     return $errors;
   }

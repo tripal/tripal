@@ -324,7 +324,7 @@ class sbo__relationship extends ChadoField {
   }
 
   /**
-   * Retrive the object from the current relationship.
+   * Retrieve the object from the current relationship.
    */
   private function getRelationshipObject($relationship) {
     $name = [];
@@ -353,7 +353,7 @@ class sbo__relationship extends ChadoField {
       //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
-    // If the object has a unqiuename then add that in for refernce.
+    // If the object has a unqiuename then add that in for reference.
     if (property_exists($relationship->{$this->object_id_column}, 'uniquename')) {
       $record['data:0842'] = $relationship->{$this->object_id_column}->uniquename;
     }
