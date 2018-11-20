@@ -16,7 +16,7 @@ Github Communication Tips
 ---------------------------
 
 - Don't be afraid to mention people (@username) who are knowledgeable on the topic or invested.  *We are academics and overcommitted, it's too easy for issues to go unanswered: don't give up on us!*
-  - Likewise, don't be shy about bumping an issue if no one responds after a few days. *Balancing responsibilities is hard.*
+- Likewise, don't be shy about bumping an issue if no one responds after a few days. *Balancing responsibilities is hard.*
 - Want to get more involved? Issues marked with "Good beginner issue" are a good place to start if you want to try your hand at submitting a PR.
 - Everyone is encouraged/welcome to comment on the issue queue! Tell us if you
     - are experiencing the same problem
