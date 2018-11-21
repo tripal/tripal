@@ -18,6 +18,40 @@
  */
 
 /**
+ * Used for autocomplete in forms for identifying stocks
+ *
+ * @param $string
+ *   The string to search for.
+ *
+ * @return
+ *   A json array of terms that begin with the provided string.
+ *
+ * @ingroup tripal_stock_api
+ */
+function chado_autocomplete_stock($string = '') {
+  $items = array();
+  $sql = "
+    SELECT
+      B.stock_id as id, B.uniquename, B.name,
+      O.genus, O,species,
+      CVT.name as type
+    FROM {stock} B
+      INNER JOIN {organism} O ON O.organism_id = B.organism_id
+      INNER JOIN {cvterm} CVT ON CVT.cvterm_id = B.type_id
+    WHERE lower(B.uniquename) like lower(:str) OR lower(B.name) like lower(:str)
+    ORDER by B.name
+    LIMIT 25 OFFSET 0
+  ";
+  $records = chado_query($sql, array(':str' => $string . '%'));
+  while ($r = $records->fetchObject()) {
+    $key = "$r->name [id: $r->id]";
+    $items[$key] = "$r->name ($r->uniquename, $r->type, $r->genus $r->species)";
+  }
+
+  drupal_json_output($items);
+}
+
+/**
  * Retrieves a chado stock variable
  *
  * @param $identifier
