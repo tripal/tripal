@@ -64,7 +64,7 @@ The goal of this document is to make it easy for **A)** contributors to make pul
   - Really in almost every case, there should be an issue for a PR.  This allows feedback and discussion before the coding happens.  Not grounds to reject, but encourage users to create issues at start of their PR.  Better late than never :).
 - Each PR **must** be tested/approved by at least 2 users with at least one user being a "trusted committer."
   - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).
-  - At the project management committee's discretion, a PR may be subject to only one PR.  Generally these are small and obvious commits.
+  - At the Project Management Committee's (PMC) discretion, a PR may be subject to only one review.  Generally these are small and obvious commits.
   - While Tripal's review body is small, only one of the code reviews must be a thorough functional test.
   - Tripal's guiding philosophy is to encourage open contribution.  With this in mind, committers should **work with contributors** to resolve issues in their PRs.  PRs that will not be merged should be closed, **transparently citing** the reason for closure.  In an ideal world, features that would be closed are discouraged at the **issue phase** before the code is written!
   - The pull request branch should be deleted after merging (if not from a forked repository) by the person who performs the merge.
@@ -85,10 +85,11 @@ The goal of this document is to make it easy for **A)** contributors to make pul
 
   If you need more instructions creating a pull request, see for example the `KnowPulse workflow <https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)>`_
 
-General Project Management
----------------------------
+How PRs and Issues are Handled
+------------------------------
+The Project Management Committee (PMC) and trusted committers will follow specific rules when working with all issues and pull requests. The rules are listed below. Anyone may provide bug fixes in which case some of the following will apply to all:
 
-- **Every task related to Tripal should be in Github, either as it's own issue or grouped with like tasks into a single issue.** This effectively puts our todo list on github making it transparent to anyone who wants to help. It has the benefit of showing how active our community is, keeps everyone informed with where Tripal is headed and makes it easy for others to chime in with experience, comments and support.
+- **Every task related to Tripal (bug, feature requests, documentation, discussions) should be in Github, either as it's own issue or grouped with like tasks into a single issue.** This effectively puts our todo list on github making it transparent to anyone who wants to help. It has the benefit of showing how active our community is, keeps everyone informed with where Tripal is headed and makes it easy for others to chime in with experience, comments and support.
 - **Guidelines for Tagging Issues:**
     - The first committer who comments on an issue should tag it with the version of Tripal it applies to.
     - Issues with a suggested fix or work-around should be tagged with "Fix Required" to let others know a PR is needed.
@@ -98,8 +99,8 @@ General Project Management
     - All feature requests should be tagged as an "enhancement"
     - If you are the first reviewer to confirm a PR works, tag it with "Reviewer #1 Approval"
 - **Guidelines for Discussion:**
-    - No requirement for discussion (still requires 2 reviews): Minor bug fixes, changes to inline comments, addition of unit tests, minor code typos
-    - Requires Discussion: Major changes, new features, and issue at the discretion of the PMC
+    - Issues that do not require discussion (PRs still require 2 reviews): minor bug fixes, changes to inline comments, addition of unit tests, minor code typos
+    - Issues that require discussion: major changes, new features, and issue at the discretion of the PMC
       - Add the "discussion" tag to any issue requiring discussion
       - Discussion Tag is removed when adequate discussion has taken place (at the discretion of the person who added the tag)
       - Additionally, new features require that all members of the PMC have had a chance to contribute to the discussion and feel satisfied.
