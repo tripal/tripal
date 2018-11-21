@@ -1,5 +1,5 @@
-Contributing to Tripal
-=======================
+Contributing to Tripal Core Code
+================================
 
 
 
