@@ -2241,7 +2241,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'term_name' => 'contact',
       ),
       'widget' => array(
-        'type' => 'local__contact_widget',
+        'type' => 'chado_linker__contact_widget',
         'settings' => array(
           'display_label' => 1,
         ),
@@ -2249,7 +2249,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'display' => array(
         'default' => array(
           'label' => 'hidden',
-          'type' => 'local__contact_formatter',
+          'type' => 'chado_linker__contact_formatter',
           'settings' => array(),
         ),
       ),
