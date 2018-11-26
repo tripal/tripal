@@ -38,10 +38,10 @@ Test organization
 
 
 Tests should be placed in ``tests/``.  This root directory contains the following files:
-* ``bootstrap.php`` - Test directory configuration.  Don't modify this.
-* ``DatabasSeeders/`` - `Database seeders <https://github.com/statonlab/TripalTestSuite#database-seeders>`_, for filling Chado with permanent test data.
-* ``DataFactory.php`` - `Data factories <https://github.com/statonlab/TripalTestSuite#factories>`_, for providing test-by-test Chado data.
-* ``example.env`` - An example environment file.  Configure this to match your development site and save as ``.env``.  Read more here: https://tripaltestsuite.readthedocs.io/en/latest/environment.html
+ - ``bootstrap.php``: Test directory configuration.  Don't modify this.
+ - ``DatabasSeeders/``: `Database seeders <https://github.com/statonlab/TripalTestSuite#database-seeders>`_, for filling Chado with permanent test data.
+ - ``DataFactory.php``: `Data factories <https://github.com/statonlab/TripalTestSuite#factories>`_, for providing test-by-test Chado data.
+ - ``example.env``: An example environment file.  Configure this to match your development site and save as ``.env``.  Read more here: https://tripaltestsuite.readthedocs.io/en/latest/environment.html
 
 Tests must end with ``Test.php`` to be recognized by PHPUnit.  The tests themselves should be organized by submodule, and category.
 

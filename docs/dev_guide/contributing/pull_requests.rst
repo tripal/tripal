@@ -31,9 +31,9 @@ Bugs
 
 
 - Every bug **should** be reported as a Github issue.
-  - Even if a bug is found by a committer who intends to fix it themselves immediately, they **should** create an issue and assign it to themselves to show their intent.
+    - Even if a bug is found by a committer who intends to fix it themselves immediately, they **should** create an issue and assign it to themselves to show their intent.
 - Please follow the issue templates as best you can.  This information makes discussion easier and helps us resolve the problem faster.
-  - Also provide as much information as possible :-)  Screenshots or links to the issue on a development site can go a long way!
+    - Also provide as much information as possible :-)  Screenshots or links to the issue on a development site can go a long way!
 - Bonus points for unit tests to ensure the bug does not return :-)
 
 Feature Requests
@@ -61,29 +61,29 @@ Pull Request (PR) Guideline
 The goal of this document is to make it easy for **A)** contributors to make pull requests that will be accepted, and **B)** Tripal committers to determine if a pull request should be accepted.
 
 - PRs that address a specific issue **must** link to the related issue page.
-  - Really in almost every case, there should be an issue for a PR.  This allows feedback and discussion before the coding happens.  Not grounds to reject, but encourage users to create issues at start of their PR.  Better late than never :).
+    - Really in almost every case, there should be an issue for a PR.  This allows feedback and discussion before the coding happens.  Not grounds to reject, but encourage users to create issues at start of their PR.  Better late than never :).
 - Each PR **must** be tested/approved by at least 2 users with at least one user being a "trusted committer."
-  - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).
-  - At the Project Management Committee's (PMC) discretion, a PR may be subject to only one review.  Generally these are small and obvious commits.
-  - While Tripal's review body is small, only one of the code reviews must be a thorough functional test.
-  - Tripal's guiding philosophy is to encourage open contribution.  With this in mind, committers should **work with contributors** to resolve issues in their PRs.  PRs that will not be merged should be closed, **transparently citing** the reason for closure.  In an ideal world, features that would be closed are discouraged at the **issue phase** before the code is written!
-  - The pull request branch should be deleted after merging (if not from a forked repository) by the person who performs the merge.
+    - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).
+    - At the Project Management Committee's (PMC) discretion, a PR may be subject to only one review.  Generally these are small and obvious commits.
+    - While Tripal's review body is small, only one of the code reviews must be a thorough functional test.
+    - Tripal's guiding philosophy is to encourage open contribution.  With this in mind, committers should **work with contributors** to resolve issues in their PRs.  PRs that will not be merged should be closed, **transparently citing** the reason for closure.  In an ideal world, features that would be closed are discouraged at the **issue phase** before the code is written!
+    - The pull request branch should be deleted after merging (if not from a forked repository) by the person who performs the merge.
 - PRs that include new functionality **must** also provide Unit Tests.
-  - Tests **must** test the new functionality added.
-  - Bonus points for testing all surrounding functionality.
-  - For example, when adding feature X to custom tables, the PR must include tests for feature X and we would be greatly appreciative if it included tests for custom tables in general :-D.
+    - Tests **must** test the new functionality added.
+    - Bonus points for testing all surrounding functionality.
+    - For example, when adding feature X to custom tables, the PR must include tests for feature X and we would be greatly appreciative if it included tests for custom tables in general :-D.
 - PRs **should** pass all Travis-CI tests before they are merged.
 - Branches **should** follow the following format:
-  - [issue\_number]-[tripal\_version]-[short\_description]
-  - tripal\_version being Tv2, Tv3, etc.
-  - "-[short\_description]" being optional but highly encouraged
-- **Must** follow `Drupal code standards: <https://www.drupal.org/docs/develop/standardshttps://www.drupal.org/docs/develop/standards>`_
+    - ``[issue\_number]-[tripal\_version]-[short\_description]``
+    - ``tripal\_version`` being Tv2, Tv3, etc.
+    - ``-[short\_description]`` being optional but highly encouraged
+- **Must** follow `Drupal code standards <https://www.drupal.org/docs/develop/standards>`_
 - PRs for new feature should remain open until adequately discussed (see guidelines below) and approved by a vote (all members of the PMC must vote in favour).
 
 
 .. note::
 
-  If you need more instructions creating a pull request, see for example the `KnowPulse workflow <https://github.com/UofS-Pulse-Binfo/KnowPulse/blob/master/Workflow.md)>`_
+  If you need more instructions creating a pull request, see for example the `KnowPulse workflow <https://knowpulse.readthedocs.io/en/latest/developer_docs/dev_workflow.html#workflow>`_
 
 How PRs and Issues are Handled
 ------------------------------

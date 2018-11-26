@@ -1,7 +1,7 @@
 Contributing to the Documentation
 ==================================
 
-The Tripal documentation is written in `**Restructured Text** <http://docutils.sourceforge.net/rst.html>`_, compiled with `Sphinx <http://www.sphinx-doc.org/en/master/usage/quickstart.html>`_, and built/hosted with `ReadTheDocs  <https://readthedocs.org/>`_.  This directory, when compiled, is hosted at https://tripal.readthedocs.io/en/latest/
+The Tripal documentation is written in `**Restructured Text** <http://docutils.sourceforge.net/rst.html>`_, compiled with `Sphinx <http://www.sphinx-doc.org/en/master/usage/quickstart.html>`_, and built/hosted with `ReadTheDocs  <https://readthedocs.org/>`_.  The ``docs`` directory, when compiled, is hosted at https://tripal.readthedocs.io/en/latest/.
 
 For minor changes, you can simply `Edit the file using the Github editor <https://help.github.com/articles/editing-files-in-your-repository/>`_, which will allow you to make a Pull Request.  Once approved, your changes will be reflected in the documentation automatically!
 
