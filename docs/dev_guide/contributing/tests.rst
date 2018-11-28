@@ -5,17 +5,13 @@ Unit Tests for Tripal
 
 This guide is for developers looking to contribute code to the core Tripal project.  It introduces the testing philosophy and guidelines for Tripal core.  Tripal uses Tripal Test Suite, which brings bootstraps your Tripal site for PHPUnit.  It also provides conveniences like name spacing, seeders, transactions, and data factories.
 
-
 Tripal Test Suite
 -------------------
 
-
 For a basic introduction of Tripal Testing, please see the `Test Suite documentation <https://tripaltestsuite.readthedocs.io/en/latest/>`_.
-
 
 Installation
 ~~~~~~~~~~~~~~
-
 
 After cloning the `Tripal Github repo <https://github.com/tripal/tripal>`_, you will need to install the developer dependencies required to run tests locally.  To do this, you'll need to `install Composer <https://getcomposer.org/doc/00-intro.md>`_, and then execute ``composer install`` in your project root.
 
@@ -23,7 +19,6 @@ Remember to run ``composer update`` to update Tripal TestSuite before writing an
 
 Testing criteria
 -----------------
-
 
 For facilitate accepting your pull requests, your code should include tests.  The tests should meet the following guidelines:
 
@@ -36,14 +31,13 @@ For facilitate accepting your pull requests, your code should include tests.  Th
 Test organization
 ------------------
 
-
 Tests should be placed in ``tests/``.  This root directory contains the following files:
  - ``bootstrap.php``: Test directory configuration.  Don't modify this.
  - ``DatabasSeeders/``: `Database seeders <https://github.com/statonlab/TripalTestSuite#database-seeders>`_, for filling Chado with permanent test data.
  - ``DataFactory.php``: `Data factories <https://github.com/statonlab/TripalTestSuite#factories>`_, for providing test-by-test Chado data.
  - ``example.env``: An example environment file.  Configure this to match your development site and save as ``.env``.  Read more here: https://tripaltestsuite.readthedocs.io/en/latest/environment.html
 
-Tests must end with ``Test.php`` to be recognized by PHPUnit.  The tests themselves should be organized by submodule, and category.
+Test files must end with ``Test.php`` to be recognized by PHPUnit.  The tests themselves should be organized by submodule, and category.
 
 Submodules
 ~~~~~~~~~~~
@@ -75,23 +69,17 @@ In order for tests to run locally, you'll need an environmental file ``tests/.en
 Writing tests
 --------------
 
+Tagging tests
+~~~~~~~~~~~~~~~~
 
-When doing test driven development, you might be running tests over and over.  To speed you along, you can assign your tests a unique ``@group`` tag, ie ``@group failing``.  Then specify your novel group when you run ``phpunit``, ie ``phpunit --group failing``.
-
-You should also tag your test with relevant groups.  For example, our Tripal Chado API tests should be tagged with ``@group api``.  We don't tag it with ``@group chado`` because it is in the *testsuite* (the submodule folder) Chado.
+You should tag your test with relevant groups.  For example, our Tripal Chado API tests should be tagged with ``@group api``.  We don't need to tag it with ``@group chado`` because it is in the *testsuite* (the submodule folder) Chado.
 
 If your test is related to a specific issue on the Tripal repo, thats great! You can use the ``@ticket`` tag to link it: ie, ``@ticket 742`` for issue number 742.
 
 Defining the test class
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you've identified where your test will go, we can start writing our test.
-
-
-Tripal Test suite provides a convenient way to start writing a test class: ``tripaltest make:test TestName``.  From the project root, our example  ``./vendor/bin/tripaltest make:test tripal_chado/api/TripalChadoOrganismAPITest``.  This will generate a test stub file with name spacing.
-
-
-The test class file should extend ``StatonLab\TripalTestSuite\TripalTestCase`` instead of `TestCase` to take advantage of the Tripal Test Suite tools.  For example, to wrap our tests in a database transaction (so we can indiscriminately insert and modify without having to revert consider how to clean up the database after), we use ``StatonLab\TripalTestSuite\DBTransaction;``.  Your test class name should match the file.
+The test class file should extend ``StatonLab\TripalTestSuite\TripalTestCase`` instead of ``TestCase`` to take advantage of the Tripal Test Suite tools.  Tests should use a database transaction to ensure the database state is the same at the start and end of the test case.  Your test class name should match the file.
 
 
 .. code-block:: php
@@ -104,7 +92,8 @@ The test class file should extend ``StatonLab\TripalTestSuite\TripalTestCase`` i
   }
 
 
-You typically will want at least one test per public method in your file or class. In the below test class, I define a single test: ``test_tripal_get_organism()``.  The test should start with `test_`, otherwise it wont run by default in PHPUnit (you can also declare that it is a test in the method documentation using ``@test``.
+Defining individual tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An ideal test operates *independently* of other tests: by default, unit tests run in random order.  How, then, do we provide our test with relevant data?  We use **Factories**, which you can read about on in the `Tripal Test Suite documentation <https://tripaltestsuite.readthedocs.io/en/latest/factories.html>`_.  In the below example, we create an organism with known information, and assert that we can retrieve it with the Chado API functions.
 
@@ -163,10 +152,14 @@ An ideal test operates *independently* of other tests: by default, unit tests ru
   }
 
 
+.. note::
+
+  You typically will want at least one test per public method in your file or class. Tests should start with ``test_``, otherwise it wont run by default in PHPUnit (you can also declare that it is a test in the method documentation using ``@test``.
+
 Testing quietly
 ~~~~~~~~~~~~~~~~
 
-Code may output errors when failing intentionally, or as part of job progress.  This can clutter the test environment, so you should wrap the offending methods.  If the output goes to standard out, you can use ``ob_start()`` and ``ob_end_clean()``.
+Tests should run quietly.  If the output goes to standard out, you can use ``ob_start()`` and ``ob_end_clean()``.
 
 
 .. code-block:: php
