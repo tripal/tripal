@@ -42,6 +42,9 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
         $ec->setAlias($ent, $update);
         $ec->resetCache();
       }
+      // To speed up bulk alias updating the following function was skipped
+      // over. We'll add it back here to complete the process.
+      drupal_path_alias_whitelist_rebuild();
     }
     elseif ($type == 'title') {
       if (!empty($arg)) {
