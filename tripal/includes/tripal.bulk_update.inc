@@ -42,16 +42,12 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
         $ec->setAlias($ent, $update);
         $ec->resetCache();
       }
-      // To speed up bulk alias updating the following function was skipped
-      // over. We'll add it back here to complete the process.
-      drupal_path_alias_whitelist_rebuild();
     }
     elseif ($type == 'title') {
       if (!empty($arg)) {
         if (is_array($arg)) {
           $ent = reset($arg);
         }
-
         $ec = entity_get_controller('TripalEntity');
         $ec->setTitle($ent, $update);
         $ec->resetCache();
@@ -63,6 +59,12 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
       print $i . "/" . $num_entities . " entities have been updated. Memory usage: $mem bytes.\r";
     }
     $i++;
+  }
+  
+  // To speed up bulk alias updating the following function was skipped
+  // over. We'll add it back here to complete the process.
+  if ($type == 'alias') {
+    drupal_path_alias_whitelist_rebuild();
   }
 
   print "\nDone.";
