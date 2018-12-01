@@ -447,8 +447,18 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
 
   // PART 2: URL Alias'
   if ($form_state['values']['url']['url_pattern']) {
+    $url_pattern = trim($form_state['values']['url']['url_pattern']);    
     $tokens_available = unserialize($form_state['values']['url']['tokens']);
-    if (preg_match_all('/(\[\w+\])/', $form_state['values']['url']['url_pattern'], $matches)) {
+    
+    // For backwards compatibility we should warn uses if they use the word 
+    // 'feature' as this conflicts with the feature lookup tool. 
+    if (preg_match('/^feature\//', $url_pattern)) {
+      $msg = t('The word "feature" should not be used first in the pattern as it conflicts with the feature lookup tool provided by Tripal');
+      form_set_error('url][url_pattern', $msg);
+    }
+    
+    // Now make sure the tokens are valid.
+    if (preg_match_all('/(\[\w+\])/', $url_pattern, $matches)) {
 
       // The matches of the first and only pattern will be our tokens.
       $tokens_used = $matches[1];
@@ -501,7 +511,8 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
 
     // Save the URL alias pattern if it's set.
     if ($form_state['values']['url']['url_pattern']) {
-      tripal_set_bundle_variable('url_format', $bundle->id, $form_state['values']['url']['url_pattern']);
+      $url_pattern = trim($form_state['values']['url']['url_pattern']);
+      tripal_set_bundle_variable('url_format', $bundle->id, $url_pattern);
     }
 
     // There are two submit buttons for this either updating the paths or the
@@ -521,7 +532,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
         'tripal_update_all_urls_and_titles', $args, $user->uid, 10, $includes);
     }
     elseif ($trigger == 'Bulk update all aliases'){
-      $update = $form_state['input']['url']['url_pattern'];
+      $update = $url_pattern;
       $type = 'alias';
       $args = array(
         'bundle_id' => $bundle->name,
