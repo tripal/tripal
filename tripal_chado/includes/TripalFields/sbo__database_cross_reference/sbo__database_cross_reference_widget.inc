@@ -122,8 +122,6 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
     $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
 
-    dpm('HERE: '.$db_id);
-
     // If user did not select a database, we want to remove the dbxref record.
     // We do this by setting all values to empty except the value and the
     // primary key.
@@ -144,6 +142,9 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     }
   }
 
+  /**
+   * @see TripalFieldWidget::submit()
+   */
   public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
     $field_name = $this->field['field_name'];
     $field_table = $this->instance['settings']['chado_table'];
@@ -151,8 +152,6 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
     $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
     $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
-
-    dpm($db_id);
 
     if($db_id and !$dbxref_id) {
       $dbxref = chado_insert_dbxref([
