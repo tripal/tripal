@@ -1827,19 +1827,11 @@ function tripal_chado_update_7335() {
 }
 
 
+
 /**
  * Use correct contact field when linked via linker table.
  */
 function tripal_chado_update_7336() {
-
-  $bases = [
-    'feature',
-    'featuremap',
-    'library',
-    'nd_experiment',
-    'project',
-    'pubauthor',
-  ];
 
   $bundles = field_info_instances('TripalEntity');
 
@@ -1848,7 +1840,8 @@ function tripal_chado_update_7336() {
     $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
     $base = $bundle->data_table;
 
-    if (in_array($base, $bases)) {
+    $contact_table = $base . '_contact';
+    if (chado_table_exists($contact_table)) {
 
       $field_name = $base . '_contact';
       $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
@@ -1857,7 +1850,7 @@ function tripal_chado_update_7336() {
       $instance_info['widget']['type'] = 'chado_linker__contact_widget';
       $instance_info['formatter']['type'] = 'chado_linker__contact_widget';
       field_update_instance($instance_info);
-
+      
     }
   }
 }
