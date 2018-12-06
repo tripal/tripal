@@ -463,12 +463,21 @@ function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $e
     $chado_column = $instance['settings']['chado_column'];
     $base_table = $instance['settings']['base_table'];
 
-    // Iterate through the field's items. Fields with cardinality ($delta) > 1
-    // are multi-valued.
+    // We want to iterate through the field's items. We will also store the
+    // field values in the $field_items array to be returned by this function. 
     $items = field_get_items($entity_type, $entity, $field_name);
     $temp = array();
     $field_items[$field_name] = $items;
-    if (is_array($items)) {
+    
+    // If there are no items for the field and it's a base table field then
+    // we need to set it to NULL so that the value can be removed.
+    if (empty($items)) {
+       if (empty($items) and ($chado_table == $base_table)) {
+         $base_fields[$chado_table][$chado_column] = '__NULL__';
+       }
+    }
+    else if (is_array($items)) {
+      // Note: fields with cardinality ($delta) > 1 are multi-valued.
       foreach ($items as $delta => $item) {
   
         // A field may have multiple items. The field can use items
