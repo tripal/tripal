@@ -13,6 +13,7 @@ User's Guide
    user_guide/learn_chado
    user_guide/content_types
    user_guide/example_genomics
+   user_guide/file_management
    user_guide/mviews
    user_guide/searching
    user_guide/job_management
