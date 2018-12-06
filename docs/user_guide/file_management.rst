@@ -3,7 +3,7 @@ File Management
 
 User Quotas
 -----------
-Data importers that use the Tripal API and Tripal supported widgets automatically associate uploaded files with users. If you are allowing end-users to upload files you may want to consider adding quotas to prevent the server storage from filling.  To ensure that users do not exceed the limits of the server a quota system is available.  Navigate to **Administer > Tripal > File Management** and click the **User Quota** tab to reveal the following page:
+Data importers that use the Tripal API and Tripal supported widgets automatically associate uploaded files with users. If you are allowing end-users to upload files you may want to consider adding quotas to prevent the server storage from filling.  To ensure that users do not exceed the limits of the server a quota system is available.  Navigate to **Administer > Tripal > User File Management** and click the **User Quotas** tab to reveal the following page:
 
 .. image:: ./file_management.user_quotas.1.png
 
