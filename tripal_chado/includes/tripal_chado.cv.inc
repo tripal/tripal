@@ -154,6 +154,10 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
   if (strcmp($op, 'Update')==0) {
     $match = array('cv_id' => $cv_id);
     $success = chado_update_record('cv', $match, $values);
+    
+    // Clear the cached terms
+    cache_clear_all('tripal_chado:term:*', 'cache', TRUE);
+    
     if ($success) {
       drupal_set_message(t("Controlled vocabulary updated"));
       drupal_goto('admin/tripal/loaders/chado_vocabs/chado_cvs');

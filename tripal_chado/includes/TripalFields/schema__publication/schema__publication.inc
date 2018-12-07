@@ -144,12 +144,6 @@ class schema__publication extends ChadoField {
       }
     }
 
-    // Ensure we don't have a value if there are no publications.
-    // This is needed due to stubbing out the field above.
-    if (sizeof($pubs) == 0) {
-      unset($entity->{$field_name});
-    }
-
     $i = 0;
     foreach ($pubs as $pub_id => $pub) {
       $pub_details = chado_get_minimal_pub_info($pub);

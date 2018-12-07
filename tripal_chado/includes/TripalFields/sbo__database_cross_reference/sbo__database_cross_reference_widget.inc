@@ -99,7 +99,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
       '#disabled' => $db_id ? FALSE : TRUE,
     );
   }
-    
+
   /**
    * @see TripalFieldWidget::validate()
    */
@@ -111,7 +111,7 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    
+
     $schema = chado_get_schema($table_name);
     $pkey = $schema['primary key'][0];
     $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
@@ -139,6 +139,27 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
       }
+    }
+  }
+
+  /**
+   * @see TripalFieldWidget::submit()
+   */
+  public function submit($form, &$form_state, $entity_type, $entity, $langcode, $delta) {
+    $field_name = $this->field['field_name'];
+    $field_table = $this->instance['settings']['chado_table'];
+
+    $dbxref_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'];
+    $db_id = $form_state['values'][$field_name]['und'][$delta]['db_id'];
+    $accession = $form_state['values'][$field_name]['und'][$delta]['accession'];
+
+    if($db_id and !$dbxref_id) {
+      $dbxref = chado_insert_dbxref([
+        'db_id' => $db_id,
+        'accession' => $accession
+      ]);
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__dbxref_id'] = $dbxref->dbxref_id;
+      $form_state['values'][$field_name]['und'][$delta]['value'] = $dbxref->dbxref_id;
     }
   }
 

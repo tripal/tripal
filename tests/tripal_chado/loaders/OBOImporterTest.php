@@ -19,38 +19,38 @@ class OBOImporterTest extends TripalTestCase {
    * @throws \Exception
    */
   private function loadOBO($name, $path) {
-    
+
     $obo_id = db_select('public.tripal_cv_obo', 't')
-    ->fields('t', ['obo_id'])
-    ->condition('t.name', $name)
-    ->execute()
-    ->fetchField();
-    
+      ->fields('t', ['obo_id'])
+      ->condition('t.name', $name)
+      ->execute()
+      ->fetchField();
+
     if (!$obo_id) {
-      
+
       $obo_id = db_insert('public.tripal_cv_obo')
-      ->fields(['name' => $name, 'path' => $path])
-      ->execute();
+        ->fields(['name' => $name, 'path' => $path])
+        ->execute();
     }
-    
+
     $run_args = ['obo_id' => $obo_id];
-    
+
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
     $importer = new \OBOImporter();
     $importer->create($run_args);
     $importer->prepareFiles();
     $importer->run();
   }
-  
-  
+
+
   /**
-   * Tests that an OBO from a remote URL can be loaded.  
-   * 
+   * Tests that an OBO from a remote URL can be loaded.
+   *
    * For this test we will use the GO Plant Slim.
    *
    * @group obo
    */
-   public function testRemoteOBO() {
+  public function testRemoteOBO() {
 
     $name = 'core_test_goslim_plant';
     $path = 'http://www.geneontology.org/ontology/subsets/goslim_plant.obo';
@@ -64,7 +64,7 @@ class OBOImporterTest extends TripalTestCase {
       ->condition('name', 'biological_process')
       ->execute()
       ->fetchField();
-    $this->assertNotFalse($bp_cv_id, 
+    $this->assertNotFalse($bp_cv_id,
       "Missing the 'biological_process' cv record after loading the GO plant slim.");
 
     $cc_cv_id = db_select('chado.cv', 'c')
@@ -82,7 +82,7 @@ class OBOImporterTest extends TripalTestCase {
       ->fetchField();
     $this->assertNotFalse($mf_cv_id,
       "Missing the 'molecular_function' cv record after loading the GO plant slim.");
-    
+
     // Make sure we have a proper database record.
     $go_db_id = db_select('chado.db', 'd')
       ->fields('d', ['db_id'])
@@ -91,8 +91,8 @@ class OBOImporterTest extends TripalTestCase {
       ->fetchField();
     $this->assertNotFalse($go_db_id,
       "Missing the 'GO' database record after loading the GO plant slim.");
-  } 
-  
+  }
+
   /**
    * Tests that an OBO from a local path can be loaded.
    *
@@ -103,9 +103,9 @@ class OBOImporterTest extends TripalTestCase {
   public function testLocalOBO() {
     $name = 'tripal_obo_test';
     $path = __DIR__ . '/../example_files/test.obo';
-    
+
     $this->loadOBO($name, $path);
-    
+
     // Make sure we have a proper vocabulary record.
     $tot_cv_id = db_select('chado.cv', 'c')
       ->fields('c', ['cv_id'])
@@ -114,7 +114,7 @@ class OBOImporterTest extends TripalTestCase {
       ->fetchField();
     $this->assertNotFalse($tot_cv_id,
       "Missing the 'tripal_obo_test' cv record after loading the test.obo file");
-    
+
     // Make sure we have a proper database record.
     $tot_db_id = db_select('chado.db', 'd')
       ->fields('d', ['db_id'])
@@ -123,13 +123,13 @@ class OBOImporterTest extends TripalTestCase {
       ->fetchField();
     $this->assertNotFalse($tot_db_id,
       "Missing the 'TOT' db record after loading the test.obo file");
-    
+
     return [[$tot_cv_id, $tot_db_id]];
   }
 
   /**
    * Test that all nodes in our test OBO are loaded.
-   * 
+   *
    * @group obo
    * @dataProvider testLocalOBO
    */
@@ -138,25 +138,25 @@ class OBOImporterTest extends TripalTestCase {
 
     // Our test OBO has 14 nodes.
     $nodes = [
-      ['TOT:001' => 'node01'], 
-      ['TOT:002' => 'node02'], 
-      ['TOT:003' => 'node03'], 
-      ['TOT:004' => 'node04'], 
-      ['TOT:005' => 'node05'], 
+      ['TOT:001' => 'node01'],
+      ['TOT:002' => 'node02'],
+      ['TOT:003' => 'node03'],
+      ['TOT:004' => 'node04'],
+      ['TOT:005' => 'node05'],
       ['TOT:006' => 'node06'],
-      ['TOT:007' => 'node07'], 
-      ['TOT:008' => 'node08'], 
+      ['TOT:007' => 'node07'],
+      ['TOT:008' => 'node08'],
       ['TOT:009' => 'node09'],
-      ['TOT:010' => 'node10'], 
-      ['TOT:011' => 'node11'], 
-      ['TOT:012' => 'node12'], 
+      ['TOT:010' => 'node10'],
+      ['TOT:011' => 'node11'],
+      ['TOT:012' => 'node12'],
       ['TOT:013' => 'node13'],
       ['TOT:014' => 'node14'],
     ];
 
     // Test that the proper records were added to identify the term.    
     foreach ($nodes as $id => $node_name) {
-      
+
       // Check that cvterm record is inserted.
       $cvterm_id = db_select('chado.cvterm', 'cvt')
         ->fields('cvt', ['cvterm_id'])
@@ -166,7 +166,7 @@ class OBOImporterTest extends TripalTestCase {
         ->fetchField();
       $this->assertNotFalse($cvterm_id,
         "Missing the cvterm record with name, '$node' after loading the test.obo file");
-      
+
       // Check that the dbxref record is inserted.
       $accession = preg_replace('/TOT:/', '', $id);
       $dbxref_id = db_select('chado.dbxref', 'dbx')
@@ -176,7 +176,7 @@ class OBOImporterTest extends TripalTestCase {
       $this->assertNotFalse($cvterm_id,
         "Missing the dbxref record forid, '$id' after loading the test.obo file");
     }
-    
+
     // Test node 11 to make sure the definition was inserted correctly.
     // The definition for node11 has an extra colon and a comment.  The colon
     // should not throw off the insertion of the full definition and
@@ -191,7 +191,7 @@ class OBOImporterTest extends TripalTestCase {
       "The definition for node11 was not added.");
     $this->assertEquals('This is node 11 : Yo', $def,
       "The definition for node11 is incorrect. it was stored as \"$def\" but should be \"def: This is node 11 : Yo\".");
-    
+
     // Make sure that colons in term names don't screw up the term. This test
     // corresponds to the term with id CHEBI:132502 in the test.obo file.
     $exists = db_select('chado.cv', 'c')
@@ -200,8 +200,8 @@ class OBOImporterTest extends TripalTestCase {
       ->execute()
       ->fetchField();
     $this->assertFalse($exists);
-    
-    
+
+
     // Node14 should be marked as obsolete.
     $sql = "
       SELECT CVT.is_obsolete
@@ -213,7 +213,7 @@ class OBOImporterTest extends TripalTestCase {
     $is_obsolete = chado_query($sql)->fetchField();
     $this->assertEquals(1, $is_obsolete,
       "The term, node14, should be marked as obsolete after loading of the test.obo file.");
-    
+
     // Every vocabulary should have an is_a term added to support the is_a
     // relationships.
     $sql = "
@@ -226,21 +226,21 @@ class OBOImporterTest extends TripalTestCase {
     $is_reltype = chado_query($sql)->fetchField();
     $this->assertNotFalse($is_reltype,
       "The cvterm record for, is_a, should have been added during loading of the test.obo file.");
-    $this->assertEquals(1, $is_reltype, 
+    $this->assertEquals(1, $is_reltype,
       "The cvterm record, is_a, should be marked as a relationship type.");
-    
+
   }
-  
+
   /**
    * Test that insertion of synonyms works.
-   * 
+   *
    * The term 'node11' has a synonym:"crazy node" EXACT []
-   * 
+   *
    * @group obo
    * @dataProvider testLocalOBO
    */
-  public function testSynonyms($cv_id, $db_id){
-     
+  public function testSynonyms($cv_id, $db_id) {
+
     $query = db_select('chado.cvtermsynonym', 'cvts');
     $query->fields('cvts', ['synonym']);
     $query->join('chado.cvterm', 'cvt', 'cvts.cvterm_id = cvt.cvterm_id');
@@ -248,23 +248,23 @@ class OBOImporterTest extends TripalTestCase {
     $synonym = $query->execute()->fetchField();
     $this->assertNotFalse($synonym,
       "Failed to find the 'crazy node' synonym record for node 11 after loading the test.obo file.");
-    
+
     $this->assertEquals("crazy node", $synonym,
       "Failed to properly add the 'crazy node' synonym for node 11 instead the following was loaded: $synonym");
   }
-  
+
   /**
    * Test that insertion of subset works.
    *
    * The term 'node11' belongs to the test_crazy subset. Everything else belongs
    * to the test_normal subset.
-   * 
+   *
    *
    * @group obo
    * @dataProvider testLocalOBO
    */
   public function testSubset($cv_id, $db_id) {
-    
+
     $sql = "
       SELECT CVT.name
       FROM {cvtermprop} CVTP
@@ -277,10 +277,10 @@ class OBOImporterTest extends TripalTestCase {
     $term_name = chado_query($sql)->fetchField();
     $this->assertNotFalse($term_name,
       "This cvtermprop record for the subset 'test_crazy' is missing.");
-    
+
     $this->assertEquals('node11', $term_name,
       "This cvtermprop record for the subset 'test_crazy' is assigned to term, $term_name, instead of node11.");
-  
+
     $sql = "
       SELECT count(CVT.cvterm_id)
       FROM {cvtermprop} CVTP
@@ -291,16 +291,16 @@ class OBOImporterTest extends TripalTestCase {
       WHERE CVTPT.name = 'Subgroup' and DB.name = 'TOT' and CVTP.value = 'test_normal'
     ";
     $subset_count = chado_query($sql)->fetchField();
-    
+
     $this->assertNotFalse($subset_count,
       "This cvtermprop record for the subset 'test_normal' are missing.");
-    
+
     // There should be 12 terms that belong to subset 'test_normal' as node14
     // does not belong to a subset.
     $this->assertEquals(12, $subset_count,
       "There are $subset_count cvtermprop record for the subset 'test_normal' but there should be 13.");
   }
-  
+
   /**
    * Test that the insertion of xref works.
    *
@@ -312,7 +312,7 @@ class OBOImporterTest extends TripalTestCase {
    * @dataProvider testLocalOBO
    */
   public function testXref($cv_id, $db_id) {
-    
+
     $sql = "
       SELECT concat(DB2.name, ':', DBX2.accession)
       FROM {cvterm} CVT
@@ -327,11 +327,11 @@ class OBOImporterTest extends TripalTestCase {
     $xref_id = chado_query($sql)->fetchField();
     $this->assertNotFalse($xref_id,
       "This cvterm_dbxref record for the xref 'GO:0043226' is missing for node11.");
-    
+
     $this->assertEquals('GO:0043226', $xref_id,
       "This cvterm_dbxref record for node 11 is, $xref_id, instead of GO:0043226.");
   }
-  
+
   /**
    * Test that the insertion of comments works.
    *
@@ -341,7 +341,7 @@ class OBOImporterTest extends TripalTestCase {
    * @dataProvider testLocalOBO
    */
   public function testComment($cv_id, $db_id) {
-    
+
     $sql = "
       SELECT CVTP.value
       FROM {cvterm} CVT
@@ -355,11 +355,11 @@ class OBOImporterTest extends TripalTestCase {
     $comment = chado_query($sql)->fetchField();
     $this->assertNotFalse($xref_id,
       "This cvterm_dbxref record for the xref 'This is a crazy node' is missing for node11.");
-    
+
     $this->assertEquals('This is a crazy node', $comment,
       "This cvterm_dbxref record for node11 is, \"$comment\", instead of \"This is a crazy node\".");
   }
-  
+
   /**
    * Tests that the cvtermpath is properly loaded.
    *
@@ -384,7 +384,7 @@ class OBOImporterTest extends TripalTestCase {
       ['node12', 'is_a', 'node10'],
       ['node13', 'is_a', 'node11'],
     ];
-    foreach ($relationships  as $relationship) {
+    foreach ($relationships as $relationship) {
       $subject = $relationship[0];
       $type = $relationship[1];
       $object = $relationship[2];
@@ -404,7 +404,7 @@ class OBOImporterTest extends TripalTestCase {
       $this->assertNotFalse($rel_id,
         "The following relationship could not be found: $subect $type $object.");
     }
-    
+
     // Now make sure we have no more relationships than what we are supposed
     // to have.
     $sql = "
@@ -423,12 +423,12 @@ class OBOImporterTest extends TripalTestCase {
 
   /**
    * Tests that the cvtermpath is properly loaded.
-   * 
+   *
    * @group obo
    * @dataProvider testLocalOBO
    */
   public function testCVtermPath($cv_id, $db_id) {
-    
+
     // For now we won't include distance or type in the check because depending
     // how the tree was loaded and if there are multiple paths to a node
     // then there's no guarantee we'll always get the same path. Therefore the
@@ -450,7 +450,7 @@ class OBOImporterTest extends TripalTestCase {
       ['node01', 'node12'],
       ['node01', 'node13'],
       // Node03 as root.
-      ['node03', 'node04'], 
+      ['node03', 'node04'],
       ['node03', 'node06'],
       ['node03', 'node07'],
       ['node03', 'node08'],
@@ -492,7 +492,7 @@ class OBOImporterTest extends TripalTestCase {
 
     // Populate the cvtermpath for our test OBO.
     chado_update_cvtermpath($cv_id);
-    
+
     foreach ($relationships as $relationship) {
       $object = $relationship[0];
       $subject = $relationship[1];
@@ -505,7 +505,11 @@ class OBOImporterTest extends TripalTestCase {
         WHERE CVTP.cv_id = :cv_id and CVTO.name = :object and 
           CVTS.name = :subject
       ";
-      $args = [':cv_id' => $cv_id, ':object' => $object, ':subject' => $subject];
+      $args = [
+        ':cv_id' => $cv_id,
+        ':object' => $object,
+        ':subject' => $subject,
+      ];
       $cvtermpath_id = chado_query($sql, $args)->fetchField();
       $this->assertNotFalse($cvtermpath_id,
         "Cound not find the cvtermpath record for the relationship: $subject => $object.");
@@ -526,12 +530,12 @@ class OBOImporterTest extends TripalTestCase {
     $this->assertEquals($expected, $rel_count,
       "There are an incorrect number of paths. There were $rel_count found but there should be $expected.");
   }
-  
+
   /**
    * Tests that the EBI Lookup is properly working.
-   * 
+   *
    * The term CHEBI:132502 should have been loaded via EBI.
-   * 
+   *
    * @group obo
    * @dataProvider testLocalOBO
    */
@@ -547,7 +551,7 @@ class OBOImporterTest extends TripalTestCase {
     $this->assertNotFalse($cvterm_id,
       "The term, CHEBI:132502, is not present the EBI OLS lookup must not have succeeded.");
   }
-  
+
   /**
    * Tests when changes are made between OBO loads.
    *
@@ -561,9 +565,9 @@ class OBOImporterTest extends TripalTestCase {
   public function testOBOChanges($cv_id, $db_id) {
     $name = 'tripal_obo_test_update';
     $path = __DIR__ . '/../example_files/test.update.obo';
-    
+
     $this->loadOBO($name, $path);
-    
+
     // Did the name of term 13 change?
     $sql = "
       SELECT CVT.name
@@ -575,7 +579,7 @@ class OBOImporterTest extends TripalTestCase {
     $name = chado_query($sql)->fetchField();
     $this->assertEquals('New name 13.', $name,
       "The name for node13 (TOT:013) failed to update to 'New name 13'.");
-    
+
     // Node15 is new, and node02 got removed. Node15 now uses node02's name and
     // has TOT:002 as an alt_id. So, node02 should be marked as obsolete
     $sql = "
@@ -588,7 +592,7 @@ class OBOImporterTest extends TripalTestCase {
     $is_obsolete = chado_query($sql)->fetchField();
     $this->assertEquals(1, $is_obsolete,
       "The node02 (TOT:002) should be marked as obsolete after update.");
-    
+
     // Node16 is new, and node08 is now obsolete. Node16 now uses node08's name,
     // so, node08 should be marked as obsolete and have the word '(obsolete)'
     // added to prevent future conflicts.
@@ -603,4 +607,20 @@ class OBOImporterTest extends TripalTestCase {
     $this->assertEquals("node08 (obsolete)", $name,
       "The node08 (TOT:008) should be marked as obsolete after update.");
   }
+
+  /**
+   * @group obo
+   * @group chado
+   */
+  public function testfindEBITerm_finder_retrieves_term() {
+
+    module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
+    $importer_private = new \OBOImporter();
+    $importer = reflect($importer_private);
+    $id = 'PECO:0007085';
+    $result = $importer->findEBITerm($id);
+    $this->assertNotEmpty($result);
+    $this->assertEquals('fertilizer exposure', $result['name'][0]);
+    }
+
 }

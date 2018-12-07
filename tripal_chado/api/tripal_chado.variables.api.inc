@@ -314,6 +314,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       // check if the current table maps to a node type-------------------------
       // If this table is connected to a node there will be a chado_tablename 
       // table in drupal.
+      $base_tables = chado_get_base_tables();
       if (module_exists('tripal_core') and db_table_exists('chado_' . $table)) {
         // That has a foreign key to this one ($table_desc['primary key'][0]
         // and to the node table (nid).
