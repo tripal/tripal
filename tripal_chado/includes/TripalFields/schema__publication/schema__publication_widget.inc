@@ -115,44 +115,34 @@ class schema__publication_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    
-    if ($field_table != $base_table) {
-      $schema = chado_get_schema($field_table);
-      $pkey = $schema['primary key'][0];
-      $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
-      $fkey = $fkeys[0];
-      $pub_item_id = 'chado-' . $field_table . '__pub_id';
-
-      // Get the field values.
-      $fkey_value = $form_state['values'][$field_name]['und'][$delta]['value'];
-    }
-    else {
-      $pub_item_id = 'chado-' . $field_table . '__' . $field_column;
-    }
-    
-    $pub_id = $form_state['values'][$field_name]['und'][$delta][$pub_item_id];
-    $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
-
+        
     // If the user provided a pub_title then we want to set the foreign key
     // value to be the chado_record_id
+    $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
     if ($title) {
       $matches = array();
       if (preg_match('/^.*\[id:(\d+)]$/', $title, $matches)) {
         $pub_id = $matches[1];
         $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
-        $form_state['values'][$field_name]['und'][$delta][$pub_item_id] = $pub->pub_id;
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $pub->pub_id;
       }
     }
-
-    // In the widgetFrom function we automatically add the foreign key
-    // record.  But if the user did not provide a publication we want to take
-    // it out so that the Chado field_storage infrastructure won't try to
-    // write a record.
-    if (!$title) {
-      $form_state['values'][$field_name]['und'][$delta]['value'] = 'delete_me';
-      $form_state['values'][$field_name]['und'][$delta][$pub_item_id] = '';
+    else {
       $form_state['values'][$field_name]['und'][$delta]['value'] = '';
+      
+      // Clear out all other values if this is a linker table except the pkey. This
+      // lets the Chado storage API know that this is an update.
+      if ($field_table != $base_table) {
+        $schema = chado_get_schema($field_table);
+        $pkey = $schema['primary key'][0];
+        $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '';
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $fkey_lcolumn] = '';
+      }
+      else {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = '__NULL__';
+      }
     }
   }
 
