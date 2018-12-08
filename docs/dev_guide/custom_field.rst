@@ -43,4 +43,5 @@ The rest of this section will walk you through these steps.
    custom_field/select_vocab_terms
    custom_field/manual_field_creation
    custom_field/custom_widget
+   custom_field/custom_formatter
    custom_field/tripal_field_generator
