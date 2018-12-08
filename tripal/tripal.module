@@ -109,6 +109,18 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 
+  $items['admin/content/bio_data/unpublish'] = [
+    'title' => 'Unpublish Orphaned Content',
+    'description' => t('Unpublish content that has no associated records in the data store.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['tripal_unpublish_orphans_form'],
+    'access arguments' => ['administer tripal'],
+    'file' => 'includes/tripal.unpublish_orphans.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 3
+  ];
+  
   /**
    * Tripal Extensions
    */
