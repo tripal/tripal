@@ -138,3 +138,63 @@ function tripal_chado_bundle_delete($bundle) {
     ->execute();
 }
 
+/**
+ * Implements hook_bundle_find_orphans(). 
+ *
+ */
+function tripal_chado_bundle_find_orphans($bundle, $count = FALSE, $offset = 0, $limit = 10) {
+  $chado_bundle_table = chado_get_bundle_entity_table($bundle);
+  $schema = chado_get_schema($bundle->data_table);
+  $primary_key = $schema['primary key'][0];
+  
+  $select = "CT.entity_id";
+  if ($count) {
+    $select = "count(*) as count";
+  }
+  $qlimit = '';
+  if (!$count and $limit) {
+    $qlimit = "LIMIT $limit OFFSET $offset ";
+  }
+  // Get the count 
+  $query = "
+    SELECT $select  
+    FROM [$chado_bundle_table] CT
+      LEFT JOIN {" . $bundle->data_table . "} BT ON CT.record_id = BT.$primary_key
+    WHERE BT.$primary_key IS NULL
+    $qlimit
+  ";
+
+  $results = chado_query($query);
+  if ($count) {
+   $num_orphans = (int) $results->fetchField();
+   return $num_orphans;
+  }
+  else {
+    $ids = [];
+    while ($entity_id = $results->fetchField()) {
+      $ids[] = $entity_id;
+    }
+    return $ids;
+  }
+}
+
+/**
+ * Implements hook_bundle_delete_orphans(). 
+ */
+function tripal_chado_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob $job = NULL) {
+  
+  $chado_bundle_table = chado_get_bundle_entity_table($bundle);
+  $schema = chado_get_schema($bundle->data_table);
+  $primary_key = $schema['primary key'][0];
+  
+  $num_deleted = db_delete($chado_bundle_table)
+    ->condition('entity_id', $ids, 'IN')
+    ->execute();
+  
+  if ($job) {
+    $job->addItemsHandled($num_deleted);
+    $job->logMessage("Removed !num orphaned entities", ['!num' => $num_deleted]);
+  }    
+   
+  return $num_deleted;
+}

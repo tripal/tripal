@@ -1649,3 +1649,94 @@ function tripal_update_entity($bundle_name, $values) {
 
 
 }
+
+
+/**
+ * Removes orphaned entities.
+ * 
+ * An orphaned entity can occur if the module that created the entity 
+ * unknowingly lost its underlying record in its data store.  Such a case 
+ * could happen if someone directly removed the record from the data store 
+ * outside of the module's control. This function allows each module
+ * to report if any orphans are missing for a given bundle type.
+ * 
+ * @param integer $bundle_id
+ *   The numeric ID of the bundle.
+ * @param TripalJob $job
+ *   (Optional). If this function is executed via the Tripal Jobs system then
+ *   this argument is provided.
+ */
+function tripal_unpublish_orphans(int $bundle_id, TripalJob $job = NULL) {
+  $bundlec = entity_get_controller('TripalBundle');
+  $ids = $bundlec->deleteOrphans($bundle_id, $job);
+}
+
+/**
+ * A hook for modules to delete details for orphaned entities.
+ * 
+ * This hook is called by the TripalBundleController.  Modules that create
+ * entities should use this hook to clean up entities that are orphaned. The
+ * list of $ids passed should be entities who are already known to
+ * be orphaned. These IDs are found by the TripalBundleController using the
+ * results from the hook_bundle_find_orphans() function. 
+ * 
+ * An implementation of this hook should not try to clean up the entity itself,
+ * but rather it should only clean up it's own records used to manage the 
+ * relationship between the entity and the underlying data that the
+ * module provides.
+ * 
+ * An orphaned entity can occur if the module that created the entity 
+ * unknowingly lost its underlying record in its data store.  Such a case 
+ * could happen if someone directly removed the record from the data store 
+ * outside of the module's control. This function allows each module
+ * to report if any orphans are missing for a given bundle type.
+ * 
+ * @param TripalBundle $bundle
+ *   A TripalBundle object for the bundle whose entities are orphaned.
+ * @param array $ids
+ *   A list of entity IDs known to be orphaned.
+ * @param TripalJob $job
+ *   An optional Tripal Job object. This is provided when this function is
+ *   called using the Tripal Jobs system.  Implementors of this hook can
+ *   use the addItemsHandled() function to indicate how many entities were
+ *   cleaned up.
+ * @return integer
+ *   The number of entitites that were cleaned up.
+ */
+function hook_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob $job = NULL) { 
+
+    // See the tripal_chado_bundle_delete_orphans() function for an example.
+    
+}
+
+/**
+ * A hook for modules to report on oprhaned entities.
+ * 
+ * An orphaned entity can occur if the module that created the entity 
+ * unknowingly lost its underlying record in its data store.  Such a case 
+ * could happen if someone directly removed the record from the data store 
+ * outside of the module's control. This function allows each module
+ * to report if any orphans are missing for a given bundle type.
+ * 
+ * @param TripalBunldle $bundle
+ *   A TripalBundle object for the bundle that should be checked for 
+ *   orphaned entities.
+ * @param bool $count
+ *   TRUE if the function should return only the number of orphaned entities.
+ *   FALSE if the function should return the list of orphned entities.
+ * @param integer $offset
+ *   For paging of entities set this to the offset within the total count.
+ * @param integer $limit
+ *   For paging of entities set this to the total number to return.
+ *   
+ * @return array|bool
+ *  If $count == FALSE then an array of all entity IDs that are orphaned. If
+ *  $count == TRUE then a single integer count value is returned.
+ */
+function hook_bundle_find_orphans(TripalBundle $bundle, bool $count = FALSE, 
+  int $offset = 0, int $limit = 10) {
+  
+    // See the tripal_chado_bundle_find_orphans() function for an example.  
+  
+}
+
