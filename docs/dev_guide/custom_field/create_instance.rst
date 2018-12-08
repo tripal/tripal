@@ -212,6 +212,7 @@ The following code is a snippet from the ``tripal_chado_bundle_create_user_field
   }
 
 
+
 .. note::
   
   It is possible to have a field that is both programmtically attached to some content types but is also allowed to be attached to another content type by the site admin using the web interface. To do this, programmatically add the field to the content types using the ``hook_bundle_instance_info`` function and also implement the ``hook_bundle_create_user_field`` function to support manual adding.
