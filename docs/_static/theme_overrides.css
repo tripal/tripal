@@ -12,11 +12,51 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
    }
 }
 
+/**
+ * Buttons on Extension Module pages.
+ */
+#administrative .section p:last-child a,
+  #analysis-annotation .section p:last-child a,
+  #data-loading-collection .section p:last-child a,
+  #developer-tools .section p:last-child a,
+  #in-development .section p:last-child a,
+  #third-party-integration .section p:last-child a,
+  #searching .section p:last-child a,
+  #visualization-display .section p:last-child a {
+   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+   display: inline-block;
+   vertical-align: middle;
+   text-align: center;
+   border-radius: 4px;
+   margin-bottom: 20px;
+   margin-right: 8px;
+   -webkit-font-smoothing: antialiased;
+   letter-spacing: 0.03em;
+   font-weight: 500;
+   line-height: 14px;
+   font-size: 14px;
+   padding: 9px 10px;
+   color: #666666;
+   background: #FFFFFF;
+   background: -webkit-linear-gradient(top, #FFFFFF, #f1f1f1);
+   border: 1px solid #c8c8c8;
+   box-shadow: 0 1px 0px #e9e9e9;
+ }
+ #administrative .section p:last-child a:hover,
+   #analysis-annotation .section p:last-child a:hover,
+   #data-loading-collection .section p:last-child a:hover,
+   #developer-tools .section p:last-child a:hover,
+   #in-development .section p:last-child a:hover,
+   #third-party-integration .section p:last-child a:hover,
+   #searching .section p:last-child a:hover,
+   #visualization-display .section p:last-child a:hover  {
+  background: -webkit-linear-gradient(top, #FFFFFF, #e6e6e6);
+}
 
-/** 
+/**
  * BRANDING
  */
- 
+
 /* Sidebar Title */
 .wy-side-nav-search {
   background: none !important;
@@ -65,8 +105,8 @@ See: https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
     background-color: rgba(0,0,0);
 }
 .wy-menu-vertical li.toctree-l1 a,
-  .wy-menu-vertical li.toctree-l2 a, 
-  .wy-menu-vertical li.toctree-l3 a, 
+  .wy-menu-vertical li.toctree-l2 a,
+  .wy-menu-vertical li.toctree-l3 a,
   .wy-menu-vertical li.toctree-l4 a {
     color: #CCCCCC;
     border-color: black;
@@ -89,48 +129,48 @@ a.icon-home:visited {
   background: #e1f0db;
 }
 /* Default Notes */
-.wy-alert.wy-alert-info, 
-  .rst-content .note, 
-  .rst-content .wy-alert-info.attention, 
-  .rst-content .wy-alert-info.caution, 
-  .rst-content .wy-alert-info.danger, 
-  .rst-content .wy-alert-info.error, 
-  .rst-content .wy-alert-info.hint, 
-  .rst-content .wy-alert-info.important, 
-  .rst-content .wy-alert-info.tip, 
-  .rst-content .wy-alert-info.warning, 
-  .rst-content .seealso, .rst-content 
-  .wy-alert-info.admonition-todo, 
+.wy-alert.wy-alert-info,
+  .rst-content .note,
+  .rst-content .wy-alert-info.attention,
+  .rst-content .wy-alert-info.caution,
+  .rst-content .wy-alert-info.danger,
+  .rst-content .wy-alert-info.error,
+  .rst-content .wy-alert-info.hint,
+  .rst-content .wy-alert-info.important,
+  .rst-content .wy-alert-info.tip,
+  .rst-content .wy-alert-info.warning,
+  .rst-content .seealso, .rst-content
+  .wy-alert-info.admonition-todo,
   .rst-content .wy-alert-info.admonition {
     background: #d9d9d9;
 }
-.wy-alert.wy-alert-info 
-  .wy-alert-title, 
-  .rst-content .note .wy-alert-title, 
-  .rst-content .wy-alert-info.attention .wy-alert-title, 
-  .rst-content .wy-alert-info.caution .wy-alert-title, 
-  .rst-content .wy-alert-info.danger .wy-alert-title, 
-  .rst-content .wy-alert-info.error .wy-alert-title, 
-  .rst-content .wy-alert-info.hint .wy-alert-title, 
-  .rst-content .wy-alert-info.important .wy-alert-title, 
-  .rst-content .wy-alert-info.tip .wy-alert-title, 
-  .rst-content .wy-alert-info.warning .wy-alert-title, 
-  .rst-content .seealso .wy-alert-title, 
-  .rst-content .wy-alert-info.admonition-todo .wy-alert-title, 
-  .rst-content .wy-alert-info.admonition .wy-alert-title, 
-  .wy-alert.wy-alert-info .rst-content .admonition-title, 
-  .rst-content .wy-alert.wy-alert-info .admonition-title, 
-  .rst-content .note .admonition-title, 
-  .rst-content .wy-alert-info.attention .admonition-title, 
-  .rst-content .wy-alert-info.caution .admonition-title, 
-  .rst-content .wy-alert-info.danger .admonition-title, 
-  .rst-content .wy-alert-info.error .admonition-title, 
-  .rst-content .wy-alert-info.hint .admonition-title, 
-  .rst-content .wy-alert-info.important .admonition-title, 
-  .rst-content .wy-alert-info.tip .admonition-title, 
-  .rst-content .wy-alert-info.warning .admonition-title, 
-  .rst-content .seealso .admonition-title, .rst-content 
-  .wy-alert-info.admonition-todo .admonition-title, 
+.wy-alert.wy-alert-info
+  .wy-alert-title,
+  .rst-content .note .wy-alert-title,
+  .rst-content .wy-alert-info.attention .wy-alert-title,
+  .rst-content .wy-alert-info.caution .wy-alert-title,
+  .rst-content .wy-alert-info.danger .wy-alert-title,
+  .rst-content .wy-alert-info.error .wy-alert-title,
+  .rst-content .wy-alert-info.hint .wy-alert-title,
+  .rst-content .wy-alert-info.important .wy-alert-title,
+  .rst-content .wy-alert-info.tip .wy-alert-title,
+  .rst-content .wy-alert-info.warning .wy-alert-title,
+  .rst-content .seealso .wy-alert-title,
+  .rst-content .wy-alert-info.admonition-todo .wy-alert-title,
+  .rst-content .wy-alert-info.admonition .wy-alert-title,
+  .wy-alert.wy-alert-info .rst-content .admonition-title,
+  .rst-content .wy-alert.wy-alert-info .admonition-title,
+  .rst-content .note .admonition-title,
+  .rst-content .wy-alert-info.attention .admonition-title,
+  .rst-content .wy-alert-info.caution .admonition-title,
+  .rst-content .wy-alert-info.danger .admonition-title,
+  .rst-content .wy-alert-info.error .admonition-title,
+  .rst-content .wy-alert-info.hint .admonition-title,
+  .rst-content .wy-alert-info.important .admonition-title,
+  .rst-content .wy-alert-info.tip .admonition-title,
+  .rst-content .wy-alert-info.warning .admonition-title,
+  .rst-content .seealso .admonition-title, .rst-content
+  .wy-alert-info.admonition-todo .admonition-title,
   .rst-content .wy-alert-info.admonition .admonition-title {
     background: #737373;
 }
