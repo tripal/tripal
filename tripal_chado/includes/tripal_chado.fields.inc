@@ -2700,7 +2700,10 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'default' => array(
           'label' => 'hidden',
           'type' => 'sbo__relationship_formatter',
-          'settings' => array(),
+          'settings' => array(
+            'title' => 'Relationships',
+            'empty' => 'There are no relationships'
+          ),
         ),
       ),
     );
