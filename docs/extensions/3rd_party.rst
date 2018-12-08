@@ -16,7 +16,7 @@ Tripal Galaxy
 
 This module is for integration of Tripal and the Galaxy Project. It facilitates the creation of forms on your Tripal site that submit jobs to a galaxy instance.
 
-`Documentation <https://github.com/tripal/tripal_galaxy/blob/7.x-1.x/README.md>`__
+`Documentation <https://tripal-galaxy.readthedocs.io/en/latest/?badge=latest>`__
 `Repository <https://github.com/tripal/tripal_galaxy>`__
 
 Tripal JBrowse
