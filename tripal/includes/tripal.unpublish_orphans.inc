@@ -24,7 +24,7 @@ function tripal_unpublish_orphans_form($form, &$form_state) {
     $bundles[$bundle->id] = $bundle->label;
   }
   drupal_set_title('Unpublish Orphaned Content');
-  
+
   $form['description'] = [
     '#type' => 'markup',
     '#markup' => t('Sometimes published content can become orphaned. This can
@@ -116,9 +116,11 @@ function tripal_unpublish_orphans_form_validate($form, &$form_state) {
  */
 function tripal_unpublish_orphans_form_submit($form, &$form_state) {
   global $user;
+
   $bundle_id = isset($form_state['values']['bundles']) ? $form_state['values']['bundles'] : NULL;
+
   tripal_add_job('Delete Orphaned Entities', 'tripal_chado',
-    'tripal_unpublish_orphans', [$bundle_id], $user->uid, 10, $includes);
+    'tripal_unpublish_orphans', [$bundle_id], $user->uid, 10, []);
 
   drupal_set_message('Job submitted');
 }
