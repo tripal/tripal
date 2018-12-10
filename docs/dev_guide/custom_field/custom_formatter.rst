@@ -60,7 +60,7 @@ To demonstrate this function, let's look at what we expect in our ``$items`` arr
     ],    
   ];
   
-You may recall that the ``$items`` array structure is the same as that created by the ``load()`` function described in the :doc:`manual_field_creation` page. Note that each key in the ``value`` array is an accession for a controlled vocabulary term.  These accessions are used to unambiguously describe the value. To display the organism on a page we need the element named ``rdfs:label``.  Therefore, on line 4 of the code above we set the ``$content`` variable to contain this value.
+You may recall that the ``$items`` array structure is the same as that created by the ``load()`` function described in the :doc:`manual_field_creation` page. Note that each key in the ``value`` array is an accession for a controlled vocabulary term.  These accessions are used to unambiguously describe the value. To display the organism on a page we need the element named ``rdfs:label``.  Thus, we set the ``$content`` variable to contain this value as shown on line 4 of the ``view()`` function above.
 
 Because our organisms are also published entities we want to link to their respective pages each time an organism is displayed.  Because the ``value`` array has an element named ``entity`` we know that this item is published.  Lines 5-6 above use this information to create a clickable link to the organism page.   Finally, the ``$element`` argument is set to provide content of type ``markup``.  This ``$element`` array is a `Drupal renderable array <https://www.drupal.org/docs/7/api/render-arrays/render-arrays-overview>`_.
 
