@@ -178,6 +178,9 @@ the :doc:`create_instance` to learn more about this function.  Briefly, the ``di
       ),
     ),
 
+.. warning::
+
+    In order for the ``settingsForm()`` implemented to be available on the "Manage Display" page, you must also implement ``settingsSummary()`` as described below.
 The settingsSummary() Function.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ``settingsSummary()`` function provides a summary of the current settings values for a field on the **manage display** page.  The following shows the same relationship field from the previous section, but with the settings form closed, and a summary of the current values shown:
