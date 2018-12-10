@@ -13,3 +13,4 @@ New in Tripal v3 is the ability to create your own content types and manage thei
    ./content_types/configuring_page_display
    ./content_types/field_loading
    ./content_types/field_permissions
+   ./content_types/cleaning_orphans

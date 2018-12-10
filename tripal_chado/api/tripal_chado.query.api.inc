@@ -1627,7 +1627,11 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * Will use a chado persistent connection if it already exists.
  *
  * @param $sql
- *   The sql statement to execute
+ *   The sql statement to execute. When referencing tables in chado, table names
+ *   should be surrounded by curly brackets (e.g. { and }). If Drupal tables
+ *   need to be included in the query, surround those by sqaure brackets
+ *   (e.g. [ and ]).  This follows Drupal conventions for resolving table names.
+ *   It also supports a multi-chado installation.
  *
  * @param $args
  *   The array of arguments, with the same structure as passed to
