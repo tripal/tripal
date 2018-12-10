@@ -1,6 +1,6 @@
 Handling Orphaned Entities
 ==========================
-It is common for site developers to work directly with Chado, especially as they become more familiar with it. And sometimes, there may purpsefully or accidentally remove data that is published in Tripal. This results in an entity being "orphaned".  The entity will still have a page on the website but the data about that entity is no longer available.  If this occurs you can easily remove published entities that are "orphaned" by navigating to **Administer > Tripal Content Types** and clicking the **Unpublish Orphaned Content** link.  The following page appears.
+It is common for site developers to work directly with Chado, especially as they become more familiar with it. And sometimes, they may purposefully or accidentally remove data from Chado that is utilized by published Tripal entities. This results in an entity being "orphaned".  The entity will still have a page on the website but the data about that entity is no longer available.  If this occurs you can easily remove published entities that are "orphaned" by navigating to **Administer > Tripal Content Types** and clicking the **Unpublish Orphaned Content** link.  The following page appears.
 
 .. image:: cleaning_orphans.1.png
 
