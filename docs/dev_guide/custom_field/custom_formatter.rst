@@ -68,7 +68,7 @@ Lastly, notice the element named ``chado-feature__organsim_id``.  This element i
 
 .. warning:: 
 
-  You should never show to the user any data that is outside of ``value`` element.  
+  You should never show the user any data that is outside of ``value`` element.  
 
 In summary, the following should be observed when processing the ``$items`` array for viewing:
 
