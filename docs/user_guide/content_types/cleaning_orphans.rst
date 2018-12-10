@@ -8,8 +8,7 @@ Next, select the content type that has missing data in the **Content Type** sele
 
 .. image:: cleaning_orphans.2.png
 
-A list of at most 10 entities that are orphaned are shown. If the content type has no orphaned entities then nothing is shown.  You can submit a job to clean the orphaned entities by clicking the 
-**Unpublish Orphaned Entities** button.
+A list of at most 10 entities that are orphaned are shown. This list is just for convenience and does not show all of the orphaned entities that will be removed. If the content type has no orphaned entities then nothing is shown.  You can submit a job to clean the orphaned entities by clicking the **Unpublish Orphaned Entities** button.  
 
 .. image:: cleaning_orphans.3.png
 
