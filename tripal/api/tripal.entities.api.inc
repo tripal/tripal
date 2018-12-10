@@ -1681,7 +1681,7 @@ function tripal_unpublish_orphans(int $bundle_id, TripalJob $job = NULL) {
  * results from the hook_bundle_find_orphans() function. 
  * 
  * An implementation of this hook should not try to clean up the entity itself,
- * but rather it should only clean up it's own records used to manage the 
+ * but rather it should only clean up its own records used to manage the 
  * relationship between the entity and the underlying data that the
  * module provides.
  * 
