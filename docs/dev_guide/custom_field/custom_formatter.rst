@@ -104,7 +104,7 @@ Next, we must initialize the pager by calling the ``pager_default_initialize`` f
   $pelement = 0; 
   $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);
   
-The call to ``pager_default_initialize`` will return the current page. Each time the user navigates to other pages the ``view()`` function is called and the current page is always provided via this function call. Next, we must theme the pager so that it follows the look-and-feel prescribed for the site. For this we use the Drupal ``theme()`` function.
+The call to ``pager_default_initialize`` will return the current page.  The current page is a numeric number indicating which page the pager is currently showing. The first time the page is loaded this will always be the first page.  Each time the user navigates to other pages by clicking the "next" link or the numeric links then this ``view()`` function is called and the current page is set to the page being viewed. Next, we must theme the pager so that it follows the look-and-feel prescribed for the site. For this we use the Drupal ``theme()`` function.
 
 .. code-block:: php
 
