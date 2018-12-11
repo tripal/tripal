@@ -42,57 +42,6 @@ class OBOImporterTest extends TripalTestCase {
     $importer->run();
   }
 
-
-  /**
-   * Tests that an OBO from a remote URL can be loaded.
-   *
-   * For this test we will use the GO Plant Slim.
-   *
-   * @group obo
-   */
-  public function testRemoteOBO() {
-
-    $name = 'core_test_goslim_plant';
-    $path = 'http://www.geneontology.org/ontology/subsets/goslim_plant.obo';
-
-    $this->loadOBO($name, $path);
-
-    // Test that we get all three vocabularies added:  biological_process,
-    // cellular_component and molecular_function.
-    $bp_cv_id = db_select('chado.cv', 'c')
-      ->fields('c', ['cv_id'])
-      ->condition('name', 'biological_process')
-      ->execute()
-      ->fetchField();
-    $this->assertNotFalse($bp_cv_id,
-      "Missing the 'biological_process' cv record after loading the GO plant slim.");
-
-    $cc_cv_id = db_select('chado.cv', 'c')
-      ->fields('c', ['cv_id'])
-      ->condition('name', 'cellular_component')
-      ->execute()
-      ->fetchField();
-    $this->assertNotFalse($cc_cv_id,
-      "Missing the 'cellular_component' cv record after loading the GO plant slim.");
-
-    $mf_cv_id = db_select('chado.cv', 'c')
-      ->fields('c', ['cv_id'])
-      ->condition('name', 'molecular_function')
-      ->execute()
-      ->fetchField();
-    $this->assertNotFalse($mf_cv_id,
-      "Missing the 'molecular_function' cv record after loading the GO plant slim.");
-
-    // Make sure we have a proper database record.
-    $go_db_id = db_select('chado.db', 'd')
-      ->fields('d', ['db_id'])
-      ->condition('name', 'GO')
-      ->execute()
-      ->fetchField();
-    $this->assertNotFalse($go_db_id,
-      "Missing the 'GO' database record after loading the GO plant slim.");
-  }
-
   /**
    * Tests that an OBO from a local path can be loaded.
    *
