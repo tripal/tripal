@@ -3,7 +3,7 @@ Using ReadTheDocs
 
 .. note::
 
-  For Tripal's own ReadTheDocs guidelines: :ref:`tripal_rtd`
+  For Tripal's own ReadTheDocs guidelines: :ref:`tripal_rtd`.
 
 
 What is ReadTheDocs?
