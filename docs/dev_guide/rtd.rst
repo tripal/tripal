@@ -28,7 +28,7 @@ Below is a quick overview of steps for integrating your module's documentation w
 - Run the quickstart command: ``sphinx-quickstart``
 - Write your documentation (we're using reStructuredText (RST) format)
   - Create an ``index.rst`` as the home page
-  ` Link other RST documents in your ``index.rst`` 
+  - Link other RST documents in your ``index.rst`` 
 - run ``make html`` in the docs folder to build your site for testing purposes. Sphinx will build you a searchable site with nicely formatted navigation.
 - Push your changes to GitHub
 
