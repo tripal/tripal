@@ -11,7 +11,9 @@ What is ReadTheDocs?
 
 Documentation is important. It tells users how to use our product, and developers how to read our code.  We recommend hosting documentation for your custom module somewhere easily accessible, like ReadTheDocs.
 
-`ReadTheDocs <https://readthedocs.org/>`_ uses the `Sphinx <http://www.sphinx-doc.org/en/master/>`_ framework to build a website in a Continuous Integration setup. When new code is pushed to GitHub, the documentation website as defined by sphinx is built, and the "live" documentation website is updated.
+`ReadTheDocs <https://readthedocs.org/>`_ (RTD) uses the `Sphinx <http://www.sphinx-doc.org/en/master/>`_ framework to build a website in a Continuous Integration setup. Your RTD-compatible documentation is added directly to your module and when code changes are pushed to GitHub, the documentation website as defined by sphinx is built, and the "live" documentation website is updated.
+
+Benefits to housing documentation inside of your module code are:
 
 - Code changes can include documentation updates **in the same pull request**.
 - Changes to the documentation is **subject to review, just like code changes**.
@@ -19,21 +21,22 @@ Documentation is important. It tells users how to use our product, and developer
 
 How do I add ReadTheDocs to my project?
 ---------------------------------------
+Below is a quick overview of steps for integrating your module's documentation with RTD:
 
-- Set up your ReadeTheDocs account and add your project integration
+- Set up your ReadTheDocs account and import your project.
 - Install Sphinx
 - Run the quickstart command: ``sphinx-quickstart``
-- Write your documentation (we're using RST format)
-- run ``make html`` in the docs folder to build your site for testing purposes
+- Write your documentation (we're using reStructuredText (RST) format)
+  - Create an ``index.rst`` as the home page
+  ` Link other RST documents in your ``index.rst`` 
+- run ``make html`` in the docs folder to build your site for testing purposes. Sphinx will build you a searchable site with nicely formatted navigation.
 - Push your changes to GitHub
 
 For a detailed walkthrough, please see the `official ReadTheDocs getting started guide <https://docs.readthedocs.io/en/latest/getting_started.html>`_.
 
-We use RST format to write our documentation. It might seem a little more complicated than markdown (and it is), but it's also more powerful.  The choice is yours for which format to use.
+For RTD integration we recommend using reStructuredText (RST) to write your documentation. It might seem a little more complicated than markdown (and it is), but it's also more powerful.  The choice is yours for which format to use.
 
-Link documents to your ``index.rst`` and Sphinx will build you a searchable site with nicely formatted navigation.
-
-ReadTheDocs also provides some really awesome **versioning** tools, allowing you to post releases of the documentation so users can go back and find older documentation with almost no effort on your part.
+ReadTheDocs also provides **versioning** tools, allowing you to post releases of the documentation so users can go back and find older documentation with almost no effort on your part.
 
 What should my documentation include?
 -------------------------------------
