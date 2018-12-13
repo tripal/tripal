@@ -24,13 +24,14 @@ How do I add ReadTheDocs to my project?
 Below is a quick overview of steps for integrating your module's documentation with RTD:
 
 - Set up your ReadTheDocs account and import your project.
-- Install Sphinx
-- Run the quickstart command: ``sphinx-quickstart``
-- Write your documentation (we're using reStructuredText (RST) format)
-  - Create an ``index.rst`` as the home page
-  - Link other RST documents in your ``index.rst`` 
-- run ``make html`` in the docs folder to build your site for testing purposes. Sphinx will build you a searchable site with nicely formatted navigation.
-- Push your changes to GitHub
+- Install Sphinx.
+- Create a ``docs`` folder at the root of your project and navigate into it.
+- Run the quickstart command: ``sphinx-quickstart``.
+  - This creates necessary site configuration files (``conf.py``) as well as the make script to build your site.
+- Write your documentation (we're using reStructuredText (RST) format):
+  - Create an ``index.rst`` as the home page.
+  - Link other RST documents in your ``index.rst``.
+- Once the guide is on your master branch on GitHub, ReadTheDocs will handle the rest!
 
 For a detailed walkthrough, please see the `official ReadTheDocs getting started guide <https://docs.readthedocs.io/en/latest/getting_started.html>`_.
 
