@@ -303,11 +303,12 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
 function chado_insert_phylotree(&$options, &$errors, &$warnings) {
   global $user;
 
-  $options['name_re'] = trim($options['name_re']);
+  $options['name_re'] = $options['name_re'] ? trim($options['name_re']) : NULL;
   $options['leaf_type'] = trim($options['leaf_type']);
   $options['name'] = trim($options['name']);
   $options['format'] = trim($options['format']);
   $options['tree_file'] = trim($options['tree_file']);
+  $options['analysis_id'] = $options['analysis_id'] ? $options['analysis_id'] : NULL;
 
   // Validate the incoming options.
   $success = chado_validate_phylotree('insert', $options, $errors, $warnings);
