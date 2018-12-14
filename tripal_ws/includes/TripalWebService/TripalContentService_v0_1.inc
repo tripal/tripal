@@ -370,12 +370,15 @@ class TripalContentService_v0_1 extends TripalWebService {
         // TODO: handle this case.
       }
     }
-
+    // Field specific permissions can result in an empty $values.
+    if (empty($values)) {
+      return;
+    }
     if ($hide_fields == TRUE and empty($values[0])) {
       return;
     }
 
-    // If the field cardinality is 1
+    // If the field cardinality is 1.
     if ($field['cardinality'] == 1) {
 
       // If the value is an array and this is the field page then all of those
