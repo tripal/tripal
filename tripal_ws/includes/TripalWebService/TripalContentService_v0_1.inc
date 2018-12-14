@@ -380,7 +380,7 @@ class TripalContentService_v0_1 extends TripalWebService {
         // TODO: handle this case.
       }
     }
-    if (isset($field['field_permissions']['type'])) {
+    if (isset($field['field_permissions']['type']) && $field['field_permissions']['type'] != 0) {
       return;
     }
 
