@@ -38,6 +38,8 @@ function tripal_field_storage_load($entity_type, $entities, $age,
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.
     $tables = array();
+    $record = $entity->chado_record;
+
     foreach ($fields as $field_id => $ids) {
 
       // By the time this hook runs, the relevant field definitions have been
@@ -48,7 +50,6 @@ function tripal_field_storage_load($entity_type, $entities, $age,
       $field_name = $field['field_name'];
       $field_type = $field['type'];
       $field_module = $field['module'];
-      $record = $entity->chado_record;
       // Get the instnace for this field
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
