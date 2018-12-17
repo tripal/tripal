@@ -6,7 +6,7 @@
 
 <!---  Please set the header below based on the PR type:
 # New Feature
-# Bux Fix
+# Bug Fix
 # Documentation  --->
 
 #
