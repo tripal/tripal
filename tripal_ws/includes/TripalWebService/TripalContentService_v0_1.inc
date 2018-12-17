@@ -371,9 +371,6 @@ class TripalContentService_v0_1 extends TripalWebService {
       }
     }
 
-    if (isset ($field['field_permissions']['type'])) {
-      return;
-    }
     if ($hide_fields == TRUE and empty($values[0])) {
       return;
     }
