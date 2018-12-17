@@ -1324,10 +1324,10 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
   // If we have any fields that need attaching, then do so now.
   if (count(array_keys($attach_fields)) > 0) {
+    $field_ids = array();
     foreach ($attach_fields as $storage_type => $details) {
       $storage = $details['storage'];
       $fields = $details['fields'];
-      $field_ids = array();
       foreach ($fields as $field) {
         $field_ids[$field['id']] = array($entity->id);
       }
