@@ -48,7 +48,7 @@ function tripal_field_storage_load($entity_type, $entities, $age,
       $field_name = $field['field_name'];
       $field_type = $field['type'];
       $field_module = $field['module'];
-
+      $record = $entity->chado_record;
       // Get the instnace for this field
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
@@ -59,8 +59,23 @@ function tripal_field_storage_load($entity_type, $entities, $age,
       if (class_exists($field_type)) {
         $tfield = new $field_type($field, $instance);
         $tfield->load($entity);
+      } 
+      else {
+        if ($field_type == 'text') {
+          $field_table = $instance['settings']['chado_table'];
+          $field_column = $instance['settings']['chado_column'];
+          $record = chado_expand_var($record, 'field', "$field_table.$field_column");
+          $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+          // Text fields that have a text_processing == 1 setting need a
+          // special 'format' element too:
+          if (array(key_exists('text_processing', $instance['settings']) and
+            $instance['settings']['text_processing'] == 1)) {
+          // TODO: we need a way to write the format back to the
+          // instance settings if the user changes it when using the form.
+            $entity->{$field_name}['und'][0]['format'] = array_key_exists('format', $instance['settings']) ? $instance['settings']['format'] : 'full_html';
+          }
+        }
       }
-
     } // end: foreach ($fields as $field_id => $ids) {
   } // end: foreach ($entities as $id => $entity) {
 }
