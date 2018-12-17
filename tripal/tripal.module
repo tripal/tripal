@@ -109,6 +109,20 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 
+  // Tripal registration form
+  $items['admin/tripal/register'] = array(
+    'title' => 'Registration',
+    'description' => t('Register your Tripal website. Registration of Tripal
+          websites gives the developers important information that allow us
+          to continue to secure funding for maintenance and expansion.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_registration_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+    'file' => 'includes/tripal.registration.inc',
+  );
+
   $items['admin/content/bio_data/unpublish'] = [
     'title' => 'Unpublish Orphaned Content',
     'description' => t('Unpublish content that has no associated records in the data store.'),
