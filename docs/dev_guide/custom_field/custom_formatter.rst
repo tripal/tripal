@@ -36,7 +36,7 @@ In the code above the input arguments have the following meaning:
   - ``$element`` is the first argument. It is an array into which you should set the contents to be displayed.  
   - ``$entity_type`` will always have the value ``Tripal Entity``.
   - ``$entity`` is the entity object which contains all information about the entity including the loaded data values.
-  -  ``$langcode`` is the language. This is used by Drupal to provide translations of data into other spoken languages. By default, Tripal does not use a language.
+  -  ``$langcode`` is the language. This is used by Drupal to provide translations of data into other spoken languages. By default, Tripal does not use a language, as biological data is generally language agnostic.  Consider for example a gene sequence or a feature coordinate.
   - ``$items`` is an array containing all of the loaded data for this field.  
   - ``$display`` is the name of the display such as full page, a teaser, etc. Currently, Tripal does not distinguish between displays.
   
