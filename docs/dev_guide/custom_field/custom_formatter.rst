@@ -187,7 +187,7 @@ The ``settingsSummary()`` function provides a summary of the current settings va
 
 .. image:: custom_formatter.settings.2.png
 
-An example of the ``sesttingsSummary()`` function that generates the summary in the image above is as follows:
+An example of the ``settingsSummary()`` function that generates the summary in the image above is as follows:
 
 .. code-block:: php
   :linenos:
