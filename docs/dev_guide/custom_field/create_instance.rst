@@ -4,7 +4,7 @@ In summary, creation of a new field requires creation of three classes that inhe
 
 The hook_bundle_field_info() function
 -------------------------------------
- The three TripalField classes simply define how the field will function, but Drupal does not yet know about the field.  The ``hook_bundle_field_info`` function tells Drupal about your field. It must be implemented in a custom Drupal module,and provides an array that tells Drupal about the fields and the classes to use for the field.  Suppose we were creating a field named ``obi__genus`` which displays the Genus for a species and we have a custom module named ``tripal_org2``.  The hook function would be named ``tripal_org2_bundle_field_info()``:
+ The three TripalField classes simply define how the field will function, but Drupal does not yet know about the field.  The ``hook_bundle_field_info`` function tells Drupal about your field. It must be implemented in a custom Drupal module, and provides an array that tells Drupal about the fields and the classes to use for the field.  Suppose we were creating a field named ``obi__genus`` which displays the Genus for a species and we have a custom module named ``tripal_org2``.  The hook function would be named ``tripal_org2_bundle_field_info()``:
 
 .. code-block:: php
   :linenos:
