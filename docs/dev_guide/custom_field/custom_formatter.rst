@@ -74,7 +74,7 @@ In summary, the following should be observed when processing the ``$items`` arra
 
   - A field with only one value (a cardinality of 1) will always have only one element in the ``$items`` array and can use the index 0. This is what has been done in this example code. 
   - A field with more than one value can have any number of elements in the ``$items`` array.  You should therefore iterate through all of them.
-  - For every index in ``$item`` you should create a matching index in ``$element``to display the data found in that ``$item``.
+  - For every index in ``$item`` you should create a matching index in ``$element`` to display the data found in that ``$item``.
   - If there are no items, then nothing you return will be displayed.
   - For each element in the ``$items`` array there is a ``value`` key.  Only the data in the ``value`` key should be shown to the user.
   - Each element in the ``$items`` array may have more than a ``value`` key.  These values are meant to help manage the data. 
