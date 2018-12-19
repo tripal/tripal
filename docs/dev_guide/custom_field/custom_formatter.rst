@@ -115,7 +115,7 @@ The call to ``pager_default_initialize`` will return the current page.  The curr
     'quantity' => $total_pages,
   ));
   
-By default, all links in the pager cause the page to reload.  We do not want the page to reload, rather we only want to update the contents of the field.  The TripalFieldFormatter class provides a function named ``axaifyPager`` to convert a pager into an AJAX pager:
+By default, all links in the pager cause the page to reload.  We do not want the page to reload, rather we only want to update the contents of the field.  The TripalFieldFormatter class provides a function named ``ajaxifyPager`` to convert a pager into an AJAX pager:
 
 .. code-block:: php
 
