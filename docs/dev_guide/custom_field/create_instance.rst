@@ -34,7 +34,7 @@ The hook_bundle_field_info() function
     return $info
   }
   
-This function receives as it's second argument the ``$bundle``. This is the bundle that Drupal is requesting new fields for.  For this example we only want to attach the field if the content type is the organism content type.  The format of the returned ``$info`` array should have the field name as the key and an array that follows the instructions provided by Drupal's `field_create_field() <https://api.drupal.org/api/drupal/modules%21field%21field.crud.inc/function/field_create_field/7.x>`_ function. 
+This function receives as its second argument the ``$bundle`` object. This is the bundle that Drupal is requesting new fields for.  For this example we only want to attach the field if the content type is the organism content type.  The format of the returned ``$info`` array should have the field name as the key and an array that follows the instructions provided by Drupal's `field_create_field() <https://api.drupal.org/api/drupal/modules%21field%21field.crud.inc/function/field_create_field/7.x>`_ function. 
 
 The settings indicate the field name, the field type, the cardinality (how many values are allowed), any default settings and the storage type.  Because we expect our data to come from Chado we set the ``field_chado_storage`` as the type.  The ``locked`` setting is set to FALSE indicating that Drupal will allow the field to be deleted if the site developer desires.
 
