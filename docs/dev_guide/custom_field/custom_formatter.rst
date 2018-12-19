@@ -5,7 +5,7 @@ The third component of a field is the formatter.  Thus far we have introduced ho
 .. note::
   This guide assumes you already have your formatter class file created. For more information, see :doc:`manual_field_creation` or, :doc:`tripal_field_generator`. 
   
-The formatter class is the most simple of all the Tripal field classes.  Here we will again use the **obi__organism** field that come swith the ``tripal_chado`` module.  
+The formatter class is the simplest of all the Tripal field classes.  Here we will again use the **obi__organism** field that comes with the ``tripal_chado`` module.  
 
 The view() function.
 ~~~~~~~~~~~~~~~~~~~~
