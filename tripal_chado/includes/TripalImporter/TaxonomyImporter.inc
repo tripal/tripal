@@ -236,7 +236,7 @@ class TaxonomyImporter extends TripalImporter {
     if (!$taxonomy_ids and $import_existing) {
       $this->setTotalItems(count($this->all_orgs));
     }
-    $this->setItemsHandled($num_handled);
+    $this->setItemsHandled(0);
 
     // If the user wants to import new taxonomy IDs then do that.
     if ($taxonomy_ids){
@@ -272,6 +272,7 @@ class TaxonomyImporter extends TripalImporter {
   private function initTree() {
     // Add the taxonomy tree record into the phylotree table. If the tree
     // already exists then don't insert it again.
+    $site_name = variable_get('site_name');
     $tree_name = $site_name . 'Taxonomy Tree';
     $phylotree = chado_select_record('phylotree', array('*'), array('name' => $tree_name));
     if (count($phylotree) == 0) {
@@ -514,7 +515,7 @@ class TaxonomyImporter extends TripalImporter {
     // organism already.
     $values = array(
       'db_id' => array(
-        'name' => NCBITaxon
+        'name' => 'NCBITaxon'
       ),
       'accession' => $taxid,
     );
@@ -548,8 +549,8 @@ class TaxonomyImporter extends TripalImporter {
           WHERE concat(genus, ' ', species) = :sci_name
         ";
       $results = chado_query($sql, array(':sci_name' => $sci_name));
-      if ($results) {
-        $item = $results->fetchObject();
+      $item = $results->fetchObject();
+      if ($item) {
         $columns = array('*');
         $values = array('organism_id' => $item->organism_id);
         $organism = chado_select_record('organism', $columns, $values);
