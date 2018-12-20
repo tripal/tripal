@@ -2135,7 +2135,7 @@ function tripal_chado_populate_vocab_NCBITAXON() {
     'name' => 'NCBITaxon',
     'description' => 'NCBI organismal classification.',
     'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/ncbitaxon#',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
   ));
   chado_insert_cv(
     'ncbitaxon',

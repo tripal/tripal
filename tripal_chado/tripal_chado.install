@@ -1854,3 +1854,16 @@ function tripal_chado_update_7336() {
     }
   }
 }
+
+/**
+ * Update the NCBITaxon DB entry.
+ */
+function tripal_chado_update_7337(){
+
+  chado_insert_db(array(
+    'name' => 'NCBITaxon',
+    'description' => 'NCBI organismal classification.',
+    'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
+    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
+  ));
+}
