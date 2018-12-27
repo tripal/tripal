@@ -1,3 +1,5 @@
+.. _tripal_rtd:
+
 Contributing to the Documentation
 ==================================
 
