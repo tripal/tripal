@@ -1,10 +1,10 @@
 Creating a Custom Widget
 ========================
 
-In Drupal/Tripal terminology, **widget** refers to the form elements for a specific Tripal Field on the "Edit" form of a piece of Tripal Content. For example, the ``obi__organism`` widget creates the "Organism" drop-down on the edit form of a specific gene. All fields come with a default widget; however, you can create a custom widget if the default one doesn't meet your needs.
+In Drupal/Tripal terminology, **widget** refers to the form elements for a specific Tripal Field on the "Edit" form of a piece of Tripal Content. For example, the ``obi__organism`` field widget creates the "Organism" drop-down on the edit form of a gene. All fields come with a default widget; however, you can create a custom widget if the default one doesn't meet your needs.
 
 .. note::
-  This guide is going to assume you already have your widget file created. For more information, see :doc:`manual_field_creation` or, :doc:`tripal_field_generator`.
+  This guide assumes you already have your widget class file created. For more information, see :doc:`manual_field_creation` or, :doc:`tripal_field_generator`.
 
 .. note::
 	If you are only creating a widget and not the whole field, you still need to follow the expected directory structure. For example, if your widget is going to be named ``obi__organism_fancy`` then your file would be ``[your_module]/includes/TripalField/obi__organism_fancy/obi__organism_fancy_widget.inc``.

@@ -1,17 +1,13 @@
 Manual Field Creation
 ======================
-
 To show how a TripalField works we will break down a class implementation section by section.  Here we will use the **obi__organism** field that comes with Tripal and which extends the ChadoField class.  The ChadoField class is almost identical to the TripalField class except that it provides a few extra settings for working with Chado tables.   To create your own class you need to create a new class that implements the necessary functions.
 
 .. note::
   Creation of your first field may not seem easy!  The following document is a lot to think about and consider. Therefore, when you write your first field, don't try to do everything at once. Take it one piece at a time.  The variables and functions described here are in order with the most critical components described first.  Take it at an even pace.
 
 
-
 Directory Structure for Fields
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 Before we create our class we must first create a proper directory structure.  Tripal expects that all new Tripal field classes are located inside of a custom module in the following directory structure:
 
 .. code-block:: bash
@@ -31,7 +27,6 @@ In the directories above the token [your_module] can be substituted with the nam
 
 Anatomy of the ChadoField Class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 The following describes a ChadoField class from top to bottom. The code for the obi__organism field is shown in order that it appears in the class with descriptions provided for the meaning of each piece of code.  To write your own class, duplicate the variables and function and customize accordingly.  First, let's look at the definition of the class.  The following line defines the class and indicates that it extends the ChadoField class:
 
 .. code-block:: php
@@ -133,8 +128,6 @@ Finally, the last item in our Class variables is the **download_formatters**.  T
 
 .. .. code-block::
 
-  
-
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
   public static $download_formatters = array(
@@ -154,14 +147,12 @@ To get started, the load() function receives a single argument. The entity objec
 
 .. code-block:: php
 
-
   public function load($entity) {
 
 
 Because this is a ChadoField and the TripalChado module supports this field and maps entities to their "base" record on Chado, we get something extra... we get the record itself
 
 .. code-block:: php
-
 
     $record = $entity->chado_record;
 
@@ -171,7 +162,6 @@ Before we set the values for our field, we need a little bit more information.  
 
 .. code-block:: php
 
-
     $settings = $this->instance['settings'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
@@ -180,7 +170,6 @@ Next, we want to get this field name and its type.  We obviously know our field 
 
 .. code-block:: php
 
-
     $field_name = $this->field['field_name'];
     $field_type = $this->field['type'];
 
@@ -188,7 +177,6 @@ Next, we want to get this field name and its type.  We obviously know our field 
 Now, let's plan how we want our values to appear in our field.  The organism record of Chado v1.3 has a genus, species, abbreviation, infraspecific name, infraspecific type, and a common name.  We want these values exposed to the end user.  But, wait... when we discussed fields in the Tripal Data Structures section we learned about a name field that provides names for entities.  That field only has one value: the name.  Our organism field has multiple values (i.e. genus, species, etc.).   A field can provide more than just one value but values have to be qualified.  We have to provide values in key/value pairs, and the keys must be controlled vocabulary terms.  We must use controlled vocabulary terms because we want our field to be searchable by other Tripal sites.  For example, the ontology term for the word 'genus' comes from the TAXRANK vocabulary.  Fortunately, almost every column of every table in Chado has been mapped to a controlled vocabulary term so we don't need to go hunting for terms.  We can use a Chado API function that Tripal provides for getting the ontology terms associated with every column table in Chado.  The following code shows these functions retrieving the ontology terms for our values from the organism table:
 
 .. code-block:: php
-
 
     // Get the terms for each of the keys for the 'values' property.
     $label_term = 'rdfs:label';
@@ -204,7 +192,6 @@ Next, let's initialize our field's value to be empty.  When setting a field valu
 
 .. code-block:: php
 
-
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
@@ -217,14 +204,12 @@ Now that we've got some preliminary values and we've initialized our value array
 
 .. code-block:: php
 
-
     if ($record) {
 
 
 Now if we do have a record we need to get the value  The first step is to actually get our organism record.  For this we will find the record variable to be really handy. It already comes pre-populated with every Chado record that has a foreign-key relationship with our base record.  So, in the case of a gene, the record is stored in the feature table which has an organism_id column which is a foreign key to the organism table.  So, we know then that our record object has an organism_id property and we can get our organism from that. The only exception is the biomaterial table which uses a field named taxon_id:
 
 .. code-block:: php
-
 
       if ($field_table == 'biomaterial') {
         $organism = $record->taxon_id;
@@ -235,9 +220,7 @@ Now if we do have a record we need to get the value  The first step is to actual
 
 We can easily get all of the values we need from this organism object.   We can now access the values for this organism using the Chado organism table column names (e.g. $organism->genus, $organism->species).
 
-.. code-block:: php
-
-  
+.. code-block:: php 
 
       $label = tripal_replace_chado_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
@@ -259,7 +242,6 @@ In the code above we are populating our value array and we're using the controll
 Okay, so, we have our values set. However, remember,  our fields must support two types of values: 1) those for end users; and 2) those that allow us to save values in Chado if the field is edited.  If you look at our value array above you will recognize that the entity to which this field is loading data for is for a feature or stock or library, etc.  This field represents the organism for a record from one of those tables.  If someone wants to edit the entity and change the organism  then effectively we need to change the organism_id of that table.  But in our values array we don't have the organism_id we only have data about the organism.  How will Tripal know how to change the organism for an entity if edited?  To do help Tripal out, we have to create special key/value pair to add to our values.  These are values that are not meant to be seen by the end-user.  The organism_id is a good example of such a value.  To create these values we create a key with a special naming scheme: use "chado-" as a prefix, followed by the table name (e.g. feature), followed by two underscores and finally the column name (e.g. organism_id).   The following code shows the creation of this value name:
 
 .. code-block:: php
-
 
     // Set the linker field appropriately.
     if ($field_table == 'biomaterial') {
