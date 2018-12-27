@@ -68,7 +68,7 @@ Lastly, notice the element named ``chado-feature__organsim_id``.  This element i
 
 .. warning:: 
 
-  You should never show the user any data that is outside of ``value`` element.  
+  You should never show the user any data that is outside of ``value`` element.  Remember that your field can be shown by other viewers, including web services.  By ensuring that data in the ``value`` element is mean to be displayed we ensure that information on the web page, web services, or any othe future form of display is always consistent.
 
 In summary, the following should be observed when processing the ``$items`` array for viewing:
 

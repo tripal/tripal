@@ -105,6 +105,9 @@ Unique to this info array are the settings related to Chado.  Because we expect 
  - ``chado_column``: the name of the column in the ``chado_table`` where the data is loaded from. if the ``base_table`` and ``chado_table`` are the same then this is the name of the column. In our case the ``genus`` columns.  If the base and chado tables are different then it is the name o the primary key column in the ``chado_table``
  - ``auto_attach``:  set this to TRUE if you want the field to automatically be added to an entity when it is generated for viewing.  Set it to FALSE to allow the field to be added via AJAX. For fields that require time to load setting to FALSE is preferred. 
  
+.. note::
+  A base table is one that contains the primary records to which ancilliary data (e.g. properties, cross references, CV terms, publications, contacts, etc) are associated via linker tables. For example some base tables include: ``feature``, ``organism``, ``stock``, ``library``, etc.).  The ``base_table`` and ``chado_table`` will always be the same when you are mapping a field to data in a column in a base table. If your field maps data to a "linker" table where ancilliary data is stored then the ``chado_table`` will be the linker table.
+
 Notice as well that the ``display`` and ``widget`` sections list the name of our TripalEntityWidget and TripalEntityFormatter calsses respectively.  This tells drupal to use our widget and formatter classes by default.
 
 When the site administrator navigates to **Administer > Structure > Tripal Content Types**, clicks on a content type, and then the **manage fields** tab, a link appears at the top titled **Checkfor new fields**.  When that link is clicked, this hook function is called.  
