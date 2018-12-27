@@ -140,7 +140,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
    *  If $count == FALSE then an array of all entity IDs that are orphaned. If
    *  $count == TRUE then a single integer count value is returned.
    */
-  public function findOrphans(int $id, bool $count = FALSE, int $offset = 0, int $limit = 0) {
+  public function findOrphans($id, $count = FALSE, $offset = 0, $limit = 0) {
     
     // Call the hook for modules to find their orphans
     $bundle = tripal_load_bundle_entity(['id' => $id]);

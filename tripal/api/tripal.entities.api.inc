@@ -1733,8 +1733,8 @@ function hook_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob 
  *  If $count == FALSE then an array of all entity IDs that are orphaned. If
  *  $count == TRUE then a single integer count value is returned.
  */
-function hook_bundle_find_orphans(TripalBundle $bundle, bool $count = FALSE, 
-  int $offset = 0, int $limit = 10) {
+function hook_bundle_find_orphans(TripalBundle $bundle, $count = FALSE,
+  $offset = 0, $limit = 10) {
   
     // See the tripal_chado_bundle_find_orphans() function for an example.  
   
