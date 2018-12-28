@@ -103,7 +103,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
       $rows[][] = array(
         'data' => $phrase,
-        'class' => array('tripal-entity-unattached field-items')
+        //'class' => array('tripal-entity-unattached field-items')
       );
     }
 
