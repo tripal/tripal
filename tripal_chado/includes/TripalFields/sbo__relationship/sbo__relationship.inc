@@ -294,7 +294,7 @@ class sbo__relationship extends ChadoField {
 
     // Retrieve the type.
     $type = $this->instance['settings']['base_table'];
-    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
+    if (($this->base_type_column != 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->subject_id_column}->{$this->base_type_column};
       if (isset($type_object->name)) {
         $type = $type_object->name;
@@ -307,8 +307,6 @@ class sbo__relationship extends ChadoField {
     $record = [
       'rdfs:type' => $type,
       'schema:name' => implode(' ', $name),
-      // @todo support the entity and determine whether this is current one or not.
-      //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
     // If the object has a uniquename then add that in for refernce.
@@ -352,7 +350,7 @@ class sbo__relationship extends ChadoField {
 
     // Retrieve the Type.
     $type = $this->instance['settings']['base_table'];
-    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
+    if (($this->base_type_column != 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->object_id_column}->{$this->base_type_column};
       if (isset($type_object->name)) {
         $type = $type_object->name;
@@ -365,8 +363,6 @@ class sbo__relationship extends ChadoField {
     $record = [
       'rdfs:type' => $type,
       'schema:name' => implode(' ', $name),
-      // @todo support the entity and determine whether this is current one or not.
-      //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
     // If the object has a unqiuename then add that in for reference.
