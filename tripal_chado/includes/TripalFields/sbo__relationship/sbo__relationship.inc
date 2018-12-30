@@ -438,7 +438,7 @@ class sbo__relationship extends ChadoField {
     // The above relationship will be shown both on marker and variant pages
     // and as such both subject and object names need to be shown.
     $clause = 'The ' . $subject_type . ', ' .
-        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
+        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' ' .
         $object_type . ', ' . $object_name . '.';
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
@@ -500,7 +500,7 @@ class sbo__relationship extends ChadoField {
       'chado-' . $field_table . '__' . $object_id_key => '',
       'chado-' . $field_table . '__type_id' => '',
       // These elements don't need to follow the naming scheme above
-      // becasue we don't need the chado_field_storage to try and
+      // because we don't need the chado_field_storage to try and
       // save these values.
       'object_name' => '',
       'subject_name' => '',
@@ -670,6 +670,7 @@ class sbo__relationship extends ChadoField {
       case 'has origin':
       case 'has part':
       case 'has quality':
+      case 'is a':
       case 'is a maternal parent of':
       case 'is a paternal parent of':
       case 'is consecutive sequence of':
