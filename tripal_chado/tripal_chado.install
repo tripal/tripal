@@ -1846,11 +1846,12 @@ function tripal_chado_update_7336() {
       $field_name = $base . '_contact';
       $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-      $instance_info['type'] = 'chado_linker__contact';
-      $instance_info['widget']['type'] = 'chado_linker__contact_widget';
-      $instance_info['formatter']['type'] = 'chado_linker__contact_widget';
-      field_update_instance($instance_info);
-      
+      if ($instance_info) {
+        $instance_info['type'] = 'chado_linker__contact';
+        $instance_info['widget']['type'] = 'chado_linker__contact_widget';
+        $instance_info['formatter']['type'] = 'chado_linker__contact_widget';
+        field_update_instance($instance_info);
+      }
     }
   }
 }
