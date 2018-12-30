@@ -346,6 +346,18 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       return;
     }
 
+    // Catch the case where a user is trying to remove a relationship.
+    if (!$type_name && !$subject_name && !$object_name) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
+      if (array_key_exists('rank', $this->schema['fields'])) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
+      return;
+    }
+
     // Do not proceed if subject ID or object ID does not exist
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
         !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
