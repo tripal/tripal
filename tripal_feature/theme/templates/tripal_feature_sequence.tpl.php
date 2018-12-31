@@ -52,6 +52,31 @@ if ($residues or count($featureloc_sequences) > 0) {
     $sequences_html .= '</div>';
     
   }
+
+  // provide spliced mRNA sequences
+  // if this is an mRNA
+  if ($feature->type_id->name == 'mRNA') {
+
+
+  $seqs = tripal_get_feature_sequences(array('feature_id' => $feature->feature_id), array('derive_from_parent' => 1, 'aggregate' => 1,
+       'sub_feature_types' => array('exon') ,'is_html' => 1, 'width' => $num_bases));
+    if (!empty($seqs) and !empty($seqs[0]['residues'])) {  
+
+       $list_items[] = '<a href="#mRNA">'. $feature->type_id->name . ' - spliced transcript sequence  ' . "</a>";
+       $sequences_html .= '<a name="mRNA"></a>';
+       $sequences_html .= '<div id="mRNA" class="tripal_feature-sequence-item">';
+       $sequences_html .= '<p><b>spliced messenger RNA</b></p>';
+       $sequences_html .= '<pre class="tripal_feature-sequence">';
+       $sequences_html .= ">". $seqs[0]['defline']. " \n".$seqs[0]['residues'];
+       $sequences_html .= '</pre>';
+       $sequences_html .= '<a href="#sequences-top">back to top</a>';
+       $sequences_html .= '</div>';
+    }
+  };
+
+
+
+
   
   // ADD IN RELATIONSHIP SEQUENCES (e.g. proteins)
   // see the explanation in the tripal_feature_relationships.tpl.php 
