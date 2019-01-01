@@ -324,8 +324,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     $fkeys = $this->schema['foreign keys'];
 
-    // 'nd_reagent_relationship' and 'project_relationship' have different column names from
-    // subject_id/object_id. Retrieve the column names determined in the form.
+    // The tables 'nd_reagent_relationship' and 'project_relationship' have
+    // different column names from subject_id/object_id. Retrieve the column
+    // names determined in the form.
     $subject_id_key = $this->subject_id_column;
     $object_id_key = $this->object_id_column;
 
@@ -346,16 +347,30 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       return;
     }
 
-    // Do not proceed if subject ID or object ID does not exist
+    // Catch the case where a user is trying to remove a relationship. All
+    // widget fields are empty but the $type_id is not.  We must therefore
+    // make sure everything is empty.
+    if (!$type_name && !$subject_name && !$object_name) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
+      if (array_key_exists('rank', $this->schema['fields'])) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
+      return;
+    }
+
+    // Do not proceed if subject ID or object ID does not exist.
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
         !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
       return;
     }
 
-    // Validation is occuring in the field::validate() but we need to know if it finds errors.
-    // As such, I'm calling it here to check.
-    // Also, field::validate() doesn't seem to always show it's errors
-    // OR stop form submission? so we need to ensure that happens here.
+    // Validation is occurring in the field::validate() but we need to know if
+    // it finds errors. As such, I'm calling it here to check. Also,
+    // field::validate() doesn't seem to always show it's errors OR stop form
+    // submission so we need to ensure that happens here.
     // sbo__relationship::validate($entity_type, $entity, $langcode, $items, &$errors)
     $errors = $this->field_instance->validateItem($form_state['values'][$field_name][$langcode][$delta], $element['#chado_record_id']);
     if ($errors) {
@@ -374,12 +389,12 @@ class sbo__relationship_widget extends ChadoFieldWidget {
             form_set_error('sbo__relationship]['.$langcode.']['.$delta, $error['message']);
         }
       }
-
-    // Ensure data is prepared for the storage backend:
-    //-------------------------------------------------
     }
+    // If there are no other validation errors then ensure data is prepared for
+    // the storage back-end.
     else {
 
+      // Get the relationship type record.
       if ($type_name && $voc_id) {
         $val = array(
           'cv_id' => $voc_id,
@@ -430,8 +445,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
 
-      // If we have all three values required for a relationship...
-      // Then set them as the chado field storage expects them to be set.
+      // If we have all three values required for a relationship
+      // then set them as the chado field storage expects them to be set.
       if ($subject_id && $object_id && $type_id) {
         // Set the IDs according to the values that were determined above.
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';

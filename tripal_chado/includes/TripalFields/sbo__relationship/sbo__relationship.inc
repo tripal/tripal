@@ -294,7 +294,7 @@ class sbo__relationship extends ChadoField {
 
     // Retrieve the type.
     $type = $this->instance['settings']['base_table'];
-    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
+    if (($this->base_type_column != 'table_name') AND isset($relationship->{$this->subject_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->subject_id_column}->{$this->base_type_column};
       if (isset($type_object->name)) {
         $type = $type_object->name;
@@ -307,8 +307,6 @@ class sbo__relationship extends ChadoField {
     $record = [
       'rdfs:type' => $type,
       'schema:name' => implode(' ', $name),
-      // @todo support the entity and determine whether this is current one or not.
-      //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
     // If the object has a uniquename then add that in for refernce.
@@ -352,7 +350,7 @@ class sbo__relationship extends ChadoField {
 
     // Retrieve the Type.
     $type = $this->instance['settings']['base_table'];
-    if ((!$this->base_type_column == 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
+    if (($this->base_type_column != 'table_name') AND isset($relationship->{$this->object_id_column}->{$this->base_type_column})) {
       $type_object = $relationship->{$this->object_id_column}->{$this->base_type_column};
       if (isset($type_object->name)) {
         $type = $type_object->name;
@@ -365,8 +363,6 @@ class sbo__relationship extends ChadoField {
     $record = [
       'rdfs:type' => $type,
       'schema:name' => implode(' ', $name),
-      // @todo support the entity and determine whether this is current one or not.
-      //'entity' => 'TripalEntity:' . $entity->id,
     ];
 
     // If the object has a unqiuename then add that in for reference.
@@ -442,7 +438,7 @@ class sbo__relationship extends ChadoField {
     // The above relationship will be shown both on marker and variant pages
     // and as such both subject and object names need to be shown.
     $clause = 'The ' . $subject_type . ', ' .
-        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' the '  .
+        $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' ' .
         $object_type . ', ' . $object_name . '.';
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
@@ -504,7 +500,7 @@ class sbo__relationship extends ChadoField {
       'chado-' . $field_table . '__' . $object_id_key => '',
       'chado-' . $field_table . '__type_id' => '',
       // These elements don't need to follow the naming scheme above
-      // becasue we don't need the chado_field_storage to try and
+      // because we don't need the chado_field_storage to try and
       // save these values.
       'object_name' => '',
       'subject_name' => '',
@@ -674,6 +670,7 @@ class sbo__relationship extends ChadoField {
       case 'has origin':
       case 'has part':
       case 'has quality':
+      case 'is a':
       case 'is a maternal parent of':
       case 'is a paternal parent of':
       case 'is consecutive sequence of':
