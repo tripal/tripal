@@ -371,9 +371,21 @@ class TripalContentService_v0_1 extends TripalWebService {
       }
     }
 
-    if (isset($field['field_permissions']['type']) && $field['field_permissions']['type'] != 0) {
-      return;
-    }
+    if (isset($field['field_permissions']['type'])) {
+
+      global $user;
+
+      if ($field['field_permissions']['type'] === '1') {
+        // Field is private.
+        return;
+      }
+      if ($field['field_permissions']['type'] === '2') {
+        // Field is custom permissions: Check
+        // if user has access to view this field in any entity.
+        if (!user_access('view ' . $field_name, $user)) {
+          return;
+        }
+      }
 
       if ($hide_fields == TRUE and empty($values[0])) {
       return;
