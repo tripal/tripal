@@ -1148,6 +1148,11 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
     ];
   }
 
+  //
+  // Add the row for cvterm options
+  //
+  // @todo @lacey
+
   $table = array(
     'header' => $headers,
     'rows' => $rows,
@@ -1808,8 +1813,13 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
   if ($clicked_button == 'chado-cvterm-settings-continue') {
     // If the user chose to differentiate type based on cv_id and supplied a cv_id
     // then we're done!
-    if (($form_state['values']['chado_type_use_cv'] == 'cv') AND ($form_state['values']['chado_type_cv_id'] > 0)) {
-      $form_state['chado-stage'] = 'complete';
+    if ($form_state['values']['chado_type_use_cv'] == 'cv') {
+      if ($form_state['values']['chado_type_cv_id'] > 0) {
+        $form_state['chado-stage'] = 'complete';
+      }
+      else {
+        form_set_error('chado_type_cv_id', 'Please select a controlled vocabulary which contains records for this content type.');
+      }
     }
 
     // If the user chose to diffentiate type based on the current term,
@@ -1883,7 +1893,8 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   // If the user indicated they want to use a cv_id to control which cvterm
   // records become pages then we'll set the stroage args and return.
   elseif ($default['use_cvterm'] == 'cv' AND $default['cv_id']) {
-    $storage_args['data_table'] = $default['table'];
+    // @debug dpm($form_state, 'form state');
+    $storage_args['data_table'] = 'cvterm';
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_value'] = $default['cv_id'];
   }
