@@ -386,6 +386,7 @@ class TripalContentService_v0_1 extends TripalWebService {
           return;
         }
       }
+    }
 
       if ($hide_fields == TRUE and empty($values[0])) {
       return;
