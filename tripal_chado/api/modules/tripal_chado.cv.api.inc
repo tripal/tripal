@@ -1276,11 +1276,6 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
       SELECT CVT.cvterm_id, CVT.name
       FROM {cvterm} CVT
       WHERE CVT.cv_id = :cv_id and lower(CVT.name) like lower(:name)
-      UNION
-      SELECT CVT2.cvterm_id, CVTS.synonym as name
-      FROM {cvterm} CVT2
-        INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
-      WHERE CVT2.cv_id = :cv_id and lower(CVTS.synonym) like lower(:name)
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
@@ -1298,12 +1293,6 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
       FROM {cvterm} CVT
         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
       WHERE lower(CVT.name) like lower(:name)
-      UNION
-      SELECT CVT2.cvterm_id, CVTS.synonym as name, CV2.name as cvname, CVT2.cv_id
-      FROM {cvterm} CVT2
-        INNER JOIN {cv} CV2 on CVT2.cv_id = CV2.cv_id
-        INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
-      WHERE lower(CVTS.synonym) like lower(:name)
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
