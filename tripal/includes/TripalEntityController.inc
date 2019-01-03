@@ -101,7 +101,7 @@ class TripalEntityController extends EntityAPIController {
 
     return TRUE;
   }
-  
+
   /**
    * Sets the title for an entity.
    *
@@ -649,7 +649,7 @@ class TripalEntityController extends EntityAPIController {
 
           // Add this field to the entity with default value.
           if (!isset($queried_entities[$id]->{$field_name})) {
-            $queried_entities[$id]->{$field_name} = array();
+            $queried_entities[$id]->{$field_name} = [];
           }
 
           // Options used for the field_attach_load function.
@@ -688,14 +688,19 @@ class TripalEntityController extends EntityAPIController {
           // attach then we will ignore it. It can only be set by providing
           // the id in the $field_id array handled previously.
           else {
-            
+
+            // Does the field instance have an 'auto_attach' setting?
+            $auto_attach = FALSE;
+            if (array_key_exists('settings', $instance) and
+                array_key_exists('auto_attach', $instance['settings']) and
+                $instance['settings']['auto_attach'] == TRUE) {
+              $auto_attach = TRUE;
+            }
+
             // Do not load fields that are not auto attached.  Instead set
             // their value to an empty string and set the #processed key to
             // FALSE.
-            if (array_key_exists('settings', $instance) and
-                array_key_exists('auto_attach', $instance['settings']) and
-                $instance['settings']['auto_attach'] == FALSE) {
-
+            if (!$auto_attach) {
                // Add an empty value. This will allow the tripal_entity_view()
                // hook to add the necessary prefixes to the field for ajax
                // loading.

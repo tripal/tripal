@@ -120,7 +120,7 @@ function tripal_menu() {
     'type' => MENU_LOCAL_ACTION,
     'weight' => 3
   ];
-  
+
   /**
    * Tripal Extensions
    */
@@ -1530,21 +1530,7 @@ function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
  * @param $context
  */
 function tripal_field_display_TripalEntity_alter(&$display, $context){
-/*   $field = $context['field'];
-  $field_name = $context['field']['field_name'];
-  $bundle = $context['entity']->bundle;
-  $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
 
-  // Hide fields that are empty, but only if the hide_empty_field variable
-  // is set to TRUE for this bundle and ajax load is turned off.
-  $hide_empty = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-  if ($hide_empty == TRUE) {
-    $items = field_get_items('TripalEntity', $context['entity'], $field_name);
-    if (tripal_field_is_empty($field, $items)) {
-      // Stop the right rail element from rendering.
-      drupal_add_css('.' . $field_name.' {display: none;}', 'inline');
-    }
-  }  */
 }
 
 /**
@@ -1565,18 +1551,18 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
       $bundle = $element[$child]['#bundle'];
       $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
 
+      $processed = FALSE;
+      if (array_key_exists('#processed', $element[$child]['#object']->$child)) {
+        $processed = $element[$child]['#object']->$child['#processed'];
+      }
+
       // If the hide empty variable is turned on and ajax load is turned off
       // then remove fields from the field group.
       $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
-      if($hide_variable == TRUE){
+      if ($hide_variable == TRUE and $processed == TRUE) {
         $items = $element[$child]['#items'];
-        // Case #1: there are no items.
-        if (count($items) == 0) {
-          unset($children[$index]);
-          unset($element[$child]);
-        }
-        // Case #2: there is one item but the value is empty.
-        if (count($items) == 1 and array_key_exists('value', $items[0]) and empty($items[0]['value'])) {
+        $field = field_info_field($child);
+        if ($field and tripal_field_is_empty($field, $items)) {
           unset($children[$index]);
           unset($element[$child]);
         }

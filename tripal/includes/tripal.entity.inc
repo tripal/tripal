@@ -498,18 +498,18 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
 
 /**
  * Implements hook_entity_prepare_view
- * 
+ *
  * This function is called before building the content array for an entity. It
  * allows us to load any unattached fields if AJAX is turned off.
  */
 function tripal_entity_prepare_view($entities, $type, $langcode) {
-  
+
   // This is for only TripalEntity content types.
   if ($type != 'TripalEntity') {
     return;
   }
 
-  // Iterate through the entities and instancesa and if AJAX loading is turned
+  // Iterate through the entities and instances and if AJAX loading is turned
   // off then we need to load those fields that were not auto attached.
   foreach ($entities as $entity_id => &$entity) {
     $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
@@ -518,17 +518,17 @@ function tripal_entity_prepare_view($entities, $type, $langcode) {
     foreach ($instances as $instance) {
       $field_name = $instance['field_name'];
       $field = field_info_field($field_name);
-      
+
       $auto_attach = array_key_exists('auto_attach', $instance['settings']) ? $instance['settings']['auto_attach'] : TRUE;
       $processed = $entity->{$field_name}['#processed'];
-      
+
       // If the field is not ajax loadable and the field is not auto attached
       // then we need to add the value.
       if (!$use_ajax and $auto_attach == FALSE and $processed == FALSE) {
         $temp = tripal_load_entity('TripalEntity', [$entity_id], TRUE, [$field['id']]);
         reset($temp);
         $entity->{$field_name} = $temp[$entity_id]->{$field_name};
-        $items = field_get_items('TripalEntity', $entity, $field_name);        
+        $items = field_get_items('TripalEntity', $entity, $field_name);
       }
     }
   }
@@ -537,7 +537,7 @@ function tripal_entity_prepare_view($entities, $type, $langcode) {
 /**
  * Implements hook_entity_view.
  *
- * Here we want to overwite unattached fields with a div box that will be
+ * Here we want to overwrite unattached fields with a div box that will be
  * recognized by JavaScript that will then use AJAX to load the field.
  * The tripal_ajax_attach_field() function is called by an AJAX call to
  * retrieve the field.  We also remove empty fields that were auto attached.
@@ -548,13 +548,13 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
   if ($type != 'TripalEntity') {
     return;
   }
-    
+
   $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
   $hide_empty = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
   $use_ajax = tripal_get_bundle_variable('ajax_field', $bundle->id);
 
   // Iterate through the fields attached to this entity and add IDs to them
-  // as well as some classe for ajax loading.
+  // as well as some classes for ajax loading.
   foreach (element_children($entity->content) as $child_name) {
 
     // Surround the field with a <div> box for AJAX loading if this
@@ -565,7 +565,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       continue;
     }
     $field = field_info_field($instance['field_name']);
-     
+
     // Check if this is an AJAX loadable field, and if so set the class.
     $class = '';
     $auto_attach = array_key_exists('auto_attach', $instance['settings']) ? $instance['settings']['auto_attach'] : TRUE;
@@ -573,7 +573,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
     if ($use_ajax and $auto_attach == FALSE and $processed == FALSE) {
       $class = 'class="tripal-entity-unattached"';
     }
-    
+
     // Set the prefix and suffix.
     if (!array_key_exists('#prefix', $entity->content[$child_name])) {
       $entity->content[$child_name]['#prefix'] = '';
@@ -583,7 +583,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
     }
     $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" ' . $class . '>';
     $entity->content[$child_name]['#suffix'] .= '</div>';
-    
+
     // Remove any auto attached fields if they are empty.
     if ($hide_empty and $processed) {
       $items = field_get_items('TripalEntity', $entity, $child_name);
@@ -592,8 +592,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       }
     }
   }
-  
-  //dpm($entity->content);
+
   // Add some settings for AJAX to deal with fields.
   $settings = [
     'tripal_display' => [

@@ -16,7 +16,11 @@ class schema__publication_formatter extends ChadoFieldFormatter {
     $chado_table = $this->instance['settings']['chado_table'];
 
     // If there are no items, we don't want to return any markup.
-    if (empty($items)) {
+    if (count($items) == 0 or (count($items) == 1 and empty($items[0]['value']))) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => 'There are no publications associated with this record.',
+      );
       return;
     }
 

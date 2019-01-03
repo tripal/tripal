@@ -475,10 +475,15 @@ function tripal_entity_reload($entity) {
 
   $sql = "SELECT count(*) FROM cache_field WHERE cid like :cid";
   $count = db_query($sql, [':cid' => $cid . '%'])->fetchField();
+
   if (!isset($count) or $count > 0) {
     drupal_set_message('Failed to clear the cache for this entity.');
   }
   else {
+    // We must reload the entity.  If we don't then other processes that
+    // depended on a fully loaded entity object will mess up.
+    $entity = tripal_load_entity('TripalEntity', [$entity->id]);
+
     drupal_set_message('Cache cleared, entity reloaded');
   }
   drupal_goto('bio_data/' . $entity_id);

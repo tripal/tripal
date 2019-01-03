@@ -3,7 +3,7 @@
 
 function tripal_user_get_files($uid){
   $directory = [];
-  
+
   // Get all of the files that have been uploaded by the user.
   $sql = "
      SELECT FM.fid, FM.filename, FM.uri, FM.uid, FM.filesize, TGEF.expiration_date
@@ -11,39 +11,39 @@ function tripal_user_get_files($uid){
        INNER JOIN {file_usage} FU on FM.fid = FU.fid and FM.uid = :user_id
        LEFT JOIN {tripal_expiration_files} TGEF on TGEF.fid = FU.fid
      WHERE FU.module = 'tripal'
-     ORDER BY FM.filename
+     ORDER BY FM.uri
    ";
   $files = db_query($sql, array(':user_id' => $uid));
   $rows = array();
   While ($file = $files->fetchObject()) {
-    
+
     // Don't list files that don't exist on the file system.
     if (!file_exists($file->uri)) {
       continue;
     }
-    
+
     // Files have to be in the User's directory.
     if (!preg_match('/^public:\/\/tripal\/users\//', $file->uri)) {
       continue;
     }
-    
+
     // If the expiration date is somehow not set, then set it.
     if (!$file->expiration_date) {
       $file->expiration_date = tripal_reset_file_expiration($file->fid);
     }
-    
+
     // Organize the file into it's directory structure.
-    $rpath = preg_replace('/^public:\/\/tripal\/users\/'. $uid . '\//', '', $file->uri); 
+    $rpath = preg_replace('/^public:\/\/tripal\/users\/'. $uid . '\//', '', $file->uri);
     $paths = explode('/', $rpath);
-    _tripal_user_build_files_dir($directory, $paths, $file); 
+    _tripal_user_build_files_dir($directory, $paths, $file);
   }
-  
+
   return $directory;
 }
 
-/** 
+/**
  * A recursive helper function for building the directory file tree.
- * 
+ *
  * @param $directory
  *   The $directory array into which the file will be placed.
  * @param $paths
@@ -62,21 +62,21 @@ function _tripal_user_build_files_dir(&$directory, $paths, $file) {
   }
 }
 
-/** 
+/**
  * Generates an item list of the files.
- * 
+ *
  * The results from this function can be passed to the theme_item_list function
  * and then themed as a file tree..
- * 
+ *
  * @param $files_list
  *   The array as returned by tripal_user_get_files().
- * 
- * @return 
+ *
+ * @return
  *   An item list.
  */
 function tripal_user_get_files_item_list($files_list, &$i = 0) {
   $items = [];
-  
+
   // Add a header row
   if ($i == 0) {
     $items[] = [
@@ -85,7 +85,7 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
       '<span class="file-size"><b>Size</b></span>' ,
     ];
   }
-  
+
   // Iterate through each file and recursively add it to our items array.
   foreach ($files_list as $filename => $file) {
     $i++;
@@ -106,8 +106,8 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
       }
       $expiration = $file->expiration_date ? date('Y-m-d', $file->expiration_date) : '';
       $items[] = [
-        'data' => '<span class="file-details"><span class="file-name">' . $filename . '</span>' . 
-          '<span class="file-expires">' . $dayleft . ' days</span>' . 
+        'data' => '<span class="file-details"><span class="file-name">' . $filename . '</span>' .
+          '<span class="file-expires">' . $dayleft . ' days</span>' .
           '<span class="file-size">' . tripal_format_bytes($file->filesize) . '</span></span>' ,
         'class' => ['tree-node-file', ($i % 2 == 0) ? 'even' : 'odd'],
         'fid' => $file->fid,
@@ -115,18 +115,18 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
       ];
     }
   }
-  
+
   return $items;
 }
 
 /**
  * Gets the list of collections that have not yet generated files.
- * 
+ *
  * @param $uid
  *   The ID of the user.
  */
 function tripal_user_files_get_pending_collections_table($uid) {
-  
+
   $collections = db_select('tripal_collection', 'tc')
     ->fields('tc', array('collection_id'))
     ->condition('uid', $uid)
@@ -135,21 +135,21 @@ function tripal_user_files_get_pending_collections_table($uid) {
 
   $headers = array('Name', 'Download Formats', 'Actions');
   $rows = array();
-  
+
   while ($collection_id = $collections->fetchField()) {
     $collection = new TripalEntityCollection();
     $collection->load($collection_id);
-    
+
     $downloads = array();
     $formatters = $collection->getFormatters();
     $formatter_labels = [];
-    
+
     $status = 'complete';
     foreach ($formatters as $class_name => $label) {
       $formatter_labels[] = $label;
-      
+
       $outfile = $collection->getOutfilePath($class_name);
-      
+
       if (file_exists($outfile)) {
         continue;
       }
@@ -157,8 +157,8 @@ function tripal_user_files_get_pending_collections_table($uid) {
         $status = 'pending';
       }
     }
-    
-    if ($status == 'pending') {    
+
+    if ($status == 'pending') {
       $rows[] = array(
         'data' => array(
           $collection->getName(),
@@ -193,9 +193,9 @@ function tripal_user_files_get_pending_collections_table($uid) {
 
   drupal_add_css(drupal_get_path('module', 'tripal') . '/theme/css/tripal_user_files.css');
   drupal_add_js(drupal_get_path('module', 'tripal') . '/theme/js/tripal.user_files.js', 'file');
-   
+
   $user_files = tripal_user_get_files($uid);
-  $items = tripal_user_get_files_item_list($user_files);  
+  $items = tripal_user_get_files_item_list($user_files);
   $theme_files = theme_item_list([
     'items' => $items,
     'title' => '',
@@ -204,7 +204,7 @@ function tripal_user_files_get_pending_collections_table($uid) {
       'id' => 'tripal-user-file-tree'
     ],
   ]);
-   
+
   $data_collections = tripal_user_files_get_pending_collections_table($uid);
 
   // Get the user quota settings.
@@ -243,7 +243,7 @@ function tripal_user_files_get_pending_collections_table($uid) {
       '#title' => 'Pending Data Collections',
       '#markup' => $data_collections,
       '#description' =>  t('Data collections allow you to store custom sets of data
-       for use on this site.  Typically data collections are created using search 
+       for use on this site.  Typically data collections are created using search
        tools.  The above data collections are waiting to be generated. You must
        generate the files before you can use them.'),
     ),
@@ -376,8 +376,8 @@ function tripal_delete_file_form_submit($form, &$form_state) {
 function tripal_view_file($uid, $fid) {
   $file = file_load($fid);
   $usage = file_usage_list($file);
-  
-  // Check to see if this is a data collection.  
+
+  // Check to see if this is a data collection.
   $collection = NULL;
   $collection_ctypes = [];
   $collection_field_list = [];
@@ -388,23 +388,23 @@ function tripal_view_file($uid, $fid) {
       $collection_id = array_keys($usage['tripal']['data_collection'])[0];
       $collection = new TripalEntityCollection();
       $collection->load($collection_id);
-      
+
       // Get the content types for this data collection.
-      $cbundles = $collection->getBundles();     
+      $cbundles = $collection->getBundles();
       foreach ($cbundles as $cbundle) {
         $eids = $collection->getEntityIDs($cbundle->bundle_name);
         $fields = $collection->getFieldIDs($cbundle->bundle_name);
-        
+
         // Convert local field IDs to their names.
         if (!$cbundle->site_id) {
           $bundle = tripal_load_bundle_entity(array('name' => $cbundle->bundle_name));
           $collection_ctypes[] = $bundle->label;
-          
+
           foreach ($fields as $field_id) {
             $field = field_info_field_by_id($field_id);
             $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle->name);
             $collection_field_list[] = $instance['label'];
-            
+
             $field_formatters = tripal_get_field_field_formatters($field, $instance);
             foreach ($field_formatters as $class_name => $label) {
               tripal_load_include_downloader_class($class_name);
@@ -414,11 +414,11 @@ function tripal_view_file($uid, $fid) {
         }
         // Convert remote field IDs to their names.
         // TODO: add in retrieval of remote details.
-        
-        
+
+
         $collection_entities += count($eids);
       }
-      
+
     }
   }
 
@@ -463,7 +463,7 @@ function tripal_view_file($uid, $fid) {
     ),
     $expiration
   );
-  
+
   $md5_file = $file->uri . '.md5';
   if (file_exists($md5_file)) {
     $rows[] = array(
@@ -474,7 +474,7 @@ function tripal_view_file($uid, $fid) {
       ),
       file_get_contents($md5_file),
     );
-  } 
+  }
   $rows[] = array(
     array(
       'data' => 'Actions',
@@ -493,8 +493,8 @@ function tripal_view_file($uid, $fid) {
     'colgroups' => [],
     'empty' => '',
   ]);
-  
-  
+
+
   $collection_content = '';
   if ($collection) {
     $rows = [];
@@ -514,7 +514,7 @@ function tripal_view_file($uid, $fid) {
       ),
       join(', ', $collection_ctypes),
     );
-    
+
     $rows[] = array(
       array(
         'data' => 'Fields',
@@ -547,7 +547,7 @@ function tripal_view_file($uid, $fid) {
       ),
       l('Delete', 'user/' . $uid . '/data-collections/' . $collection->getCollectionID() . '/delete')
     );
-    
+
     $collection_content = '<b>Collection Details</b>' . theme_table([
       'header' => $headers,
       'rows' => $rows,
@@ -558,7 +558,7 @@ function tripal_view_file($uid, $fid) {
       'empty' => '',
     ]);
   }
-  
+
   drupal_json_output($file_content . $collection_content);
 }
 

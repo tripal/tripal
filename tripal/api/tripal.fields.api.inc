@@ -4,7 +4,7 @@
  * @file
  * Provides an application programming interface (API) for working with
  * fields attached to TripalEntity content types (bundles).
- * 
+ *
  */
 
 /**
@@ -13,31 +13,31 @@
  * @{
  * Provides an application programming interface (API) for working with
  * fields attached to TripalEntity content types (bundles).
- * 
+ *
  * Fields:
- * A field is a reusable "data container" that is attached to a Bundle. 
- * Programmatically, each field provides one or more primitive data types, with 
- * validators and widgets for editing and formatters for display. Each field 
- * independently manages the data to which it assigned.  Just like with Bundles, 
- * Fields are also described using controlled vocabulary terms.  For example, a 
- * gene Bundle has a field attached that provides the name of the gene.   
- * This field only provides the name and nothing more.  Tripal uses the 
- * schema:name vocabulary term to describe the field.  
+ * A field is a reusable "data container" that is attached to a Bundle.
+ * Programmatically, each field provides one or more primitive data types, with
+ * validators and widgets for editing and formatters for display. Each field
+ * independently manages the data to which it assigned.  Just like with Bundles,
+ * Fields are also described using controlled vocabulary terms.  For example, a
+ * gene Bundle has a field attached that provides the name of the gene.
+ * This field only provides the name and nothing more.  Tripal uses the
+ * schema:name vocabulary term to describe the field.
  *
  * Field Instances:
- * Fields describe "atomic" units of data that are associated with an entity.  
- * For example, a "name" is an atomic unit of data about a Gene or Organism 
- * entity. Fields can be reused for multiple Bundles. For example, gene, mRNA, 
- * genetic markers and variants all have name data.  Despite that all of these 
+ * Fields describe "atomic" units of data that are associated with an entity.
+ * For example, a "name" is an atomic unit of data about a Gene or Organism
+ * entity. Fields can be reused for multiple Bundles. For example, gene, mRNA,
+ * genetic markers and variants all have name data.  Despite that all of these
  * Bundles provides a "name", we only need one field to describe that this data
- * is a "name".  However, we may want to customize a field specific to each 
- * bundle.  Therefore, an Instance of a field is attached to a bundle, and 
- * field instances can then be customized differently.  The most important 
- * customization is the one that defines the Chado table from which the data 
- * for a field is retrieved.   Despite that field instances are attached to 
- * bundles, they become visible with Entities.  When an entity is loaded for 
- * display, Drupal examines all of the fields that are attached to the entity's 
- * bundle, and then populates the fields instances with data specific to the 
+ * is a "name".  However, we may want to customize a field specific to each
+ * bundle.  Therefore, an Instance of a field is attached to a bundle, and
+ * field instances can then be customized differently.  The most important
+ * customization is the one that defines the Chado table from which the data
+ * for a field is retrieved.   Despite that field instances are attached to
+ * bundles, they become visible with Entities.  When an entity is loaded for
+ * display, Drupal examines all of the fields that are attached to the entity's
+ * bundle, and then populates the fields instances with data specific to the
  * entity being loaded.
  * @}
  *
@@ -81,8 +81,8 @@ function hook_field_storage_tquery($conditions, $orderBy) {
 }
 
 /**
- * Allows a module to return a bundles field info. 
- * 
+ * Allows a module to return a bundles field info.
+ *
  * @param $entity_type
  *  The name of the entity, like 'TripalEntity'.
  * @param $bundle
@@ -100,7 +100,7 @@ function hook_bundle_fields_info($entity_type, $bundle) {
  *  The name of the entity, most likely 'TripalEntity'.
  * @param $bundle
  *  The bundle object.
- * 
+ *
  * @ingroup tripal_fields_api
  */
 function hook_bundle_instances_info($entity_type, $bundle) {
@@ -111,11 +111,11 @@ function hook_bundle_instances_info($entity_type, $bundle) {
  * Indicate if a field has an empty value.
  *
  * By default, all field values are attached to an entity in the form
- * $entity->{field_name}[{language}][{delta}].   Tyipcally a field witll then
+ * $entity->{field_name}[{language}][{delta}].   Typically a field will then
  * have a 'value' element:  $entity->{field_name}[{language}][{delta}]['value']
  * and if that value is empty then the field is considered empty by Tripal.
- * By default the tripal_field-is_empty() function is used to check all
- * fields to see if they are empty. However, this fhook can be implemented by
+ * By default the tripal_field_is_empty() function is used to check all
+ * fields to see if they are empty. However, this hook can be implemented by
  * any module to override that behavior.
  *
  * @param $field
@@ -130,32 +130,32 @@ function hook_bundle_instances_info($entity_type, $bundle) {
  * @return
  *   TRUE if the field value is empty for the given delta, and FALSE if not
  *   empty.
- *   
+ *
  * @ingroup tripal_fields_api
  */
 function tripal_field_is_empty($field, $items, $delta = 0) {
-  
+
   // If the $items argument is empty then return TRUE.
   if (!$items) {
     return TRUE;
   }
-  
+
   // If the field is a tripal field storage API field and there
   // is no value field then the field is empty.
-  if (array_key_exists('storage', $field) and 
-      array_key_exists('tripal_storage_api', $field['storage']['settings']) and 
+  if (array_key_exists('storage', $field) and
+      array_key_exists('tripal_storage_api', $field['storage']['settings']) and
       !array_key_exists('value', $items[$delta])) {
     return TRUE;
   }
-  
+
   // If there is a value field but there's nothing in it, the the field is
   // empty.
-  if (array_key_exists($delta, $items) and 
-      array_key_exists('value', $items[$delta]) and 
+  if (array_key_exists($delta, $items) and
+      array_key_exists('value', $items[$delta]) and
       empty($items[$delta]['value'])) {
     return TRUE;
   }
-  
+
   // Otherwise, the field is not empty.
   return FALSE;
 }
