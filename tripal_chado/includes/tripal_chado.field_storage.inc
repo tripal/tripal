@@ -1010,6 +1010,14 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
     '#type' => 'value',
     '#value' => $default['use_linker'],
   ];
+  $form['chado_type_use_cv'] = [
+    '#type' => 'value',
+    '#value' => $default['use_cvterm'],
+  ];
+  $form['chado_type_cv_id'] = [
+    '#type' => 'value',
+    '#value' => $default['cv_id'],
+  ];
 
   //
   // Add the base table row.
@@ -1151,7 +1159,34 @@ function tripal_chado_field_storage_bundle_mapping_form_summary(&$form, &$form_s
   //
   // Add the row for cvterm options
   //
-  // @todo @lacey
+  if ($default['use_cvterm']) {
+    $message = 'No. All records belong to a single controlled vocabulary.';
+    if ($default['use_cvterm'] == 'parent') {
+      $message = 'Yes. Records should include all child records of the specified term.';
+    }
+    $rows[] = [
+      [
+        'data' => 'Use a Parent Chado cvterm?',
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $message,
+    ];
+
+    // Add the cv if needed
+    if ($default['cv_id'] > 0) {
+      $cv_name = chado_query('SELECT name FROM chado.cv WHERE cv_id=:id',
+        [':id' => $default['cv_id']])->fetchField();
+        $rows[] = [
+          [
+            'data' => 'Restrict to Vocabulary',
+            'header' => TRUE,
+            'width' => '20%',
+          ],
+          $cv_name,
+        ];
+    }
+  }
 
   $table = array(
     'header' => $headers,
@@ -1814,17 +1849,19 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     // If the user chose to differentiate type based on cv_id and supplied a cv_id
     // then we're done!
     if ($form_state['values']['chado_type_use_cv'] == 'cv') {
-      if ($form_state['values']['chado_type_cv_id'] > 0) {
+      if (isset($form_state['values']['chado_type_cv_id']) AND ($form_state['values']['chado_type_cv_id'] > 0)) {
         $form_state['chado-stage'] = 'complete';
       }
-      else {
+      else if (isset($form['chado_type_cv_id'])) {
         form_set_error('chado_type_cv_id', 'Please select a controlled vocabulary which contains records for this content type.');
       }
     }
 
     // If the user chose to diffentiate type based on the current term,
     // then we're done!
-    // @todo @lacey handle this case.
+    if ($form_state['values']['chado_type_use_cv'] == 'parent') {
+      $form_state['chado-stage'] = 'complete';
+    }
   }
 
   //
@@ -1892,8 +1929,7 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
 
   // If the user indicated they want to use a cv_id to control which cvterm
   // records become pages then we'll set the stroage args and return.
-  elseif ($default['use_cvterm'] == 'cv' AND $default['cv_id']) {
-    // @debug dpm($form_state, 'form state');
+  else if (($default['use_cvterm'] == 'cv') AND ($default['cv_id'])) {
     $storage_args['data_table'] = 'cvterm';
     $storage_args['type_id'] = $form_state['values']['selected_cvterm_id'];
     $storage_args['type_value'] = $default['cv_id'];
@@ -1907,4 +1943,3 @@ function tripal_chado_field_storage_bundle_mapping_form_submit($form,
   }
 
 }
-
