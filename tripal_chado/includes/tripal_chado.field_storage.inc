@@ -1612,17 +1612,17 @@ function tripal_chado_field_storage_bundle_mapping_form_add_cvterm(&$form,
       within the cvterm table?',
     '#options' => array(
       'cv' => 'All records that belong to a single controlled vocabulary?',
-      'parent' => 'All child records of the specified term?'
+      //  SPF: Commenting out until we can write the code to deal with
+      //  using a parent term to indicate child elements that belong to the
+      //  content type.
+      // 'parent' => 'All child records of the specified term?'
     ),
     '#description' => t('Records in the cvterm table are often not used for content
         types. The records in the cvterm table are meant to be vocabulary terms.
-        However, there are times when records in the cvterm table can be
+        However, there are times when records in the cvterm table may be
         used for a content type. One example is for trait "pages" that
-        use phenotype values stored in the phenotype table.  Because records in
-        the cvterm table are vocabulary terms they do not have "types" so the
-        only ways to distinguish them are 1) to use the controlled vocabulary to
-        distinguish the records or 2) to use all children records of the
-        selected term.  Please select the appropriate value for this case.'),
+        use phenotype values stored in the phenotype table. The vocabulary that
+        contains the "trait" terms should then be provided.'),
     '#default_value' => $default['use_cvterm'],
   );
   if ($default['use_cvterm'] == 'cv') {
