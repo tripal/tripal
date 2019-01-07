@@ -13,6 +13,14 @@ class OBOImporterTest extends TripalTestCase {
   use DBTransaction;
 
   /**
+   * Dummy test to prevent warnings until the below tests are uncommented.
+   */
+  public function testDummy(){
+    $this->assertTrue(TRUE);
+
+  }
+
+  /**
    * A helper function for loading any OBO.
    *
    * @param $name - ontology name.  This goes in the tripal_cv_obo table.
