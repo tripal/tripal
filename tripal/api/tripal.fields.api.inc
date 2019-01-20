@@ -161,6 +161,54 @@ function tripal_field_is_empty($field, $items, $delta = 0) {
 }
 
 /**
+ * Retrieves a list of all fiels implementing Tripal Fields/Formatters/Widgets.
+ *
+ * The TripalField classes can be added by the site developer and should be
+ * placed in the [module]/includes/TripalFields directory. Tripal will support
+ * any field as long as:
+ *   - it's in the [modules]/includes/TripalFields directory,
+ *   - extends TripalField, TripalWidget or TripalFormatter,
+ *   - matches the [cvname]__[termname] convention.
+ *
+ * @return
+ *   An array of files containing Tripal fields, widgets or formatters where
+ *   each element has a name, filename, and uri. The URI is relative to your
+ *   drupal root.
+ */
+function tripal_get_tripalfield_files() {
+  $field_files = &drupal_static(__FUNCTION__);
+
+  if (!isset($field_files)) {
+    $field_files = array();
+
+    // Check module directories.
+    $modules = module_list(TRUE);
+    foreach ($modules as $module) {
+
+      // Only run this for modules that are enabled.
+      if (!module_exists($module)) {
+        continue;
+      }
+
+      // Find all of the files in the tripal_chado/includes/fields directory.
+      $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
+      $tmp = file_scan_directory($fields_path, '/.*__.*\.inc$/');
+      if (!empty($tmp)) { $field_files = array_merge($field_files, $tmp); }
+    }
+
+    // Check the library directory.
+    if (module_exists('libraries')) {
+      $library_path = libraries_get_path('TripalFields');
+      $fields_path = $library_path;
+      $tmp = file_scan_directory($fields_path, '/.*__.*\.inc$/');
+      if (!empty($tmp)) { $field_files = array_merge($field_files, $tmp); }
+    }
+  }
+
+  return $field_files;
+}
+
+/**
  * Retrieves a list of TripalField types.
  *
  * The TripalField classes can be added by a site developer and should be
@@ -178,51 +226,20 @@ function tripal_field_is_empty($field, $items, $delta = 0) {
 function tripal_get_field_types() {
   $types = array();
 
-  $modules = module_list(TRUE);
-  foreach ($modules as $module) {
-
-    // Only run this for modules that are enabled.
-    if (!module_exists($module)) {
+  $field_files = tripal_get_tripalfield_files();
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    // Ignore the formatter and widget classes for now.
+    if (preg_match('/_formatter|_widget/', $file->name)) {
       continue;
     }
-    // Find all of the files in the tripal_chado/includes/TripalFields/ directory.
-    $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
-    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
-    // Iterate through the fields, include the file and run the info function.
-    foreach ($field_files as $file) {
-      // Ignore the formatter and widget classes for now.
-      if (preg_match('/_formatter|_widget/', $file->name)) {
-        continue;
-      }
-      $field_type = $file->name;
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $field_type);
-      if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
-        $types[] = $field_type;
-      }
+    $field_type = $file->name;
+    require_once($file->uri);
+    if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
+      $types[] = $field_type;
     }
   }
 
-  // If the libraries module is enabled then we want to look for a TripalFields
-  // library folder and see if our field exist there.
-  if (module_exists('libraries')) {
-    $library_path = libraries_get_path('TripalFields');
-    $fields_path = realpath(".") . '/' . $library_path;
-    $field_files = file_scan_directory($fields_path, '/.*\.inc$/');
-    foreach ($field_files as $file) {
-      // Ignore the formatter and widget classes for now.
-      if (preg_match('/_formatter|_widget/', $file->name)) {
-        continue;
-      }
-      $field_type = $file->name;
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $field_type . '.inc';
-      if (file_exists($file_path)) {
-        require_once($file_path);
-        if (class_exists($field_type) and is_subclass_of($field_type, 'TripalField')) {
-          $types[] = $field_type;
-        }
-      }
-    }
-  }
   return $types;
 }
 
@@ -242,46 +259,18 @@ function tripal_get_field_types() {
 function tripal_get_field_widgets() {
   $widgets = array();
 
-  $modules = module_list(TRUE);
-  foreach ($modules as $module) {
-
-    // Only run this for modules that are enabled.
-    if (!module_exists($module)) {
-      continue;
-    }
-
-    // Find all of the files in the tripal_chado/includes/fields directory.
-    $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
-    $field_files = file_scan_directory($fields_path, '/.*_widget\.inc$/');
-    // Iterate through the fields, include the file and run the info function.
-    foreach ($field_files as $file) {
+  $field_files = tripal_get_tripalfield_files();
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    if (preg_match('/_widget/', $file->name)) {
       $widget_type = $file->name;
-      $field_type = preg_replace('/(^.*)_widget/', '$1', $widget_type);
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $widget_type);
+      require_once($file->uri);
       if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
         $widgets[] = $widget_type;
       }
     }
   }
 
-  // If the libraries module is enabled then we want to look for a TripalFields
-  // library folder and see if our field exist there.
-  if (module_exists('libraries')) {
-    $library_path = libraries_get_path('TripalFields');
-    $fields_path = realpath(".") . '/' . $library_path;
-    $field_files = file_scan_directory($fields_path, '/.*_widget\.inc$/');
-    foreach ($field_files as $file) {
-      $widget_type = $file->name;
-      $field_type = preg_replace('/(^.*)_widget/', '$1', $widget_type);
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $widget_type . '.inc';
-      if (file_exists($file_path)) {
-        require_once($file_path);
-        if (class_exists($widget_type) and is_subclass_of($widget_type, 'TripalFieldWidget')) {
-          $widgets[] = $widget_type;
-        }
-      }
-    }
-  }
   return $widgets;
 }
 
@@ -337,46 +326,18 @@ function tripal_get_field_field_formatters($field, $instance) {
 function tripal_get_field_formatters() {
   $formatters = array();
 
-  $modules = module_list(TRUE);
-  foreach ($modules as $module) {
-
-    // Only run this for modules that are enabled.
-    if (!module_exists($module)) {
-      continue;
-    }
-
-    // Find all of the files in the tripal_chado/includes/fields directory.
-    $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
-    $field_files = file_scan_directory($fields_path, '/.*_formatter\.inc$/');
-    // Iterate through the fields, include the file and run the info function.
-    foreach ($field_files as $file) {
+  $field_files = tripal_get_tripalfield_files();
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    if (preg_match('/_formatter/', $file->name)) {
       $formatter_type = $file->name;
-      $field_type = preg_replace('/(^.*)_formatter/', '$1', $formatter_type);
-      module_load_include('inc', $module, 'includes/TripalFields/' . $field_type . '/' . $formatter_type);
+      require_once($file->uri);
       if (class_exists($formatter_type) and is_subclass_of($formatter_type, 'TripalFieldFormatter')) {
         $formatters[] = $formatter_type;
       }
     }
   }
 
-  // If the libraries module is enabled then we want to look for a TripalFields
-  // library folder and see if our field exist there.
-  if (module_exists('libraries')) {
-    $library_path = libraries_get_path('TripalFields');
-    $fields_path = realpath(".") . '/' . $library_path;
-    $field_files = file_scan_directory($fields_path, '/.*_formatter\.inc$/');
-    foreach ($field_files as $file) {
-      $formatter_type = $file->name;
-      $field_type = preg_replace('/(^.*)_formatter/', '$1', $formatter_type);
-      $file_path = realpath(".") . '/' . $library_path .'/' . $field_type . '/' . $formatter_type . '.inc';
-      if (file_exists($file_path)) {
-        require_once($file_path);
-        if (class_exists($formatter_type) and is_subclass_of($formatter_type, 'TripalFieldFormatter')) {
-          $formatters[] = $formatter_type;
-        }
-      }
-    }
-  }
   return $formatters;
 }
 /**
