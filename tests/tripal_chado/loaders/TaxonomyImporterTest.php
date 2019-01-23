@@ -15,7 +15,6 @@ class TaxonomyImporterTest extends TripalTestCase {
   /**
    * Adds an organism and checks that the importer runs and adds some properties to it.
    *
-   * @group waffle
    */
   public function testImportExistingTaxonomyLoader() {
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/TaxonomyImporter');
