@@ -26,6 +26,10 @@ class TaxonomyImporterTest extends TripalTestCase {
       'type_id' => NULL,
     ];
 
+    $prev_db = chado_set_active('chado');
+    chado_query('TRUNCATE TABLE {organism} CASCADE');
+    chado_set_active($prev_db);
+
     $organism = factory('chado.organism')->create($org);
     //  $this->publish('organism');
     $file = [];
