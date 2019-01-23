@@ -490,7 +490,7 @@ class TaxonomyImporter extends TripalImporter {
 
       if (!$rfh){
 
-        $this->logMessage("Could not look up " . $sci_name, [], TRIPAL_WARNING);
+        $this->logMessage("Could not look up !sci_name" , ['!sci_name' =>  $sci_name], TRIPAL_WARNING);
         continue;
       }
       while (!feof($rfh)) {
