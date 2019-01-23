@@ -193,7 +193,9 @@ function tripal_get_tripalfield_files() {
       // Find all of the files in the tripal_chado/includes/fields directory.
       $fields_path = drupal_get_path('module', $module) . '/includes/TripalFields';
       $tmp = file_scan_directory($fields_path, '/.*__.*\.inc$/');
-      if (!empty($tmp)) { $field_files = array_merge($field_files, $tmp); }
+ if (!empty($tmp)) {
+        $field_files = array_merge($field_files, $tmp);
+      }
     }
 
     // Check the library directory.
