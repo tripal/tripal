@@ -5,15 +5,17 @@ namespace Tests\tripal_chado;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-
+/**
+ *
+ */
 class TaxonomyImporterTest extends TripalTestCase {
 
   use DBTransaction;
 
-
-  /*
+  /**
    * Adds an organism and checks that the importer runs and adds some properties to it.
    *
+   * @group waffle
    */
   public function testImportExistingTaxonomyLoader() {
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/TaxonomyImporter');
@@ -26,12 +28,13 @@ class TaxonomyImporterTest extends TripalTestCase {
       'type_id' => NULL,
     ];
 
+    // Speed up test an ensure no organisms
+    // in db since it will check all.
     $prev_db = chado_set_active('chado');
     chado_query('TRUNCATE TABLE {organism} CASCADE');
     chado_set_active($prev_db);
-
     $organism = factory('chado.organism')->create($org);
-    //  $this->publish('organism');
+    // $this->publish('organism');.
     $file = [];
     $run_args = ['import_existing' => TRUE];
     $importer = new \TaxonomyImporter();
@@ -39,7 +42,6 @@ class TaxonomyImporterTest extends TripalTestCase {
     $importer->create($run_args, $file);
     $importer->run();
     ob_end_clean();
-
 
     $query = db_select('chado.organism', 'o');
     $query->join('chado.organismprop', 'op', 'o.organism_id = op.organism_id');
@@ -51,10 +53,10 @@ class TaxonomyImporterTest extends TripalTestCase {
   }
 
   /**
-   * the importer can also load an array of pubmed ids.  We use the pillbug
+   * The importer can also load an array of pubmed ids.  We use the pillbug
    * again.
    *
-   * https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=96821
+   * Https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=96821
    *
    * @throws \Exception
    */
@@ -63,7 +65,8 @@ class TaxonomyImporterTest extends TripalTestCase {
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/TaxonomyImporter');
 
     $file = [];
-    $run_args = ['taxonomy_ids' => '96821']; //its the pillbug again!
+    // Its the pillbug again!
+    $run_args = ['taxonomy_ids' => '96821'];
     $importer = new \TaxonomyImporter();
 
     ob_start();
