@@ -27,14 +27,8 @@ class TaxonomyImporterTest extends TripalTestCase {
       'common_name' => 'pillbug',
       'type_id' => NULL,
     ];
-
-    // Speed up test an ensure no organisms
-    // in db since it will check all.
-    $prev_db = chado_set_active('chado');
-    chado_query('TRUNCATE TABLE {organism} CASCADE');
-    chado_set_active($prev_db);
+    
     $organism = factory('chado.organism')->create($org);
-    // $this->publish('organism');.
     $file = [];
     $run_args = ['import_existing' => TRUE];
     $importer = new \TaxonomyImporter();
