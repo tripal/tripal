@@ -377,7 +377,9 @@ class TripalContentService_v0_1 extends TripalWebService {
 
       if ($field['field_permissions']['type'] === '1') {
         // Field is private.
-        return;
+           if (!user_access('view ' . $field_name, $user)) {
+          return;
+        }
       }
       if ($field['field_permissions']['type'] === '2') {
         // Field is custom permissions: Check
