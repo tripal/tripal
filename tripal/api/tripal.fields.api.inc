@@ -161,7 +161,7 @@ function tripal_field_is_empty($field, $items, $delta = 0) {
 }
 
 /**
- * Retrieves a list of all fiels implementing Tripal Fields/Formatters/Widgets.
+ * Retrieves a list of all fields implementing Tripal Fields/Formatters/Widgets.
  *
  * The TripalField classes can be added by the site developer and should be
  * placed in the [module]/includes/TripalFields directory. Tripal will support
