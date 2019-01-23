@@ -20,3 +20,11 @@ Tripal Apollo lets you manage user accounts for your JBrowse Apollo instances on
 
 `Documentation <https://tripal-apollo.readthedocs.io/en/latest/>`__
 `Repository <https://github.com/NAL-i5K/tripal_apollo>`__
+
+Tripal Multi-Chado
+------------------
+
+The Multi-Chado module is an extension for Tripal 2.x and 3.x (dev branch under testing) that can be used to install more than one Chado instance across different schemata of your choice and it also enables the use of different PostgreSQL database credentials allowing the administrator to do fine tuning of database accesses. For instance, with this module, you can host on a *same Drupal instance* (config, tools and users) both a *public* and one or more *private* Chado instances. You could also have different public instances for *different releases* of a same genome sequencing or event *different species*. It can also alow you do provide a Chado *sandbox* to allow users to safely modify Chado data and see the changes on the site. It can be used to run *tests* against a blank Chado instance (see https://github.com/tripal/tripal_simpletest/). And you may even think of other kind of uses (dev-staging-prod, etc.)... The dev branch is supposed to work well with Tripal 3 but has not been extensively tested yet. A companion module (tripal_mc_selector) is provided to allow easy Chado instance switching. Several hooks are available for module developers in order to automatically switch Chado instance according to a given context.
+
+`Documentation <http://cgit.drupalcode.org/tripal_mc/plain/README.md?h=7.x-1.x>`__
+`Repository <https://www.drupal.org/project/tripal_mc>`__
