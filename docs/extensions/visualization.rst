@@ -42,3 +42,14 @@ This module provides additional fields for use with Tripal 3. The current versio
 
 `Documentation <https://github.com/tripal/trpfancy_fields/blob/master/README.md>`__
 `Repository <https://github.com/tripal/trpfancy_fields>`__
+
+Phylotree
+-------------------
+
+This extension provides a simple file formatter for [newick][1] tree files using
+the Javascript library ["phylotree"][2] for display.
+[1]: http://evolution.genetics.washington.edu/phylip/newicktree.html
+[2]: https://github.com/veg/phylotree.js/tree/master
+
+`Documentation <https://cgit.drupalcode.org/phylotree/tree/README.md>`__
+`Repository <https://www.drupal.org/project/phylotree>`__
