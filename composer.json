@@ -5,6 +5,11 @@
     "doctrine/instantiator": "1.0.*",
     "statonlab/tripal-test-suite": "1.*"
   },
+  "autoload": {
+    "files": [
+      "tests/TripalFieldTestHelper.php"
+    ]
+  },
   "require": {
   }
 }
