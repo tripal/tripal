@@ -3,6 +3,14 @@ Third-party Integration
 
 The following modules provide integration with external third-party tools. For example, they may allow you to easily embed the tool in Drupal/Tripal pages and/or expose data from the tool on your Tripal site.
 
+BrAPI
+-----
+
+This module provides a Breeding API end point on your Tripal site as well as a user query interface and an auto-query system to integrate external BrAPI end point data into your site dynamically. An administrative interface allows you to adjust the module settings according to the way you use Chado. A couple of hooks are also provided for module developers in order to allow customization/extension of calls.
+
+`Documentation <https://brapi.readthedocs.io/en/latest/>`__
+`Repository <https://github.com/tripal/brapi>`__
+
 Tripal Blast
 ------------
 
@@ -34,11 +42,3 @@ This modules provides a form interface so users can custom filter existing VCF f
 
 `Documentation <https://github.com/UofS-Pulse-Binfo/vcf_filter/blob/master/README.md>`__
 `Repository <https://github.com/UofS-Pulse-Binfo/vcf_filter>`__
-
-BrAPI
------
-
-This module provides a Breeding API end point on your Tripal site as well as a user query interface and an auto-query system to integrate external BrAPI end point data into your site dynamically. An administrative interface allows you to adjust the module settings according to the way you use Chado. A couple of hooks are also provided for module developers in order to allow customization/extension of calls.
-
-`Documentation <https://brapi.readthedocs.io/en/latest/>`__
-`Repository <https://github.com/tripal/brapi>`__
