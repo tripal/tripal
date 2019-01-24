@@ -59,13 +59,13 @@ class local__child_properties extends ChadoField {
 
     $properties = [];
 
-    foreach ($master as $child){
-
-      //remove all the other fields from the expand_var.
-      
-      $child['info'] = $child['info']->featureprops;
-
-    }
+//    foreach ($master as $child){
+//
+//      //remove all the other fields from the expand_var.
+//
+//      $child['info'] = $child['info']->featureprops;
+//
+//    }
 
     //TODO: filter this to just hte properties.
     // Right now we include everything because we are having this field do double duty for annotations.

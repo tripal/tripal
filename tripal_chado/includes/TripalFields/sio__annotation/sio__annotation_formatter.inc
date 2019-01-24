@@ -56,7 +56,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
       }
     }
 
-    // Theme the results in a talbe.
+    // Theme the results in a table.
     $caption = 'This record has the following annotations.';
     $table = array(
       'header' => $headers,
@@ -72,10 +72,82 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     );
 
     if (count($items) > 0) {
-      $element[0] = array(
+      $element[0]['base'] = array(
         '#type' => 'markup',
         '#markup' => theme_table($table),
       );
     }
+
+
+    $rows = $this->getAnnotationRows($child);
+    $header = ['name', 'type', 'annotation'];
+
+    $table = theme('table', ['rows' => $rows, 'header' => $header]);
+    $element[0][$i]['annotation_table'] = [
+      '#markup' => $table,
+      '#title' => t("Annotations for !root", ['!root' => $name]),
+    ];
+
   }
+
+
+
+  /**
+   * Get annotations for child features, from the data__sequence_features field.
+   *
+   * @param $data
+   */
+  private function getAnnotationRows($data) {
+
+    $rows = [];
+
+    $info = $data['info'];
+
+    $children = $data['children'] ?? NULL;
+
+    $annotations = $info->feature_cvterm;
+
+    if ($annotations) {
+
+      if (is_array($annotations)) {
+        foreach ($annotations as $ann) {
+
+          $annotation_name = $ann->cvterm_id->name;
+          if ($ann->is_not) {
+            $annotation_name = "is not " . $annotation_name;
+          }
+
+          $rows[] = [
+            $info->uniquename,
+            $info->type_id->name,
+            $annotation_name,
+          ];
+        }
+      }
+      else {
+        $annotation_name = $annotations->cvterm_id->name;
+        if ($annotations->is_not) {
+          $annotation_name = "is not " . $annotation_name;
+        }
+
+        $rows[] = [
+          $info->uniquename,
+          $info->type_id->name,
+          $annotation_name,
+        ];
+
+      }
+
+    }
+
+    if ($children && !empty($children)) {
+
+      foreach ($children as $child) {
+        $rows = array_merge($this->getAnnotationRows($child), $rows);
+      }
+    }
+    return $rows;
+
+  }
+
 }
