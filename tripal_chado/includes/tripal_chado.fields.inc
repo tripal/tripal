@@ -587,6 +587,49 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
       ),
     );
   }
+
+
+  // Gene child fields.
+  // These fields traverse the relationship table to
+  // display information about ALL children.
+
+  if (isset($bundle->data_table) and ($bundle->data_table == 'feature') and $bundle->term->name == 'gene') {
+    tripal_insert_cvterm([
+      'id' => 'data:1255',
+      'name' => 'Sequence features',
+      'cv_name' => 'EDAM',
+      'definition' => 'Annotation of positional features of molecular sequence(s), i.e. that can be mapped to position(s) in the sequence.',
+    ]);
+    $field_name = 'data__sequence_features';
+    $field_type = 'data__sequence_features';
+    $fields[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+    tripal_insert_cvterm([
+      'id' => 'local:child_properties',
+      'name' => 'child_properties',
+      'cv_name' => 'local',
+      'definition' => 'Properties associated with children of a feature.',
+    ]);
+    $field_name = 'local__child_properties';
+    $field_type = 'local__child_properties';
+    $fields[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
 }
 
 /**
@@ -2204,6 +2247,72 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ),
     );
   }
+
+
+  if (isset($bundle->data_table) and ($bundle->data_table == 'feature') and $bundle->term->name == 'gene') {
+    $field_name = 'data__sequence_features';
+    $instances[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Transcript Information',
+      'description' => 'Recursively gathers information about all sub-features (mRNA, CDS, proteins), associated with a top-level feature (gene)',
+      'required' => FALSE,
+      'settings' => [
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence features',
+        'term_accession' => '1255',
+        'auto_attach' => FALSE,
+        'chado_table' => 'feature_relationship',
+        'chado_column' => 'subject_id',
+        'base_table' => $bundle->data_table,
+      ],
+      'widget' => [
+        'type' => 'data__sequence_features_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'data__sequence_features_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+    $field_name = 'local__child_properties';
+    $instances[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Child Properties',
+      'description' => 'Displays property information associated with recursive children of this feature.',
+      'required' => FALSE,
+      'settings' => [
+        'term_vocabulary' => 'local',
+        'term_name' => 'child_properties',
+        'term_accession' => 'child_properties',
+        'auto_attach' => FALSE,
+        'chado_table' => 'featureprop',
+        'chado_column' => 'feature_id',
+        'base_table' => $bundle->data_table,
+      ],
+      'widget' => [
+        'type' => 'local__child_properties_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'local__child_properties_formatter',
+          // This field depends on the data__sequence_features field.
+          // The weight must be set to ensure it loads after this field.
+          'settings' => ['weight' => 500],
+        ],
+      ],
+    ];
+  }
+
+
 }
 
 /**
