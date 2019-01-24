@@ -40,8 +40,8 @@ Phylotree
 
 This extension provides a simple file formatter for [newick][1] tree files using
 the Javascript library ["phylotree"][2] for display.
-[1]: http://evolution.genetics.washington.edu/phylip/newicktree.html
-[2]: https://github.com/veg/phylotree.js/tree/master
+[1]: `Newick documentation <http://evolution.genetics.washington.edu/phylip/newicktree.html`__
+[2]: `Phylotree JS repository <https://github.com/veg/phylotree.js/tree/master`__
 
 `Documentation <https://cgit.drupalcode.org/phylotree/tree/README.md>`__
 `Repository <https://www.drupal.org/project/phylotree>`__
