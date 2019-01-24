@@ -2,48 +2,44 @@
 
 /**
  * @class
- * Purpose:
+ * Purpose: Displays all child features recursively via a featureviewer drawing.
  *
  * Display:
  * Configuration:
  */
 class data__sequence_features_formatter extends ChadoFieldFormatter {
 
-  /**
-   * The default label for this field.
-   */
   public static $default_label = 'Transcript Information';
-
-  /**
-   * The list of field types for which this formatter is appropriate.
-   */
   public static $field_types = ['data__sequence_features'];
-
-  /**
-   * The list of default settings for this formatter.
-   */
   public static $default_settings = [
     'setting1' => 'default_value',
   ];
 
-
   /**
-   * Featureloc start rel to parent.
+   * Featureloc start relative to parent.
+   *
+   * @var int
    */
   private $parent_start;
 
   /**
    * Featureloc stop rel to parent.
+   *
+   * @var int
    */
   private $parent_stop;
 
   /**
    * Featureloc strand rel to parent.
+   *
+   * @var string
    */
   private $parent_strand;
 
   /**
    * Holds converted featureloc information for the feature viewer drawing.
+   *
+   * @var array
    */
   private $feature_coords;
 
@@ -61,7 +57,6 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
 
     // Get the settings.
     $settings = $display['settings'];
-
     $parent = $entity->chado_record->feature_id;
 
     drupal_add_js("https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js", [
@@ -76,21 +71,22 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
     $sequence = $entity->data__sequence['und'][0]['value'];
 
     if (!$sequence) {
-      // TODO: We cant draw without a sequence.
-      // Now what?
+      // We can't draw without a sequence unfortunately.
+      return;
     }
 
     $coordinates = $entity->data__sequence_coordinates['und'][0]['value'];
-
+    // Featureloc stores location relative to some parent feature, ie a contig.
+    // We want the drawing to be relative to the gene feature.
     $this->parent_start = $coordinates['local:fmin'];
     $this->parent_stop = $coordinates['local:fmax'];
     $this->parent_strand = $coordinates['data:0853'];
-
     $child_draw['residues'] = $sequence;
 
     foreach ($entity->{'data__sequence_features'}['und'] as $i => $data) {
+      // The direct child of the entity feature.
+      // If the entity is a gene, this is an mRNA/transcript.
       $child = $data['value'];
-
       $info = $child['info'];
       $name = $info->uniquename;
 
@@ -103,18 +99,17 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
             'collapsed',
           ],
         ],
-        // see: https://www.drupal.org/forum/support/module-development-and-code-questions/2012-02-07/drupal-render-fieldset-element
+        // JS to render collapsible fieldsets properly.
         '#attached' => ['js' => ['misc/collapse.js', 'misc/form.js']],
       ];
+      // The featureviewer drawing div.
       $element[$i]['drawing'] = [
         '#type' => 'item',
-        '#title' => t('Drawing'),
-        '#prefix' => '<div id="tripal_manage_expression_featureloc_viewer_' . $i . '">',
+        '#prefix' => '<div id="tripal_sequence_features_featureloc_viewer_' . $i . '">',
         '#suffix' => '</div>',
       ];
 
       $rows = $this->buildChildTable($child);
-
       $this->build_featureviewer_data($i, $child);
 
       if (empty($rows)) {
@@ -130,24 +125,28 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
       $element[$i][$i . 'table'] = ['#markup' => $output];
 
       unset($rows);
-
     }
 
     // Un-collapse the first fieldset.
+    // TODO: should we allow a property to specify which transcript is primary?
+    // Is there any example GFF?
     $element[0]['#attributes']['class'] = ['collapsible'];
-
     $child_draw['children'] = $this->feature_coords;
-    // Pass in the needed JS info.
     drupal_add_js([
       'children_draw_info' => $child_draw,
     ], 'setting');
 
-    drupal_add_js(drupal_get_path('module', 'tripal_manage_analyses') . "/theme/js/tripal_manage_analyses_featureloc.js");
+    drupal_add_js(drupal_get_path('module', 'tripal_chado') . "/theme/js/tripal_chado_data_sequence_features_featureloc.js");
 
   }
 
   /**
+   * Builds the featureviewer drawing for a given child feature.
    *
+   * @param int $i
+   *   Cardinal tracker.
+   * @param array $child
+   *   Child array as created by data__sequence_features field.
    */
   private function build_featureviewer_data($i, $child) {
 
@@ -155,12 +154,11 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
 
     $grand_children = $child['children'] ?? NULL;
 
-    // Set base info
     // All child features will be drawn on this one in 'data'
     // Convert and store the coordinates for hte feature viewer.
-    $this->convertFeatureCoords($i, $info->feature_id, $info);
+    $this->convertFeatureCoords($i, $info);
 
-    // Repeat for grandchildren;.
+    // Repeat recursively for grandchildren and their children etc.
     if ($grand_children) {
       foreach ($grand_children as $grand_child) {
         $this->build_featureviewer_data($i, $grand_child);
@@ -169,7 +167,7 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
   }
 
   /**
-   * Builds featureloc string for display to user.
+   * Builds featureloc string for display to user in table.
    *
    * @param $featureloc
    *   The featureloc object returned from chado_expand_var on featureloc.
@@ -179,7 +177,6 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
   private function buildFeatureString($featureloc) {
 
     $info = $featureloc->feature_id;
-
     $min = $info->fmin;
     $max = $info->fmax;
     $strand = $info->strand;
@@ -190,18 +187,18 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
     }
 
     $out = "${parent}:  ${min}-${max} (${strand})";
-
     return $out;
   }
 
   /**
    * Converts featureloc coordinates to be based on the entity.
    *
-   * @param $i
-   * @param $feature_id
-   * @param $info
+   * @param int $i
+   *   Cardinality tracker.
+   * @param object $info
+   *   The chado_expand_var object generated by the field.
    */
-  private function convertFeatureCoords($i, $feature_id, $info) {
+  private function convertFeatureCoords($i, $info) {
 
     $featureloc = $info->featureloc->feature_id;
     // TODO: what if theres no featureloc relative to a parent?
@@ -216,7 +213,7 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
     if ($strand == '+') {
 
       // It doesnt matter what strand it is, we always do this.
-      // TODO: check that assertion.
+      // TODO: check this assertion.
       $start = $min - $parent_start + 1;
       $stop = $max - $parent_start + 1;
     }
@@ -260,25 +257,31 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
 
     switch ($name) {
       case 'mRNA':
-        return '#12E09D';
+        return '#AC92EB';
 
       case 'polypeptide':
-        return '#808080';
+        return '#4FC1E8';
 
       case 'CDS':
-        return '#FF0000';
+        return '#A0D568';
 
       case 'exon':
-        return '#F4D4AD';
+        return '#FFCE54';
 
       case NULL:
-        return '#000000';
+        return '#ED5564';
     }
 
   }
 
   /**
+   * Builds a table of recursive children featurelocs.
    *
+   * @param array $child
+   *   Child array from the base field.  Should have an info and a children key.
+   *
+   * @return array
+   *   Array of rows suitable for theme_table().
    */
   private function buildChildTable($child) {
 
