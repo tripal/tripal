@@ -463,6 +463,10 @@ class TaxonomyImporter extends TripalImporter {
    */
   private function updateExisting() {
 
+    $i = 0;
+
+    $total = count($this->all_orgs);
+
     foreach ($this->all_orgs as $organism) {
       // If the organism record is marked as new then let's skip it because
       // it was newly added and should have the updated information already.
@@ -483,6 +487,12 @@ class TaxonomyImporter extends TripalImporter {
       // Get the search response from NCBI.
       $rfh = fopen($search_url, "r");
       $xml_text = '';
+
+      if (!$rfh){
+
+        $this->logMessage("Could not look up !sci_name" , ['!sci_name' =>  $sci_name], TRIPAL_WARNING);
+        continue;
+      }
       while (!feof($rfh)) {
         $xml_text .= fread($rfh, 255);
       }
@@ -497,6 +507,13 @@ class TaxonomyImporter extends TripalImporter {
         }
       }
       $this->addItemsHandled(1);
+
+      // NCBI limits requests to 3/second.
+      if ($i % 3 == 0) {
+        sleep(1);
+      }
+      $i++;
+
     }
   }
 
