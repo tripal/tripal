@@ -35,14 +35,6 @@ This module provides support and visualization of genotypic data stored in a mod
 `Documentation <https://nd-genotypes.readthedocs.io/en/latest/>`__
 `Repository <https://github.com/UofS-Pulse-Binfo/nd_genotypes>`__
 
-Tripal Fancy Fields
--------------------
-
-This module provides additional fields for use with Tripal 3. The current version provides a single-series chart field that can be displayed as a pie, donut, or bar chart, as well as, a simple table.
-
-`Documentation <https://github.com/tripal/trpfancy_fields/blob/master/README.md>`__
-`Repository <https://github.com/tripal/trpfancy_fields>`__
-
 Phylotree
 -------------------
 
@@ -53,3 +45,11 @@ the Javascript library ["phylotree"][2] for display.
 
 `Documentation <https://cgit.drupalcode.org/phylotree/tree/README.md>`__
 `Repository <https://www.drupal.org/project/phylotree>`__
+
+Tripal Fancy Fields
+-------------------
+
+This module provides additional fields for use with Tripal 3. The current version provides a single-series chart field that can be displayed as a pie, donut, or bar chart, as well as, a simple table.
+
+`Documentation <https://github.com/tripal/trpfancy_fields/blob/master/README.md>`__
+`Repository <https://github.com/tripal/trpfancy_fields>`__
