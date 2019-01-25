@@ -61,18 +61,16 @@ class data__sequence_features extends ChadoField {
 
     parent::load($entity);
     $field = get_class($this);
-
     $parent = $entity->chado_record->feature_id;
-
     $children = $this->findChildFeatures($parent);
     if (empty($children)) {
       unset($entity->{$field});
       return;
     }
+
     $i = 0;
     foreach ($children as $child_id => $child) {
       $entity->{$field}['und'][$i]['value'] = $child;
-
       $i++;
     }
 

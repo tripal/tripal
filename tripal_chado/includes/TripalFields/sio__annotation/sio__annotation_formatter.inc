@@ -77,23 +77,13 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
         '#markup' => theme_table($table),
       );
     }
-
-
-    $rows = $this->getAnnotationRows($child);
-    $header = ['name', 'type', 'annotation'];
-
-    $table = theme('table', ['rows' => $rows, 'header' => $header]);
-    $element[0][$i]['annotation_table'] = [
-      '#markup' => $table,
-      '#title' => t("Annotations for !root", ['!root' => $name]),
-    ];
-
   }
 
 
 
   /**
    * Get annotations for child features, from the data__sequence_features field.
+   * Possibly not used.
    *
    * @param $data
    */

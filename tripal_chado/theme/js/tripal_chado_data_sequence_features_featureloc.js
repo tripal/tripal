@@ -42,4 +42,23 @@
             })
         })
     }
+
+    // Trigger a window resize event to notify charting modules that
+    // the container dimensions has changed
+
+    $(document).on('collapsed', function (e) {
+        setTimeout(function () {
+            if (typeof Event !== 'undefined') {
+                window.dispatchEvent(new Event('resize'));
+            }
+            else {
+                // Support IE
+                var event = window.document.createEvent('UIEvents');
+                event.initUIEvent('resize', true, false, window, 0);
+                window.dispatchEvent(event);
+            }
+        }, 1000)
+    });
+
+
 })(jQuery);

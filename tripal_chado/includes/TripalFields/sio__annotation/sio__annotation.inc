@@ -328,20 +328,6 @@ class sio__annotation extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__pub_id'] = $linker->pub_id;
       }
     }
-
-
-    //  Deal with annotations from child features and their children.
-    // TODO: only check if we're attached to a feature that's a gene.
-    // TODO: filter out chado_expand_var stuff that isnt feature_relationship
-
-
-    $master = $entity->data__sequence_features['und'];
-
-    if ($master && !empty($master)) {
-
-      $entity->{$field_name}['und'][0]['child_annotations'] = $master;
-    }
-
   }
 }
 

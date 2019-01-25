@@ -602,7 +602,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     ]);
     $field_name = 'data__sequence_features';
     $field_type = 'data__sequence_features';
-    $fields[$field_name] = [
+    $info[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -619,7 +619,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
     ]);
     $field_name = 'local__child_properties';
     $field_type = 'local__child_properties';
-    $fields[$field_name] = [
+    $info[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => 1,
@@ -2251,7 +2251,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   if (isset($bundle->data_table) and ($bundle->data_table == 'feature') and $bundle->term->name == 'gene') {
     $field_name = 'data__sequence_features';
-    $instances[$field_name] = [
+    $info[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
@@ -2280,7 +2280,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       ],
     ];
     $field_name = 'local__child_properties';
-    $instances[$field_name] = [
+    $info[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,

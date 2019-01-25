@@ -59,13 +59,14 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
     $settings = $display['settings'];
     $parent = $entity->chado_record->feature_id;
 
-    drupal_add_js("https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js", [
+    drupal_add_js("https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.4/dist/feature-viewer.bundle.js", [
       'type' => 'external',
       'scope' => 'header',
       'group' => 15,
       'every_page' => TRUE,
       'weight' => 500,
     ]);
+
 
     $child_draw = [];
     $sequence = $entity->data__sequence['und'][0]['value'];
@@ -100,7 +101,7 @@ class data__sequence_features_formatter extends ChadoFieldFormatter {
           ],
         ],
         // JS to render collapsible fieldsets properly.
-        '#attached' => ['js' => ['misc/collapse.js', 'misc/form.js']],
+        //'#attached' => ['js' => ['misc/collapse.js', 'misc/form.js']],
       ];
       // The featureviewer drawing div.
       $element[$i]['drawing'] = [
