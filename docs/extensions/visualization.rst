@@ -35,6 +35,15 @@ This module provides support and visualization of genotypic data stored in a mod
 `Documentation <https://nd-genotypes.readthedocs.io/en/latest/>`__
 `Repository <https://github.com/UofS-Pulse-Binfo/nd_genotypes>`__
 
+Phylotree
+-------------------
+
+This extension provides a simple file formatter for `Newick <http://evolution.genetics.washington.edu/phylip/newicktree.html>`__ tree files using
+the Javascript library `Phylotree <https://github.com/veg/phylotree.js/tree/master>`__ for display.
+
+`Documentation <https://cgit.drupalcode.org/phylotree/tree/README.md>`__
+`Repository <https://www.drupal.org/project/phylotree>`__
+
 Tripal Fancy Fields
 -------------------
 
