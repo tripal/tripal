@@ -39,7 +39,7 @@ Phylotree
 -------------------
 
 This extension provides a simple file formatter for `Newick <http://evolution.genetics.washington.edu/phylip/newicktree.html>`__ tree files using
-the Javascript library `Phylotree <https://github.com/veg/phylotree.js/tree/master`__ for display.
+the Javascript library `Phylotree <https://github.com/veg/phylotree.js/tree/master>`__ for display.
 
 `Documentation <https://cgit.drupalcode.org/phylotree/tree/README.md>`__
 `Repository <https://www.drupal.org/project/phylotree>`__
