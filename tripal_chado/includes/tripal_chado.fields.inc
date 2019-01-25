@@ -628,6 +628,23 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ],
     ];
+    tripal_insert_cvterm([
+      'id' => 'local:child_annotations',
+      'name' => 'child_annotations',
+      'cv_name' => 'local',
+      'definition' => 'Annotations associated with children of a feature.',
+    ]);
+    $field_name = 'local__child_annotations';
+    $field_type = 'local__child_annotations';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
   }
 
 }
@@ -2275,7 +2292,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'hidden',
           'type' => 'data__sequence_features_formatter',
-          'settings' => [],
+          'settings' => ['weight' => 1],
         ],
       ],
     ];
@@ -2304,6 +2321,39 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'hidden',
           'type' => 'local__child_properties_formatter',
+          // This field depends on the data__sequence_features field.
+          // The weight must be set to ensure it loads after this field.
+          'settings' => ['weight' => 490],
+        ],
+      ],
+    ];
+
+
+    $field_name = 'local__child_annotations';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Child Annotations',
+      'description' => 'Displays annotation information associated with recursive children of this feature.',
+      'required' => FALSE,
+      'settings' => [
+        'term_vocabulary' => 'local',
+        'term_name' => 'child_annotations',
+        'term_accession' => 'child_annotations',
+        'auto_attach' => FALSE,
+        'chado_table' => 'feature_cvterm',
+        'chado_column' => 'feature_id',
+        'base_table' => $bundle->data_table,
+      ],
+      'widget' => [
+        'type' => 'local__child_annotations_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'local__child_annotations_formatter',
           // This field depends on the data__sequence_features field.
           // The weight must be set to ensure it loads after this field.
           'settings' => ['weight' => 500],

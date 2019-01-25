@@ -11,8 +11,8 @@ class local__child_properties extends ChadoField {
 
   public static $default_label = 'Child Properties';
   public static $default_description = 'All of the properties associated with child features.';
-  public static $default_widget = 'local__child_properties_widget';
-  public static $default_formatter = 'local__child_properties_formatter';
+  public static $default_widget = 'local__child_annotations_widget';
+  public static $default_formatter = 'local__child_annotations_formatter';
   public static $module = 'tripal_chado';
   public static $default_settings = [
     'storage' => 'field_chado_storage',
