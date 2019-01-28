@@ -3,6 +3,9 @@
     attach: function (context, settings){
       // Add a close button for each pane except for the te_base
       $('div.tripal_pane').each(function (i) {
+        if($(this).find('.tripal_pane-fieldset-buttons').length > 0) {
+          return;
+        }
         $(this).prepend(
           '<div class="tripal_pane-fieldset-buttons">' +
             '<div id="tripal-pane-close-button" class="tripal-pane-button">' +
