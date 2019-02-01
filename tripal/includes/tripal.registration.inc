@@ -26,7 +26,7 @@ function tripal_registration_form($form, &$form_state) {
   $form['disable_tripal_reporting'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disable registration reminder'),
-    '#default_value' => isset($form_data['input']['disable_tripal_reporting']) ? $form_data['input']['disable_tripal_reporting'] : NULL,
+    '#default_value' => isset($form_data['values']['disable_tripal_reporting']) ? $form_data['values']['disable_tripal_reporting'] : NULL,
     '#description' => "If you do not want to register your site please check
       this box as it will stop the reminder notifications.",
   );
@@ -41,14 +41,14 @@ function tripal_registration_form($form, &$form_state) {
   $form['details']['principal_investigator']['principal_investigator_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
-    '#default_value' => isset($form_data['input']['principal_investigator_name']) ? $form_data['input']['principal_investigator_name'] : NULL,
+    '#default_value' => isset($form_data['values']['principal_investigator_name']) ? $form_data['values']['principal_investigator_name'] : NULL,
     '#required' => TRUE,
   );
 
   $form['details']['principal_investigator']['principal_investigator_email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email'),
-    '#default_value' => isset($form_data['input']['principal_investigator_email']) ? $form_data['input']['principal_investigator_email'] : NULL,
+    '#default_value' => isset($form_data['values']['principal_investigator_email']) ? $form_data['values']['principal_investigator_email'] : NULL,
     '#required' => TRUE,
   );
   $form['details']['tripal_reg_site_admin'] = array(
@@ -61,21 +61,21 @@ function tripal_registration_form($form, &$form_state) {
   $form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
-    '#default_value' => isset($form_data['input']['tripal_reg_site_admin_name']) ? $form_data['input']['tripal_reg_site_admin_name'] : NULL,
+    '#default_value' => isset($form_data['values']['tripal_reg_site_admin_name']) ? $form_data['values']['tripal_reg_site_admin_name'] : NULL,
     '#required' => FALSE,
   );
 
   $form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email'),
-    '#default_value' => isset($form_data['input']['tripal_reg_site_admin_email']) ? $form_data['input']['tripal_reg_site_admin_email'] : NULL,
+    '#default_value' => isset($form_data['values']['tripal_reg_site_admin_email']) ? $form_data['values']['tripal_reg_site_admin_email'] : NULL,
     '#required' => FALSE,
   );
 
   $form['details']['tripal_reg_site_description']= array(
     '#type' => 'textarea',
     '#title' => t('Description of the site'),
-    '#default_value' => isset($form_data['input']['tripal_reg_site_description']) ? $form_data['input']['tripal_reg_site_description'] : NULL,
+    '#default_value' => isset($form_data['values']['tripal_reg_site_description']) ? $form_data['values']['tripal_reg_site_description'] : NULL,
     '#required' => FALSE,
   );
 
@@ -86,7 +86,7 @@ function tripal_registration_form($form, &$form_state) {
     '#suffix' => '</div>',
   );
 
-  $count = count($form_data['input']['funding']);
+  $count = count($form_data['values']['funding']);
   $form_state['details']['funding'] = $form_state['details']['funding'] + $count;
   for ($i = 1; $i <= $form_state['details']['funding']; $i++) {
     $form['details']['funding'][$i] = array(
@@ -97,13 +97,13 @@ function tripal_registration_form($form, &$form_state) {
 
     $form['details']['funding'][$i]['tripal_reg_site_agency'] = array(
       '#type' => 'textfield',
-      '#default_value' => isset($form_data['input']['funding'][$i]['tripal_reg_site_agency']) ? $form_data['input']['funding'][$i]['tripal_reg_site_agency'] : NULL,
+      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_agency']) ? $form_data['values']['funding'][$i]['tripal_reg_site_agency'] : NULL,
       '#title' => t('Agency'),
     );
 
     $form['details']['funding'][$i]['tripal_reg_site_grant'] = array(
       '#type' => 'textfield',
-      '#default_value' => isset($form_data['input']['funding'][$i]['tripal_reg_site_grant']) ? $form_data['input']['funding'][$i]['tripal_reg_site_grant'] : NULL,
+      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_grant']) ? $form_data['values']['funding'][$i]['tripal_reg_site_grant'] : NULL,
       '#title' => t('Grant Number'),
     );
 
@@ -116,7 +116,7 @@ function tripal_registration_form($form, &$form_state) {
     $form['details']['funding'][$i]['funding_period']['tripal_reg_site_start'] = array(
       '#type' => 'date_select',
       '#title' => t("Start"),
-      '#default_value' => isset($form_data['input']['funding'][$i]['funding_period']['tripal_reg_site_start']) ? $form_data['input']['funding'][$i]['funding_period']['tripal_reg_site_start'] : date('Y', time()),
+      '#default_value' => isset($form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_start']) ? $form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_start'] : date('Y', time()),
       '#date_year_range' => '-20:+20',
       '#date_format' => 'Y',
     );
@@ -124,7 +124,7 @@ function tripal_registration_form($form, &$form_state) {
     $form['details']['funding'][$i]['funding_period']['tripal_reg_site_end'] = array(
       '#type' => 'date_select',
       '#title' => t('End'),
-      '#default_value' => isset($form_data['input']['funding'][$i]['funding_period']['tripal_reg_site_end']) ? $form_data['input']['funding'][$i]['funding_period']['tripal_reg_site_end'] : date('Y', time()),
+      '#default_value' => isset($form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_end']) ? $form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_end'] : date('Y', time()),
       '#date_year_range' => '-20:+20',
       '#date_format' => 'Y',
     );
@@ -144,14 +144,14 @@ function tripal_registration_form($form, &$form_state) {
   $form['details']['tripal_reg_site_purpose'] = array(
     '#type' => 'radios',
     '#title' => t('Purpose of site'),
-    '#default_value' => isset($form_data['input']['tripal_reg_site_purpose']) ? $form_data['input']['tripal_reg_site_purpose'] : NULL,
+    '#default_value' => isset($form_data['values']['tripal_reg_site_purpose']) ? $form_data['values']['tripal_reg_site_purpose'] : NULL,
     '#options' => $purpose,
     '#required' => TRUE,
   );
 
   $form['details']['tripal_reg_site_modules'] = array(
     '#type' => 'checkbox',
-    '#default_value' => isset($form_data['input']['tripal_reg_site_modules']) ? $form_data['input']['tripal_reg_site_modules'] : NULL,
+    '#default_value' => isset($form_data['values']['tripal_reg_site_modules']) ? $form_data['values']['tripal_reg_site_modules'] : NULL,
     '#title' => t('Provide Tripal (not other 3rd party modules) module usage information.'),
   );
   $form_state['details']['funding']++;
@@ -176,25 +176,6 @@ function tripal_registration_form($form, &$form_state) {
 }
 
 function custom_registration_ajax_add_funding($form, $form_state) {
-      // Get current list of modules.
-  $files = system_rebuild_module_data();
-
-  // Remove hidden modules from display list.
-  $visible_files = $files;
-  foreach ($visible_files as $filename => $file) {
-    if (!empty($file->info['hidden'])) {
-      unset($visible_files[$filename]);
-    }
-  }
-  uasort($visible_files, 'system_sort_modules_by_info_name');
-
-    // Iterate through each of the modules.
-  foreach ($visible_files as $filename => $module) {
-    $extra = array();
-    $extra['enabled'] = (bool)$module->status;
-    dpm($module);
-  }
-
   return $form['details']['funding'];
 }
 
@@ -228,6 +209,15 @@ function tripal_registration_form_validate($form, &$form_state){
  *   during processing.
  */
 function tripal_registration_form_submit($form, &$form_state) {
+  //Check for empty funding periods and remove them.
+  $j = 1;
+  foreach ($form_state['values']['funding'] as $funding_source) {
+    if (!empty($funding_source['tripal_reg_site_agency']) && !empty($funding_source['tripal_reg_site_grant'])) {
+      $form_state['values']['fundings'][$j] = $funding_source;
+      $j++;
+    }
+  }
+  $form_state['values']['funding'] = $form_state['values']['fundings'];
   $registration = serialize($form_state);
   variable_set('tripal_site_registration', $registration);
   //Now send the updated info to the Tripal Site.
@@ -235,30 +225,60 @@ function tripal_registration_form_submit($form, &$form_state) {
 }
 
 function tripal_registration_remote_submit($data) {
-  $endpoint = 'endpoint';
+  global $base_url;
+  $endpoint = 'http://localhost/tripal30';
   //Are we getting the modules?
   $form_data = unserialize($data);
-  if ($form_data['input']['tripal_reg_site_modules']) {
+  if ($form_data['values']['tripal_reg_site_modules']) {
     // Get current list of modules.
     $files = system_rebuild_module_data();
 
-  // Remove hidden modules from display list.
+    // Remove hidden modules from display list.
     $visible_files = $files;
     foreach ($visible_files as $filename => $file) {
       if (!empty($file->info['hidden'])) {
         unset($visible_files[$filename]);
       }
     }
-    uasort($visible_files, 'system_sort_modules_by_info_name');
-
     // Iterate through each of the modules.
+    $tripal_modules = [];
     foreach ($visible_files as $filename => $module) {
-      $extra = array();
-      $extra['enabled'] = (bool)$module->status;
-      if (!empty($module->info['required'])) {
-        $extra['disabled'] = true;
-        $extra['required_by'][] = $distribution_name . (!empty($module->info['explanation']) ? ' (' . $module->info['explanation'] . ')' : '');
+      if ($module->info['package'] == 'Tripal Extensions') {
+        $module_name = $module->info['name'];
+        $tripal_modules[$module_name]['info'] = $module->info;
+        $tripal_modules[$module_name]['status'] = $module->status;
       }
     }
   }
+
+  //Clean up form data
+  $outgoing_data['pi_name'] = $form_data['values']['principal_investigator_name'];
+  $outgoing_data['pi_email'] = $form_data['values']['principal_investigator_email'];
+  $outgoing_data['sa_name'] = $form_data['values']['tripal_reg_site_admin_name'];
+  $outgoing_data['sa_email'] = $form_data['values']['tripal_reg_site_admin_email'];
+  $outgoing_data['description'] = $form_data['values']['tripal_reg_site_description'];
+  $i = 0;
+
+  foreach ($form_data['values']['funding'] as $funding_source){
+    $outgoing_data['funding_' . $i . '_agency'] = $funding_source['tripal_reg_site_agency'];
+    $outgoing_data['funding_' . $i . '_grant']  = $funding_source['tripal_reg_site_grant'];
+    $outgoing_data['funding_' . $i . '_start']  = $funding_source['funding_period']['tripal_reg_site_start'];
+    $outgoing_data['funding_' . $i . '_end']  = $funding_source['funding_period']['tripal_reg_site_end'];
+    $i++;
+  }
+
+  $outgoing_data['type'] = $form_data['values']['tripal_reg_site_purpose'];
+
+  //Build the info to send out.
+  $outgoing_data['tripal_modules'] = $tripal_modules;
+  $outgoing_data['site_name'] = $base_url;
+  $outgoing_data['site_url'] = variable_get('site_name', 'Default');
+
+  //Send
+  $result = drupal_http_request($endpoint, array(
+    'method' => 'POST',
+    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+    'data' => http_build_query($outgoing_data),
+  ));
+  dpm($result);
 }
