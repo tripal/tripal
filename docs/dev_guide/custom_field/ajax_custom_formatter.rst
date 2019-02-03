@@ -24,17 +24,20 @@ The selector has specified that wrapper, and the AJAX callback function ``exampl
 
 .. code-block:: php
 
-  #./includes/form_for_the_field.inc
-
-  function tripal_example_map_organism_featuremap_selector($form, &$form_state, $select) {
+  /**
+   * AJAX-enabled form for [field formatter name].
+   */
+  function tripal_example_map_organism_featuremap_selector_form($form, &$form_state, $select) {
 
     $selected = 0;
 
+    // $form_state['values'] will be set if the form has been submitted via AJAX
     if (isset($form_state['values']['featuremap_select'])) {
       $selected = isset($form_state['values']['featuremap_select']);
     }
 
-
+    // We need to provide a container for Dupal AJAX to replace.
+    // Here we use a fieldset with a set ID which we can refer to below.
     $form['rendered_maps'] = [
       '#type' => 'fieldset',
       '#collapsible' => FALSE,
@@ -42,29 +45,33 @@ The selector has specified that wrapper, and the AJAX callback function ``exampl
       '#suffix' => '</div>',
     ];
 
-
+    // This is the element which will trigger AJAX.
     $form['rendered_maps']['featuremap_select'] = [
       '#type' => 'select',
       '#options' => $select,
       '#title' => 'Please select a map to view',
       '#default_value' => $selected,
       '#ajax' => [
+        // Your Drupal AJAX callback
+        // which simply returns the form element to be re-rendered.
         'callback' => 'examplemap_organism_featuremap_callback',
+        // This should be the ID you set above on your container to be replaced.
         'wrapper' => 'examplemap-featuremap-organism-selector-wrapper',
         'effect' => 'fade',
       ],
     ];
 
-
+    // Check the AJAX submitted values...
     $chosen = 0;
-
     if (isset($form_state['values']['featuremap_select'])) {
       $chosen = $form_state['input']['featuremap_select'];
     }
 
+    // If the user chose an option (triggered AJAX).
     if ($chosen != 0) {
-
-
+      // Then change the form accordingly...
+      // Notice that you react to the AJAX change in the form
+      // not in the AJAX callback.
       $mini_form = tripal_example_map_genetic_map_overview_form([], $form_state, $chosen);
 
       $form['rendered_maps']['map'] = $mini_form;
@@ -76,8 +83,7 @@ The selector has specified that wrapper, and the AJAX callback function ``exampl
   }
 
   /**
-  * The callback will return the part o the form you want to re-draw.
-  *
+   * The callback will return the part of the form you want to re-draw.
    */
   function examplemap_organism_featuremap_callback($form, &$form_state) {
 
@@ -90,16 +96,19 @@ In the field formatter, we simply add this form and put the markup in the elemen
 
 .. code-block:: php
 
-      //Our__field_formatter.inc
+    /**
+     * In our Our__field_formatter.inc
+     */
+    public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-      //multiple maps for this organism, let user select.  Create a special form for that so we can have an AJAX select box
-      $select= $select + $select_add;
+      // Multiple maps for this organism, let user select.  Create a special form for that so we can have an AJAX select box
+      $select = $select + $select_add;
 
-      $form = drupal_get_form('tripal_example_map_organism_featuremap_selector', $select);
+      $form = drupal_get_form('tripal_example_map_organism_featuremap_selector_form', $select);
       $content = drupal_render($form);
-        $element[] = [
+      $element[] = [
           '#type' => 'markup',
           '#markup' => $content,
-        ];
-        return $element;
+      ];
+      return $element;
     }
