@@ -1,12 +1,21 @@
 Drush Installation
 ==================
 
-Drush is a command-line utility that allows for non-graphical access to the Drupal website. You can use it to automatically download and install themes and modules, clear the Drupal cache, upgrade the site and more. Tripal v3 supports Drush. For this tutorial we will use Drush and therefore we want the most recent version installed. Drush can be found on a GitHub page at https://github.com/drush-ops/drush.
+Drush is a command-line utility that allows for non-graphical access to the Drupal website. You can use it to automatically download and install themes and modules, clear the Drupal cache, upgrade the site and more. Tripal v3 supports Drush. For this tutorial we will use Drush and therefore we want the most recent, Drupal7-compatible version installed: we recommend Drush 8.x (see compatibility chart below.)
+
+==============  =============  ==========  ===========================
+Drush Version   Drush Branch   PHP         Compatible Drupal versions
+==============  =============  ==========  ===========================
+Drush 9         master 	       5.6+ 	     D8.4+
+Drush 8         8.x 	         5.4.5+      D6, D7, D8.3
+Drush 7         7.x 	         5.3.0+      D6, D7
+Drush 6         6.x 	         5.3.0+      D6, D7
+Drush 5         5.x 	         5.2.0+      D6, D7
+==============  =============  ==========  ===========================
+
+*As you can see from the above table, the newest version of Drupal which supports Drupal 7 is Drush 8.*
 
 Install Drush
 -------------
 
-An extensive list of platforms and their corresponding install instructions can be found here: https://www.drupal.org/node/1791676.  Below are quick links for installation of Drush on Ubuntu and CentOS
-
-- `Installing Drush on Ubuntu <https://www.drupal.org/node/1248790>`_
-- `Installing Drush on CentOS (with H-Sphere) <https://www.drupal.org/node/2009426>`_
+The official documentation for installing Drush 8 can be found here: https://docs.drush.org/en/8.x/install/.
