@@ -10,7 +10,7 @@ Drupal and AJAX
 Drupal has its own special way of doing AJAX! This is important to ensure that changes are executed in the correct order. You should `read the documentation carefully! <https://api.drupal.org/api/drupal/includes%21ajax.inc/group/ajax/7.x>`_  The Drupal AJAX API works best on forms, and field formatters **are not forms**.  Instead, they are `renderable arrays. <https://www.drupal.org/docs/7/api/render-arrays/render-arrays-overview>`_
 As such, rather than accepting ``$form`` and ``&$form_state``, they accept ``&$element``, ``$entity_type``, ``$entity``, ``$langcode``, ``$items``, and ```$display``, where ``$element`` is the renderable array.
 
-This means if you want to add an AJAX callback to a field formatter, you  need a **seperate form file** that gets added in using ``drupal_get_form()``.  If you do this, you can build the AJAX as Drupal expects it.
+This means if you want to add an AJAX callback to a field formatter, you  need a **separate form function** that gets added in using ``drupal_get_form()``.  If you do this, you can build the AJAX as Drupal expects it.
 
 
 Example form and field
@@ -101,8 +101,8 @@ In the field formatter, we simply add this form and put the markup in the elemen
      */
     public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-      // Multiple maps for this organism, let user select.  Create a special form for that so we can have an AJAX select box
-      $select = $select + $select_add;
+      // Select choices would be loaded in the base field's load method.
+      $select = $items[0]['select_choices'];
 
       $form = drupal_get_form('tripal_example_map_organism_featuremap_selector_form', $select);
       $content = drupal_render($form);
