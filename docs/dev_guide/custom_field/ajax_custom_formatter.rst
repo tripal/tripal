@@ -7,7 +7,7 @@ Some fields need to be responsive.  For example, a user might select an analysis
 Drupal and AJAX
 ---------------
 
-Drupal has its special way of doing AJAX!  You should `read the documentation carefully! <https://api.drupal.org/api/drupal/includes%21ajax.inc/group/ajax/7.x>`_ To Drupal, AJAX only makes sense as on forms, and field formatters **are not forms**.  Instead, they are `renderable arrays <https://www.drupal.org/docs/7/api/render-arrays/render-arrays-overview>`_
+Drupal has its own special way of doing AJAX! This is important to ensure that changes are executed in the correct order. You should `read the documentation carefully! <https://api.drupal.org/api/drupal/includes%21ajax.inc/group/ajax/7.x>`_  The Drupal AJAX API works best on forms, and field formatters **are not forms**.  Instead, they are `renderable arrays. <https://www.drupal.org/docs/7/api/render-arrays/render-arrays-overview>`_
 As such, rather than accepting ``$form`` and ``&$form_state``, they accept ``&$element``, ``$entity_type``, ``$entity``, ``$langcode``, ``$items``, and ```$display``, where ``$element`` is the renderable array.
 
 This means if you want to add an AJAX callback to a field formatter, you  need a **seperate form file** that gets added in using ``drupal_get_form()``.  If you do this, you can build the AJAX as Drupal expects it.
