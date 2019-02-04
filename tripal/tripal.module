@@ -87,7 +87,7 @@ function tripal_init() {
   dpm(variable_get('disable_tripal_reporting'));
   //Ask users to do the registration form
   if (user_access('administer tripal')) {
-    if (!variable_get('tripal_site_registration', FALSE) || (variable_get('disable_tripal_reporting', FALSE)) {
+    if (!variable_get('tripal_site_registration', FALSE) || (variable_get('disable_tripal_reporting', FALSE))) {
       drupal_set_message('Please register your Tripal Site. Registering gives the developers important reporting
       information that will help us secure funding to continue making better Tripal versions. ' .
         l('Please register now.', 'admin/tripal/register'), 'warning');
