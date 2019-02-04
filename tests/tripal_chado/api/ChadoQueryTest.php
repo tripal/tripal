@@ -24,10 +24,11 @@ class ChadoQueryTest extends TripalTestCase {
         'data' => '01%',
       ),
     );
-    $object = chado_generate_var('stock', $selector);
 
+    $object = chado_generate_var('stock',[], $selector);
 
     $this->assertNotNull($object);
+    $this->assertEquals($stock->stock_id, $object->stock_id);
 
     // Test 2 Pass an array of filters with a single item.
     $selector = array(
@@ -39,9 +40,11 @@ class ChadoQueryTest extends TripalTestCase {
         ),
       ),
     );
-    $object = chado_generate_var('stock', $selector);
+    $object = chado_generate_var('stock',[], $selector);
 
     $this->assertNotNull($object);
+    $this->assertEquals($stock->stock_id, $object->stock_id);
+
 
     // Test 3 Pass an array of filters with multiple items.
     $selector = array(
@@ -56,8 +59,10 @@ class ChadoQueryTest extends TripalTestCase {
         ),
       ),
     );
-    $object = chado_generate_var('stock', $selector);
+    $object = chado_generate_var('stock',[], $selector);
     $this->assertNotNull($object);
+    $this->assertEquals($stock->stock_id, $object->stock_id);
+
   }
 
 }
