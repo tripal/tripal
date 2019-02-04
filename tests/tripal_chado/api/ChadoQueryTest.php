@@ -18,21 +18,22 @@ class ChadoQueryTest extends TripalTestCase {
 
     // Test 1. Pass a single filter.
     $selector = array(
-      'stock_id' => 1085,
+      'stock_id' => $stock->stock_id,
       'uniquename' => array(
         'op' => 'LIKE',
-        'data' => '01%',
+        'data' => 'octopus%',
       ),
     );
 
-    $object = chado_generate_var('stock',[], $selector);
+    $object = chado_generate_var('stock', $selector);
 
-    $this->assertNotNull($object);
+    $this->assertNotNull($object->stock_id);
     $this->assertEquals($stock->stock_id, $object->stock_id);
+
 
     // Test 2 Pass an array of filters with a single item.
     $selector = array(
-      'stock_id' => 1085,
+      'stock_id' => $stock->stock_id,
       'uniquename' => array(
         array(
           'op' => 'LIKE',
@@ -40,9 +41,9 @@ class ChadoQueryTest extends TripalTestCase {
         ),
       ),
     );
-    $object = chado_generate_var('stock',[], $selector);
+    $object = chado_generate_var('stock', $selector);
 
-    $this->assertNotNull($object);
+    $this->assertNotNull($object->stock_id);
     $this->assertEquals($stock->stock_id, $object->stock_id);
 
 
@@ -60,7 +61,7 @@ class ChadoQueryTest extends TripalTestCase {
       ),
     );
     $object = chado_generate_var('stock',[], $selector);
-    $this->assertNotNull($object);
+    $this->assertNotNull($object->stock_id);
     $this->assertEquals($stock->stock_id, $object->stock_id);
 
   }
