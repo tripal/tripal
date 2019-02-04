@@ -19,3 +19,8 @@ Install Drush
 -------------
 
 The official documentation for installing Drush 8 can be found here: https://docs.drush.org/en/8.x/install/.
+
+.. warning::
+
+  Don't accidentally follow the Drupal 8 installation method for your Drupal 7 site!  The "site-local" Drush installation won't work for Drupal 7.
+
