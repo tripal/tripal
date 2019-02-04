@@ -29,6 +29,10 @@ function tripal_registration_form($form, &$form_state) {
     '#default_value' => isset($form_data['values']['disable_tripal_reporting']) ? $form_data['values']['disable_tripal_reporting'] : NULL,
     '#description' => "If you do not want to register your site please check
       this box as it will stop the reminder notifications.",
+    '#ajax' => array(
+      'callback' => '_tripal_form_disable_reg_callback',
+      'event' => 'click',
+    ),
   );
 
   $form['details']['principal_investigator'] = array(
@@ -179,6 +183,10 @@ function custom_registration_ajax_add_funding($form, $form_state) {
   return $form['details']['funding'];
 }
 
+function _tripal_form_disable_reg_callback($form, &$form_state) {
+  variable_set('disable_tripal_reporting', TRUE);
+}
+
 /**
  * Implements validation from the Form API.
  * 
@@ -240,13 +248,16 @@ function tripal_registration_remote_submit($data) {
         unset($visible_files[$filename]);
       }
     }
+
     // Iterate through each of the modules.
     $tripal_modules = [];
     foreach ($visible_files as $filename => $module) {
       if ($module->info['package'] == 'Tripal Extensions') {
         $module_name = $module->info['name'];
-        $tripal_modules[$module_name]['info'] = $module->info;
-        $tripal_modules[$module_name]['status'] = $module->status;
+        if (!in_array($module->info, $tripal_modules)) {
+          $tripal_modules[$module_name]['info'] = $module->info;
+          $tripal_modules[$module_name]['status'] = $module->status;
+        }
       }
     }
   }
@@ -257,13 +268,13 @@ function tripal_registration_remote_submit($data) {
   $outgoing_data['sa_name'] = $form_data['values']['tripal_reg_site_admin_name'];
   $outgoing_data['sa_email'] = $form_data['values']['tripal_reg_site_admin_email'];
   $outgoing_data['description'] = $form_data['values']['tripal_reg_site_description'];
-  $i = 0;
 
+  $i = 0;
   foreach ($form_data['values']['funding'] as $funding_source){
-    $outgoing_data['funding_' . $i . '_agency'] = $funding_source['tripal_reg_site_agency'];
-    $outgoing_data['funding_' . $i . '_grant']  = $funding_source['tripal_reg_site_grant'];
-    $outgoing_data['funding_' . $i . '_start']  = $funding_source['funding_period']['tripal_reg_site_start'];
-    $outgoing_data['funding_' . $i . '_end']  = $funding_source['funding_period']['tripal_reg_site_end'];
+    $outgoing_data['funding_period'][$i]['funding_agency'] = $funding_source['tripal_reg_site_agency'];
+    $outgoing_data['funding_period'][$i]['funding_grant']  = $funding_source['tripal_reg_site_grant'];
+    $outgoing_data['funding_period'][$i]['funding_start']  = $funding_source['funding_period']['tripal_reg_site_start'];
+    $outgoing_data['funding_period'][$i]['funding_end']  = $funding_source['funding_period']['tripal_reg_site_end'];
     $i++;
   }
 
@@ -271,14 +282,14 @@ function tripal_registration_remote_submit($data) {
 
   //Build the info to send out.
   $outgoing_data['tripal_modules'] = $tripal_modules;
-  $outgoing_data['site_name'] = $base_url;
-  $outgoing_data['site_url'] = variable_get('site_name', 'Default');
+  $outgoing_data['site_name'] = variable_get('site_name', 'Default');
+  $outgoing_data['site_url'] = $base_url;
 
   //Send
   $result = drupal_http_request($endpoint, array(
     'method' => 'POST',
-    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
-    'data' => http_build_query($outgoing_data),
+    'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
+    'data' => json_encode($outgoing_data),
   ));
-  dpm($result);
+
 }
