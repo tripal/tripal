@@ -25,8 +25,8 @@ The Tripal Daemon requires the `Libraries API <https://www.drupal.org/project/li
 
 .. code-block:: shell
 
-  drush pm-download Libraries
-  drush pm-enable Libraries
+  drush pm-download libraries
+  drush pm-enable libraries
 
 Next, we need the `PHP-Daemon Library version 2.0 <https://github.com/shaneharter/PHP-Daemon>`_. You must download the PHP-Daemon Library and extract it in your ``sites/all/libraries`` directory. The folder must be named "PHP-Daemon".  The following commands can be used to do this:
 
