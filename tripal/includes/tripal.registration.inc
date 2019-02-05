@@ -164,7 +164,7 @@ function tripal_registration_form($form, &$form_state) {
   if (!empty($form_data)) {
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => 'Update registeration information',
+      '#value' => 'Update registration information',
     );
   }
   else {
@@ -234,7 +234,7 @@ function tripal_registration_form_submit($form, &$form_state) {
 
 function tripal_registration_remote_submit($data) {
   global $base_url;
-  $endpoint = 'http://localhost/tripal30';
+  $endpoint = 'http://upgrade.tripal.info/web/registration/content/50619jdi8ciayjhygidf';
   //Are we getting the modules?
   $form_data = unserialize($data);
   if ($form_data['values']['tripal_reg_site_modules']) {
@@ -291,5 +291,5 @@ function tripal_registration_remote_submit($data) {
     'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
     'data' => json_encode($outgoing_data),
   ));
-
+  dpm($result);
 }
