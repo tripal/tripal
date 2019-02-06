@@ -125,6 +125,11 @@ But what do you do if the record you want to link to via foreign key constraint 
     // Validate your data here
     //...
 
+    //...
+    // Determine the subject_id, object_id and type_id based on user input.
+    // User input is found in $form_state['values'].
+    //...
+
     // If we have all the keys then set the columns as in the obi__organism ex.
     if ($subject_id && $object_id && $type_id) {
       // Set all chado fields to their values.
