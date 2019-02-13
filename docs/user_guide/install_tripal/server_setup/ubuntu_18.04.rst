@@ -63,7 +63,7 @@ Drupal uses PHP.   In Ubuntu 18.04 there are two different instances of PHP that
 
 .. code-block:: bash
 
-  sudo apt-get install php php-dev php-cli libapache2-mod-php
+  sudo apt-get install php php-dev php-cli libapache2-mod-php php7.2-mbstring
 
 You may notice that installing the libapach2-mod-php module will automatically restart the Apache web server which will allow it to parse PHP files.  Next, we need a few additional extension modules for PHP that support connection to a PostgreSQL database server, JSON and the GD graphics library:
 
