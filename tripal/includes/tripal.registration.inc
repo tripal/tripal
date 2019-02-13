@@ -110,6 +110,11 @@ function tripal_registration_form($form, &$form_state) {
       '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_grant']) ? $form_data['values']['funding'][$i]['tripal_reg_site_grant'] : NULL,
       '#title' => t('Grant Number'),
     );
+    $form['details']['funding'][$i]['tripal_reg_site_amount'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_amount']) ? $form_data['values']['funding'][$i]['tripal_reg_site_amount'] : null,
+      '#title' => t('Funding Amount'),
+    );
 
     $form['details']['funding'][$i]['funding_period'] = array(
       '#type' => 'fieldset',
@@ -275,6 +280,7 @@ function tripal_registration_remote_submit($data) {
     $outgoing_data['funding_period'][$i]['funding_grant']  = $funding_source['tripal_reg_site_grant'];
     $outgoing_data['funding_period'][$i]['funding_start']  = $funding_source['funding_period']['tripal_reg_site_start'];
     $outgoing_data['funding_period'][$i]['funding_end']  = $funding_source['funding_period']['tripal_reg_site_end'];
+    $outgoing_data['funding_period'][$i]['funding_amount']  = $funding_source['tripal_reg_site_amount'];
     $i++;
   }
 
@@ -291,5 +297,7 @@ function tripal_registration_remote_submit($data) {
     'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
     'data' => json_encode($outgoing_data),
   ));
-  dpm($result);
+
+  drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
+
 }
