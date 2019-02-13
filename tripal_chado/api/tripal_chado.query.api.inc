@@ -1367,7 +1367,8 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
       // CASE 1a: If there is only one element in the array, treat it the same
       // as a non-array value.
-      if (count($value) == 1 AND is_int(key($value))) {
+      if (count($value) == 1 AND is_int(key($value))
+          AND !(isset($value[0]['op']) && isset($value[0]['data']))) {
 
         $value = array_pop($value);
         $op = '=';
