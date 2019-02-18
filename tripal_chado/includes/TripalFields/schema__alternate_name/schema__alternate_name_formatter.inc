@@ -15,9 +15,10 @@ class schema__alternate_name_formatter extends ChadoFieldFormatter {
     $list_items = array();
 
     foreach ($items as $delta => $item) {
-      if(! empty($item['value'])){
-        $list_items[] = $item['value'];
+      if(empty($item['value'])){
+        continue;
       }
+      $list_items[] = $item['value'];
     }
     $list = 'There are no synonyms.';
     if (count($list_items) > 0) {
