@@ -13,7 +13,7 @@ Bronze
 - Should install on a Tripal site appropriate for the versions it supports.
 - Defines any custom tables or materialized views in the install file (if applicable).
 - Adds any needed controlled vocabulary terms in the install file (Tripal3)
-- Provides Installation and admin instructions README.md (or RTD)
+- Provides Installation and admin instructions README.md (or `RTD <https://tripal.readthedocs.io/en/latest/dev_guide/rtd.html>`_)
 - Has a license (distributed with module)
 
 Silver
