@@ -23,7 +23,7 @@ Silver
 
 - Follows basic Drupal Coding standards; specifically, `code format <https://www.drupal.org/docs/develop/standards/coding-standards>`_ and `API documentation <https://www.drupal.org/docs/develop/standards/api-documentation-and-comment-standards#drupal>`_
 - Uses Tripal API functions. Specifically, it should use the
-    - `Chado Query API <http://api.tripal.info/api/tripal/tripal_chado%21api%21tripal_chado.query.api.inc/group/tripal_chado_query_api/3.x>`_ for querying chado.
+    - `Chado Query API <http://api.tripal.info/api/tripal/tripal_chado%21api%21tripal_chado.query.api.inc/group/tripal_chado_query_api/3.x>`_ for querying chado (if using chado as the storage system).
     - `Tripal Jobs API <http://api.tripal.info/api/tripal/tripal%21api%21tripal.jobs.api.inc/group/tripal_jobs_api/3.x>`_ for long running processes.
     - TripalField class to add data to pages (Tripal3)
 - Provides an admin interface to allow for customization
