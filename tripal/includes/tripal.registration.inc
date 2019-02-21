@@ -297,7 +297,7 @@ function tripal_registration_remote_submit($data) {
     'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
     'data' => json_encode($outgoing_data),
   ));
-
+  dpm($result);
   drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
 
 }
