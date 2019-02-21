@@ -12,23 +12,23 @@ Bronze
 - Has a public release.
 - Should install on a Tripal site appropriate for the versions it supports.
 - Defines any custom tables or materialized views in the install file (if applicable).
-- Adds any needed controlled vocabulary terms in the install file (Tripal3)
-- Provides Installation and admin instructions README.md (or `RTD <https://tripal.readthedocs.io/en/latest/dev_guide/rtd.html>`_)
-- Has a license (distributed with module)
+- Adds any needed controlled vocabulary terms in the install file (Tripal3).
+- Provides Installation and admin instructions README.md (or `RTD <https://tripal.readthedocs.io/en/latest/dev_guide/rtd.html>`_).
+- Has a license (distributed with module).
 
 Silver
 -------
 
 .. image:: Tripal-Silver.png
 
-- Follows basic Drupal Coding standards; specifically, `code format <https://www.drupal.org/docs/develop/standards/coding-standards>`_ and `API documentation <https://www.drupal.org/docs/develop/standards/api-documentation-and-comment-standards#drupal>`_
+- Follows basic Drupal Coding standards; specifically, `code format <https://www.drupal.org/docs/develop/standards/coding-standards>`_ and `API documentation <https://www.drupal.org/docs/develop/standards/api-documentation-and-comment-standards#drupal>`_.
 - Uses Tripal API functions. Specifically, it should use the
     - `Chado Query API <http://api.tripal.info/api/tripal/tripal_chado%21api%21tripal_chado.query.api.inc/group/tripal_chado_query_api/3.x>`_ for querying chado (if using chado as the storage system).
     - `Tripal Jobs API <http://api.tripal.info/api/tripal/tripal%21api%21tripal.jobs.api.inc/group/tripal_jobs_api/3.x>`_ for long running processes.
-    - TripalField class to add data to pages (Tripal3)
-- Provides an admin interface to allow for customization
+    - TripalField class to add data to pages (Tripal3).
+- Provides ways to customize the module (e.g. drush options, field/formatter settings, admin UI).
 - Latest releases should follow Drupal naming best practices.
-    - e.g. first release for Drupal 7 should be: 7.x-1.x
+    - e.g. first release for Drupal 7 should be: ``7.x-1.x``.
 
 Gold
 -----
@@ -38,9 +38,9 @@ Gold
 - Extensive documentation for the module (similar to Tripal User's Guide).
 - Unit testing is implemented using PHPUnit with the TripalTestSuite or something similar.
 - Continuous integration is setup (e.g. such as with TravisCI).
-- Imports data via Tripal's importer class (Tripal3)
+- Imports data via Tripal's importer class (Tripal3).
 - Tripal 3 fields are
-    - Fully compatible with web services
+    - Fully compatible with web services.
     - The elementInfo function is fully implemented.
     - The query and queryOrder functions fully implemented.
 - Web Services uses Tripal's Web Service Classes (Tripal3).
@@ -59,8 +59,8 @@ reStructuredText
 .. code-block:: RST
 
     .. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Bronze.png
-    :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Bronze
-    :alt: Tripal Rating: Bronze
+      :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Bronze
+      :alt: Tripal Rating: Bronze
 
 
 Markdown
