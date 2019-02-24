@@ -23,9 +23,9 @@ Silver
 
 - Follows basic Drupal Coding standards; specifically, `code format <https://www.drupal.org/docs/develop/standards/coding-standards>`_ and `API documentation <https://www.drupal.org/docs/develop/standards/api-documentation-and-comment-standards#drupal>`_.
 - Uses Tripal API functions. Specifically, it should use the
-    - `Chado Query API <http://api.tripal.info/api/tripal/tripal_chado%21api%21tripal_chado.query.api.inc/group/tripal_chado_query_api/3.x>`_ for querying chado (if using chado as the storage system).
-    - `Tripal Jobs API <http://api.tripal.info/api/tripal/tripal%21api%21tripal.jobs.api.inc/group/tripal_jobs_api/3.x>`_ for long running processes.
-    - TripalField class to add data to pages (Tripal3).
+    - Chado Query API for querying chado (if using chado as the storage system). (`API <http://api.tripal.info/api/tripal/tripal_chado%21api%21tripal_chado.query.api.inc/group/tripal_chado_query_api/3.x>`_, :doc:`Tutorial <../dev_guide/chado>`)
+    - Tripal Jobs API for long running processes. (`API  <http://api.tripal.info/api/tripal/tripal%21api%21tripal.jobs.api.inc/group/tripal_jobs_api/3.x>`_)
+    - TripalField class to add data to pages (Tripal3). (:doc:`Tutorial <../dev_guide/custom_field>`)
 - Provides ways to customize the module (e.g. drush options, field/formatter settings, admin UI).
 - Latest releases should follow Drupal naming best practices.
     - e.g. first release for Drupal 7 should be: ``7.x-1.x``.
@@ -35,15 +35,15 @@ Gold
 
 .. image:: Tripal-Gold.png
 
-- Extensive documentation for the module (similar to Tripal User's Guide).
+- Extensive documentation for the module (similar to Tripal User's Guide). ( `Tutorial <https://tripal.readthedocs.io/en/latest/dev_guide/rtd.html>`_)
 - Unit testing is implemented using PHPUnit with the TripalTestSuite or something similar.
 - Continuous integration is setup (e.g. such as with TravisCI).
-- Imports data via Tripal's importer class (Tripal3).
-- Tripal 3 fields are
+- Imports data via Tripal's importer class (Tripal3) (:doc:`Tutorial <../dev_guide/custom_data_loader>`).
+- Tripal 3 fields are (:doc:`Tutorial <../dev_guide/custom_field/manual_field_creation>`)
     - Fully compatible with web services.
     - The elementInfo function is fully implemented.
     - The query and queryOrder functions fully implemented.
-- Web Services uses Tripal's Web Service Classes (Tripal3).
+- Web Services uses Tripal's Web Service Classes (Tripal3). (:doc:`Tutorial <../dev_guide/custom_web_services>`)
 - Code sniffing and testing coverage reports (optional but encouraged).
 - Drupal.org vetted release (optional but encouraged).
 
