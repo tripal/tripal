@@ -28,7 +28,7 @@ Silver
     - TripalField class to add data to pages (Tripal3). (:doc:`Tutorial <../dev_guide/custom_field>`)
 - Provides ways to customize the module (e.g. drush options, field/formatter settings, admin UI).
 - Latest releases should follow Drupal naming best practices.
-    - e.g. first release for Drupal 7 should be: ``7.x-1.x``.
+    - e.g. first release for Drupal 7 should be: ``7.x-1.0``.
 
 Gold
 -----
