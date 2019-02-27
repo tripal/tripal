@@ -249,6 +249,8 @@ function tripal_registration_form_validate($form, &$form_state){
  *   during processing.
  */
 function tripal_registration_form_submit($form, &$form_state) {
+  variable_set('disable_tripal_reporting', TRUE);
+    
   //Check for empty funding periods and remove them.
   $j = 1;
   foreach ($form_state['values']['funding'] as $funding_source) {
@@ -260,6 +262,7 @@ function tripal_registration_form_submit($form, &$form_state) {
   $form_state['values']['funding'] = $form_state['values']['fundings'];
   $registration = serialize($form_state);
   variable_set('tripal_site_registration', $registration);
+    
   //Now send the updated info to the Tripal Site.
   tripal_registration_remote_submit($registration);
 }
