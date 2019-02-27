@@ -87,9 +87,9 @@ function tripal_init() {
   //Ask users to do the registration form
   if (user_access('administer tripal')) {
     if (empty(variable_get('tripal_site_registration', FALSE)) || !(variable_get('disable_tripal_reporting', FALSE))) {
-      drupal_set_message('Please register your Tripal Site. Registering gives the developers important reporting
-      information that will help us secure funding to continue making better Tripal versions. ' .
-        l('Please register now.', 'admin/tripal/register'), 'warning');
+      drupal_set_message('Please register your Tripal Site. Registering provides important
+      information that will help secure funding for continued improvements to Tripal. ' .
+        l('Click to register now or opt out.', 'admin/tripal/register'), 'warning');
     }
   } 
 }
@@ -126,7 +126,7 @@ function tripal_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_registration_form'),
     'access arguments' => array('administer tripal'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
     'file' => 'includes/tripal.registration.inc',
   );
