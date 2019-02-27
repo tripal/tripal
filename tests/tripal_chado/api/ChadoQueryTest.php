@@ -67,4 +67,35 @@ class ChadoQueryTest extends TripalTestCase {
 
   }
 
+  /**
+   * @group api
+   * @group failing
+   * @group chado
+   * 
+   */
+  public function test_chado_db_select() {
+
+    $analysis_record = factory('chado.analysis')->create();
+
+    $id = $analysis_record->analysis_id;
+
+    $query = chado_db_select('analysis', 't');
+    $analysis = $query->fields('t')
+      ->condition('analysis_id', $id)
+      ->execute()
+      ->fetchObject();
+    $querytwo = db_select('chado.analysis', 't');
+
+    $traditional_analysis = $querytwo
+      ->condition('analysis_id', $id)
+      ->fields('t')
+      ->execute()
+      ->fetchObject();
+
+
+    $this->assertNotFalse($analysis);
+    $this->assertNotFalse($traditional_analysis);
+
+  }
+
 }
