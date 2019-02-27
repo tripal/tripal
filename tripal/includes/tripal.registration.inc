@@ -11,7 +11,6 @@
  *
  */
 function tripal_registration_form($form, &$form_state) {
-  $site_name = variable_get('site_name', "");
   $form_data = unserialize(variable_get('tripal_site_registration', NULL));
 
   $form_state['details']['funding'] =
@@ -81,20 +80,20 @@ function tripal_registration_form($form, &$form_state) {
      Project Management Committee (PMC) for the purposes of engaging with the larger 
      Tripal user community. The PI will NOT be automatically subscribed to mailing lists.')
   );
+
   $form['details']['principal_investigator']['principal_investigator_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#default_value' => isset($form_data['values']['principal_investigator_name']) ? $form_data['values']['principal_investigator_name'] : NULL,
     '#required' => FALSE,
   );
+
   $form['details']['principal_investigator']['principal_investigator_email'] = array(
     '#type' => 'textfield',
     '#title' => t('Email'),
     '#default_value' => isset($form_data['values']['principal_investigator_email']) ? $form_data['values']['principal_investigator_email'] : NULL,
     '#required' => FALSE,
   );
-  
-  
   $form['details']['tripal_reg_site_admin'] = array(
     '#type' => 'fieldset',
     '#title' => t('Site Manager (if different from the principal investigator)'),
@@ -145,13 +144,18 @@ function tripal_registration_form($form, &$form_state) {
     $form['details']['funding'][$i]['tripal_reg_site_agency'] = array(
       '#type' => 'textfield',
       '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_agency']) ? $form_data['values']['funding'][$i]['tripal_reg_site_agency'] : NULL,
-      '#title' => t('Agency'),
+      '#title' => t('Funding Agency'),
     );
 
     $form['details']['funding'][$i]['tripal_reg_site_grant'] = array(
       '#type' => 'textfield',
       '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_grant']) ? $form_data['values']['funding'][$i]['tripal_reg_site_grant'] : NULL,
       '#title' => t('Grant Number'),
+    );
+    $form['details']['funding'][$i]['tripal_reg_site_amount'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_amount']) ? $form_data['values']['funding'][$i]['tripal_reg_site_amount'] : null,
+      '#title' => t('Funding Amount'),
     );
 
     $form['details']['funding'][$i]['funding_period'] = array(
@@ -186,7 +190,6 @@ function tripal_registration_form($form, &$form_state) {
       'wrapper' => 'funding',
     ),
   );
-  
   $form_state['details']['funding']++;
 
   // Provide a submit button.
@@ -304,6 +307,7 @@ function tripal_registration_remote_submit($data) {
     $outgoing_data['funding_period'][$i]['funding_grant']  = $funding_source['tripal_reg_site_grant'];
     $outgoing_data['funding_period'][$i]['funding_start']  = $funding_source['funding_period']['tripal_reg_site_start'];
     $outgoing_data['funding_period'][$i]['funding_end']  = $funding_source['funding_period']['tripal_reg_site_end'];
+    $outgoing_data['funding_period'][$i]['funding_amount']  = $funding_source['tripal_reg_site_amount'];
     $i++;
   }
 
@@ -320,5 +324,7 @@ function tripal_registration_remote_submit($data) {
     'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
     'data' => json_encode($outgoing_data),
   ));
+
+  drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
 
 }
