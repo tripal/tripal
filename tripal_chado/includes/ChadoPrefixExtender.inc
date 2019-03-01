@@ -25,7 +25,9 @@ class ChadoPrefixExtender extends SelectQueryExtender {
    * @return $this
    */
   public function join($table, $alias = NULL, $condition = NULL, $arguments = []) {
-
+    if(strpos($table, '[') !== 0 && strpos($table, ']') !== strlen($table)) {
+      $table = "{{$table}}";
+    }
     $table = chado_replace_table_prefix($table);
     $this->query->join($table, $alias, $condition, $arguments);
     return $this;

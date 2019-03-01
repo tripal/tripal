@@ -2067,7 +2067,7 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
  * @ingroup tripal_chado_query_api
  */
 function chado_db_select($table, $alias = NULL, array $options = array()) {
-  if(strpos($table, '[') !== 0) {
+  if(strpos($table, '[') !== 0 && strpos($table, ']') !== strlen($table)) {
     $table = "{{$table}}";
   }
   $table = chado_replace_table_prefix($table);
