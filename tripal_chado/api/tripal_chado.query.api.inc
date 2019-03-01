@@ -1,7 +1,8 @@
 <?php
+
 /**
  * @file
- * Provides an API for querying of chado including inserting, updating, deleting 
+ * Provides an API for querying of chado including inserting, updating, deleting
  * and selecting from chado.
  */
 
@@ -9,21 +10,21 @@
  * @defgroup tripal_chado_query_api Chado Query
  * @ingroup tripal_chado_api
  * @{
- * Provides an API for querying of chado including inserting, updating, deleting 
- * and selecting from specific chado tables. There is also a generic function, 
- * chado_query(), to execute and SQL statement on chado. It is ideal to use 
- * these functions to interact with chado in order to keep your module 
- * compatible with both local & external chado databases. Furthermore, it 
+ * Provides an API for querying of chado including inserting, updating, deleting
+ * and selecting from specific chado tables. There is also a generic function,
+ * chado_query(), to execute and SQL statement on chado. It is ideal to use
+ * these functions to interact with chado in order to keep your module
+ * compatible with both local & external chado databases. Furthermore, it
  * ensures connection to the chado database is taken care of for you.
  *
  * Generic Queries to a specifc chado table:
  *
- * chado_select_record( [table name], [columns to select], 
+ * chado_select_record( [table name], [columns to select],
  * [specify record to select], [options*] ) This function allows you to select
- * various columns from the specified chado table. Although you can only select 
+ * various columns from the specified chado table. Although you can only select
  * from a single table, you can specify the record to select using values
- * from related tables through use of a nested array. For example, the following 
- * code shows you how to select the name and uniquename of a feature based on 
+ * from related tables through use of a nested array. For example, the following
+ * code shows you how to select the name and uniquename of a feature based on
  * it's type and source organism.
  * @code
  *   $values =  array(
@@ -42,18 +43,18 @@
  *   $result = chado_select_record(
  *      'feature',                      // table to select from
  *      array('name', 'uniquename'),    // columns to select
- *      $values                         // record to select (see variable defn. 
+ *      $values                         // record to select (see variable defn.
  *                                                           above)
  *   );
  * @endcode
  *
  * chado_insert_record( [table name], [values to insert], [options*] )
  * This function allows you to insert a single record into a specific table. The
- * values to insert are specified using an associative array where the keys are 
- * the column names to insert into and they point to the value to be inserted 
- * into that column. If the column is a foreign key, the key will point to an 
- * array specifying the record in the foreign table and then the primary key of 
- * that record will be inserted in the column. For example, the following code 
+ * values to insert are specified using an associative array where the keys are
+ * the column names to insert into and they point to the value to be inserted
+ * into that column. If the column is a foreign key, the key will point to an
+ * array specifying the record in the foreign table and then the primary key of
+ * that record will be inserted in the column. For example, the following code
  * will insert a feature and for the type_id, the cvterm.cvterm_id of the cvterm
  * record will be inserted and for the organism_id, the organism.organism_id
  * of the organism_record will be inserted.
@@ -79,13 +80,13 @@
  *   );
  * @endcode
  *
- * chado_update_record( [table name], [specify record to update], 
- * [values to change], [options*] ) This function allows you to update records 
+ * chado_update_record( [table name], [specify record to update],
+ * [values to change], [options*] ) This function allows you to update records
  * in a specific chado table. The record(s) you wish to update are specified the
- * same as in the select function above and the values to be update are 
- * specified the same as the values to be inserted were. For example, the 
+ * same as in the select function above and the values to be update are
+ * specified the same as the values to be inserted were. For example, the
  * following code species that a feature with a given uniquename, organism_id,
- * and type_id (the unique constraint for the feature table) will be updated 
+ * and type_id (the unique constraint for the feature table) will be updated
  * with a new name, and the type changed from a gene to an mRNA.
  * @code
  * $umatch = array(
@@ -116,9 +117,9 @@
  * @endcode
  *
  * chado_delete_record( [table name], [specify records to delete], [options*] )
- * This function allows you to delete records from a specific chado table. The 
+ * This function allows you to delete records from a specific chado table. The
  * record(s) to delete are specified the same as the record to select/update was
- * above. For example, the following code will delete all genes from the 
+ * above. For example, the following code will delete all genes from the
  * organism Citrus sinensis.
  * @code
  *   $values =  array(
@@ -136,23 +137,23 @@
  *   );
  *   $result = chado_select_record(
  *      'feature',                      // table to select from
- *      $values                         // records to delete (see variable defn. 
+ *      $values                         // records to delete (see variable defn.
  *                                                            above)
  *   );
  * @endcode
  *
  * Generic Queries for any SQL:
  *
- * Often it is necessary to select from more then one table in chado or to 
+ * Often it is necessary to select from more then one table in chado or to
  * execute other complex queries that cannot be handled efficiently by the above
- * functions. It is for this reason that the chado_query( [sql string], 
+ * functions. It is for this reason that the chado_query( [sql string],
  * [arguments to sub-in to the sql] ) function was created. This function allows
  * you to execute any SQL directly on the chado database and should be used with
- * care. If any user input will be used in the query make sure to put a 
- * placeholder in your SQL string and then define the value in the arguments 
+ * care. If any user input will be used in the query make sure to put a
+ * placeholder in your SQL string and then define the value in the arguments
  * array. This will make sure that the user input is santized and safe through
- * type-checking and escaping. The following code shows an example of how to 
- * use user input resulting from a form and would be called withing the form 
+ * type-checking and escaping. The following code shows an example of how to
+ * use user input resulting from a form and would be called withing the form
  * submit function.
  * @code
  * $sql = "SELECT F.name, CVT.name as type_name, ORG.common_name
@@ -172,14 +173,14 @@
  *
  * Loading of Variables from chado data:
  *
- * These functions, chado_generate_var() and  chado_expand_var(), generate 
- * objects containing the full details of a record(s) in chado. These should be 
+ * These functions, chado_generate_var() and  chado_expand_var(), generate
+ * objects containing the full details of a record(s) in chado. These should be
  * used in all theme templates.
  *
- * This differs from the objects returned by chado_select_record in so far as 
- * all foreign key relationships have been followed meaning you have more 
- * complete details. Thus this function should be used whenever you need a full 
- * variable and chado_select_record should be used if you only case about a few 
+ * This differs from the objects returned by chado_select_record in so far as
+ * all foreign key relationships have been followed meaning you have more
+ * complete details. Thus this function should be used whenever you need a full
+ * variable and chado_select_record should be used if you only case about a few
  * columns.
  *
  * The initial variable is generated by the
@@ -191,16 +192,16 @@
  * );
  * $features = chado_generate_var('feature', $values);
  * @endcode
- * This will return an object if there is only one feature with the name 
+ * This will return an object if there is only one feature with the name
  * Medtr4g030710 or it will return an array of feature objects if more than one
  * feature has that name.
  *
- * Some tables and fields are excluded by default. To have those tables & fields 
+ * Some tables and fields are excluded by default. To have those tables & fields
  * added to your variable you can use the
- * chado_expand_var([chado variable], [type], [what to expand], 
+ * chado_expand_var([chado variable], [type], [what to expand],
  * [optional options]) function. An example of how to use this function is:
  * @code
- * 
+ *
  * Get a chado object to be expanded
  * $values = array(
  * 'name' => 'Medtr4g030710'
@@ -213,44 +214,42 @@
  * Expand the feature properties (featureprop table)
  * $feature = chado_expand_var($feature, 'table', 'featureprop');
  * @endcode
- */
+ *//**
+    * Get max rank for a given set of criteria.
+    *
+    * This function was developed with the many property tables in chado in mind
+    * but will work for any table with a rank.
+    *
+    * @param tablename: the name of the chado table you want to select the max
+    *   rank from this table must contain a rank column of type integer.
+    * @param where_options: array(
+    *   <column_name> => array(
+    *     'type' => <type of column: INT/STRING>,
+    *     'value' => <the value you want to filter on>,
+    *     'exact' => <if TRUE use =; if FALSE use ~>,
+    *    )
+    *   )
+    *   where options should include the id and type for that table to correctly
+    *   group a set of records together where the only difference are the value and
+    *   rank.
+    *
+    * @return
+    *   The maximum rank.
+    *
+    * @ingroup tripal_chado_query_api
+    */
 
-
-/**
- * Get max rank for a given set of criteria.
- * 
- * This function was developed with the many property tables in chado in mind 
- * but will work for any table with a rank.
- *
- * @param tablename: the name of the chado table you want to select the max 
- *            rank from this table must contain a rank column of type integer.
- * @param where_options: array(
- *   <column_name> => array(
- *     'type' => <type of column: INT/STRING>,
- *     'value' => <the value you want to filter on>,
- *     'exact' => <if TRUE use =; if FALSE use ~>,
- *    )
- *  )
- *  where options should include the id and type for that table to correctly
- *  group a set of records together where the only difference are the value and 
- *  rank.
- *
- * @return 
- *  The maximum rank.
- *
- * @ingroup tripal_chado_query_api
- */
 function chado_get_table_max_rank($tablename, $where_options) {
 
   $where_clauses = array();
   $where_args = array();
 
-  //generate the where clause from supplied options
-  // the key is the column name
+  // Generate the where clause from supplied options
+  // the key is the column name.
   $i = 0;
   $sql = "
     SELECT max(rank) as max_rank, count(rank) as count
-    FROM {".$tablename."}
+    FROM {" . $tablename . "}
     WHERE
   ";
   foreach ($where_options as $key => $value) {
@@ -296,14 +295,14 @@ function hook_chado_connection_alter(&$settings) {
   // "chado_set_active('chado_only');" and the hook will remove 'public' from
   // the search path.
   if ('chado_only' == $settings['dbname']) {
-    $settings['new_active_db']   = 'chado';
+    $settings['new_active_db'] = 'chado';
     // We don't include 'public' in search path.
     $settings['new_search_path'] = 'chado';
   }
 }
 
 /**
- * Set the Tripal Database
+ * Set the Tripal Database.
  *
  * The chado_set_active function is used to prevent namespace collisions
  * when Chado and Drupal are installed in the same database but in different
@@ -317,11 +316,11 @@ function hook_chado_connection_alter(&$settings) {
  * $GLOBALS['chado_active_db'].
  *
  * @see hook_chado_connection_alter()
- * 
+ *
  * @param $dbname
- *  
+ *
  * @return
- *  Global variable $GLOBALS['chado_active_db'].
+ *   Global variable $GLOBALS['chado_active_db'].
  *
  * @ingroup tripal_chado_query_api
  */
@@ -336,9 +335,9 @@ function chado_set_active($dbname = 'default') {
   $search_path = chado_get_schema_name('drupal');
 
   // Change only if 'chado' has been specified.
-  // Notice that we leave the active_db set as chado but use the possibly 
-  // user-altered  schema name for the actual search path. This is to keep 
-  // outward facing mentions of chado as "chado" while still allowing the user 
+  // Notice that we leave the active_db set as chado but use the possibly
+  // user-altered  schema name for the actual search path. This is to keep
+  // outward facing mentions of chado as "chado" while still allowing the user
   // to alter the schema name used.
   if ($dbname == 'chado') {
     $active_db = 'chado';
@@ -358,18 +357,17 @@ function chado_set_active($dbname = 'default') {
   // note: hooks can alter $active_db and $search_path.
   drupal_alter('chado_connection', $settings);
 
-  // set chado_active_db to remember active db
+  // Set chado_active_db to remember active db.
   $GLOBALS['chado_active_db'] = $active_db;
 
-  // set PostgreSQL search_path
+  // Set PostgreSQL search_path.
   db_query('SET search_path TO ' . $search_path);
 
   return $previous_db;
 }
 
-
 /**
- * Provides a generic routine for inserting into any Chado table
+ * Provides a generic routine for inserting into any Chado table.
  *
  * Use this function to insert a record into any Chado table.  The first
  * argument specifies the table for inserting and the second is an array
@@ -377,23 +375,24 @@ function chado_set_active($dbname = 'default') {
  * foreign key lookup values can be specified.
  *
  * @param $table
- *  The name of the chado table for inserting
+ *   The name of the chado table for inserting
  * @param $values
- *  An associative array containing the values for inserting.
+ *   An associative array containing the values for inserting.
  * @param $options
- *  An array of options such as:
- *  - skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
+ *   An array of options such as:
+ *   - skip_validation: TRUE or FALSE. If TRUE will skip all the validation steps and
  *     just try to insert as is. This is much faster but results in unhandled
  *     non user-friendly errors if the insert fails.
- *  - return_record: by default, the function will return the record but with
+ *   - return_record: by default, the function will return the record but with
  *     the primary keys added after insertion.  To simply return TRUE on success
  *     set this option to FALSE
  *
  * @return
- *  On success this function returns the inserted record with the new primary keys
- *  added to the returned array. On failure, it returns FALSE.
+ *   On success this function returns the inserted record with the new primary keys
+ *   added to the returned array. On failure, it returns FALSE.
  *
- * Example usage:
+ *   Example usage:
+ *
  * @code
  *   $values =  array(
  *     'organism_id' => array(
@@ -431,10 +430,10 @@ function chado_insert_record($table, $values, $options = array()) {
     );
     return FALSE;
   }
-  if (count($values)==0) {
+  if (count($values) == 0) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Cannot pass an empty array as values for inserting.',
-      array(),array('print' => $print_errors)
+      array(), array('print' => $print_errors)
     );
     return FALSE;
   }
@@ -475,7 +474,7 @@ function chado_insert_record($table, $values, $options = array()) {
   // that has all the values needed for insert with all foreign relationsihps
   // resolved.
   foreach ($values as $field => $value) {
-    // Make sure the field is in the table description. If not then return an 
+    // Make sure the field is in the table description. If not then return an
     // error message.
     if (!array_key_exists($field, $table_desc['fields'])) {
       tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -593,14 +592,16 @@ function chado_insert_record($table, $values, $options = array()) {
     }
   }
   // End of validation.
-
   // Now build the insert SQL statement.
-  $ifields = array();       // Contains the names of the fields.
-  $itypes  = array();       // Contains placeholders for the sql query.
-  $ivalues = array();       // Contains the values of the fields.
+  // Contains the names of the fields.
+  $ifields = array();
+  // Contains placeholders for the sql query.
+  $itypes = array();
+  // Contains the values of the fields.
+  $ivalues = array();
   foreach ($insert_values as $field => $value) {
     $ifields[] = $field;
-    if (strcmp($value, '__NULL__')==0) {
+    if (strcmp($value, '__NULL__') == 0) {
       $itypes[] = "NULL";
     }
     else {
@@ -659,23 +660,24 @@ function chado_insert_record($table, $values, $options = array()) {
  * that foreign key lookup values can be specified.
  *
  * @param $table
- *  The name of the chado table for inserting.
+ *   The name of the chado table for inserting.
  * @param $match
- *  An associative array containing the values for locating a record to update.
+ *   An associative array containing the values for locating a record to update.
  * @param $values
- *  An associative array containing the values for updating.
+ *   An associative array containing the values for updating.
  * @param $options
- *  An array of options such as:
- *  - return_record: by default, the function will return the TRUE if the record
+ *   An array of options such as:
+ *   - return_record: by default, the function will return the TRUE if the record
  *     was succesfully updated.  However, set this option to TRUE to return the
- *     record that was updated.  The returned record will have the fields 
- *     provided but the primary key (if available for the table) will be added 
+ *     record that was updated.  The returned record will have the fields
+ *     provided but the primary key (if available for the table) will be added
  *     to the record.
- * 
- * @return
- *  On success this function returns TRUE. On failure, it returns FALSE.
  *
- * Example usage:
+ * @return
+ *   On success this function returns TRUE. On failure, it returns FALSE.
+ *
+ *   Example usage:
+ *
  * @code
  * $umatch = array(
  *  'organism_id' => array(
@@ -690,7 +692,7 @@ function chado_insert_record($table, $values, $options = array()) {
  *    'name' => 'gene',
  *    'is_obsolete' => 0
  *  ),
- *);
+ * );
  * $uvalues = array(
  *  'name' => 'orange1.1g000034m.g',
  *  'type_id' => array (
@@ -727,7 +729,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
     );
     return FALSE;
   }
-  if (count($values)==0) {
+  if (count($values) == 0) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Cannot pass an empty array as values for updating.',
       array(), array('print' => $print_errors)
@@ -742,7 +744,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
     );
     return FALSE;
   }
-  if (count($match)==0) {
+  if (count($match) == 0) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.',
       array(), array('print' => $print_errors)
@@ -760,8 +762,10 @@ function chado_update_record($table, $match, $values, $options = NULL) {
     $options['return_record'] = FALSE;
   }
 
-  $update_values = array();   // Contains the values to be updated.
-  $update_matches = array();  // Contains the values for the where clause.
+  // Contains the values to be updated.
+  $update_values = array();
+  // Contains the values for the where clause.
+  $update_matches = array();
 
   // Get the table description.
   $table_desc = chado_get_schema($table);
@@ -841,7 +845,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_chado', TRIPAL_DEBUG,
           'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)),
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
         return FALSE;
@@ -856,8 +860,9 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   }
 
   // Now build the SQL statement.
-  $sql  = 'UPDATE {' . $table . '} SET ';
-  $args = array();        // Arguments passed to chado_query.
+  $sql = 'UPDATE {' . $table . '} SET ';
+  // Arguments passed to chado_query.
+  $args = array();
   foreach ($update_values as $field => $value) {
     if (strcmp($value, '__NULL__') == 0) {
       $sql .= " $field = NULL, ";
@@ -867,11 +872,12 @@ function chado_update_record($table, $match, $values, $options = NULL) {
       $args[":$field"] = $value;
     }
   }
-  $sql = drupal_substr($sql, 0, -2);  // Get rid of the trailing comma & space.
+  // Get rid of the trailing comma & space.
+  $sql = drupal_substr($sql, 0, -2);
 
   $sql .= " WHERE ";
   foreach ($update_matches as $field => $value) {
-    if (strcmp($value, '__NULL__')==0) {
+    if (strcmp($value, '__NULL__') == 0) {
       $sql .= " $field = NULL AND ";
     }
     else {
@@ -879,15 +885,15 @@ function chado_update_record($table, $match, $values, $options = NULL) {
       $args[":old_$field"] = $value;
     }
   }
-  $sql = drupal_substr($sql, 0, -4);  // Get rid of the trailing 'AND'.
+  // Get rid of the trailing 'AND'.
+  $sql = drupal_substr($sql, 0, -4);
 
   $result = chado_query($sql, $args);
 
   // If we have a result then add primary keys to return array.
   if ($options['return_record'] == TRUE and $result) {
-    // Only if we have a single result do we want to add the primary keys to the 
+    // Only if we have a single result do we want to add the primary keys to the
     // values array.  If the update matched many records we can't add the pkeys.
-
     if (count($pkeys) == 1) {
       foreach ($pkeys as $index => $pkey) {
         foreach ($pkey as $field => $fvalue) {
@@ -903,7 +909,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   else {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       "chado_update_record: Cannot update record in %table table.  \nMatch: %match \nValues: %values",
-      array('%table' => table, '%match' => print_r($match,TRUE), '%values' => print_r($values, 1)),
+      array('%table' => table, '%match' => print_r($match, TRUE), '%values' => print_r($values, 1)),
       array('print' => $print_errors)
     );
     return FALSE;
@@ -921,17 +927,19 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  * are mutli-dimensional such that foreign key lookup values can be specified.
  *
  * @param $table
- *  The name of the chado table for inserting.
+ *   The name of the chado table for inserting.
  * @param $match
- *  An associative array containing the values for locating a record to update.
+ *   An associative array containing the values for locating a record to update.
  * @param $options
- *  Currently there are no options.
+ *   Currently there are no options.
+ *
  * @return
  *   On success this function returns TRUE. On failure, it returns FALSE.
  *
- * Example usage:
+ *   Example usage:
+ *
  * @code
- *$umatch = array(
+ * $umatch = array(
  *  'organism_id' => array(
  *    'genus' => 'Citrus',
  *    'species' => 'sinensis',
@@ -944,8 +952,8 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  *    'name' => 'gene',
  *    'is_obsolete' => 0
  *  ),
- *);
- *$uvalues = array(
+ * );
+ * $uvalues = array(
  *  'name' => 'orange1.1g000034m.g',
  *  'type_id' => array (
  *    'cv_id' => array (
@@ -954,7 +962,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  *    'name' => 'mRNA',
  *    'is_obsolete' => 0
  *  ),
- *);
+ * );
  *   $result = chado_update_record('feature', $umatch, $uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
@@ -978,7 +986,7 @@ function chado_delete_record($table, $match, $options = NULL) {
       'Cannot pass non array as values for matching.', array());
     return FALSE;
   }
-  if (count($match)==0) {
+  if (count($match) == 0) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.', array());
     return FALSE;
@@ -990,7 +998,8 @@ function chado_delete_record($table, $match, $options = NULL) {
     $options = array();
   }
 
-  $delete_matches = array();  // Contains the values for the where clause.
+  // Contains the values for the where clause.
+  $delete_matches = array();
 
   // Get the table description.
   $table_desc = chado_get_schema($table);
@@ -1019,7 +1028,7 @@ function chado_delete_record($table, $match, $options = NULL) {
           return FALSE;
         }
         elseif (sizeof($results) < 1) {
-          //tripal_report_error('tripal_chado', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));
+          // tripal_report_error('tripal_chado', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));.
         }
         else {
           $delete_matches[$field] = $results[0];
@@ -1036,7 +1045,6 @@ function chado_delete_record($table, $match, $options = NULL) {
   $args = array();
   foreach ($delete_matches as $field => $value) {
     // If we have an array values then this is an "IN" clasue.
-
     if (is_array($value) and count($value) > 1) {
       $sql .= "$field IN (";
       $index = 0;
@@ -1045,7 +1053,8 @@ function chado_delete_record($table, $match, $options = NULL) {
         $args[":$field" . $index] = $v;
         $index++;
       }
-      $sql = drupal_substr($sql, 0, -2); // Get rid of trailing ', '.
+      // Get rid of trailing ', '.
+      $sql = drupal_substr($sql, 0, -2);
       $sql .= ") AND ";
     }
     else {
@@ -1058,7 +1067,8 @@ function chado_delete_record($table, $match, $options = NULL) {
       }
     }
   }
-  $sql = drupal_substr($sql, 0, -4);  // Get rid of the trailing 'AND'.
+  // Get rid of the trailing 'AND'.
+  $sql = drupal_substr($sql, 0, -4);
 
   // Finally perform the delete.  If successful, return the updated record.
   $result = chado_query($sql, $args);
@@ -1079,62 +1089,63 @@ function chado_delete_record($table, $match, $options = NULL) {
  * Use this function to perform a simple select from any Chado table.
  *
  * @param $table
- *  The name of the chado table for inserting
+ *   The name of the chado table for inserting
  * @param $columns
- *  An array of column names
+ *   An array of column names
  * @param $values
- *  An associative array containing the values for filtering the results. In the
- *  case where multiple values for the same time are to be selected an 
- *  additional entry for the field should appear for each value. If you need to 
- *  filter results using more complex methods see the 'Complex Filtering' 
- * section below.
+ *   An associative array containing the values for filtering the results. In the
+ *   case where multiple values for the same time are to be selected an
+ *   additional entry for the field should appear for each value. If you need to
+ *   filter results using more complex methods see the 'Complex Filtering'
+ *   section below.
  * @param $options
- *  An associative array of additional options where the key is the option
- *  and the value is the value of that option.
+ *   An associative array of additional options where the key is the option
+ *   and the value is the value of that option.
  *
- * Additional Options Include:
- *  - has_record
+ *   Additional Options Include:
+ *   - has_record
  *     Set this argument to 'TRUE' to have this function return a numeric
  *     value for the number of records rather than the array of records.  this
- *     can be useful in 'if' statements to check the presence of particula 
+ *     can be useful in 'if' statements to check the presence of particula
  *     records.
- *  - return_sql
+ *   - return_sql
  *     Set this to 'TRUE' to have this function return an array where the first
  *     element is the sql that would have been run and the second is an array of
  *     arguments.
- *  - case_insensitive_columns
+ *   - case_insensitive_columns
  *     An array of columns to do a case insensitive search on.
- *  - regex_columns
- *     An array of columns where the value passed in should be treated as a 
+ *   - regex_columns
+ *     An array of columns where the value passed in should be treated as a
  *     regular expression
- *  - order_by
+ *   - order_by
  *     An associative array containing the column names of the table as keys
  *     and the type of sort (i.e. ASC, DESC) as the values.  The results in the
- *     query will be sorted by the key values in the direction listed by the 
+ *     query will be sorted by the key values in the direction listed by the
  *     value
- *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
+ *   - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
  *     they violate any of the unique constraints. If not, the record
  *     is returned, if so, FALSE is returned.
- *  - pager:  Use this option if it is desired to return only a subset of 
- *     results so that they may be shown with in a Drupal-style pager. This 
- *     should be an array with two keys: 'limit' and 'element'.  The value of 
- *     'limit'  should specify the number of records to return and 'element' is 
+ *   - pager:  Use this option if it is desired to return only a subset of
+ *     results so that they may be shown with in a Drupal-style pager. This
+ *     should be an array with two keys: 'limit' and 'element'.  The value of
+ *     'limit'  should specify the number of records to return and 'element' is
  *     a unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.
- *  -limit:  Specifies the number of records to return.
- *  -offset:  Indicates the number of records to skip before returning records.
+ *   -limit:  Specifies the number of records to return.
+ *   -offset:  Indicates the number of records to skip before returning records.
  *
  * @return
- *  An array of results, FALSE if the query was not executed
- *  correctly, an empty array if no records were matched, or the number of 
- *  records in the dataset if $has_record is set.
- *  If the option 'is_duplicate' is provided and the record is a duplicate it
- *  will return the duplicated record.  If the 'has_record' option is provided
- *  a value of TRUE will be returned if a record exists and FALSE will bee
- *  returned if there are not records.
+ *   An array of results, FALSE if the query was not executed
+ *   correctly, an empty array if no records were matched, or the number of
+ *   records in the dataset if $has_record is set.
+ *   If the option 'is_duplicate' is provided and the record is a duplicate it
+ *   will return the duplicated record.  If the 'has_record' option is provided
+ *   a value of TRUE will be returned if a record exists and FALSE will bee
+ *   returned if there are not records.
  *
- * Example usage:
+ *   Example usage:
+ *
  * @code
  *   $columns = array('feature_id', 'name');
  *   $values =  array(
@@ -1171,7 +1182,7 @@ function chado_delete_record($table, $match, $options = NULL) {
  *   or 'is NULL'. If your criteria doesn't fall into one of these two categories
  *   then you need to provide an array with additional details such as the operator
  *   as well as the value. An example follows and will be discussed in detail.
- *   @code
+ * @code
  *      $columns = array('feature_id', 'fmin', 'fmax');
  *     // Regular criteria specifying the parent feature to retrieve locations from.
  *     $values = array(
@@ -1192,7 +1203,7 @@ function chado_delete_record($table, $match, $options = NULL) {
  *       'data' => 100
  *     );
  *     $results = chado_select_record('featureloc', $columns, $values);
- *   @endcode
+ * @endcode
  *   The above code example will return all of the name, start and end of all
  *   the features that start within MtChr1:15-100bp. Note that complex filtering
  *   can be used in conjunction with basic filtering and that multiple criteria,
@@ -1272,7 +1283,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     // arrays to only include these fields.
     foreach ($ukeys as $cname => $fields) {
       if ($has_results) {
-         continue;
+        continue;
       }
       $new_values = array();
       $new_columns = array();
@@ -1356,7 +1367,8 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           '%field' => $field,
           '%table' => $table,
           '%array' => print_r($values, 1),
-          '%fields' => print_r($table_desc['fields'], 1)),
+          '%fields' => print_r($table_desc['fields'], 1),
+        ),
         array('print' => $print_errors)
       );
       return array();
@@ -1367,8 +1379,8 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
       // CASE 1a: If there is only one element in the array, treat it the same
       // as a non-array value.
-      if (count($value) == 1 AND is_int(key($value))
-          AND !(isset($value[0]['op']) && isset($value[0]['data']))) {
+      if (count($value) == 1 and is_int(key($value))
+          and !(isset($value[0]['op']) && isset($value[0]['data']))) {
 
         $value = array_pop($value);
         $op = '=';
@@ -1377,25 +1389,25 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         $where[] = array(
           'field' => $field,
           'op' => $op,
-          'data' => $value
+          'data' => $value,
         );
       }
       // CASE 1b: If there is a 'data' key in the array then we have the new
       // complex filtering format with a single criteria.
-      elseif (isset($value['data']) AND isset($value['op'])) {
+      elseif (isset($value['data']) and isset($value['op'])) {
 
         $value['field'] = $field;
         $where[] = $value;
       }
       // CASE 1c: If we have an integer indexed array and the first element is
-      // not an array then we have a simple array of values to be used for an 
+      // not an array then we have a simple array of values to be used for an
       // IN clause.
-      elseif (is_int(key($value)) AND !is_array(current($value))) {
+      elseif (is_int(key($value)) and !is_array(current($value))) {
 
         $where[] = array(
           'field' => $field,
           'op' => 'IN',
-          'data' => $value
+          'data' => $value,
         );
       }
       // We have a multi-dimensional array: 2 cases...
@@ -1404,14 +1416,14 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         // CASE 1d: If there is a multi-dimensional array with each sub-array
         // containing a data key then we have the new complex filtering format
         // with multiple criteria.
-        if (isset($value[0]['data']) AND isset($value[0]['op'])) {
+        if (isset($value[0]['data']) and isset($value[0]['op'])) {
 
           foreach ($value as $subvalue) {
             $subvalue['field'] = $field;
             $where[] = $subvalue;
           }
         }
-        // CASE 1e: We have a multi-dimensional array that doesn't fit any of 
+        // CASE 1e: We have a multi-dimensional array that doesn't fit any of
         // the above cases then we have a foreign key definition to follow.
         else {
 
@@ -1422,7 +1434,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
 
           // Ensure that looking up the foreign key didn't fail in an error.
-          if ($results === FALSE OR $results === NULL) {
+          if ($results === FALSE or $results === NULL) {
             tripal_report_error('tripal_chado', TRIPAL_ERROR,
               'chado_select_record: could not follow the foreign key definition
               for %field where the definition supplied was %value',
@@ -1431,9 +1443,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
             return array();
           }
           // Ensure that there were results returned.
-          elseif (count($results)==0) {
+          elseif (count($results) == 0) {
             tripal_report_error('tripal_chado', TRIPAL_ERROR,
-              'chado_select_record: the foreign key definition for \'%field\' on table \'%table\' '.
+              'chado_select_record: the foreign key definition for \'%field\' on table \'%table\' ' .
               'returned no results where the definition supplied was %value',
               array('%field' => $field, '%table' => $table, '%value' => print_r($value, TRUE))
             );
@@ -1448,7 +1460,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
             $where[] = array(
               'field' => $field,
               'op' => $op,
-              'data' => $results
+              'data' => $results,
             );
           }
           // Otherwise multiple results were returned so we want to form an
@@ -1457,7 +1469,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
             $where[] = array(
               'field' => $field,
               'op' => 'IN',
-              'data' => $results
+              'data' => $results,
             );
           }
         }
@@ -1472,7 +1484,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       $where[] = array(
         'field' => $field,
         'op' => $op,
-        'data' => $value
+        'data' => $value,
       );
     }
 
@@ -1487,11 +1499,11 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   // Now build the SQL.
   if (empty($where)) {
     // Sometimes want to select everything.
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
+    $sql = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
   }
   else {
-    $sql  = "SELECT " . implode(', ', $columns) . " ";
+    $sql = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
 
     // If $values is empty then we want all results so no where clause.
@@ -1506,12 +1518,13 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           $sql .= $value_def['field'] . " IN (";
           $index = 0;
           foreach ($value_def['data'] as $v) {
-            $placeholder = ':' . $value_def['field'] . $clause_num .'_' . $index;
+            $placeholder = ':' . $value_def['field'] . $clause_num . '_' . $index;
             $sql .= $placeholder . ', ';
             $args[$placeholder] = $v;
             $index++;
           }
-          $sql = drupal_substr($sql, 0, -2); // remove trailing ', '
+          // Remove trailing ', '.
+          $sql = drupal_substr($sql, 0, -2);
           $sql .= ") AND ";
           break;
 
@@ -1522,19 +1535,20 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
         // Default is [field] [op] [data].
         default:
-          $placeholder = ':'. $value_def['field'] . $clause_num;
+          $placeholder = ':' . $value_def['field'] . $clause_num;
 
           // Support case insensitive columns.
           if (in_array($value_def['field'], $options['case_insensitive_columns'])) {
-            $sql .= 'lower(' . $value_def['field'] .') '. $value_def['op'] .' lower('. $placeholder . ') AND ';
+            $sql .= 'lower(' . $value_def['field'] . ') ' . $value_def['op'] . ' lower(' . $placeholder . ') AND ';
           }
           else {
-            $sql .= $value_def['field'] .' '. $value_def['op'] .' '. $placeholder . ' AND ';
+            $sql .= $value_def['field'] . ' ' . $value_def['op'] . ' ' . $placeholder . ' AND ';
           }
           $args[$placeholder] = $value_def['data'];
       }
     } // End foreach item in where clause.
-    $sql = drupal_substr($sql, 0, -4);  // Get rid of the trailing 'AND '
+    // Get rid of the trailing 'AND '.
+    $sql = drupal_substr($sql, 0, -4);
   } // End if (empty($where)){ } else {
 
   // Add any ordering of the results to the SQL statement.
@@ -1543,7 +1557,8 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     foreach ($options['order_by'] as $field => $dir) {
       $sql .= "$field $dir, ";
     }
-    $sql = drupal_substr($sql, 0, -2);  // Get rid of the trailing ', '
+    // Get rid of the trailing ', '.
+    $sql = drupal_substr($sql, 0, -2);
   }
 
   // Limit the records returned.
@@ -1587,7 +1602,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
  * changing the operator to 'IS NULL'.
  * @code
  *     $op = '=';
- *     chado_select_record_check_value_type($op, $value, 
+ *     chado_select_record_check_value_type($op, $value,
  *                                      $table_desc['fields'][$field]['type']);
  *
  *     $where[] = array(
@@ -1605,7 +1620,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
  * @param $type
  *   The type from the table definition that's used to determine the type of
  *   value.
- * 
+ *
  * @ingroup tripal_chado_query_api
  */
 function chado_select_record_check_value_type(&$op, &$value, $type) {
@@ -1641,7 +1656,8 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * @return
  *   DatabaseStatementInterface A prepared statement object, already executed.
  *
- * Example usage:
+ *   Example usage:
+ *
  * @code
  * $sql = "SELECT F.name, CVT.name as type_name, ORG.common_name
  *          FROM {feature} F
@@ -1651,7 +1667,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *            F.uniquename = :feature_uniquename";
  * $args = array( ':feature_uniquename' => $form_state['values']['uniquename'] );
  * $result = chado_query($sql, $args);
- * while ($r = $results->fetchObject()) { 
+ * while ($r = $results->fetchObject()) {
  *   // Do something with the record object $r
  * }
  * @endcode
@@ -1663,7 +1679,7 @@ function chado_query($sql, $args = array()) {
 
   $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
 
-  // Args should be an array
+  // Args should be an array.
   if (!is_array($args)) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
@@ -1672,7 +1688,7 @@ function chado_query($sql, $args = array()) {
     return FALSE;
   }
 
-  // if Chado is local to the database then prefix the Chado table
+  // If Chado is local to the database then prefix the Chado table
   // names with 'chado'.
   if ($is_local) {
     // Remove carriage returns from the SQL.
@@ -1682,29 +1698,26 @@ function chado_query($sql, $args = array()) {
     // Chado tables should be enclosed in curly brackets (ie: {feature} )
     // and Drupal tables should be enclosed in square brackets
     // (ie: [tripal_jobs] ).
-    $chado_schema_name = chado_get_schema_name('chado');
-    $drupal_schema_name = chado_get_schema_name('drupal');
-    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $sql);
-    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $sql);
+    $sql = chado_replace_table_prefix($sql);
 
-    // Add an alter hook to allow module developers to change the query right 
+    // Add an alter hook to allow module developers to change the query right
     // before it's  executed. Since all queriying of chado by Tripal eventually
     // goes through this function, we only need to provide an alter hook at this
-    // point in order to ensure developers have complete control over the query 
-    // being executed. For example, a module developer might want to remove 
-    // schema prefixing from queries and rely on the search path. This alter 
+    // point in order to ensure developers have complete control over the query
+    // being executed. For example, a module developer might want to remove
+    // schema prefixing from queries and rely on the search path. This alter
     // hook would allow them to do that by implementing
-    // mymodule_chado_query_alter($sql, $args) and using a regular expression 
+    // mymodule_chado_query_alter($sql, $args) and using a regular expression
     // to remove table prefixing from the query.
     // @see hook_chado_query_alter().
     drupal_alter('chado_query', $sql, $args);
 
     // The featureloc table has some indexes that use function that call other
-    // functions and those calls do not reference a schema, therefore, any 
-    // tables with featureloc must automaticaly have the chado schema set as 
+    // functions and those calls do not reference a schema, therefore, any
+    // tables with featureloc must automaticaly have the chado schema set as
     // active to find.
-    if (preg_match('/'.$chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
-      $previous_db = chado_set_active('chado') ;
+    if (preg_match('/' . $chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
+      $previous_db = chado_set_active('chado');
       try {
         $results = db_query($sql, $args);
         chado_set_active($previous_db);
@@ -1714,7 +1727,7 @@ function chado_query($sql, $args = array()) {
         throw $e;
       }
     }
-    // For all other tables we should have everything in scope so just run the 
+    // For all other tables we should have everything in scope so just run the
     // query.
     else {
       $results = db_query($sql, $args);
@@ -1723,7 +1736,7 @@ function chado_query($sql, $args = array()) {
   // Check for any cross schema joins (ie: both drupal and chado tables
   // represented and if present don't execute the query but instead warn the
   // administrator.
-  else if (preg_match('/\[(\w*?)\]/', $sql)) {
+  elseif (preg_match('/\[(\w*?)\]/', $sql)) {
     tripal_report_error('chado_query', TRIPAL_ERROR,
       'The following query does not support external chado databases. Please file an issue with the Drupal.org Tripal Project. Query: @query',
        array('@query' => $sql)
@@ -1742,21 +1755,21 @@ function chado_query($sql, $args = array()) {
 }
 
 /**
- * This hook provides a way for module developers to alter any/all queries on 
+ * This hook provides a way for module developers to alter any/all queries on
  * the chado schema by Tripal.
  *
- * Example: a module developer might want to remove schema prefixing from 
- * queries and rely on the search path. This alter hook would allow them to do 
- * that by implementing mymodule_chado_query_alter($sql, $args) and using a 
+ * Example: a module developer might want to remove schema prefixing from
+ * queries and rely on the search path. This alter hook would allow them to do
+ * that by implementing mymodule_chado_query_alter($sql, $args) and using a
  * regular expression to remove table prefixing from the query.
  *
  * @param $sql
- *    A string describing the SQL query to be executed by Tripal. All parameters
- *    should be indicated by :tokens with values being in the $args array and 
- *    all tables should be prefixed with the schema name described in 
+ *   A string describing the SQL query to be executed by Tripal. All parameters
+ *    should be indicated by :tokens with values being in the $args array and
+ *    all tables should be prefixed with the schema name described in
  *    chado_get_schema_name().
  * @param $args
- *    An array of arguments where the key is the token used in $sql 
+ *   An array of arguments where the key is the token used in $sql
  *    (for example, :value) and the value is the value you would like
  *    substituted in.
  *
@@ -1766,12 +1779,12 @@ function hook_chado_query_alter(&$sql, &$args) {
 
   // The following code is an example of how this alter function might be used.
   // Say you would like only a portion of node => feature connections available
-  // for a period of time or under a specific condition. To "hide" the other 
-  // connections you might create a temporary view of the chado_feature table 
+  // for a period of time or under a specific condition. To "hide" the other
+  // connections you might create a temporary view of the chado_feature table
   // that only includes the connections you would like to be available. In order
-  // to ensure this view is used rather than the original chado_feature table 
-  // you could alter all Tripal queries referring to chado_feature to instead 
-  //refer to your view.
+  // to ensure this view is used rather than the original chado_feature table
+  // you could alter all Tripal queries referring to chado_feature to instead
+  // refer to your view.
   if (preg_match('/(\w+)\.chado_feature/', $sql, $matches)) {
 
     $sql = str_replace(
@@ -1794,7 +1807,7 @@ function hook_chado_query_alter(&$sql, &$args) {
  * @param $limit
  *   The number of query results to display per page.
  * @param $element
- *   An numeric identifier used to distinguish between multiple pagers on one 
+ *   An numeric identifier used to distinguish between multiple pagers on one
  *   page.
  * @param $count_query
  *   An SQL query used to count matching records.
@@ -1811,7 +1824,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   $pages = explode(',', $page_arg);
   $page = 0;
   if (count($pages) >= $element) {
-     $page = key_exists($element, $pages) ? $pages[$element] : 0;
+    $page = key_exists($element, $pages) ? $pages[$element] : 0;
   }
   $offset = $limit * $page;
   $q = $_GET['q'];
@@ -1868,32 +1881,33 @@ function chado_pager_get_count($element) {
  * This function is used by chado_select_record, chado_insert_record,
  * and chado_update_record to iterate through the associate array of
  * values that gets passed to each of those routines.  The values array
- * is nested where foreign key constraints are used to specify a value that.  
+ * is nested where foreign key constraints are used to specify a value that.
  * See documentation for any of those functions for further information.
  *
  * @param $table_desc
- *  A table description for the table with the foreign key relationship to be 
- *  identified generated by hook_chado_<table name>_schema()
+ *   A table description for the table with the foreign key relationship to be
+ *   identified generated by hook_chado_<table name>_schema()
  * @param $field
- *  The field in the table that is the foreign key.
+ *   The field in the table that is the foreign key.
  * @param $values
- *  An associative array containing the values
+ *   An associative array containing the values
  * @param $options
- *  An associative array of additional options where the key is the option
- *  and the value is the value of that option. These options are passed on to
- *  chado_select_record.
+ *   An associative array of additional options where the key is the option
+ *   and the value is the value of that option. These options are passed on to
+ *   chado_select_record.
  *
- * Additional Options Include:
- *  - case_insensitive_columns
+ *   Additional Options Include:
+ *   - case_insensitive_columns
  *     An array of columns to do a case insensitive search on.
- *  - regex_columns
- *     An array of columns where the value passed in should be treated as a 
+ *   - regex_columns
+ *     An array of columns where the value passed in should be treated as a
  *     regular expression
  *
  * @return
- *  A string containg the results of the foreign key lookup, or FALSE if failed.
+ *   A string containg the results of the foreign key lookup, or FALSE if failed.
  *
- * Example usage:
+ *   Example usage:
+ *
  * @code
  *
  *   $values = array(
@@ -1904,12 +1918,11 @@ function chado_pager_get_count($element) {
  *
  * @endcode
  * The above code selects a record from the feature table using the three fields
- * that uniquely identify a feature.  The $columns array simply lists the 
- * columns to select. The $values array is nested such that the organism is 
- * identified by way of the organism_id foreign key constraint by specifying the 
- * genus and species.  The cvterm is also specified using its foreign key and 
+ * that uniquely identify a feature.  The $columns array simply lists the
+ * columns to select. The $values array is nested such that the organism is
+ * identified by way of the organism_id foreign key constraint by specifying the
+ * genus and species.  The cvterm is also specified using its foreign key and
  * the cv_id for the cvterm is nested as well.
- *
  */
 function chado_schema_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 
@@ -1987,8 +2000,9 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
  * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
  *
  * @param $schema
- *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the 
+ *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
  *   default.
+ *
  * @return
  *   The name of the PostgreSQL schema housing the $schema specified.
  *
@@ -2013,25 +2027,26 @@ function chado_get_schema_name($schema = 'chado') {
 
   return $schema_name;
 }
+
 /**
  * Alter the name of the schema housing Chado and/or Drupal.
  *
- * This example implementation shows a solution for the case where your chado 
- * database was well established in the "public" schema and you added Drupal 
- * later in a "drupal" schema. Please note that this has not been tested and 
- * while we can ensure that Tripal will work as expected, we have no control 
+ * This example implementation shows a solution for the case where your chado
+ * database was well established in the "public" schema and you added Drupal
+ * later in a "drupal" schema. Please note that this has not been tested and
+ * while we can ensure that Tripal will work as expected, we have no control
  * over whether Drupal is compatible with not being in the public schema. That's
  * why we recommened the organization we have (ie: Chado in a "chado" schema and
  * Drupal in the "public schema).
  *
  * @param $schema_name
- *   The current name of the schema as known by Tripal. This is likely the 
- *   default set in chado_get_schema_name() but in the case of multiple alter 
+ *   The current name of the schema as known by Tripal. This is likely the
+ *   default set in chado_get_schema_name() but in the case of multiple alter
  *   hooks, it might be different.
  * @param $context
  *   This is an array of items to provide context.
- *     - schema: this is the schema that was passed to chado_get_schema_name() 
- *       and will be either "chado" or "drupal". This should be used to 
+ *     - schema: this is the schema that was passed to chado_get_schema_name()
+ *       and will be either "chado" or "drupal". This should be used to
  *       determine you are changing the name of the correct schema.
  *
  * @ingroup tripal_chado_query_api
@@ -2050,6 +2065,7 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
     $schema_name = 'drupal';
   }
 }
+
 /**
  * A replacment for db_select when querying Chado.
  *
@@ -2069,22 +2085,28 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
  * @ingroup tripal_chado_query_api
  */
 function chado_db_select($table, $alias = NULL, array $options = array()) {
-  if (empty($options['target'])) {
-    $options['target'] = 'default';
-  }
-   
-  // We only want one connection for chado_db_select, so the first time we
-  // create it, we'll save it in the $GLOBALS array for use next time this
-  // function is called. If we don't do this, then the function will
-  // open too many connections and cause the database server to block.
-  $conn = NULL;
-  if (!array_key_exists('chado_db_select_connnection', $GLOBALS)) {
-    $conninfo = Database::getConnectionInfo();
-    $conn = new ChadoDatabaseConnection($conninfo['default']);
-    $GLOBALS['chado_db_select_connnection'] = $conn;
-  }
-  else {
-    $conn = $GLOBALS['chado_db_select_connnection'];
-  }
-  return $conn->select($table, $alias, $options);
+
+  $table = chado_replace_table_prefix($table);
+  $query = db_select($table, $alias, $options);
+  $query->extend('ChadoPrefixExtender');
+  return $query;
+
+}
+
+/**
+ * Replaces [] and {} placeholders using chado_get_schema_name().
+ *
+ * @param $string
+ *   Input string to replace table prefixes for.
+ *
+ * @return string
+ *   Output string with correct table prefixes.
+ */
+function chado_replace_table_prefix($string) {
+  $chado_schema_name = chado_get_schema_name('chado');
+  $drupal_schema_name = chado_get_schema_name('drupal');
+  $string = preg_replace('/\{(.*?)\}/', $chado_schema_name.'.$1', $string);
+  $string = preg_replace('/\[(\w+)\]/', $drupal_schema_name.'.$1', $string);
+
+  return $string;
 }

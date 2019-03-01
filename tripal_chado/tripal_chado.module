@@ -68,7 +68,7 @@ require_once "includes/TripalFields/ChadoField.inc";
 require_once "includes/TripalFields/ChadoFieldWidget.inc";
 require_once "includes/TripalFields/ChadoFieldFormatter.inc";
 
-require_once "includes/ChadoDatabaseConnection.inc";
+require_once "includes/ChadoPrefixExtender.inc";
 
 tripal_chado_set_globals();
 

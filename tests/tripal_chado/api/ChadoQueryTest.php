@@ -79,11 +79,12 @@ class ChadoQueryTest extends TripalTestCase {
 
     $id = $analysis_record->analysis_id;
 
-    $query = chado_db_select('analysis', 't');
+    $query = chado_db_select('{analysis}', 't');
     $analysis = $query->fields('t')
       ->condition('analysis_id', $id)
       ->execute()
       ->fetchObject();
+
     $querytwo = db_select('chado.analysis', 't');
 
     $traditional_analysis = $querytwo
