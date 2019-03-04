@@ -25,7 +25,9 @@ class schema__publication_formatter extends ChadoFieldFormatter {
     }
 
     foreach ($items as $delta => $item) {
-
+      if(empty($item['value'])){
+        continue;
+      }
       $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
       $citation = isset($item['value']['TPUB:0000003']) ? $item['value']['TPUB:0000003'] : '';
       $entity = (is_array($item['value']) && array_key_exists('entity', $item['value'])) ? $item['value']['entity'] : '';
