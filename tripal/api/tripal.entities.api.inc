@@ -1324,17 +1324,17 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
   // If we have any fields that need attaching, then do so now.
   if (count(array_keys($attach_fields)) > 0) {
-    $field_ids = array();
     foreach ($attach_fields as $storage_type => $details) {
+      $field_ids = array();
       $storage = $details['storage'];
       $fields = $details['fields'];
       foreach ($fields as $field) {
         $field_ids[$field['id']] = array($entity->id);
       }
       $entities = array($entity->id => $entity);
+      module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
+          $entities, FIELD_LOAD_CURRENT, $field_ids, array());
     }
-    module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
-        $entities, FIELD_LOAD_CURRENT, $field_ids, array());
   }
 
   // Now that all necessary fields are attached process the tokens.
