@@ -28,6 +28,7 @@ tripal_import_api();
 require_once "includes/tripal.field_storage.inc";
 require_once "includes/tripal.fields.inc";
 require_once "includes/tripal.entity.inc";
+require_once "includes/tripal.registration.inc";
 
 require_once "includes/TripalVocab.inc";
 require_once "includes/TripalVocabController.inc";
@@ -1359,7 +1360,7 @@ function tripal_cron() {
     $modules = module_implements('tripal_cron_notification');
     foreach ($modules as $module) {
       $function = $module . '_tripal_cron_notification';
-      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',                                         // Module Name
+      tripal_add_job("Cron: Checking for '$module' notifications.", 'tripal',
         $function, $args, 1, 1, $includes, TRUE);
     }
   }
@@ -1371,6 +1372,17 @@ function tripal_cron() {
   tripal_add_job('Cron: Checking expired files', 'tripal',
     'tripal_expire_files', $args, 1, 1, $includes, TRUE);
 
+  // Update the registration information every month.  
+  if (variable_get('tripal_site_registration', FALSE)) {
+    $last_submit = variable_get('tripal_site_registration_last_update');
+    if ($last_submit) {
+      if ($last_submit <= strtotime('-1 month')) {
+        $registration = variable_get('tripal_site_registration', FALSE);
+        $success = tripal_registration_remote_submit($registration);
+        watchdog('Tripal Cron', 'Tripal registration has been successfull submitted to the remote service.', [], WATCHDOG_INFO);
+      }
+    }
+  }
 }
 
 /**

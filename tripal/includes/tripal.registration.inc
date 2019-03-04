@@ -265,6 +265,8 @@ function tripal_registration_form_submit($form, &$form_state) {
     
   //Now send the updated info to the Tripal Site.
   tripal_registration_remote_submit($registration);
+
+  drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
 }
 
 function tripal_registration_remote_submit($data) {
@@ -327,7 +329,8 @@ function tripal_registration_remote_submit($data) {
     'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
     'data' => json_encode($outgoing_data),
   ));
-  dpm($result);
-  drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
 
+  variable_set('tripal_site_registration_last_update', time());
+  
+  return $result;
 }
