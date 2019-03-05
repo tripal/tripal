@@ -22,6 +22,10 @@ This module provides a basic interface to allow your users to utilize your serve
 Tripal Galaxy
 -------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+
 This module is for integration of Tripal and the Galaxy Project. It facilitates the creation of forms on your Tripal site that submit jobs to a galaxy instance.
 
 `Documentation <https://tripal-galaxy.readthedocs.io/en/latest/?badge=latest>`__
