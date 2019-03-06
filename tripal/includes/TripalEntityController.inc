@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TripalEntityController extends DrupalDefaultEntityController.
  *
@@ -25,7 +26,7 @@ class TripalEntityController extends EntityAPIController {
    * @return
    *   An object with all default fields initialized.
    */
-  public function create(array $values = array()) {
+  public function create(array $values = []) {
 
     // Add some items to the values array passed to the constructor
     global $user;
@@ -62,8 +63,8 @@ class TripalEntityController extends EntityAPIController {
    * @param array $ids
    *    An array of the ids denoting which entities to delete.
    * @param DatabaseTransaction $transaction
-   *    Optionally a DatabaseTransaction object to use. Allows overrides to pass in
-   *    their transaction object.
+   *    Optionally a DatabaseTransaction object to use. Allows overrides to
+   *   pass in their transaction object.
    */
   public function delete($ids, $transaction = NULL) {
 
@@ -89,8 +90,7 @@ class TripalEntityController extends EntityAPIController {
           ->condition('id', $entity->id)
           ->execute();
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       if ($transaction) {
         $transaction->rollback();
       }
@@ -112,18 +112,18 @@ class TripalEntityController extends EntityAPIController {
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
    * @param $cache
-   *   This array is used to store objects you want to cache for performance reasons,
-   *   as well as, cache related options. The following are supported:
+   *   This array is used to store objects you want to cache for performance
+   *   reasons, as well as, cache related options. The following are supported:
    *   - TripalBundle $bundle
    *       The bundle for the current entity.
    */
-  public function setTitle($entity, $title = NULL, $cache = array()) {
+  public function setTitle($entity, $title = NULL, $cache = []) {
 
     if (isset($cache['bundle'])) {
       $bundle = $cache['bundle'];
     }
     else {
-      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
     }
 
     // If no title was supplied then we should try to generate one using the
@@ -135,9 +135,9 @@ class TripalEntityController extends EntityAPIController {
 
     if ($title) {
       db_update('tripal_entity')
-        ->fields(array(
-          'title' => $title
-        ))
+        ->fields([
+          'title' => $title,
+        ])
         ->condition('id', $entity->id)
         ->execute();
     }
@@ -153,14 +153,14 @@ class TripalEntityController extends EntityAPIController {
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
    * @param $cache
-   *   This array is used to store objects you want to cache for performance reasons,
-   *   as well as, cache related options. The following are supported:
+   *   This array is used to store objects you want to cache for performance
+   *   reasons, as well as, cache related options. The following are supported:
    *   - TripalBundle $bundle
    *       The bundle for the current entity.
    *   - TripalTerm $term
    *       The term for the current entity.
    */
-  public function setAlias($entity, $alias = NULL, $cache = array()) {
+  public function setAlias($entity, $alias = NULL, $cache = []) {
     $source_url = "bio_data/$entity->id";
 
     // If no alias was supplied then we should try to generate one using the
@@ -174,7 +174,7 @@ class TripalEntityController extends EntityAPIController {
         $bundle_entity = $cache['bundle'];
       }
       else {
-        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        $bundle_entity = tripal_load_bundle_entity(['name' => $entity->bundle]);
       }
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
@@ -187,7 +187,7 @@ class TripalEntityController extends EntityAPIController {
       // Load the term for this TripalEntity. Set a default based on the term
       // name and entity id. Then replace all the tokens with values from
       // the entity fields.
-      $term = (isset($cache['term'])) ? $cache['term'] : entity_load('TripalTerm', array('id' => $entity->term_id));
+      $term = (isset($cache['term'])) ? $cache['term'] : entity_load('TripalTerm', ['id' => $entity->term_id]);
       $term = reset($term);
       $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
@@ -196,12 +196,12 @@ class TripalEntityController extends EntityAPIController {
     // Check if the passed alias has tokens. Load the TripalBundle entity for
     // this TripalEntity. Then replace all the tokens with values from the
     // entity fields.
-    if($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
+    if ($alias && (preg_match_all("/\[[^\]]*\]/", $alias, $bundle_tokens))) {
       if (isset($cache['bundle'])) {
         $bundle_entity = $cache['bundle'];
       }
       else {
-        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+        $bundle_entity = tripal_load_bundle_entity(['name' => $entity->bundle]);
       }
       $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
@@ -214,12 +214,12 @@ class TripalEntityController extends EntityAPIController {
 
     if ($alias) {
       // Determine if this alias has already been used.
-      $sql ='
+      $sql = '
         SELECT count(*) as num_alias
         FROM {url_alias}
         WHERE alias=:alias
       ';
-      $num_aliases = db_query($sql, array(':alias' => $alias))->fetchField();
+      $num_aliases = db_query($sql, [':alias' => $alias])->fetchField();
 
       // Either there isn't an alias yet so we just create one.
       // OR an Alias already exists but we would like to add a new one.
@@ -234,11 +234,11 @@ class TripalEntityController extends EntityAPIController {
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
         // @lacey: drupal_path_alias_whitelist_rebuild() isn't getting called for me during publish.
-        $values =  array(
+        $values = [
           'source' => $source_url,
           'alias' => $alias,
           'language' => 'und',
-        );
+        ];
 
         // Now check if an entry with the source url for this entity already
         // exists. This is an issue when updating existing url aliases. To avoid
@@ -249,7 +249,7 @@ class TripalEntityController extends EntityAPIController {
           ->condition('source', $source_url, '=')
           ->execute()->fetchAll();
         $num_aliases = count($existing_aliases);
-        if($num_aliases) {
+        if ($num_aliases) {
           // For each existing entry create a redirect.
           foreach ($existing_aliases as $ea) {
             $path = [
@@ -260,7 +260,7 @@ class TripalEntityController extends EntityAPIController {
                 'alias' => $ea->alias,
                 'pid' => $ea->pid,
                 'language' => $ea->language,
-              ]
+              ],
             ];
             module_load_include('module', 'redirect', 'redirect');
             redirect_path_update($path);
@@ -287,7 +287,7 @@ class TripalEntityController extends EntityAPIController {
           $bundle_entity = $cache['bundle'];
         }
         else {
-          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+          $bundle_entity = tripal_load_bundle_entity(['name' => $entity->bundle]);
         }
 
         // Check to see if the single alias is for the same entity and if not
@@ -297,18 +297,18 @@ class TripalEntityController extends EntityAPIController {
           FROM {url_alias}
           WHERE alias=:alias AND source=:source
         ";
-        $replace = array(':alias' => $alias, ':source' => $source_url);
+        $replace = [':alias' => $alias, ':source' => $source_url];
         $same_alias = db_query($sql, $replace)->fetchField();
         if (!$same_alias) {
           $msg = 'The URL alias, %alias, already exists for another page. ' .
             'Please ensure the pattern supplied on the <a href="!link" ' .
             'target="_blank">%type Edit Page</a> under URL Path options is ' .
             'unique.';
-          $msg_var = array(
+          $msg_var = [
             '%alias' => $alias,
             '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
-            '%type' => $bundle_entity->label
-          );
+            '%type' => $bundle_entity->label,
+          ];
           tripal_report_error('trpentity', TRIPAL_WARNING, $msg, $msg_var);
           drupal_set_message(t($msg, $msg_var), 'warning');
         }
@@ -320,25 +320,25 @@ class TripalEntityController extends EntityAPIController {
           $bundle_entity = $cache['bundle'];
         }
         else {
-          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+          $bundle_entity = tripal_load_bundle_entity(['name' => $entity->bundle]);
         }
 
         $aliases = db_query('SELECT source FROM {url_alias} WHERE alias=:alias',
-          array(':alias' => $alias))->fetchAll();
-        $pages = array();
-        foreach($aliases as $a) {
+          [':alias' => $alias])->fetchAll();
+        $pages = [];
+        foreach ($aliases as $a) {
           $pages[] = $a->source;
         }
 
-        $msg = 'The URL alias, %alias, already exists for multiple pages! '.
+        $msg = 'The URL alias, %alias, already exists for multiple pages! ' .
           'Please ensure the pattern supplied on the <a href="!link" ' .
           'target="_blank">%type Edit Page</a> under URL Path options is ' .
           'unique.';
-        $msg_var = array(
+        $msg_var = [
           '%alias' => $alias,
           '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
-          '%type' => $bundle_entity->label
-        );
+          '%type' => $bundle_entity->label,
+        ];
         drupal_set_message(t($msg, $msg_var), 'error');
 
         $msg .= ' This url alias has already been used for the following pages: %pages.
@@ -355,12 +355,14 @@ class TripalEntityController extends EntityAPIController {
    * @param $entity
    *   A TripalEntity object to save.
    * @param $cache
-   *   This array is used to store objects you want to cache for performance reasons,
-   *   as well as, cache related options. The following are supported:
+   *   This array is used to store objects you want to cache for performance
+   *   reasons, as well as, cache related options. The following are supported:
    *   - boolean $clear_cached_fields
-   *       Clearing cached fields is NECESSARY. IF you choose to set this to false then YOU
-   *       must clear the cache yourself using cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
-   *       The only known reason to set this to FALSE is to clear the cache in bulk for perfomance reasons.
+   *       Clearing cached fields is NECESSARY. IF you choose to set this to
+   *   false then YOU must clear the cache yourself using
+   *   cache_clear_all('field:TripalEntity:[entity_id]', 'cache_field', TRUE).
+   *   The only known reason to set this to FALSE is to clear the cache in bulk
+   *   for perfomance reasons.
    *   - TripalBundle $bundle
    *       The bundle for the current entity.
    *   - TripalTerm $term
@@ -369,11 +371,13 @@ class TripalEntityController extends EntityAPIController {
    * @return
    *   The saved entity object with updated properties.
    */
-  public function save($entity, $cache = array()) {
+  public function save($entity, $cache = []) {
     global $user;
-    $pkeys = array();
+    $pkeys = [];
 
-    if (!isset($cache['clear_cached_fields'])) $cache['clear_cached_fields'] = TRUE;
+    if (!isset($cache['clear_cached_fields'])) {
+      $cache['clear_cached_fields'] = TRUE;
+    }
 
     $changed_date = time();
     $create_date = $changed_date;
@@ -401,7 +405,7 @@ class TripalEntityController extends EntityAPIController {
       }
       else {
         $invocation = 'entity_update';
-        $pkeys = array('id');
+        $pkeys = ['id'];
       }
       if (property_exists($entity, 'publish') and $entity->publish == TRUE) {
         $invocation = 'entity_publish';
@@ -411,16 +415,16 @@ class TripalEntityController extends EntityAPIController {
       module_invoke_all('entity_presave', $entity, $entity->type);
 
       // Write out the entity record.
-      $record = array(
-        'term_id'   => $entity->term_id,
-        'type'      => $entity->type,
-        'bundle'    => $entity->bundle,
-        'title'     => $entity->title,
-        'uid'       => $entity->uid,
-        'created'   => $create_date,
-        'changed'   => $changed_date,
-        'status'    => $status,
-      );
+      $record = [
+        'term_id' => $entity->term_id,
+        'type' => $entity->type,
+        'bundle' => $entity->bundle,
+        'title' => $entity->title,
+        'uid' => $entity->uid,
+        'created' => $create_date,
+        'changed' => $changed_date,
+        'status' => $status,
+      ];
       if (property_exists($entity, 'nid') and $entity->nid) {
         $record['nid'] = $entity->nid;
       }
@@ -466,8 +470,7 @@ class TripalEntityController extends EntityAPIController {
       }
 
       return $entity;
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
       drupal_set_message("Could not save the TripalEntity: " . $e->getMessage(), "error");
@@ -494,9 +497,9 @@ class TripalEntityController extends EntityAPIController {
    *  Tripal jobs that load lots of entities.  Caching of entities can
    *  be disabled to improve memory performance by setting this to FALSE.
    */
-  public function load($ids = array(), $conditions = array(), $field_ids = array(), $cache = TRUE) {
+  public function load($ids = [], $conditions = [], $field_ids = [], $cache = TRUE) {
 
-    $entities = array();
+    $entities = [];
 
     // Revisions are not statically cached, and require a different query to
     // other conditions, so separate the revision id into its own variable.
@@ -542,7 +545,7 @@ class TripalEntityController extends EntityAPIController {
     // is set to FALSE (so we load all entities), if there are any ids left to
     // load or if loading a revision.
     if (!($this->cacheComplete && $ids === FALSE && !$conditions) && ($ids === FALSE || $ids || $revision_id)) {
-      $queried_entities = array();
+      $queried_entities = [];
       foreach ($this->query($ids, $conditions, $revision_id) as $record) {
         // Skip entities already retrieved from cache.
         if (isset($entities[$record->{$this->idKey}])) {
@@ -588,7 +591,7 @@ class TripalEntityController extends EntityAPIController {
     if ($this->cache and $cache) {
       // Add entities to the cache if we are not loading a revision.
       if (!empty($queried_entities) && !$revision_id) {
-          $this->cacheSet($queried_entities);
+        $this->cacheSet($queried_entities);
 
         // Remember if we have cached all entities now.
         if (!$conditions && $ids === FALSE) {
@@ -622,7 +625,7 @@ class TripalEntityController extends EntityAPIController {
    * @param $field_ids
    */
   protected function attachLoad(&$queried_entities, $revision_id = FALSE,
-      $field_ids = array()) {
+                                $field_ids = []) {
 
     // Attach fields.
     if ($this->entityInfo['fieldable']) {
@@ -636,14 +639,14 @@ class TripalEntityController extends EntityAPIController {
         $info = entity_get_info($queried_entities[$id]->type);
         $field_cache = array_key_exists('field cache', $info) ? $info['field cache'] : FALSE;
         $bundle_name = $queried_entities[$id]->bundle;
-        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+        $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
         // Iterate through the field instances and find those that are set to
         // 'auto_attach' and which are attached to this bundle. Add all
         // fields that don't need auto attach to the field_ids array.
         $instances = field_info_instances('TripalEntity', $bundle_name);
         foreach ($instances as $instance) {
-          $field_name =  $instance['field_name'];
+          $field_name = $instance['field_name'];
           $field = field_info_field($field_name);
           $field_id = $field['id'];
 
@@ -653,7 +656,7 @@ class TripalEntityController extends EntityAPIController {
           }
 
           // Options used for the field_attach_load function.
-          $options = array();
+          $options = [];
           $options['field_id'] = $field['id'];
 
           // The cache ID for the entity.  We must manually set the cache
@@ -674,8 +677,8 @@ class TripalEntityController extends EntityAPIController {
           // to only load the  fields specified.
           if (count($field_ids) > 0) {
             if (in_array($field_id, $field_ids)) {
-              $function($this->entityType, array($id => $queried_entities[$id]),
-                  FIELD_LOAD_CURRENT, $options);
+              $function($this->entityType, [$id => $queried_entities[$id]],
+                FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
                 cache_set($cfid, $queried_entities[$id]->{$field_name}, 'cache_field');
@@ -692,8 +695,8 @@ class TripalEntityController extends EntityAPIController {
             // Does the field instance have an 'auto_attach' setting?
             $auto_attach = FALSE;
             if (array_key_exists('settings', $instance) and
-                array_key_exists('auto_attach', $instance['settings']) and
-                $instance['settings']['auto_attach'] == TRUE) {
+              array_key_exists('auto_attach', $instance['settings']) and
+              $instance['settings']['auto_attach'] == TRUE) {
               $auto_attach = TRUE;
             }
 
@@ -701,15 +704,15 @@ class TripalEntityController extends EntityAPIController {
             // their value to an empty string and set the #processed key to
             // FALSE.
             if (!$auto_attach) {
-               // Add an empty value. This will allow the tripal_entity_view()
-               // hook to add the necessary prefixes to the field for ajax
-               // loading.
-               $queried_entities[$id]->{$field_name}['und'][0]['value'] = '';
-               $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
+              // Add an empty value. This will allow the tripal_entity_view()
+              // hook to add the necessary prefixes to the field for ajax
+              // loading.
+              $queried_entities[$id]->{$field_name}['und'][0]['value'] = '';
+              $queried_entities[$id]->{$field_name}['#processed'] = FALSE;
             }
             else {
-              $function($this->entityType, array($id => $queried_entities[$id]),
-                  FIELD_LOAD_CURRENT, $options);
+              $function($this->entityType, [$id => $queried_entities[$id]],
+                FIELD_LOAD_CURRENT, $options);
               // Cache the field.
               if ($field_cache) {
                 if (property_exists($queried_entities[$id], $field_name)) {
@@ -732,7 +735,7 @@ class TripalEntityController extends EntityAPIController {
     // Call hook_TYPE_load(). The first argument for hook_TYPE_load() are
     // always the queried entities, followed by additional arguments set in
     // $this->hookLoadArguments.
-    $args = array_merge(array($queried_entities), $this->hookLoadArguments);
+    $args = array_merge([$queried_entities], $this->hookLoadArguments);
     foreach (module_implements($this->entityInfo['load hook']) as $module) {
       call_user_func_array($module . '_' . $this->entityInfo['load hook'], $args);
     }

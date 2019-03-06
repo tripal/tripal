@@ -120,30 +120,30 @@ class sep__protocol extends ChadoField {
     if (!$record) {
       return;
     }
-    
+
     $protocol = $record->{$field_column};
     // If this record does not have a protcol then just return.
     if (!$protocol) {
       return;
     }
-    
+
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = [
       'value' => [],
     ];
-    
+
     $entity_id = $record->entity_id;
 
     // Get the Protocol controlled vocabulary terms.
     $protocol_name_term = chado_get_semweb_term('protocol', 'name');
-    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');       
-    
+    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');
+
     $entity->{$field_name}['und'][0]['value'] = [
       $protocol_name_term => $protocol->name,
       $protocol_type_term => $protocol->type_id->name,
     ];
-    
-    $entity->{$field_name}['und'][0][$linker_field] =  $protocol->protocol_id;
+
+    $entity->{$field_name}['und'][0][$linker_field] = $protocol->protocol_id;
 
     // Is there a published entity for this protocol?
     if (property_exists($record->{$field_column}, 'entity_id')) {
@@ -194,6 +194,7 @@ class sep__protocol extends ChadoField {
 
   /**
    * Provide query support.  We only make use of the name and type.
+   *
    * @param $query
    * @param $condition
    */

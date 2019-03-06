@@ -24,7 +24,7 @@ class schema__alternate_name extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -35,7 +35,7 @@ class schema__alternate_name extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'schema__alternate_name_widget';
@@ -63,7 +63,7 @@ class schema__alternate_name extends ChadoField {
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $pkey => '',
       'chado-' . $field_table . '__' . $fkey_lcolumn => '',
@@ -74,17 +74,17 @@ class schema__alternate_name extends ChadoField {
       'name' => '',
       'type_id' => '',
       // Ignore the synonym_sgml column for now.
-    );
+    ];
 
     $linker_table = $base_table . '_synonym';
-    $options = array('return_array' => 1);
+    $options = ['return_array' => 1];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
     $synonyms_linker = $record->$linker_table;
     if (is_array($synonyms_linker) and count($synonyms_linker) > 0) {
       $i = 0;
       foreach ($synonyms_linker as $index => $linker) {
         $synonym = $linker->synonym_id;
-        $entity->{$field_name}['und'][$i] = array(
+        $entity->{$field_name}['und'][$i] = [
           'value' => $synonym->name,
           'chado-' . $field_table . '__' . $pkey => $linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
@@ -94,7 +94,7 @@ class schema__alternate_name extends ChadoField {
           'chado-' . $field_table . '__' . 'is_internal' => $linker->is_internal,
           'name' => $synonym->name,
           'type_id' => $synonym->type_id->cvterm_id,
-        );
+        ];
         $i++;
       }
     }

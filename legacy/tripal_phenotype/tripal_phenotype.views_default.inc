@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_phenotype
  */
 function tripal_phenotype_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_phenotype_defaultvalue_user_phenotypes() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/phenotype';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Phenotypes',
     'description' => 'A controlled sentence describing observable effects of non-wild type function.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Remove edit/delete node
@@ -103,21 +103,21 @@ function tripal_phenotype_defaultview_admin_phenotypes() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'uniquename' => 'uniquename',
     'value' => 'value',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'uniquename';
-  $handler->display->display_options['style_options']['info'] = array(
-    'uniquename' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'value' => array(
+    ],
+    'value' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -244,11 +244,11 @@ function tripal_phenotype_defaultview_admin_phenotypes() {
   $handler->display->display_options['filters']['value']['expose']['label'] = 'Value Contains';
   $handler->display->display_options['filters']['value']['expose']['operator'] = 'value_op';
   $handler->display->display_options['filters']['value']['expose']['identifier'] = 'phen_value';
-  $handler->display->display_options['filters']['value']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['value']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

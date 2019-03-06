@@ -13,9 +13,9 @@ class ChadoField extends TripalField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'field_chado_storage',
-  );
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -24,7 +24,7 @@ class ChadoField extends TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -41,14 +41,14 @@ class ChadoField extends TripalField {
     'chado_column' => '',
     // The base table.
     'base_table' => '',
-  );
+  ];
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
-  public static $download_formatters = array(
+  public static $download_formatters = [
     'TripalTabDownloader',
     'TripalCSVDownloader',
-  );
+  ];
 
   // The module that manages this field.
   public static $module = 'tripal_chado';
@@ -79,7 +79,7 @@ class ChadoField extends TripalField {
       // Get the base table column that is associated with the term
       // passed as $condition['column'].
       $base_field = chado_get_semweb_column($chado_table, $condition['column']);
-      $query->condition('base.' . $base_field , $condition['value'], $operator);
+      $query->condition('base.' . $base_field, $condition['value'], $operator);
     }
     else {
       // If the two are not the same then we expect that the child class
@@ -137,7 +137,7 @@ class ChadoField extends TripalField {
       return;
     }
 
-    switch($type) {
+    switch ($type) {
       case 'LEFT OUTER':
         $query->leftjoin($table, $alias, $condition);
         break;
@@ -150,42 +150,47 @@ class ChadoField extends TripalField {
   }
 
   /**
-   * Used to retrieve a distinct list of values already used for the current field instance.
+   * Used to retrieve a distinct list of values already used for the current
+   * field instance.
    *
    * @param $keyword
-   *   A string option used to filter the distinct list. This is used when creating an
-   *   autocomplete. For all distinct values, set this to NULL.
+   *   A string option used to filter the distinct list. This is used when
+   *   creating an autocomplete. For all distinct values, set this to NULL.
    * @param $options
-   *   An array where options for how to generate this list can be specified. 
+   *   An array where options for how to generate this list can be specified.
    *   Supported options include:
    *     - limit: how many results to limit to (Default: 25)
-   *     - label_string: a string with tokens that should be used to generate the
-   *         human-readable values in the returned list.
+   *     - label_string: a string with tokens that should be used to generate
+   *   the human-readable values in the returned list.
    *
-   * The following example shows you how to pull all the value list for a specific instance 
-   * of a field.
+   * The following example shows you how to pull all the value list for a
+   *   specific instance of a field.
+   *
    * @code
-      // In this example we want the values for the obi__organism field
-      // attached to the Tripal Content Type with a machine name of bio_data_17:
-      $field_name = 'obi__organism';
-      $bundle_name = 'bio_data_17';
-
-      // The following two calls get information about the field we want the values for.
-      $field_info = field_info_field($field_name);
-      $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
-      // Construct the Field instance we want the values for.
-      $instance = new ChadoField($field_info, $instance_info);
-
-      // Retrieve the values.
-      // $values will be an array containing the distinct set of values for this field instance.
-      $values = $instance->getValueList();
+   * // In this example we want the values for the obi__organism field
+   * // attached to the Tripal Content Type with a machine name of bio_data_17:
+   * $field_name = 'obi__organism';
+   * $bundle_name = 'bio_data_17';
+   *
+   * // The following two calls get information about the field we want the
+   *   values for.
+   * $field_info = field_info_field($field_name);
+   * $instance_info = field_info_instance('TripalEntity', $field_name,
+   *   $bundle_name);
+   * // Construct the Field instance we want the values for.
+   * $instance = new ChadoField($field_info, $instance_info);
+   *
+   * // Retrieve the values.
+   * // $values will be an array containing the distinct set of values for this
+   *   field instance.
+   * $values = $instance->getValueList();
    * @endcode
    *
    * @return
    *   An array of values.
    */
-  public function getValueList($options = array(), $keyword = NULL) {
-    $values = array();
+  public function getValueList($options = [], $keyword = NULL) {
+    $values = [];
 
     // Set some defaults.
     $options['limit'] = (isset($options['limit'])) ? $options['limit'] : 25;
@@ -198,7 +203,7 @@ class ChadoField extends TripalField {
         'TripalField',
         TRIPAL_WARNING,
         'Values List: Unable to generate a values list for %field_name since we don\'t know it\'s chado table/column.',
-        array('%field_name' => $this->instance['field_name'])
+        ['%field_name' => $this->instance['field_name']]
       );
       return FALSE;
     }
@@ -230,10 +235,10 @@ class ChadoField extends TripalField {
 
         // Determine the query.
         $sql = "SELECT base.$chado_column as id, fk.*
-                FROM {".$chado_table."} base
-                LEFT JOIN {".$fk_table."} fk ON base.$chado_column=fk.$fk_column
+                FROM {" . $chado_table . "} base
+                LEFT JOIN {" . $fk_table . "} fk ON base.$chado_column=fk.$fk_column
                 GROUP BY base.$chado_column, fk.$fk_column
-                LIMIT ".$options['limit'];
+                LIMIT " . $options['limit'];
 
         // Choose a default label string, if needed.
         if (empty($options['label_string'])) {
@@ -258,7 +263,7 @@ class ChadoField extends TripalField {
               'TripalField',
               TRIPAL_WARNING,
               'Values List: Unable to generate a default human-readable label for %field_name since there is no name/uniquename column. Please set the options[label_string].',
-              array('%field_name' => $this->instance['field_name'])
+              ['%field_name' => $this->instance['field_name']]
             );
             return FALSE;
           }
@@ -267,9 +272,9 @@ class ChadoField extends TripalField {
       // Not a foreign key, so just make the key and value from the base table.
       else {
         $sql = "SELECT $chado_column as id, $chado_column
-                FROM {".$chado_table."} base
+                FROM {" . $chado_table . "} base
                 GROUP BY $chado_column
-                LIMIT ".$options['limit'];
+                LIMIT " . $options['limit'];
 
         // Choose a default label string, if needed.
         if (empty($options['label_string'])) {
@@ -282,7 +287,7 @@ class ChadoField extends TripalField {
         'TripalField',
         TRIPAL_WARNING,
         'Unable to retrieve a values list for %field_name since it is not a direct column in %base',
-        array('%field_name' => $this->instance['field_name'], '%base' => $base_table)
+        ['%field_name' => $this->instance['field_name'], '%base' => $base_table]
       );
       return FALSE;
     }
@@ -297,13 +302,13 @@ class ChadoField extends TripalField {
     foreach ($results as $r) {
       // Determine the label using the label_string option.
       $label = $options['label_string'];
-      $replace = array();
+      $replace = [];
       foreach ($tokens as $column) {
         if (isset($r->{$column})) {
-          $replace[ "[$column]" ] = $r->{$column};
+          $replace["[$column]"] = $r->{$column};
         }
         else {
-          $replace[ "[$column]" ] = "";
+          $replace["[$column]"] = "";
         }
       }
 
@@ -321,18 +326,18 @@ class ChadoField extends TripalField {
     // Make sure we don't lose our Chado table mappings when the settings
     // are updated.  Setting them as values in the form ensures they don't
     // get accidentally overwritten.
-    $element['base_table'] = array(
+    $element['base_table'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['base_table'],
-    );
-    $element['chado_table'] = array(
+    ];
+    $element['chado_table'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['chado_table'],
-    );
-    $element['chado_column'] = array(
+    ];
+    $element['chado_column'] = [
       '#type' => 'value',
       '#value' => $this->instance['settings']['chado_column'],
-    );
+    ];
     return $element;
   }
 }

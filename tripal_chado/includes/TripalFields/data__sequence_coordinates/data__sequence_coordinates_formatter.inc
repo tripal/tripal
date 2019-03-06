@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Sequence Coordinate List';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence_coordinates');
+  public static $field_types = ['data__sequence_coordinates'];
 
 
   /**
@@ -20,7 +21,7 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
     $strand_term = chado_get_semweb_term('featureloc', 'strand');
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
-    $locations = array();
+    $locations = [];
     foreach ($items as $item) {
       if (!empty($item['value'])) {
         $srcfeature = $item['value'][$reference_term];
@@ -37,9 +38,9 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
     else {
       $content = implode('<br />', $locations);
     }
-    $element[0] = array(
+    $element[0] = [
       '#type' => 'markup',
       '#markup' => $content,
-    );
+    ];
   }
 }

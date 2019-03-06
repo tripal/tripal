@@ -177,7 +177,7 @@ class GFF3ImporterTest extends TripalTestCase {
 
   private function loadLandmarks($analysis, $organism) {
     $landmark_file = ['file_remote' => 'https://raw.githubusercontent.com/statonlab/tripal_dev_seed/master/Fexcel_mini/sequences/empty_landmarks.fasta'];
-    
+
     $run_args = [
       'organism_id' => $organism->organism_id,
       'analysis_id' => $analysis->analysis_id,

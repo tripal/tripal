@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  */
@@ -21,24 +22,24 @@ class TripalTermViewsController extends EntityDefaultViewsController {
 
     $data['tripal_term']['vocab_id']['title'] = t('Vocabulary ID');
     $data['tripal_term']['vocab_id']['help'] = t('The internal numeric ID for the vocabulary to which the content type term belongs.');
-    $data['tripal_term']['vocab_id']['relationship'] = array(
+    $data['tripal_term']['vocab_id']['relationship'] = [
       'base' => 'tripal_vocab',
       'base field' => 'id',
       'handler' => 'views_handler_relationship',
       'label' => t('Tripal Content Vocabulary'),
       'title' => t('Tripal Content Vocabulary'),
-      'help' => t('Associates the vocabulary ID of the Tripal content type with information about the vocabulary.')
-    );
+      'help' => t('Associates the vocabulary ID of the Tripal content type with information about the vocabulary.'),
+    ];
 
 
-    $data['tripal_term']['table']['join'] = array();
+    $data['tripal_term']['table']['join'] = [];
 
     // Join the term to it's entity type.
-    $data['tripal_term']['table']['join']['tripal_entity'] = array(
+    $data['tripal_term']['table']['join']['tripal_entity'] = [
       'handler' => 'views_join',
       'left_field' => 'term_id',
       'field' => 'id',
-    );
+    ];
 
     // It is not intended that the following fields will every be used by the
     // end-user.

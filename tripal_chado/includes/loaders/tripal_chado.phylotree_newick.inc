@@ -27,7 +27,7 @@ function tripal_phylogeny_parse_newick_file($file_name) {
   $tripal_phylogeny_bootstrap = 1;
   $tripal_phylogeny_index = 1;
 
-  $tree = array();
+  $tree = [];
 
   $fp = fopen($file_name, 'r');
   if ($fp) {
@@ -38,10 +38,12 @@ function tripal_phylogeny_parse_newick_file($file_name) {
   }
   return $tree;
 }
+
 /**
  *
  * @param unknown $fp
  * @param number $depth
+ *
  * @return boolean
  */
 function tripal_phylogeny_parse_newick_tree($fp, $depth = 0) {
@@ -76,6 +78,7 @@ function tripal_phylogeny_parse_newick_tree($fp, $depth = 0) {
  *
  * @param unknown $fp
  * @param unknown $depth
+ *
  * @return Ambigous|unknown
  */
 function tripal_phylogeny_parse_newick_subtree($fp, $depth) {
@@ -83,12 +86,12 @@ function tripal_phylogeny_parse_newick_subtree($fp, $depth) {
   $internal = tripal_phylogeny_parse_newick_internal($fp, $depth + 1);
   if (!is_array($internal)) {
     $leaf_node = tripal_phylogeny_parse_newick_leaf($fp, $depth);
-    return array(
+    return [
       'name' => $leaf_node,
       'depth' => $depth,
       'is_leaf' => TRUE,
       'descendents' => 0,
-    );
+    ];
   }
   else {
     $internal['depth'] = $depth;
@@ -100,6 +103,7 @@ function tripal_phylogeny_parse_newick_subtree($fp, $depth) {
  *
  * @param unknown $fp
  * @param unknown $depth
+ *
  * @return boolean|multitype:unknown Ambigous <Ambigous, unknown>
  */
 function tripal_phylogeny_parse_newick_branch($fp, $depth) {
@@ -110,6 +114,7 @@ function tripal_phylogeny_parse_newick_branch($fp, $depth) {
   $subtree['length'] = $length;
   return $subtree;
 }
+
 /**
  *
  * @param unknown $fp
@@ -140,13 +145,13 @@ function tripal_phylogeny_parse_newick_internal($fp, $depth) {
     $descendent_count += 1 + $branches[$i]['descendents'];
   }
 
-  return array(
+  return [
     'name' => $internal_node,
     'depth' => $depth,
     'branch_set' => $branches,
     'is_internal' => TRUE,
     'descendents' => $descendent_count,
-  );
+  ];
 }
 
 /**
@@ -156,7 +161,7 @@ function tripal_phylogeny_parse_newick_internal($fp, $depth) {
  * @param unknown $depth
  */
 function tripal_phylogeny_parse_newick_branchset($fp, $depth) {
-  $branches = array();
+  $branches = [];
 
   $num_read = 0;
   $branch = tripal_phylogeny_parse_newick_branch($fp, $depth);
@@ -183,19 +188,23 @@ function tripal_phylogeny_parse_newick_branchset($fp, $depth) {
 
   return $branches;
 }
+
 /**
  *
  * @param unknown $fp
  * @param unknown $depth
+ *
  * @return Ambigous <string, boolean, unknown>
  */
 function tripal_phylogeny_parse_newick_leaf($fp, $depth) {
   return tripal_phylogeny_parse_newick_name($fp, $depth);
 }
+
 /**
  *
  * @param unknown $fp
  * @param unknown $depth
+ *
  * @return string|boolean|Ambigous <string, unknown>
  */
 function tripal_phylogeny_parse_newick_name($fp, $depth) {
@@ -218,14 +227,16 @@ function tripal_phylogeny_parse_newick_name($fp, $depth) {
   }
   return $token;
 }
+
 /**
  *
  * @param unknown $fp
  * @param unknown $depth
+ *
  * @return string|boolean|unknown
  */
 function tripal_phylogeny_parse_newick_length($fp, $depth) {
-  $length  = '';
+  $length = '';
 
   $token = tripal_phylogeny_parse_newick_get_token($fp);
 
@@ -257,6 +268,7 @@ function tripal_phylogeny_parse_newick_length($fp, $depth) {
 /**
  *
  * @param unknown $fp
+ *
  * @return string
  */
 function tripal_phylogeny_parse_newick_get_token($fp) {
@@ -292,8 +304,8 @@ function tripal_phylogeny_parse_newick_get_token($fp) {
         }
 
         break;
-        // Quotes are allowed around names and if a name is in
-        // quotes then allow spaces. Otherwise, spaces are ignored.
+      // Quotes are allowed around names and if a name is in
+      // quotes then allow spaces. Otherwise, spaces are ignored.
       case '\'':
       case '"':
         if (!$in_quote) {
@@ -311,7 +323,7 @@ function tripal_phylogeny_parse_newick_get_token($fp) {
           $token .= $c;
         }
         break;
-        // All other characters get saved as the token
+      // All other characters get saved as the token
       default:
         $token .= $c;
     }
@@ -319,6 +331,7 @@ function tripal_phylogeny_parse_newick_get_token($fp) {
   }
   return $token;
 }
+
 /**
  *
  * @param unknown $fp
