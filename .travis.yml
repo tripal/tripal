@@ -9,7 +9,8 @@ sudo: required
 php:
   - 7.1
   - 7.2
-  - 7.3
+#  PHP 7.3 is not yet supported (issue: https://www.drupal.org/project/drupal/issues/3012308)
+#  - 7.3
 
 env:
   - BASE_URL="http://127.0.0.1:8080"
