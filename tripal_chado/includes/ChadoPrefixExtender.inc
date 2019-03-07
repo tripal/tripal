@@ -56,6 +56,29 @@ class ChadoPrefixExtender extends SelectQueryExtender {
   }
 
   /**
+   * @param $type
+   * @param $table
+   * @param null $alias
+   * @param null $condition
+   * @param array $arguments
+   *
+   * @return $this
+   *
+   * @see SelectQueryInterface::addJoin()
+   */
+  public function addJoin($type, $table, $alias = NULL, $condition = NULL, $arguments = []) {
+    $table = static::getTable($table);
+
+    if (is_null($alias)) {
+      $alias = static::makeAlias($table);
+    }
+
+    $this->query->addJoin($type, $table, $alias, $condition, $arguments);
+
+    return $this;
+  }
+
+  /**
    * Overwrites the join to prefix table names.
    *
    * @param string $table
@@ -84,6 +107,75 @@ class ChadoPrefixExtender extends SelectQueryExtender {
     return $this;
   }
 
+  /**
+   * Overwrites the innerJoin to prefix table names.
+   *
+   * @param string $table
+   *   Table to join.
+   * @param string $alias
+   *   Alias for joined table.
+   * @param string $condition
+   *   Operation for joining.
+   * @param array $arguments
+   *   Additional arguments.
+   *
+   * @return $this
+   *   The current object.
+   *
+   * @ingroup tripal_chado_query_api
+   */
+  public function innerJoin($table, $alias = NULL, $condition = NULL, $arguments = []) {
+    $table = static::getTable($table);
+
+    if (is_null($alias)) {
+      $alias = static::makeAlias($table);
+    }
+
+    $this->query->innerJoin($table, $alias, $condition, $arguments);
+
+    return $this;
+  }
+
+  public function leftJoin($table, $alias = NULL, $condition = NULL, $arguments = []) {
+    $table = static::getTable($table);
+
+    if (is_null($alias)) {
+      $alias = static::makeAlias($table);
+    }
+
+    $this->query->leftJoin($table, $alias, $condition, $arguments);
+
+    return $this;
+  }
+
+  /**
+   * Overwrites the rightJoin to prefix table names.
+   *
+   * @param string $table
+   *   Table to join.
+   * @param string $alias
+   *   Alias for joined table.
+   * @param string $condition
+   *   Operation for joining.
+   * @param array $arguments
+   *   Additional arguments.
+   *
+   * @return $this
+   *   The current object.
+   *
+   * @ingroup tripal_chado_query_api
+   */
+  public function rightJoin($table, $alias = NULL, $condition = NULL, $arguments = []) {
+    $table = static::getTable($table);
+
+    if (is_null($alias)) {
+      $alias = static::makeAlias($table);
+    }
+
+    $this->query->rightJoin($table, $alias, $condition, $arguments);
+
+    return $this;
+  }
 
   /**
    * Checks if a table is a chado table.
