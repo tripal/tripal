@@ -242,7 +242,7 @@ function tripal_entity_info() {
  */
 function tripal_entity_uri($entity) {
   return array(
-    'path' => 'bio-data/' . $entity->id,
+    'path' => 'bio_data/' . $entity->id,
     'options' => array(),
   );
 }
