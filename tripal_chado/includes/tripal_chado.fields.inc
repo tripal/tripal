@@ -213,7 +213,6 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
       $base_info['settings']['text_processing'] = 0;
     }
 
-    dpm($base_info);
 
     $info[$field_name] = $base_info;
   }
