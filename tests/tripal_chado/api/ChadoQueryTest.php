@@ -68,6 +68,7 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_chado_db_select_works_for_chado_tables() {
     $analysis_record = factory('chado.analysis')->create();
@@ -92,6 +93,7 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_chado_db_select_should_throw_an_exception_if_table_is_undefined() {
     $this->expectException(\Exception::class);
@@ -101,9 +103,11 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_chado_db_select_recognizes_non_chado_tables() {
-    $query = chado_db_select('users');
+    $query = chado_db_select('users', '');
+    $query->fields('u');
     $query->range(0, 1);
     $results = $query->execute()->fetchAll();
 
@@ -113,6 +117,21 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
+   */
+  public function test_chado_db_select_handles_aliases_correctly() {
+    $query = chado_db_select('public.users');
+    $query->fields('public_users');
+    $query->range(0, 1);
+    $results = $query->execute()->fetchAll();
+
+    $this->assertNotEmpty($results);
+  }
+
+  /**
+   * @group api
+   * @group chado
+   * @group chado_db_select
    */
   public function test_joining_chado_tables_in_chado_db_select() {
     $feature = factory('chado.feature')->create();
@@ -122,7 +141,7 @@ class ChadoQueryTest extends TripalTestCase {
     $feature_cvterm = chado_insert_record('feature_cvterm', [
       'feature_id' => $feature->feature_id,
       'cvterm_id' => $cvterm->cvterm_id,
-      'pub_id' => $pub->pub_id
+      'pub_id' => $pub->pub_id,
     ]);
 
     $query = chado_db_select('feature', 'f');
@@ -139,6 +158,7 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_left_joining_chado_tables_in_chado_db_select() {
     $feature = factory('chado.feature')->create();
@@ -148,7 +168,7 @@ class ChadoQueryTest extends TripalTestCase {
     $feature_cvterm = chado_insert_record('feature_cvterm', [
       'feature_id' => $feature->feature_id,
       'cvterm_id' => $cvterm->cvterm_id,
-      'pub_id' => $pub->pub_id
+      'pub_id' => $pub->pub_id,
     ]);
 
     $query = chado_db_select('feature', 'f');
@@ -165,6 +185,7 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_right_joining_chado_tables_in_chado_db_select() {
     $feature = factory('chado.feature')->create();
@@ -174,7 +195,7 @@ class ChadoQueryTest extends TripalTestCase {
     $feature_cvterm = chado_insert_record('feature_cvterm', [
       'feature_id' => $feature->feature_id,
       'cvterm_id' => $cvterm->cvterm_id,
-      'pub_id' => $pub->pub_id
+      'pub_id' => $pub->pub_id,
     ]);
 
     $query = chado_db_select('feature', 'f');
@@ -191,6 +212,7 @@ class ChadoQueryTest extends TripalTestCase {
   /**
    * @group api
    * @group chado
+   * @group chado_db_select
    */
   public function test_inner_joining_chado_tables_in_chado_db_select() {
     $feature = factory('chado.feature')->create();
@@ -200,7 +222,7 @@ class ChadoQueryTest extends TripalTestCase {
     $feature_cvterm = chado_insert_record('feature_cvterm', [
       'feature_id' => $feature->feature_id,
       'cvterm_id' => $cvterm->cvterm_id,
-      'pub_id' => $pub->pub_id
+      'pub_id' => $pub->pub_id,
     ]);
 
     $query = chado_db_select('feature', 'f');
