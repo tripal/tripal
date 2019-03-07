@@ -2137,9 +2137,9 @@ function chado_db_select($table, $alias = NULL, array $options = []) {
  */
 function chado_replace_table_prefix($string) {
   $chado_schema_name = chado_get_schema_name('chado');
-  //  $drupal_schema_name = chado_get_schema_name('drupal');
+  $drupal_schema_name = chado_get_schema_name('drupal');
   $string = preg_replace('/\{(.*?)\}/', $chado_schema_name . '.$1', $string);
-  $string = preg_replace('/\[(\w+)\]/', '{$1}', $string);
+  $string = preg_replace('/\[(\w+)\]/', $drupal_schema_name . '.$1', $string);
 
   return $string;
 }
