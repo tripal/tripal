@@ -653,7 +653,7 @@ function tripal_chado_views_views_data_alter(&$data) {
           'group' => $base_table_label,
           'title' => $base_table_label,
           'help' => t(
-            "Links @base_table_label to its @bundle_label.",
+            "Links @base_table_label to its Tripal Content Type '@bundle_label'.",
             array(
               '@base_table_label' => $base_table_label,
               '@bundle_label' => $bundle_label,
