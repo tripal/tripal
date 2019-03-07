@@ -151,7 +151,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
         break;
       case 'blob':
         // not sure how to support a blob field.
-        continue;
+        continue 2;
         break;
       case 'int':
         $base_info['type'] = 'number_integer';
@@ -1013,7 +1013,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
         break;
       case 'blob':
         // not sure how to support a blob field.
-        continue;
+        continue 2;
         break;
       case 'int':
         $base_info['widget']['type'] = 'number';
