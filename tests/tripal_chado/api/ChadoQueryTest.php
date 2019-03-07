@@ -135,4 +135,82 @@ class ChadoQueryTest extends TripalTestCase {
     $this->assertNotEmpty($found);
     $this->assertEquals($feature_cvterm['cvterm_id'], $found->cvterm_id);
   }
+
+  /**
+   * @group api
+   * @group chado
+   */
+  public function test_left_joining_chado_tables_in_chado_db_select() {
+    $feature = factory('chado.feature')->create();
+    $cvterm = factory('chado.cvterm')->create();
+    $pub = factory('chado.pub')->create();
+
+    $feature_cvterm = chado_insert_record('feature_cvterm', [
+      'feature_id' => $feature->feature_id,
+      'cvterm_id' => $cvterm->cvterm_id,
+      'pub_id' => $pub->pub_id
+    ]);
+
+    $query = chado_db_select('feature', 'f');
+    $query->leftJoin('feature_cvterm', 'fcvt', 'f.feature_id = fcvt.feature_id');
+    $query->fields('f', ['name']);
+    $query->fields('fcvt', ['cvterm_id']);
+    $query->condition('f.feature_id', $feature->feature_id);
+    $found = $query->execute()->fetchObject();
+
+    $this->assertNotEmpty($found);
+    $this->assertEquals($feature_cvterm['cvterm_id'], $found->cvterm_id);
+  }
+
+  /**
+   * @group api
+   * @group chado
+   */
+  public function test_right_joining_chado_tables_in_chado_db_select() {
+    $feature = factory('chado.feature')->create();
+    $cvterm = factory('chado.cvterm')->create();
+    $pub = factory('chado.pub')->create();
+
+    $feature_cvterm = chado_insert_record('feature_cvterm', [
+      'feature_id' => $feature->feature_id,
+      'cvterm_id' => $cvterm->cvterm_id,
+      'pub_id' => $pub->pub_id
+    ]);
+
+    $query = chado_db_select('feature', 'f');
+    $query->rightJoin('feature_cvterm', 'fcvt', 'f.feature_id = fcvt.feature_id');
+    $query->fields('f', ['name']);
+    $query->fields('fcvt', ['cvterm_id']);
+    $query->condition('f.feature_id', $feature->feature_id);
+    $found = $query->execute()->fetchObject();
+
+    $this->assertNotEmpty($found);
+    $this->assertEquals($feature_cvterm['cvterm_id'], $found->cvterm_id);
+  }
+
+  /**
+   * @group api
+   * @group chado
+   */
+  public function test_inner_joining_chado_tables_in_chado_db_select() {
+    $feature = factory('chado.feature')->create();
+    $cvterm = factory('chado.cvterm')->create();
+    $pub = factory('chado.pub')->create();
+
+    $feature_cvterm = chado_insert_record('feature_cvterm', [
+      'feature_id' => $feature->feature_id,
+      'cvterm_id' => $cvterm->cvterm_id,
+      'pub_id' => $pub->pub_id
+    ]);
+
+    $query = chado_db_select('feature', 'f');
+    $query->innerJoin('feature_cvterm', 'fcvt', 'f.feature_id = fcvt.feature_id');
+    $query->fields('f', ['name']);
+    $query->fields('fcvt', ['cvterm_id']);
+    $query->condition('f.feature_id', $feature->feature_id);
+    $found = $query->execute()->fetchObject();
+
+    $this->assertNotEmpty($found);
+    $this->assertEquals($feature_cvterm['cvterm_id'], $found->cvterm_id);
+  }
 }
