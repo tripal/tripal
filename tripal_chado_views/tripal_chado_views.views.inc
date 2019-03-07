@@ -596,96 +596,125 @@ function tripal_chado_views_views_data_tripal_views_tables($data) {
  * Used to add Chado <-> Node Joins & Relationships
  *   since you need to add to the $data['node'] to do this
  *
+ * @see https://api.drupal.org/api/views/views.api.php/function/hook_views_data/7.x-3.x
+ *
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_views_data_alter(&$data) {
-
   // ADD IN ENTITIES JOINS & RELATIONSHIPS
   // D7 @todo: Create custom handler to allow join from Entity => Base (ie: organism)
   //           with the addition of a single relationship
   // D7 @todo: Create custom handler to allow join from Base (ie: organism)
   //           with the addition of a single relationship
   // D7 @todo: Add support for Mview <-> Entity joins and relationships
-  $bundles = db_select('chado_bundle', 'CB')
-      ->fields('CB', array('bundle_id', 'data_table', 'type_column', 'type_id'))
-      ->execute();
+  $bundle_query = db_select('chado_bundle', 'CB');
+  $bundle_query->fields('CB', array('bundle_id', 'data_table'));
+  $bundle_query->join('tripal_bundle', 'TB', 'CB.bundle_id = TB.id');
+  $bundle_query->fields('TB', array('name', 'label'));
+  $bundle_query->join('tripal_term', 'TT', 'TB.term_id = TT.id');
+  $bundle_query->fields('TT', array('accession'));
+  $bundle_query->join('tripal_vocab', 'TV', 'TT.vocab_id = TV.id');
+  $bundle_query->fields('TV', array('vocabulary'));
+  $bundles = $bundle_query->execute();
   // Look for the record ID in the appropriate chado table.
   foreach ($bundles as $bundle) {
     // Ids we'll use for queries.
+    // Ex.: 'stock'.
     $base_table = $bundle->data_table;
-    $linker_table = 'chado_bio_data_' . $bundle->bundle_id;
-    $base_title = ucwords(str_replace('_', ' ', $base_table));
-    $bundle_name = 'bio_data_' . $bundle->bundle_id;
-  
+    // Ex.: 'stock_id'.
+    $base_id_field = $base_table . '_id';
+    // Ex.:'Chado Stock'.
+    $base_table_label = 'Chado ' . ucwords(str_replace('_', ' ', $base_table));
+    // Ex.: 'chado_bio_data_21'.
+    $linker_table = 'chado_' . $bundle->name;
+    // Ex.: 'Germplasm Accession'
+    $bundle_label = $bundle->label;
+    // Ex.: 'CO_010__0000044'
+    $bundle_internal_name = $bundle->vocabulary . '__' . $bundle->accession;
+
     // Add in joins to the tripal_entity tables if the Chado schema is local.
     $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
     if ($is_local) {
       if (db_table_exists($linker_table)) {
-        // Adds tripal_entity fields to chado base table field lists automatically.
-        $data['tripal_entity']['table']['join'][$linker_table] = array(
-          'left_field' => 'entity_id',
-          'field' => 'id',
-        );
-        $data['tripal_entity']['table']['join'][$base_table] = array(
-          'left_table' => $linker_table,
-          'left_field' => 'entity_id',
-          'field' => 'id',
-        );
+        // Adds in a chado base table => entity relationship.
+        // This allows controlled joining to multiple entities per line.
+        // Use Case:  link to feature and organism entities on a feature listing.
+        // D7 todo: a custom relationship handler to get from feature.organism_id => organism node
+        //      without 1st needing to add relationship to organism table.
         $data[$linker_table]['table']['join'][$base_table] = array(
-          'left_field' => $base_table . '_id',
+          'left_field' => $base_id_field,
           'field' => 'record_id',
         );
         $data[$linker_table]['table']['join']['tripal_entity'] = array(
           'left_field' => 'id',
           'field' => 'entity_id',
         );
-        $data[$base_table]['table']['join'][$linker_table] = array(
-          'left_field' => 'record_id',
-          'field' => $base_table . '_id',
-        );
-        $data[$base_table]['table']['join']['tripal_entity'] = array(
-          'left_table' => $linker_table,
-          'left_field' => 'record_id',
-          'field' => $base_table . '_id',
-        );
-  
-        // Adds in a chado base table => entity relationship.
-        // This allows controlled joining to multiple entities per line.
-        // Use Case:  link to feature and organism entities on a feature listing.
-        // D7 todo: a custom relationship handler to get from feature.organism_id => organism node
-        //      without 1st needing to add relationship to organism table.
-        $base_field = $base_table . '_id';
-        $data[$linker_table][$base_field] = array(
-          'group' => $base_title,
-          'title' => $base_title . 'Entity',
-          'help' => t("Links @base_title to it's entity.", array('@base_title' => $base_title)),
+        $data[$linker_table][$base_id_field] = array(
+          'group' => $base_table_label,
+          'title' => $base_table_label,
+          'help' => t(
+            "Links @base_table_label to its @bundle_label.",
+            array(
+              '@base_table_label' => $base_table_label,
+              '@bundle_label' => $bundle_label,
+            )
+          ),
           'relationship' => array(
             'handler' => 'views_handler_relationship',
-            'title' => t("@base_title => Entity", array('@base_title' => $base_title)),
-            'label' => t("@base_title => Entity", array('@base_title' => $base_title)),
+            'title' => t(
+              "@base_table_label => @bundle_label",
+              array(
+                '@base_table_label' => $base_table_label,
+                '@bundle_label' => $bundle_label,
+              )
+            ),
+            'label' => t(
+              "@base_table_label => @bundle_label",
+              array(
+                '@base_table_label' => $base_table_label,
+                '@bundle_label' => $bundle_label,
+              )
+            ),
             'real field' => 'entity_id',
             'base' => 'tripal_entity',
             'base field' => 'id'
           ),
         );
-  
+
         // Add Chado fields to a entity-based view
         // This will only be done with relationships.
-        $base_field = $base_table . '_id';
-        $data['tripal_entity'][$base_field] = array(
-          'group' => $base_title,
-          'title' => $base_title,
-          'help' => t("Links entity to chado @base_title.", array('@base_title' => $base_title)),
+        $data[$bundle_internal_name][$base_id_field] = array(
+          'group' => $bundle_label,
+          'title' => $bundle_label,
+          'help' => t(
+            "Links @bundle_label to @base_table_label.",
+            array(
+              '@bundle_label' => $bundle_label,
+              '@base_table_label' => $base_table_label,
+            )
+          ),
           'relationship' => array(
             'handler' => 'views_handler_relationship',
-            'title' => t("Entity => @base_title", array('@base_title' => $base_title)),
-            'label' => t("Entity => @base_title", array('@base_title' => $base_title)),
+            'title' => t(
+              "@bundle_label => @base_table_label",
+              array(
+                '@bundle_label' => $bundle_label,
+                '@base_table_label' => $base_table_label,
+              )
+            ),
+            'label' => t(
+              "@bundle_label => @base_table_label",
+              array(
+                '@bundle_label' => $bundle_label,
+                '@base_table_label' => $base_table_label,
+              )
+            ),
             'real field' => 'id',
-            'base' => $linker_table,
-            'base field' => 'entity_id'
+            'base' => $base_table,
+            'base field' => $base_id_field
           ),
         );
-  
+
       }
     }
   }
