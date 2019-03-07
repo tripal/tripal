@@ -106,7 +106,7 @@ class ChadoQueryTest extends TripalTestCase {
    * @group chado_db_select
    */
   public function test_chado_db_select_recognizes_non_chado_tables() {
-    $query = chado_db_select('users', '');
+    $query = chado_db_select('users', 'u');
     $query->fields('u');
     $query->range(0, 1);
     $results = $query->execute()->fetchAll();
