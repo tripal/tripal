@@ -103,9 +103,9 @@ function tripal_unpublish_orphans_form($form, &$form_state) {
 function tripal_unpublish_orphans_form_validate($form, &$form_state) {
   $bundle_id = isset($form_state['values']['bundles']) ? $form_state['values']['bundles'] : NULL;
 
-   if (empty($bundle_id) || !is_numeric($bundle_id)) {
-     form_set_error('bundles', t('Please select a valid bundle.'));
-   }
+  if (empty($bundle_id) || !is_numeric($bundle_id)) {
+    form_set_error('bundles', t('Please select a valid bundle.'));
+  }
 }
 
 /**
@@ -152,7 +152,7 @@ function tripal_chado_missing_records_table(TripalBundleController $bundlec, int
   return theme('table', [
     'header' => [
       'Entity ID',
-      'Title'
+      'Title',
     ],
     'rows' => array_map(function ($entity) {
       return [

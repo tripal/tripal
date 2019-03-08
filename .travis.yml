@@ -7,14 +7,16 @@ services:
 sudo: required
 
 php:
-  - 7.0
   - 7.1
+  - 7.2
+#  PHP 7.3 is not yet supported (issue: https://www.drupal.org/project/drupal/issues/3012308)
+#  - 7.3
 
 env:
   - BASE_URL="http://127.0.0.1:8080"
 
 install:
-  - composer global require drush/drush:8
+  - composer global require "drush/drush:~8"
 
 before_script:
   - docker pull statonlab/tripal2

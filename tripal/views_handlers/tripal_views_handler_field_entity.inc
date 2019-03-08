@@ -8,7 +8,8 @@
 /**
  * Field handler to provide simple renderer that allows linking to a entity.
  * Definition terms:
- * - link_to_entity default: Should this field have the checkbox "link to entity" enabled by default.
+ * - link_to_entity default: Should this field have the checkbox "link to
+ * entity" enabled by default.
  *
  * @ingroup views_field_handlers
  */
@@ -18,16 +19,25 @@ class tripal_views_handler_field_entity extends tripal_views_handler_field {
     parent::init($view, $options);
     // Don't add the additional fields to groupby
     if (!empty($this->options['link_to_entity'])) {
-      $this->additional_fields['id'] = array('table' => 'tripal_entity', 'field' => 'id');
+      $this->additional_fields['id'] = [
+        'table' => 'tripal_entity',
+        'field' => 'id',
+      ];
       if (module_exists('translation')) {
-        $this->additional_fields['language'] = array('table' => 'entity', 'field' => 'language');
+        $this->additional_fields['language'] = [
+          'table' => 'entity',
+          'field' => 'language',
+        ];
       }
     }
   }
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['link_to_entity'] = array('default' => isset($this->definition['link_to_entity default']) ? $this->definition['link_to_entity default'] : FALSE, 'bool' => TRUE);
+    $options['link_to_entity'] = [
+      'default' => isset($this->definition['link_to_entity default']) ? $this->definition['link_to_entity default'] : FALSE,
+      'bool' => TRUE,
+    ];
     return $options;
   }
 
@@ -35,12 +45,12 @@ class tripal_views_handler_field_entity extends tripal_views_handler_field {
    * Provide link to entity option
    */
   function options_form(&$form, &$form_state) {
-    $form['link_to_entity'] = array(
+    $form['link_to_entity'] = [
       '#title' => t('Link this field to the original piece of content'),
       '#description' => t("Enable to override this field's links."),
       '#type' => 'checkbox',
       '#default_value' => !empty($this->options['link_to_entity']),
-    );
+    ];
 
     parent::options_form($form, $form_state);
   }

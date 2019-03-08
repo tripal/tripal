@@ -54,7 +54,7 @@ class ChadoRecordTest extends TripalTestCase {
     $record = new \ChadoRecord($table);
     $this->assertNotNull($record);
     $chado_record = factory('chado.' . $table)->create($values);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
 
     $record = new \ChadoRecord($table, $chado_record->$record_column);
     $this->assertNotNull($record);
@@ -84,7 +84,7 @@ class ChadoRecordTest extends TripalTestCase {
    */
   public function testGetID($table, $values) {
     $chado_record = factory('chado.' . $table)->create();
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
     $id = $chado_record->$record_column;
 
     $record = new \ChadoRecord($table, $id);
@@ -102,7 +102,7 @@ class ChadoRecordTest extends TripalTestCase {
    */
   public function testGetValues($table, $values) {
     $chado_record = factory('chado.' . $table)->create($values);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
     $id = $chado_record->$record_column;
     $record = new \ChadoRecord($table, $id);
 
@@ -124,7 +124,7 @@ class ChadoRecordTest extends TripalTestCase {
   public function testGetValue($table, $values) {
 
     $chado_record = factory('chado.' . $table)->create($values);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
     $id = $chado_record->$record_column;
 
     $record = new \ChadoRecord($table, $id);
@@ -144,7 +144,7 @@ class ChadoRecordTest extends TripalTestCase {
   public function testFind($table, $values) {
 
     $chado_record = factory('chado.' . $table)->create($values);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
     $id = $chado_record->$record_column;
 
     $record = new \ChadoRecord($table);
@@ -201,19 +201,19 @@ class ChadoRecordTest extends TripalTestCase {
    *
    * @dataProvider  recordProvider
    */
-  public function testSave($table, $values){
+  public function testSave($table, $values) {
     //first, test the insert case
     $record = new \ChadoRecord($table);
     $record->setValues($values);
     $record->save();
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
 
     $query = db_select('chado.' . $table, 't')
       ->fields('t', [$record_column]);
-    foreach ($values as $key => $val){
+    foreach ($values as $key => $val) {
       $query->condition($key, $val);
     }
-    $result =$query->execute()->fetchAll();
+    $result = $query->execute()->fetchAll();
     $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
 
     //change the last key
@@ -224,10 +224,10 @@ class ChadoRecordTest extends TripalTestCase {
 
     $query = db_select('chado.' . $table, 't')
       ->fields('t', [$record_column]);
-    foreach ($values as $key => $val){
+    foreach ($values as $key => $val) {
       $query->condition($key, $val);
     }
-    $result =$query->execute()->fetchAll();
+    $result = $query->execute()->fetchAll();
     $this->assertNotEmpty($result, 'Our record wasnt updated when saving!');
   }
 
@@ -238,25 +238,26 @@ class ChadoRecordTest extends TripalTestCase {
    *
    * @dataProvider  recordProvider
    */
-  public function testInsert($table, $values){
+  public function testInsert($table, $values) {
     //first, test the insert case
     $record = new \ChadoRecord($table);
     $record->setValues($values);
     $record->insert();
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
 
     $query = db_select('chado.' . $table, 't')
       ->fields('t', [$record_column]);
-    foreach ($values as $key => $val){
+    foreach ($values as $key => $val) {
       $query->condition($key, $val);
     }
-    $result =$query->execute()->fetchAll();
+    $result = $query->execute()->fetchAll();
     $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
 
     //If we insert again, it should fail
     $this->expectException(EXCEPTION);
     $record->insert();
   }
+
   /**
    *
    * @group chado
@@ -264,13 +265,13 @@ class ChadoRecordTest extends TripalTestCase {
    *
    * @dataProvider  recordProvider
    */
-  public function testUpdate($table, $values){
+  public function testUpdate($table, $values) {
     $id = $this->genChadoRecord($table, $values);
     $record = new \ChadoRecord($table, $id);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
 
     //$dump_vals = $record->getValues();
-   // var_dump($dump_vals);
+    // var_dump($dump_vals);
 
     $key = array_keys($values)[0];
     $string = 'some_random_new_string34792387';
@@ -280,46 +281,46 @@ class ChadoRecordTest extends TripalTestCase {
     $record->update();
 
     //$dump_vals = $record->getValues();
-   // var_dump($dump_vals);
+    // var_dump($dump_vals);
 
     $query = db_select('chado.' . $table, 't')
       ->fields('t', [$key]);
-    foreach ($values as $key => $val){
+    foreach ($values as $key => $val) {
       $query->condition($key, $val);
     }
-    $result =$query->execute()->fetchField();
+    $result = $query->execute()->fetchField();
     $this->assertNotFalse($result, 'we couldnt update our record.');
     $this->assertEquals($string, $result);
   }
 
 
   /**
-   * 
+   *
    * @group chado
    * @group api
    *
    * @dataProvider recordProvider
    *
    */
-  public function testDelete($table, $values){
+  public function testDelete($table, $values) {
     $id = $this->genChadoRecord($table, $values);
     $record = new \ChadoRecord($table, $id);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
 
     $record->delete();
     $query = db_select('chado.' . $table, 't')
       ->fields('t', [$record_column]);
-    foreach ($values as $key => $val){
-   $query->condition($key, $val);
+    foreach ($values as $key => $val) {
+      $query->condition($key, $val);
     }
-    $result =$query->execute()->fetchAll();
+    $result = $query->execute()->fetchAll();
     $this->assertEmpty($result, 'we couldnt delete our record!');
   }
 
 
-  private function genChadoRecord($table, $values){
+  private function genChadoRecord($table, $values) {
     $chado_record = factory('chado.' . $table)->create($values);
-    $record_column = $table.'_id';
+    $record_column = $table . '_id';
     $id = $chado_record->$record_column;
     return $id;
   }

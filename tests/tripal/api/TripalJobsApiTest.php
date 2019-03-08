@@ -5,7 +5,7 @@ namespace Tests\tripal\api;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-class TripalJobsApiTest extends TripalTestCase{
+class TripalJobsApiTest extends TripalTestCase {
 
   use DBTransaction;
 

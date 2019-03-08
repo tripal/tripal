@@ -6,7 +6,7 @@ class obi__organism_formatter extends ChadoFieldFormatter {
   public static $default_label = 'Organism';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('obi__organism');
+  public static $field_types = ['obi__organism'];
 
   /**
    * @see TripalFieldFormatter::view()
@@ -21,10 +21,10 @@ class obi__organism_formatter extends ChadoFieldFormatter {
 
       // The cardinality of this field is 1 so we don't have to
       // iterate through the items array, as there will never be more than 1.
-      $element[0] = array(
+      $element[0] = [
         '#type' => 'markup',
         '#markup' => $content,
-      );
+      ];
     }
   }
 }

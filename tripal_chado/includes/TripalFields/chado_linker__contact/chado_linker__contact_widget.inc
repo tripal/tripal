@@ -1,11 +1,12 @@
 <?php
 
 class chado_linker__contact_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Contacts';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('chado_linker__contact');
+  public static $field_types = ['chado_linker__contact'];
 
   /**
    *
@@ -26,7 +27,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     $pkey = $schema['primary key'][0];
 
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-//    $fkey_lcolumn = key($schema['foreign keys']['protocol']['columns']);
+    //    $fkey_lcolumn = key($schema['foreign keys']['protocol']['columns']);
 
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
@@ -50,38 +51,38 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $name = $form_state['values'][$field_name]['und'][$delta]['name'];
     }
 
 
     $schema = chado_get_schema('contact');
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
+    $widget['chado-' . $field_table . '__' . $pkey] = [
       '#type' => 'value',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $field_table . '__' . $fkey_lcolumn] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $fkey_lcolumn] = [
       '#type' => 'value',
       '#default_value' => $fk_value,
-    );
-    $widget['chado-' . $field_table . '__contact_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__contact_id'] = [
       '#type' => 'value',
       '#default_value' => $contact_id,
-    );
+    ];
 
-    $widget['name'] = array(
+    $widget['name'] = [
       '#type' => 'textfield',
       '#title' => t('Contact'),
       '#default_value' => $name,
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/contact',
       '#maxlength' => 100000,
-    );
+    ];
   }
 
 
@@ -108,7 +109,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     // If the user provided a name then we want to set the foreign key
     // value to be the chado_record_id
     if ($name) {
-      $contact = chado_generate_var('contact', array('name' => $name));
+      $contact = chado_generate_var('contact', ['name' => $name]);
       if ($contact) {
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__contact_id'] = $contact->contact_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $name;

@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\tripal_chado\api;
 
 use StatonLab\TripalTestSuite\DBTransaction;
@@ -13,6 +14,7 @@ module_load_include('inc', 'tripal_chado', 'api/ChadoSchema');
  * @todo test "Check" functions in the ChadoSchema class.
  */
 class ChadoSchemaTest extends TripalTestCase {
+
   use DBTransaction;
 
   /**
@@ -53,7 +55,7 @@ class ChadoSchemaTest extends TripalTestCase {
       $version,
       $retrieved_version,
       t('The version retrieved via ChadoSchema->getVersion, "!ret", should equal that set, "!set"',
-        array('!ret' => $retrieved_version, '!set' => $version))
+        ['!ret' => $retrieved_version, '!set' => $version])
     );
 
     // @todo Check version can be retrieved when it's looked up?
@@ -80,7 +82,7 @@ class ChadoSchemaTest extends TripalTestCase {
       $schema_name,
       $retrieved_schema,
       t('The schema name retrieved via ChadoSchema->getSchemaName, "!ret", should equal that set, "!set"',
-        array('!ret' => $retrieved_schema, '!set' => $schema_name))
+        ['!ret' => $retrieved_schema, '!set' => $schema_name])
     );
 
     // @todo Check schema name can be retrieved when it's looked up?
@@ -106,7 +108,7 @@ class ChadoSchemaTest extends TripalTestCase {
         $table_name,
         $returned_tables,
         t('The table, "!known", should exist in the returned tables list for version !version.',
-          array(':known' => $table_name, ':version' => $version))
+          [':known' => $table_name, ':version' => $version])
       );
     }
   }
@@ -130,14 +132,14 @@ class ChadoSchemaTest extends TripalTestCase {
     $this->assertNotEmpty(
       $table_schema,
       t('Returned schema for "!table" in chado v!version should not be empty.',
-        array('!table' => $table_name, '!version' => $version))
+        ['!table' => $table_name, '!version' => $version])
     );
 
     $this->assertArrayHasKey(
       'fields',
       $table_schema,
       t('The schema array for "!table" should have columns listed in an "fields" array',
-        array('!table' => $table_name))
+        ['!table' => $table_name])
     );
 
     // Instead of asserting these keys exist. Lets assert that if they do exist,
@@ -145,16 +147,16 @@ class ChadoSchemaTest extends TripalTestCase {
 
     if (isset($table_schema['primary key'])) {
       $this->assertTrue(is_array($table_schema['primary key']),
-	t('The primary key of the Tripal Schema definition for "!table" must be an array.',
-          array('!table' => $table_name)));
-  
+        t('The primary key of the Tripal Schema definition for "!table" must be an array.',
+          ['!table' => $table_name]));
+
     }
 
     $this->assertArrayHasKey(
       'foreign keys',
       $table_schema,
       t('The schema array for "!table" should have foreign keys listed in an "foreign keys" array',
-        array('!table' => $table_name))
+        ['!table' => $table_name])
     );
 
   }
@@ -177,14 +179,14 @@ class ChadoSchemaTest extends TripalTestCase {
     $this->assertNotEmpty(
       $table_schema,
       t('Returned schema for "!table" in chado v!version should not be empty.',
-        array('!table' => $table_name, '!version' => $version))
+        ['!table' => $table_name, '!version' => $version])
     );
 
     $this->assertArrayHasKey(
       'fields',
       $table_schema,
       t('The schema array for "!table" should have columns listed in an "fields" array',
-        array('!table' => $table_name))
+        ['!table' => $table_name])
     );
 
     // NOTE: Other then ensuring fields are set, we can't test further since all other
@@ -209,12 +211,12 @@ class ChadoSchemaTest extends TripalTestCase {
 
     foreach ($known_tables as $table_name) {
 
-      $found = false;
+      $found = FALSE;
 
-      foreach ($returned_tables as $check_table ){
+      foreach ($returned_tables as $check_table) {
 
-        if ($check_table == $table_name){
-          $found = True;
+        if ($check_table == $table_name) {
+          $found = TRUE;
         }
       }
       $this->assertTrue($found, "{$table_name} was not returned by getBaseTables for Chado v {$version}");
@@ -231,64 +233,71 @@ class ChadoSchemaTest extends TripalTestCase {
    * @group chado
    * @group chado-schema
    */
- // public function testGetCvtermMapping($version, $table_name) {
+  // public function testGetCvtermMapping($version, $table_name) {
 
-    //
-//    // Ideally we would create a new chado table + mapping and then test this pulls it out
-//    // since admin can re-map terms. However, that's more then I meant to bite off right
-//    // now...
-//
-//    // @todo Test that known terms match the tables we expect.
-//
-//    // @todo Test that a non-existent term throws an error.
-//
-//    // @todo Test that an fake unmapped term returns no mapping.
- // }
+  //
+  //    // Ideally we would create a new chado table + mapping and then test this pulls it out
+  //    // since admin can re-map terms. However, that's more then I meant to bite off right
+  //    // now...
+  //
+  //    // @todo Test that known terms match the tables we expect.
+  //
+  //    // @todo Test that a non-existent term throws an error.
+  //
+  //    // @todo Test that an fake unmapped term returns no mapping.
+  // }
 
   /**
    * Data Provider: returns known tables specific to a given chado version.
    *
    * @return array
    */
-   public function knownTableProvider() {
+  public function knownTableProvider() {
     // chado version, array of 3 tables specific to version.
 
     return [
       ['1.2', ['cell_line_relationship', 'cvprop', 'chadoprop']],
       ['1.3', ['analysis_cvterm', 'dbprop', 'organism_pub']],
     ];
-   }
+  }
 
   /**
    * Data Provider: returns known tables specific to a given chado version.
    *
    * @return array
    */
-   public function knownBaseTableProvider() {
+  public function knownBaseTableProvider() {
     // chado version, array of 3 tables specific to version.
 
     return [
-      ['1.2', ['organism', 'feature', 'stock', 'project','analysis', 'phylotree']],
-      ['1.3', ['organism', 'feature', 'stock', 'project','analysis', 'phylotree']],
+      [
+        '1.2',
+        ['organism', 'feature', 'stock', 'project', 'analysis', 'phylotree'],
+      ],
+      [
+        '1.3',
+        ['organism', 'feature', 'stock', 'project', 'analysis', 'phylotree'],
+      ],
     ];
-   }
+  }
 
   /**
-   * Data Provider: returns known custom tables specific to a given chado version.
+   * Data Provider: returns known custom tables specific to a given chado
+   * version.
    *
    * NOTE: These tables are provided by core Tripal so we should be able to
    *  depend on them. Also, for the same reason, chado version doesn't matter.
    *
    * @return array
    */
-   public function knownCustomTableProvider() {
+  public function knownCustomTableProvider() {
 
     return [
       ['library_feature_count'],
       ['organism_feature_count'],
       ['tripal_gff_temp'],
     ];
-   }
+  }
 
   /**
    * DataProvider, a list of all chado tables.
@@ -299,7 +308,7 @@ class ChadoSchemaTest extends TripalTestCase {
 
     // Provide the table list for all versions.
     $dataset = [];
-    foreach (array('1.11','1.2','1.3') as $version) {
+    foreach (['1.11', '1.2', '1.3'] as $version) {
       $chado_schema = new \ChadoSchema();
       $version = $chado_schema->getVersion();
 

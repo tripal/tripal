@@ -41,7 +41,7 @@ function chado_get_record_entity_by_bundle(TripalBundle $bundle, $record_id) {
 
   $chado_entity_table = chado_get_bundle_entity_table($bundle);
   return db_select($chado_entity_table, 'CE')
-    ->fields('CE', array('entity_id'))
+    ->fields('CE', ['entity_id'])
     ->condition('CE.record_id', $record_id)
     ->execute()
     ->fetchField();
@@ -79,14 +79,14 @@ function chado_get_record_entity_by_table($data_table, $record_id) {
 
   // Get the list of bundles for this table.
   $bundles = db_select('chado_bundle', 'CB')
-    ->fields('CB', array('bundle_id'))
+    ->fields('CB', ['bundle_id'])
     ->condition('CB.data_table', $data_table)
     ->execute();
 
   // Look for the record ID in the appropriate chado table.
   while ($bundle_id = $bundles->fetchField()) {
-    $entity_id = db_select('chado_bio_data_' . $bundle_id , 'CBD')
-      ->fields('CBD', array('entity_id'))
+    $entity_id = db_select('chado_bio_data_' . $bundle_id, 'CBD')
+      ->fields('CBD', ['entity_id'])
       ->condition('record_id', $record_id)
       ->execute()
       ->fetchField();

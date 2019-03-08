@@ -5,129 +5,129 @@
  *
  * @ingroup tripal_contact
  */
-function tripal_chado_add_contactprop_table(){
-  $schema = array (
+function tripal_chado_add_contactprop_table() {
+  $schema = [
     'table' => 'contactprop',
-    'fields' => array (
-      'contactprop_id' => array (
+    'fields' => [
+      'contactprop_id' => [
         'type' => 'serial',
-        'not null' => true,
-      ),
-      'contact_id' => array (
+        'not null' => TRUE,
+      ],
+      'contact_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'type_id' => array (
+        'not null' => TRUE,
+      ],
+      'type_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'value' => array (
+        'not null' => TRUE,
+      ],
+      'value' => [
         'type' => 'text',
-        'not null' => false,
-      ),
-      'rank' => array (
+        'not null' => FALSE,
+      ],
+      'rank' => [
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
-      ),
-    ),
-    'primary key' => array (
+      ],
+    ],
+    'primary key' => [
       0 => 'contactprop_id',
-    ),
-    'unique keys' => array (
-      'contactprop_c1' => array (
+    ],
+    'unique keys' => [
+      'contactprop_c1' => [
         0 => 'contact_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array (
-      'contactprop_idx1' => array (
+      ],
+    ],
+    'indexes' => [
+      'contactprop_idx1' => [
         0 => 'contact_id',
-      ),
-      'contactprop_idx2' => array (
+      ],
+      'contactprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'cvterm' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'contact' => array (
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array (
+        'columns' => [
           'contact_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   chado_create_custom_table('contactprop', $schema, TRUE, NULL, FALSE);
 }
 
 /**
  * Adds the featuremap_dbxref table to Chado v1.2.
  */
-function tripal_chado_add_featuremap_dbxref_table(){
+function tripal_chado_add_featuremap_dbxref_table() {
 
   // add the featuremap_dbxref table to Chado
-  $schema = array (
+  $schema = [
     'table' => 'featuremap_dbxref',
-    'fields' => array (
-      'featuremap_dbxref_id' => array (
+    'fields' => [
+      'featuremap_dbxref_id' => [
         'type' => 'serial',
-        'not null' => true,
-      ),
-      'featuremap_id' => array (
+        'not null' => TRUE,
+      ],
+      'featuremap_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'dbxref_id' => array (
+        'not null' => TRUE,
+      ],
+      'dbxref_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'is_current' => array (
+        'not null' => TRUE,
+      ],
+      'is_current' => [
         'type' => 'int',
         'size' => 'tiny',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 1,
-      ),
-    ),
-    'primary key' => array (
+      ],
+    ],
+    'primary key' => [
       0 => 'featuremap_dbxref_id',
-    ),
-    'unique keys' => array (
-      'featuremap_dbxref_c1' => array (
+    ],
+    'unique keys' => [
+      'featuremap_dbxref_c1' => [
         0 => 'featuremap_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array (
-      'featuremap_dbxref_idx1' => array (
+      ],
+    ],
+    'indexes' => [
+      'featuremap_dbxref_idx1' => [
         0 => 'featuremap_dbxref_id',
-      ),
-      'featuremap_dbxref_idx2' => array (
+      ],
+      'featuremap_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'dbxref' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array (
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'featuremap' => array (
+        ],
+      ],
+      'featuremap' => [
         'table' => 'featuremap',
-        'columns' => array (
+        'columns' => [
           'featuremap_id' => 'featuremap_id',
-        ),
-      ),
-    ),
+        ],
+      ],
+    ],
     'referring_tables' => NULL,
-  );
+  ];
 
   chado_create_custom_table('featuremap_dbxref', $schema, TRUE, NULL, FALSE);
 
@@ -141,131 +141,131 @@ function tripal_chado_add_featuremap_dbxref_table(){
  *
  * @ingroup tripal_featuremap
  */
-function tripal_chado_add_featuremapprop_table(){
+function tripal_chado_add_featuremapprop_table() {
   // add the featuremaprop table to Chado
-  $schema = array (
+  $schema = [
     'table' => 'featuremapprop',
-    'fields' => array (
-      'featuremapprop_id' => array (
+    'fields' => [
+      'featuremapprop_id' => [
         'type' => 'serial',
-        'not null' => true,
-      ),
-      'featuremap_id' => array (
+        'not null' => TRUE,
+      ],
+      'featuremap_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'type_id' => array (
+        'not null' => TRUE,
+      ],
+      'type_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'value' => array (
+        'not null' => TRUE,
+      ],
+      'value' => [
         'type' => 'text',
-        'not null' => false,
-      ),
-      'rank' => array (
+        'not null' => FALSE,
+      ],
+      'rank' => [
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
-      ),
-    ),
-    'primary key' => array (
+      ],
+    ],
+    'primary key' => [
       0 => 'featuremapprop_id',
-    ),
-    'unique keys' => array (
-      'featuremapprop_c1' => array (
+    ],
+    'unique keys' => [
+      'featuremapprop_c1' => [
         0 => 'featuremap_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array (
-      'featuremapprop_idx1' => array (
+      ],
+    ],
+    'indexes' => [
+      'featuremapprop_idx1' => [
         0 => 'featuremap_id',
-      ),
-      'featuremapprop_idx2' => array (
+      ],
+      'featuremapprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'cvterm' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'featuremap' => array (
+        ],
+      ],
+      'featuremap' => [
         'table' => 'featuremap',
-        'columns' => array (
+        'columns' => [
           'featuremap_id' => 'featuremap_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   chado_create_custom_table('featuremapprop', $schema, TRUE, NULL, FALSE);
 }
 
 /**
  *
  */
-function tripal_chado_add_featureposprop_table(){
-  $schema = array (
+function tripal_chado_add_featureposprop_table() {
+  $schema = [
     'table' => 'featureposprop',
-    'fields' => array (
-      'featureposprop_id' => array (
+    'fields' => [
+      'featureposprop_id' => [
         'type' => 'serial',
-        'not null' => true,
-      ),
-      'featurepos_id' => array (
+        'not null' => TRUE,
+      ],
+      'featurepos_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'type_id' => array (
+        'not null' => TRUE,
+      ],
+      'type_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'value' => array (
+        'not null' => TRUE,
+      ],
+      'value' => [
         'type' => 'text',
-        'not null' => false,
-      ),
-      'rank' => array (
+        'not null' => FALSE,
+      ],
+      'rank' => [
         'type' => 'int',
-        'not null' => true,
+        'not null' => TRUE,
         'default' => 0,
-      ),
-    ),
-    'primary key' => array (
+      ],
+    ],
+    'primary key' => [
       0 => 'featureposprop_id',
-    ),
-    'unique keys' => array (
-      'featureposprop_id' => array (
+    ],
+    'unique keys' => [
+      'featureposprop_id' => [
         0 => 'featurepos_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array (
-      'featureposprop_c1' => array (
+      ],
+    ],
+    'indexes' => [
+      'featureposprop_c1' => [
         0 => 'featurepos_id',
-      ),
-      'featureposprop_idx2' => array (
+      ],
+      'featureposprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'cvterm' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array (
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'featurepos' => array (
+        ],
+      ],
+      'featurepos' => [
         'table' => 'featurepos',
-        'columns' => array (
+        'columns' => [
           'featurepos_id' => 'featurepos_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   chado_create_custom_table('featureposprop', $schema, TRUE, NULL, FALSE);
 }
 
@@ -277,45 +277,45 @@ function tripal_chado_add_featureposprop_table(){
  * @ingroup tripal_pub
  */
 function tripal_chado_add_pubauthor_contact_table() {
-  $schema = array (
+  $schema = [
     'table' => 'pubauthor_contact',
-    'fields' => array (
-      'pubauthor_contact_id' => array (
+    'fields' => [
+      'pubauthor_contact_id' => [
         'type' => 'serial',
-        'not null' => true,
-      ),
-      'contact_id' => array (
+        'not null' => TRUE,
+      ],
+      'contact_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-      'pubauthor_id' => array (
+        'not null' => TRUE,
+      ],
+      'pubauthor_id' => [
         'type' => 'int',
-        'not null' => true,
-      ),
-    ),
-    'primary key' => array (
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => [
       0 => 'pubauthor_contact_id',
-    ),
-    'unique keys' => array (
-      'pubauthor_contact_c1' => array (
+    ],
+    'unique keys' => [
+      'pubauthor_contact_c1' => [
         0 => 'contact_id',
         1 => 'pubauthor_id',
-      ),
-    ),
-    'foreign keys' => array (
-      'contact' => array (
+      ],
+    ],
+    'foreign keys' => [
+      'contact' => [
         'table' => 'contact',
-        'columns' => array (
+        'columns' => [
           'contact_id' => 'contact_id',
-        ),
-      ),
-      'pubauthor' => array (
+        ],
+      ],
+      'pubauthor' => [
         'table' => 'pubauthor',
-        'columns' => array (
+        'columns' => [
           'pubauthor_id' => 'pubauthor_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   chado_create_custom_table('pubauthor_contact', $schema, TRUE, NULL, FALSE);
 }

@@ -10,26 +10,26 @@
  * @defgroup tripal_d3js_api d3js
  * @ingroup tripal_api
  * @{
- * D3.js is a JavaScript library for producing dynamic, interactive data 
- * visualizations in web browsers. It makes use of the widely implemented SVG, 
+ * D3.js is a JavaScript library for producing dynamic, interactive data
+ * visualizations in web browsers. It makes use of the widely implemented SVG,
  * HTML5, and CSS standards. For more information on how to use d3js please see
- * https://github.com/d3/d3. 
- * 
- * For an example of d3 usage in Tripal please review 
- * tripal_chado/includes/tripal_chado.phylotree.inc and 
+ * https://github.com/d3/d3.
+ *
+ * For an example of d3 usage in Tripal please review
+ * tripal_chado/includes/tripal_chado.phylotree.inc and
  * tripal_chado/theme/js/d3.phylogram.js
- * 
+ *
  * @}
  */
 
 
 /**
  * Load D3.js releated javascripts for the current page.
- * 
+ *
  * @ingroup tripal_d3js_api
  */
 function tripal_add_d3js() {
-  $library = array('loaded' => FALSE);
+  $library = ['loaded' => FALSE];
 
   // First try to load d3.js using the libraries API.
   // This will work if the site admin has saved d3.js in their libraries folder.

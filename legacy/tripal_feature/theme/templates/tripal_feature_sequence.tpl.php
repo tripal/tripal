@@ -17,12 +17,12 @@ $num_bases = 50;
 // we don't want to get the sequence for traditionally large types. They are
 // too big,  bog down the web browser, take longer to load and it's not
 // reasonable to print them on a page.
-$residues ='';
-if(strcmp($feature->type_id->name,'scaffold') !=0 and
-   strcmp($feature->type_id->name,'chromosome') !=0 and
-   strcmp($feature->type_id->name,'supercontig') !=0 and
-   strcmp($feature->type_id->name,'pseudomolecule') !=0) {
-  $feature = chado_expand_var($feature,'field','feature.residues');
+$residues = '';
+if (strcmp($feature->type_id->name, 'scaffold') != 0 and
+  strcmp($feature->type_id->name, 'chromosome') != 0 and
+  strcmp($feature->type_id->name, 'supercontig') != 0 and
+  strcmp($feature->type_id->name, 'pseudomolecule') != 0) {
+  $feature = chado_expand_var($feature, 'field', 'feature.residues');
   $residues = $feature->residues;
 }
 
@@ -33,7 +33,7 @@ $featureloc_sequences = $feature->featureloc_sequences;
 if ($residues or count($featureloc_sequences) > 0) {
 
   $sequences_html = '';  // a variable for holding all sequences HTML text
-  $list_items = array(); // a list to be used for theming of content on this page
+  $list_items = []; // a list to be used for theming of content on this page
 
   // ADD IN RESIDUES FOR THIS FEATURE
   // add in the residues if they are present
@@ -61,9 +61,9 @@ if ($residues or count($featureloc_sequences) > 0) {
   $object_rels = $all_relationships['object'];
   $has_coding_seq = 0;
   $coding_seq = '';
-  foreach ($object_rels as $rel_type => $rels){
-    foreach ($rels as $subject_type => $subjects){
-      foreach ($subjects as $subject){
+  foreach ($object_rels as $rel_type => $rels) {
+    foreach ($rels as $subject_type => $subjects) {
+      foreach ($subjects as $subject) {
 
         // add in protein sequence if it has residues
         if ($rel_type == 'derives from' and $subject_type == 'polypeptide') {
@@ -131,8 +131,8 @@ if ($residues or count($featureloc_sequences) > 0) {
    *
    *   $feature->featureloc_sequences
    */
-  if(count($featureloc_sequences) > 0){
-    foreach($featureloc_sequences as $src => $attrs){
+  if (count($featureloc_sequences) > 0) {
+    foreach ($featureloc_sequences as $src => $attrs) {
       // the $attrs array has the following keys
       //   * id:  a unique identifier combining the feature id with the cvterm id
       //   * type: the type of sequence (e.g. mRNA, etc)
@@ -140,10 +140,10 @@ if ($residues or count($featureloc_sequences) > 0) {
       //   * defline: the definition line
       //   * formatted_seq: the formatted sequences
       //   * featureloc:  the feature object aligned to
-      $list_items[] = '<a href="#' . $attrs['id'] . '">'. $feature->type_id->name . ' from alignment at  ' . $attrs['location'] . "</a>";
+      $list_items[] = '<a href="#' . $attrs['id'] . '">' . $feature->type_id->name . ' from alignment at  ' . $attrs['location'] . "</a>";
       $sequences_html .= '<a name="' . $attrs['id'] . '"></a>';
       $sequences_html .= '<div id="' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
-      $sequences_html .= '<p><b>'. $feature->type_id->name . ' from alignment at  ' . $attrs['location'] .'</b></p>';
+      $sequences_html .= '<p><b>' . $feature->type_id->name . ' from alignment at  ' . $attrs['location'] . '</b></p>';
       $sequences_html .= $attrs['formatted_seq'];
       $sequences_html .= '<a href="#sequences-top">back to top</a>';
       $sequences_html .= '</div>';
@@ -151,19 +151,23 @@ if ($residues or count($featureloc_sequences) > 0) {
 
     // check to see if this alignment has any CDS. If so, generate a CDS sequence
     $cds_sequence = tripal_get_feature_sequences(
-        array(
-          'feature_id' => $feature->feature_id,
-          'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
-          'name' => $feature->name,
-          'featureloc_id' => $attrs['featureloc']->featureloc_id,
-        ),
-        array(
-          'width' => $num_bases,  // FASTA sequence should have $num_bases chars per line
-          'derive_from_parent' => 1, // CDS are in parent-child relationships so we want to use the sequence from the parent
-          'aggregate' => 1, // we want to combine all CDS for this feature into a single sequence
-          'sub_feature_types' => array('CDS'), // we're looking for CDS features
-          'is_html' => 1
-        )
+      [
+        'feature_id' => $feature->feature_id,
+        'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
+        'name' => $feature->name,
+        'featureloc_id' => $attrs['featureloc']->featureloc_id,
+      ],
+      [
+        'width' => $num_bases,
+        // FASTA sequence should have $num_bases chars per line
+        'derive_from_parent' => 1,
+        // CDS are in parent-child relationships so we want to use the sequence from the parent
+        'aggregate' => 1,
+        // we want to combine all CDS for this feature into a single sequence
+        'sub_feature_types' => ['CDS'],
+        // we're looking for CDS features
+        'is_html' => 1,
+      ]
     );
     if (count($cds_sequence) > 0) {
       // the tripal_get_feature_sequences() function can return multiple sequences
@@ -186,7 +190,9 @@ if ($residues or count($featureloc_sequences) > 0) {
   }
   ?>
 
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following sequences are available for this feature:</div>
+    <div class="tripal_feature-data-block-desc tripal-data-block-desc">The
+        following sequences are available for this feature:
+    </div>
   <?php
 
   // first add a list at the top of the page that can be formatted as the
@@ -195,12 +201,12 @@ if ($residues or count($featureloc_sequences) > 0) {
   // to create the list can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_item_list/7
   print '<a name="sequences-top"></a>';
-  print theme_item_list(array(
+  print theme_item_list([
     'items' => $list_items,
     'title' => '',
     'type' => 'ul',
-    'attributes' => array(),
-  ));
+    'attributes' => [],
+  ]);
 
   $message = 'Administrators, sequences will appear on this page if:
     <br><br><b>For any feature type:</b>
@@ -223,7 +229,7 @@ if ($residues or count($featureloc_sequences) > 0) {
           shown.</li>
     </ul>
     </p>';
-  print tripal_set_message($message, TRIPAL_INFO, array('return_html' => 1));
+  print tripal_set_message($message, TRIPAL_INFO, ['return_html' => 1]);
 
   // now print the sequences
   print $sequences_html;

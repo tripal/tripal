@@ -4,9 +4,9 @@
  * Contains functions related to theme-ing including preprocess hooks
  */
 
- /**
- * Implements hook_preprocess_tripal_stock_relationships() which is the preprocess
- * hook for the tripal_stock_relationships template
+/**
+ * Implements hook_preprocess_tripal_stock_relationships() which is the
+ * preprocess hook for the tripal_stock_relationships template
  *
  * @ingroup tripal_legacy_stock
  */
@@ -15,24 +15,24 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   $stock = $variables['node']->stock;
 
   // expand the stock object to include the stock relationships.
-  $options = array(
+  $options = [
     'return_array' => 1,
-    'order_by' => array('rank' => 'ASC'),
+    'order_by' => ['rank' => 'ASC'],
     // we don't want to fully recurse we only need information about the
     // relationship type and the object and subject stocks (including stock type
     // and organism)
-    'include_fk' => array(
+    'include_fk' => [
       'type_id' => 1,
-      'object_id' => array(
+      'object_id' => [
         'type_id' => 1,
-        'organism_id' => 1
-      ),
-      'subject_id'  => array(
+        'organism_id' => 1,
+      ],
+      'subject_id' => [
         'type_id' => 1,
-        'organism_id' => 1
-      ),
-    ),
-  );
+        'organism_id' => 1,
+      ],
+    ],
+  ];
   $stock = chado_expand_var($stock, 'table', 'stock_relationship', $options);
 
   // get the subject relationships
@@ -40,9 +40,9 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
   $orelationships = $stock->stock_relationship->object_id;
 
   // combine both object and subject relationshisp into a single array
-  $relationships = array();
-  $relationships['object'] = array();
-  $relationships['subject'] = array();
+  $relationships = [];
+  $relationships['object'] = [];
+  $relationships['subject'] = [];
 
   // iterate through the object relationships
   if ($orelationships) {
@@ -56,16 +56,16 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
 
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
-      $n = db_query($sql, array(':stock_id' => $relationship->subject_id->stock_id))->fetchObject();
+      $n = db_query($sql, [':stock_id' => $relationship->subject_id->stock_id])->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
 
       if (!array_key_exists($rel_type, $relationships['object'])) {
-        $relationships['object'][$rel_type] = array();
+        $relationships['object'][$rel_type] = [];
       }
       if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-        $relationships['object'][$rel_type][$child_type] = array();
+        $relationships['object'][$rel_type][$child_type] = [];
       }
       $relationships['object'][$rel_type][$child_type][] = $rel;
     }
@@ -81,16 +81,16 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
 
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
-      $n = db_query($sql, array(':stock_id' => $relationship->object_id->stock_id))->fetchObject();
+      $n = db_query($sql, [':stock_id' => $relationship->object_id->stock_id])->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
 
       if (!array_key_exists($rel_type, $relationships['subject'])) {
-        $relationships['subject'][$rel_type] = array();
+        $relationships['subject'][$rel_type] = [];
       }
       if (!array_key_exists($parent_type, $relationships['subject'][$rel_type])) {
-        $relationships['subject'][$rel_type][$parent_type] = array();
+        $relationships['subject'][$rel_type][$parent_type] = [];
       }
       $relationships['subject'][$rel_type][$parent_type][] = $rel;
     }

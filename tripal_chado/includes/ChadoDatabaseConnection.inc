@@ -24,7 +24,7 @@ class ChadoDatabaseConnection extends DatabaseConnection_pgsql {
    * entry for every Chado table and custom table they create.  That's not
    * very manageable.
    */
-  function __construct(array $connection_options = array()) {
+  function __construct(array $connection_options = []) {
     parent::__construct($connection_options);
 
 
@@ -34,8 +34,8 @@ class ChadoDatabaseConnection extends DatabaseConnection_pgsql {
     $preplace = $this->prefixReplace;
 
     // Reset the prefix serach and replace
-    $this->prefixSearch = array();
-    $this->prefixReplace = array();
+    $this->prefixSearch = [];
+    $this->prefixReplace = [];
 
     $tables = chado_get_table_names(TRUE);
     foreach ($tables as $table) {

@@ -44,12 +44,12 @@
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cv($identifiers, $options = array()) {
+function chado_get_cv($identifiers, $options = []) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not to follow any foreign keys.
-    $options['include_fk'] = array();
+    $options['include_fk'] = [];
   }
 
   // Error Checking of parameters.
@@ -59,9 +59,9 @@ function chado_get_cv($identifiers, $options = array()) {
       TRIPAL_ERROR,
       "chado_get_cv: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
   elseif (empty($identifiers)) {
@@ -71,9 +71,9 @@ function chado_get_cv($identifiers, $options = array()) {
       "chado_get_cv: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -90,9 +90,9 @@ function chado_get_cv($identifiers, $options = array()) {
       'tripal_chado_api',
       TRIPAL_ERROR,
       "chado_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -104,9 +104,9 @@ function chado_get_cv($identifiers, $options = array()) {
       "chado_get_cv: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -127,9 +127,12 @@ function chado_get_cv($identifiers, $options = array()) {
  */
 function chado_get_cv_select_options() {
 
-  $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
+  $results = chado_select_record('cv', [
+    'cv_id',
+    'name',
+  ], [], ['order_by' => ['name' => 'ASC']]);
 
-  $options = array();
+  $options = [];
   $options[] = 'Select a Vocabulary';
 
   foreach ($results as $r) {
@@ -174,12 +177,12 @@ function chado_get_cv_select_options() {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cvterm($identifiers, $options = array()) {
+function chado_get_cvterm($identifiers, $options = []) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var to only get the cv.
-    $options['include_fk'] = array('cv_id' => TRUE);
+    $options['include_fk'] = ['cv_id' => TRUE];
   }
 
   // Error Checking of parameters.
@@ -187,7 +190,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
     tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "chado_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
-      array('%identifier'=> print_r($identifiers, TRUE))
+      ['%identifier' => print_r($identifiers, TRUE)]
     );
   }
   elseif (empty($identifiers)) {
@@ -195,7 +198,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
       "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
-      array('%identifier'=> print_r($identifiers, TRUE))
+      ['%identifier' => print_r($identifiers, TRUE)]
     );
   }
 
@@ -204,17 +207,17 @@ function chado_get_cvterm($identifiers, $options = array()) {
   if (isset($identifiers['synonym'])) {
     $synonym = $identifiers['synonym']['name'];
 
-    $values = array('synonym' => $synonym);
+    $values = ['synonym' => $synonym];
     if (isset($identifiers['synonym']['cv_id'])) {
-      $values['cvterm_id'] = array('cv_id' => $identifiers['synonym']['cv_id']);
+      $values['cvterm_id'] = ['cv_id' => $identifiers['synonym']['cv_id']];
     }
     if (isset($identifiers['synonym']['cv_name'])) {
-      $values['cvterm_id'] = array('cv_id' => array('name' => $identifiers['synonym']['cv_name']));
+      $values['cvterm_id'] = ['cv_id' => ['name' => $identifiers['synonym']['cv_name']]];
     }
-    $options = array(
-      'case_insensitive_columns' => array('name')
-    );
-    $result = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
+    $options = [
+      'case_insensitive_columns' => ['name'],
+    ];
+    $result = chado_select_record('cvtermsynonym', ['cvterm_id'], $values, $options);
 
     // if the synonym doens't exist or more than one record is returned then
     // return false.
@@ -225,7 +228,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
       return FALSE;
     }
 
-    $identifiers = array('cvterm_id' => $result[0]->cvterm_id);
+    $identifiers = ['cvterm_id' => $result[0]->cvterm_id];
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property().
@@ -233,21 +236,21 @@ function chado_get_cvterm($identifiers, $options = array()) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $cvterm = chado_get_record_with_property(
-      array('table' => 'cvterm', 'base_records' => $identifiers),
-      array('type_name' => $property),
+      ['table' => 'cvterm', 'base_records' => $identifiers],
+      ['type_name' => $property],
       $options
     );
   }
   if (isset($identifiers['id'])) {
     list($db_name, $accession) = preg_split('/:/', $identifiers['id']);
-    $cvterm = chado_generate_var('cvterm',array(
-      'dbxref_id' => array(
-        'db_id' => array(
+    $cvterm = chado_generate_var('cvterm', [
+      'dbxref_id' => [
+        'db_id' => [
           'name' => $db_name,
-        ),
+        ],
         'accession' => $accession,
-      )
-    ));
+      ],
+    ]);
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get
@@ -263,9 +266,9 @@ function chado_get_cvterm($identifiers, $options = array()) {
       'tripal_cv_api',
       TRIPAL_ERROR,
       "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -278,9 +281,9 @@ function chado_get_cvterm($identifiers, $options = array()) {
       "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -309,16 +312,16 @@ function chado_get_cvterm($identifiers, $options = array()) {
  * @ingroup tripal_chado_cv_api
  */
 function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
-  $columns = array('cvterm_id', 'name');
-  $values = array('cv_id' => $cv_id);
+  $columns = ['cvterm_id', 'name'];
+  $values = ['cv_id' => $cv_id];
   if ($rel_type) {
     $values['is_relationshiptype'] = 1;
   }
-  $s_options = array('order_by' => array('name' => 'ASC'));
+  $s_options = ['order_by' => ['name' => 'ASC']];
 
   $cvterms = chado_select_record('cvterm', $columns, $values, $s_options);
 
-  $options = array();
+  $options = [];
   $options[0] = 'Select a Type';
   foreach ($cvterms as $cvterm) {
     $options[$cvterm->cvterm_id] = $cvterm->name;
@@ -337,6 +340,7 @@ function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
  *   This function is intended to be used with the Tripal Jobs API.
  *   When this function is called as a job the $job_id is automatically
  *   passed to this function.
+ *
  * @return
  *   TRUE on success FALSE on failure.
  *
@@ -347,7 +351,7 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
 
   // First get the controlled vocabulary name:
   $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id";
-  $cv = chado_query($sql, array(':cv_id' => $cv_id))->fetchObject();
+  $cv = chado_query($sql, [':cv_id' => $cv_id])->fetchObject();
 
   print "\nUpdating cvtermpath for $cv->name...\n";
 
@@ -357,13 +361,12 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
   try {
     $sql = "SELECT * FROM fill_cvtermpath(:name)";
 
-    db_query($sql, array(':name' => $cv->name));
+    db_query($sql, [':name' => $cv->name]);
     chado_set_active($previous);
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     chado_set_active($previous);
     $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath table: @error", array('@error' => $error));
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath table: @error", ['@error' => $error]);
     return FALSE;
   }
   return TRUE;
@@ -397,7 +400,7 @@ function chado_clear_cvtermpath($cv_id) {
 function chado_update_cvtermpath($cv_id, $job = NULL) {
 
   $cv = new ChadoRecord('cv', $cv_id);
-  print "Building cvterm paths for vocabulary: " . $cv->getValue('name') ."\n";
+  print "Building cvterm paths for vocabulary: " . $cv->getValue('name') . "\n";
   print "Clearing the cvtermpath table for this vocabulary...\n";
   chado_clear_cvtermpath($cv_id);
   print "Clearing completed.\n";
@@ -440,7 +443,11 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
     $rels = chado_query($sql, [':cv_id' => $cv_id]);
     $total_items;
     while ($rel = $rels->fetchObject()) {
-      $cache['rels'][$rel->object_id][] = [$rel->subject_id, $rel->type_id, $rel->name];
+      $cache['rels'][$rel->object_id][] = [
+        $rel->subject_id,
+        $rel->type_id,
+        $rel->name,
+      ];
     }
     $total_items = count(array_keys($cache['rels']));
     if ($job) {
@@ -467,7 +474,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
     // Iterate through the tree roots.
     print "Processing terms...\n";
     while ($root = $roots->fetchObject()) {
-      $root_id =  $root->cvterm_id;
+      $root_id = $root->cvterm_id;
       $root_name = $root->name;
 
       if ($job) {
@@ -481,8 +488,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
       _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job,
         $num_handled, $depth);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     throw $e;
   }
@@ -514,7 +520,7 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
  *   The current depth in the tree of this term.
  */
 function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
-  $job, &$num_handled, $root_depth = 0) {
+                                       $job, &$num_handled, $root_depth = 0) {
 
 
   // Don't use a node as a root if we've already used it once before.
@@ -575,6 +581,7 @@ function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
       $job, $num_handled, $next_depth);
   }
 }
+
 /**
  * Handles a single node in the tree.
  *
@@ -596,7 +603,7 @@ function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
  *   The current depth in the tree.
  */
 function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
-  $path, &$cache, $depth = 1) {
+                                                   $path, &$cache, $depth = 1) {
 
   $cache['nodes_processed'][$cvterm_id] = TRUE;
 
@@ -655,15 +662,15 @@ function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
  *   The TripalJob instance.
  */
 function _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id,
-  $root_id, $cv_id, $depth) {
+                                                   $root_id, $cv_id, $depth) {
 
   $cvtermpath = new ChadoRecord('cvtermpath');
   $cvtermpath->setValues([
-    'type_id' =>  $type_id,
+    'type_id' => $type_id,
     'subject_id' => $cvterm_id,
     'object_id' => $root_id,
-    'cv_id'  => $cv_id,
-    'pathdistance'  => $depth,
+    'cv_id' => $cv_id,
+    'pathdistance' => $depth,
   ]);
   $cvtermpath->insert();
 }
@@ -686,14 +693,14 @@ function _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id,
 function chado_insert_cv($name, $definition) {
 
   // Insert/update values.
-  $ins_values = array(
-    'name'       => $name,
-    'definition' => $definition
-  );
+  $ins_values = [
+    'name' => $name,
+    'definition' => $definition,
+  ];
 
   // See if the CV default exists already in the database.
-  $sel_values = array('name' => $name);
-  $results = chado_select_record('cv', array('*'), $sel_values);
+  $sel_values = ['name' => $name];
+  $results = chado_select_record('cv', ['*'], $sel_values);
 
   // If it does not exists then add it.
   if (count($results) == 0) {
@@ -702,7 +709,7 @@ function chado_insert_cv($name, $definition) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to create the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values);
+    $results = chado_select_record('cv', ['*'], $sel_values);
   }
   // If it already exists then do an update.
   else {
@@ -711,7 +718,7 @@ function chado_insert_cv($name, $definition) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values);
+    $results = chado_select_record('cv', ['*'], $sel_values);
   }
 
   // Return the cv object.
@@ -762,7 +769,7 @@ function chado_insert_cv($name, $definition) {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_insert_cvterm($term, $options = array()) {
+function chado_insert_cvterm($term, $options = []) {
   // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
   $name = '';
@@ -844,7 +851,7 @@ function chado_insert_cvterm($term, $options = array()) {
     return 0;
   }
   // Make sure the CV name exists.
-  $cv = chado_get_cv(array('name' => $cvname));
+  $cv = chado_get_cv(['name' => $cvname]);
   if (!$cv) {
     $cv = chado_insert_cv($cvname, '');
   }
@@ -867,9 +874,9 @@ function chado_insert_cvterm($term, $options = array()) {
   ";
   // Add the database. The function will just return the DB object if the
   // database already exists.
-  $db = chado_get_db(array('name' => $dbname));
+  $db = chado_get_db(['name' => $dbname]);
   if (!$db) {
-    $db = chado_insert_db(array('name' => $dbname));
+    $db = chado_insert_db(['name' => $dbname]);
   }
   if (!$db) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
@@ -877,30 +884,30 @@ function chado_insert_cvterm($term, $options = array()) {
   }
   // The cvterm table has two unique dependencies. We need to check both.
   // first check the (name, cv_id, is_obsolete) constraint.
-  $values = array(
+  $values = [
     'name' => $name,
     'is_obsolete' => $is_obsolete,
-    'cv_id' => array(
+    'cv_id' => [
       'name' => $cvname,
-    ),
-  );
-  $result = chado_select_record('cvterm', array('*'), $values);
+    ],
+  ];
+  $result = chado_select_record('cvterm', ['*'], $values);
   if (count($result) == 1) {
     $cvterm = $result[0];
     // Get the dbxref record.
-    $values = array('dbxref_id' => $cvterm->dbxref_id);
-    $result = chado_select_record('dbxref', array('*'), $values);
+    $values = ['dbxref_id' => $cvterm->dbxref_id];
+    $result = chado_select_record('dbxref', ['*'], $values);
     $dbxref = $result[0];
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_ERROR,
-          'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
-          array(':term' => $name, '!record' => print_r($cvterm, TRUE))
+        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
+        [':term' => $name, '!record' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }
     // Get the db.
-    $values = array('db_id' => $dbxref->db_id);
-    $result = chado_select_record('db', array('*'), $values);
+    $values = ['db_id' => $dbxref->db_id];
+    $result = chado_select_record('db', ['*'], $values);
     $db_check = $result[0];
     //     // The database name for this existing term does not match that of the
     //     // one provided to this function.  The CV name matches otherwise we
@@ -940,36 +947,39 @@ function chado_insert_cvterm($term, $options = array()) {
     // So we'll need to add the record to the cvterm_dbxref table instead.
     if ($dbxref->accession != $accession) {
       // Get/add the dbxref for his term.
-      $dbxref_new = chado_insert_dbxref(array(
+      $dbxref_new = chado_insert_dbxref([
         'db_id' => $db->db_id,
-        'accession' => $accession
-      ));
+        'accession' => $accession,
+      ]);
       if (!$dbxref_new) {
         tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-            "$name (id: $accession), for database $dbname", NULL);
+          "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
       // Check to see if the cvterm_dbxref record already exists.
-      $values = array(
+      $values = [
         'cvterm_id' => $cvterm->cvterm_id,
         'dbxref_id' => $dbxref_new->dbxref_id,
         'is_for_definition' => 1,
-      );
-      $result = chado_select_record('cvterm_dbxref', array('*'), $values);
+      ];
+      $result = chado_select_record('cvterm_dbxref', ['*'], $values);
       // if the cvterm_dbxref record does not exists then add it
-      if (count($result)==0) {
-        $options = array(
+      if (count($result) == 0) {
+        $options = [
           'return_record' => FALSE,
-        );
+        ];
         $success = chado_insert_record('cvterm_dbxref', $values, $options);
         if (!$success) {
           tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the cvterm_dbxref record for a " .
-              "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
+            "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
           return 0;
         }
       }
       // Get the original cvterm with the same name and return that.
-      $result = chado_query($cvtermsql, array(':accession' => $dbxref->accession, ':name' => $dbname));
+      $result = chado_query($cvtermsql, [
+        ':accession' => $dbxref->accession,
+        ':name' => $dbname,
+      ]);
       $cvterm = $result->fetchObject();
       return $cvterm;
     }
@@ -977,32 +987,35 @@ function chado_insert_cvterm($term, $options = array()) {
     // We can now perform and updated if we need to.
   }
   // Get the CVterm record.
-  $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+  $result = chado_query($cvtermsql, [
+    ':accession' => $accession,
+    ':name' => $dbname,
+  ]);
   $cvterm = $result->fetchObject();
   if (!$cvterm) {
     // Check to see if the dbxref exists if not, add it.
-    $dbxref = chado_insert_dbxref(array(
+    $dbxref = chado_insert_dbxref([
       'db_id' => $db->db_id,
-      'accession' => $accession
-    ));
+      'accession' => $accession,
+    ]);
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-          "$name (id: $accession), for database $dbname", NULL);
+        "$name (id: $accession), for database $dbname", NULL);
       return 0;
     }
     // Check to see if the dbxref already has an entry in the cvterm table.
-    $values = array('dbxref_id' => $dbxref->dbxref_id);
-    $check = chado_select_record('cvterm', array('cvterm_id'), $values);
+    $values = ['dbxref_id' => $dbxref->dbxref_id];
+    $check = chado_select_record('cvterm', ['cvterm_id'], $values);
     if (count($check) == 0) {
       // now add the cvterm
-      $ins_values = array(
-        'cv_id'                => $cv->cv_id,
-        'name'                 => $name,
-        'definition'           => $definition,
-        'dbxref_id'            => $dbxref->dbxref_id,
-        'is_obsolete'          => $is_obsolete,
-        'is_relationshiptype'  => $is_relationship,
-      );
+      $ins_values = [
+        'cv_id' => $cv->cv_id,
+        'name' => $name,
+        'definition' => $definition,
+        'dbxref_id' => $dbxref->dbxref_id,
+        'is_obsolete' => $is_obsolete,
+        'is_relationshiptype' => $is_relationship,
+      ];
       $success = chado_insert_record('cvterm', $ins_values);
       if (!$success) {
         if (!$is_relationship) {
@@ -1020,19 +1033,22 @@ function chado_insert_cvterm($term, $options = array()) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", NULL);
       return 0;
     }
-    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $result = chado_query($cvtermsql, [
+      ':accession' => $accession,
+      ':name' => $dbname,
+    ]);
     $cvterm = $result->fetchObject();
   }
   // Update the cvterm.
   elseif ($update) {
     // First, basic update of the term.
-    $match = array('cvterm_id' => $cvterm->cvterm_id);
-    $upd_values = array(
-      'name'                => $name,
-      'definition'          => $definition,
-      'is_obsolete'         => $is_obsolete,
+    $match = ['cvterm_id' => $cvterm->cvterm_id];
+    $upd_values = [
+      'name' => $name,
+      'definition' => $definition,
+      'is_obsolete' => $is_obsolete,
       'is_relationshiptype' => $is_relationship,
-    );
+    ];
     $success = chado_update_record('cvterm', $match, $upd_values);
     if (!$success) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
@@ -1048,22 +1064,27 @@ function chado_insert_cvterm($term, $options = array()) {
         INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
       WHERE DBX.accession = :accession and DB.name = :dbname and CVT.name = :term and CV.name = :cvname
     ";
-    $check = chado_query($checksql, array(':accession' => $accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
+    $check = chado_query($checksql, [
+      ':accession' => $accession,
+      ':dbname' => $dbname,
+      ':term' => $name,
+      ':cvname' => $cvname,
+    ])->fetchObject();
     if (!$check) {
       // Check to see if the dbxref exists if not, add it.
-      $dbxref = chado_insert_dbxref(array(
+      $dbxref = chado_insert_dbxref([
         'db_id' => $db->db_id,
-        'accession' => $accession
-      ));
+        'accession' => $accession,
+      ]);
       if (!$dbxref) {
         tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-            "$name (id: $accession), for database $dbname", NULL);
+          "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
-      $match = array('cvterm_id' => $cvterm->cvterm_id);
-      $upd_values = array(
+      $match = ['cvterm_id' => $cvterm->cvterm_id];
+      $upd_values = [
         'dbxref_id' => $dbxref->dbxref_id,
-      );
+      ];
       $success = chado_update_record('cvterm', $match, $upd_values);
       if (!$success) {
         tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the term $name with new accession $db:$accession", NULL);
@@ -1071,7 +1092,10 @@ function chado_insert_cvterm($term, $options = array()) {
       }
     }
     // Finally grab the updated details.
-    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $result = chado_query($cvtermsql, [
+      ':accession' => $accession,
+      ':name' => $dbname,
+    ]);
     $cvterm = $result->fetchObject();
   }
   else {
@@ -1122,36 +1146,36 @@ function chado_submit_obo_job($obo) {
 
   // Set Defaults
   $obo['obo_id'] = (isset($obo['obo_id'])) ? $obo['obo_id'] : NULL;
-  $obo['name']   = (isset($obo['name']))   ? $obo['name']   : NULL;
-  $obo['url']    = (isset($obo['url']))    ? $obo['url']    : NULL;
-  $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
+  $obo['name'] = (isset($obo['name'])) ? $obo['name'] : NULL;
+  $obo['url'] = (isset($obo['url'])) ? $obo['url'] : NULL;
+  $obo['file'] = (isset($obo['file'])) ? $obo['file'] : NULL;
 
-  $includes = array(
+  $includes = [
     drupal_get_path('module', 'tripal_chado') . '/includes/tripal_chado.cv.inc',
-  );
+  ];
 
   if ($obo['obo_id']) {
     $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
-    $result = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
+    $result = db_query($sql, [':obo_id' => $obo['obo_id']])->fetchObject();
 
-    $args = array($result->obo_id);
+    $args = [$result->obo_id];
     return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
-       "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
+      "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
   }
   else {
     if ($obo['url']) {
       $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :url";
-      $result = db_query($sql, array(':url' => $obo['url']))->fetchObject();
+      $result = db_query($sql, [':url' => $obo['url']])->fetchObject();
 
-      $args = array($result->obo_id);
+      $args = [$result->obo_id];
       return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
         "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
     elseif ($obo['file']) {
       $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :file";
-      $result = db_query($sql, array(':url' => $obo['file']))->fetchObject();
+      $result = db_query($sql, [':url' => $obo['file']])->fetchObject();
 
-      $args = array($result->obo_id);
+      $args = [$result->obo_id];
       return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
         "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
@@ -1177,26 +1201,26 @@ function chado_submit_obo_job($obo) {
 function chado_insert_obo($name, $path) {
   // Make sure an OBO with the same name doesn't already exist.
   $obo_id = db_select('tripal_cv_obo', 'tco')
-    ->fields('tco', array('obo_id'))
+    ->fields('tco', ['obo_id'])
     ->condition('name', $name)
     ->execute()
     ->fetchField();
 
   if ($obo_id) {
     db_update('tripal_cv_obo')
-      ->fields(array(
+      ->fields([
         'path' => $path,
-      ))
+      ])
       ->condition('name', $name)
       ->execute();
     return $obo_id;
   }
   else {
     $obo_id = db_insert('tripal_cv_obo')
-      ->fields(array(
+      ->fields([
         'name' => $name,
         'path' => $path,
-      ))
+      ])
       ->execute();
     return $obo_id;
   }
@@ -1247,8 +1271,8 @@ function chado_autocomplete_cv($string = '') {
     ORDER by CV.name
     LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, array(':name' => $string . '%'));
-  $items = array();
+  $results = chado_query($sql, [':name' => $string . '%']);
+  $items = [];
   foreach ($results as $cv) {
     $items[$cv->name] = $cv->name;
   }
@@ -1284,8 +1308,11 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, array(':cv_id' => $cv_id, ':name' => $string . '%'));
-    $items = array();
+    $results = chado_query($sql, [
+      ':cv_id' => $cv_id,
+      ':name' => $string . '%',
+    ]);
+    $items = [];
     foreach ($results as $term) {
       $items[$term->name] = $term->name;
     }
@@ -1307,8 +1334,8 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, array(':name' => $string . '%'));
-    $items = array();
+    $results = chado_query($sql, [':name' => $string . '%']);
+    $items = [];
     foreach ($results as $term) {
       $items[$term->name] = $term->name;
     }
@@ -1339,7 +1366,7 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
+function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = []) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 
@@ -1349,30 +1376,34 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = arra
   // If the cvterm_id is not set then find the cvterm record using the name and
   // cv_id.
   if (!isset($cvterm['cvterm_id'])) {
-    $values = array(
+    $values = [
       'name' => $cvterm['name'],
-    );
+    ];
     if (isset($cvterm['cv_id'])) {
       $values['cv_id'] = $cvterm['cv_id'];
     }
     elseif (isset($cvterm['cv_name'])) {
-      $values['cv_id'] = array(
-        'name' => $cvterm['cv_name']
-      );
+      $values['cv_id'] = [
+        'name' => $cvterm['cv_name'],
+      ];
     }
     else {
       tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
         "chado_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
           supplied. You were trying to associate a cvterm with the %base %record_id
           and supplied the cvterm values: %cvterm.",
-        array('%base' => $basetable, '%record_id' => $record_id, '%cvterm' => print_r($cvterm,TRUE))
+        [
+          '%base' => $basetable,
+          '%record_id' => $record_id,
+          '%cvterm' => print_r($cvterm, TRUE),
+        ]
       );
       return FALSE;
     }
 
     // Get the cvterm. If it doesn't exist then add it if the option
     // 'insert_cvterm' is set.
-    $select = chado_select_record('cvterm', array('*'), $values);
+    $select = chado_select_record('cvterm', ['*'], $values);
     if ($select) {
       $cvterm['cvterm_id'] = $select[0]->cvterm_id;
     }
@@ -1385,7 +1416,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = arra
       else {
         tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
           "chado_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
-          array('%cvterm' => print_r($cvterm,TRUE))
+          ['%cvterm' => print_r($cvterm, TRUE)]
         );
         return FALSE;
       }
@@ -1393,7 +1424,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = arra
     else {
       tripal_report_error('tripal_api', TRIPAL_WARNING,
         "chado_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
-        array('%cvterm' => print_r($cvterm,TRUE))
+        ['%cvterm' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }
@@ -1401,24 +1432,24 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = arra
 
   // Now add the link between the record & cvterm.
   if ($cvterm['cvterm_id'] > 0) {
-    $values = array(
+    $values = [
       'cvterm_id' => $cvterm['cvterm_id'],
       $foreignkey_name => $record_id,
       'pub_id' => 1,
-    );
+    ];
 
     // Check if the cvterm is already associated. If so, don't re-add it.
-    $result = chado_select_record($linking_table, array('*'), $values);
+    $result = chado_select_record($linking_table, ['*'], $values);
     if (!$result) {
       $success = chado_insert_record($linking_table, $values);
       if (!$success) {
         tripal_report_error('tripal_api', TRIPAL_WARNING,
           "Failed to insert the %base record %term",
-          array('%base' => $linking_table, '%term' => $cvterm['name'])
+          ['%base' => $linking_table, '%term' => $cvterm['name']]
         );
         return FALSE;
       }
-      $result = chado_select_record($linking_table, array('*'), $values);
+      $result = chado_select_record($linking_table, ['*'], $values);
     }
 
     if (isset($result[0])) {

@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\tripal_chado\api;
 
 use StatonLab\TripalTestSuite\DBTransaction;
@@ -7,9 +8,11 @@ use StatonLab\TripalTestSuite\TripalTestCase;
 module_load_include('inc', 'tripal_chado', 'api/ChadoSchema');
 
 /**
- * Tests the current Chado Database is compliant with the schema definition used by Tripal
+ * Tests the current Chado Database is compliant with the schema definition
+ * used by Tripal
  */
 class ChadoComplianceTest extends TripalTestCase {
+
   // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
 
@@ -58,7 +61,11 @@ class ChadoComplianceTest extends TripalTestCase {
     $this->assertTrue(
       $chado_schema->checkTableExists($table_name),
       t('"!table_name" should exist in the "!chado" schema v!version.',
-        array('!table_name' => $table_name, '!chado' => $schema_name, '!version' => $version))
+        [
+          '!table_name' => $table_name,
+          '!chado' => $schema_name,
+          '!version' => $version,
+        ])
     );
 
     // Retrieve the schema for this table.
@@ -71,15 +78,23 @@ class ChadoComplianceTest extends TripalTestCase {
       $this->assertTrue(
         $chado_schema->checkColumnExists($table_name, $column_name),
         t('The column "!column" must exist in "!table" for chado v!version.',
-          array('!column' => $column_name, '!table' => $table_name, '!version' => $version))
+          [
+            '!column' => $column_name,
+            '!table' => $table_name,
+            '!version' => $version,
+          ])
       );
 
       // Check #3: The field is the type we expect.
       $this->assertTrue(
         $chado_schema->checkColumnType($table_name, $column_name, $column_details['type']),
         t('The column "!table.!column" must be of type "!type" for chado v!version.',
-          array('!column' => $column_name, '!table' => $table_name,
-            '!version' => $version, '!type' => $column_details['type']))
+          [
+            '!column' => $column_name,
+            '!table' => $table_name,
+            '!version' => $version,
+            '!type' => $column_details['type'],
+          ])
       );
     }
 
@@ -94,7 +109,11 @@ class ChadoComplianceTest extends TripalTestCase {
       $this->assertTrue(
         $chado_schema->checkPrimaryKey($table_name, $pkey_column),
         t('The column "!table.!column" must be a primary key with an associated sequence and constraint for chado v!version.',
-          array('!column' => $pkey_column, '!table' => $table_name, '!version' => $version))
+          [
+            '!column' => $pkey_column,
+            '!table' => $table_name,
+            '!version' => $version,
+          ])
       );
     }
 
@@ -106,7 +125,11 @@ class ChadoComplianceTest extends TripalTestCase {
       $this->assertTrue(
         $chado_schema->checkConstraintExists($table_name, $constraint_name, 'UNIQUE'),
         t('The unique constraint "!name" for "!table" must exist for chado v!version.',
-          array('!name' => $constraint_name, '!table' => $table_name, '!version' => $version))
+          [
+            '!name' => $constraint_name,
+            '!table' => $table_name,
+            '!version' => $version,
+          ])
       );
 
       // Check #5: The constraint consists of the columns we expect.
@@ -123,10 +146,14 @@ class ChadoComplianceTest extends TripalTestCase {
         $this->assertTrue(
           $chado_schema->checkFKConstraintExists($table_name, $base_column),
           t('The foreign key constraint "!name" for "!table.!column" => "!fktable.!fkcolumn" must exist for chado v!version.',
-            array('!name' => $constraint_name,
-              '!table' => $table_name, '!column' => $base_column,
-              '!fktable' => $fk_table, '!fkcolumn' => $fk_column,
-              '!version' => $version))
+            [
+              '!name' => $constraint_name,
+              '!table' => $table_name,
+              '!column' => $base_column,
+              '!fktable' => $fk_table,
+              '!fkcolumn' => $fk_column,
+              '!version' => $version,
+            ])
         );
 
         // Check #5: The constraint consists of the columns we expect.
