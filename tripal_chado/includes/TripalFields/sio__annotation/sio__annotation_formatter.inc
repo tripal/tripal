@@ -73,7 +73,7 @@ class sio__annotation_formatter extends ChadoFieldFormatter {
     ];
 
     if (count($items) > 0) {
-      $element[0] = array(
+      $element[0] = [
         '#type' => 'markup',
         '#markup' => theme_table($table),
       ];
